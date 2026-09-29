@@ -6,6 +6,19 @@ namespace Avalonia.Media.Fonts
     internal static class FontCollectionKeyExtensions
     {
         /// <summary>
+        /// Compares the style, weight and stretch of two keys and ignores their variation positions.
+        /// </summary>
+        /// <remarks>
+        /// A varied clone reports the key it was resolved for together with its variation position,
+        /// while a requested key never carries one. Comparing with record equality would therefore
+        /// treat the clone that satisfies a request as a mismatch.
+        /// </remarks>
+        public static bool StyleEquals(this FontCollectionKey key, FontCollectionKey other)
+        {
+            return key.Style == other.Style && key.Weight == other.Weight && key.Stretch == other.Stretch;
+        }
+
+        /// <summary>
         /// Creates a new FontCollectionKey based on the style, weight, and stretch of the specified Typeface.
         /// </summary>
         /// <param name="typeface">The Typeface from which to extract style, weight, and stretch information. Cannot be null.</param>

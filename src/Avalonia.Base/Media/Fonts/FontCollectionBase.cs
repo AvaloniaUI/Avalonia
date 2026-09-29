@@ -256,7 +256,7 @@ namespace Avalonia.Media.Fonts
                 }
             }
 
-            if (candidate.ToFontCollectionKey() == requestedKey)
+            if (candidate.ToFontCollectionKey().StyleEquals(requestedKey))
             {
                 score += 1;
             }
@@ -311,7 +311,7 @@ namespace Avalonia.Media.Fonts
             // oblique simulation of "Yu Gothic UI" returns "Yu Gothic Medium"). Accept the matched
             // glyph typeface as-is and pre-cache it under the requested key so later
             // GlyphTypeface lookups via the returned Typeface short-circuit through the cache.
-            if (matchedKey != requestedKey)
+            if (!matchedKey.StyleEquals(requestedKey))
             {
                 TryAddGlyphTypeface(glyphTypeface.FamilyName, requestedKey, glyphTypeface);
             }
@@ -380,9 +380,9 @@ namespace Avalonia.Media.Fonts
             // The platform's character match, biased by the family already resolved, yields that family
             // at the requested key when it has that face (MatchCharacter covers the codepoint, so no
             // extra coverage check is needed). Accept it only when it is the exact key and can shape.
-            if (glyphTypeface.ToFontCollectionKey() != key &&
+            if (!glyphTypeface.ToFontCollectionKey().StyleEquals(key) &&
                 TryMatchCharacterFromPlatform(codepoint, key, glyphTypeface.FamilyName, culture, out var exact) &&
-                exact.ToFontCollectionKey() == key &&
+                exact.ToFontCollectionKey().StyleEquals(key) &&
                 CanShape(exact, shapingScript))
             {
                 return exact;
@@ -495,7 +495,7 @@ namespace Avalonia.Media.Fonts
 
             var currentKey = glyphTypeface.ToFontCollectionKey();
                 
-            if (currentKey == key)
+            if (currentKey.StyleEquals(key))
             {
                 return false;
             }
@@ -891,7 +891,7 @@ namespace Avalonia.Media.Fonts
                         // an exact hit instead of another pass over the family's variation space.
                         TryAddGlyphTypeface(familyName, key, glyphTypeface);
                     }
-                    else if (matchKind == MatchKind.Nearest && matchedKey != key)
+                    else if (matchKind == MatchKind.Nearest && !matchedKey.StyleEquals(key))
                     {
                         if (TryCreateSyntheticGlyphTypeface(glyphTypeface, key.Style, key.Weight, key.Stretch, out var syntheticGlyphTypeface))
                         {
