@@ -1218,6 +1218,110 @@ namespace Avalonia.Media
         }
 
         /// <summary>
+        /// Adds the family names of this variable font's instance at the user-space
+        /// <paramref name="userCoordinates"/> to <paramref name="familyNames"/>: the invariant name
+        /// <see cref="TryGetInstanceNames(IReadOnlyDictionary{OpenTypeTag, float}, out FontInstanceNames)"/>
+        /// composes, then one per language that localizes the typographic family name.
+        /// </summary>
+        /// <remarks>
+        /// A localized family is composed from that language's typographic family name (or its
+        /// family name, for a font without typographic names) and that language's STAT value names,
+        /// each falling back to its en-US record the way the invariant name does.
+        /// </remarks>
+        internal void GetInstanceFamilyNames(
+            IReadOnlyDictionary<OpenTypeTag, float> userCoordinates,
+            ICollection<string> familyNames)
+        {
+            if (_fvarTable is null || !TryGetInstanceNames(userCoordinates, out var names))
+            {
+                return;
+            }
+
+            AddName(names.FamilyName);
+
+            if (_nameTable is not { } nameTable)
+            {
+                return;
+            }
+
+            const ushort USEnglish = 0x0409;
+
+            Dictionary<ushort, (string? Typographic, string? Family)>? localized = null;
+            var hasTypographicFamily = false;
+
+            foreach (var record in nameTable)
+            {
+                var isTypographic = record.NameID == KnownNameIds.TypographicFamilyName;
+
+                if (record.Platform != Fonts.Tables.PlatformID.Windows ||
+                    (!isTypographic && record.NameID != KnownNameIds.FontFamilyName))
+                {
+                    continue;
+                }
+
+                hasTypographicFamily |= isTypographic;
+
+                if (record.LanguageID == 0 || record.LanguageID == USEnglish)
+                {
+                    continue;
+                }
+
+                localized ??= new Dictionary<ushort, (string?, string?)>();
+                localized.TryGetValue(record.LanguageID, out var entry);
+
+                if (isTypographic)
+                {
+                    entry.Typographic ??= record.GetValue();
+                }
+                else
+                {
+                    entry.Family ??= record.GetValue();
+                }
+
+                localized[record.LanguageID] = entry;
+            }
+
+            if (localized is null)
+            {
+                return;
+            }
+
+            foreach (var language in localized)
+            {
+                // The name ID 1 family of a font with typographic names is its legacy
+                // four-style family, which a localized typographic family is not derived from.
+                var familyName = hasTypographicFamily ? language.Value.Typographic : language.Value.Family;
+
+                if (string.IsNullOrEmpty(familyName))
+                {
+                    continue;
+                }
+
+                var languageId = language.Key;
+
+                if (VariableFontNaming.TryGetInstanceNames(
+                        StatTable,
+                        _fvarTable.Axes,
+                        _fvarTable.Instances,
+                        familyName,
+                        userCoordinates,
+                        nameId => nameTable.GetNameById(languageId, nameId),
+                        out var localizedNames))
+                {
+                    AddName(localizedNames.FamilyName);
+                }
+            }
+
+            void AddName(string name)
+            {
+                if (!string.IsNullOrEmpty(name) && !familyNames.Contains(name))
+                {
+                    familyNames.Add(name);
+                }
+            }
+        }
+
+        /// <summary>
         /// Returns the value a STAT axis value or a named instance declares for the fvar axis at
         /// <paramref name="axisIndex"/> when it normalizes to <paramref name="normalized"/>;
         /// otherwise <paramref name="userValue"/>.
