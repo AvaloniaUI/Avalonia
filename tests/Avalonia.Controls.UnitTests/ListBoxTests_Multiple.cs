@@ -430,8 +430,14 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
-        [Fact]
-        public void Right_Click_On_UnselectedItem_Should_Clear_Existing_Selection()
+        [Theory]
+        [InlineData(KeyModifiers.None, false)]
+        [InlineData(KeyModifiers.Shift, false)]
+        [InlineData(KeyModifiers.Control, false)]
+        [InlineData(KeyModifiers.None, true)]
+        [InlineData(KeyModifiers.Shift, true)]
+        [InlineData(KeyModifiers.Control, true)]
+        public void Right_Click_On_UnselectedItem_Should_Preserve_Selection(KeyModifiers modifiers, bool emptySelection)
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
@@ -450,16 +456,20 @@ namespace Avalonia.Controls.UnitTests
 
                 AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration());
                 var panel = target.Presenter!.Panel!;
-                _helper.Click(panel.Children[0]);
-                _helper.Click(panel.Children[1], modifiers: KeyModifiers.Shift);
+                if (!emptySelection)
+                {
+                    _helper.Click(panel.Children[0]);
+                    _helper.Click(panel.Children[1], modifiers: KeyModifiers.Shift);
+                }
 
-                Assert.NotNull(target.SelectedItems);
-                Assert.Equal(2, target.SelectedItems.Count);
+                var expectedItems = emptySelection ? System.Array.Empty<string>() : new[] { "Foo", "Bar" };
+                var expectedIndexes = emptySelection ? System.Array.Empty<int>() : new[] { 0, 1 };
+                Assert.Equal(expectedItems, target.SelectedItems);
 
-                _helper.Click(panel.Children[2], MouseButton.Right);
+                _helper.Click(panel.Children[2], MouseButton.Right, modifiers: modifiers);
 
-                Assert.NotNull(target.SelectedItems);
-                Assert.Equal(1, target.SelectedItems.Count);
+                Assert.Equal(expectedItems, target.SelectedItems);
+                Assert.Equal(expectedIndexes, SelectedContainers(target));
             }
         }
 
