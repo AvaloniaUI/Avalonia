@@ -33,7 +33,19 @@ namespace Avalonia.Platform
         /// </summary>
         PlatformRenderTargetState PlatformRenderTargetState => PlatformRenderTargetState.Ready;
         
-        public record struct RenderTargetSceneInfo(PixelSize Size, double Scaling, Size LogicalSize, CompositionTransparencyLevel TransparencyLevel)
+        /// <summary>
+        /// Describes the scene that is about to be rendered into a render target.
+        /// </summary>
+        /// <param name="Size">The size of the scene in device pixels.</param>
+        /// <param name="Scaling">The render scaling of the scene.</param>
+        /// <param name="LogicalSize">The size of the scene in device-independent pixels.</param>
+        /// <param name="TransparencyLevel">The transparency level that the scene is composed with.</param>
+        /// <param name="PlatformSpecificSceneInfo">
+        /// An opaque immutable object provided by the platform's <c>ITopLevelImpl.PlatformSpecificSceneInfo</c>,
+        /// or null when the platform doesn't provide one.
+        /// </param>
+        public record struct RenderTargetSceneInfo(PixelSize Size, double Scaling, Size LogicalSize,
+            CompositionTransparencyLevel TransparencyLevel, object? PlatformSpecificSceneInfo = null)
         {
             public RenderTargetSceneInfo(PixelSize size, double scaling, CompositionTransparencyLevel transparencyLevel) : this(size, scaling, size.ToSize(scaling), transparencyLevel)
             {

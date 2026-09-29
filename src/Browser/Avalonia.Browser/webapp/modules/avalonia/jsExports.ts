@@ -14,6 +14,10 @@ export class JsExports {
         return this.resolvedExports?.Avalonia.Browser.Interop.TimerHelper;
     }
 
+    public static get SingleThreadedDispatcherImpl(): any {
+        return this.resolvedExports?.Avalonia.Browser.BrowserSingleThreadedDispatcherImpl;
+    }
+
     public static get CanvasHelper(): any {
         return this.resolvedExports?.Avalonia.Browser.Interop.CanvasHelper;
     }
