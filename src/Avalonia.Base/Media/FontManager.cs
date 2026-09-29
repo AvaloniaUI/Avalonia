@@ -135,11 +135,13 @@ namespace Avalonia.Media
 
             // Variations are applied once, here, whichever resolution path (mapped family,
             // composite key, system fonts, default fallback) produced the base typeface.
-            // Static fonts ignore the request; per-variation instances are cached on the
-            // resolved GlyphTypeface, so repeated lookups stay cheap.
+            // Resolution may already have moved a variable font along its axes to satisfy
+            // the weight, stretch or style; the settings override only the axes they name,
+            // on top of that position. Static fonts ignore the request; per-variation
+            // instances are cached on the source typeface, so repeated lookups stay cheap.
             if (typeface.FontVariations is { } variations)
             {
-                glyphTypeface = glyphTypeface.WithVariations(variations);
+                glyphTypeface = glyphTypeface.WithVariationOverrides(variations);
             }
 
             return true;
