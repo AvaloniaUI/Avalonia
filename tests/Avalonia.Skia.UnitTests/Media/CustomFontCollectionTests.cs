@@ -218,6 +218,41 @@ namespace Avalonia.Skia.UnitTests.Media
 
 
 
+        [Theory]
+        [InlineData(true)]  // resource font source
+        [InlineData(false)] // stream
+        public void Should_Register_Localized_Family_Names(bool fromFontSource)
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
+            {
+                var fontCollection = new CustomFontCollection(new Uri("fonts:custom", UriKind.Absolute));
+
+                // A font whose family is also named in German.
+                var fontUri = new Uri(
+                    "resm:Avalonia.Skia.UnitTests.Fonts.BareMinimum-Localized.ttf?assembly=Avalonia.Skia.UnitTests",
+                    UriKind.Absolute);
+
+                if (fromFontSource)
+                {
+                    Assert.True(fontCollection.TryAddFontSource(fontUri));
+                }
+                else
+                {
+                    var assetLoader = AvaloniaLocator.Current.GetRequiredService<IAssetLoader>();
+
+                    using var stream = assetLoader.Open(fontUri);
+
+                    Assert.True(fontCollection.TryAddGlyphTypeface(stream, out _));
+                }
+
+                Assert.True(fontCollection.TryGetGlyphTypeface("BareMinimum Localized", FontStyle.Normal,
+                    FontWeight.Normal, FontStretch.Normal, out var glyphTypeface));
+                Assert.True(fontCollection.TryGetGlyphTypeface("BareMinimum Lokalisiert", FontStyle.Normal,
+                    FontWeight.Normal, FontStretch.Normal, out var localized));
+                Assert.Same(glyphTypeface, localized);
+            }
+        }
+
         private class CustomFontCollection(Uri key) : FontCollectionBase
         {
             public override Uri Key { get; } = key;
