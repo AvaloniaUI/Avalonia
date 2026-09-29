@@ -1151,6 +1151,123 @@ namespace Avalonia.Media
         }
 
         /// <summary>
+        /// Composes the family and style name of this variable font's instance at
+        /// <paramref name="position"/>, following the STAT naming model described on
+        /// <see cref="VariableFontNaming"/>.
+        /// </summary>
+        /// <remarks>
+        /// Normalized coordinates are quantized, so each coordinate is matched back to the STAT or
+        /// named-instance value that normalizes to it before the names are selected.
+        /// </remarks>
+        /// <returns>
+        /// <c>false</c> for static fonts, and for a position that is no named instance of a font
+        /// without STAT axis values.
+        /// </returns>
+        internal bool TryGetInstanceNames(NormalizedVariationPosition position, out FontInstanceNames names)
+        {
+            if (_fvarTable is null)
+            {
+                names = default;
+                return false;
+            }
+
+            var axes = _fvarTable.Axes;
+            var userCoordinates = new Dictionary<OpenTypeTag, float>(axes.Length);
+
+            for (var i = 0; i < axes.Length; i++)
+            {
+                var tag = axes[i].Tag;
+
+                TryGetUserAxisValue(position, tag, out var userValue);
+
+                userCoordinates[tag] = SnapToDeclaredValue(i, position.GetCoordinateOrDefault(tag), userValue);
+            }
+
+            return TryGetInstanceNames(userCoordinates, out names);
+        }
+
+        /// <summary>
+        /// Composes the family and style name of this variable font's instance at the user-space
+        /// <paramref name="userCoordinates"/>, such as a named instance's coordinates.
+        /// </summary>
+        /// <returns>
+        /// <c>false</c> for static fonts, and for coordinates that are no named instance of a font
+        /// without STAT axis values.
+        /// </returns>
+        internal bool TryGetInstanceNames(
+            IReadOnlyDictionary<OpenTypeTag, float> userCoordinates,
+            out FontInstanceNames names)
+        {
+            if (_fvarTable is null)
+            {
+                names = default;
+                return false;
+            }
+
+            var nameTable = _nameTable;
+            var familyName = string.IsNullOrEmpty(TypographicFamilyName) ? FamilyName : TypographicFamilyName;
+
+            return VariableFontNaming.TryGetInstanceNames(
+                StatTable,
+                _fvarTable.Axes,
+                _fvarTable.Instances,
+                familyName,
+                userCoordinates,
+                nameId => nameTable?.GetNameById((ushort)CultureInfo.InvariantCulture.LCID, nameId),
+                out names);
+        }
+
+        /// <summary>
+        /// Returns the value a STAT axis value or a named instance declares for the fvar axis at
+        /// <paramref name="axisIndex"/> when it normalizes to <paramref name="normalized"/>;
+        /// otherwise <paramref name="userValue"/>.
+        /// </summary>
+        private float SnapToDeclaredValue(int axisIndex, float normalized, float userValue)
+        {
+            var axis = _fvarTable!.Axes[axisIndex];
+
+            if (normalized == 0f)
+            {
+                return axis.DefaultValue;
+            }
+
+            if (StatTable is { } stat)
+            {
+                foreach (var value in stat.AxisValues)
+                {
+                    foreach (var record in value.Records)
+                    {
+                        if (stat.DesignAxes[record.AxisIndex].Tag == axis.Tag &&
+                            NormalizesTo(axisIndex, record.Value, normalized))
+                        {
+                            return record.Value;
+                        }
+                    }
+                }
+            }
+
+            foreach (var instance in _fvarTable.Instances)
+            {
+                if (instance.Coordinates.TryGetValue(axis.Tag, out var value) &&
+                    NormalizesTo(axisIndex, value, normalized))
+                {
+                    return value;
+                }
+            }
+
+            return userValue;
+        }
+
+        // NormalizeAxisValue clamps, so a value outside the axis range would claim the axis ends.
+        private bool NormalizesTo(int axisIndex, float userValue, float normalized)
+        {
+            var axis = _fvarTable!.Axes[axisIndex];
+
+            return userValue >= axis.MinimumValue && userValue <= axis.MaximumValue &&
+                   NormalizeAxisValue(axisIndex, userValue) == normalized;
+        }
+
+        /// <summary>
         /// Gets the variation axes declared by the font's <c>fvar</c> table, in declaration
         /// order. Empty for static fonts.
         /// </summary>
