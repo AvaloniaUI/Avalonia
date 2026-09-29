@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Avalonia.Media;
 using Avalonia.Media.Fonts;
 using Avalonia.Media.Fonts.Tables.Variation;
@@ -171,6 +172,37 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
             var names = Names(builder, axes, (s_grad, 100), (s_opsz, 48));
 
             Assert.Equal(new FontInstanceNames("Family Display Grade High", "Regular"), names);
+        }
+
+        [Fact]
+        public void Family_Positions_Combine_The_Named_Values_Of_The_Non_Style_Axes()
+        {
+            var axes = new List<FontVariationAxis>(s_axes) { new(s_grad, "Grade", 0, 0, 100, false) };
+            var builder = new StatTableBuilder()
+                .Axis("wght", 256, 0)
+                .Axis("opsz", 257, 1)
+                .Axis("GRAD", 258, 2)
+                .Format1(0, 0, 301, 700)
+                .Format1(1, 0, 304, 12)
+                .Format2(1, 0, 305, 48, 20, 48)
+                .Format1(1, 0, 305, 96)
+                .Format1(2, 0, 309, 100)
+                .Format4(0, 308, (0, 700), (1, 48));
+
+            var positions = VariableFontNaming.GetFamilyPositions(StatTable.TryParse(builder.Build()), axes);
+
+            // wght is a style axis, opsz 96 lies outside the axis range and format 4 combinations
+            // name no family on their own.
+            Assert.Equal(
+                new[] { "opsz=12,GRAD=100", "opsz=48,GRAD=100" },
+                positions.Select(x => $"opsz={x[s_opsz]},GRAD={x[s_grad]}"));
+            Assert.All(positions, x => Assert.Equal(2, x.Count));
+        }
+
+        [Fact]
+        public void Font_Without_STAT_Has_No_Family_Positions()
+        {
+            Assert.Empty(VariableFontNaming.GetFamilyPositions(null, s_axes));
         }
 
         [Fact]
