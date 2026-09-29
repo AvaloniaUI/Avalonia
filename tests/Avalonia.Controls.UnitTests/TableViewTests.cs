@@ -71,6 +71,47 @@ public sealed class TableViewTests : ScopedTestBase
     }
 
     [Fact]
+    public void Column_LogicalParent_Is_Set_When_Added_And_Unset_When_Removed()
+    {
+        using var app = Start();
+
+        var target = CreateTarget(new[] { "Foo" });
+        var column = new TableViewColumn();
+        target.Columns.Add(column);
+
+        Prepare(target);
+
+        Assert.Same(target, column.GetLogicalParent());
+
+        target.Columns.Remove(column);
+
+        Assert.Null(column.GetLogicalParent());
+    }
+
+    [Fact]
+    public void Column_Receives_Styles_From_TableView()
+    {
+        using var app = Start();
+
+        var target = CreateTarget(new[] { "Foo" });
+        var style = new Style(x => x.OfType<TableViewColumn>().Class("right-align"))
+        {
+            Setters = { new Setter(TableViewColumn.HorizontalContentAlignmentProperty, HorizontalAlignment.Right) }
+        };
+        target.Styles.Add(style);
+
+        var column = new TableViewColumn
+        {
+            Classes = { "right-align" }
+        };
+        target.Columns.Add(column);
+
+        Prepare(target);
+
+        Assert.Equal(HorizontalAlignment.Right, column.HorizontalContentAlignment);
+    }
+
+    [Fact]
     public void Column_Cannot_Belong_To_Two_TableViews()
     {
         using var app = Start();

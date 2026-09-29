@@ -131,5 +131,30 @@ namespace Avalonia.Controls
             var format = GetCurrentDateFormat();
             return date.Year.ToString(format);
         }
+
+        /// <summary>
+        /// Gets the week-of-year number for the specified date.
+        /// </summary>
+        /// <param name="date">The date.</param>
+        /// <param name="rule">The rule that defines what constitutes the first week of the year.</param>
+        /// <param name="firstDayOfWeek">The first day of the week.</param>
+        /// <param name="calendar">the calendar to use.</param>
+        /// <returns>The week number that <paramref name="date"/> falls in.</returns>
+        /// <remarks>
+        /// This method fixes an issue where .NET's Calendar.GetWeekOfYear incorrectly returns week 53 for
+        /// late-December dates that ISO 8601 assigns to week 1 of the next year (e.g. 2018-12-31).
+        /// </remarks>
+        public static int GetWeekOfYear(DateTime date, 
+            CalendarWeekRule rule, 
+            DayOfWeek firstDayOfWeek, 
+            System.Globalization.Calendar calendar)
+        {
+            // .NET's Calendar.GetWeekOfYear incorrectly returns week 53 for late-December dates
+            // that ISO 8601 assigns to week 1 of the next year (e.g. 2018-12-31).
+            if (rule == CalendarWeekRule.FirstFourDayWeek && firstDayOfWeek == DayOfWeek.Monday)
+                return ISOWeek.GetWeekOfYear(date);
+
+            return calendar.GetWeekOfYear(date, rule, firstDayOfWeek);
+        }
     }
 }

@@ -1,0 +1,77 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="RenderDemo.Pages.GeometryHitTestingPage">
+  <DockPanel>
+
+    <StackPanel DockPanel.Dock="Top"
+                Margin="16"
+                Spacing="4">
+      <TextBlock x:Name="Status" />
+      <StackPanel Orientation="Horizontal"
+                  Spacing="8">
+        <TextBlock Text="Stroke thickness:"
+                   VerticalAlignment="Center" />
+        <Slider x:Name="StrokeThickness"
+                Width="240"
+                Minimum="1"
+                Maximum="40"
+                Value="12"
+                TickFrequency="1"
+                IsSnapToTickEnabled="True" />
+        <TextBlock Text="{Binding #StrokeThickness.Value}"
+                   VerticalAlignment="Center" />
+      </StackPanel>
+    </StackPanel>
+
+    <Grid x:Name="Scene"
+          Background="Transparent"
+          Cursor="None">
+      <Ellipse x:Name="Ellipse"
+               Margin="80,50,0,0"
+               HorizontalAlignment="Left"
+               VerticalAlignment="Top"
+               Width="180"
+               Height="120"
+               Fill="#3B82F6"
+               Stroke="#1E3A8A"
+               StrokeThickness="{Binding #StrokeThickness.Value}" />
+
+      <Rectangle x:Name="Rectangle"
+                 Margin="0,60,50,0"
+                 HorizontalAlignment="Right"
+                 VerticalAlignment="Top"
+                 Width="180"
+                 Height="120"
+                 RadiusX="12"
+                 RadiusY="12"
+                 Fill="#22C55E"
+                 Stroke="#14532D"
+                 StrokeThickness="{Binding #StrokeThickness.Value}" />
+
+      <Path x:Name="Star"
+            Margin="0,0,50,50"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Bottom"
+            Width="180"
+            Height="180"
+            Stretch="Uniform"
+            Data="M 50,0 L 61,35 L 98,35 L 68,57 L 79,91 L 50,70 L 21,91 L 32,57 L 2,35 L 39,35 Z"
+            Fill="#F43F5E"
+            Stroke="#7F1D1D"
+            StrokeThickness="{Binding #StrokeThickness.Value}" />
+
+      <Path x:Name="Probe"
+            Stretch="None"
+            IsVisible="False"
+            IsHitTestVisible="False"
+            Fill="#66FACC15"
+            Stroke="#CA8A04"
+            StrokeThickness="3" />
+    </Grid>
+  </DockPanel>
+
+</UserControl>
+

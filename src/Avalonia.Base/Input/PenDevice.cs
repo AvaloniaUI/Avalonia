@@ -63,6 +63,9 @@ namespace Avalonia.Input
                     case RawPointerEventType.LeaveWindow:
                         shouldReleasePointer = true;
                         break;
+                    case RawPointerEventType.CancelCapture:
+                        pointer.PlatformCaptureLost();
+                        break;
                     case RawPointerEventType.LeftButtonDown:
                     case RawPointerEventType.RightButtonDown:
                     case RawPointerEventType.MiddleButtonDown:
@@ -90,8 +93,8 @@ namespace Avalonia.Input
             {
                 if (shouldReleasePointer)
                 {
-                    pointer.Dispose();
                     _pointers.Remove(e.RawPointerId);
+                    pointer.Dispose();
                 }
             }
         }
@@ -173,9 +176,7 @@ namespace Avalonia.Input
                 }
                 finally
                 {
-                    pointer.Capture(null, CaptureSource.Implicit);
-                    pointer.CaptureGestureRecognizer(null);
-                    pointer.IsGestureRecognitionSkipped = false;
+                    pointer.CaptureLost(CaptureSource.Implicit);
                     _lastMouseDownButton = default;
                 }
 

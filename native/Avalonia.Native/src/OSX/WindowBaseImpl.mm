@@ -465,11 +465,21 @@ void WindowBaseImpl::CleanNSWindow() {
 }
 
 void WindowBaseImpl::CreateNSWindow(bool usePanel) {
+    // Anchor the content rect to the primary screen's origin. It's usually at (0,0), but can be offset while the
+    // display server is mid-reconfiguration. This ensures the window is always on a proper screen.
+    // See https://github.com/AvaloniaUI/Avalonia/issues/18895
+    NSPoint origin = NSZeroPoint;
+    NSArray<NSScreen*>* screens = [NSScreen screens];
+    if (screens.count > 0)
+        origin = screens.firstObject.frame.origin;
+
+    NSRect contentRect = NSRect { origin.x, origin.y, lastSize };
+
     if (usePanel) {
-        Window = [[AvnPanel alloc] initWithParent:this contentRect:NSRect{0, 0, lastSize} styleMask:NSWindowStyleMaskBorderless];
+        Window = [[AvnPanel alloc] initWithParent:this contentRect:contentRect styleMask:NSWindowStyleMaskBorderless];
         [Window setHidesOnDeactivate:false];
     } else {
-        Window = [[AvnWindow alloc] initWithParent:this contentRect:NSRect{0, 0, lastSize} styleMask:NSWindowStyleMaskBorderless];
+        Window = [[AvnWindow alloc] initWithParent:this contentRect:contentRect styleMask:NSWindowStyleMaskBorderless];
     }
 }
 

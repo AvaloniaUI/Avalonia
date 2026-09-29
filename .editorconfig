@@ -199,6 +199,18 @@ dotnet_diagnostic.AVP1032.severity = warning
 dotnet_diagnostic.AVP1040.severity = warning
 dotnet_diagnostic.AVA2001.severity = warning
 
+# Avalonia property source generator (GeneratedPropertyAnalyzer)
+dotnet_diagnostic.AVP2001.severity = error
+dotnet_diagnostic.AVP2002.severity = error
+dotnet_diagnostic.AVP2003.severity = error
+dotnet_diagnostic.AVP2004.severity = error
+dotnet_diagnostic.AVP2005.severity = error
+dotnet_diagnostic.AVP2006.severity = error
+dotnet_diagnostic.AVP2007.severity = error
+dotnet_diagnostic.AVP2008.severity = error
+dotnet_diagnostic.AVP2100.severity = warning
+dotnet_diagnostic.AVP2101.severity = warning
+
 # Xaml files
 [*.{xaml,axaml}]
 indent_size = 2

@@ -55,6 +55,7 @@
       "src\\Windows\\Avalonia.Win32.Automation\\Avalonia.Win32.Automation.csproj",
       "src\\Windows\\Avalonia.Win32.Interoperability\\Avalonia.Win32.Interoperability.csproj",
       "src\\Windows\\Avalonia.Win32\\Avalonia.Win32.csproj",
+      "tests\\Avalonia.Analyzers.Tests\\Avalonia.Analyzers.Tests.csproj",
       "tests\\Avalonia.Base.UnitTests\\Avalonia.Base.UnitTests.csproj",
       "tests\\Avalonia.Benchmarks\\Avalonia.Benchmarks.csproj",
       "tests\\Avalonia.Build.Tasks.UnitTest\\Avalonia.Build.Tasks.UnitTest.csproj",

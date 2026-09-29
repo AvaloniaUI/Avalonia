@@ -174,11 +174,14 @@ namespace Avalonia.Android.Platform.Input
 
                 outAttrs.InputType = options.ContentType switch
                 {
-                    TextInputContentType.Email => InputTypes.TextVariationEmailAddress,
-                    TextInputContentType.Number => InputTypes.ClassNumber,
-                    TextInputContentType.Password => InputTypes.TextVariationPassword,
+                    TextInputContentType.Email => InputTypes.ClassText | InputTypes.TextVariationEmailAddress,
+                    TextInputContentType.Number => InputTypes.ClassNumber | InputTypes.NumberFlagDecimal | InputTypes.NumberFlagSigned,
+                    TextInputContentType.Password => InputTypes.ClassText | InputTypes.TextVariationPassword,
+                    TextInputContentType.Pin => InputTypes.ClassNumber | InputTypes.NumberVariationPassword,
                     TextInputContentType.Digits => InputTypes.ClassPhone,
-                    TextInputContentType.Url => InputTypes.TextVariationUri,
+                    TextInputContentType.Url => InputTypes.ClassText | InputTypes.TextVariationUri,
+                    TextInputContentType.Name => InputTypes.ClassText | InputTypes.TextVariationPersonName,
+                    // Alpha/Normal/Social/Search have no dedicated Android keyboard
                     _ => InputTypes.ClassText
                 };
 
@@ -191,9 +194,6 @@ namespace Avalonia.Android.Platform.Input
                 if (options.Multiline)
                     outAttrs.InputType |= InputTypes.TextFlagMultiLine;
 
-                if (outAttrs.InputType is InputTypes.ClassText && options.ShowSuggestions == false)
-                    outAttrs.InputType |= InputTypes.TextVariationPassword | InputTypes.TextFlagNoSuggestions;
-                    
                 outAttrs.ImeOptions = options.ReturnKeyType switch
                 {
                     TextInputReturnKeyType.Return => ImeFlags.NoEnterAction,
@@ -207,6 +207,23 @@ namespace Avalonia.Android.Platform.Input
                 };
 
                 outAttrs.ImeOptions |= ImeFlags.NoFullscreen | ImeFlags.NoExtractUi;
+
+                if (options.ShowSuggestions == false &&
+                    (outAttrs.InputType & InputTypes.MaskClass) == InputTypes.ClassText)
+                {
+                    outAttrs.InputType |= InputTypes.TextFlagNoSuggestions;
+
+                    if ((outAttrs.InputType & InputTypes.MaskVariation) == InputTypes.TextVariationNormal)
+                        outAttrs.InputType |= InputTypes.TextVariationVisiblePassword;
+                }
+
+                if (options.IsSensitive)
+                {
+                    outAttrs.InputType |= InputTypes.TextFlagNoSuggestions;
+
+                    if (OperatingSystem.IsAndroidVersionAtLeast(26))
+                        outAttrs.ImeOptions |= ImeFlags.NoPersonalizedLearning;
+                }
 
                 if (options.LocaleHints?.Count > 0)
                     outAttrs.HintLocales = new LocaleList(options.LocaleHints.Select(Java.Util.Locale.ForLanguageTag).ToArray());

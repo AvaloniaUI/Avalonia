@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <Compile Include="../Avalonia.Analyzers.CSharp/DiagnosticIds.cs" />
+    <Compile Include="../Avalonia.Analyzers.CSharp/GeneratedProperties/GeneratedPropertyDescriptors.cs" Link="GeneratedPropertyDescriptors.cs" />
   </ItemGroup>
 
   <Import Project="../../../build/TrimmingEnable.props" />

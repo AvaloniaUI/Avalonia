@@ -311,7 +311,7 @@ namespace Avalonia.Android.Platform.Input
 
         public bool SendKeyEvent(KeyEvent? e)
         {
-            _inputMethod.View.DispatchKeyEvent(e);
+            QueueCommand(new KeyEventCommand(e));
 
             return true;
         }

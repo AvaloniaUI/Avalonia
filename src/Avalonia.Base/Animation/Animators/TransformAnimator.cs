@@ -67,7 +67,7 @@ namespace Avalonia.Animation.Animators
                 if (renderTransformType == Property.OwnerType)
                 {
                     return _doubleAnimator.Apply(animation, (Transform) ctrl.RenderTransform, clock ?? control.Clock,
-                        obsMatch, onComplete, shouldPauseOnInvisible);
+                        obsMatch, onComplete, shouldPauseOnInvisible, ctrl);
                 }
                 // It's a TransformGroup and try finding the target there.
                 else if (renderTransformType == typeof(TransformGroup))
@@ -77,7 +77,7 @@ namespace Avalonia.Animation.Animators
                         if (transform.GetType() == Property.OwnerType)
                         {
                             return _doubleAnimator.Apply(animation, transform, clock ?? control.Clock,
-                                obsMatch, onComplete, shouldPauseOnInvisible);
+                                obsMatch, onComplete, shouldPauseOnInvisible, ctrl);
                         }
                     }
                 }

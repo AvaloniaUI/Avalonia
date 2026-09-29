@@ -1,0 +1,45 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="IntegrationTestApp.Pages.KeyboardPage">
+  <StackPanel Margin="8" Spacing="8">
+    <Border Name="GestureScope" Padding="8" BorderThickness="1" BorderBrush="Gray">
+      <StackPanel Spacing="4">
+        <TextBlock>Key bindings in scope: Space, A, Ctrl+G</TextBlock>
+        <TextBox Name="GestureTextBox"/>
+      </StackPanel>
+    </Border>
+
+    <StackPanel Orientation="Horizontal" Spacing="4">
+      <TextBlock>Gesture text box content:</TextBlock>
+      <TextBlock Name="GestureTextBoxContent" Text="{Binding #GestureTextBox.Text}"/>
+    </StackPanel>
+
+    <StackPanel Orientation="Horizontal" Spacing="4">
+      <TextBlock>Last key binding:</TextBlock>
+      <TextBlock Name="LastKeyBinding"/>
+    </StackPanel>
+
+    <TextBlock Margin="0,8,0,0">No key bindings in scope, used to inspect raw key downs:</TextBlock>
+    <TextBox Name="KeyDownTextBox"/>
+
+    <StackPanel Orientation="Horizontal" Spacing="4">
+      <TextBlock>Last key down:</TextBlock>
+      <TextBlock Name="LastKeyDown"/>
+    </StackPanel>
+
+    <StackPanel Orientation="Horizontal" Spacing="4">
+      <TextBlock>Key down count:</TextBlock>
+      <TextBlock Name="KeyDownCount"/>
+    </StackPanel>
+
+    <StackPanel Orientation="Horizontal" Spacing="4">
+      <TextBlock>Last text input:</TextBlock>
+      <TextBlock Name="LastTextInput"/>
+    </StackPanel>
+
+    <Button Name="ResetKeyboard" Click="ResetKeyboard_Click" HorizontalAlignment="Left">Reset</Button>
+  </StackPanel>
+</UserControl>

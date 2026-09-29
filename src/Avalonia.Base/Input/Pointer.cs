@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Avalonia.Input.GestureRecognizers;
 using Avalonia.VisualTree;
@@ -18,6 +19,8 @@ namespace Avalonia.Input
         private static int s_NextFreePointerId = 1000;
         public static int GetNextFreeId() => s_NextFreePointerId++;
         
+        private bool _disposed;
+
         public Pointer(int id, PointerType type, bool isPrimary)
         {
             Id = id;
@@ -40,10 +43,23 @@ namespace Avalonia.Input
 
         }
 
-        internal void PlatformCaptureLost()
+        internal void PlatformCaptureLost() => CaptureLost(CaptureSource.Platform);
+
+        /// <summary>
+        /// Ends every capture the pointer holds, on the element and on a gesture recognizer.
+        /// </summary>
+        internal void CaptureLost(CaptureSource source)
         {
-            if (Captured != null)
-                Capture(null, CaptureSource.Platform);
+            if (_disposed)
+                return;
+
+            CaptureLostCore(source);
+        }
+
+        private void CaptureLostCore(CaptureSource source)
+        {
+            CaptureCore(null, null, source);
+            IsGestureRecognitionSkipped = false;
         }
 
         public void Capture(IInputElement? control)
@@ -51,13 +67,31 @@ namespace Avalonia.Input
             Capture(control, CaptureSource.Explicit);
         }
 
+        private IInputElement? EffectiveCapturer => this.CapturedGestureRecognizer?.Target ?? Captured;
+
         internal void Capture(IInputElement? control, CaptureSource source)
         {
+            if (_disposed)
+            {
+                Debug.Assert(control is null, "Capturing a pointer that no longer exists.");
+                return;
+            }
+
+            CaptureCore(control, null, source);
+        }
+
+        private void CaptureCore(
+            IInputElement? control,
+            GestureRecognizer? gestureRecognizer,
+            CaptureSource source)
+        {
             var oldCapture = Captured;
+            var oldGestureRecognizer = CapturedGestureRecognizer;
             var oldSource = CaptureSource;
+            var oldEffectiveCapturer = EffectiveCapturer;
 
             // If a handler marks Implicit capture as handled, we still want them to have another chance if the element is captured explicitly.
-            if (oldCapture == control && oldSource == source)
+            if (oldCapture == control && oldGestureRecognizer == gestureRecognizer && oldSource == source)
                 return;
 
             var oldVisual = oldCapture as Visual;
@@ -81,12 +115,17 @@ namespace Avalonia.Input
 
             if (oldVisual != null)
                 oldVisual.DetachedFromVisualTree -= OnCaptureDetached;
+
+            if (oldGestureRecognizer != gestureRecognizer)
+                oldGestureRecognizer?.PointerCaptureLostInternal(this);
+
             Captured = control;
+            CapturedGestureRecognizer = gestureRecognizer;
             CaptureSource = source;
 
             // However, we still want to notify the platform only if the captured element actually changed.
-            if (oldCapture != control && source != CaptureSource.Platform)
-                PlatformCapture(control);
+            if (oldEffectiveCapturer != EffectiveCapturer && source != CaptureSource.Platform)
+                PlatformCapture(EffectiveCapturer);
 
             if (oldVisual != null)
                 foreach (var notifyTarget in oldVisual.GetSelfAndVisualAncestors().OfType<IInputElement>())
@@ -98,9 +137,6 @@ namespace Avalonia.Input
 
             if (newVisual != null)
                 newVisual.DetachedFromVisualTree += OnCaptureDetached;
-
-            if (Captured != null)
-                CaptureGestureRecognizer(null);
 
             if (Captured == null && CapturedGestureRecognizer == null)
             {
@@ -148,7 +184,14 @@ namespace Avalonia.Input
 
         public void Dispose()
         {
-            // callers are responsible for calling Capture(null, source) with an appropriate source
+            if (_disposed)
+                return;
+
+            // Mark the pointer gone first, so a capture lost handler can't capture it again.
+            // It no longer exists, so the platform is the only source the release can come from.
+            _disposed = true;
+
+            CaptureLostCore(CaptureSource.Platform);
         }
 
         /// <summary>
@@ -157,17 +200,13 @@ namespace Avalonia.Input
         /// <param name="gestureRecognizer">The gesture recognizer.</param>
         internal void CaptureGestureRecognizer(GestureRecognizer? gestureRecognizer)
         {
-            if (CapturedGestureRecognizer != gestureRecognizer)
+            if (_disposed)
             {
-                CapturedGestureRecognizer?.PointerCaptureLostInternal(this);
+                Debug.Assert(gestureRecognizer is null, "Capturing a pointer that no longer exists to a gesture recognizer.");
+                return;
             }
 
-            CapturedGestureRecognizer = gestureRecognizer;
-
-            if (gestureRecognizer != null)
-            {
-                Capture(null);
-            }
+            CaptureCore(null, gestureRecognizer, CaptureSource.Explicit);
         }
     }
 }

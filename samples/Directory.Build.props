@@ -1,5 +1,7 @@
 <Project>
 
+  <Import Project="$(MSBuildThisFileDirectory)\..\Directory.Build.props" />
+
   <PropertyGroup>
     <IsPackable>false</IsPackable>
     <AvaloniaPreviewerNetCoreToolPath>$(MSBuildThisFileDirectory)..\src\tools\Avalonia.Designer.HostApp\bin\Debug\$(AvsCurrentTargetFramework)\Avalonia.Designer.HostApp.dll</AvaloniaPreviewerNetCoreToolPath>
@@ -9,12 +11,11 @@
     <Nullable>enable</Nullable>
     <NoWarn>$(NoWarn);CS8002</NoWarn> <!-- ignore signing warnings for samples -->
     <EnableRuntimeMarshalling>true</EnableRuntimeMarshalling>
+    <ApplicationIcon>$(SharedAssetsPath)icon.ico</ApplicationIcon> <!-- defualt icon shared between projects -->
   </PropertyGroup>
 
   <Import Project="..\build\SharedVersion.props"/>
   <Import Project="..\build\DevAnalyzers.props"/>
   <Import Project="..\build\TrimmingEnable.props" />
-
-  <Import Project="$(MSBuildThisFileDirectory)\..\Directory.Build.props" />
 
 </Project>

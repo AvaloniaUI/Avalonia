@@ -6,6 +6,7 @@
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <UseMicroCom>true</UseMicroCom>
+    <ApplicationIcon>$(SharedAssetsPath)\icon.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -35,6 +36,7 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
 
+  <Import Project="..\..\build\BuildTargets.targets" />
   <Import Project="..\..\build\SampleApp.props" />
   <Import Project="..\..\build\ReferenceCoreLibraries.props" />
   <Import Project="..\..\build\MicroCOM.props" />

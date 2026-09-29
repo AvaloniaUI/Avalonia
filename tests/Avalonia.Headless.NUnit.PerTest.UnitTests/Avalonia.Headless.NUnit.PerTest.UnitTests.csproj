@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFramework>$(AvsCurrentTargetFramework)</TargetFramework>
     <IsTestProject>true</IsTestProject>
-    <DefineConstants>$(DefineConstants);NUNIT</DefineConstants>
+    <DefineConstants>$(DefineConstants);NUNIT;PERTEST</DefineConstants>
     <EnableNUnitRunner>true</EnableNUnitRunner>
     <OutputType>Exe</OutputType>
   </PropertyGroup>

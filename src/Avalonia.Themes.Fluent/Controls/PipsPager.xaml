@@ -18,9 +18,9 @@
     <Setter Property="Background" Value="{DynamicResource PipsPagerNavigationButtonBackground}" />
     <Setter Property="Foreground" Value="{DynamicResource PipsPagerNavigationButtonForeground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource PipsPagerNavigationButtonBorderBrush}" />
-    <Setter Property="BorderThickness" Value="1" />
-    <Setter Property="Width" Value="24" />
-    <Setter Property="Height" Value="24" />
+    <Setter Property="BorderThickness" Value="{DynamicResource PipsPagerNavigationButtonBorderThickness}" />
+    <Setter Property="Width" Value="{DynamicResource PipsPagerNavigationButtonSize}" />
+    <Setter Property="Height" Value="{DynamicResource PipsPagerNavigationButtonSize}" />
     <Setter Property="Padding" Value="0" />
     <Setter Property="HorizontalContentAlignment" Value="Center" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
@@ -66,8 +66,8 @@
   <ControlTheme x:Key="PipsPagerNextButtonTheme" TargetType="Button" BasedOn="{StaticResource PipsPagerNavigationButtonTheme}" />
 
   <ControlTheme x:Key="PipsPagerItemTheme" TargetType="ListBoxItem">
-    <Setter Property="Width" Value="12" />
-    <Setter Property="Height" Value="24" />
+    <Setter Property="Width" Value="{DynamicResource PipsPagerItemWidth}" />
+    <Setter Property="Height" Value="{DynamicResource PipsPagerItemHeight}" />
     <Setter Property="Padding" Value="0" />
     <Setter Property="Margin" Value="0" />
     <Setter Property="MinWidth" Value="0" />
@@ -111,8 +111,8 @@
     </Setter>
 
     <Style Selector="^:pointerover /template/ Ellipse#Pip">
-      <Setter Property="Width" Value="6" />
-      <Setter Property="Height" Value="6" />
+      <Setter Property="Width" Value="{DynamicResource PipsPagerItemDotSizeActive}" />
+      <Setter Property="Height" Value="{DynamicResource PipsPagerItemDotSizeActive}" />
       <Setter Property="Fill" Value="{DynamicResource PipsPagerSelectionIndicatorForegroundPointerOver}" />
     </Style>
     <Style Selector="^:pointerover /template/ Ellipse#PipBackground">
@@ -120,8 +120,8 @@
       <Setter Property="Stroke" Value="{DynamicResource PipsPagerSelectionIndicatorBorderBrushPointerOver}" />
     </Style>
     <Style Selector="^:pressed /template/ Ellipse#Pip">
-      <Setter Property="Width" Value="4" />
-      <Setter Property="Height" Value="4" />
+      <Setter Property="Width" Value="{DynamicResource PipsPagerItemDotSize}" />
+      <Setter Property="Height" Value="{DynamicResource PipsPagerItemDotSize}" />
       <Setter Property="Fill" Value="{DynamicResource PipsPagerSelectionIndicatorForegroundPressed}" />
     </Style>
     <Style Selector="^:pressed /template/ Ellipse#PipBackground">
@@ -130,8 +130,8 @@
     </Style>
 
     <Style Selector="^:selected /template/ Ellipse#Pip">
-      <Setter Property="Width" Value="6" />
-      <Setter Property="Height" Value="6" />
+      <Setter Property="Width" Value="{DynamicResource PipsPagerItemDotSizeActive}" />
+      <Setter Property="Height" Value="{DynamicResource PipsPagerItemDotSizeActive}" />
       <Setter Property="Fill" Value="{DynamicResource PipsPagerSelectionIndicatorForegroundSelected}" />
     </Style>
     <Style Selector="^:selected /template/ Ellipse#PipBackground">
@@ -139,8 +139,8 @@
       <Setter Property="Stroke" Value="{DynamicResource PipsPagerSelectionIndicatorBorderBrushSelected}" />
     </Style>
     <Style Selector="^:selected:pointerover /template/ Ellipse#Pip">
-      <Setter Property="Width" Value="6" />
-      <Setter Property="Height" Value="6" />
+      <Setter Property="Width" Value="{DynamicResource PipsPagerItemDotSizeActive}" />
+      <Setter Property="Height" Value="{DynamicResource PipsPagerItemDotSizeActive}" />
       <Setter Property="Fill" Value="{DynamicResource PipsPagerSelectionIndicatorForegroundPointerOver}" />
     </Style>
     <Style Selector="^:selected:pointerover /template/ Ellipse#PipBackground">
@@ -223,8 +223,8 @@
     </Style>
 
     <Style Selector="^:vertical /template/ ListBox ListBoxItem">
-      <Setter Property="Width" Value="24" />
-      <Setter Property="Height" Value="12" />
+      <Setter Property="Width" Value="{DynamicResource PipsPagerItemHeight}" />
+      <Setter Property="Height" Value="{DynamicResource PipsPagerItemWidth}" />
     </Style>
 
     <Style Selector="^:vertical /template/ StackPanel#PART_RootPanel">

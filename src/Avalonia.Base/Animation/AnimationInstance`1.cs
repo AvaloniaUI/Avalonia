@@ -15,6 +15,7 @@ namespace Avalonia.Animation
         private readonly Animator<T> _animator;
         private readonly Animation _animation;
         private readonly Animatable _targetControl;
+        private readonly Visual? _visualTarget;
         private readonly Action? _onCompleteAction;
         private IDisposable? _timerSub;
         private EventHandler<AvaloniaPropertyChangedEventArgs>? _propertyChangedDelegate;
@@ -61,7 +62,8 @@ namespace Avalonia.Animation
 
         private readonly bool _shouldPauseOnInvisible;
 
-        public AnimationInstance(Animation animation, Animatable control, Animator<T> animator, IClock baseClock, Action? OnComplete, Func<double, T, T> Interpolator, bool shouldPauseOnInvisible)
+        public AnimationInstance(Animation animation, Animatable control, Animator<T> animator, IClock baseClock,
+            Action? OnComplete, Func<double, T, T> Interpolator, bool shouldPauseOnInvisible, Visual? visualTarget)
         {
             _lastInterpValue = default!;
             _animator = animator;
@@ -70,6 +72,7 @@ namespace Avalonia.Animation
             _onCompleteAction = OnComplete;
             _interpolator = Interpolator;
             _baseClock = baseClock;
+            _visualTarget = visualTarget;
             _initialKFValue = default!;
             _neutralValue = default!;
             _shouldPauseOnInvisible = shouldPauseOnInvisible;
@@ -132,7 +135,7 @@ namespace Avalonia.Animation
             _targetControl.PropertyChanged -= _propertyChangedDelegate;
             timerSub.Dispose();
 
-            if (_targetControl is Visual visual)
+            if (_visualTarget is { } visual)
             {
                 if (_visibilityChangedHandler is not null)
                 {
@@ -155,7 +158,7 @@ namespace Avalonia.Animation
             _clock = new Clock(_baseClock);
             _timerSub = _clock.Subscribe(Step);
 
-            if (_targetControl is Visual visual)
+            if (_visualTarget is { } visual)
             {
                 if (_shouldPauseOnInvisible)
                 {

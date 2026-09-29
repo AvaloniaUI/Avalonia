@@ -137,6 +137,7 @@
     <File Path="build/UnitTests.NetCore.targets" />
   </Folder>
   <Folder Name="/Tests/">
+    <Project Path="tests/Avalonia.Analyzers.Tests/Avalonia.Analyzers.Tests.csproj" />
     <Project Path="tests/Avalonia.Base.UnitTests/Avalonia.Base.UnitTests.csproj" />
     <Project Path="tests/Avalonia.Benchmarks/Avalonia.Benchmarks.csproj" />
     <Project Path="tests/Avalonia.Build.Tasks.UnitTest/Avalonia.Build.Tasks.UnitTest.csproj" />

@@ -9,6 +9,7 @@ using System.Threading;
 using System.Reactive.Linq;
 using Avalonia.Data;
 using Avalonia.Layout;
+using Avalonia.Media;
 using Avalonia.UnitTests;
 
 namespace Avalonia.Base.UnitTests.Animation
@@ -158,6 +159,61 @@ namespace Avalonia.Base.UnitTests.Animation
             clock.Step(TimeSpan.FromSeconds(18.5));
             Assert.True(animationRun.Status == TaskStatus.RanToCompletion);
             Assert.Equal(100d, border.Width);
+        }
+
+        [Fact]
+        public void OnlyIfVisible_Resumes_Transform_Animations_With_Visual()
+        {
+            var animation = new Animation
+            {
+                Duration = TimeSpan.FromSeconds(1),
+                IterationCount = IterationCount.Infinite,
+                Easing = new LinearEasing(),
+                PlaybackBehavior = PlaybackBehavior.OnlyIfVisible,
+                Children =
+                {
+                    new KeyFrame
+                    {
+                        Cue = new Cue(0d),
+                        Setters =
+                        {
+                            new Setter(ScaleTransform.ScaleXProperty, 1d),
+                            new Setter(Visual.OpacityProperty, 0.9d),
+                        }
+                    },
+                    new KeyFrame
+                    {
+                        Cue = new Cue(1d),
+                        Setters =
+                        {
+                            new Setter(ScaleTransform.ScaleXProperty, 2.5d),
+                            new Setter(Visual.OpacityProperty, 0d),
+                        }
+                    }
+                }
+            };
+            var border = new Border();
+            var clock = new MockGlobalClock();
+
+            using var subscription = animation.Apply(border, clock, Observable.Return(true), null);
+
+            clock.Pulse(TimeSpan.FromSeconds(0.25));
+
+            var scale = (ScaleTransform)((TransformGroup)border.RenderTransform!).Children[0];
+            var scaleBeforePause = scale.ScaleX;
+            var opacityBeforePause = border.Opacity;
+
+            border.IsVisible = false;
+            clock.Pulse(TimeSpan.FromSeconds(0.75));
+
+            Assert.Equal(scaleBeforePause, scale.ScaleX);
+            Assert.Equal(opacityBeforePause, border.Opacity);
+
+            border.IsVisible = true;
+            clock.Pulse(TimeSpan.FromSeconds(1));
+
+            Assert.Equal(1.375d, scale.ScaleX);
+            Assert.Equal(0.675d, border.Opacity, 10);
         }
         
         [Fact]
