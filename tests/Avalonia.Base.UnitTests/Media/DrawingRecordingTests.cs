@@ -739,4 +739,93 @@ public class DrawingRecordingTests
         parent.Dispose();
         Assert.Equal(1, bitmap.RefCount);
     }
+
+    [Fact]
+    public void Disposing_A_Recording_Releases_Its_Scene_Brush_Snapshots()
+    {
+        var bitmap = RefCountable.Create(Mock.Of<IBitmapImpl>());
+        var rect = new Rect(0, 0, 10, 10);
+        var tile = DrawingRecording.Create(ctx => ctx.DrawBitmap(bitmap, 1, rect, rect));
+        var brush = new DrawingRecordingBrush(tile);
+        var recording = DrawingRecording.Create(ctx => ctx.DrawRectangle(brush, null, new Rect(0, 0, 100, 100)));
+
+        // The recording snapshotted the brush, and that snapshot embeds the tile.
+        tile.Dispose();
+        Assert.Equal(2, bitmap.RefCount);
+
+        recording.Dispose();
+        Assert.Equal(1, bitmap.RefCount);
+    }
+
+    [Fact]
+    public void Disposing_A_Recording_Releases_The_Scene_Brush_Snapshots_Of_Its_Pens()
+    {
+        var bitmap = RefCountable.Create(Mock.Of<IBitmapImpl>());
+        var rect = new Rect(0, 0, 10, 10);
+        var tile = DrawingRecording.Create(ctx => ctx.DrawBitmap(bitmap, 1, rect, rect));
+        var pen = new Pen(new DrawingRecordingBrush(tile), 4);
+        var recording = DrawingRecording.Create(ctx => ctx.DrawLine(pen, new Point(0, 0), new Point(100, 0)));
+
+        tile.Dispose();
+        Assert.Equal(2, bitmap.RefCount);
+
+        recording.Dispose();
+        Assert.Equal(1, bitmap.RefCount);
+    }
+
+    [Fact]
+    public void Bitmaps_Are_Released_When_The_Record_Delegate_Throws()
+    {
+        var bitmap = RefCountable.Create(Mock.Of<IBitmapImpl>());
+        var rect = new Rect(0, 0, 10, 10);
+
+        Assert.Throws<InvalidOperationException>(() => DrawingRecording.Create(ctx =>
+        {
+            ctx.DrawBitmap(bitmap, 1, rect, rect);
+            throw new InvalidOperationException("record failed");
+        }));
+
+        Assert.Equal(1, bitmap.RefCount);
+    }
+
+    /// <summary>Draws a counted bitmap together with a mutable brush.</summary>
+    private sealed class MutableContentImage(IRef<IBitmapImpl> bitmap) : IImage
+    {
+        public Size Size => new(10, 10);
+
+        public void Draw(DrawingContext context, Rect sourceRect, Rect destRect)
+        {
+            context.DrawBitmap(bitmap, 1, sourceRect, destRect);
+            context.DrawRectangle(new SolidColorBrush(Colors.Red), null, destRect);
+        }
+    }
+
+    [Fact]
+    public void A_Rejected_Scene_Brush_Snapshot_Releases_Its_Bitmaps()
+    {
+        var bitmap = RefCountable.Create(Mock.Of<IBitmapImpl>());
+        var rect = new Rect(0, 0, 10, 10);
+        var brush = new DrawingBrush(new ImageDrawing { ImageSource = new MutableContentImage(bitmap), Rect = rect });
+
+        // An immutable recording refuses content that uses a mutable brush, after it has
+        // already snapshotted that content.
+        Assert.Throws<InvalidOperationException>(() =>
+            DrawingRecording.Create(ctx => ctx.DrawRectangle(brush, null, rect)));
+
+        Assert.Equal(1, bitmap.RefCount);
+    }
+
+    [Fact]
+    public void A_Rejected_Pen_Brush_Snapshot_Releases_Its_Bitmaps()
+    {
+        var bitmap = RefCountable.Create(Mock.Of<IBitmapImpl>());
+        var rect = new Rect(0, 0, 10, 10);
+        var brush = new DrawingBrush(new ImageDrawing { ImageSource = new MutableContentImage(bitmap), Rect = rect });
+        var pen = new Pen(brush, 4);
+
+        Assert.Throws<InvalidOperationException>(() =>
+            DrawingRecording.Create(ctx => ctx.DrawLine(pen, new Point(0, 0), new Point(10, 0))));
+
+        Assert.Equal(1, bitmap.RefCount);
+    }
 }
