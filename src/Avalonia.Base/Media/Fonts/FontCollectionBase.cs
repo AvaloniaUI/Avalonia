@@ -1036,24 +1036,54 @@ namespace Avalonia.Media.Fonts
         }
 
         /// <summary>
-        /// Returns the variable default-instance faces registered for a family, or <c>null</c> when
-        /// the family has none. Simulated faces and varied clones are skipped: axis positions are
-        /// always taken from the unsimulated design.
+        /// Returns the unsimulated variable faces registered for a family, or <c>null</c> when the
+        /// family has none. A default-instance face represents its whole design space. A varied
+        /// clone counts only when the family does not hold its default instance: the family then
+        /// sits at that clone's position (an optical-size or other named-instance family), and
+        /// matching starts from there. Simulated faces are skipped: axis positions are always taken
+        /// from the unsimulated design.
         /// </summary>
         private List<VariableFace>? GetVariableFaces(IDictionary<FontCollectionKey, GlyphTypeface?> glyphTypefaces)
         {
             List<VariableFace>? result = null;
+            List<GlyphTypeface>? clones = null;
 
             foreach (var candidate in glyphTypefaces.Values)
             {
                 if (candidate is null ||
                     candidate.VariationAxes.Count == 0 ||
-                    !candidate.VariationPosition.IsDefault ||
                     candidate.FontSimulations != FontSimulations.None)
                 {
                     continue;
                 }
 
+                if (!candidate.VariationPosition.IsDefault)
+                {
+                    (clones ??= new List<GlyphTypeface>(1)).Add(candidate);
+                    continue;
+                }
+
+                AddFace(candidate);
+            }
+
+            if (clones is not null)
+            {
+                foreach (var clone in clones)
+                {
+                    // WithVariation(default) returns the clone's source. The clones of one source
+                    // registered for a family were resolved from the same face and share its
+                    // non-style axes, so one of them is enough.
+                    if (!HasSource(clone.WithVariation(default)))
+                    {
+                        AddFace(clone);
+                    }
+                }
+            }
+
+            return result;
+
+            void AddFace(GlyphTypeface candidate)
+            {
                 var face = _variableFaces.GetValue(candidate, static gt => new VariableFace(gt));
 
                 result ??= new List<VariableFace>(1);
@@ -1064,7 +1094,21 @@ namespace Avalonia.Media.Fonts
                 }
             }
 
-            return result;
+            bool HasSource(GlyphTypeface source)
+            {
+                if (result is not null)
+                {
+                    foreach (var face in result)
+                    {
+                        if (ReferenceEquals(face.Typeface.WithVariation(default), source))
+                        {
+                            return true;
+                        }
+                    }
+                }
+
+                return false;
+            }
         }
 
         /// <summary>
@@ -1144,7 +1188,8 @@ namespace Avalonia.Media.Fonts
         /// <summary>
         /// The font matching view of a variable face: its named instances keyed by the
         /// Weight / Style / Stretch they project to, and the ranges of the axes that map onto
-        /// those properties. Built once per face.
+        /// those properties. Built once per face. The face may be a varied clone; the axes a style
+        /// key does not describe (optical size and custom axes) then stay at the clone's position.
         /// </summary>
         private sealed class VariableFace
         {
@@ -1181,16 +1226,21 @@ namespace Avalonia.Media.Fonts
                 }
 
                 var namedInstances = typeface.NamedInstances;
-                var instances = new (FontCollectionKey, NormalizedVariationPosition)[namedInstances.Count];
+                var instances = new List<(FontCollectionKey, NormalizedVariationPosition)>(namedInstances.Count);
 
-                for (var i = 0; i < instances.Length; i++)
+                for (var i = 0; i < namedInstances.Count; i++)
                 {
                     var position = typeface.CreateNormalizedPosition(null, namedInstances[i].Index);
 
-                    instances[i] = (typeface.GetProjectedKey(position), position);
+                    // An instance at another optical size (or other non-style axis value) is a
+                    // different design, not this face at another weight, width or style.
+                    if (IsAtFacePosition(typeface, position))
+                    {
+                        instances.Add((typeface.GetProjectedKey(position), position));
+                    }
                 }
 
-                Instances = instances;
+                Instances = instances.ToArray();
             }
 
             public GlyphTypeface Typeface { get; }
@@ -1236,11 +1286,36 @@ namespace Avalonia.Media.Fonts
 
                 isExact &= AddStyle(key.Style, settings);
 
+                // Start from the face's own position so the axes the key does not describe keep
+                // their values; the settings replace only the style axes.
                 position = Typeface.CreateNormalizedPosition(
-                    new FontVariationSettings(settings), default(NormalizedVariationPosition));
+                    new FontVariationSettings(settings), Typeface.VariationPosition);
 
                 return isExact;
             }
+
+            private static bool IsAtFacePosition(GlyphTypeface typeface, NormalizedVariationPosition position)
+            {
+                foreach (var axis in typeface.VariationAxes)
+                {
+                    if (IsStyleAxis(axis.Tag))
+                    {
+                        continue;
+                    }
+
+                    if (position.GetCoordinateOrDefault(axis.Tag) !=
+                        typeface.VariationPosition.GetCoordinateOrDefault(axis.Tag))
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
+            private static bool IsStyleAxis(OpenTypeTag tag)
+                => tag == FvarAxisTags.Weight || tag == FvarAxisTags.Width ||
+                   tag == FvarAxisTags.Italic || tag == FvarAxisTags.Slant;
 
             private bool AddStyle(FontStyle style, List<FontVariation> settings)
             {
