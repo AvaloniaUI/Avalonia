@@ -749,6 +749,13 @@ namespace Avalonia.Media.Fonts
                 }
             }
 
+            // FamilyNames holds only the Windows-platform names, so a font that names its family on
+            // another platform alone would otherwise not be found under its own family name.
+            if (TryAddGlyphTypeface(glyphTypeface.FamilyName, key, glyphTypeface))
+            {
+                result = true;
+            }
+
             foreach (var kvp in glyphTypeface.FamilyNames)
             {
                 if (TryAddGlyphTypeface(kvp.Value, key, glyphTypeface))
@@ -820,18 +827,7 @@ namespace Avalonia.Media.Fonts
                                 continue;
                             }
 
-                            var key = glyphTypeface.ToFontCollectionKey();
-
-                            //Add TypographicFamilyName to the cache
-                            if (!string.IsNullOrEmpty(glyphTypeface.TypographicFamilyName))
-                            {
-                                if (TryAddGlyphTypeface(glyphTypeface.TypographicFamilyName, key, glyphTypeface))
-                                {
-                                    result = true;
-                                }
-                            }
-
-                            if (TryAddGlyphTypeface(glyphTypeface.FamilyName, key, glyphTypeface))
+                            if (TryAddGlyphTypeface(glyphTypeface))
                             {
                                 result = true;
                             }
