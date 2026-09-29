@@ -150,4 +150,49 @@ public class CompositionRecordingVisualTests : ScopedTestBase
         CommitAndRender();
         Assert.Equal(1, bitmap.RefCount);
     }
+
+    [Fact]
+    public void Visual_Displays_Its_Recording_Again_When_Reattached()
+    {
+        var recording = DrawingRecording.Create(_services.Compositor, ctx =>
+            ctx.DrawRectangle(Brushes.Crimson, null, new Rect(20, 20, 60, 60)));
+        var (visual, host) = AttachRecordingVisual();
+        visual.Recording = recording;
+        CommitAndRender();
+
+        ElementComposition.SetElementChildVisual(host, null);
+        CommitAndRender();
+        ElementComposition.SetElementChildVisual(host, visual);
+        CommitAndRender();
+
+        var server = (ServerCompositionRecordingVisual)visual.Server;
+        Assert.NotNull(server.ComputeOwnContentBounds());
+        Assert.True(visual.HitTest(new Point(30, 30)));
+
+        recording.Dispose();
+    }
+
+    [Fact]
+    public void Recording_Disposed_While_Detached_Is_Not_Displayed_On_Reattach()
+    {
+        var bitmap = RefCountable.Create(Mock.Of<IBitmapImpl>());
+        var recording = RecordBitmap(bitmap);
+        var (visual, host) = AttachRecordingVisual();
+        visual.Recording = recording;
+        CommitAndRender();
+
+        ElementComposition.SetElementChildVisual(host, null);
+        CommitAndRender();
+        recording.Dispose();
+        CommitAndRender();
+        CommitAndRender();
+        Assert.Equal(1, bitmap.RefCount);
+
+        ElementComposition.SetElementChildVisual(host, visual);
+        CommitAndRender();
+
+        var server = (ServerCompositionRecordingVisual)visual.Server;
+        Assert.Null(server.ComputeOwnContentBounds());
+        Assert.False(visual.HitTest(new Point(10, 10)));
+    }
 }
