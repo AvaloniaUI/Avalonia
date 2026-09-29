@@ -127,6 +127,64 @@ namespace Avalonia.Media.Fonts.Tables.Variation
             return map[map.Length - 1].To;
         }
 
+        /// <summary>
+        /// Maps an avar-corrected coordinate back to the linearly-normalized coordinate that
+        /// <see cref="Remap"/> would have turned into it, by interpolating the segment map in
+        /// the reverse direction.
+        /// </summary>
+        /// <remarks>
+        /// The spec requires the mapped values of a segment map to ascend with their inputs,
+        /// which makes the map invertible. A map whose outputs do not ascend yields the input
+        /// of the first segment containing the value, which is still a point
+        /// <see cref="Remap"/> sends to it.
+        /// </remarks>
+        /// <param name="axisIndex">Zero-based axis index, matching the fvar axis order.</param>
+        /// <param name="mappedCoordinate">An avar-corrected coordinate in <c>[-1, 1]</c>.</param>
+        /// <returns>The linearly-normalized coordinate, also in <c>[-1, 1]</c>.</returns>
+        public float Unmap(int axisIndex, float mappedCoordinate)
+        {
+            if ((uint)axisIndex >= (uint)_segmentMaps.Length)
+            {
+                return mappedCoordinate;
+            }
+
+            var map = _segmentMaps[axisIndex];
+            if (map.Length == 0)
+            {
+                return mappedCoordinate;
+            }
+
+            if (mappedCoordinate <= -1f)
+            {
+                return -1f;
+            }
+
+            if (mappedCoordinate >= 1f)
+            {
+                return 1f;
+            }
+
+            for (var i = 1; i < map.Length; i++)
+            {
+                var hi = map[i];
+                if (mappedCoordinate <= hi.To)
+                {
+                    var lo = map[i - 1];
+
+                    var range = hi.To - lo.To;
+                    if (range <= 0f)
+                    {
+                        return hi.From;
+                    }
+
+                    var t = (mappedCoordinate - lo.To) / range;
+                    return lo.From + t * (hi.From - lo.From);
+                }
+            }
+
+            return map[map.Length - 1].From;
+        }
+
         public static bool TryLoad(
             GlyphTypeface glyphTypeface,
             [NotNullWhen(true)] out AvarTable? avarTable)

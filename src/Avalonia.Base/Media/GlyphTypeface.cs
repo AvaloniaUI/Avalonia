@@ -399,18 +399,19 @@ namespace Avalonia.Media
         /// <para>
         /// Reference-shared (no per-clone allocation): every Tables/* parser instance,
         /// the name records, the family / face name dictionaries, the character map,
-        /// the glyph count, and the static-design weight / style / stretch. None of
-        /// these depend on variation — the per-glyph delta tables (HVAR / VVAR /
-        /// gvar) are read on demand against the clone's variation point, and MVAR's
-        /// font-wide deltas are applied to a fresh <see cref="FontMetrics"/> struct
-        /// here at clone time.
+        /// and the glyph count. None of these depend on variation — the per-glyph
+        /// delta tables (HVAR / VVAR / gvar) are read on demand against the clone's
+        /// variation point, and MVAR's font-wide deltas are applied to a fresh
+        /// <see cref="FontMetrics"/> struct here at clone time.
         /// </para>
         /// <para>
         /// Per-clone: the platform typeface (cloned via
         /// <see cref="IPlatformTypeface.WithVariation"/> — a no-op when the platform
         /// hasn't overridden it, an actual variation-bound face when it has), the
-        /// variation position, and the lazy shaper typeface (cleared so the clone
-        /// materializes its own variation-aware shaper).
+        /// variation position, the lazy shaper typeface (cleared so the clone
+        /// materializes its own variation-aware shaper), and <see cref="Weight"/> /
+        /// <see cref="Style"/> / <see cref="Stretch"/>, which are projected from the
+        /// <c>wght</c>, <c>ital</c> / <c>slnt</c> and <c>wdth</c> axes of the position.
         /// </para>
         /// </remarks>
         private GlyphTypeface(GlyphTypeface source, IPlatformTypeface platformTypeface, NormalizedVariationPosition variation)
@@ -460,14 +461,12 @@ namespace Avalonia.Media
             IsLastResort = source.IsLastResort;
             FontSimulations = source.FontSimulations;
 
-            // Weight / Style / Stretch stay at the source's design values. A future
-            // change could project the variation onto these (e.g. wght=900 →
-            // Weight.Black) so reflected typeface identity tracks the active
-            // variation. For now, clones identify by their normalized variation
-            // position, not by these properties.
-            Weight = source.Weight;
-            Style = source.Style;
-            Stretch = source.Stretch;
+            // Weight / Style / Stretch describe the face the clone draws, so font matching sees
+            // a wght=700 clone as Bold and does not synthesize bold on top of it. Axes the font
+            // lacks keep the source's static values.
+            Weight = ProjectWeight(source, variation);
+            Style = ProjectStyle(source, variation);
+            Stretch = ProjectStretch(source, variation);
 
             // Metrics: apply MVAR deltas to the source's default-instance metrics. The
             // sign conventions follow GlyphTypeface's source constructor — Avalonia's
@@ -572,6 +571,126 @@ namespace Avalonia.Media
                 StrikethroughPosition = strikethroughPosition,
                 StrikethroughThickness = strikethroughThickness,
             };
+        }
+
+        private static FontWeight ProjectWeight(GlyphTypeface source, NormalizedVariationPosition variation)
+        {
+            if (!source.TryGetUserAxisValue(variation, FvarAxisTags.Weight, out var wght))
+            {
+                return source.Weight;
+            }
+
+            var weight = (FontWeight)Math.Clamp((int)MathF.Round(wght), 1, 1000);
+
+            // A bold-simulated source reports Bold whatever its design weight; the emboldened
+            // outlines stay at least that heavy at every position.
+            if ((source.FontSimulations & FontSimulations.Bold) != 0 && weight < FontWeight.Bold)
+            {
+                weight = FontWeight.Bold;
+            }
+
+            return weight;
+        }
+
+        private static FontStyle ProjectStyle(GlyphTypeface source, NormalizedVariationPosition variation)
+        {
+            // An oblique-simulated source is slanted at every position.
+            if ((source.FontSimulations & FontSimulations.Oblique) != 0)
+            {
+                return source.Style;
+            }
+
+            var hasItal = source.TryGetUserAxisValue(variation, FvarAxisTags.Italic, out var ital);
+            var hasSlnt = source.TryGetUserAxisValue(variation, FvarAxisTags.Slant, out var slnt);
+
+            if (hasItal && ital >= 0.5f)
+            {
+                return FontStyle.Italic;
+            }
+
+            // slnt is measured counter-clockwise, so a conventional forward slant is negative.
+            if (hasSlnt && slnt < 0f)
+            {
+                return FontStyle.Oblique;
+            }
+
+            return hasItal || hasSlnt ? FontStyle.Normal : source.Style;
+        }
+
+        private static FontStretch ProjectStretch(GlyphTypeface source, NormalizedVariationPosition variation)
+        {
+            return source.TryGetUserAxisValue(variation, FvarAxisTags.Width, out var wdth)
+                ? GetFontStretch(wdth)
+                : source.Stretch;
+        }
+
+        /// <summary>
+        /// Maps a <c>wdth</c> axis value (percent of normal width) to the nearest
+        /// <see cref="FontStretch"/>, using the OS/2 <c>usWidthClass</c> percentages.
+        /// </summary>
+        internal static FontStretch GetFontStretch(float widthPercentage)
+        {
+            // The thresholds are the midpoints between neighbouring usWidthClass percentages.
+            return widthPercentage switch
+            {
+                < 56.25f => FontStretch.UltraCondensed,
+                < 68.75f => FontStretch.ExtraCondensed,
+                < 81.25f => FontStretch.Condensed,
+                < 93.75f => FontStretch.SemiCondensed,
+                < 106.25f => FontStretch.Normal,
+                < 118.75f => FontStretch.SemiExpanded,
+                < 137.5f => FontStretch.Expanded,
+                < 175f => FontStretch.ExtraExpanded,
+                _ => FontStretch.UltraExpanded
+            };
+        }
+
+
+        /// <summary>
+        /// Converts the normalized coordinate of <paramref name="axis"/> in
+        /// <paramref name="position"/> back to user space, undoing the avar correction and the
+        /// fvar normalization <see cref="CreateNormalizedPosition"/> applies.
+        /// </summary>
+        /// <remarks>
+        /// Normalized coordinates are quantized to F2Dot14, so the result can differ from the
+        /// user value the position was created from by a fraction of a unit.
+        /// </remarks>
+        /// <returns><c>false</c> when the font has no such axis.</returns>
+        internal bool TryGetUserAxisValue(NormalizedVariationPosition position, OpenTypeTag axis, out float userValue)
+        {
+            userValue = 0f;
+
+            if (_fvarTable is null)
+            {
+                return false;
+            }
+
+            var axes = _fvarTable.Axes;
+
+            for (var i = 0; i < axes.Length; i++)
+            {
+                var record = axes[i];
+
+                if (record.Tag != axis)
+                {
+                    continue;
+                }
+
+                var normalized = position.GetCoordinateOrDefault(axis);
+
+                if (_avarTable is not null)
+                {
+                    normalized = _avarTable.Unmap(i, normalized);
+                }
+
+                userValue = normalized < 0f
+                    ? record.DefaultValue + normalized * (record.DefaultValue - record.MinimumValue)
+                    : record.DefaultValue + normalized * (record.MaximumValue - record.DefaultValue);
+
+                return true;
+            }
+
+            return false;
         }
 
         private static ushort GetFontDesignEmHeight(HeadTable? headTable)
