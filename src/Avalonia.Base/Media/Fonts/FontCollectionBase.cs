@@ -6,7 +6,9 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Avalonia.Media.Fonts.Tables;
+using Avalonia.Media.Fonts.Tables.Variation;
 using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Platform;
 
@@ -31,6 +33,14 @@ namespace Avalonia.Media.Fonts
         private volatile FontFamily[] _fontFamilies = Array.Empty<FontFamily>();
         private readonly IFontManagerImpl _fontManagerImpl;
         private readonly IAssetLoader _assetLoader;
+
+        // Font matching data of each variable face, built on the first request the face's
+        // registered keys cannot answer.
+        private readonly ConditionalWeakTable<GlyphTypeface, VariableFace> _variableFaces = new();
+
+        // Simulated default instances created to vary a simulated face. Only their varied clones
+        // are registered, so the collection keeps the sources to release them on disposal.
+        private readonly ConcurrentBag<GlyphTypeface> _variedSyntheticSources = new();
 
         private readonly record struct ScriptFallbackKey(Script Script, string? CultureName);
 
@@ -531,6 +541,15 @@ namespace Avalonia.Media.Fonts
                         if (syntheticGlyphTypeface is null)
                             return false;
 
+                        // The stream holds the default instance, so a varied face is simulated by
+                        // moving the simulated default instance to the same position.
+                        if (!glyphTypeface.VariationPosition.IsDefault)
+                        {
+                            _variedSyntheticSources.Add(syntheticGlyphTypeface);
+                            syntheticGlyphTypeface =
+                                syntheticGlyphTypeface.WithVariation(glyphTypeface.VariationPosition);
+                        }
+
                         //Add the TypographicFamilyName to the cache
                         if (!string.IsNullOrEmpty(glyphTypeface.TypographicFamilyName))
                         {
@@ -862,11 +881,17 @@ namespace Avalonia.Media.Fonts
 
             if (_glyphTypefaceCache.TryGetValue(familyName, out var glyphTypefaces))
             {
-                if (TryGetMatch(glyphTypefaces, key, allowNearestMatch, out glyphTypeface, out var isNearestMatch))
+                if (TryGetMatch(glyphTypefaces, key, allowNearestMatch, out glyphTypeface, out var matchKind))
                 {
                     var matchedKey = glyphTypeface.ToFontCollectionKey();
 
-                    if (isNearestMatch && matchedKey != key)
+                    if (matchKind == MatchKind.VariedFace)
+                    {
+                        // Register the varied face under the requested key so the next request is
+                        // an exact hit instead of another pass over the family's variation space.
+                        TryAddGlyphTypeface(familyName, key, glyphTypeface);
+                    }
+                    else if (matchKind == MatchKind.Nearest && matchedKey != key)
                     {
                         if (TryCreateSyntheticGlyphTypeface(glyphTypeface, key.Style, key.Weight, key.Stretch, out var syntheticGlyphTypeface))
                         {
@@ -958,22 +983,322 @@ namespace Avalonia.Media.Fonts
             FontCollectionKey key,
             bool allowNearestMatch,
             [NotNullWhen(true)] out GlyphTypeface? glyphTypeface,
-            out bool isNearestMatch)
+            out MatchKind matchKind)
         {
             if (glyphTypefaces.TryGetValue(key, out glyphTypeface) && glyphTypeface is not null)
             {
-                isNearestMatch = false;
+                matchKind = MatchKind.Exact;
                 return true;
             }
 
-            if (allowNearestMatch && TryGetNearestMatch(glyphTypefaces, key, out glyphTypeface))
+            if (allowNearestMatch)
             {
-                isNearestMatch = true;
+                // A variable face can reach the requested weight, width or style along its axes,
+                // which beats both a nearest static face and a simulation.
+                var variableFaces = GetVariableFaces(glyphTypefaces);
+
+                if (variableFaces is not null)
+                {
+                    if (TryGetVariedMatch(variableFaces, key, out glyphTypeface))
+                    {
+                        matchKind = MatchKind.VariedFace;
+                        return true;
+                    }
+
+                    if (TryGetNearestMatch(CreateVariedCandidates(glyphTypefaces, variableFaces, key), key,
+                            out glyphTypeface))
+                    {
+                        matchKind = MatchKind.Nearest;
+                        return true;
+                    }
+                }
+                else if (TryGetNearestMatch(glyphTypefaces, key, out glyphTypeface))
+                {
+                    matchKind = MatchKind.Nearest;
+                    return true;
+                }
+            }
+
+            matchKind = MatchKind.Exact;
+            return false;
+        }
+
+        private enum MatchKind
+        {
+            /// <summary>The face is registered under the requested key.</summary>
+            Exact,
+
+            /// <summary>A variable face moved along its axes to match the requested key exactly.</summary>
+            VariedFace,
+
+            /// <summary>The closest available face; it may need simulation to close the gap.</summary>
+            Nearest
+        }
+
+        /// <summary>
+        /// Returns the variable default-instance faces registered for a family, or <c>null</c> when
+        /// the family has none. Simulated faces and varied clones are skipped: axis positions are
+        /// always taken from the unsimulated design.
+        /// </summary>
+        private List<VariableFace>? GetVariableFaces(IDictionary<FontCollectionKey, GlyphTypeface?> glyphTypefaces)
+        {
+            List<VariableFace>? result = null;
+
+            foreach (var candidate in glyphTypefaces.Values)
+            {
+                if (candidate is null ||
+                    candidate.VariationAxes.Count == 0 ||
+                    !candidate.VariationPosition.IsDefault ||
+                    candidate.FontSimulations != FontSimulations.None)
+                {
+                    continue;
+                }
+
+                var face = _variableFaces.GetValue(candidate, static gt => new VariableFace(gt));
+
+                result ??= new List<VariableFace>(1);
+
+                if (!result.Contains(face))
+                {
+                    result.Add(face);
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Finds a varied face that matches <paramref name="key"/> exactly: a named instance
+        /// first, then a position built from the axis values.
+        /// </summary>
+        private static bool TryGetVariedMatch(
+            List<VariableFace> variableFaces,
+            FontCollectionKey key,
+            [NotNullWhen(true)] out GlyphTypeface? glyphTypeface)
+        {
+            foreach (var face in variableFaces)
+            {
+                foreach (var instance in face.Instances)
+                {
+                    if (instance.Key == key)
+                    {
+                        glyphTypeface = face.Typeface.WithVariation(instance.Position);
+                        return true;
+                    }
+                }
+            }
+
+            foreach (var face in variableFaces)
+            {
+                if (face.TryCreateAxisPosition(key, out var position))
+                {
+                    glyphTypeface = face.Typeface.WithVariation(position);
+                    return true;
+                }
+            }
+
+            glyphTypeface = null;
+            return false;
+        }
+
+        /// <summary>
+        /// Builds the candidate set for a nearest match: the family's registered faces plus, for
+        /// every variable face, its named instances and the position closest to
+        /// <paramref name="key"/> its axis ranges allow. Variation candidates are keyed by the
+        /// Weight / Style / Stretch they report, so the regular fallback search finds them.
+        /// </summary>
+        private static Dictionary<FontCollectionKey, GlyphTypeface?> CreateVariedCandidates(
+            IDictionary<FontCollectionKey, GlyphTypeface?> glyphTypefaces,
+            List<VariableFace> variableFaces,
+            FontCollectionKey key)
+        {
+            var candidates = new Dictionary<FontCollectionKey, GlyphTypeface?>(glyphTypefaces);
+
+            foreach (var face in variableFaces)
+            {
+                face.TryCreateAxisPosition(key, out var closest);
+                AddCandidate(face.Typeface.WithVariation(closest));
+
+                foreach (var instance in face.Instances)
+                {
+                    if (!candidates.ContainsKey(instance.Key))
+                    {
+                        candidates.Add(instance.Key, face.Typeface.WithVariation(instance.Position));
+                    }
+                }
+            }
+
+            return candidates;
+
+            void AddCandidate(GlyphTypeface candidate)
+            {
+                var candidateKey = new FontCollectionKey(candidate.Style, candidate.Weight, candidate.Stretch);
+
+                if (!candidates.ContainsKey(candidateKey))
+                {
+                    candidates.Add(candidateKey, candidate);
+                }
+            }
+        }
+
+        /// <summary>
+        /// The font matching view of a variable face: its named instances keyed by the
+        /// Weight / Style / Stretch they project to, and the ranges of the axes that map onto
+        /// those properties. Built once per face.
+        /// </summary>
+        private sealed class VariableFace
+        {
+            // The oblique angle CSS uses when font-style: oblique names none.
+            private const float DefaultObliqueAngle = 14f;
+
+            private readonly FontVariationAxis? _weight;
+            private readonly FontVariationAxis? _width;
+            private readonly FontVariationAxis? _italic;
+            private readonly FontVariationAxis? _slant;
+
+            public VariableFace(GlyphTypeface typeface)
+            {
+                Typeface = typeface;
+
+                foreach (var axis in typeface.VariationAxes)
+                {
+                    if (axis.Tag == FvarAxisTags.Weight)
+                    {
+                        _weight = axis;
+                    }
+                    else if (axis.Tag == FvarAxisTags.Width)
+                    {
+                        _width = axis;
+                    }
+                    else if (axis.Tag == FvarAxisTags.Italic)
+                    {
+                        _italic = axis;
+                    }
+                    else if (axis.Tag == FvarAxisTags.Slant)
+                    {
+                        _slant = axis;
+                    }
+                }
+
+                var namedInstances = typeface.NamedInstances;
+                var instances = new (FontCollectionKey, NormalizedVariationPosition)[namedInstances.Count];
+
+                for (var i = 0; i < instances.Length; i++)
+                {
+                    var position = typeface.CreateNormalizedPosition(null, namedInstances[i].Index);
+
+                    instances[i] = (typeface.GetProjectedKey(position), position);
+                }
+
+                Instances = instances;
+            }
+
+            public GlyphTypeface Typeface { get; }
+
+            public (FontCollectionKey Key, NormalizedVariationPosition Position)[] Instances { get; }
+
+            /// <summary>
+            /// Builds the position that brings the face closest to <paramref name="key"/>, each
+            /// axis clamped to its range.
+            /// </summary>
+            /// <returns>
+            /// <c>true</c> when the position matches the key exactly; <c>false</c> when an axis
+            /// range or a missing axis leaves a gap.
+            /// </returns>
+            public bool TryCreateAxisPosition(FontCollectionKey key, out NormalizedVariationPosition position)
+            {
+                var settings = new List<FontVariation>(3);
+                var isExact = true;
+
+                if (_weight is { } weightAxis)
+                {
+                    var weight = Clamp((int)key.Weight, weightAxis);
+
+                    settings.Add(new FontVariation(weightAxis.Tag, weight));
+                    isExact &= weight == (int)key.Weight;
+                }
+                else
+                {
+                    isExact &= Typeface.Weight == key.Weight;
+                }
+
+                if (_width is { } widthAxis)
+                {
+                    var width = Clamp(GlyphTypeface.GetWidthPercentage(key.Stretch), widthAxis);
+
+                    settings.Add(new FontVariation(widthAxis.Tag, width));
+                    isExact &= GlyphTypeface.GetFontStretch(width) == key.Stretch;
+                }
+                else
+                {
+                    isExact &= Typeface.Stretch == key.Stretch;
+                }
+
+                isExact &= AddStyle(key.Style, settings);
+
+                position = Typeface.CreateNormalizedPosition(
+                    new FontVariationSettings(settings), default(NormalizedVariationPosition));
+
+                return isExact;
+            }
+
+            private bool AddStyle(FontStyle style, List<FontVariation> settings)
+            {
+                if (style == FontStyle.Normal)
+                {
+                    if (_italic is { } uprightItalic)
+                    {
+                        settings.Add(new FontVariation(uprightItalic.Tag, Clamp(0f, uprightItalic)));
+                    }
+
+                    if (_slant is { } uprightSlant)
+                    {
+                        settings.Add(new FontVariation(uprightSlant.Tag, Clamp(0f, uprightSlant)));
+                    }
+
+                    return Typeface.Style == FontStyle.Normal || _italic is not null || _slant is not null;
+                }
+
+                if (Typeface.Style == style)
+                {
+                    return true;
+                }
+
+                // Italic prefers the italic axis and Oblique the slant axis, but either may stand
+                // in for the other, the way CSS falls back between the two styles.
+                return style == FontStyle.Italic
+                    ? TryAddItalic(settings) || TryAddSlant(settings)
+                    : TryAddSlant(settings) || TryAddItalic(settings);
+            }
+
+            private bool TryAddItalic(List<FontVariation> settings)
+            {
+                if (_italic is not { } axis || axis.MaximumValue < 0.5f)
+                {
+                    return false;
+                }
+
+                settings.Add(new FontVariation(axis.Tag, Clamp(1f, axis)));
                 return true;
             }
 
-            isNearestMatch = false;
-            return false;
+            private bool TryAddSlant(List<FontVariation> settings)
+            {
+                if (_slant is not { } axis || axis.MinimumValue >= 0f)
+                {
+                    return false;
+                }
+
+                // slnt is counter-clockwise, so a forward slant is a negative angle.
+                settings.Add(new FontVariation(axis.Tag, Clamp(-DefaultObliqueAngle, axis)));
+                return true;
+            }
+
+            private static float Clamp(float value, FontVariationAxis axis)
+                => Math.Min(Math.Max(value, axis.MinimumValue), axis.MaximumValue);
+
+            private static int Clamp(int value, FontVariationAxis axis)
+                => (int)MathF.Round(Clamp((float)value, axis));
         }
 
         /// <summary>
@@ -1286,6 +1611,11 @@ namespace Avalonia.Media.Fonts
                 {
                     pair.Value?.Dispose();
                 }
+            }
+
+            foreach (var source in _variedSyntheticSources)
+            {
+                source.Dispose();
             }
 
             GC.SuppressFinalize(this);
