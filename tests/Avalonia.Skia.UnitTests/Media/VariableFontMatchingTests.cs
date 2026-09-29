@@ -1,4 +1,6 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using Avalonia.Media;
 using Avalonia.Media.Fonts;
 using Avalonia.Platform;
@@ -97,6 +99,27 @@ namespace Avalonia.Skia.UnitTests.Media
         }
 
         [Fact]
+        public void Resolved_Varied_Face_Is_An_Exact_Match_For_A_Later_Character_Lookup()
+        {
+            using (Start(out _, out var collection))
+            {
+                var resolved = Resolve(new Typeface(InterVariable, weight: FontWeight.SemiBold));
+
+                // The wght=600 clone registered for SemiBold already is the requested face, so the
+                // fallback must neither ask the platform for an exact face nor replace the clone.
+                Assert.True(collection.TryMatchCharacter('A', FontStyle.Normal, FontWeight.SemiBold,
+                    FontStretch.Normal, "Inter Variable", null, out var match));
+
+                Assert.Equal(0, collection.PlatformCallCount);
+
+                var glyphTypeface = Resolve(match);
+
+                Assert.Same(resolved, glyphTypeface);
+                Assert.Equal(FontSimulations.None, glyphTypeface.FontSimulations);
+            }
+        }
+
+        [Fact]
         public void FontVariations_Override_Only_Their_Axes_Of_The_Resolved_Position()
         {
             using (Start(out var root))
@@ -148,12 +171,14 @@ namespace Avalonia.Skia.UnitTests.Media
         private static NormalizedVariationPosition Position(GlyphTypeface root, string settings)
             => root.CreateNormalizedPosition(FontVariationSettings.Parse(settings));
 
-        private static IDisposable Start(out GlyphTypeface interVariable)
+        private static IDisposable Start(out GlyphTypeface interVariable) => Start(out interVariable, out _);
+
+        private static IDisposable Start(out GlyphTypeface interVariable, out VariableFontCollection collection)
         {
             var app = UnitTestApplication.Start(
                 TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl()));
 
-            var collection = new VariableFontCollection(new Uri(CollectionKey, UriKind.Absolute));
+            collection = new VariableFontCollection(new Uri(CollectionKey, UriKind.Absolute));
             FontManager.Current.AddFontCollection(collection);
 
             var assetLoader = AvaloniaLocator.Current.GetRequiredService<IAssetLoader>();
@@ -179,6 +204,16 @@ namespace Avalonia.Skia.UnitTests.Media
         private sealed class VariableFontCollection(Uri key) : FontCollectionBase
         {
             public override Uri Key { get; } = key;
+
+            public int PlatformCallCount { get; private set; }
+
+            protected override bool TryMatchCharacterFromPlatform(int codepoint, FontCollectionKey key,
+                string? familyName, CultureInfo? culture, [NotNullWhen(true)] out GlyphTypeface? glyphTypeface)
+            {
+                PlatformCallCount++;
+                glyphTypeface = null;
+                return false;
+            }
         }
     }
 }
