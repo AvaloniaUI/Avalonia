@@ -1002,10 +1002,11 @@ namespace Avalonia.Media
         /// <para>
         /// For variation clones, the shaper is derived from the source's shaper via
         /// <see cref="ITextShaperTypeface.WithVariation"/> so face-level state (HarfBuzz
-        /// <c>hb_face_t</c>, parsed shaping tables) stays shared. The default
-        /// <c>WithVariation</c> implementation is a no-op; a shaper integration (e.g.
-        /// HarfBuzz with <c>Font.SetVariationCoordsNormalized</c>) overrides it to
-        /// configure variation coordinates on the produced shaping font.
+        /// <c>hb_face_t</c>, parsed shaping tables) stays shared. The HarfBuzz shaper
+        /// returns a distinct shaping font carrying the clone's normalized coordinates,
+        /// which the clone owns and releases on <see cref="Dispose()"/>. A shaper without
+        /// variation support returns the source's instance, and the clone is shaped at
+        /// the default instance.
         /// </para>
         /// </remarks>
         public ITextShaperTypeface TextShaperTypeface
