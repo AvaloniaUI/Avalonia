@@ -30,12 +30,14 @@ namespace Avalonia.Media
             string name,
             int index,
             IReadOnlyDictionary<OpenTypeTag, float> coordinates,
-            int? postScriptNameId)
+            int? postScriptNameId,
+            ushort subfamilyNameId)
         {
             Name = name ?? string.Empty;
             Index = index;
             _coordinates = coordinates;
             PostScriptNameId = postScriptNameId;
+            SubfamilyNameId = subfamilyNameId;
         }
 
         /// <summary>
@@ -66,6 +68,13 @@ namespace Avalonia.Media
         /// font declares one. <c>null</c> when not present.
         /// </summary>
         public int? PostScriptNameId { get; }
+
+        /// <summary>
+        /// Gets the <c>name</c> table ID that <see cref="Name"/> is resolved from: 2, 17, or an ID
+        /// in the font-specific range 256-32767. Kept raw so family grouping can resolve the name
+        /// again, for example in another language.
+        /// </summary>
+        internal ushort SubfamilyNameId { get; }
 
         /// <summary>
         /// Two instances are equal when they describe the same preset on the same font —

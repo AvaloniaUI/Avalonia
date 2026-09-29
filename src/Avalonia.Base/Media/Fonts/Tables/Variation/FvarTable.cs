@@ -215,7 +215,8 @@ namespace Avalonia.Media.Fonts.Tables.Variation
                     instanceName,
                     i,
                     coordinates,
-                    postScriptNameId));
+                    postScriptNameId,
+                    subfamilyNameId));
             }
 
             fvarTable = new FvarTable(

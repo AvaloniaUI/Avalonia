@@ -290,6 +290,9 @@ namespace Avalonia.Media
 
             TypographicFamilyName = _nameTable?.GetNameById((ushort)CultureInfo.InvariantCulture.LCID, KnownNameIds.TypographicFamilyName) ?? FamilyName;
 
+            TypographicSubfamilyName = _nameTable?.GetNameById(
+                (ushort)CultureInfo.InvariantCulture.LCID, KnownNameIds.TypographicSubfamilyName) ?? string.Empty;
+
             if (_nameTable != null)
             {
                 Dictionary<CultureInfo, string>? familyNames = null;
@@ -455,6 +458,7 @@ namespace Avalonia.Media
             // Shareable face-level metadata.
             FamilyName = source.FamilyName;
             TypographicFamilyName = source.TypographicFamilyName;
+            TypographicSubfamilyName = source.TypographicSubfamilyName;
             FamilyNames = source.FamilyNames;
             FaceNames = source.FaceNames;
             GlyphCount = source.GlyphCount;
@@ -770,6 +774,13 @@ namespace Avalonia.Media
         /// Gets the typographic family name of the font.
         /// </summary>
         public string TypographicFamilyName { get; }
+
+        /// <summary>
+        /// Gets the typographic subfamily name (name ID 17) of the font, the style name within
+        /// <see cref="TypographicFamilyName"/>. Empty when the font has no such name record, which
+        /// means the legacy subfamily name (name ID 2) already names the style.
+        /// </summary>
+        internal string TypographicSubfamilyName { get; }
 
         /// <summary>
         /// Gets a read-only mapping of localized culture-specific family names.

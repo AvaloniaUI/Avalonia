@@ -16,7 +16,8 @@ namespace Avalonia.Base.UnitTests.Media
         private const string InterFontUri = "resm:Avalonia.Base.UnitTests.Assets.Inter-Regular.ttf?assembly=Avalonia.Base.UnitTests";
         private const string BlankFontUri = "resm:Avalonia.Base.UnitTests.Assets.AdobeBlank2VF.ttf?assembly=Avalonia.Base.UnitTests";
         private const string GB18030FontUri = "resm:Avalonia.Base.UnitTests.Assets.NISC18030.ttf?assembly=Avalonia.Base.UnitTests";
-        private const string MiSansFontUri = "resm:Avalonia.Base.UnitTests.Assets.MiSans-Normal.ttf?assembly=Avalonia.Base.UnitTests";
+        private const string ManropeFontUri = "resm:Avalonia.Base.UnitTests.Assets.Manrope-Light.ttf?assembly=Avalonia.Base.UnitTests";
+        private const string MiSansFontUri ="resm:Avalonia.Base.UnitTests.Assets.MiSans-Normal.ttf?assembly=Avalonia.Base.UnitTests";
 
         [Fact]
         public void Should_Load_Inter_Font()
@@ -175,6 +176,49 @@ namespace Avalonia.Base.UnitTests.Media
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
             Assert.NotNull(typeface.TypographicFamilyName);
+        }
+
+        [Fact]
+        public void TypographicSubfamilyName_Reads_Name_Id_17()
+        {
+            // Manrope Light names its style "Light" in ID 17 while ID 2 says "Regular", the
+            // legacy four-style grouping of a family with more weights.
+            var assetLoader = new StandardAssetLoader();
+
+            using var stream = assetLoader.Open(new Uri(ManropeFontUri));
+
+            var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
+
+            Assert.Equal("Manrope", typeface.TypographicFamilyName);
+            Assert.Equal("Light", typeface.TypographicSubfamilyName);
+        }
+
+        [Fact]
+        public void TypographicSubfamilyName_Is_Empty_Without_Name_Id_17()
+        {
+            var assetLoader = new StandardAssetLoader();
+
+            using var stream = assetLoader.Open(new Uri(InterFontUri));
+
+            var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
+
+            Assert.Equal(string.Empty, typeface.TypographicSubfamilyName);
+        }
+
+        [Fact]
+        public void TypographicSubfamilyName_Is_Shared_By_Variation_Clones()
+        {
+            var assetLoader = new StandardAssetLoader();
+
+            using var stream = assetLoader.Open(new Uri(BlankFontUri));
+
+            var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
+            var clone = typeface.WithVariations(new FontVariationSettings(
+                new[] { new FontVariation(OpenTypeTag.Parse("wdth"), 500) }));
+
+            Assert.NotSame(typeface, clone);
+            Assert.Equal("R", typeface.TypographicSubfamilyName);
+            Assert.Equal("R", clone.TypographicSubfamilyName);
         }
 
         [Fact]
