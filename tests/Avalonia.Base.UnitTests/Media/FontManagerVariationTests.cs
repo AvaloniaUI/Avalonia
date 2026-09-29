@@ -78,6 +78,42 @@ namespace Avalonia.Base.UnitTests.Media
             }
         }
 
+        [Fact]
+        public void FontVariations_Override_Only_Their_Axes_Of_A_Resolved_Varied_Face()
+        {
+            using (Start())
+            {
+                // A collection that resolves SemiBold to the wght=600 position of the variable
+                // font, the way font matching picks a named instance or axis value.
+                var assetLoader = new StandardAssetLoader();
+                using var stream = assetLoader.Open(new Uri(InterVariableAsset));
+                var root = new GlyphTypeface(new CustomPlatformTypeface(stream));
+                var semiBold = root.WithVariations(FontVariationSettings.Parse("wght=600"));
+
+                var collection = new PresetFontCollection(new Uri("fonts:preset", UriKind.Absolute));
+                Assert.True(collection.TryAddGlyphTypeface(semiBold,
+                    new FontCollectionKey(FontStyle.Normal, FontWeight.SemiBold, FontStretch.Normal)));
+                FontManager.Current.AddFontCollection(collection);
+
+                var typeface = new Typeface(new FontFamily("fonts:preset#Inter Variable"),
+                    FontStyle.Normal, FontWeight.SemiBold, FontStretch.Normal, FontVariationSettings.Parse("opsz=32"));
+
+                Assert.True(FontManager.Current.TryGetGlyphTypeface(typeface, out var glyphTypeface));
+
+                var position = glyphTypeface.VariationPosition;
+
+                Assert.Equal(semiBold.VariationPosition.GetCoordinateOrDefault(s_wghtTag),
+                    position.GetCoordinateOrDefault(s_wghtTag));
+                Assert.Equal(1f, position.GetCoordinateOrDefault(OpenTypeTag.Parse("opsz")));
+                Assert.Equal(FontWeight.SemiBold, glyphTypeface.Weight);
+            }
+        }
+
+        private sealed class PresetFontCollection(Uri key) : FontCollectionBase
+        {
+            public override Uri Key { get; } = key;
+        }
+
         private static IDisposable Start() =>
             UnitTestApplication.Start(TestServices.MockPlatformRenderInterface
                 .With(fontManagerImpl: new VariableFontManagerStub()));

@@ -649,7 +649,7 @@ namespace Avalonia.Media
         /// <summary>
         /// Converts the normalized coordinate of <paramref name="axis"/> in
         /// <paramref name="position"/> back to user space, undoing the avar correction and the
-        /// fvar normalization <see cref="CreateNormalizedPosition"/> applies.
+        /// fvar normalization <see cref="CreateNormalizedPosition(FontVariationSettings, int?)"/> applies.
         /// </summary>
         /// <remarks>
         /// Normalized coordinates are quantized to F2Dot14, so the result can differ from the
@@ -1069,7 +1069,7 @@ namespace Avalonia.Media
         /// <para>
         /// These are the normalized coordinates used by gvar / HVAR / MVAR / VVAR
         /// consumers. They are produced from human-readable user-space values
-        /// (e.g. <c>wght = 700</c>) by <see cref="CreateNormalizedPosition"/>.
+        /// (e.g. <c>wght = 700</c>) by <see cref="CreateNormalizedPosition(FontVariationSettings, int?)"/>.
         /// </para>
         /// </remarks>
         internal NormalizedVariationPosition VariationPosition => _variationPosition;
@@ -1098,7 +1098,7 @@ namespace Avalonia.Media
         /// Named instances are pre-defined points in variation space the font designer has
         /// labeled (e.g. "SemiBold" at <c>wght=600</c>). Pass an instance's
         /// <see cref="FontVariationInstance.Index"/> to
-        /// <see cref="CreateNormalizedPosition"/> as a shorthand for "give me the
+        /// <see cref="CreateNormalizedPosition(FontVariationSettings, int?)"/> as a shorthand for "give me the
         /// position of this preset".
         /// </remarks>
         public IReadOnlyList<FontVariationInstance> NamedInstances
@@ -1656,11 +1656,7 @@ namespace Avalonia.Media
                 return default;
             }
 
-            var axes = _fvarTable.Axes;
-
-            // Start from the named instance's coords when one was requested, then overlay
-            // any explicit user values. Both inputs are user-space.
-            Dictionary<OpenTypeTag, float>? effective = null;
+            NormalizedVariationPosition basePosition = default;
 
             if (instanceIndex is int idx)
             {
@@ -1672,84 +1668,70 @@ namespace Avalonia.Media
                         $"Instance index must be in the range [0, {_fvarTable.Instances.Length}).");
                 }
 
-                var instance = _fvarTable.Instances[idx];
-                effective = new Dictionary<OpenTypeTag, float>(instance.Coordinates);
+                basePosition = NormalizeUserValues(_fvarTable.Instances[idx].Coordinates);
             }
 
-            if (settings is not null && !settings.IsEmpty)
+            return CreateNormalizedPosition(settings, basePosition);
+        }
+
+        /// <summary>
+        /// Derives this font's <see cref="NormalizedVariationPosition"/> by starting from
+        /// <paramref name="basePosition"/> and overriding it per axis with the user-space
+        /// <paramref name="settings"/>.
+        /// </summary>
+        /// <remarks>
+        /// This is the CSS order of font matching: the position chosen from weight, width and
+        /// style comes first, and <c>font-variation-settings</c> overrides only the axes it names.
+        /// </remarks>
+        /// <param name="settings">
+        /// User-space axis values; axes the font does not declare are ignored. <c>null</c> or
+        /// empty keeps <paramref name="basePosition"/> unchanged.
+        /// </param>
+        /// <param name="basePosition">
+        /// A normalized position of this font, for example the <see cref="VariationPosition"/>
+        /// of a clone picked during font matching.
+        /// </param>
+        /// <returns>
+        /// The combined normalized position; <c>default(NormalizedVariationPosition)</c> for
+        /// static fonts and when every axis resolves to its default value.
+        /// </returns>
+        internal NormalizedVariationPosition CreateNormalizedPosition(
+            FontVariationSettings? settings,
+            NormalizedVariationPosition basePosition)
+        {
+            if (_fvarTable is null)
             {
-                effective ??= new Dictionary<OpenTypeTag, float>(settings.Variations.Length);
-                foreach (var variation in settings.Variations)
-                {
-                    effective[variation.Tag] = (float)variation.Value;
-                }
+                return default;
             }
 
-            // Per-axis normalization. Skip axes that resolve to the default so the result
-            // equals default(NormalizedVariationPosition) when the caller asked for the
-            // default-instance point — important for cache identity at the
-            // GlyphTypeface layer (WithVariation(default) returns the source).
+            if (settings is null || settings.IsEmpty)
+            {
+                return basePosition;
+            }
+
+            var axes = _fvarTable.Axes;
+            var variations = settings.Variations;
+
+            // Skip axes that resolve to the default so the result equals
+            // default(NormalizedVariationPosition) when the caller asked for the default-instance
+            // point — important for cache identity at the GlyphTypeface layer
+            // (WithVariation(default) returns the source).
             Dictionary<OpenTypeTag, float>? normalized = null;
 
             for (var i = 0; i < axes.Length; i++)
             {
                 var axis = axes[i];
+                var normalizedValue = basePosition.GetCoordinateOrDefault(axis.Tag);
 
-                var userValue = axis.DefaultValue;
-                if (effective is not null && effective.TryGetValue(axis.Tag, out var supplied))
+                // The last setting for an axis wins, matching CSS declaration order.
+                for (var j = variations.Length - 1; j >= 0; j--)
                 {
-                    userValue = supplied;
+                    if (variations[j].Tag == axis.Tag)
+                    {
+                        normalizedValue = NormalizeAxisValue(i, (float)variations[j].Value);
+                        break;
+                    }
                 }
-
-                // Clamp to the axis range. fvar treats values outside [min, max] as a
-                // best-effort clamp rather than an error — matches CSS and DirectWrite.
-                if (userValue < axis.MinimumValue)
-                {
-                    userValue = axis.MinimumValue;
-                }
-                else if (userValue > axis.MaximumValue)
-                {
-                    userValue = axis.MaximumValue;
-                }
-
-                // Linear fvar normalization into [-1, 1] anchored at the default value.
-                // The two halves of the axis (below and above default) are normalized
-                // independently — this is what makes the design "default" land at 0
-                // regardless of where min and max sit.
-                float normalizedValue;
-                if (userValue == axis.DefaultValue)
-                {
-                    normalizedValue = 0f;
-                }
-                else if (userValue < axis.DefaultValue)
-                {
-                    var range = axis.DefaultValue - axis.MinimumValue;
-                    normalizedValue = range > 0f
-                        ? (userValue - axis.DefaultValue) / range
-                        : 0f;
-                }
-                else
-                {
-                    var range = axis.MaximumValue - axis.DefaultValue;
-                    normalizedValue = range > 0f
-                        ? (userValue - axis.DefaultValue) / range
-                        : 0f;
-                }
-
-                // avar segment-map correction. Identity on axes the table doesn't cover
-                // (or when the table is absent), so safe to call unconditionally inside
-                // the loop once we've checked _avarTable is non-null.
-                if (_avarTable is not null)
-                {
-                    normalizedValue = _avarTable.Remap(i, normalizedValue);
-                }
-
-                // Quantize to the F2Dot14 grid (1/16384) the font binary itself uses for
-                // normalized coordinates — gvar, avar and the item variation stores cannot
-                // represent a finer position, so this loses nothing. It also bounds the
-                // per-source variation-clone cache under animation: a swept axis lands on
-                // at most 32769 distinct positions instead of one per float progress value.
-                normalizedValue = MathF.Round(normalizedValue * 16384f) / 16384f;
 
                 if (normalizedValue != 0f)
                 {
@@ -1758,13 +1740,93 @@ namespace Avalonia.Media
                 }
             }
 
-            if (normalized is null)
+            return normalized is null ? default : NormalizedVariationPosition.FromCoordinates(normalized);
+        }
+
+        /// <summary>
+        /// Normalizes a full set of user-space axis values, such as a named instance's
+        /// coordinates. Axes missing from <paramref name="userValues"/> take their default.
+        /// </summary>
+        private NormalizedVariationPosition NormalizeUserValues(IReadOnlyDictionary<OpenTypeTag, float> userValues)
+        {
+            var axes = _fvarTable!.Axes;
+
+            Dictionary<OpenTypeTag, float>? normalized = null;
+
+            for (var i = 0; i < axes.Length; i++)
             {
-                // Every axis came out at default — return the canonical "no variation" value.
-                return default;
+                if (!userValues.TryGetValue(axes[i].Tag, out var userValue))
+                {
+                    continue;
+                }
+
+                var normalizedValue = NormalizeAxisValue(i, userValue);
+
+                if (normalizedValue != 0f)
+                {
+                    normalized ??= new Dictionary<OpenTypeTag, float>(axes.Length);
+                    normalized[axes[i].Tag] = normalizedValue;
+                }
             }
 
-            return NormalizedVariationPosition.FromCoordinates(normalized);
+            return normalized is null ? default : NormalizedVariationPosition.FromCoordinates(normalized);
+        }
+
+        /// <summary>
+        /// Converts a user-space value of the axis at <paramref name="axisIndex"/> to its
+        /// normalized, avar-corrected, F2Dot14-quantized coordinate.
+        /// </summary>
+        private float NormalizeAxisValue(int axisIndex, float userValue)
+        {
+            var axis = _fvarTable!.Axes[axisIndex];
+
+            // Clamp to the axis range. fvar treats values outside [min, max] as a
+            // best-effort clamp rather than an error — matches CSS and DirectWrite.
+            if (userValue < axis.MinimumValue)
+            {
+                userValue = axis.MinimumValue;
+            }
+            else if (userValue > axis.MaximumValue)
+            {
+                userValue = axis.MaximumValue;
+            }
+
+            // Linear fvar normalization into [-1, 1] anchored at the default value.
+            // The two halves of the axis (below and above default) are normalized
+            // independently — this is what makes the design "default" land at 0
+            // regardless of where min and max sit.
+            float normalizedValue;
+            if (userValue == axis.DefaultValue)
+            {
+                normalizedValue = 0f;
+            }
+            else if (userValue < axis.DefaultValue)
+            {
+                var range = axis.DefaultValue - axis.MinimumValue;
+                normalizedValue = range > 0f
+                    ? (userValue - axis.DefaultValue) / range
+                    : 0f;
+            }
+            else
+            {
+                var range = axis.MaximumValue - axis.DefaultValue;
+                normalizedValue = range > 0f
+                    ? (userValue - axis.DefaultValue) / range
+                    : 0f;
+            }
+
+            // avar segment-map correction. Identity on axes the table doesn't cover.
+            if (_avarTable is not null)
+            {
+                normalizedValue = _avarTable.Remap(axisIndex, normalizedValue);
+            }
+
+            // Quantize to the F2Dot14 grid (1/16384) the font binary itself uses for
+            // normalized coordinates — gvar, avar and the item variation stores cannot
+            // represent a finer position, so this loses nothing. It also bounds the
+            // per-source variation-clone cache under animation: a swept axis lands on
+            // at most 32769 distinct positions instead of one per float progress value.
+            return MathF.Round(normalizedValue * 16384f) / 16384f;
         }
 
         /// <summary>
@@ -1793,12 +1855,21 @@ namespace Avalonia.Media
             => WithVariation(CreateNormalizedPosition(settings, instanceIndex));
 
         /// <summary>
+        /// Returns a <see cref="GlyphTypeface"/> at this typeface's own
+        /// <see cref="VariationPosition"/> with the axes named by <paramref name="settings"/>
+        /// replaced. Unlike <see cref="WithVariations"/>, which measures settings from the
+        /// design default, the axes the settings leave out keep the values font matching chose.
+        /// </summary>
+        internal GlyphTypeface WithVariationOverrides(FontVariationSettings? settings)
+            => WithVariation(CreateNormalizedPosition(settings, _variationPosition));
+
+        /// <summary>
         /// Returns a <see cref="GlyphTypeface"/> bound to the same underlying font face
         /// but at the specified variation point.
         /// </summary>
         /// <param name="variation">
         /// Normalized variation coordinates, typically produced by
-        /// <see cref="CreateNormalizedPosition"/>. Pass
+        /// <see cref="CreateNormalizedPosition(FontVariationSettings, int?)"/>. Pass
         /// <c>default(NormalizedVariationPosition)</c> to request the default-instance
         /// typeface.
         /// </param>

@@ -395,5 +395,82 @@ namespace Avalonia.Base.UnitTests.Media
 
             public void Dispose() => IsDisposed = true;
         }
+
+        [Fact]
+        public void CreateNormalizedPosition_Overrides_Only_The_Named_Axes_Of_A_Base_Position()
+        {
+            var gt = LoadTypeface(InterVariableAsset);
+            var semiBold = WghtPosition(gt, 600);
+
+            var position = gt.CreateNormalizedPosition(FontVariationSettings.Parse("opsz=32"), semiBold);
+
+            Assert.Equal(semiBold.GetCoordinateOrDefault(s_wghtTag), position.GetCoordinateOrDefault(s_wghtTag));
+            Assert.Equal(1f, position.GetCoordinateOrDefault(OpenTypeTag.Parse("opsz")));
+        }
+
+        [Fact]
+        public void CreateNormalizedPosition_Setting_Replaces_The_Base_Value_Of_Its_Axis()
+        {
+            var gt = LoadTypeface(InterVariableAsset);
+
+            var position = gt.CreateNormalizedPosition(FontVariationSettings.Parse("wght=900"), WghtPosition(gt, 600));
+
+            Assert.Equal(WghtPosition(gt, 900), position);
+        }
+
+        [Fact]
+        public void CreateNormalizedPosition_Without_Settings_Returns_The_Base_Position()
+        {
+            var gt = LoadTypeface(InterVariableAsset);
+            var semiBold = WghtPosition(gt, 600);
+
+            Assert.Equal(semiBold, gt.CreateNormalizedPosition(null, semiBold));
+            Assert.Equal(semiBold, gt.CreateNormalizedPosition(FontVariationSettings.Empty, semiBold));
+        }
+
+        [Fact]
+        public void CreateNormalizedPosition_Instance_Is_The_Base_For_Settings()
+        {
+            // Inter's SemiBold instance sits at opsz=14, wght=600.
+            var gt = LoadTypeface(InterVariableAsset);
+            var semiBoldIndex = IndexOfInstance(gt, "SemiBold");
+            var settings = FontVariationSettings.Parse("opsz=32");
+
+            var viaIndex = gt.CreateNormalizedPosition(settings, instanceIndex: semiBoldIndex);
+            var viaBase = gt.CreateNormalizedPosition(settings, WghtPosition(gt, 600));
+
+            Assert.Equal(viaBase, viaIndex);
+        }
+
+        [Fact]
+        public void WithVariationOverrides_Keeps_The_Receivers_Other_Axes()
+        {
+            var gt = LoadTypeface(InterVariableAsset);
+            var semiBold = gt.WithVariation(WghtPosition(gt, 600));
+
+            var overridden = semiBold.WithVariationOverrides(FontVariationSettings.Parse("opsz=32"));
+
+            Assert.Equal(
+                semiBold.VariationPosition.GetCoordinateOrDefault(s_wghtTag),
+                overridden.VariationPosition.GetCoordinateOrDefault(s_wghtTag));
+            Assert.Equal(1f, overridden.VariationPosition.GetCoordinateOrDefault(OpenTypeTag.Parse("opsz")));
+
+            // The public entry point measures from the design default instead.
+            Assert.False(semiBold.WithVariations(FontVariationSettings.Parse("opsz=32"))
+                .VariationPosition.TryGetCoordinate(s_wghtTag, out _));
+        }
+
+        private static int IndexOfInstance(GlyphTypeface gt, string name)
+        {
+            foreach (var instance in gt.NamedInstances)
+            {
+                if (instance.Name == name)
+                {
+                    return instance.Index;
+                }
+            }
+
+            throw new InvalidOperationException($"No named instance '{name}'.");
+        }
     }
 }
