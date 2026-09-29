@@ -790,7 +790,7 @@ namespace Avalonia.Controls.Primitives
             }
             else if (rightButton)
             {
-                if (Selection.IsSelected(index) == false)
+                if (!multi && Selection.IsSelected(index) == false)
                 {
                     SelectedIndex = index;
                 }
