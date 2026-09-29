@@ -301,26 +301,75 @@ namespace Avalonia.Media.Fonts
             return false;
         }
 
+        /// <summary>
+        /// Builds the fallback typeface for a face that maps the codepoint. When the face does not
+        /// match <paramref name="requestedKey"/>, the key is resolved from that face the way a
+        /// family lookup resolves it (named instance, axis value, nearest position, simulation) and
+        /// the result is cached under the requested key, which the returned typeface resolves
+        /// through. Varied clones and simulated faces share the face's character map, so the result
+        /// still maps the codepoint.
+        /// </summary>
         private Typeface BuildTypefaceWithSynthesis(GlyphTypeface glyphTypeface, FontCollectionKey requestedKey)
         {
-            var matchedKey = glyphTypeface.ToFontCollectionKey();
+            var familyName = glyphTypeface.FamilyName;
 
-            // The fallback search already found a font face that maps the codepoint. Synthesis
-            // (re-loading the stream with FontSimulations) is unsafe here: with .ttc collections
-            // the platform may resolve a different face from the same stream (e.g. asking for an
-            // oblique simulation of "Yu Gothic UI" returns "Yu Gothic Medium"). Accept the matched
-            // glyph typeface as-is and pre-cache it under the requested key so later
-            // GlyphTypeface lookups via the returned Typeface short-circuit through the cache.
-            if (!matchedKey.StyleEquals(requestedKey))
+            // An entry already cached under the requested key is what the returned typeface
+            // resolves to, so resolving again would only repeat the work.
+            if (!glyphTypeface.ToFontCollectionKey().StyleEquals(requestedKey) &&
+                !(_glyphTypefaceCache.TryGetValue(familyName, out var glyphTypefaces) &&
+                  glyphTypefaces.TryGetValue(requestedKey, out var cached) && cached is not null))
             {
-                TryAddGlyphTypeface(glyphTypeface.FamilyName, requestedKey, glyphTypeface);
+                TryAddGlyphTypeface(familyName, requestedKey, ResolveFromFace(glyphTypeface, requestedKey));
             }
 
             return new Typeface(
-                new FontFamily(null, Key.AbsoluteUri + "#" + glyphTypeface.FamilyName),
+                new FontFamily(null, Key.AbsoluteUri + "#" + familyName),
                 requestedKey.Style,
                 requestedKey.Weight,
                 requestedKey.Stretch);
+        }
+
+        /// <summary>
+        /// Resolves <paramref name="key"/> from <paramref name="glyphTypeface"/> alone: a named
+        /// instance or axis position of a variable face first, then the nearest of those
+        /// positions, then a simulation of the nearest face. Returns <paramref name="glyphTypeface"/>
+        /// when nothing gets closer.
+        /// </summary>
+        private GlyphTypeface ResolveFromFace(GlyphTypeface glyphTypeface, FontCollectionKey key)
+        {
+            var nearest = glyphTypeface;
+
+            if (glyphTypeface.VariationAxes.Count > 0 && glyphTypeface.FontSimulations == FontSimulations.None)
+            {
+                var variableFaces = new List<VariableFace>(1)
+                {
+                    _variableFaces.GetValue(glyphTypeface, static gt => new VariableFace(gt))
+                };
+
+                if (TryGetVariedMatch(variableFaces, key, out var varied))
+                {
+                    return varied;
+                }
+
+                var faces = new Dictionary<FontCollectionKey, GlyphTypeface?>
+                {
+                    [new FontCollectionKey(glyphTypeface.Style, glyphTypeface.Weight, glyphTypeface.Stretch)] =
+                        glyphTypeface
+                };
+
+                if (TryGetNearestMatch(CreateVariedCandidates(faces, variableFaces, key), key, out var candidate))
+                {
+                    nearest = candidate;
+                }
+            }
+
+            if (!nearest.ToFontCollectionKey().StyleEquals(key) &&
+                TryCreateSyntheticGlyphTypeface(nearest, key.Style, key.Weight, key.Stretch, out var synthetic))
+            {
+                return synthetic;
+            }
+
+            return nearest;
         }
 
         /// <summary>
@@ -541,6 +590,17 @@ namespace Avalonia.Media.Fonts
                         if (syntheticGlyphTypeface is null)
                             return false;
 
+                        // The stream of a face inside a font collection (.ttc) loads the
+                        // collection's first face, which may be another family or style (an
+                        // oblique "Yu Gothic UI" would come back as "Yu Gothic Medium"). Keep the
+                        // unsimulated face rather than cache a different one under its name.
+                        if (!IsSameFace(glyphTypeface, syntheticGlyphTypeface))
+                        {
+                            syntheticGlyphTypeface.Dispose();
+                            syntheticGlyphTypeface = null;
+                            return false;
+                        }
+
                         // The stream holds the default instance, so a varied face is simulated by
                         // moving the simulated default instance to the same position.
                         if (!glyphTypeface.VariationPosition.IsDefault)
@@ -569,6 +629,27 @@ namespace Avalonia.Media.Fonts
             }
 
             return false;
+        }
+
+        private static bool IsSameFace(GlyphTypeface expected, GlyphTypeface actual)
+        {
+            if (expected.GlyphCount != actual.GlyphCount ||
+                !string.Equals(expected.FamilyName, actual.FamilyName, StringComparison.Ordinal) ||
+                expected.FaceNames.Count != actual.FaceNames.Count)
+            {
+                return false;
+            }
+
+            foreach (var faceName in expected.FaceNames)
+            {
+                if (!actual.FaceNames.TryGetValue(faceName.Key, out var name) ||
+                    !string.Equals(faceName.Value, name, StringComparison.Ordinal))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         public IEnumerator<FontFamily> GetEnumerator() => ((IEnumerable<FontFamily>)_fontFamilies).GetEnumerator();
