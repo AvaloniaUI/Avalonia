@@ -153,6 +153,25 @@ namespace Avalonia.Skia.UnitTests.Media
             }
         }
 
+        [Fact]
+        public void Character_Match_In_Instance_Family_Resolves_Back_To_That_Family()
+        {
+            using (Start(out var root, out var collection))
+            {
+                // The typographic family already holds a SemiBold at the default optical size.
+                Resolve(new Typeface(CollectionKey + "#Inter Variable", weight: FontWeight.SemiBold));
+                Resolve(new Typeface(CollectionKey + "#Inter Variable Display"));
+
+                Assert.True(collection.TryMatchCharacter('A', FontStyle.Normal, FontWeight.SemiBold,
+                    FontStretch.Normal, "Inter Variable Display", null, out var match));
+
+                var glyphTypeface = Resolve(match);
+
+                Assert.Equal(FontSimulations.None, glyphTypeface.FontSimulations);
+                Assert.Equal(Position(root, "opsz=32,wght=600"), glyphTypeface.VariationPosition);
+            }
+        }
+
         private static GlyphTypeface Resolve(Typeface typeface)
         {
             Assert.True(FontManager.Current.TryGetGlyphTypeface(typeface, out var glyphTypeface));
