@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using Avalonia.Base.UnitTests.Media.Fonts.Tables;
 using Avalonia.Media;
 using Avalonia.Media.Fonts;
+using Avalonia.Media.TextFormatting;
 using Avalonia.Platform;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Base.UnitTests.Media
@@ -301,6 +303,80 @@ namespace Avalonia.Base.UnitTests.Media
             };
 
             Assert.NotEqual(boldKey, blackKey);
+        }
+
+        [Fact]
+        public void Disposing_A_Variation_Clone_Should_Not_Dispose_The_Source_Shaper_Typeface()
+        {
+            // A shaper without variation support hands the clone the source's own instance.
+            var shaper = new TrackingTextShaperImpl(varies: false);
+
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(textShaperImpl: shaper)))
+            {
+                var gt = LoadTypeface(InterVariableAsset);
+                var sourceShaper = (TrackingShaperTypeface)gt.TextShaperTypeface;
+
+                var varied = gt.WithVariation(WghtPosition(gt, 700));
+                Assert.Same(sourceShaper, varied.TextShaperTypeface);
+
+                varied.Dispose();
+
+                Assert.False(sourceShaper.IsDisposed);
+            }
+        }
+
+        [Fact]
+        public void Disposing_A_Variation_Clone_Should_Dispose_Its_Own_Shaper_Typeface()
+        {
+            var shaper = new TrackingTextShaperImpl(varies: true);
+
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(textShaperImpl: shaper)))
+            {
+                var gt = LoadTypeface(InterVariableAsset);
+                var sourceShaper = (TrackingShaperTypeface)gt.TextShaperTypeface;
+
+                var varied = gt.WithVariation(WghtPosition(gt, 700));
+                var variedShaper = (TrackingShaperTypeface)varied.TextShaperTypeface;
+                Assert.NotSame(sourceShaper, variedShaper);
+
+                varied.Dispose();
+
+                Assert.True(variedShaper.IsDisposed);
+                Assert.False(sourceShaper.IsDisposed);
+            }
+        }
+
+        private sealed class TrackingTextShaperImpl : ITextShaperImpl
+        {
+            private readonly bool _varies;
+
+            public TrackingTextShaperImpl(bool varies)
+            {
+                _varies = varies;
+            }
+
+            public ITextShaperTypeface CreateTypeface(GlyphTypeface glyphTypeface)
+                => new TrackingShaperTypeface(_varies);
+
+            public ShapedBuffer ShapeText(ReadOnlyMemory<char> text, TextShaperOptions options)
+                => throw new NotSupportedException();
+        }
+
+        private sealed class TrackingShaperTypeface : ITextShaperTypeface
+        {
+            private readonly bool _varies;
+
+            public TrackingShaperTypeface(bool varies)
+            {
+                _varies = varies;
+            }
+
+            public bool IsDisposed { get; private set; }
+
+            ITextShaperTypeface ITextShaperTypeface.WithVariation(NormalizedVariationPosition variation)
+                => _varies ? new TrackingShaperTypeface(_varies) : this;
+
+            public void Dispose() => IsDisposed = true;
         }
     }
 }
