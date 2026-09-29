@@ -85,6 +85,10 @@ namespace Avalonia.Media
         private readonly object _textShaperLock = new();
         private volatile ITextShaperTypeface? _textShaperTypeface;
 
+        // A shaper without variation support returns the source's own instance from WithVariation;
+        // the clone then shares it and must leave its disposal to the source.
+        private bool _ownsTextShaperTypeface = true;
+
         private UnicodeRange? _supportedUnicodeRange;
 
         // Lazily-built set of OpenType script tags the font declares in GSUB/GPOS, used by
@@ -859,7 +863,11 @@ namespace Avalonia.Media
 
                     if (_sourceTypeface is not null)
                     {
-                        _textShaperTypeface = _sourceTypeface.TextShaperTypeface.WithVariation(_variationPosition);
+                        var sourceShaper = _sourceTypeface.TextShaperTypeface;
+                        var variedShaper = sourceShaper.WithVariation(_variationPosition);
+
+                        _ownsTextShaperTypeface = !ReferenceEquals(variedShaper, sourceShaper);
+                        _textShaperTypeface = variedShaper;
                     }
                     else
                     {
@@ -1637,9 +1645,10 @@ namespace Avalonia.Media
                 cache.Clear();
             }
 
-            // Lazy text shaper — owned regardless of whether it was derived from a
-            // source's shaper (each shaper instance is its own object).
-            _textShaperTypeface?.Dispose();
+            if (_ownsTextShaperTypeface)
+            {
+                _textShaperTypeface?.Dispose();
+            }
 
             // Only the source-of-truth owns and disposes the platform typeface. When
             // the platform's WithVariation override returned 'this', the clone shares
