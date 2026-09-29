@@ -106,7 +106,11 @@ internal class RenderDataDrawingContext : DrawingContext
             return brush;
         }
 
-        return SnapshotBrush(brush);
+        var snapshot = SnapshotBrush(brush);
+        // A snapshot made here exists for this recording alone, so the stream owns it.
+        if (!ReferenceEquals(snapshot, brush) && snapshot is IDisposable owned)
+            Stream.AddOwned(owned);
+        return snapshot;
     }
 
     /// <summary>
@@ -133,6 +137,9 @@ internal class RenderDataDrawingContext : DrawingContext
         }
 
         var snapshot = SnapshotPen(pen);
+        // As for brushes: a brush snapshot made for this pen belongs to this recording alone.
+        if (!ReferenceEquals(snapshot.Brush, pen.Brush) && snapshot.Brush is IDisposable owned)
+            Stream.AddOwned(owned);
         return (snapshot, snapshot);
     }
 
@@ -154,7 +161,15 @@ internal class RenderDataDrawingContext : DrawingContext
             case IMutableBrush:
             {
                 var snapshot = brush.ToImmutable();
-                ThrowIfRestrictedSceneContent(snapshot, brush);
+                try
+                {
+                    ThrowIfRestrictedSceneContent(snapshot, brush);
+                }
+                catch
+                {
+                    (snapshot as IDisposable)?.Dispose();
+                    throw;
+                }
                 return snapshot;
             }
             case CompositionBrush:
@@ -180,7 +195,16 @@ internal class RenderDataDrawingContext : DrawingContext
             case Pen:
             {
                 var snapshot = pen.ToImmutable();
-                ThrowIfRestrictedSceneContent(snapshot.Brush, pen);
+                try
+                {
+                    ThrowIfRestrictedSceneContent(snapshot.Brush, pen);
+                }
+                catch
+                {
+                    if (!ReferenceEquals(snapshot.Brush, pen.Brush))
+                        (snapshot.Brush as IDisposable)?.Dispose();
+                    throw;
+                }
                 return snapshot;
             }
             default:
@@ -501,8 +525,7 @@ internal class RenderDataDrawingContext : DrawingContext
                 rv = new CompositionRenderData(_compositor!, _stream);
             else
             {
-                _stream?.Dispose();
-                _stream = null;
+                DiscardStream();
                 return null;
             }
         }
@@ -538,8 +561,7 @@ internal class RenderDataDrawingContext : DrawingContext
 
         if (_stream is not { OpcodeLength: > 0 })
         {
-            _stream?.Dispose();
-            _stream = null;
+            DiscardStream();
             return null;
         }
 
@@ -547,6 +569,16 @@ internal class RenderDataDrawingContext : DrawingContext
         _stream = null;
         return new ImmediateRenderDataSceneBrushContent(brush, stream, rect, useScalableRasterization,
             _containsCompositorResources, _containsMutableResources);
+    }
+
+    // A stream this context never handed off is still solely its own, so the resources it took
+    // are released here, not left to the finalizer. Without opcodes it can still hold some, from
+    // push scopes that were erased because nothing was drawn inside them.
+    private void DiscardStream()
+    {
+        _stream?.DisposeResources();
+        _stream?.Dispose();
+        _stream = null;
     }
 
     public void Reset()
@@ -557,7 +589,7 @@ internal class RenderDataDrawingContext : DrawingContext
             _renderData = null;
         }
         else
-            _stream?.Dispose();
+            DiscardStream();
 
         // Ownership of these children was transferred by DrawRecording(..., Owned).
         // If they are still here the discarded work never reached a DrawingRecording

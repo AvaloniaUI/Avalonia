@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering.Composition.Transport;
@@ -11,6 +12,7 @@ internal partial class RenderDataStream : IDisposable
 {
     private RenderDataWriter _writer;
     private RenderDataResources _resources;
+    private List<IDisposable>? _owned;
     private int _depth;
     private int _maxDepth;
 
@@ -37,6 +39,10 @@ internal partial class RenderDataStream : IDisposable
             _maxDepth = _depth;
     }
 
+    // Takes ownership of an object made for this stream alone, such as a scene-brush snapshot
+    // taken while recording, so it is released together with the stream's other resources.
+    public void AddOwned(IDisposable owned) => (_owned ??= new List<IDisposable>()).Add(owned);
+
     public void DisposeResources()
     {
         for (var i = 0; i < _resources.Count; i++)
@@ -56,6 +62,13 @@ internal partial class RenderDataStream : IDisposable
                     recorded.Dispose();
                     break;
             }
+        }
+
+        if (_owned != null)
+        {
+            foreach (var owned in _owned)
+                owned.Dispose();
+            _owned = null;
         }
     }
 
