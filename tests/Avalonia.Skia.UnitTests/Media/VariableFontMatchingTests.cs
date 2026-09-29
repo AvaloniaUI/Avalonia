@@ -119,6 +119,25 @@ namespace Avalonia.Skia.UnitTests.Media
             }
         }
 
+        [Theory]
+        [InlineData(450)] // between named instances: reached along the weight axis
+        [InlineData(700)] // a named instance weight, but the instance sits at the default optical size
+        public void Family_At_An_Optical_Size_Keeps_It_For_A_Requested_Weight(int weight)
+        {
+            using (Start(out var root, out var collection))
+            {
+                // A family whose only face is Inter Variable at its largest optical size, the way an
+                // optical-size instance is exposed as a family of its own.
+                collection.AddFamily("Inter Display", root.WithVariations(FontVariationSettings.Parse("opsz=32")));
+
+                var glyphTypeface = Resolve(new Typeface(CollectionKey + "#Inter Display", weight: (FontWeight)weight));
+
+                Assert.Equal(FontSimulations.None, glyphTypeface.FontSimulations);
+                Assert.Equal((FontWeight)weight, glyphTypeface.Weight);
+                Assert.Equal(Position(root, $"opsz=32,wght={weight}"), glyphTypeface.VariationPosition);
+            }
+        }
+
         [Fact]
         public void FontVariations_Override_Only_Their_Axes_Of_The_Resolved_Position()
         {
@@ -206,6 +225,9 @@ namespace Avalonia.Skia.UnitTests.Media
             public override Uri Key { get; } = key;
 
             public int PlatformCallCount { get; private set; }
+
+            public void AddFamily(string familyName, GlyphTypeface glyphTypeface)
+                => TryAddGlyphTypeface(familyName, glyphTypeface.ToFontCollectionKey(), glyphTypeface);
 
             protected override bool TryMatchCharacterFromPlatform(int codepoint, FontCollectionKey key,
                 string? familyName, CultureInfo? culture, [NotNullWhen(true)] out GlyphTypeface? glyphTypeface)
