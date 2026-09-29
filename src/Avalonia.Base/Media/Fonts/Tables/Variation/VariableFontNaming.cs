@@ -47,6 +47,115 @@ namespace Avalonia.Media.Fonts.Tables.Variation
 
         private const string DefaultStyleName = "Regular";
 
+        // Bounds the combinations of named values on the non-style axes. A font with several
+        // named custom axes would otherwise multiply into a family per combination.
+        private const int MaxFamilyPositions = 64;
+
+        /// <summary>
+        /// Returns user-space positions at which the axes other than <c>wght</c>, <c>wdth</c>,
+        /// <c>ital</c> and <c>slnt</c> take the values the STAT table names, the style axes at
+        /// their defaults. These are the positions of the families the STAT table composes,
+        /// including those no fvar named instance sits in (e.g. an optical size named "Display").
+        /// </summary>
+        /// <remarks>
+        /// Every combination of the named values of those axes is returned when there are at most
+        /// <see cref="MaxFamilyPositions"/>; otherwise each named value is varied on its own from
+        /// the default position. Values outside the fvar axis range and values of format 4
+        /// combinations are skipped.
+        /// </remarks>
+        public static List<Dictionary<OpenTypeTag, float>> GetFamilyPositions(
+            StatTable? stat,
+            IReadOnlyList<FontVariationAxis> axes)
+        {
+            var result = new List<Dictionary<OpenTypeTag, float>>();
+
+            if (stat is null)
+            {
+                return result;
+            }
+
+            var namedAxes = new List<(OpenTypeTag Tag, List<float> Values)>();
+            var combinations = 1;
+
+            foreach (var axis in axes)
+            {
+                if (IsStyleAxis(axis.Tag))
+                {
+                    continue;
+                }
+
+                List<float>? values = null;
+
+                foreach (var axisValue in stat.AxisValues)
+                {
+                    if (axisValue.Format == 4 || axisValue.IsOlderSiblingFontAttribute)
+                    {
+                        continue;
+                    }
+
+                    var record = axisValue.Records[0];
+
+                    if (stat.DesignAxes[record.AxisIndex].Tag != axis.Tag ||
+                        record.Value < axis.MinimumValue || record.Value > axis.MaximumValue)
+                    {
+                        continue;
+                    }
+
+                    values ??= new List<float>();
+
+                    if (!values.Exists(x => AreEqual(x, record.Value)))
+                    {
+                        values.Add(record.Value);
+                    }
+                }
+
+                if (values is not null)
+                {
+                    namedAxes.Add((axis.Tag, values));
+                    combinations = Math.Min(combinations * values.Count, MaxFamilyPositions + 1);
+                }
+            }
+
+            if (namedAxes.Count == 0)
+            {
+                return result;
+            }
+
+            if (combinations > MaxFamilyPositions)
+            {
+                foreach (var (tag, values) in namedAxes)
+                {
+                    foreach (var value in values)
+                    {
+                        result.Add(new Dictionary<OpenTypeTag, float> { [tag] = value });
+                    }
+                }
+
+                return result;
+            }
+
+            AddCombinations(0, new Dictionary<OpenTypeTag, float>());
+
+            return result;
+
+            void AddCombinations(int axisIndex, Dictionary<OpenTypeTag, float> coordinates)
+            {
+                if (axisIndex == namedAxes.Count)
+                {
+                    result.Add(new Dictionary<OpenTypeTag, float>(coordinates));
+                    return;
+                }
+
+                var (tag, values) = namedAxes[axisIndex];
+
+                foreach (var value in values)
+                {
+                    coordinates[tag] = value;
+                    AddCombinations(axisIndex + 1, coordinates);
+                }
+            }
+        }
+
         /// <summary>
         /// Composes the names of the instance at <paramref name="userCoordinates"/>.
         /// </summary>
