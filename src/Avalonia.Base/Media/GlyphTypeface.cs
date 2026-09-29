@@ -573,6 +573,23 @@ namespace Avalonia.Media
             };
         }
 
+        /// <summary>
+        /// Gets the Weight / Style / Stretch a clone of this typeface at
+        /// <paramref name="variation"/> reports, without creating the clone.
+        /// </summary>
+        internal FontCollectionKey GetProjectedKey(NormalizedVariationPosition variation)
+        {
+            if (_fvarTable is null || variation.IsDefault)
+            {
+                return new FontCollectionKey(Style, Weight, Stretch);
+            }
+
+            return new FontCollectionKey(
+                ProjectStyle(this, variation),
+                ProjectWeight(this, variation),
+                ProjectStretch(this, variation));
+        }
+
         private static FontWeight ProjectWeight(GlyphTypeface source, NormalizedVariationPosition variation)
         {
             if (!source.TryGetUserAxisValue(variation, FvarAxisTags.Weight, out var wght))
@@ -642,6 +659,26 @@ namespace Avalonia.Media
                 < 137.5f => FontStretch.Expanded,
                 < 175f => FontStretch.ExtraExpanded,
                 _ => FontStretch.UltraExpanded
+            };
+        }
+
+        /// <summary>
+        /// Maps a <see cref="FontStretch"/> to its <c>wdth</c> axis value (percent of normal
+        /// width), the OS/2 <c>usWidthClass</c> percentage.
+        /// </summary>
+        internal static float GetWidthPercentage(FontStretch stretch)
+        {
+            return stretch switch
+            {
+                FontStretch.UltraCondensed => 50f,
+                FontStretch.ExtraCondensed => 62.5f,
+                FontStretch.Condensed => 75f,
+                FontStretch.SemiCondensed => 87.5f,
+                FontStretch.SemiExpanded => 112.5f,
+                FontStretch.Expanded => 125f,
+                FontStretch.ExtraExpanded => 150f,
+                FontStretch.UltraExpanded => 200f,
+                _ => 100f
             };
         }
 
