@@ -7,6 +7,17 @@ using Avalonia.Media.Fonts.Tables.Name;
 namespace Avalonia.Media.Fonts.Tables.Variation
 {
     /// <summary>
+    /// Tags of the registered design-variation axes that map onto font matching properties.
+    /// </summary>
+    internal static class FvarAxisTags
+    {
+        public static readonly OpenTypeTag Weight = OpenTypeTag.Parse("wght");
+        public static readonly OpenTypeTag Width = OpenTypeTag.Parse("wdth");
+        public static readonly OpenTypeTag Italic = OpenTypeTag.Parse("ital");
+        public static readonly OpenTypeTag Slant = OpenTypeTag.Parse("slnt");
+    }
+
+    /// <summary>
     /// Parses the OpenType 'fvar' (font variations) table. Provides the variation axis
     /// definitions and named instances declared by a variable font.
     /// </summary>
