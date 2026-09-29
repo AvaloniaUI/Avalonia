@@ -75,6 +75,12 @@ namespace Avalonia.Media
         // on static fonts. Horizontal text never reads it.
         private readonly VvarTable? _vvarTable;
 
+        // STAT table — style names of axis values, read only to group and name the instances of
+        // a variable font. Parsed on first access on the source typeface; clones read the source's.
+        // Parsing twice under a race is harmless (the results are equal), so no lock is taken.
+        private StatTable? _statTable;
+        private volatile bool _statTableLoaded;
+
         // Source typeface for variation clones. Null for default-instance typefaces
         // (the source) — every WithVariation clone points back to its source so all
         // variations of the same font share a single cache and resource owner.
@@ -1121,6 +1127,28 @@ namespace Avalonia.Media
         /// </para>
         /// </remarks>
         internal NormalizedVariationPosition VariationPosition => _variationPosition;
+
+        /// <summary>
+        /// Gets the font's STAT table, or <c>null</c> when the font has none or it is malformed.
+        /// </summary>
+        internal StatTable? StatTable
+        {
+            get
+            {
+                var source = _sourceTypeface ?? this;
+
+                if (!source._statTableLoaded)
+                {
+                    Fonts.Tables.Variation.StatTable.TryLoad(source, out var statTable);
+
+                    // Publish the table before the flag so a reader that sees the flag sees it.
+                    source._statTable = statTable;
+                    source._statTableLoaded = true;
+                }
+
+                return source._statTable;
+            }
+        }
 
         /// <summary>
         /// Gets the variation axes declared by the font's <c>fvar</c> table, in declaration
