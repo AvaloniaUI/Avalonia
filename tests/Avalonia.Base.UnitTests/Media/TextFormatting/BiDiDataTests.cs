@@ -6,9 +6,9 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting;
 public class BiDiDataTests
 {
     [Theory]
-    [InlineData("‮abc‬", 1)] // RLO ... PDF
-    [InlineData("‫abc‬", 2)] // RLE ... PDF
-    [InlineData("⁧abc⁩", 2)] // RLI ... PDI
+    [InlineData("\u202Eabc\u202C", 1)] // RLO ... PDF
+    [InlineData("\u202Babc\u202C", 2)] // RLE ... PDF
+    [InlineData("\u2067abc\u2069", 2)] // RLI ... PDI
     public void Explicit_Formatting_Should_Be_Resolved_After_Reset(string text, sbyte expectedLevel)
     {
         var bidiData = new BidiData();

@@ -251,9 +251,9 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         }
 
         [Theory]
-        [InlineData("‮abc‬", 1)] // RLO ... PDF
-        [InlineData("‫abc‬", 2)] // RLE ... PDF
-        [InlineData("⁧abc⁩", 2)] // RLI ... PDI
+        [InlineData("\u202Eabc\u202C", 1)] // RLO ... PDF
+        [InlineData("\u202Babc\u202C", 2)] // RLE ... PDF
+        [InlineData("\u2067abc\u2069", 2)] // RLI ... PDI
         public void Should_Resolve_Explicit_Formatting_After_Another_Paragraph(string text, int expectedLevel)
         {
             using (Start())
