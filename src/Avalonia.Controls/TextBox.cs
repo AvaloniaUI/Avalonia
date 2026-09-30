@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Automation.Peers;
+using Avalonia.Collections;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Presenters;
@@ -12,6 +13,7 @@ using Avalonia.Controls.Utils;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
+using Avalonia.Input.TextInput;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Logging;
@@ -293,6 +295,11 @@ namespace Avalonia.Controls
                 nameof(CanSelectAll),
                 o => o.CanSelectAll);
 
+        public static readonly DirectProperty<TextBox, bool> HasTextActionsProperty =
+            AvaloniaProperty.RegisterDirect<TextBox, bool>(
+                nameof(HasTextActions),
+                o => o.HasTextActions);
+
         /// <summary>
         /// Defines the <see cref="IsUndoEnabled"/> property
         /// </summary>
@@ -318,6 +325,10 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly DirectProperty<TextBox, bool> CanRedoProperty =
             AvaloniaProperty.RegisterDirect<TextBox, bool>(nameof(CanRedo), x => x.CanRedo);
+
+        public static readonly DirectProperty<TextBox, AvaloniaList<TextProcessingAction>> PlatformTextActionsProperty =
+            AvaloniaProperty.RegisterDirect<TextBox, AvaloniaList<TextProcessingAction>>(nameof(PlatformTextActions),
+                x => x.PlatformTextActions);
 
         /// <summary>
         /// Defines the <see cref="CopyingToClipboard"/> event.
@@ -402,7 +413,7 @@ namespace Avalonia.Controls
         private static readonly string[] invalidCharacters = new String[1] { "\u007f" };
         private bool _canUndo;
         private bool _canRedo;
-
+        private bool _hasTextActions;
         private int _wordSelectionStart = -1;
         private (int Start, int End) _selectionAtPointerPress;
         private int _selectedTextChangesMadeSinceLastUndoSnapshot;
@@ -414,6 +425,8 @@ namespace Avalonia.Controls
         private bool _isInTouchSelectionMode;
         private bool _isInTouchCaretMode;
         private bool _hasTouchSelection;
+        private IPlatformTextProcessorImpl? _textProcessor;
+        private AvaloniaList<TextProcessingAction> _platformTextActions = [];
         private const int _maxCharsBeforeUndoSnapshot = 7;
 
         static TextBox()
@@ -906,6 +919,12 @@ namespace Avalonia.Controls
             private set => SetAndRaise(CanSelectAllProperty, ref _canSelectAll, value);
         }
 
+        public bool HasTextActions
+        {
+            get => _hasTextActions;
+            private set => SetAndRaise(HasTextActionsProperty, ref _hasTextActions, value);
+        }
+
         /// <summary>
         /// Property for determining whether undo/redo is enabled
         /// </summary>
@@ -950,6 +969,12 @@ namespace Avalonia.Controls
         {
             get => _canRedo;
             private set => SetAndRaise(CanRedoProperty, ref _canRedo, value);
+        }
+
+        public AvaloniaList<TextProcessingAction> PlatformTextActions
+        {
+            get => _platformTextActions;
+            private set => SetAndRaise(PlatformTextActionsProperty, ref _platformTextActions, value);
         }
 
         /// <summary>
@@ -1052,11 +1077,16 @@ namespace Avalonia.Controls
 
                 _presenter.PropertyChanged += PresenterPropertyChanged;
             }
+
+            _textProcessor = TopLevel.GetTopLevel(this)?.PlatformTextProcessor;
+            CachePlatformTextActions();
         }
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnDetachedFromVisualTree(e);
+
+            _textProcessor = null;
 
             if (_presenter != null)
             {
@@ -1150,6 +1180,16 @@ namespace Avalonia.Controls
             CanCut = !IsPasswordBox && hasSelection && !IsReadOnly;
             CanPaste = !IsReadOnly;
             CanSelectAll = Text?.Length > 0;
+            HasTextActions = _platformTextActions.Count > 0;
+        }
+
+        private async void CachePlatformTextActions()
+        {
+            if (_textProcessor is not { } processor)
+                return;
+
+            _platformTextActions.Clear();
+            _platformTextActions.AddRange(await processor.GetActions());
         }
 
         protected override void OnGotFocus(FocusChangedEventArgs e)
@@ -1172,6 +1212,7 @@ namespace Avalonia.Controls
             }
 
             UpdateCommandStates();
+            CachePlatformTextActions();
 
             _imClient.SetPresenter(_presenter, this);
 
@@ -2468,6 +2509,22 @@ namespace Avalonia.Controls
 
             SetCurrentValue(SelectionStartProperty, 0);
             SetCurrentValue(SelectionEndProperty, Text?.Length ?? 0);
+        }
+
+        public async void RunTextAction(TextProcessingAction action)
+        {
+            if (_textProcessor is { } processor &&
+                SelectedText is { } selection &&
+                !string.IsNullOrEmpty(selection))
+            {
+                var processedText = await processor.ProcessText(action.Id, selection, !CanPaste);
+
+                if(processedText != null && CanPaste)
+                {
+                    SnapshotUndoRedo();
+                    HandleTextInput(processedText);
+                }
+            }
         }
 
         private (int start, int end) GetSelectionRange()
