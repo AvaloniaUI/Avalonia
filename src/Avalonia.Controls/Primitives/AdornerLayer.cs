@@ -21,10 +21,10 @@ namespace Avalonia.Controls.Primitives
             AvaloniaProperty.RegisterAttached<AdornerLayer, Visual, Visual?>("AdornedElement");
 
         /// <summary>
-        /// Allows for controlling clipping of the adorner.
+        /// Allows for controlling clipping of the adorner. Adorners are not clipped by default.
         /// </summary>
         public static readonly AttachedProperty<bool> IsClipEnabledProperty =
-            AvaloniaProperty.RegisterAttached<AdornerLayer, Visual, bool>("IsClipEnabled", true);
+            AvaloniaProperty.RegisterAttached<AdornerLayer, Visual, bool>("IsClipEnabled", false);
 
         /// <summary>
         /// Allows for getting and setting of the adorner for control.
