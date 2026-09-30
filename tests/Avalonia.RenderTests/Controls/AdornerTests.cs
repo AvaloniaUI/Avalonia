@@ -49,6 +49,37 @@ public class AdornerTests : TestBase
         CompareImages(skipImmediate: true, testName: testName);
     }
     
+    [Fact]
+    public async Task Adorner_Is_Not_Clipped_By_Default()
+    {
+        Border adorned;
+        var content = new Border
+        {
+            Background = Brushes.Red,
+            Padding = new Thickness(10, 50, 10, 10),
+            Child = new Border()
+            {
+                Background = Brushes.White,
+                ClipToBounds = true,
+                Padding = new Thickness(0, -30, 0, 0),
+                Child = adorned = new Border
+                {
+                    Background = Brushes.Green,
+                    VerticalAlignment = VerticalAlignment.Top,
+                    Height = 100,
+                    Width = 50
+                }
+            }
+        };
+        var adorner = new Border
+        {
+            BorderThickness = new Thickness(2),
+            BorderBrush = Brushes.Black
+        };
+
+        await CheckAdornedContent(content, adorned, adorner);
+    }
+
     [Theory,
         InlineData(true),
         InlineData(false)
@@ -79,8 +110,7 @@ public class AdornerTests : TestBase
             BorderThickness = new Thickness(2),
             BorderBrush = Brushes.Black
         };
-        if (!clip)
-            AdornerLayer.SetIsClipEnabled(adorner, false);
+        AdornerLayer.SetIsClipEnabled(adorner, clip);
         await CheckAdornedContent(content, adorned, adorner,
             testName: "Focus_Adorner_Is_Properly_Clipped_Clip_" + clip);
     }
