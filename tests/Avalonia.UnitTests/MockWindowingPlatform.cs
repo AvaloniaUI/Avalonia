@@ -13,13 +13,16 @@ namespace Avalonia.UnitTests
         private static readonly Size s_screenSize = new Size(1280, 1024);
         private readonly Func<IWindowImpl>? _windowImpl;
         private readonly Func<IWindowBaseImpl, IPopupImpl?>? _popupImpl;
+        private readonly Func<ITrayIconImpl?>? _trayIconImpl;
 
         public MockWindowingPlatform(
             Func<IWindowImpl>? windowImpl = null,
-            Func<IWindowBaseImpl, IPopupImpl?>? popupImpl = null )
+            Func<IWindowBaseImpl, IPopupImpl?>? popupImpl = null,
+            Func<ITrayIconImpl?>? trayIconImpl = null)
         {
             _windowImpl = windowImpl;
             _popupImpl = popupImpl;
+            _trayIconImpl = trayIconImpl;
         }
 
         public static Mock<IWindowImpl> CreateWindowMock(double initialWidth = 800, double initialHeight = 600, Compositor? compositor = null)
@@ -44,6 +47,7 @@ namespace Avalonia.UnitTests
 
             windowImpl.Setup(x => x.Dispose()).Callback(() =>
             {
+                windowImpl.Object.LostFocus?.Invoke();
                 windowImpl.Object.Closed?.Invoke();
             });
 
@@ -161,7 +165,7 @@ namespace Avalonia.UnitTests
 
         public ITrayIconImpl? CreateTrayIcon()
         {
-            return null;
+            return _trayIconImpl?.Invoke();
         }
 
         public void GetWindowsZOrder(ReadOnlySpan<IWindowImpl> windows, Span<long> zOrder)

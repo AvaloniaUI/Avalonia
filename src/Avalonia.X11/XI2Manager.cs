@@ -296,7 +296,8 @@ namespace Avalonia.X11
             var detail = ev.detail;
             if (detail != XiEnterLeaveDetail.XINotifyNonlinearVirtual &&
                 detail != XiEnterLeaveDetail.XINotifyNonlinear &&
-                detail != XiEnterLeaveDetail.XINotifyVirtual)
+                detail != XiEnterLeaveDetail.XINotifyVirtual &&
+                detail != XiEnterLeaveDetail.XINotifyAncestor)
                 return;
 
             var buttons = ParsedDeviceEvent.ParseButtonState(ev.buttons.MaskLen, ev.buttons.Mask);

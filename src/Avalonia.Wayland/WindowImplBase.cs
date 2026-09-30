@@ -49,7 +49,7 @@ internal abstract partial class WindowBaseImpl : IWindowBaseImpl
     }
 
     public Compositor Compositor { get; }
-    public double DesktopScaling => RenderScaling;
+    public double DesktopScaling => 1;
     public IPlatformHandle? Handle => null;
 
     public Size ClientSize

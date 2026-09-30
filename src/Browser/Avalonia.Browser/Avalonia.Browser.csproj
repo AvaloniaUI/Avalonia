@@ -4,6 +4,7 @@
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <WebAppDir>$(MSBuildThisFileDirectory)webapp</WebAppDir>
+    <WebAppOutputDir>$(MSBuildThisFileDirectory)wwwroot</WebAppOutputDir>
   </PropertyGroup>
 
   <ItemGroup>
@@ -24,11 +25,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- See https://github.com/dotnet/sdk/blob/9d4d2c4ca35b0856af7df63d6a38b3259aa6917c/src/StaticWebAssetsSdk/Targets/Microsoft.NET.Sdk.StaticWebAssets.Pack.targets#L64-L66 -->
-    <Content Include="build\Microsoft.AspNetCore.StaticWebAssets.props">
-      <Pack>true</Pack>
-      <PackagePath>build/</PackagePath>
-    </Content>
     <Content Include="build\Avalonia.Browser.props">
       <Pack>true</Pack>
       <PackagePath>build/;buildTransitive/;buildMultiTargeting/</PackagePath>
@@ -36,10 +32,6 @@
     <Content Include="build\Avalonia.Browser.targets">
       <Pack>true</Pack>
       <PackagePath>build/;buildTransitive/</PackagePath>
-    </Content>
-    <Content Include="staticwebassets/**/*.*">
-      <Pack>true</Pack>
-      <PackagePath>staticwebassets/</PackagePath>
     </Content>
   </ItemGroup>
 
@@ -49,8 +41,30 @@
     <!-- Write the stamp file, so incremental builds work -->
     <Touch Files="$(WebAppDir)/node_modules/.install-stamp" AlwaysCreate="true" />
   </Target>
-  <Target Name="BunRunBuild" DependsOnTargets="BunInstall" BeforeTargets="DispatchToInnerBuilds">
+
+  <ItemGroup>
+    <!-- ItemGroup defined to track BunRunBuild inputs with msbuild -->
+    <AvaloniaWebAppSource Include="$(WebAppDir)/build.js;$(WebAppDir)/package.json;$(WebAppDir)/tsconfig.json" />
+    <AvaloniaWebAppSource Include="$(WebAppDir)/modules/**/*.ts;$(WebAppDir)/types/**/*.ts" />
+  </ItemGroup>
+
+  <Target Name="BunRunBuild" DependsOnTargets="BunInstall"
+          BeforeTargets="DispatchToInnerBuilds;BeforeBuild"
+          Inputs="@(AvaloniaWebAppSource)"
+          Outputs="$(WebAppOutputDir)/avalonia.js;$(WebAppOutputDir)/storage.js;$(WebAppOutputDir)/avalonia-sw.js">
     <Exec Command="dnx Bun.Unofficial.Tool build.js" WorkingDirectory="$(WebAppDir)" />
+  </Target>
+
+  <!--
+    Packed as plain files; build/Avalonia.Browser.targets defines the static web assets in the app.
+    Added from a target because wwwroot only exists after esbuild runs.
+  -->
+  <Target Name="IncludeAvaloniaWebAppPackageFiles"
+          DependsOnTargets="BunRunBuild"
+          BeforeTargets="_GetPackageFiles">
+    <ItemGroup>
+      <Content Include="wwwroot\**" Pack="true" PackagePath="staticwebassets/" CopyToOutputDirectory="Never" />
+    </ItemGroup>
   </Target>
 
   <ItemGroup>

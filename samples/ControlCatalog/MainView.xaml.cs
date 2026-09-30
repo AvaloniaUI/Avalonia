@@ -3,18 +3,13 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
-using Avalonia.Media;
-using Avalonia.Media.Immutable;
 using Avalonia.Styling;
-using ControlCatalog.Models;
 using ControlCatalog.ViewModels;
 
 namespace ControlCatalog
 {
     public partial class MainView : DrawerPage
     {
-        private readonly TransparentStyles _transparentStyles = new();
-
         public MainView()
         {
             InitializeComponent();
@@ -35,6 +30,11 @@ namespace ControlCatalog
 
             SizeChanged += OnDrawerSizeChanged;
             UpdateAdaptiveLayout();
+
+            if (Application.Current is { } app)
+            {
+                app.RequestedThemeVariant = ThemeVariant.Default;
+            }
         }
 
         private void MainView_Unloaded(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -89,59 +89,6 @@ namespace ControlCatalog
             }
         }
 
-        private void Themes_SelectionChanged(object? sender, SelectionChangedEventArgs e)
-        {
-            if (e.AddedItems.Count > 0 && e.AddedItems[0] is CatalogTheme theme)
-            {
-                App.SetCatalogThemes(theme);
-            }
-        }
-
-        private void ThemeVariants_SelectionChanged(object? sender, SelectionChangedEventArgs e)
-        {
-            if (Application.Current is { } app && e.AddedItems.Count > 0 && e.AddedItems[0] is ThemeVariant themeVariant)
-            {
-                app.RequestedThemeVariant = themeVariant;
-            }
-        }
-
-        private void FlowDirection_SelectionChanged(object? sender, SelectionChangedEventArgs e)
-        {
-            if (TopLevel.GetTopLevel(this) is { } topLevel && e.AddedItems.Count > 0 && e.AddedItems[0] is FlowDirection flowDirection)
-            {
-                topLevel.FlowDirection = flowDirection;
-            }
-        }
-
-        private void Decorations_SelectionChanged(object? sender, SelectionChangedEventArgs e)
-        {
-            if (TopLevel.GetTopLevel(this) is Window window && e.AddedItems.Count > 0 && e.AddedItems[0] is WindowDecorations systemDecorations)
-            {
-                window.WindowDecorations = systemDecorations;
-            }
-        }
-
-        private void TransparencyLevels_SelectionChanged(object? sender, SelectionChangedEventArgs e)
-        {
-            if (TopLevel.GetTopLevel(this) is { } topLevel && e.AddedItems.Count > 0 && e.AddedItems[0] is WindowTransparencyLevel transparencyLevel)
-            {
-                topLevel.TransparencyLevelHint = [transparencyLevel];
-
-                if (topLevel.ActualTransparencyLevel != WindowTransparencyLevel.None &&
-                    transparencyLevel != WindowTransparencyLevel.None)
-                {
-                    topLevel.Background = new ImmutableSolidColorBrush(Colors.Gray, 0.2);
-                    if (!topLevel.Styles.Contains(_transparentStyles))
-                        topLevel.Styles.Add(_transparentStyles);
-                }
-                else
-                {
-                    topLevel.Background = null;
-                    topLevel.Styles.Remove(_transparentStyles);
-                }
-            }
-        }
-
         protected override void OnDataContextChanged(EventArgs e)
         {
             base.OnDataContextChanged(e);
@@ -149,6 +96,8 @@ namespace ControlCatalog
             if (ViewModel != null)
             {
                 ViewModel.Navigator = NavPage;
+
+                ViewModel.NavigateToItem(ViewModel.HomeItem);
             }
         }
 
@@ -164,8 +113,6 @@ namespace ControlCatalog
             UpdateAdaptiveLayout();
 
             var topLevel = TopLevel.GetTopLevel(this)!;
-            if (topLevel is Window window)
-                ViewModel.SelectedDecorationIndex = (int)window.WindowDecorations;
 
             var insets = topLevel.InsetsManager;
             if (insets != null)
@@ -197,8 +144,6 @@ namespace ControlCatalog
                     ViewModel.IsSystemBarVisible = insets.IsSystemBarVisible ?? true;
                 };
             }
-
-            ViewModel.SelectedPageIndex = 0;
         }
 
         private async void AvaloniaIcon_OnTapped(object? sender, TappedEventArgs e)

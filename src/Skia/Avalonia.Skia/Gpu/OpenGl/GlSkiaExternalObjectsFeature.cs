@@ -24,6 +24,7 @@ internal class GlSkiaExternalObjectsFeature : IExternalObjectsRenderInterfaceCon
                                                               ?? Array.Empty<string>();
     public IReadOnlyList<string> SupportedSemaphoreTypes => _feature?.SupportedImportableExternalSemaphoreTypes
                                                             ?? Array.Empty<string>();
+    public IReadOnlyList<PlatformGraphicsDrmFormat>? SupportedDmaBufFormats => _feature?.SupportedDmaBufFormats;
 
     public IPlatformRenderInterfaceImportedImage ImportImage(IPlatformHandle handle,
         PlatformGraphicsExternalImageProperties properties)

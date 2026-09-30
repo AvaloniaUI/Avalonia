@@ -26,6 +26,7 @@ namespace GpuInterop
                 {
                     DemoType.Vulkan => new VulkanDemoControl(),
                     DemoType.D3D11 => new D3D11DemoControl(),
+                    DemoType.VulkanDmaBuf => new VulkanDmaBufDemoControl(),
                     var unknown => throw new InvalidOperationException($"Unknown demo type {unknown}")
                 }
             };

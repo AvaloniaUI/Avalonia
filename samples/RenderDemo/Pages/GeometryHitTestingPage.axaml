@@ -10,6 +10,7 @@
                 Margin="16"
                 Spacing="4">
       <TextBlock x:Name="Status" />
+      <TextBlock Text="Ellipse shape has Null Fill" />
       <StackPanel Orientation="Horizontal"
                   Spacing="8">
         <TextBlock Text="Stroke thickness:"
@@ -35,7 +36,7 @@
                VerticalAlignment="Top"
                Width="180"
                Height="120"
-               Fill="#3B82F6"
+               Fill="{x:Null}"
                Stroke="#1E3A8A"
                StrokeThickness="{Binding #StrokeThickness.Value}" />
 
@@ -62,6 +63,16 @@
             Fill="#F43F5E"
             Stroke="#7F1D1D"
             StrokeThickness="{Binding #StrokeThickness.Value}" />
+
+      <Line
+        x:Name="Line"
+        Margin="60,0,0,80"
+        HorizontalAlignment="Left"
+        VerticalAlignment="Bottom"
+        Stroke="Cyan"
+        StartPoint="10,10"
+        EndPoint="200,10"
+        />
 
       <Path x:Name="Probe"
             Stretch="None"

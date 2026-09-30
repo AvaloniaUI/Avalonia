@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
@@ -37,9 +38,7 @@ namespace Avalonia.Headless
 
         public IGeometryImpl CreateLineGeometry(Point p1, Point p2)
         {
-            var tl = new Point(Math.Min(p1.X, p2.X), Math.Min(p1.Y, p2.Y));
-            var br = new Point(Math.Max(p1.X, p2.X), Math.Max(p1.Y, p2.Y));
-            return new HeadlessGeometryStub(new Rect(tl, br));
+            return new HeadlessLineGeometryContextStub(p1, p2);
         }
 
         public IGeometryImpl CreateRectangleGeometry(Rect rect)
@@ -54,12 +53,12 @@ namespace Avalonia.Headless
                 children.Select(c => c.Bounds).Aggregate((a, b) => a.Union(b)) :
                 default);
 
-        public IGeometryImpl CreateCombinedGeometry(GeometryCombineMode combineMode, IGeometryImpl g1, IGeometryImpl g2) 
+        public IGeometryImpl CreateCombinedGeometry(GeometryCombineMode combineMode, IGeometryImpl g1, IGeometryImpl g2)
             => new HeadlessGeometryStub(g1.Bounds.Union(g2.Bounds));
 
         public IRenderTarget CreateRenderTarget(IEnumerable<IPlatformRenderSurface> surfaces) => new HeadlessRenderTarget();
         public IDrawingContextLayerImpl CreateOffscreenRenderTarget(PixelSize pixelSize, Vector scaling,
-            bool enableTextAntialiasing) => 
+            bool enableTextAntialiasing) =>
             new HeadlessBitmapStub(pixelSize, scaling * 96);
 
         public bool IsLost => false;
@@ -112,7 +111,7 @@ namespace Avalonia.Headless
         public IBitmapImpl LoadBitmap(PixelFormat format, AlphaFormat alphaFormat, IntPtr data, PixelSize size, Vector dpi, int stride)
         {
             return new HeadlessBitmapStub(new Size(1, 1), new Vector(96, 96));
-        }        
+        }
 
         public IBitmapImpl LoadBitmapToWidth(Stream stream, int width, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
         {
@@ -135,9 +134,9 @@ namespace Avalonia.Headless
         }
 
         public IGlyphRunImpl CreateGlyphRun(
-            GlyphTypeface glyphTypeface, 
+            GlyphTypeface glyphTypeface,
             double fontRenderingEmSize,
-            IReadOnlyList<GlyphInfo> glyphInfos, 
+            IReadOnlyList<GlyphInfo> glyphInfos,
             Point baselineOrigin)
         {
             return new HeadlessGlyphRunStub(glyphTypeface, fontRenderingEmSize, baselineOrigin);
@@ -161,7 +160,7 @@ namespace Avalonia.Headless
 
             public GlyphTypeface GlyphTypeface { get; }
 
-            public double FontRenderingEmSize { get; }           
+            public double FontRenderingEmSize { get; }
 
             public void Dispose()
             {
@@ -179,14 +178,14 @@ namespace Avalonia.Headless
             }
 
             public Rect Bounds { get; set; }
-            
+
             public double ContourLength { get; } = 0;
-            
+
             public virtual bool FillContains(Point point) => Bounds.Contains(point);
 
             public Rect GetRenderBounds(IPen? pen)
             {
-                if(pen is null)
+                if (pen is null)
                 {
                     return Bounds;
                 }
@@ -202,7 +201,26 @@ namespace Avalonia.Headless
             }
 
             public IGeometryImpl Intersect(IGeometryImpl geometry)
-                => new HeadlessGeometryStub(geometry.Bounds.Intersect(Bounds));
+            {
+                var intersection = geometry.Bounds.Intersect(Bounds);
+                if (intersection == default)
+                {
+                    // In the case that a 0-width or 0-height geometry, like a line is being tested
+                    var rect1 = Bounds;
+                    var rect2 = geometry.Bounds;
+                    var newLeft = (rect1.X > rect2.X) ? rect1.X : rect2.X;
+                    var newTop = (rect1.Y > rect2.Y) ? rect1.Y : rect2.Y;
+                    var newRight = (rect1.Right < rect2.Right) ? rect1.Right : rect2.Right;
+                    var newBottom = (rect1.Bottom < rect2.Bottom) ? rect1.Bottom : rect2.Bottom;
+
+                    if ((newRight >= newLeft) && (newBottom >= newTop))
+                    {
+                        intersection = new Rect(newLeft, newTop, newRight - newLeft, newBottom - newTop);
+                    }
+                }
+
+                return new HeadlessGeometryStub(intersection);
+            }
 
             public ITransformedGeometryImpl WithTransform(Matrix transform) =>
                 new HeadlessTransformedGeometryStub(this, transform);
@@ -236,10 +254,10 @@ namespace Avalonia.Headless
                     var otherBounds = geometry.GetRenderBounds(null);
 
                     if (bounds.Contains(otherBounds))
-                        return IntersectionResult.FullyContains;
+                        return IntersectionResult.FullyInside;
 
                     if (otherBounds.Contains(bounds))
-                        return IntersectionResult.FullyInside;
+                        return IntersectionResult.FullyContains;
 
                     return IntersectionResult.Intersects;
                 }
@@ -291,18 +309,9 @@ namespace Avalonia.Headless
             }
         }
 
-        private class HeadlessRectangleGeometryContextStub : HeadlessGeometryStub, IHeadlessGeometryWithEdges
+        private abstract class HeadlessGeometryWithEdgesStub(Rect bounds) : HeadlessGeometryStub(bounds), IHeadlessGeometryWithEdges
         {
-            private List<Point> _points = new List<Point>();
-            public HeadlessRectangleGeometryContextStub(Rect bounds) : base(bounds)
-            {
-                _points.Add(bounds.TopLeft);
-                _points.Add(bounds.TopRight);
-                _points.Add(bounds.BottomLeft);
-                _points.Add(bounds.BottomRight);
-            }
-
-            public List<Point> Points => _points;
+            public abstract List<Point> Points { get; }
 
             public override IntersectionResult GetFillIntersectionResult(IGeometryImpl geometry)
             {
@@ -320,11 +329,48 @@ namespace Avalonia.Headless
                             return IntersectionResult.Empty;
                     }
 
+                    var bounds = GetRenderBounds(null);
+                    var otherBounds = geometry.GetRenderBounds(null);
+
+                    if (bounds.Contains(otherBounds))
+                        return IntersectionResult.FullyInside;
+
+                    if (otherBounds.Contains(bounds))
+                        return IntersectionResult.FullyContains;
+
                     return IntersectionResult.Intersects;
                 }
 
                 return base.GetFillIntersectionResult(geometry);
             }
+        }
+
+        private class HeadlessLineGeometryContextStub : HeadlessGeometryWithEdgesStub
+        {
+            private List<Point> _points = new List<Point>();
+
+            public HeadlessLineGeometryContextStub(Point p1, Point p2) : base(new Rect(new Point(Math.Min(p1.X, p2.X), Math.Min(p1.Y, p2.Y)),
+                new Point(Math.Max(p1.X, p2.X), Math.Max(p1.Y, p2.Y))))
+            {
+                _points.Add(p1);
+                _points.Add(p2);
+            }
+
+            public override List<Point> Points => _points;
+        }
+
+        private class HeadlessRectangleGeometryContextStub : HeadlessGeometryWithEdgesStub
+        {
+            private List<Point> _points = new List<Point>();
+            public HeadlessRectangleGeometryContextStub(Rect bounds) : base(bounds)
+            {
+                _points.Add(bounds.TopLeft);
+                _points.Add(bounds.TopRight);
+                _points.Add(bounds.BottomLeft);
+                _points.Add(bounds.BottomRight);
+            }
+
+            public override List<Point> Points => _points;
         }
 
         internal interface IHeadlessGeometryWithEdges
@@ -560,7 +606,7 @@ namespace Avalonia.Headless
 
             public void Blit(IDrawingContextImpl context)
             {
-                
+
             }
 
             public bool CanBlit => false;
@@ -610,7 +656,7 @@ namespace Avalonia.Headless
 
             public void PushClip(IPlatformRenderInterfaceRegion region)
             {
-                
+
             }
 
             public void PopClip()
@@ -671,22 +717,22 @@ namespace Avalonia.Headless
 
             public void DrawBitmap(IBitmapImpl source, double opacity, Rect sourceRect, Rect destRect)
             {
-                
+
             }
 
             public void DrawBitmap(IBitmapImpl source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect)
             {
-                
+
             }
 
             public void DrawRectangle(IBrush? brush, IPen? pen, RoundedRect rect, BoxShadows boxShadow = default)
             {
-                
+
             }
 
             public void DrawRegion(IBrush? brush, IPen? pen, IPlatformRenderInterfaceRegion region)
             {
-                
+
             }
 
             public void DrawEllipse(IBrush? brush, IPen? pen, Rect rect)
@@ -695,22 +741,22 @@ namespace Avalonia.Headless
 
             public void DrawGlyphRun(IBrush? foreground, IGlyphRunImpl glyphRun)
             {
-                
+
             }
 
             public void PushClip(RoundedRect clip)
             {
-                
+
             }
 
             public void PushRenderOptions(RenderOptions renderOptions)
             {
-                
+
             }
 
             public void PopRenderOptions()
             {
-                
+
             }
 
             public void PushTextOptions(TextOptions textOptions)
@@ -748,7 +794,7 @@ namespace Avalonia.Headless
 
         public void Dispose()
         {
-            
+
         }
     }
 }

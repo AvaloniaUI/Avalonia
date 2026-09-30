@@ -2,8 +2,10 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using System.Linq;
 using Avalonia.Data;
+using Avalonia.Data.Converters;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.UnitTests;
 using Xunit;
@@ -272,6 +274,102 @@ public partial class BindingExpressionTests
     }
 
     [Fact]
+    public void Indei_Validation_Updates_Data_Validation_When_Writing_To_Source_OneWayToSource()
+    {
+        // Issue #8235: validation errors should be displayed for OneWayToSource bindings.
+        var data = new IndeiViewModel();
+        var target = CreateTargetWithSource(
+            data,
+            o => o.MustBePositive,
+            enableDataValidation: true,
+            mode: BindingMode.OneWayToSource);
+
+        Assert.Equal(0, data.MustBePositive);
+        AssertNoError(target, TargetClass.IntProperty);
+
+        target.Int = 5;
+
+        Assert.Equal(5, data.MustBePositive);
+        AssertNoError(target, TargetClass.IntProperty);
+
+        target.Int = -5;
+
+        Assert.Equal(-5, data.MustBePositive);
+        AssertBindingError(target, TargetClass.IntProperty, new DataValidationException("Must be positive"), BindingErrorType.DataValidationError);
+
+        target.Int = 5;
+
+        Assert.Equal(5, data.MustBePositive);
+        AssertNoError(target, TargetClass.IntProperty);
+
+        GC.KeepAlive(data);
+    }
+
+    [Fact]
+    public void DataAnnotations_Validation_Updates_Data_Validation_When_Writing_To_Source_OneWayToSource()
+    {
+        // Issue #8235: validation attributes should be displayed for OneWayToSource bindings.
+        if (!BindingPlugins.DataValidators.Any(x => x is DataAnnotationsValidationPlugin))
+            BindingPlugins.DataValidators.Insert(0, new DataAnnotationsValidationPlugin());
+
+        var data = new DataAnnotationsViewModel();
+        var target = CreateTargetWithSource(
+            data,
+            o => o.MaxLengthString,
+            enableDataValidation: true,
+            mode: BindingMode.OneWayToSource);
+
+        target.String = "1234";
+
+        Assert.Equal("1234", data.MaxLengthString);
+        AssertNoError(target, TargetClass.StringProperty);
+
+        target.String = "123456";
+
+        Assert.Equal("123456", data.MaxLengthString);
+        AssertBindingError(
+            target,
+            TargetClass.StringProperty,
+            new DataValidationException("Too long!"),
+            BindingErrorType.DataValidationError);
+
+        GC.KeepAlive(data);
+    }
+
+    [Fact]
+    public void Conversion_Error_Is_Cleared_When_Value_Becomes_Valid_OneWayToSource()
+    {
+        // Issue #15378.
+        var data = new ViewModel();
+        var target = CreateTargetWithSource(
+            data,
+            o => o.DoubleValue,
+            targetProperty: TargetClass.ObjectProperty,
+            enableDataValidation: true,
+            mode: BindingMode.OneWayToSource);
+
+        target.Object = 5.0;
+
+        Assert.Equal(5.0, data.DoubleValue);
+        AssertNoError(target, TargetClass.ObjectProperty);
+
+        target.Object = null;
+
+        AssertBindingError(
+            target,
+            TargetClass.ObjectProperty,
+            new InvalidCastException("Could not convert '(null)' (null) to System.Double."),
+            BindingErrorType.DataValidationError);
+
+        target.Object = 5.0;
+
+        Assert.Equal(5.0, data.DoubleValue);
+        AssertNoError(target, TargetClass.ObjectProperty);
+
+        GC.KeepAlive(data);
+    }
+
+    [Fact]
     public void Does_Not_Subscribe_To_Indei_Of_Intermediate_Object_In_Chain()
     {
         var data = new IndeiContainerViewModel { Inner = new() };
@@ -445,6 +543,15 @@ public partial class BindingExpressionTests
             get { return _requiredString; }
             set { _requiredString = value; RaisePropertyChanged(); }
         }
+
+        private string? _maxLengthString;
+
+        [MaxLength(5, ErrorMessage = "Too long!")]
+        public string? MaxLengthString
+        {
+            get { return _maxLengthString; }
+            set { _maxLengthString = value; RaisePropertyChanged(); }
+        }
     }
 
     private class IndeiDataAnnotationsViewModel : IndeiBase
@@ -470,6 +577,115 @@ public partial class BindingExpressionTests
             return Array.Empty<string>();
         }
     }   
+
+    private class InvalidIdConverter(BindingErrorType errorType) : IValueConverter
+    {
+        private readonly BindingErrorType _errorType = errorType;
+
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture) => value;
+
+        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        {
+            if (value is int i)
+                return i;
+
+            if (value is string s && int.TryParse(s, out var parsed))
+                return parsed;
+
+            return new BindingNotification(
+                new FormatException($"'{value}' is not a valid ID."),
+                _errorType);
+        }
+    }
+
+    [Fact]
+    public void ConvertBack_DataValidationError_Updates_Data_Validation()
+    {
+        var data = new ViewModel { IntValue = 1 };
+        var target = CreateTargetWithSource(
+            data,
+            o => o.IntValue,
+            converter: new InvalidIdConverter(BindingErrorType.DataValidationError),
+            enableDataValidation: true,
+            mode: BindingMode.TwoWay,
+            targetProperty: TargetClass.TagProperty);
+
+        target.Tag = "42";
+
+        AssertNoError(target, TargetClass.TagProperty);
+
+        target.Tag = "0x555g";
+
+        Assert.Equal(42, data.IntValue);
+        AssertBindingError(
+            target,
+            TargetClass.TagProperty,
+            new FormatException("'0x555g' is not a valid ID."),
+            BindingErrorType.DataValidationError);
+
+        GC.KeepAlive(data);
+    }
+
+    [Fact]
+    public void ConvertBack_Error_Updates_Data_Validation()
+    {
+        var data = new ViewModel { IntValue = 1 };
+        var target = CreateTargetWithSource(
+            data,
+            o => o.IntValue,
+            converter: new InvalidIdConverter(BindingErrorType.Error),
+            enableDataValidation: true,
+            mode: BindingMode.TwoWay,
+            targetProperty: TargetClass.TagProperty);
+
+        target.Tag = "42";
+
+        AssertNoError(target, TargetClass.TagProperty);
+
+        target.Tag = "0x555g";
+
+        Assert.Equal(42, data.IntValue);
+        AssertBindingError(
+            target,
+            TargetClass.TagProperty,
+            new FormatException("'0x555g' is not a valid ID."),
+            BindingErrorType.Error);
+
+        GC.KeepAlive(data);
+    }
+
+    [Fact]
+    public void ConvertBack_Notification_With_Value_Writes_Value()
+    {
+        var data = new ViewModel { IntValue = 1 };
+        var target = CreateTargetWithSource(
+            data,
+            o => o.IntValue,
+            converter: new FuncValueConverter(v => new BindingNotification(42)),
+            enableDataValidation: true,
+            mode: BindingMode.TwoWay,
+            targetProperty: TargetClass.TagProperty);
+
+        target.Tag = "foo";
+
+        Assert.Equal(42, data.IntValue);
+        AssertNoError(target, TargetClass.TagProperty);
+
+        GC.KeepAlive(data);
+    }
+
+    private class FuncValueConverter : IValueConverter
+    {
+        private readonly Func<object?, object?> _convertBack;
+
+        public FuncValueConverter(Func<object?, object?> convertBack) => _convertBack = convertBack;
+
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+            => value;
+
+        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+            => _convertBack(value);
+    }
 
     private static void AssertNoError(TargetClass target, AvaloniaProperty property)
     {

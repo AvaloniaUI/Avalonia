@@ -26,6 +26,7 @@ using Avalonia.X11.Glx;
 using Avalonia.X11.NativeDialogs;
 using Avalonia.X11.Selections.DragDrop;
 using static Avalonia.X11.XLib;
+using Avalonia.X11.XShm;
 
 // ReSharper disable IdentifierTypo
 // ReSharper disable StringLiteralTypo
@@ -166,6 +167,10 @@ namespace Avalonia.X11
                     // Emulate Window 7+'s default window size behavior.
                     defaultWidth = (int)(monitor.WorkingArea.Width * 0.75d);
                     defaultHeight = (int)(monitor.WorkingArea.Height * 0.7d);
+
+                    // The default size is in pixels, so initialize the scaling to match the monitor.
+                    // Otherwise UpdateScaling() would treat the pixel size as DIPs and scale it again.
+                    RenderScaling = monitor.Scaling;
                 }
             }
 
@@ -202,7 +207,13 @@ namespace Avalonia.X11
             Handle = new PlatformHandle(_handle, "XID");
 
             _mode.OnHandleCreated(_handle);
-            
+
+            // The window mode may have set a scaling override (e.g. XEmbed forces a scaling of 1), which takes
+            // precedence over the monitor scaling. Keep them in sync, otherwise UpdateScaling() would see a
+            // mismatch and trigger a spurious DPI resize.
+            if (_scalingOverride is { } scalingOverride)
+                RenderScaling = scalingOverride;
+
             _realSize = new PixelSize(defaultWidth, defaultHeight);
             platform.Windows[_handle] = new X11WindowInfo(OnEvent, this);
             XEventMask ignoredMask = XEventMask.SubstructureRedirectMask
@@ -229,6 +240,15 @@ namespace Avalonia.X11
                 new X11FramebufferSurface(_x11.DeferredDisplay, _renderHandle, 
                    depth, _platform.Options.UseRetainedFramebuffer ?? false)
             };
+
+            // XShm needs a 32-bit visual (other depths would require a slow XShmPutImage conversion) and the
+            // MIT-SHM extension, probed once by X11Info on the deferred display.
+            if (_platform.Options.UseXShmFramebuffer is true && depth == 32 && _x11.HasXShm)
+            {
+                surfaces.Insert(0,
+                    new X11ShmFramebufferSurface(_x11.DeferredDisplay, _renderHandle, visual, depth,
+                        platform.DeferredDisplayDispatcher));
+            }
             
             if (egl != null)
                 surfaces.Insert(0,
@@ -595,13 +615,15 @@ namespace Avalonia.X11
             else if (ev.type == XEventName.MotionNotify)
                 MouseEvent(RawPointerEventType.Move, ref ev, ev.MotionEvent.state);
             else if (ev.type == XEventName.LeaveNotify)
-                MouseEvent(RawPointerEventType.LeaveWindow, ref ev, ev.CrossingEvent.state);
+            {
+                if (IsHandledLeaveEnterDetail(ev.CrossingEvent.detail))
+                {
+                    MouseEvent(RawPointerEventType.LeaveWindow, ref ev, ev.CrossingEvent.state);
+                }
+            }
             else if (ev.type == XEventName.EnterNotify)
             {
-                if (ev.CrossingEvent.detail is
-                    NotifyDetail.NotifyNonlinear or
-                    NotifyDetail.NotifyNonlinearVirtual or
-                    NotifyDetail.NotifyVirtual)
+                if (IsHandledLeaveEnterDetail(ev.CrossingEvent.detail))
                 {
                     MouseEvent(RawPointerEventType.Move, ref ev, ev.CrossingEvent.state);
                 }
@@ -747,6 +769,13 @@ namespace Avalonia.X11
                 HandleKeyEvent(ref ev);
             }
         }
+
+        private static bool IsHandledLeaveEnterDetail(NotifyDetail detail)
+            => detail is
+                NotifyDetail.NotifyNonlinear or
+                NotifyDetail.NotifyNonlinearVirtual or
+                NotifyDetail.NotifyVirtual or
+                NotifyDetail.NotifyAncestor;
 
         private void HandleActivation(bool active)
         {
@@ -1098,6 +1127,11 @@ namespace Avalonia.X11
             if (featureType == typeof(IClipboard))
             {
                 return AvaloniaLocator.Current.GetRequiredService<IClipboard>();
+            }
+
+            if (featureType == typeof(IPlatformClipboardManagerImpl))
+            {
+                return AvaloniaLocator.Current.GetRequiredService<IPlatformClipboardManagerImpl>();
             }
 
             if (featureType == typeof(ILauncher))

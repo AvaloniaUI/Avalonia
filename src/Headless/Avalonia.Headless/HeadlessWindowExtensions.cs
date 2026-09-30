@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
@@ -83,6 +84,9 @@ public static class HeadlessWindowExtensions
     /// <remarks>
     /// In the headless platform, there is a single mouse pointer. There are no helper methods for touch or pen input.
     /// </remarks>
+    /// <remarks>
+    /// In the headless platform, there is a single mouse pointer. For touch input use the TouchBegin method.
+    /// </remarks>
     public static void MouseDown(this TopLevel topLevel, Point point, MouseButton button,
         RawInputModifiers modifiers = RawInputModifiers.None) =>
         RunJobsOnImpl(topLevel, w => w.MouseDown(point, button, modifiers));
@@ -107,6 +111,46 @@ public static class HeadlessWindowExtensions
     public static void MouseWheel(this TopLevel topLevel, Point point, Vector delta,
         RawInputModifiers modifiers = RawInputModifiers.None) =>
         RunJobsOnImpl(topLevel, w => w.MouseWheel(point, delta, modifiers));
+
+    /// <summary>
+    /// Simulates a touch contact being pressed on the headless window/toplevel.
+    /// </summary>
+    /// <returns>
+    /// A touch pointer to pass to <see cref="TouchMove"/> and <see cref="TouchEnd"/>.
+    /// Disposing the pointer cancels the contact if it is still pressed.
+    /// </returns>
+    /// <remarks>
+    /// To simulate multi-touch, keep several returned touch pointers pressed at the same time.
+    /// </remarks>
+    public static IHeadlessTouchPointer TouchBegin(this TopLevel topLevel, Point point,
+        RawInputModifiers modifiers = RawInputModifiers.None)
+    {
+        var touchPointId = Interlocked.Increment(ref s_nextTouchPointId);
+        RunJobsOnImpl(topLevel, w => w.Touch(point, touchPointId, RawPointerEventType.TouchBegin, modifiers));
+        return new HeadlessTouchPointer(topLevel, touchPointId, point);
+    }
+
+    /// <summary>
+    /// Simulates a touch contact being moved on the headless window/toplevel.
+    /// </summary>
+    /// <param name="topLevel">The target headless top level. Must be the one the touch pointer was created on.</param>
+    /// <param name="touchPointer">The touch pointer returned from <see cref="TouchBegin"/>.</param>
+    /// <param name="point">The new contact position.</param>
+    /// <param name="modifiers">The optional key modifiers.</param>
+    public static void TouchMove(this TopLevel topLevel, IHeadlessTouchPointer touchPointer, Point point,
+        RawInputModifiers modifiers = RawInputModifiers.None) =>
+        GetTouchPointer(topLevel, touchPointer).Move(point, modifiers);
+
+    /// <summary>
+    /// Simulates a touch contact being released on the headless window/toplevel.
+    /// </summary>
+    /// <param name="topLevel">The target headless top level. Must be the one the touch pointer was created on.</param>
+    /// <param name="touchPointer">The touch pointer returned from <see cref="TouchBegin"/>.</param>
+    /// <param name="point">The position at which the contact is released.</param>
+    /// <param name="modifiers">The optional key modifiers.</param>
+    public static void TouchEnd(this TopLevel topLevel, IHeadlessTouchPointer touchPointer, Point point,
+        RawInputModifiers modifiers = RawInputModifiers.None) =>
+        GetTouchPointer(topLevel, touchPointer).End(point, modifiers);
 
     /// <summary>
     /// Simulates a drag and drop target event on the headless window/toplevel. This event simulates a user moving files from another app to the current app.
@@ -160,5 +204,63 @@ public static class HeadlessWindowExtensions
             IHeadlessWindow headless => headless,
             _ => throw new InvalidOperationException("TopLevel must be a headless window.")
         };
+    }
+
+    private static long s_nextTouchPointId;
+
+    private static HeadlessTouchPointer GetTouchPointer(TopLevel topLevel, IHeadlessTouchPointer touchPointer)
+    {
+        if (touchPointer is not HeadlessTouchPointer headlessTouchPointer)
+            throw new ArgumentException("The touch pointer was not created by TouchBegin.", nameof(touchPointer));
+        if (headlessTouchPointer.TopLevel != topLevel)
+            throw new ArgumentException("The touch pointer belongs to a different toplevel.", nameof(touchPointer));
+        return headlessTouchPointer;
+    }
+
+    private sealed class HeadlessTouchPointer : IHeadlessTouchPointer
+    {
+        private readonly long _touchPointId;
+        private Point _position;
+        private bool _pressed = true;
+
+        public HeadlessTouchPointer(TopLevel topLevel, long touchPointId, Point position)
+        {
+            TopLevel = topLevel;
+            _touchPointId = touchPointId;
+            _position = position;
+        }
+
+        public TopLevel TopLevel { get; }
+
+        public void Move(Point point, RawInputModifiers modifiers)
+        {
+            ThrowIfReleased();
+            RunJobsOnImpl(TopLevel, w => w.Touch(point, _touchPointId, RawPointerEventType.TouchUpdate, modifiers));
+            _position = point;
+        }
+
+        public void End(Point point, RawInputModifiers modifiers)
+        {
+            ThrowIfReleased();
+            _pressed = false;
+            RunJobsOnImpl(TopLevel, w => w.Touch(point, _touchPointId, RawPointerEventType.TouchEnd, modifiers));
+        }
+
+        public void Dispose()
+        {
+            if (!_pressed)
+                return;
+            _pressed = false;
+
+            // The toplevel might have been closed already, cancelling all of its touch pointers.
+            if (TopLevel.PlatformImpl is IHeadlessWindow)
+                RunJobsOnImpl(TopLevel, w => w.Touch(_position, _touchPointId, RawPointerEventType.TouchCancel, RawInputModifiers.None));
+        }
+
+        private void ThrowIfReleased()
+        {
+            if (!_pressed)
+                throw new InvalidOperationException("The touch pointer has already been released.");
+        }
     }
 }

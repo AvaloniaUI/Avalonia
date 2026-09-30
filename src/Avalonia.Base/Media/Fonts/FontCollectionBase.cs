@@ -18,7 +18,8 @@ namespace Avalonia.Media.Fonts
             Comparer<FontFamily>.Create((a, b) => string.Compare(a.Name, b.Name, StringComparison.OrdinalIgnoreCase));
 
         // Make this internal for testing purposes
-        internal readonly ConcurrentDictionary<string, ConcurrentDictionary<FontCollectionKey, GlyphTypeface?>> _glyphTypefaceCache = new();
+        internal readonly ConcurrentDictionary<string, ConcurrentDictionary<FontCollectionKey, GlyphTypeface?>> _glyphTypefaceCache =
+            new(StringComparer.OrdinalIgnoreCase);
 
         // Cache of resolved script/culture fallback family names. A non-null value is the preferred
         // fallback family for that script bucket: a Tier B hint that is still re-checked for coverage
@@ -501,7 +502,26 @@ namespace Avalonia.Media.Fonts
                 fontSimulations |= FontSimulations.Bold;
             }
 
-            if (fontSimulations != FontSimulations.None && glyphTypeface.PlatformTypeface.TryGetStream(out var stream))
+            if (fontSimulations == FontSimulations.None)
+            {
+                return false;
+            }
+
+            // A synthetic for this key may already be cached under the source family, reached
+            // through another of its names or by another thread. Building a second one copies the
+            // whole font file through TryGetStream, then loses the slot below to the instance
+            // already there, so nothing caches it, nothing disposes it, and its native typeface is
+            // never released.
+            if (glyphTypefaces.TryGetValue(key, out var cachedGlyphTypeface) &&
+                cachedGlyphTypeface is not null &&
+                cachedGlyphTypeface.FontSimulations == fontSimulations)
+            {
+                syntheticGlyphTypeface = cachedGlyphTypeface;
+
+                return true;
+            }
+
+            if (glyphTypeface.PlatformTypeface.TryGetStream(out var stream))
             {
                 using (stream)
                 {
@@ -852,11 +872,12 @@ namespace Avalonia.Media.Fonts
                         {
                             glyphTypeface = syntheticGlyphTypeface;
                         }
-                        else
-                        {
-                            // Cache the nearest match for future lookups
-                            TryAddGlyphTypeface(familyName, key, glyphTypeface);
-                        }
+
+                        // TryCreateSyntheticGlyphTypeface registers the synthetic only under the
+                        // source font's own family names, so a request arriving through a different
+                        // name would otherwise miss the cache and re-synthesise on every call,
+                        // copying the whole font file each time.
+                        TryAddGlyphTypeface(familyName, key, glyphTypeface);
                     }
 
                     return true;

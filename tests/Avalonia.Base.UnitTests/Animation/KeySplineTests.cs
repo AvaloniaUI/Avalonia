@@ -74,6 +74,22 @@ namespace Avalonia.Base.UnitTests.Animation
             Assert.NotEqual(0.5, easing.Ease(0.5));
         }
 
+        [Fact]
+        public void SplineEasing_Constructor_Assigns_All_Control_Points()
+        {
+            // y1 != y2 and y2 != 1 (KeySpline default) so both a Y1 overwrite
+            // and a missing Y2 assignment would fail this test.
+            var easing = new SplineEasing(0.2, 0.8, 0.4, 0.3);
+
+            Assert.Equal(0.2, easing.X1);
+            Assert.Equal(0.8, easing.Y1);
+            Assert.Equal(0.4, easing.X2);
+            Assert.Equal(0.3, easing.Y2);
+
+            var expected = new SplineEasing(new KeySpline(0.2, 0.8, 0.4, 0.3));
+            Assert.Equal(expected.Ease(0.5), easing.Ease(0.5));
+        }
+
         /*
           To get the test values for the KeySpline test, you can:
           1) Grab the WPF sample for KeySpline animations from https://github.com/microsoft/WPF-Samples/tree/master/Animation/KeySplineAnimations

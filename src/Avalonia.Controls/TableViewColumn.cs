@@ -15,6 +15,12 @@ namespace Avalonia.Controls;
 public class TableViewColumn : StyledElement, IHeadered
 {
     /// <summary>
+    /// Defines the <see cref="IsVisible"/> property.
+    /// </summary>
+    public static readonly StyledProperty<bool> IsVisibleProperty =
+        Visual.IsVisibleProperty.AddOwner<TableViewColumn>();
+
+    /// <summary>
     /// Defines the <see cref="HeaderTheme"/> property.
     /// </summary>
     public static readonly StyledProperty<ControlTheme?> HeaderThemeProperty =
@@ -86,6 +92,15 @@ public class TableViewColumn : StyledElement, IHeadered
     /// </summary>
     public static readonly DirectProperty<TableViewColumn, bool> CanUserEffectivelyResizeProperty =
         AvaloniaProperty.RegisterDirect<TableViewColumn, bool>(nameof(CanUserEffectivelyResize), o => o.CanUserEffectivelyResize);
+
+    /// <summary>
+    /// Gets or sets whether the column is visible. The default is true.
+    /// </summary>
+    public bool IsVisible
+    {
+        get => GetValue(IsVisibleProperty);
+        set => SetValue(IsVisibleProperty, value);
+    }
 
     /// <summary>
     /// Gets or sets the theme to apply to the header.
@@ -217,22 +232,25 @@ public class TableViewColumn : StyledElement, IHeadered
         => property == CellThemeProperty ||
            property == CellTemplateProperty ||
            property == BindingProperty ||
-           property == HorizontalContentAlignmentProperty;
+           property == HorizontalContentAlignmentProperty ||
+           property == IsVisibleProperty;
 
     private static bool IsHeaderProperty(AvaloniaProperty property)
         => property == HeaderThemeProperty ||
            property == HeaderTemplateProperty ||
            property == HeaderProperty ||
-           property == HorizontalContentAlignmentProperty;
+           property == HorizontalContentAlignmentProperty ||
+           property == IsVisibleProperty;
 
     /// <inheritdoc />
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
 
-        if (change.Property == WidthProperty)
+        if (change.Property == WidthProperty || change.Property == IsVisibleProperty)
             TableView?.OnColumnsSizeChanged();
-        else if (change.Property == CanUserResizeProperty)
+
+        if (change.Property == CanUserResizeProperty)
             UpdateCanUserEffectivelyResize();
         else
         {

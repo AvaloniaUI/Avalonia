@@ -69,7 +69,7 @@ namespace Avalonia.Media.Fonts
             TryAddGlyphTypeface(platformTypeface.FamilyName, key, glyphTypeface);
             
             // Then the requested family name
-            if (familyName != platformTypeface.FamilyName)
+            if (!string.Equals(familyName, platformTypeface.FamilyName, StringComparison.OrdinalIgnoreCase))
                 TryAddGlyphTypeface(familyName, key, glyphTypeface);
 
             //Add to cache

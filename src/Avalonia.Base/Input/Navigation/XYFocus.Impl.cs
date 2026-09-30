@@ -28,12 +28,6 @@ public partial class XYFocus
 
     private static readonly XYFocus _instance = new();
     
-    internal XYFocusAlgorithms.XYFocusManifolds ResetManifolds()
-    {
-        _manifolds.Reset();
-        return _manifolds;
-    }
-
     internal void SetManifoldsFromBounds(Rect bounds)
     {
         _manifolds.VManifold = (bounds.Left, bounds.Right);

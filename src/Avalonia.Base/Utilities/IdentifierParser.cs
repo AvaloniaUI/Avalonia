@@ -21,6 +21,25 @@ namespace Avalonia.Utilities
             }
         }
 
+        /// <summary>
+        /// Parses an identifier that may name a nested type, e.g. "Outer+Inner".
+        /// </summary>
+        public static ReadOnlySpan<char> ParseTypeIdentifier(this
+#if NET7SDK
+            scoped
+#endif
+            ref CharacterReader r)
+        {
+            if (IsValidIdentifierStart(r.Peek))
+            {
+                return r.TakeWhile(c => IsValidIdentifierChar(c) || c == '+');
+            }
+            else
+            {
+                return ReadOnlySpan<char>.Empty;
+            }
+        }
+
         private static bool IsValidIdentifierStart(char c)
         {
             return char.IsLetter(c) || c == '_';

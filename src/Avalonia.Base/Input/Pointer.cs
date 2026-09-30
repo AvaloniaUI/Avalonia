@@ -58,9 +58,7 @@ namespace Avalonia.Input
 
         private void CaptureLostCore(CaptureSource source)
         {
-            if (Captured != null)
-                CaptureCore(null, source);
-            CaptureGestureRecognizerCore(null);
+            CaptureCore(null, null, source);
             IsGestureRecognitionSkipped = false;
         }
 
@@ -68,6 +66,8 @@ namespace Avalonia.Input
         {
             Capture(control, CaptureSource.Explicit);
         }
+
+        private IInputElement? EffectiveCapturer => this.CapturedGestureRecognizer?.Target ?? Captured;
 
         internal void Capture(IInputElement? control, CaptureSource source)
         {
@@ -77,16 +77,21 @@ namespace Avalonia.Input
                 return;
             }
 
-            CaptureCore(control, source);
+            CaptureCore(control, null, source);
         }
 
-        private void CaptureCore(IInputElement? control, CaptureSource source)
+        private void CaptureCore(
+            IInputElement? control,
+            GestureRecognizer? gestureRecognizer,
+            CaptureSource source)
         {
             var oldCapture = Captured;
+            var oldGestureRecognizer = CapturedGestureRecognizer;
             var oldSource = CaptureSource;
+            var oldEffectiveCapturer = EffectiveCapturer;
 
             // If a handler marks Implicit capture as handled, we still want them to have another chance if the element is captured explicitly.
-            if (oldCapture == control && oldSource == source)
+            if (oldCapture == control && oldGestureRecognizer == gestureRecognizer && oldSource == source)
                 return;
 
             var oldVisual = oldCapture as Visual;
@@ -110,12 +115,17 @@ namespace Avalonia.Input
 
             if (oldVisual != null)
                 oldVisual.DetachedFromVisualTree -= OnCaptureDetached;
+
+            if (oldGestureRecognizer != gestureRecognizer)
+                oldGestureRecognizer?.PointerCaptureLostInternal(this);
+
             Captured = control;
+            CapturedGestureRecognizer = gestureRecognizer;
             CaptureSource = source;
 
             // However, we still want to notify the platform only if the captured element actually changed.
-            if (oldCapture != control && source != CaptureSource.Platform)
-                PlatformCapture(control);
+            if (oldEffectiveCapturer != EffectiveCapturer && source != CaptureSource.Platform)
+                PlatformCapture(EffectiveCapturer);
 
             if (oldVisual != null)
                 foreach (var notifyTarget in oldVisual.GetSelfAndVisualAncestors().OfType<IInputElement>())
@@ -127,9 +137,6 @@ namespace Avalonia.Input
 
             if (newVisual != null)
                 newVisual.DetachedFromVisualTree += OnCaptureDetached;
-
-            if (Captured != null)
-                CaptureGestureRecognizer(null);
 
             if (Captured == null && CapturedGestureRecognizer == null)
             {
@@ -199,22 +206,7 @@ namespace Avalonia.Input
                 return;
             }
 
-            CaptureGestureRecognizerCore(gestureRecognizer);
-        }
-
-        private void CaptureGestureRecognizerCore(GestureRecognizer? gestureRecognizer)
-        {
-            if (CapturedGestureRecognizer != gestureRecognizer)
-            {
-                CapturedGestureRecognizer?.PointerCaptureLostInternal(this);
-            }
-
-            CapturedGestureRecognizer = gestureRecognizer;
-
-            if (gestureRecognizer != null)
-            {
-                Capture(null);
-            }
+            CaptureCore(null, gestureRecognizer, CaptureSource.Explicit);
         }
     }
 }
