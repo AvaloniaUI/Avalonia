@@ -608,10 +608,9 @@ namespace Avalonia.Media.TextFormatting
 
                     //Fulfill max height constraint. The mere existence of this next candidate line (which
                     //hasn't been added yet) proves there is more content than fits. Only add an ellipsis
-                    //if the last visible line was itself split by word-wrap (IsSplit=true), meaning its
-                    //content was physically cut mid-paragraph. If it ended at a hard paragraph break the
-                    //line was not trimmed — hiding the next paragraph is analogous to CSS
-                    //max-height+overflow:hidden, which clips silently without adding "…".
+                    //if the last visible line was cut by word-wrap (IsSplit). If it ended at a hard break
+                    //the line itself was not trimmed, and hiding the following paragraph is clipped
+                    //silently like CSS max-height with overflow:hidden.
                     if (textLines.Count > 0 && !double.IsPositiveInfinity(MaxHeight)
                         && MathUtilities.GreaterThan(Height + textLine.Height, MaxHeight))
                     {
@@ -626,8 +625,9 @@ namespace Avalonia.Media.TextFormatting
                         break;
                     }
 
-                    //Fulfill max lines constraint. Mirrors the MaxHeight check above: the next candidate
-                    //line's existence proves the previously added (Max-th) line hides real content.
+                    //Fulfill max lines constraint. The next candidate line's existence proves the previously
+                    //added (Max-th) line hides real content. Unlike the height limit this ellipsizes after a
+                    //hard break too, like CSS line-clamp.
                     if (MaxLines > 0 && textLines.Count >= MaxLines)
                     {
                         if (_textTrimming != TextTrimming.None && hasRealContent)
