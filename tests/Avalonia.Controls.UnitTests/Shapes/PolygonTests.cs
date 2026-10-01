@@ -73,4 +73,23 @@ public class PolygonTests : ScopedTestBase
 
         Assert.Equal(polygon.DefiningGeometry!.Bounds, polyline.DefiningGeometry!.Bounds);
     }
+
+    [Fact]
+    public void Polygon_Should_Invalidate_Geometry_When_Points_Collection_Changes()
+    {
+        using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+        var points = new Points { new Point(0, 0) };
+        var target = new Polygon { Points = points };
+        target.Measure(Size.Infinity);
+
+        var geometry = target.DefiningGeometry;
+        Assert.NotNull(geometry);
+        var invalidated = false;
+        geometry!.Changed += (_, _) => invalidated = true;
+
+        points.Add(new Point(10, 10));
+
+        Assert.True(invalidated);
+    }
 }
