@@ -14,6 +14,54 @@ namespace Avalonia.Controls.UnitTests
     public class TextBoxSelectionNotificationTests : ScopedTestBase
     {
         [Theory]
+        [InlineData(8, 18)]
+        [InlineData(18, 8)]
+        public void Setting_Input_Method_Selection_Notifies_After_Both_Endpoints_Are_Assigned(
+            int start, int end)
+        {
+            using var app = UnitTestApplication.Start(Services);
+            var textBox = CreateTextBox();
+            var client = GetClient(textBox);
+            var selections = new List<TextSelection>();
+            client.SelectionChanged += (_, _) => selections.Add(client.Selection);
+
+            client.Selection = new TextSelection(start, end);
+
+            Assert.Equal(new TextSelection(start, end), Assert.Single(selections));
+        }
+
+        [Theory]
+        [InlineData(8, 18)]
+        [InlineData(18, 8)]
+        public void Setting_Input_Method_Selection_Allows_Reentrant_Input_From_Selection_Changed(
+            int start, int end)
+        {
+            using var app = UnitTestApplication.Start(Services);
+            var textBox = CreateTextBox();
+            var client = GetClient(textBox);
+            var inserted = false;
+            client.SelectionChanged += (_, _) =>
+            {
+                if (inserted)
+                    return;
+
+                inserted = true;
+                textBox.RaiseEvent(new TextInputEventArgs
+                {
+                    RoutedEvent = InputElement.TextInputEvent,
+                    Text = "!"
+                });
+            };
+
+            client.Selection = new TextSelection(start, end);
+
+            Assert.True(inserted);
+            Assert.Equal("abcdefgh!st", textBox.Text);
+            Assert.Equal(new TextSelection(9, 9), client.Selection);
+            Assert.Equal(9, textBox.CaretIndex);
+        }
+
+        [Theory]
         [InlineData(8, 18, 5, 5)]
         [InlineData(18, 8, 5, 5)]
         [InlineData(2, 18, 2, 5)]
