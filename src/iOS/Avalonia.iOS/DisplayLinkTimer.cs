@@ -68,22 +68,43 @@ namespace Avalonia.iOS
         /// </summary>
         internal static void SetPreferredFrameRateRange(CADisplayLink link)
         {
-            if (Platform.Options is { EnableHighRefreshRate: true }
-                && (OperatingSystem.IsIOSVersionAtLeast(15)
-                    || OperatingSystem.IsTvOSVersionAtLeast(15)
-                    || OperatingSystem.IsMacCatalystVersionAtLeast(15)))
-            {
+            if (UsesHighRefreshRate)
                 link.PreferredFrameRateRange = CAFrameRateRange.Create(60, 120, 120);
-            }
         }
+
+        /// <summary>
+        /// Gets whether display links ask for more than the default 60 Hz: this needs OS version 15
+        /// and <see cref="iOSPlatformOptions.EnableHighRefreshRate"/>.
+        /// </summary>
+        internal static bool UsesHighRefreshRate =>
+            Platform.Options is { EnableHighRefreshRate: true }
+            && (OperatingSystem.IsIOSVersionAtLeast(15)
+                || OperatingSystem.IsTvOSVersionAtLeast(15)
+                || OperatingSystem.IsMacCatalystVersionAtLeast(15));
+
+#if !TVOS
+        /// <summary>
+        /// Gets whether display links can actually run faster than 60 Hz: <see cref="UsesHighRefreshRate"/>,
+        /// a screen faster than 60 Hz and, on iPhone, CADisableMinimumFrameDurationOnPhone in Info.plist.
+        /// </summary>
+        internal static bool CanExceed60Hz => s_canExceed60Hz.Value;
+
+        private static readonly Lazy<bool> s_canExceed60Hz = new(() =>
+            UsesHighRefreshRate
+            && UIScreen.MainScreen.MaximumFramesPerSecond > 60
+            && !IsPhoneWithoutHighRefreshRateKey());
+
+        private static bool IsPhoneWithoutHighRefreshRateKey() =>
+            UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Phone
+            && NSBundle.MainBundle.ObjectForInfoDictionary("CADisableMinimumFrameDurationOnPhone") is not NSNumber { BoolValue: true };
+#endif
 
         private void WarnIfLimitedTo60Hz()
         {
 #if !TVOS
             if (Platform.Options is { EnableHighRefreshRate: true }
-                && UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Phone
                 && UIScreen.MainScreen.MaximumFramesPerSecond > 60
-                && NSBundle.MainBundle.ObjectForInfoDictionary("CADisableMinimumFrameDurationOnPhone") is not NSNumber { BoolValue: true })
+                && IsPhoneWithoutHighRefreshRateKey())
             {
                 Logger.TryGet(LogEventLevel.Warning, LogArea.IOSPlatform)?.Log(this,
                     "Rendering is limited to 60 Hz on this ProMotion display. Set CADisableMinimumFrameDurationOnPhone " +

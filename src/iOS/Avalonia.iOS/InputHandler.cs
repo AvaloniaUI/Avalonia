@@ -26,6 +26,9 @@ internal sealed class InputHandler
     private Point? _cachedScrollLocation;
     
     #if !TVOS
+    private static CADisplayLink? s_touchDisplayLink;
+    private static int s_touchingViews;
+    private bool _holdsTouchDisplayLink;
     private CADisplayLink? _momentumDisplayLink;
     private double _momentumVelocityX;
     private double _momentumVelocityY;
@@ -125,6 +128,45 @@ internal sealed class InputHandler
                 => false;
 #endif
         }
+
+        UpdateTouchDisplayLink();
+    }
+
+    private void UpdateTouchDisplayLink()
+    {
+#if !TVOS
+        // UIKit delivers touches at the main thread's display link rate, which stays at 60 Hz on ProMotion displays
+        // unless a main thread display link asks for more. One process-wide link is kept while any view has touches down.
+        var holds = _knownTouches.Count > 0 && DisplayLinkTimer.CanExceed60Hz;
+        if (holds == _holdsTouchDisplayLink)
+            return;
+
+        _holdsTouchDisplayLink = holds;
+        if (holds)
+        {
+            if (s_touchingViews++ == 0)
+            {
+                s_touchDisplayLink = CADisplayLink.Create(static () => { });
+                DisplayLinkTimer.SetPreferredFrameRateRange(s_touchDisplayLink);
+                s_touchDisplayLink.AddToRunLoop(NSRunLoop.Main, NSRunLoopMode.Common);
+            }
+        }
+        else if (--s_touchingViews == 0)
+        {
+            s_touchDisplayLink?.Invalidate();
+            s_touchDisplayLink = null;
+        }
+#endif
+    }
+
+    /// <summary>
+    /// Forgets the touches in progress, for when the view leaves its window or is disposed:
+    /// UIKit doesn't report the end of those touches then.
+    /// </summary>
+    public void ResetTouches()
+    {
+        _knownTouches.Clear();
+        UpdateTouchDisplayLink();
     }
 
     public bool Handle(NSSet<UIPress> presses, UIPressesEvent? evt)
