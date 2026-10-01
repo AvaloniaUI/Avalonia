@@ -366,6 +366,63 @@ namespace Avalonia.Controls.UnitTests.Selection
 
                 Assert.Equal(1, raised);
             }
+
+            [Fact]
+            public void Indexer_Does_Not_Throw_When_Source_Collection_Shrinks()
+            {
+                // Simulate a source that raises Reset instead of per-index Remove
+                // events (e.g. a filtered view being replaced), so the selection
+                // ranges can reference indices that no longer exist.
+                var source = new ResettingList<string?> { "foo", "bar", "baz" };
+                var target = CreateTarget();
+                target.Source = source;
+
+                target.Select(0);
+                target.Select(2);
+
+                source.Reset(new[] { "foo" });
+
+                // Must not throw regardless of whether the ranges were pruned.
+                var items = target.SelectedItems;
+                for (var i = 0; i < items.Count; i++)
+                {
+                    _ = items[i];
+                }
+            }
+
+            [Fact]
+            public void Indexer_Returns_Default_For_Stale_Ranges()
+            {
+                // Construct SelectedItems<T> directly with ranges pointing beyond
+                // the end of the items collection, as can happen when the source
+                // shrinks without per-index Remove events (see issue #6128).
+                var ranges = new List<IndexRange> { new(0, 2) };
+                var items = ItemsSourceView<string?>.GetOrCreate(new[] { "foo", null });
+                var selectedItems = SelectedItems<string?>.Create(ranges, items)!;
+
+                Assert.Equal(3, selectedItems.Count);
+                Assert.Equal("foo", selectedItems[0]);
+                Assert.Null(selectedItems[1]);
+                Assert.Null(selectedItems[2]);
+            }
+
+            [Fact]
+            public void GetEnumerator_Does_Not_Throw_When_Source_Collection_Is_Cleared()
+            {
+                var source = new AvaloniaList<string?> { "foo", "bar", "baz" };
+                var target = CreateTarget();
+                target.Source = source;
+
+                target.Select(0);
+                target.Select(1);
+                target.Select(2);
+
+                source.Clear();
+
+                var selected = new List<string?>(target.SelectedItems);
+
+                Assert.Empty(selected);
+            }
         }
 
         public class Select : ScopedTestBase
