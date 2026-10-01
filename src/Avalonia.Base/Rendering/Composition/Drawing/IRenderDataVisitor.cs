@@ -17,6 +17,8 @@ internal interface IRenderDataVisitor<TScope> where TScope : unmanaged
     void OnDrawGlyphRun(IBrush? serverBrush, IRef<IGlyphRunImpl>? glyphRun);
     void OnDrawBitmap(IRef<IBitmapImpl>? bitmap, double opacity, Rect sourceRect, Rect destRect);
     void OnDrawCustom(ICustomDrawOperation? operation);
+    void OnDrawRecording(ServerCompositionRenderData? server, CompositionRenderData? client,
+        RenderDataStream? stream, Matrix transform);
 
     TScope OnPushClip(RoundedRect clip);
     TScope OnPushGeometryClip(IGeometryImpl? geometry);
