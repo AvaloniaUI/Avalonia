@@ -1086,10 +1086,7 @@ class WXdgPopup : WXdgShellSurface, IWXdgPopup
     {
         protected override void Configure(XdgPopup eventSender, int x, int y, int width, int height)
         {
-            p._pendingBatch.X = x;
-            p._pendingBatch.Y = y;
-            p._pendingBatch.Width = width;
-            p._pendingBatch.Height = height;
+            p._pendingBatch.Geometry = new PixelRect(x, y, width, height);
         }
 
         protected override void PopupDone(XdgPopup eventSender) =>
