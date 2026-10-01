@@ -526,7 +526,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Ty()
+        public void Flyout_With_Pointer_Placement_Keeps_Position_On_Resize()
         {
             using (CreateServicesWithFocus())
             {
