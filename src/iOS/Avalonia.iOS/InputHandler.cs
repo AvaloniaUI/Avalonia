@@ -30,6 +30,7 @@ internal sealed class InputHandler
     private static int s_touchingViews;
     private bool _holdsTouchDisplayLink;
     private CADisplayLink? _momentumDisplayLink;
+    private double _lastMomentumTimestamp;
     private double _momentumVelocityX;
     private double _momentumVelocityY;
     private const double DecelerationRate = 0.95;
@@ -371,7 +372,9 @@ internal sealed class InputHandler
         var scaleFactor = 800.0;
         _momentumVelocityX = velocity.X / scaleFactor;
         _momentumVelocityY = velocity.Y / scaleFactor;
+        _lastMomentumTimestamp = 0;
         _momentumDisplayLink = CADisplayLink.Create(UpdateInertiaScrolling);
+        DisplayLinkTimer.SetPreferredFrameRateRange(_momentumDisplayLink);
         _momentumDisplayLink.AddToRunLoop(NSRunLoop.Main, NSRunLoopMode.Common);
 #endif
     }
@@ -396,8 +399,21 @@ internal sealed class InputHandler
     private void UpdateInertiaScrolling()
     {
 #if !TVOS
-        _momentumVelocityX *= DecelerationRate;
-        _momentumVelocityY *= DecelerationRate;
+        if (_momentumDisplayLink is not { } link)
+            return;
+
+        // The deceleration rate and velocity are per 60 Hz frame, scale them to the time since the last update.
+        var timestamp = link.TargetTimestamp;
+        var frames = (timestamp - (_lastMomentumTimestamp > 0 ? _lastMomentumTimestamp : link.Timestamp)) * 60;
+        _lastMomentumTimestamp = timestamp;
+        // Don't catch up with a long stall (such as a trip to the background) in a single jump.
+        frames = Math.Min(frames, 4);
+        var deceleration = Math.Pow(DecelerationRate, frames);
+        // The distance that per-frame steps would have covered: DecelerationRate per step, summed over the frames.
+        var distance = DecelerationRate * (1 - deceleration) / (1 - DecelerationRate);
+        var delta = new Vector(_momentumVelocityX * distance, _momentumVelocityY * distance);
+        _momentumVelocityX *= deceleration;
+        _momentumVelocityY *= deceleration;
 
         var currentMagnitude = Math.Sqrt(_momentumVelocityX * _momentumVelocityX + _momentumVelocityY * _momentumVelocityY);
 
@@ -417,7 +433,7 @@ internal sealed class InputHandler
             (ulong)Environment.TickCount64, 
             Root,
             _cachedScrollLocation.Value,
-            new Vector(_momentumVelocityX, _momentumVelocityY),
+            delta,
             RawInputModifiers.None
         ));
 #endif
