@@ -3,10 +3,12 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using Avalonia.Platform;
+using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using Avalonia.Styling;
-using Avalonia.Themes.Simple;
 using Avalonia.Themes.Fluent;
+using Avalonia.Themes.Simple;
+using ControlCatalog.Controls;
 using ControlCatalog.Models;
 using ControlCatalog.ViewModels;
 
@@ -14,10 +16,12 @@ namespace ControlCatalog
 {
     public class App : Application
     {
+        public static readonly TransparentStyles TransparentStyles = new();
         private readonly Styles _themeStylesContainer = new();
         private FluentTheme? _fluentTheme;
         private SimpleTheme? _simpleTheme;
         private IStyle? _colorPickerFluent, _colorPickerSimple;
+        private MainWindowViewModel _mainWindowViewModel = new MainWindowViewModel();
 
         public App()
         {
@@ -42,21 +46,15 @@ namespace ControlCatalog
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktopLifetime)
             {
-                desktopLifetime.MainWindow = new MainWindow { DataContext = new MainWindowViewModel() };
+                desktopLifetime.MainWindow = new MainWindow { DataContext = _mainWindowViewModel };
             }
             else if (ApplicationLifetime is IActivityApplicationLifetime singleViewFactoryApplicationLifetime)
             {
-                singleViewFactoryApplicationLifetime.MainViewFactory = () => new PageNavigationHost()
-                {
-                    Page = new MainView { DataContext = new MainWindowViewModel() }
-                };
+                singleViewFactoryApplicationLifetime.MainViewFactory = () => new MainViewHost(_mainWindowViewModel);
             }
             else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewLifetime)
             {
-                singleViewLifetime.MainView = new PageNavigationHost()
-                {
-                    Page = new MainView { DataContext = new MainWindowViewModel() }
-                };
+                singleViewLifetime.MainView = new MainViewHost(_mainWindowViewModel);
             }
 
             if (this.TryGetFeature<IActivatableLifetime>() is { } activatableApplicationLifetime)
@@ -106,6 +104,27 @@ namespace ControlCatalog
 
         private CatalogTheme _prevTheme;
         public static CatalogTheme CurrentTheme => ((App)Current!)._prevTheme;
+
+        public event EventHandler? ThemeUpdated;
+
+        public static void ApplyTopLevelTransparency(TopLevel topLevel, WindowTransparencyLevel windowTransparencyLevel)
+        {
+            topLevel.TransparencyLevelHint = [windowTransparencyLevel];
+
+            if (topLevel.ActualTransparencyLevel != WindowTransparencyLevel.None &&
+                windowTransparencyLevel != WindowTransparencyLevel.None)
+            {
+                topLevel.Background = new ImmutableSolidColorBrush(Colors.Gray, 0.2);
+                if (!topLevel.Styles.Contains(TransparentStyles))
+                    topLevel.Styles.Add(TransparentStyles);
+            }
+            else
+            {
+                topLevel.Background = null;
+                topLevel.Styles.Remove(TransparentStyles);
+            }
+        }
+
         public static void SetCatalogThemes(CatalogTheme theme)
         {
             var app = (App)Current!;
@@ -136,28 +155,27 @@ namespace ControlCatalog
                 if (app.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktopLifetime)
                 {
                     var oldWindow = desktopLifetime.MainWindow;
-                    var newWindow = new MainWindow()
+
+                    if (oldWindow != null)
                     {
-                        DataContext = new MainWindowViewModel()
-                    };
-                    desktopLifetime.MainWindow = newWindow;
-                    newWindow.Show();
-                    oldWindow?.Close();
-                }
-                else if (app.ApplicationLifetime is IActivityApplicationLifetime singleViewFactoryApplicationLifetime)
-                {
-                    singleViewFactoryApplicationLifetime.MainViewFactory = () => new PageNavigationHost()
+                        oldWindow.Content = null;
+                        var controlTheme = app.FindResource(app.ActualThemeVariant, typeof(Window)) as ControlTheme;
+                        oldWindow.Theme = controlTheme;
+                        oldWindow.Content = new MainView();
+                    }
+                    else
                     {
-                        Page = new MainView { DataContext = new MainWindowViewModel() }
-                    };
+                        var newWindow = new MainWindow()
+                        {
+                            DataContext = app._mainWindowViewModel
+                        };
+                        desktopLifetime.MainWindow = newWindow;
+                        newWindow.Show();
+                    }
+
                 }
-                else if (app.ApplicationLifetime is ISingleViewApplicationLifetime singleViewLifetime)
-                {
-                    singleViewLifetime.MainView = new PageNavigationHost()
-                    {
-                        Page = new MainView { DataContext = new MainWindowViewModel() }
-                    };
-                }
+
+                app.ThemeUpdated?.Invoke(app, EventArgs.Empty);
             }
         }
     }

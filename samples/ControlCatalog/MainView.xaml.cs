@@ -97,7 +97,9 @@ namespace ControlCatalog
             {
                 ViewModel.Navigator = NavPage;
 
-                ViewModel.NavigateToItem(ViewModel.HomeItem);
+                ViewModel.CurrentPageItem = null;
+
+                ViewModel.NavigateToItem(ViewModel.LastActivePageItem ?? MainWindowViewModel.HomeItem);
             }
         }
 

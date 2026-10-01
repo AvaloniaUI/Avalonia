@@ -2,6 +2,7 @@ using System;
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
 using Avalonia.Input;
+using ControlCatalog.ViewModels;
 
 namespace ControlCatalog
 {
@@ -30,6 +31,14 @@ namespace ControlCatalog
         public void OnCloseClicked(object sender, EventArgs args)
         {
             Close();
+        }
+
+        public void ApplyWindowSettings()
+        {
+            if (DataContext is MainWindowViewModel viewModel && viewModel.SettingsViewModel is { } settingsViewModel)
+            {
+                App.ApplyTopLevelTransparency(this, settingsViewModel.CurrentWindowTransparencyLevel);
+            }
         }
     }
 }
