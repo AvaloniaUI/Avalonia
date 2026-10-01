@@ -9,35 +9,56 @@ using UIKit;
 
 namespace Avalonia.iOS
 {
-    class DisplayLinkTimer : IRenderTimer
+    /// <summary>
+    /// Render timer driven by a <see cref="CADisplayLink"/>, paused while the render loop is idle
+    /// or the application is in the background.
+    /// </summary>
+    internal sealed class DisplayLinkTimer : IRenderTimer
     {
-        private volatile Action<TimeSpan>? _tick;
-        private Stopwatch _st = Stopwatch.StartNew();
+        private readonly CADisplayLink _link;
+        private readonly Stopwatch _st = Stopwatch.StartNew();
+        // Guards _tick, _inBackground and _paused, which the render loop, the main thread and the link thread share.
+        private readonly object _lock = new();
+        private Action<TimeSpan>? _tick;
+        private bool _inBackground;
+        private bool _paused = true;
 
         public DisplayLinkTimer()
         {
-            var link = CADisplayLink.Create(OnLinkTick);
-            SetPreferredFrameRateRange(link);
+            _link = CADisplayLink.Create(OnLinkTick);
+            _link.Paused = true;
+            SetPreferredFrameRateRange(_link);
             WarnIfLimitedTo60Hz();
             TimerThread = new Thread(() =>
             {
-                link.AddToRunLoop(NSRunLoop.Current, NSRunLoopMode.Common);
+                _link.AddToRunLoop(NSRunLoop.Current, NSRunLoopMode.Common);
                 NSRunLoop.Current.Run();
             });
             TimerThread.Start();
-            UIApplication.Notifications.ObserveDidEnterBackground((_,__) => link.Paused = true);
-            UIApplication.Notifications.ObserveWillEnterForeground((_, __) => link.Paused = false);
+
+            UIApplication.Notifications.ObserveDidEnterBackground((_, _) => SetInBackground(true));
+            UIApplication.Notifications.ObserveWillEnterForeground((_, _) => SetInBackground(false));
         }
 
-        public Thread TimerThread { get;  }
-        
+        public Thread TimerThread { get; }
+
         public bool RunsInBackground => true;
 
-        // TODO: start/stop on RenderLoop request
         public Action<TimeSpan>? Tick
         {
-            get => _tick;
-            set => _tick = value;
+            get
+            {
+                lock (_lock)
+                    return _tick;
+            }
+            set
+            {
+                lock (_lock)
+                {
+                    _tick = value;
+                    UpdateLinkState();
+                }
+            }
         }
 
         /// <summary>
@@ -71,9 +92,33 @@ namespace Avalonia.iOS
 #endif
         }
 
+        private void SetInBackground(bool inBackground)
+        {
+            lock (_lock)
+            {
+                _inBackground = inBackground;
+                UpdateLinkState();
+            }
+        }
+
+        // Called with _lock held. CADisplayLink.Paused is documented as thread safe.
+        private void UpdateLinkState()
+        {
+            var paused = _inBackground || _tick is null;
+            if (_paused != paused)
+            {
+                _paused = paused;
+                _link.Paused = paused;
+            }
+        }
+
         private void OnLinkTick()
         {
-            _tick?.Invoke(_st.Elapsed);
+            Action<TimeSpan>? tick;
+            // A callback already scheduled when the link was paused can still arrive.
+            lock (_lock)
+                tick = _paused ? null : _tick;
+            tick?.Invoke(_st.Elapsed);
         }
     }
 }
