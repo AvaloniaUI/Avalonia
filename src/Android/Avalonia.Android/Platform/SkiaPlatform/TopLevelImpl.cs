@@ -44,6 +44,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         private readonly AndroidPlatformFeedback _feedback;
         private SurfaceViewImpl? _view;
         private WindowTransparencyLevel _transparencyLevel;
+        private PlatformTextProcessor _platformTextProcessor;
 
         public TopLevelImpl(AvaloniaView avaloniaView, bool placeOnTop = false)
         {
@@ -62,6 +63,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 context));
             _screens = new AndroidScreens(context);
             _feedback = new AndroidPlatformFeedback(avaloniaView);
+            _platformTextProcessor = new PlatformTextProcessor(context);
 
             if (context is Activity mainActivity)
             {
@@ -373,6 +375,11 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             if(featureType == typeof(IPlatformFeedback))
             {
                 return _feedback;
+            }
+
+            if(featureType == typeof(IPlatformTextProcessorImpl))
+            {
+                return _platformTextProcessor;
             }
             return null;
         }

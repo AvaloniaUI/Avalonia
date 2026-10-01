@@ -534,6 +534,8 @@ namespace Avalonia.Controls
         public IInputPane? InputPane => PlatformImpl?.TryGetFeature<IInputPane>();
         public ILauncher Launcher => PlatformImpl?.TryGetFeature<ILauncher>() ?? new NoopLauncher();
 
+        internal IPlatformTextProcessorImpl? PlatformTextProcessor => PlatformImpl?.TryGetFeature<IPlatformTextProcessorImpl>();
+
         /// <summary>
         /// Gets platform screens implementation.
         /// </summary>

@@ -60,46 +60,70 @@
         <Setter Property="MinWidth" Value="{DynamicResource HorizontalMenuFlyoutThemeMinWidth}" />
       </ControlTheme>
     </Flyout.FlyoutPresenterTheme>
-    <Expander>
-      <Expander.Header>
-        <Menu Padding="0">
-          <Menu.ItemsPanel>
-            <ItemsPanelTemplate>
-              <StackPanel Orientation="Horizontal"/>
-            </ItemsPanelTemplate>
-          </Menu.ItemsPanel>
-          <MenuItem Header="{DynamicResource StringTextFlyoutCutText}" Command="{Binding $parent[TextBox].Cut}" IsEnabled="{Binding $parent[TextBox].CanCut}" IsVisible="{Binding $parent[TextBox].CanCut}" />
-          <MenuItem Header="{DynamicResource StringTextFlyoutCopyText}" Command="{Binding $parent[TextBox].Copy}" IsEnabled="{Binding $parent[TextBox].CanCopy}" IsVisible="{Binding $parent[TextBox].CanCopy}" />
-          <MenuItem Header="{DynamicResource StringTextFlyoutPasteText}" Command="{Binding $parent[TextBox].Paste}" IsEnabled="{Binding $parent[TextBox].CanPaste}" />
-          <MenuItem Header="{DynamicResource StringTextFlyoutSelectAllText}" Command="{Binding $parent[TextBox].SelectAll}" IsEnabled="{Binding $parent[TextBox].CanSelectAll}" IsVisible="{Binding $parent[TextBox].CanSelectAll}" />
-        </Menu>
-      </Expander.Header>
-      <Expander.Content>
-        <Menu  ItemContainerTheme="{StaticResource HorizontalMenuItem}">
-          <Menu.ItemsPanel>
-            <ItemsPanelTemplate>
-              <StackPanel Orientation="Vertical"/>
-            </ItemsPanelTemplate>
-          </Menu.ItemsPanel>
-          <!--     <Menu.IsVisible>
-          <MultiBinding Converter="{x:Static BoolConverters.And}">
-          <Binding Path="$parent[TextBox].HasTextActions"/>
-          <Binding Path="$parent[TextBox].CanCopy"/>
-          </MultiBinding>
-          </Menu.IsVisible>
-          <Menu.ItemContainerTheme>
-          <ControlTheme TargetType="MenuItem" BasedOn="{StaticResource HorizontalMenuItem}" x:DataType="TextProcessingAction">
-          <Setter Property="Header" Value="{Binding Label}"/>
-          <Setter Property="Command" Value="{Binding $parent[TextBox].RunTextAction}"/>
-          <Setter Property="CommandParameter" Value="{Binding}"/>
-          </ControlTheme>
-          </Menu.ItemContainerTheme>-->
+    <ContentControl Content="{Binding $parent[TextBox]}">
+      <ContentControl.ContentTemplate>
+        <DataTemplate x:DataType="TextBox">
+          <Grid RowDefinitions="Auto,Auto">
+            <Grid Grid.Row="0"
+                  HorizontalAlignment="Left"
+                  ColumnDefinitions="Auto,Auto">
+              <Grid.Resources>
+                <ResourceDictionary>
+                  <StaticResource x:Key="ToggleButtonBackgroundChecked" ResourceKey="ToggleButtonBackground"/>
+                  <StaticResource x:Key="ToggleButtonBackgroundCheckedPointerOver" ResourceKey="ToggleButtonBackgroundPointerOver"/>
+                  <StaticResource x:Key="ToggleButtonBackgroundCheckedPressed" ResourceKey="ToggleButtonBackgroundPressed"/>
+                </ResourceDictionary>
+              </Grid.Resources>
+              <Menu Padding="0"
+                    Grid.Column="0"
+                    IsVisible="{Binding !#ExtrasToggleButton.IsChecked}">
+                <Menu.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <StackPanel Orientation="Horizontal"/>
+                  </ItemsPanelTemplate>
+                </Menu.ItemsPanel>
+                <MenuItem Header="{DynamicResource StringTextFlyoutCutText}" Command="{Binding Cut}" IsEnabled="{Binding CanCut}"  />
+                <MenuItem Header="{DynamicResource StringTextFlyoutCopyText}" Command="{Binding Copy}" IsEnabled="{Binding CanCopy}"  />
+                <MenuItem Header="{DynamicResource StringTextFlyoutPasteText}" Command="{Binding Paste}" IsEnabled="{Binding CanPaste}" />
+                <MenuItem Header="{DynamicResource StringTextFlyoutSelectAllText}" Command="{Binding SelectAll}" IsEnabled="{Binding CanSelectAll}" />
+              </Menu>
+              <ToggleButton Name="ExtrasToggleButton" Grid.Column="1" VerticalAlignment="Stretch"
+                            Padding="10">
 
-          <MenuItem Header="{DynamicResource StringTextFlyoutCutText}" Command="{Binding $parent[TextBox].Cut}" IsEnabled="{Binding $parent[TextBox].CanCut}" />
-          <MenuItem Header="{DynamicResource StringTextFlyoutCopyText}" Command="{Binding $parent[TextBox].Copy}" IsEnabled="{Binding $parent[TextBox].CanCopy}" />
-        </Menu>
-      </Expander.Content>
-    </Expander>
+                <PathIcon Data="{StaticResource MoreIconData}"/>
+              </ToggleButton>
+            </Grid>
+            <Border Grid.Row="1"
+                    IsVisible="{Binding #ExtrasToggleButton.IsChecked}">
+              <Menu ItemContainerTheme="{StaticResource HorizontalMenuItem}"
+                    Height="NaN">
+                <Menu.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <StackPanel Orientation="Vertical"/>
+                  </ItemsPanelTemplate>
+                </Menu.ItemsPanel>
+                <!--     <Menu.IsVisible>
+                <MultiBinding Converter="{x:Static BoolConverters.And}">
+                <Binding Path="$parent[TextBox].HasTextActions"/>
+                <Binding Path="$parent[TextBox].CanCopy"/>
+                </MultiBinding>
+                </Menu.IsVisible>
+                <Menu.ItemContainerTheme>
+                <ControlTheme TargetType="MenuItem" BasedOn="{StaticResource HorizontalMenuItem}" x:DataType="TextProcessingAction">
+                <Setter Property="Header" Value="{Binding Label}"/>
+                <Setter Property="Command" Value="{Binding $parent[TextBox].RunTextAction}"/>
+                <Setter Property="CommandParameter" Value="{Binding}"/>
+                </ControlTheme>
+                </Menu.ItemContainerTheme>-->
+
+                <MenuItem Header="{DynamicResource StringTextFlyoutCutText}" Command="{Binding Cut}" IsEnabled="{Binding CanCut}" />
+                <MenuItem Header="{DynamicResource StringTextFlyoutCopyText}" Command="{Binding Copy}" IsEnabled="{Binding CanCopy}" />
+              </Menu>
+            </Border>
+          </Grid>
+        </DataTemplate>
+      </ContentControl.ContentTemplate>
+    </ContentControl>
   </Flyout>
 
   <ControlTheme x:Key="FluentTextBoxButton" TargetType="Button">
