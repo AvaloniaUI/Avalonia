@@ -5,6 +5,7 @@ using System.Linq;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Input;
+using Avalonia.Input.Raw;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Platform;
@@ -226,7 +227,7 @@ namespace Avalonia.Controls.UnitTests
                 Assert.False(f.IsOpen);
             }
         }
-        
+
         [Fact]
         public void Light_Dismiss_No_Event_Pass_Through_To_Button()
         {
@@ -312,7 +313,7 @@ namespace Avalonia.Controls.UnitTests
                 Assert.True(buttonClicked);  // Button is clicked
             }
         }
-        
+
         [Fact]
         public void Flyout_Has_Uncancellable_Close_Before_Showing_On_A_Different_Target()
         {
@@ -525,6 +526,53 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Ty()
+        {
+            using (CreateServicesWithFocus())
+            {
+                var flyoutContent = new Button()
+                {
+                    Width = 100,
+                    Height = 20
+                };
+                var flyout = new Flyout()
+                {
+                    Content = flyoutContent
+                };
+                var target = new Border
+                {
+                    Width = 200,
+                    Height = 200,
+                    ContextFlyout = flyout
+                };
+
+                var window = PreparedWindow(target);
+                window.Show();
+
+                var mouseHelper = new MouseTestHelper();
+                mouseHelper.Click(target, MouseButton.Right);
+
+                var host = flyout.Popup.Host as WindowBase;
+
+                Assert.True(flyout.IsOpen);
+                Assert.Equal(host?.PlatformImpl?.Position, new PixelPoint());
+
+                var mouse = new MouseDevice();
+
+                window.PlatformImpl?.Input!(new RawPointerEventArgs(
+                    mouse, 0, window.InputRoot, RawPointerEventType.Move, new Point(120, 50),
+                    RawInputModifiers.LeftMouseButton));
+
+                host?.Height = 40;
+                host?.InvalidateMeasure();
+                host?.Measure(Size.Infinity);
+                host?.Arrange(new Rect(default, host?.DesiredSize ?? default));
+
+                Assert.Equal(host?.PlatformImpl?.Position, new PixelPoint());
+            }
+        }
+
+        [Fact]
         public void Should_Reset_Popup_Parent_On_Target_Detached()
         {
             using (CreateServicesWithFocus())
@@ -532,18 +580,18 @@ namespace Avalonia.Controls.UnitTests
                 var userControl = new UserControl();
                 var window = PreparedWindow(userControl);
                 window.Show();
-                
+
                 var flyout = new TestFlyout();
                 flyout.ShowAt(userControl);
-                
+
                 var popup = Assert.IsType<Popup>(flyout.Popup);
                 Assert.NotNull(popup.Parent);
-                
+
                 window.Content = null;
                 Assert.Null(popup.Parent);
             }
         }
-        
+
         [Fact]
         public void Should_Reset_Popup_Parent_On_Target_Attach_Following_Detach()
         {
@@ -552,15 +600,15 @@ namespace Avalonia.Controls.UnitTests
                 var userControl = new UserControl();
                 var window = PreparedWindow(userControl);
                 window.Show();
-                
+
                 var flyout = new TestFlyout();
                 flyout.ShowAt(userControl);
-                
+
                 var popup = Assert.IsType<Popup>(flyout.Popup);
                 Assert.NotNull(popup.Parent);
-                
+
                 flyout.Hide();
-                
+
                 flyout.ShowAt(userControl);
                 Assert.NotNull(popup.Parent);
             }
@@ -846,7 +894,7 @@ namespace Avalonia.Controls.UnitTests
 
         private IDisposable CreateServicesWithFocus()
         {
-            return UnitTestApplication.Start(TestServices.StyledWindow.With(windowingPlatform:
+            return UnitTestApplication.Start(TestServices.FocusableWindow.With(windowingPlatform:
                 new MockWindowingPlatform(null,
                     x => UseOverlayPopups ? null : MockWindowingPlatform.CreatePopupMock(x).Object),
                     keyboardDevice: () => new KeyboardDevice()));
