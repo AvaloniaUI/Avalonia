@@ -526,7 +526,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Ty()
+        public void Flyout_With_Pointer_Placement_Keeps_Position_On_Resize()
         {
             using (CreateServicesWithFocus())
             {
@@ -552,10 +552,10 @@ namespace Avalonia.Controls.UnitTests
                 var mouseHelper = new MouseTestHelper();
                 mouseHelper.Click(target, MouseButton.Right);
 
-                var host = flyout.Popup.Host as WindowBase;
-
+                var host = (flyout.Popup.Host as ContentControl);
+                var platformImpl = (host?.PresentationSource as PresentationSource)?.PlatformImpl as IWindowBaseImpl;
                 Assert.True(flyout.IsOpen);
-                Assert.Equal(host?.PlatformImpl?.Position, new PixelPoint());
+                Assert.Equal(platformImpl?.Position, new PixelPoint());
 
                 var mouse = new MouseDevice();
 
@@ -568,7 +568,7 @@ namespace Avalonia.Controls.UnitTests
                 host?.Measure(Size.Infinity);
                 host?.Arrange(new Rect(default, host?.DesiredSize ?? default));
 
-                Assert.Equal(host?.PlatformImpl?.Position, new PixelPoint());
+                Assert.Equal(platformImpl?.Position, new PixelPoint());
             }
         }
 
