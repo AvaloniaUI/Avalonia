@@ -18,7 +18,12 @@ namespace Avalonia.Styling
         private IResourceDictionary? _resources;
         private List<SetterBase>? _setters;
         private List<IAnimation>? _animations;
-        private StyleInstance? _sharedInstance;
+        // Shared instances are cached per FrameType: the same ControlTheme can be
+        // attached to a control both as its own Theme and as a TemplatedParentTheme,
+        // and a single StyleInstance object must never be inserted twice into the
+        // same ValueStore (nor shared across different frame types).
+        private StyleInstance? _sharedTemplatedParentThemeInstance;
+        private StyleInstance? _sharedThemeInstance;
 
         public IList<IStyle> Children => _children ??= new(this);
 
@@ -118,9 +123,14 @@ namespace Avalonia.Styling
 
             StyleInstance instance;
 
-            if (_sharedInstance is not null && canShareInstance)
+            ref var sharedSlot = ref (type == FrameType.TemplatedParentTheme
+                ? ref _sharedTemplatedParentThemeInstance
+                : ref _sharedThemeInstance);
+
+            if (sharedSlot is not null && canShareInstance &&
+                !ContainsFrame(ao.GetValueStore(), sharedSlot))
             {
-                instance = _sharedInstance;
+                instance = sharedSlot;
             }
             else
             {
@@ -144,13 +154,24 @@ namespace Avalonia.Styling
                 if (canShareInstance)
                 {
                     instance.MakeShared();
-                    _sharedInstance = instance;
+                    sharedSlot = instance;
                 }
             }
 
             ao.GetValueStore().AddFrame(instance);
             instance.ApplyAnimations(ao);
             return instance;
+        }
+
+        private static bool ContainsFrame(ValueStore store, ValueFrame frame)
+        {
+            var frames = store.Frames;
+            for (var i = 0; i < frames.Count; ++i)
+            {
+                if (frames[i] == frame)
+                    return true;
+            }
+            return false;
         }
 
         internal virtual void SetParent(StyleBase? parent) => Parent = parent;
