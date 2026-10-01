@@ -666,6 +666,86 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        private static double GetLineHeight()
+        {
+            using var layout = new TextLayout("0", Typeface.Default, 12, Brushes.Black);
+
+            return layout.Height;
+        }
+
+        private const string HardBreakText = "0123456789\r\n0123456789\r\n0123456789\r\n0123456789";
+
+        private const string WrappedText = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
+
+        [Fact]
+        public void Should_Add_Ellipsis_When_MaxLines_Cuts_At_Hard_Break()
+        {
+            using (Start())
+            {
+                var layout = new TextLayout(
+                    HardBreakText,
+                    Typeface.Default,
+                    12,
+                    Brushes.Black,
+                    textTrimming: TextTrimming.CharacterEllipsis,
+                    maxWidth: 180,
+                    maxLines: 2);
+
+                Assert.Equal(2, layout.TextLines.Count);
+                Assert.True(layout.TextLines[1].HasCollapsed);
+
+                layout.Dispose();
+            }
+        }
+
+        [Fact]
+        public void Should_Not_Add_Ellipsis_When_MaxHeight_Cuts_At_Hard_Break()
+        {
+            using (Start())
+            {
+                var lineHeight = GetLineHeight();
+
+                var layout = new TextLayout(
+                    HardBreakText,
+                    Typeface.Default,
+                    12,
+                    Brushes.Black,
+                    textTrimming: TextTrimming.CharacterEllipsis,
+                    maxWidth: 180,
+                    maxHeight: lineHeight * 2.2);
+
+                Assert.Equal(2, layout.TextLines.Count);
+                Assert.All(layout.TextLines, line => Assert.False(line.HasCollapsed));
+
+                layout.Dispose();
+            }
+        }
+
+        [Fact]
+        public void Should_Add_Ellipsis_When_MaxHeight_Cuts_Wrapped_Line()
+        {
+            using (Start())
+            {
+                var lineHeight = GetLineHeight();
+
+                var layout = new TextLayout(
+                    WrappedText,
+                    Typeface.Default,
+                    12,
+                    Brushes.Black,
+                    textWrapping: TextWrapping.Wrap,
+                    textTrimming: TextTrimming.CharacterEllipsis,
+                    maxWidth: 180,
+                    maxHeight: lineHeight * 2.2);
+
+                Assert.Equal(2, layout.TextLines.Count);
+                Assert.False(layout.TextLines[0].HasCollapsed);
+                Assert.True(layout.TextLines[1].HasCollapsed);
+
+                layout.Dispose();
+            }
+        }
+
         [Fact]
         public void Should_Produce_Fixed_Height_Lines()
         {
