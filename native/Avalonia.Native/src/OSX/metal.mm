@@ -1,9 +1,37 @@
 #import <AppKit/AppKit.h>
 #import <Metal/Metal.h>
 #import <QuartzCore/QuartzCore.h>
+#include <memory>
+#include <mutex>
 #include "common.h"
 #include "rendertarget.h"
 #import "crapium.h"
+
+
+struct AvnMetalLayout
+{
+    AvnPixelSize Size;
+    double Scaling;
+
+    AvnMetalLayout() : Size{1, 1}, Scaling(1) {}
+    AvnMetalLayout(const AvnPixelSize& size, double scaling) : Size(size), Scaling(scaling) {}
+
+    bool operator==(const AvnMetalLayout& other) const
+    {
+        return Size.Width == other.Size.Width
+            && Size.Height == other.Size.Height
+            && Scaling == other.Scaling;
+    }
+
+    bool operator!=(const AvnMetalLayout& other) const { return !(*this == other); }
+};
+
+struct AvnMetalLayoutState
+{
+    std::mutex Mutex;
+    AvnMetalLayout Pending;   // last value reported by resize:withScale:
+    AvnMetalLayout Applied;   // value currently set on the CAMetalLayer
+};
 
 
 class API_AVAILABLE(macos(12.0)) AvnMTLSharedEvent : public ComSingleObject<IAvnMTLSharedEvent, &IID_IAvnMTLSharedEvent>
@@ -182,12 +210,18 @@ class AvnMetalRenderSession : public ComSingleObject<IAvnMetalRenderingSession, 
     AvnPixelSize _size;
     double _scaling;
     bool _presentWithTransaction;
+    AvnMetalLayout _renderedLayout;
+    std::shared_ptr<AvnMetalLayoutState> _layoutState;   // session can outlive the target
 public:
     FORWARD_IUNKNOWN()
 
-    AvnMetalRenderSession(AvnMetalDevice* device, CAMetalLayer* layer, id <CAMetalDrawable> drawable, const AvnPixelSize &size, double scaling, bool presentWithTransaction)
+    AvnMetalRenderSession(AvnMetalDevice* device, CAMetalLayer* layer, id <CAMetalDrawable> drawable,
+                          const AvnPixelSize &size, double scaling, bool presentWithTransaction,
+                          const AvnMetalLayout& renderedLayout,
+                          std::shared_ptr<AvnMetalLayoutState> layoutState)
             : _drawable(drawable), _size(size), _scaling(scaling), _queue(device->queue),
-            _texture([drawable texture]), _presentWithTransaction(presentWithTransaction) {
+            _texture([drawable texture]), _presentWithTransaction(presentWithTransaction),
+            _renderedLayout(renderedLayout), _layoutState(std::move(layoutState)) {
         _layer = layer;
     }
 
@@ -207,19 +241,36 @@ public:
     ~AvnMetalRenderSession()
     {
         START_ARP_CALL;
+
+        // Presenting this stale frame would stretch it; the resize schedules another.
+        bool layoutChanged = false;
+        if(_layoutState)
+        {
+            std::lock_guard<std::mutex> lock(_layoutState->Mutex);
+            layoutChanged = _layoutState->Applied != _renderedLayout;
+        }
+
         auto buffer = [_queue commandBuffer];
-        if(_presentWithTransaction)
+        if(layoutChanged)
+        {
+            [buffer commit];
+        }
+        else if(_presentWithTransaction)
         {
             [buffer commit];
             [buffer waitUntilScheduled];
             [_drawable present];
-            // Restore the default asynchronous presentation for the off-thread render loop.
-            _layer.presentsWithTransaction = NO;
         }
         else
         {
             [buffer presentDrawable: _drawable];
             [buffer commit];
+        }
+
+        if(_presentWithTransaction)
+        {
+            // Required for dropped frames too, else later frames stay serialized.
+            _layer.presentsWithTransaction = NO;
         }
     }
 };
@@ -227,12 +278,43 @@ public:
 class AvnMetalRenderTarget : public ComSingleObject<IAvnMetalRenderTarget, &IID_IAvnMetalRenderTarget>
 {
     CAMetalLayer* _layer;
-    double _scaling = 1;
-    AvnPixelSize _size = {1,1};
     ComPtr<AvnMetalDevice> _device;
+    std::shared_ptr<AvnMetalLayoutState> _layoutState = std::make_shared<AvnMetalLayoutState>();
+
+    void ApplyLayoutLocked(const AvnMetalLayout& layout)
+    {
+        CGSize layerSize = {(CGFloat)layout.Size.Width, (CGFloat)layout.Size.Height};
+
+        // Without this Core Animation animates the layer to the new size.
+        [CATransaction begin];
+        [CATransaction setDisableActions:YES];
+        [_layer setDrawableSize: layerSize];
+        [CATransaction commit];
+
+        _layoutState->Applied = layout;
+    }
+
+    // A zero-sized drawable cannot be acquired.
+    static AvnMetalLayout Sanitize(const AvnMetalLayout& layout)
+    {
+        AvnMetalLayout result = layout;
+        if(result.Size.Width < 1) result.Size.Width = 1;
+        if(result.Size.Height < 1) result.Size.Height = 1;
+        if(!(result.Scaling > 0)) result.Scaling = 1;
+        return result;
+    }
+
+    // Safe to call from any thread.
+    AvnMetalLayout SyncLayout()
+    {
+        std::lock_guard<std::mutex> lock(_layoutState->Mutex);
+        auto layout = Sanitize(_layoutState->Pending);
+        if(_layoutState->Applied != layout)
+            ApplyLayoutLocked(layout);
+        return layout;
+    }
+
 public:
-    double PendingScaling = 1;
-    AvnPixelSize PendingSize = {1,1};
     FORWARD_IUNKNOWN()
     AvnMetalRenderTarget(CAMetalLayer* layer, ComPtr<AvnMetalDevice> device)
     {
@@ -240,25 +322,38 @@ public:
         _device = device;
     }
 
+    // UI thread, on view resize. Applied eagerly so the layer is already correct
+    // when the render thread wakes up.
+    void SetPendingLayout(const AvnMetalLayout& layout)
+    {
+        {
+            std::lock_guard<std::mutex> lock(_layoutState->Mutex);
+            _layoutState->Pending = Sanitize(layout);
+        }
+
+        SyncLayout();
+    }
+
     HRESULT BeginDrawing(IAvnMetalRenderingSession **ret) override {
         START_COM_ARP_CALL;
         bool onMainThread = [NSThread isMainThread];
         if(onMainThread)
         {
-            // Flush all existing rendering
+            // Flush before touching the layer geometry.
             auto buffer = [_device->queue commandBuffer];
             [buffer commit];
             [buffer waitUntilCompleted];
-            _size = PendingSize;
-            _scaling= PendingScaling;
-            CGSize layerSize = {(CGFloat)_size.Width, (CGFloat)_size.Height};
-
-            [CATransaction begin];
-            [CATransaction setDisableActions:YES];
-            [_layer setDrawableSize: layerSize];
-            _layer.presentsWithTransaction = YES;
-            [CATransaction commit];
         }
+
+        // Sync on any thread, so a resize is never rendered into a stale drawable.
+        auto layout = SyncLayout();
+
+        if(onMainThread)
+        {
+            // Present synchronously so a live resize cannot tear.
+            _layer.presentsWithTransaction = YES;
+        }
+
         auto drawable = [_layer nextDrawable];
         if(drawable == nil)
         {
@@ -267,7 +362,18 @@ public:
             *ret = nullptr;
             return E_FAIL;
         }
-        *ret = new AvnMetalRenderSession(_device, _layer, drawable, _size, _scaling, onMainThread);
+
+        // Skia requires this to match the Metal texture exactly.
+        AvnPixelSize drawableSize = {
+            (int)[drawable texture].width,
+            (int)[drawable texture].height
+        };
+        if(drawableSize.Width < 1) drawableSize.Width = 1;
+        if(drawableSize.Height < 1) drawableSize.Height = 1;
+
+        *ret = new AvnMetalRenderSession(_device, _layer, drawable,
+                                         drawableSize, layout.Scaling, onMainThread,
+                                         layout, _layoutState);
         return 0;
     }
 };
@@ -294,9 +400,7 @@ public:
 }
 
 - (void)resize:(AvnPixelSize)size withScale:(float)scale {
-    CGSize layerSize = {(CGFloat)size.Width, (CGFloat)size.Height};
-    _target->PendingScaling = scale;
-    _target->PendingSize = size;
+    _target->SetPendingLayout(AvnMetalLayout(size, scale));
     [_layer setNeedsDisplay];
 }
 
