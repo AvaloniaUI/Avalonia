@@ -357,7 +357,7 @@ namespace Avalonia.Media.TextFormatting
 
         public IEnumerable<Rect> HitTestTextRange(int start, int length)
         {
-            if (length == 0 || start + length <= 0)
+            if (start + length <= 0)
             {
                 return Array.Empty<Rect>();
             }
@@ -401,7 +401,7 @@ namespace Avalonia.Media.TextFormatting
                     }
                 }
 
-                if (length == 0 || textLine.FirstTextSourceIndex + textLine.Length >= start + length)
+                if (textLine.FirstTextSourceIndex + textLine.Length >= start + length)
                 {
                     break;
                 }
