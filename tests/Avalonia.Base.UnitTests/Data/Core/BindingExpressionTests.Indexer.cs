@@ -189,6 +189,40 @@ public partial class BindingExpressionTests
         GC.KeepAlive(data);
     }
 
+    [Theory]
+    [InlineData("Item[]")]
+    [InlineData("Item[foo]")]
+    public void Should_Track_NonIntegerIndexer_With_Indexer_PropertyName(string propertyName)
+    {
+        var data = new { Foo = new NonIntegerIndexer(propertyName) };
+        data.Foo["foo"] = "bar";
+
+        var target = CreateTargetWithSource(data, o => o.Foo["foo"]);
+
+        Assert.Equal("bar", target.String);
+
+        data.Foo["foo"] = "bar2";
+
+        Assert.Equal("bar2", target.String);
+
+        GC.KeepAlive(data);
+    }
+
+    [Fact]
+    public void Should_Track_AvaloniaDictionary_Value()
+    {
+        var data = new { Foo = new AvaloniaDictionary<string, string> { ["foo"] = "bar" } };
+        var target = CreateTargetWithSource(data, o => o.Foo["foo"]);
+
+        Assert.Equal("bar", target.String);
+
+        data.Foo["foo"] = "bar2";
+
+        Assert.Equal("bar2", target.String);
+
+        GC.KeepAlive(data);
+    }
+
     [Fact]
     public void Should_SetArrayIndex()
     {
@@ -282,6 +316,12 @@ public partial class BindingExpressionTests
     private class NonIntegerIndexer : NotifyingBase
     {
         private readonly Dictionary<string, string> _storage = new Dictionary<string, string>();
+        private readonly string _propertyName;
+
+        public NonIntegerIndexer(string propertyName = CommonPropertyNames.IndexerName)
+        {
+            _propertyName = propertyName;
+        }
 
         public string this[string key]
         {
@@ -292,7 +332,7 @@ public partial class BindingExpressionTests
             set
             {
                 _storage[key] = value;
-                RaisePropertyChanged(CommonPropertyNames.IndexerName);
+                RaisePropertyChanged(_propertyName);
             }
         }
     }
