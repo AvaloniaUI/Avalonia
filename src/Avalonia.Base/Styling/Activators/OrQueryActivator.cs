@@ -10,7 +10,7 @@ namespace Avalonia.Styling.Activators
     {
         private List<IStyleActivator>? _sources;
 
-        public OrQueryActivator(Visual visual) : base(visual)
+        public OrQueryActivator(StyledElement target) : base(target)
         {
         }
 
