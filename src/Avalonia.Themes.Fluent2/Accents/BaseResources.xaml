@@ -13,7 +13,6 @@
   <SplineEasing x:Key="ControlFastOutSlowInKeySpline" X1="0" Y1="0" X2="0" Y2="1" />
 
   <SolidColorBrush x:Key="SystemControlTransparentBrush" Color="Transparent" />
-  <x:Boolean x:Key="UseSystemFocusVisuals">True</x:Boolean>
   <Thickness x:Key="TextControlThemeBorderThickness">1</Thickness>
   <Thickness x:Key="TextControlThemeBorderThicknessFocused">1,1,1,2</Thickness>
   <Thickness x:Key="TextControlThemePadding">10,5,6,6</Thickness>
