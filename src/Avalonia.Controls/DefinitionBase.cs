@@ -60,6 +60,10 @@ namespace Avalonia.Controls
             }
 
             Parent?.InvalidateMeasure();
+
+            //  while this link survives the definition still reads the grid's inherited
+            //  PrivateSharedSizeScope, and the grid holds it as an inheritance child.
+            InheritanceParent = null;
         }
 
         /// <summary>
@@ -268,6 +272,17 @@ namespace Avalonia.Controls
                 return (minSize);
             }
         }
+
+        /// <summary>
+        /// Returns min size, never taking into account shared state.
+        /// </summary>
+        /// <remarks>
+        /// This is the definition's own intrinsic contribution to its group. It is the counterpart
+        /// of <see cref="SetMinSize"/>: code that saves and restores a min size across a measure
+        /// must round-trip this value, because feeding the group minimum back into
+        /// <see cref="_minSize"/> would make the group unable to shrink.
+        /// </remarks>
+        internal double RawMinSize => _minSize;
 
         /// <summary>
         /// Offset.
@@ -626,7 +641,7 @@ namespace Avalonia.Controls
                 //  accumulate min size of all participating definitions
                 for (int i = 0, count = _registry.Count; i < count; ++i)
                 {
-                    sharedMinSize = Math.Max(sharedMinSize, _registry[i].MinSize);
+                    sharedMinSize = Math.Max(sharedMinSize, _registry[i]._minSize);
                 }
 
                 bool sharedMinSizeChanged = !MathUtilities.AreClose(_minSize, sharedMinSize);

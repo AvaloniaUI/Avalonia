@@ -21,7 +21,7 @@ namespace Avalonia.Media
 #if !BUILDTASK
     public
 #endif
-    readonly struct Color : IEquatable<Color>
+    readonly struct Color : IEquatable<Color>, IFormattable
     {
         private const double byteToDouble = 1.0 / 255;
 
@@ -459,6 +459,97 @@ namespace Avalonia.Media
                 builder.Append('#');
                 builder.AppendFormat(CultureInfo.InvariantCulture, "{0:x8}", rgb);
             }
+        }
+
+        /// <summary>
+        /// Returns a formatted string representation of the color.
+        /// </summary>
+        /// <param name="format">
+        /// The format specifier. All color types support all specifiers via auto-conversion.
+        /// Uppercase includes alpha, lowercase excludes it. <c>%</c> suffix = percent mode:
+        /// <list type="bullet">
+        /// <item><c>null</c> or <c>""</c> — Default (known name or <c>#aarrggbb</c>)</item>
+        /// <item><c>"X"</c> — XAML hex with alpha: <c>#AARRGGBB</c></item>
+        /// <item><c>"x"</c> — Hex without alpha: <c>#RRGGBB</c></item>
+        /// <item><c>"H"</c> — HTML hex with alpha: <c>#RRGGBBAA</c></item>
+        /// <item><c>"R"</c> — CSS rgba absolute: <c>rgba(r, g, b, a)</c></item>
+        /// <item><c>"r"</c> — CSS rgb absolute: <c>rgb(r, g, b)</c></item>
+        /// <item><c>"R%"</c> — CSS rgba percent: <c>rgba(r%, g%, b%, a%)</c></item>
+        /// <item><c>"r%"</c> — CSS rgb percent: <c>rgb(r%, g%, b%)</c></item>
+        /// <item><c>"L"/"l"/"L%"/"l%"</c> — CSS hsl/hsla (auto-converts to HSL)</item>
+        /// <item><c>"V"/"v"/"V%"/"v%"</c> — CSS hsv/hsva (auto-converts to HSV)</item>
+        /// </list>
+        /// <para><c>"C"</c> and <c>"A"</c> are reserved for future complex format strings.</para>
+        /// </param>
+        /// <param name="formatProvider">Ignored. Color formatting is culture-invariant.</param>
+        /// <returns>The formatted string representation.</returns>
+        /// <exception cref="FormatException">Thrown when <paramref name="format"/> is not recognized.</exception>
+        public string ToString(string? format, IFormatProvider? formatProvider)
+        {
+            if (string.IsNullOrEmpty(format))
+            {
+                return ToString();
+            }
+
+            return format switch
+            {
+                "X" => $"#{A:X2}{R:X2}{G:X2}{B:X2}",
+                "x" => $"#{R:X2}{G:X2}{B:X2}",
+                "H" => $"#{R:X2}{G:X2}{B:X2}{A:X2}",
+
+                "R" => FormatRgbCss(),
+                "r" => FormatRgbCss(includeAlpha: false),
+                "R%" => FormatRgbPercentCss(),
+                "r%" => FormatRgbPercentCss(includeAlpha: false),
+
+                "L" or "l" or "L%" or "l%" => ToHsl().ToString(format, formatProvider),
+                "V" or "v" or "V%" or "v%" => ToHsv().ToString(format, formatProvider),
+
+                _ => throw new FormatException($"Format string '{format}' is not supported.")
+            };
+        }
+
+        /// <summary>
+        /// Formats the color as a CSS rgb() or rgba() string using absolute RGB components and fractional alpha.
+        /// </summary>
+        private string FormatRgbCss(bool includeAlpha = true)
+        {
+            if (includeAlpha)
+            {
+                return string.Format(
+                    CultureInfo.InvariantCulture,
+                    "rgba({0}, {1}, {2}, {3:F2})",
+                    R,
+                    G,
+                    B,
+                    A * byteToDouble);
+            }
+
+            return string.Format(CultureInfo.InvariantCulture, "rgb({0}, {1}, {2})", R, G, B);
+        }
+
+        /// <summary>
+        /// Formats the color as a CSS rgb() or rgba() string with all components as percentages.
+        /// </summary>
+        private string FormatRgbPercentCss(bool includeAlpha = true)
+        {
+            int rPct = (int)Math.Round(R * byteToDouble * 100.0);
+            int gPct = (int)Math.Round(G * byteToDouble * 100.0);
+            int bPct = (int)Math.Round(B * byteToDouble * 100.0);
+
+            if (includeAlpha)
+            {
+                int aPct = (int)Math.Round(A * byteToDouble * 100.0);
+                return string.Format(
+                    CultureInfo.InvariantCulture,
+                    "rgba({0}%, {1}%, {2}%, {3}%)",
+                    rPct,
+                    gPct,
+                    bPct,
+                    aPct);
+            }
+
+            return string.Format(CultureInfo.InvariantCulture, "rgb({0}%, {1}%, {2}%)", rPct, gPct, bPct);
         }
 
         /// <summary>

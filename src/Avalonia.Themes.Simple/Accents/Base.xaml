@@ -117,6 +117,9 @@
     Opacity="0.75"
     Color="#444444" />
   <SolidColorBrush
+    x:Key="NotificationCardForegroundBrush"
+    Color="White" />
+  <SolidColorBrush
     x:Key="NotificationCardInformationBackgroundBrush"
     Opacity="0.75"
     Color="#007ACC" />

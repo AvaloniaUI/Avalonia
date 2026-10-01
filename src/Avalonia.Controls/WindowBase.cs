@@ -239,6 +239,8 @@ namespace Avalonia.Controls
             {
                 IsVisible = false;
 
+                if (IsActive)
+                    HandleDeactivated();
                 if (this is IFocusScope scope)
                 {
                     ((FocusManager?)FocusManager)?.RemoveFocusRoot(scope);

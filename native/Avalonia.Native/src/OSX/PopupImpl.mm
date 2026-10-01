@@ -25,9 +25,14 @@ private:
     PopupImpl(IAvnWindowEvents* events) : TopLevelImpl(events), WindowBaseImpl(events)
     {
         WindowEvents = events;
-        [Window setLevel:NSPopUpMenuWindowLevel];
+        UpdateWindowLevel();
     }
 protected:
+    virtual NSWindowLevel GetBaseWindowLevel() override
+    {
+        return NSPopUpMenuWindowLevel;
+    }
+
     virtual NSWindowStyleMask CalculateStyleMask() override
     {
         return NSWindowStyleMaskBorderless;
@@ -43,6 +48,17 @@ public:
         return WindowBaseImpl::Show(activate, true);
     }
     
+    virtual HRESULT SetHitTestVisible(bool value) override
+    {
+        START_COM_CALL;
+
+        @autoreleasepool
+        {
+            [Window setIgnoresMouseEvents:!value];
+            return S_OK;
+        }
+    }
+
     virtual bool ShouldTakeFocusOnShow() override
     {
         auto parent = Parent.tryGet();

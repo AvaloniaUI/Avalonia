@@ -1,0 +1,70 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:ControlCatalog.Controls"
+             x:Class="ControlCatalog.Pages.TextBoxSelectionPage">
+  <ScrollViewer Padding="24,20,24,28">
+    <StackPanel Spacing="16">
+
+      <controls:SampleSection Header="Selection"
+                              Description="SelectionStart and SelectionEnd are character offsets, so a selection can be set from XAML or from code without any pointer input. SelectionBrush paints behind it and SelectionForegroundBrush recolours the glyphs."
+                              StageMinHeight="150">
+        <StackPanel Spacing="8">
+          <TextBox Name="SelectionBox"
+                   Width="360"
+                   HorizontalAlignment="Left"
+                   Text="Selection set from XAML, then changed from code."
+                   SelectionStart="5"
+                   SelectionEnd="22"
+                   SelectionBrush="Teal"
+                   SelectionForegroundBrush="White"
+                   ClearSelectionOnLostFocus="False" />
+          <TextBlock Name="SelectionStatus" Classes="sample-caption" TextWrapping="Wrap" />
+        </StackPanel>
+        <controls:SampleSection.Options>
+          <StackPanel Spacing="8">
+            <Button Content="SelectAll()" Click="OnSelectAll" HorizontalAlignment="Stretch" />
+            <Button Content="Select the first word" Click="OnSelectFirstWord" HorizontalAlignment="Stretch" />
+            <Button Content="ClearSelection()" Click="OnClearSelection" HorizontalAlignment="Stretch" />
+            <CheckBox Content="ClearSelectionOnLostFocus" IsChecked="{Binding #SelectionBox.ClearSelectionOnLostFocus}" />
+            <CheckBox Content="IsInactiveSelectionHighlightEnabled" IsChecked="{Binding #SelectionBox.IsInactiveSelectionHighlightEnabled}" />
+          </StackPanel>
+        </controls:SampleSection.Options>
+        <controls:SampleSection.Code><x:String xml:space="preserve"><![CDATA[<TextBox SelectionStart="5"
+         SelectionEnd="22"
+         SelectionBrush="Teal"
+         SelectionForegroundBrush="White"
+         ClearSelectionOnLostFocus="False" />]]></x:String></controls:SampleSection.Code>
+      </controls:SampleSection>
+
+      <controls:SampleSection Header="Caret"
+                              Description="CaretIndex is where the next character goes. CaretBrush colours the caret and CaretBlinkInterval sets how fast it blinks, with TimeSpan.Zero turning the blink off."
+                              StageMinHeight="130">
+        <StackPanel Spacing="8">
+          <TextBox Name="CaretBox"
+                   Width="360"
+                   HorizontalAlignment="Left"
+                   Text="Click anywhere in this box to move the caret."
+                   CaretBrush="Teal" />
+          <TextBlock Classes="sample-caption"
+                     Text="{Binding #CaretBox.CaretIndex, StringFormat='CaretIndex: {0}'}" />
+        </StackPanel>
+        <controls:SampleSection.Options>
+          <StackPanel Spacing="8">
+            <Button Content="Caret to start" Click="OnCaretToStart" HorizontalAlignment="Stretch" />
+            <Button Content="Caret to end" Click="OnCaretToEnd" HorizontalAlignment="Stretch" />
+            <TextBlock Text="CaretBlinkInterval" Classes="sample-caption" />
+            <ComboBox Name="CaretBlinkCombo" SelectedIndex="0" HorizontalAlignment="Stretch">
+              <ComboBoxItem Content="500 ms (default)" />
+              <ComboBoxItem Content="150 ms" />
+              <ComboBoxItem Content="1 second" />
+              <ComboBoxItem Content="No blink" />
+            </ComboBox>
+          </StackPanel>
+        </controls:SampleSection.Options>
+        <controls:SampleSection.Code><x:String xml:space="preserve"><![CDATA[<TextBox CaretBrush="Teal"
+         CaretBlinkInterval="0:0:0.15" />]]></x:String></controls:SampleSection.Code>
+      </controls:SampleSection>
+
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

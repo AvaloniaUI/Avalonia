@@ -27,6 +27,7 @@ internal class CompositionInterop : ICompositionGpuInterop
 
     public IReadOnlyList<string> SupportedImageHandleTypes => _externalObjects.SupportedImageHandleTypes;
     public IReadOnlyList<string> SupportedSemaphoreTypes => _externalObjects.SupportedSemaphoreTypes;
+    public IReadOnlyList<PlatformGraphicsDrmFormat>? SupportedDmaBufFormats => _externalObjects.SupportedDmaBufFormats;
 
     public CompositionGpuImportedImageSynchronizationCapabilities GetSynchronizationCapabilities(string imageHandleType)
         => _externalObjects.GetSynchronizationCapabilities(imageHandleType);
@@ -56,7 +57,7 @@ internal class CompositionInterop : ICompositionGpuInterop
         throw new System.NotSupportedException();
     }
 
-    public bool IsLost { get; }
+    public bool IsLost => _context.IsLost;
     public byte[]? DeviceLuid { get; set; }
     public byte[]? DeviceUuid { get; set; }
 }

@@ -1,0 +1,150 @@
+<ContentPage Theme="{StaticResource ScrollPage}" xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             xmlns:local="using:ControlCatalog"
+             xmlns:models="using:ControlCatalog.Models"
+             Header="Settings"
+             Margin="20"
+             xmlns:viewModels="using:ControlCatalog.ViewModels"
+             x:DataType="viewModels:SettingsViewModel"
+             x:Class="ControlCatalog.Pages.SettingsPage">
+  <ContentPage.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Default">
+          <SolidColorBrush x:Key="CardBackground" Color="#FFFFFF" />
+          <SolidColorBrush x:Key="CardBorderBrush" Color="#E5E5EA" />
+          <SolidColorBrush x:Key="CardBorderBrushHover" Color="#3E6DF3" />
+          <SolidColorBrush x:Key="SubtleForeground" Color="#64646E" />
+          <SolidColorBrush x:Key="BadgeBackground" Color="#E8EFFD" />
+          <SolidColorBrush x:Key="BadgeForeground" Color="#3462D9" />
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Dark">
+          <SolidColorBrush x:Key="CardBackground" Color="#2B2B33" />
+          <SolidColorBrush x:Key="CardBorderBrush" Color="#3A3A45" />
+          <SolidColorBrush x:Key="CardBorderBrushHover" Color="#8AB4FF" />
+          <SolidColorBrush x:Key="SubtleForeground" Color="#9C9CAB" />
+          <SolidColorBrush x:Key="BadgeBackground" Color="#31395A" />
+          <SolidColorBrush x:Key="BadgeForeground" Color="#8AB4FF" />
+        </ResourceDictionary>
+      </ResourceDictionary.ThemeDictionaries>
+    </ResourceDictionary>
+  </ContentPage.Resources>
+  <ContentPage.Styles>
+    <Style Selector="ComboBox">
+      <Setter Property="MinWidth">200</Setter>
+    </Style>
+    <Style Selector="Border.card">
+      <Setter Property="Background" Value="{DynamicResource CardBackground}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource CardBorderBrush}" />
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="Padding" Value="10"/>
+      <Setter Property="CornerRadius" Value="10"/>
+    </Style>
+    <Style Selector="Border.card Label">
+      <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
+  </ContentPage.Styles>
+  <StackPanel Orientation="Vertical" Spacing="10">
+    <Border Classes="card">
+
+      <Grid ColumnSpacing="10" ColumnDefinitions="*,Auto">
+        <Label>Window Decorations</Label>
+        <ComboBox x:Name="Decorations"
+                  Grid.Column="1"
+                  HorizontalAlignment="Stretch"
+                  SelectedIndex="{Binding SelectedDecorationIndex}"
+                  SelectionChanged="Decorations_SelectionChanged"
+                  ToolTip.Tip="System Decorations">
+          <ComboBox.Items>
+            <WindowDecorations>None</WindowDecorations>
+            <WindowDecorations>BorderOnly</WindowDecorations>
+            <WindowDecorations>Full</WindowDecorations>
+          </ComboBox.Items>
+        </ComboBox>
+      </Grid>
+    </Border>
+
+    <Border Classes="card">
+      <Grid ColumnSpacing="10" ColumnDefinitions="*,Auto">
+        <Label>Theme</Label>
+        <ComboBox HorizontalAlignment="Stretch"
+                  Grid.Column="1"
+                  SelectedItem="{x:Static local:App.CurrentTheme}"
+                  SelectionChanged="Themes_SelectionChanged"
+                  ToolTip.Tip="Catalog Theme">
+          <ComboBox.Items>
+            <models:CatalogTheme>Fluent</models:CatalogTheme>
+            <models:CatalogTheme>Simple</models:CatalogTheme>
+          </ComboBox.Items>
+        </ComboBox>
+      </Grid>
+    </Border>
+
+    <Border Classes="card">
+      <Grid ColumnSpacing="10" ColumnDefinitions="*,Auto">
+        <Label>Theme Variant</Label>
+        <ComboBox HorizontalAlignment="Stretch"
+                  Grid.Column="1"
+                  DisplayMemberBinding="{Binding Key, x:DataType=ThemeVariant}"
+                  SelectedIndex="{Binding SelectedThemeVariantIndex}"
+                  SelectionChanged="ThemeVariants_SelectionChanged"
+                  ToolTip.Tip="Theme Variant">
+          <ComboBox.Items>
+            <ThemeVariant>Default</ThemeVariant>
+            <ThemeVariant>Light</ThemeVariant>
+            <ThemeVariant>Dark</ThemeVariant>
+          </ComboBox.Items>
+        </ComboBox>
+      </Grid>
+    </Border>
+
+    <Border Classes="card">
+      <Grid ColumnSpacing="10" ColumnDefinitions="*,Auto">
+        <Label>Window Transparency</Label>
+        <ComboBox HorizontalAlignment="Stretch"
+                  Grid.Column="1"
+                  SelectedIndex="{Binding SelectedTransparencyLevelIndex}"
+                  SelectionChanged="TransparencyLevels_SelectionChanged"
+                  ToolTip.Tip="Window Transparency Level">
+          <ComboBox.Items>
+            <WindowTransparencyLevel>None</WindowTransparencyLevel>
+            <WindowTransparencyLevel>Transparent</WindowTransparencyLevel>
+            <WindowTransparencyLevel>Blur</WindowTransparencyLevel>
+            <WindowTransparencyLevel>AcrylicBlur</WindowTransparencyLevel>
+            <WindowTransparencyLevel>Mica</WindowTransparencyLevel>
+          </ComboBox.Items>
+        </ComboBox>
+      </Grid>
+    </Border>
+
+    <Border Classes="card">
+      <Grid ColumnSpacing="10" ColumnDefinitions="*,Auto">
+        <Label>Flow Direction</Label>
+        <ComboBox HorizontalAlignment="Stretch"
+                  Grid.Column="1"
+                  SelectedIndex="{Binding SelectedFlowDirectionIndex}"
+                  SelectionChanged="FlowDirection_SelectionChanged"
+                  ToolTip.Tip="Flow Direction">
+          <ComboBox.Items>
+            <FlowDirection>LeftToRight</FlowDirection>
+            <FlowDirection>RightToLeft</FlowDirection>
+          </ComboBox.Items>
+        </ComboBox>
+      </Grid>
+    </Border>
+
+    <Border Classes="card">
+      <Grid ColumnSpacing="10" ColumnDefinitions="*,Auto">
+        <Label>Window State</Label>          
+        <ComboBox HorizontalAlignment="Stretch"
+                  Grid.Column="1"
+                  ItemsSource="{Binding WindowStates}"
+                  SelectedItem="{Binding WindowState}"
+                  ToolTip.Tip="Window State"/>
+      </Grid>
+    </Border>
+  </StackPanel>
+</ContentPage>

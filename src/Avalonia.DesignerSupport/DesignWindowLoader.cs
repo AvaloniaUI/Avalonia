@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -12,6 +13,7 @@ using Avalonia.Styling;
 
 namespace Avalonia.DesignerSupport
 {
+    [RequiresUnreferencedCode("Remote designer relies on reflection")]
     public class DesignWindowLoader
     {
         public static Window LoadDesignerWindow(string xaml, string assemblyPath, string xamlFileProjectPath)

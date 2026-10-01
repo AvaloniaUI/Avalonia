@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.IO;
 using Avalonia.Media;
 using CrossUI;
 using Xunit;
@@ -136,6 +138,53 @@ public class CrossTileBrushTests : CrossTestBase
             Background = brush
         });
 
+    }
+
+    // Scaling about the centre of the 200x200 canvas rather than about its origin, so the
+    // transformed tile stays inside the fill and the output shows where it landed.
+    private static readonly Matrix s_halveAboutCanvasCentre =
+        Matrix.CreateTranslation(-100, -100)
+        * Matrix.CreateScale(0.5, 0.5)
+        * Matrix.CreateTranslation(100, 100);
+
+    [CrossFact]
+    public void Should_Render_Drawing_Brush_With_Transform_On_An_Offset_Fill()
+    {
+        // A relative viewport lays the tile over the fill, and the transform then acts on it in
+        // target space, so the crimson rect ends up centred in the fill at half its size.
+        // Transforming the tile before it is positioned would push it towards the bottom edge.
+        var brush = new CrossDrawingBrush
+        {
+            TileMode = TileMode.None,
+            Transform = s_halveAboutCanvasCentre,
+            Drawing = new CrossGeometryDrawing(new CrossRectangleGeometry(new Rect(0, 0, 100, 100)))
+            {
+                Brush = new CrossSolidColorBrush(Colors.Crimson)
+            }
+        };
+
+        RenderAndCompare(new CrossFuncControl(ctx => ctx.DrawRectangle(brush, null, new Rect(40, 70, 120, 60)))
+        {
+            Width = 200,
+            Height = 200,
+            Background = new CrossSolidColorBrush(Colors.White)
+        });
+    }
+
+    [CrossFact]
+    public void Should_Render_Image_Brush_With_Transform_On_An_Offset_Fill()
+    {
+        var path = Path.Join(
+            Path.GetDirectoryName(typeof(CrossTileBrushTests).Assembly.Location), "Assets", "Ramp64.png");
+
+        var brush = new CrossImageBrush { Path = path, Transform = s_halveAboutCanvasCentre };
+
+        RenderAndCompare(new CrossFuncControl(ctx => ctx.DrawRectangle(brush, null, new Rect(40, 70, 120, 60)))
+        {
+            Width = 200,
+            Height = 200,
+            Background = new CrossSolidColorBrush(Colors.White)
+        });
     }
 
     [CrossFact]

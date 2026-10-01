@@ -17,7 +17,7 @@ internal class SkiaMetalGpu : ISkiaGpu
 
     public SkiaMetalGpu(IMetalDevice device, long? maxResourceBytes, bool? useStencilBuffers = null)
     {
-        var avoidStencilBuffers = useStencilBuffers == false;
+        var avoidStencilBuffers = SkiaOptions.ShouldAvoidStencilBuffers(useStencilBuffers);
         _context = GRContext.CreateMetal(
                        new GRMtlBackendContext { DeviceHandle = device.Device, QueueHandle = device.CommandQueue, },
                        new GRContextOptions { AvoidStencilBuffers = avoidStencilBuffers })

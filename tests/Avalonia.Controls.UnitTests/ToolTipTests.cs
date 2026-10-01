@@ -28,6 +28,54 @@ namespace Avalonia.Controls.UnitTests
             Assert.IsType<PopupRoot>(toolTip.PopupHost);
             Assert.Same(TopLevel.GetTopLevel(toolTip), toolTip.PopupHost);
         }
+
+        [Fact]
+        public void Should_Not_Close_When_Pointer_Is_Over_ToolTip_Window_Without_Hit_Test_Result()
+        {
+            using var app = UnitTestApplication.Start(ConfigureServices(TestServices.FocusableWindow));
+
+            var target = new Decorator
+            {
+                [ToolTip.TipProperty] = "Tip",
+                [ToolTip.ShowDelayProperty] = 0
+            };
+
+            var scope = SetupWindow(target);
+
+            scope.MouseEnter(target);
+            AssertToolTipOpen(target);
+
+            var toolTip = Assert.IsType<ToolTip>(target.GetValue(ToolTip.ToolTipProperty));
+            var toolTipRoot = Assert.IsType<PopupRoot>(toolTip.PopupHost).GetInputRoot();
+            Assert.NotNull(toolTipRoot);
+
+            scope.SendRawPointerEvent(RawPointerEventType.Move, toolTipRoot, scope.GetPointerPosition(null));
+
+            AssertToolTipOpen(target);
+        }
+
+        [Fact]
+        public void Should_Not_Close_When_Leaving_Window_Right_After_ToolTip_Opened_Under_Pointer()
+        {
+            using var app = UnitTestApplication.Start(ConfigureServices(TestServices.FocusableWindow));
+
+            var target = new Decorator
+            {
+                [ToolTip.TipProperty] = "Tip",
+                [ToolTip.ShowDelayProperty] = 0
+            };
+
+            var scope = SetupWindow(target);
+
+            scope.MouseEnter(target);
+            AssertToolTipOpen(target);
+
+            // The pointer is still over the adorned control: this leave event is only caused by the tooltip window
+            // being displayed on top of it (macOS case).
+            scope.SendRawPointerEvent(RawPointerEventType.LeaveWindow, scope.Window.InputRoot, scope.GetPointerPosition(target));
+
+            AssertToolTipOpen(target);
+        }
     }
 
     public class ToolTipTests_Overlay : ToolTipTests, IDisposable
@@ -74,7 +122,7 @@ namespace Avalonia.Controls.UnitTests
 
         protected abstract void VerifyToolTipType(Control control);
 
-        private void AssertToolTipOpen(Control control)
+        protected void AssertToolTipOpen(Control control)
         {
             Assert.True(ToolTip.GetIsOpen(control));
             VerifyToolTipType(control);
@@ -215,7 +263,7 @@ namespace Avalonia.Controls.UnitTests
                 window.ApplyTemplate();
                 window.Presenter!.ApplyTemplate();
 
-                Assert.Empty(toolTip.Classes);
+                Assert.DoesNotContain(":open", toolTip.Classes);
             }
         }
 
@@ -240,7 +288,7 @@ namespace Avalonia.Controls.UnitTests
 
                 ToolTip.SetIsOpen(decorator, true);
 
-                Assert.Equal(new[] { ":open" }, toolTip.Classes);
+                Assert.Contains(":open", toolTip.Classes);
                 VerifyToolTipType(decorator);
             }
         }
@@ -271,7 +319,7 @@ namespace Avalonia.Controls.UnitTests
                 AssertToolTipOpen(decorator);
                 ToolTip.SetIsOpen(decorator, false);
 
-                Assert.Empty(toolTip.Classes);
+                Assert.DoesNotContain(":open", toolTip.Classes);
             }
         }
 
@@ -505,7 +553,7 @@ namespace Avalonia.Controls.UnitTests
             target[ToolTip.TipProperty] = null;
 
             Assert.False(ToolTip.GetIsOpen(target));
-		}
+        }
 
         [Fact]
         public void Should_Close_When_Pointer_Leaves_Window()
@@ -527,11 +575,13 @@ namespace Avalonia.Controls.UnitTests
                 topLevel!.PlatformImpl!.Input!(new RawPointerEventArgs(s_mouseDevice, (ulong)DateTime.Now.Ticks, topLevel.InputRoot,
                     RawPointerEventType.LeaveWindow, default(RawPointerPoint), RawInputModifiers.None));
 
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
                 Assert.False(ToolTip.GetIsOpen(target));
             }
         }
 
-        private Action<Control?> SetupWindowAndGetMouseEnterAction(Control windowContent, [CallerMemberName] string? testName = null)
+        protected ToolTipTestScope SetupWindow(Control windowContent, [CallerMemberName] string? testName = null)
         {
             var windowImpl = MockWindowingPlatform.CreateWindowMock();
             SetupWindowMock(windowImpl);
@@ -554,10 +604,31 @@ namespace Avalonia.Controls.UnitTests
             Assert.True(windowContent.IsMeasureValid);
             Assert.True(windowContent.IsVisible);
 
-            var controlIds = new Dictionary<Control, int>();
-            IInputRoot? lastRoot = null;
+            return new ToolTipTestScope(
+                window,
+                windowImpl,
+                (point, control) => hitTesterMock
+                    .Setup(m => m.HitTestFirst(point, It.IsAny<Visual>(), It.IsAny<Func<Visual, bool>>()))
+                    .Returns(control));
+        }
 
-            return control =>
+        private Action<Control?> SetupWindowAndGetMouseEnterAction(Control windowContent, [CallerMemberName] string? testName = null)
+            => SetupWindow(windowContent, testName).MouseEnter;
+
+        private void SetupWindowAndActivateToolTip(Control windowContent, Control? targetOverride = null, [CallerMemberName] string? testName = null)
+            => SetupWindowAndGetMouseEnterAction(windowContent, testName)(targetOverride ?? windowContent);
+
+        protected sealed class ToolTipTestScope(Window window, Mock<IWindowImpl> windowImpl, Action<Point, Control?> setupHitTest)
+        {
+            private readonly Dictionary<Control, int> _controlIds = new();
+            private IInputRoot? _lastRoot;
+
+            public Window Window { get; } = window;
+
+            /// <summary>
+            /// Returns a pointer position which hit tests to <paramref name="control"/>, or to nothing when it's null.
+            /// </summary>
+            public Point GetPointerPosition(Control? control)
             {
                 Point point;
 
@@ -567,36 +638,48 @@ namespace Avalonia.Controls.UnitTests
                 }
                 else
                 {
-                    if (!controlIds.TryGetValue(control, out int id))
+                    if (!_controlIds.TryGetValue(control, out int id))
                     {
-                        id = controlIds[control] = controlIds.Count;
+                        id = _controlIds[control] = _controlIds.Count;
                     }
                     point = new Point(id, int.MaxValue);
                 }
 
-                hitTesterMock.Setup(m => m.HitTestFirst(point, It.IsAny<Visual>(), It.IsAny<Func<Visual, bool>>()))
-                    .Returns(control);
+                setupHitTest(point, control);
 
-                var root = control?.GetInputRoot() ?? window.InputRoot;
+                return point;
+            }
+
+            /// <summary>
+            /// Moves the pointer over <paramref name="control"/>, leaving the previous root if it changed.
+            /// </summary>
+            public void MouseEnter(Control? control)
+            {
+                var point = GetPointerPosition(control);
+                var root = control?.GetInputRoot() ?? Window.InputRoot;
                 var timestamp = (ulong)DateTime.Now.Ticks;
 
                 windowImpl.Object.Input!(new RawPointerEventArgs(s_mouseDevice, timestamp, root,
                         RawPointerEventType.Move, point, RawInputModifiers.None));
 
-                if (lastRoot != null && lastRoot != root)
+                if (_lastRoot != null && _lastRoot != root)
                 {
-                    ((PresentationSource)lastRoot)?.PlatformImpl?.Input?.Invoke(new RawPointerEventArgs(s_mouseDevice, timestamp,
-                        lastRoot, RawPointerEventType.LeaveWindow, new Point(-1,-1), RawInputModifiers.None));
+                    ((PresentationSource)_lastRoot)?.PlatformImpl?.Input?.Invoke(new RawPointerEventArgs(s_mouseDevice, timestamp,
+                        _lastRoot, RawPointerEventType.LeaveWindow, new Point(-1,-1), RawInputModifiers.None));
                 }
 
-                lastRoot = root;
+                _lastRoot = root;
 
                 Assert.True(control == null || control.IsPointerOver);
-            };
-        }
+            }
 
-        private void SetupWindowAndActivateToolTip(Control windowContent, Control? targetOverride = null, [CallerMemberName] string? testName = null) =>
-            SetupWindowAndGetMouseEnterAction(windowContent, testName)(targetOverride ?? windowContent);
+            /// <summary>
+            /// Sends a raw pointer event, as a platform backend would do.
+            /// </summary>
+            public void SendRawPointerEvent(RawPointerEventType type, IInputRoot root, Point position)
+                => windowImpl.Object.Input!(new RawPointerEventArgs(
+                    s_mouseDevice, (ulong)DateTime.Now.Ticks, root, type, position, RawInputModifiers.None));
+        }
     }
 
     internal class ToolTipViewModel

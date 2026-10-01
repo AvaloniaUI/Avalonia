@@ -10,7 +10,7 @@
 
 Considered by many to be the spiritual successor to WPF, Avalonia UI provides a familiar, modern development experience for XAML developers creating cross-platform applications. While Avalonia UI is [similar to WPF](https://docs.avaloniaui.net/docs/next/get-started/wpf/), it isn't a 1:1 copy, and you'll find plenty of improvements. 
 
-For those seeking a cross-platform WPF, we have created [Avalonia XPF]([https://avaloniaui.net/xpf](https://avaloniaui.net/xpf?utm_source=github&utm_medium=referral&utm_content=readme_link)), enabling WPF applications to run on macOS and Linux with little to no code changes. Avalonia XPF is a commercial product and is licensed per-app, per-platform. 
+For those seeking a cross-platform WPF, we have created [Avalonia XPF](https://avaloniaui.net/xpf?utm_source=github&utm_medium=referral&utm_content=readme_link), enabling WPF applications to run on macOS and Linux with little to no code changes. Avalonia XPF is a commercial product and is licensed per-app, per-platform. 
 
 ### Blog
 To see the latest announcements and read about the state of Avalonia, check out the [Avalonia UI Blog](https://www.avaloniaui.net/blog?utm_source=github&utm_medium=referral&utm_content=readme_link).

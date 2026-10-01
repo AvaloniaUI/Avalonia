@@ -21,8 +21,10 @@ internal static class TrimmingMessages
     public const string SelectorsParseRequiresUnreferencedCodeMessage = "Selectors runtime parser might require unreferenced code. Consider using stronly typed selectors factory with 'new Style(s => s.OfType<Button>())' syntax.";
 
     public const string PropertyAccessorsRequiresUnreferencedCodeMessage = "PropertyAccessors might require unreferenced code.";
-    public const string DataValidationPluginRequiresUnreferencedCodeMessage = "DataValidationPlugin might require unreferenced code.";
     public const string StreamPluginRequiresUnreferencedCodeMessage = "StreamPlugin might require unreferenced code.";
+
+    public const string DataValidationPluginRequiresUnreferencedCodeMessage = "DataValidationPlugin might require unreferenced code.";
+    public const string DataValidationPluginSuppressUnreferencedCodeMessage = "DataValidationPlugin might require unreferenced code, but properties and attributes should be preserved by compiled bindings.";
 
     public const string StyleResourceIncludeRequiresUnreferenceCodeMessage = "StyleInclude and ResourceInclude use AvaloniaXamlLoader.Load which dynamically loads referenced assembly with Avalonia resources. Note, StyleInclude and ResourceInclude defined in XAML are resolved compile time and are safe with trimming and AOT.";
     public const string AvaloniaXamlLoaderRequiresUnreferenceCodeMessage = "AvaloniaXamlLoader.Load(uri, baseUri) dynamically loads referenced assembly with Avalonia resources.";

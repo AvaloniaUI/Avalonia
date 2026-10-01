@@ -18,8 +18,27 @@
 #include "WindowImpl.h"
 #include "AvnTextInputMethod.h"
 #include "AvnView.h"
+#include <algorithm>
 
 @class AutoFitContentView;
+
+
+// Activates the app, but defers until the run loop is running if it isn't yet.
+// Windows are shown (and the app activated) from OnFrameworkInitializationCompleted,
+// which runs before -[NSApplication run]. Activating that early yields a "degraded"
+// activation: the app looks frontmost but the WindowServer never does a real
+// become-active, which leaves the out-of-process file picker unable to receive
+// clicks in its file list/sidebar until a manual app switch. Deferring makes the first
+// activation a clean transition.
+static void ActivateApplication() {
+    if ([NSApp isRunning]) {
+        [NSApp activateIgnoringOtherApps:YES];
+    } else {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [NSApp activateIgnoringOtherApps:YES];
+        });
+    }
+}
 
 WindowBaseImpl::~WindowBaseImpl() {
     View = nullptr;
@@ -38,11 +57,11 @@ WindowBaseImpl::WindowBaseImpl(IAvnWindowBaseEvents *events, bool usePanel) : To
     lastMaxSize = NSSize { CGFLOAT_MAX, CGFLOAT_MAX};
     lastMinSize = NSSize { 0, 0 };
     lastMenu = nullptr;
-    
+
     CreateNSWindow(usePanel);
-    
+
     StandardContainer = [[AutoFitContentView new] initWithContent:View];
-    
+
     [Window setContentView:StandardContainer];
     [Window setBackingType:NSBackingStoreBuffered];
     [Window setContentMinSize:lastMinSize];
@@ -71,7 +90,7 @@ HRESULT WindowBaseImpl::Show(bool activate, bool isDialog) {
 
     @autoreleasepool {
         [Window setContentSize:lastSize];
-        
+
         if(hasPosition)
         {
             SetPosition(lastPositionSet);
@@ -92,27 +111,27 @@ HRESULT WindowBaseImpl::Show(bool activate, bool isDialog) {
         [Window setCollectionBehavior:collectionBehavior & ~NSWindowCollectionBehaviorFullScreenPrimary];
 
         UpdateAppearance();
-        
+
         [Window invalidateShadow];
 
         if (ShouldTakeFocusOnShow() && activate) {
             [Window orderFront:Window];
             [Window makeKeyAndOrderFront:Window];
             [Window makeFirstResponder:View];
-            [NSApp activateIgnoringOtherApps:YES];
+            ActivateApplication();
         } else {
             [Window orderFront:Window];
         }
 
         _shown = true;
         [Window setCollectionBehavior:collectionBehavior];
-        
+
         // Ensure that we call needsDisplay = YES so that AvnView.updateLayer is called after the
         // window is shown: if the client is pumping messages during the window creation/show
         // process, it's possible that updateLayer gets called after the window is created but
         // before it's is shown.
         [View.layer setNeedsDisplay];
-        
+
         return S_OK;
     }
 }
@@ -143,7 +162,7 @@ HRESULT WindowBaseImpl::Hide() {
 
     @autoreleasepool {
         if (Window != nullptr) {
-            
+
             // If window is hidden without ending attached sheet first, it will stuck in "order out" state,
             // and block any new sheets from being attached.
             // Additionaly, we don't know if user would define any custom panels, so we only end/close file dialog sheets.
@@ -177,7 +196,7 @@ HRESULT WindowBaseImpl::Activate() {
     @autoreleasepool {
         if (Window != nullptr) {
             [Window makeKeyAndOrderFront:nil];
-            [NSApp activateIgnoringOtherApps:YES];
+            ActivateApplication();
         }
     }
 
@@ -188,9 +207,38 @@ HRESULT WindowBaseImpl::SetTopMost(bool value) {
     START_COM_CALL;
 
     @autoreleasepool {
-        [Window setLevel:value ? NSFloatingWindowLevel : NSNormalWindowLevel];
+        _isTopmost = value;
+
+        UpdateWindowLevel();
 
         return S_OK;
+    }
+}
+
+NSWindowLevel WindowBaseImpl::GetBaseWindowLevel() {
+    return _isTopmost ? NSFloatingWindowLevel : NSNormalWindowLevel;
+}
+
+void WindowBaseImpl::UpdateWindowLevel() {
+    if (Window == nullptr)
+        return;
+
+    auto level = GetBaseWindowLevel();
+
+    // An owned window must be able to come to the front of its owner.
+    // TODO: It shouldn't be necessary if we used `addChildWindow` API.
+    auto parent = Parent.tryGet();
+
+    if (parent != nullptr && parent->Window != nullptr)
+        level = std::max(level, [parent->Window level]);
+
+    [Window setLevel:level];
+
+    for (auto iterator = _children.begin(); iterator != _children.end(); iterator++) {
+        auto child = (*iterator).tryGet();
+
+        if (child != nullptr)
+            child->UpdateWindowLevel();
     }
 }
 
@@ -330,6 +378,21 @@ HRESULT WindowBaseImpl::BeginMoveDrag() {
         auto lastEvent = [View lastMouseDownEvent];
 
         if (lastEvent == nullptr) {
+            // A press that begins inside an embedded native view (for example a webview hosted
+            // through NativeControlHost) is consumed by that view and never delivered to the
+            // Avalonia view, so no mouse-down is recorded; fall back to the event the
+            // application is tracking right now, provided it is a left-button press or drag
+            // that belongs to this window.
+            auto currentEvent = [NSApp currentEvent];
+
+            if (currentEvent != nullptr && [currentEvent window] == Window &&
+                ([currentEvent type] == NSEventTypeLeftMouseDown ||
+                 [currentEvent type] == NSEventTypeLeftMouseDragged)) {
+                lastEvent = currentEvent;
+            }
+        }
+
+        if (lastEvent == nullptr) {
             return S_OK;
         }
 
@@ -432,11 +495,21 @@ void WindowBaseImpl::CleanNSWindow() {
 }
 
 void WindowBaseImpl::CreateNSWindow(bool usePanel) {
+    // Anchor the content rect to the primary screen's origin. It's usually at (0,0), but can be offset while the
+    // display server is mid-reconfiguration. This ensures the window is always on a proper screen.
+    // See https://github.com/AvaloniaUI/Avalonia/issues/18895
+    NSPoint origin = NSZeroPoint;
+    NSArray<NSScreen*>* screens = [NSScreen screens];
+    if (screens.count > 0)
+        origin = screens.firstObject.frame.origin;
+
+    NSRect contentRect = NSRect { origin.x, origin.y, lastSize };
+
     if (usePanel) {
-        Window = [[AvnPanel alloc] initWithParent:this contentRect:NSRect{0, 0, lastSize} styleMask:NSWindowStyleMaskBorderless];
+        Window = [[AvnPanel alloc] initWithParent:this contentRect:contentRect styleMask:NSWindowStyleMaskBorderless];
         [Window setHidesOnDeactivate:false];
     } else {
-        Window = [[AvnWindow alloc] initWithParent:this contentRect:NSRect{0, 0, lastSize} styleMask:NSWindowStyleMaskBorderless];
+        Window = [[AvnWindow alloc] initWithParent:this contentRect:contentRect styleMask:NSWindowStyleMaskBorderless];
     }
 }
 
@@ -458,18 +531,18 @@ HRESULT WindowBaseImpl::SetParent(IAvnWindowBase *parent) {
     START_COM_CALL;
 
     @autoreleasepool {
-        
+
         auto oldParent = Parent.tryGet();
-        
+
         if(oldParent != nullptr)
         {
             oldParent->_children.remove(this);
         }
 
         auto cparent = dynamic_cast<WindowImpl *>(parent);
-        
+
         Parent = cparent;
-       
+
         if(cparent != nullptr && Window != nullptr){
             // If one tries to show a child window with a minimized parent window, then the parent window will be
             // restored but macOS isn't kind enough to *tell* us that, so the window will be left in a non-interactive
@@ -478,11 +551,13 @@ HRESULT WindowBaseImpl::SetParent(IAvnWindowBase *parent) {
                 cparent->SetWindowState(Normal);
 
             [Window setCollectionBehavior:NSWindowCollectionBehaviorFullScreenAuxiliary];
-                
+
             cparent->_children.push_back(this);
-                
+
             UpdateAppearance();
         }
+
+        UpdateWindowLevel();
 
         return S_OK;
     }

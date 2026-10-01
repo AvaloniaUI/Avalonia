@@ -88,9 +88,11 @@ namespace Avalonia.UnitTests
                 .Bind<ICursorFactory?>().ToConstant(Services.StandardCursorFactory)
                 .Bind<IWindowingPlatform?>().ToConstant(Services.WindowingPlatform)
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
-                .Bind<IPlatformSettings>().ToSingleton<DefaultPlatformSettings>()
+                .Bind<IPlatformSettings>().ToConstant(Services.PlatformSettings ?? new DefaultPlatformSettings())
                 .Bind<IAccessKeyHandler?>().ToFunc(Services.AccessKeyHandler ?? (() => null));
-            
+
+            InitializeThemeVariant();
+
             // This is a hack to make tests work, we need to refactor the way font manager is registered
             // See https://github.com/AvaloniaUI/Avalonia/issues/10081
             AvaloniaLocator.CurrentMutable.Bind<FontManager>().ToConstant((FontManager)null!);
