@@ -96,6 +96,40 @@ namespace Avalonia.Skia.RenderTests
         }
 
         /// <summary>
+        /// Tests a transparent gradient stop with a GradientOrigin inside the circle described by
+        /// Center/Radius: what is behind the brush must show through the transparent part.
+        /// </summary>
+        [Fact]
+        public async Task RadialGradientBrush_Transparent_Stop_Offset_Inside()
+        {
+            Decorator target = new Decorator
+            {
+                Padding = new Thickness(8),
+                Width = 200,
+                Height = 200,
+                Child = new Border
+                {
+                    Background = Brushes.DarkRed,
+                    Child = new Border
+                    {
+                        Background = new RadialGradientBrush
+                        {
+                            GradientStops =
+                            {
+                                new GradientStop { Color = Color.FromArgb(0, 0, 128, 0), Offset = 0 },
+                                new GradientStop { Color = Colors.Green, Offset = 1 }
+                            },
+                            GradientOrigin = new RelativePoint(0.8, 0.5, RelativeUnit.Relative)
+                        }
+                    }
+                }
+            };
+
+            await RenderToFile(target);
+            CompareImages();
+        }
+
+        /// <summary>
         /// Tests using a GradientOrigin that falls outside of the circle described by Center/Radius.
         /// </summary>
         [Fact]
