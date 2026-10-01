@@ -189,6 +189,42 @@ namespace Avalonia.Media.TextFormatting
             return collapsedLine;
         }
 
+        /// <summary>
+        /// Collapses the line as <see cref="Collapse"/> does, and appends the collapsing symbol when the line fits
+        /// as it is, since the layout cut the text after it.
+        /// </summary>
+        /// <param name="collapsingProperties">The collapsing properties.</param>
+        /// <returns>The collapsed line, or this line when the properties collapse nothing.</returns>
+        internal TextLine CollapseCutLine(TextCollapsingProperties? collapsingProperties)
+        {
+            if (collapsingProperties is null || HasCollapsed)
+            {
+                return this;
+            }
+
+            var collapsedLine = Collapse(collapsingProperties);
+
+            if (collapsedLine.HasCollapsed || collapsingProperties is not (TextTrailingCharacterEllipsis or TextTrailingWordEllipsis))
+            {
+                return collapsedLine;
+            }
+
+            // The trailing whitespace is the gap the line broke on, a newline included; an empty line keeps
+            // the symbol alone.
+            var collapsedLength = Math.Max(0, Length - TrailingWhitespaceLength);
+
+            var shapedSymbol = TextFormatter.CreateSymbol(collapsingProperties.Symbol, collapsingProperties.FlowDirection);
+
+            var collapsedRuns = TextCollapsingProperties.CreateCollapsedRuns(this, collapsedLength, shapedSymbol);
+
+            var appendedLine = new TextLineImpl(collapsedRuns, FirstTextSourceIndex, Length, _paragraphWidth, _paragraphProperties,
+                _resolvedFlowDirection, TextLineBreak, true);
+
+            appendedLine.FinalizeLine();
+
+            return appendedLine;
+        }
+
         /// <inheritdoc/>
         public override void Justify(JustificationProperties justificationProperties)
         {
