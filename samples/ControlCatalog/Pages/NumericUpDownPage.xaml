@@ -125,6 +125,15 @@
 
     <StackPanel Margin="10">
       <Label FontSize="14" FontWeight="Bold" Target="InnerContent"
+             Content="Clear Button"/>
+      <NumericUpDown
+                     TextAlignment="Right"
+                     Classes="clearButton"
+                     x:Name="ClearButton"/>
+    </StackPanel>
+
+    <StackPanel Margin="10">
+      <Label FontSize="14" FontWeight="Bold" Target="InnerContent"
              Content="Inner Contents"/>
       <NumericUpDown ButtonSpinnerLocation="Left"
                      TextAlignment="Right"

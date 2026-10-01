@@ -1,7 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
-using Avalonia.Media.Immutable;
 using Avalonia.Styling;
 using ControlCatalog.Models;
 using ControlCatalog.ViewModels;
@@ -78,13 +77,13 @@ namespace ControlCatalog.Pages
                 if (topLevel.ActualTransparencyLevel != WindowTransparencyLevel.None &&
                     transparencyLevel != WindowTransparencyLevel.None)
                 {
-                    topLevel.Background = new ImmutableSolidColorBrush(Colors.Gray, 0.2);
+                    topLevel.Background = null;
                     if (!topLevel.Styles.Contains(_transparentStyles))
                         topLevel.Styles.Add(_transparentStyles);
                 }
                 else
                 {
-                    topLevel.Background = null;
+                    topLevel.ClearValue(BackgroundProperty);
                     topLevel.Styles.Remove(_transparentStyles);
                 }
             }

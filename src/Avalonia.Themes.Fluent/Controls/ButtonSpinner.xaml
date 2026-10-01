@@ -128,7 +128,6 @@
               </StackPanel>
 
               <ContentPresenter Name="PART_ContentPresenter"
-                                Grid.Column="1"
                                 TabIndex="1"
                                 ContentTemplate="{TemplateBinding ContentTemplate}"
                                 Content="{TemplateBinding Content}"

@@ -1,0 +1,103 @@
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    x:ClassModifier="internal">
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Default">
+      <StaticResource x:Key="MenuFlyoutItemBackground" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="MenuFlyoutItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondary" />
+      <StaticResource x:Key="MenuFlyoutItemBackgroundPressed" ResourceKey="SubtleFillColorTertiary" />
+      <StaticResource x:Key="MenuFlyoutItemBackgroundDisabled" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="MenuFlyoutItemForeground" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="MenuFlyoutItemForegroundPointerOver" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="MenuFlyoutItemForegroundPressed" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="MenuFlyoutItemForegroundDisabled" ResourceKey="TextFillColorDisabled" />
+      <StaticResource x:Key="MenuFlyoutSubItemChevronForeground" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="MenuFlyoutSubItemChevronForegroundPointerOver" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="MenuFlyoutSubItemChevronForegroundPressed" ResourceKey="TextFillColorTertiary" />
+      <StaticResource x:Key="MenuFlyoutSubItemChevronForegroundSubMenuOpened" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="MenuFlyoutSubItemChevronForegroundDisabled" ResourceKey="TextFillColorDisabled" />
+      <StaticResource x:Key="MenuFlyoutItemKeyboardAcceleratorTextForeground" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="MenuFlyoutItemKeyboardAcceleratorTextForegroundPointerOver" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="MenuFlyoutItemKeyboardAcceleratorTextForegroundPressed" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="MenuFlyoutItemKeyboardAcceleratorTextForegroundDisabled" ResourceKey="TextFillColorDisabled" />
+      <StaticResource x:Key="MenuFlyoutPresenterBackground" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
+      <StaticResource x:Key="MenuFlyoutPresenterBorderBrush" ResourceKey="SurfaceStrokeColorFlyout" />
+    </ResourceDictionary>
+    <ResourceDictionary x:Key="Dark">
+      <StaticResource x:Key="MenuFlyoutItemBackground" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="MenuFlyoutItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondary" />
+      <StaticResource x:Key="MenuFlyoutItemBackgroundPressed" ResourceKey="SubtleFillColorTertiary" />
+      <StaticResource x:Key="MenuFlyoutItemBackgroundDisabled" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="MenuFlyoutItemForeground" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="MenuFlyoutItemForegroundPointerOver" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="MenuFlyoutItemForegroundPressed" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="MenuFlyoutItemForegroundDisabled" ResourceKey="TextFillColorDisabled" />
+      <StaticResource x:Key="MenuFlyoutSubItemChevronForeground" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="MenuFlyoutSubItemChevronForegroundPointerOver" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="MenuFlyoutSubItemChevronForegroundPressed" ResourceKey="TextFillColorTertiary" />
+      <StaticResource x:Key="MenuFlyoutSubItemChevronForegroundSubMenuOpened" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="MenuFlyoutSubItemChevronForegroundDisabled" ResourceKey="TextFillColorDisabled" />
+      <StaticResource x:Key="MenuFlyoutItemKeyboardAcceleratorTextForeground" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="MenuFlyoutItemKeyboardAcceleratorTextForegroundPointerOver" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="MenuFlyoutItemKeyboardAcceleratorTextForegroundPressed" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="MenuFlyoutItemKeyboardAcceleratorTextForegroundDisabled" ResourceKey="TextFillColorDisabled" />
+      <StaticResource x:Key="MenuFlyoutPresenterBackground" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
+      <StaticResource x:Key="MenuFlyoutPresenterBorderBrush" ResourceKey="SurfaceStrokeColorFlyout" />
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
+
+  <x:Double x:Key="MenuFlyoutSeparatorThemeHeight">1</x:Double>
+  <x:Double x:Key="MenuFlyoutThemeMinHeight">32</x:Double>
+  <Thickness x:Key="MenuFlyoutPresenterThemePadding">0,2,0,2</Thickness>
+  <Thickness x:Key="MenuFlyoutItemChevronMargin">24,0,0,-1</Thickness>
+  <Thickness x:Key="MenuFlyoutSeparatorThemePadding">12,4,12,4</Thickness>
+  <Thickness x:Key="MenuFlyoutPresenterThemeBorderThickness">1</Thickness>
+  <x:Double x:Key="HorizontalMenuFlyoutThemeMinWidth">32</x:Double>
+  <Thickness x:Key="HorizontalMenuFlyoutItemMargin">2,0,2,0</Thickness>
+  <Thickness x:Key="HorizontalMenuFlyoutItemThemePadding">8,4,8,7</Thickness>
+  <Thickness x:Key="MenuFlyoutItemThemePadding">11,8,11,9</Thickness>
+  <Thickness x:Key="MenuFlyoutItemThemePaddingNarrow">11,4,11,5</Thickness>
+
+  <ControlTheme x:Key="{x:Type MenuFlyoutPresenter}" TargetType="MenuFlyoutPresenter" BasedOn="{StaticResource DefaultMenuFlyoutPresenterTheme}"/>
+
+  <ControlTheme x:Key="DefaultMenuFlyoutPresenterTheme" TargetType="MenuFlyoutPresenter">
+    <Setter Property="Background" Value="{DynamicResource MenuFlyoutPresenterBackground}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource MenuFlyoutPresenterBorderBrush}" />
+    <Setter Property="BorderThickness" Value="{DynamicResource MenuFlyoutPresenterThemeBorderThickness}" />
+    <Setter Property="Padding" Value="{DynamicResource MenuFlyoutPresenterThemePadding}" />
+    <Setter Property="MaxWidth" Value="{DynamicResource FlyoutThemeMaxWidth}" />
+    <Setter Property="MinHeight" Value="{DynamicResource MenuFlyoutThemeMinHeight}" />
+    <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
+    <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+    <Setter Property="CornerRadius" Value="{DynamicResource OverlayCornerRadius}" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Name="LayoutRoot"
+                Background="{TemplateBinding Background}"
+                BackgroundSizing="InnerBorderEdge"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="{TemplateBinding CornerRadius}">
+          <ScrollViewer HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                        Theme="{StaticResource FluentMenuScrollViewer}"
+                        Margin="{TemplateBinding Padding}"
+                        VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}">
+            <ItemsPresenter Name="PART_ItemsPresenter"
+                            ItemsPanel="{TemplateBinding ItemsPanel}"
+                            Margin="{DynamicResource MenuFlyoutScrollerMargin}"
+                            KeyboardNavigation.TabNavigation="Continue"
+                            Grid.IsSharedSizeScope="True" />
+          </ScrollViewer>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+  <ControlTheme x:Key="HorizontalMenuFlyoutPresenter" TargetType="MenuFlyoutPresenter"  BasedOn="{StaticResource DefaultMenuFlyoutPresenterTheme}">
+    <Setter Property="MinWidth" Value="{DynamicResource HorizontalMenuFlyoutThemeMinWidth}" />
+    <Setter Property="ItemsPanel">
+      <ItemsPanelTemplate>
+        <StackPanel Orientation="Horizontal"/>
+      </ItemsPanelTemplate>
+    </Setter>
+  </ControlTheme>
+</ResourceDictionary>
