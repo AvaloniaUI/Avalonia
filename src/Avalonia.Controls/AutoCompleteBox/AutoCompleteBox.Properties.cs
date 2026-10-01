@@ -57,6 +57,12 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<Media.IBrush?> WatermarkForegroundProperty = PlaceholderForegroundProperty;
 
         /// <summary>
+        /// Defines the <see cref="UseFloatingPlaceholder"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> UseFloatingPlaceholderProperty =
+            AvaloniaProperty.Register<AutoCompleteBox, bool>(nameof(UseFloatingPlaceholder));
+
+        /// <summary>
         /// Identifies the <see cref="MinimumPrefixLength" /> property.
         /// </summary>
         /// <value>The identifier for the <see cref="MinimumPrefixLength" /> property.</value>
@@ -475,6 +481,16 @@ namespace Avalonia.Controls
             [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1012",
                 Justification = "Obsolete property setter for backward compatibility.")]
             set => PlaceholderForeground = value;
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the <see cref="PlaceholderText"/> will still be shown above the
+        /// <see cref="Text"/> even after a text value is set.
+        /// </summary>
+        public bool UseFloatingPlaceholder
+        {
+            get => GetValue(UseFloatingPlaceholderProperty);
+            set => SetValue(UseFloatingPlaceholderProperty, value);
         }
 
         /// <summary>
