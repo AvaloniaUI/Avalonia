@@ -214,14 +214,15 @@ internal abstract partial class WindowBaseImpl : IWindowBaseImpl
             if (IsDisposed || InputRoot is null)
                 return;
 
+            // Releases and focus loss must clear repeat state even while the owner is disabled.
+            if (HandleKeyboardDispatch(args))
+                return;
+
             if (!Parent.IsEnabled)
             {
                 OnInputWhileDisabled();
                 return;
             }
-
-            if (HandleKeyboardDispatch(args))
-                return;
 
             if (HandleDragDropDispatch(args))
                 return;
