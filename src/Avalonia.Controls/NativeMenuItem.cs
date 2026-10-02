@@ -220,6 +220,13 @@ namespace Avalonia.Controls
                     WeakEvents.CommandCanExecuteChanged.Subscribe(newCommand, _canExecuteChangedSubscriber);
                 CanExecuteChanged();
             }
+            else if (change.Property == CommandParameterProperty && Command is not null)
+            {
+                // XAML can assign the parameter after the command, so the result of the
+                // first query is stale. Without a command there is nothing to query, and
+                // CanExecuteChanged would overwrite an explicit IsEnabled value.
+                CanExecuteChanged();
+            }
         }
 
         internal override void BuildDebugDisplay(StringBuilder builder, bool includeContent)
