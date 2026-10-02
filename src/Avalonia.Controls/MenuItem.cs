@@ -28,6 +28,11 @@ namespace Avalonia.Controls
         private EventHandler? _canExecuteChangeHandler = default;
         private EventHandler CanExecuteChangedHandler => _canExecuteChangeHandler ??= new(CanExecuteChanged);
 
+        // Whether the control keeps a CanExecuteChanged subscription on the current Command. This is not the same as
+        // ILogical.IsAttachedToLogicalTree: styles are applied before OnAttachedToLogicalTree and removed before
+        // OnDetachedFromLogicalTree, so a style-set Command changes while that property already reports the new state.
+        private bool _isSubscribedToCommand;
+
         /// <summary>
         /// Defines the <see cref="Command"/> property.
         /// </summary>
@@ -456,6 +461,8 @@ namespace Avalonia.Controls
                 command.CanExecuteChanged += CanExecuteChangedHandler;
             }
 
+            _isSubscribedToCommand = true;
+
             TryUpdateCanExecute(command, parameter);
 
             var parent = Parent;
@@ -492,6 +499,8 @@ namespace Avalonia.Controls
             {
                 Command.CanExecuteChanged -= CanExecuteChangedHandler;
             }
+
+            _isSubscribedToCommand = false;
         }
 
         /// <summary>
@@ -623,7 +632,7 @@ namespace Avalonia.Controls
             if (e.Sender is MenuItem menuItem)
 
             {
-                if (((ILogical)menuItem).IsAttachedToLogicalTree)
+                if (menuItem._isSubscribedToCommand)
                 {
                     if (e.OldValue is ICommand oldCommand)
                     {
