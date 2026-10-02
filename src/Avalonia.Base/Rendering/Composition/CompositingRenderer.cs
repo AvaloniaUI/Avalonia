@@ -223,6 +223,9 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
 
     public void TriggerSceneInvalidatedForUnitTests(Rect rect) =>
         SceneInvalidated?.Invoke(this, new SceneInvalidatedEventArgs(rect));
+
+    internal bool HasPendingUpdateForUnitTests(Visual visual) =>
+        _dirty.Contains(visual) || _recalculateChildren.Contains(visual);
     
     private void Update()
     {
