@@ -131,4 +131,34 @@ public class CompositorInvalidationTests : CompositorTestsBase
             s.AssertRects(new Rect(40, 60, 20, 10));
         }
     }
+
+    [Fact]
+    public void Sibling_Controls_Should_Invalidate_Rects_When_ZIndex_Order_Changes()
+    {
+        using (var s = new CompositorCanvas())
+        {
+            // The siblings draw nothing themselves, so only their reordering can invalidate anything.
+            var back = new Decorator
+            {
+                [Canvas.LeftProperty] = 30, [Canvas.TopProperty] = 50,
+                ZIndex = 1,
+                Child = new Border { Width = 20, Height = 10, Background = Brushes.Red }
+            };
+            var front = new Decorator
+            {
+                [Canvas.LeftProperty] = 40, [Canvas.TopProperty] = 55,
+                ZIndex = 2,
+                Child = new Border { Width = 20, Height = 10, Background = Brushes.Blue }
+            };
+            s.Canvas.Children.Add(back);
+            s.Canvas.Children.Add(front);
+            s.RunJobs();
+            s.Events.Rects.Clear();
+
+            back.ZIndex = 2;
+            front.ZIndex = 1;
+
+            s.AssertRects(new Rect(30, 50, 20, 10), new Rect(40, 55, 20, 10));
+        }
+    }
 }
