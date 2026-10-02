@@ -164,6 +164,15 @@ partial class ServerCompositionVisual
         AttHelper_ParentChanged();
     }
     
+    /// <summary>
+    /// Redraws the visual's subtree after its position in the parent's child list has changed.
+    /// </summary>
+    public void InvalidateZOrder()
+    {
+        _delayPropagateIsDirtyForRender = true;
+        EnqueueOwnPropertiesRecompute();
+    }
+
     protected void AddExtraDirtyRect(LtrbRect rect)
     {
         _extraDirtyRect = _delayPropagateHasExtraDirtyRects ? _extraDirtyRect.Union(rect) : rect;

@@ -161,4 +161,30 @@ public class CompositorInvalidationTests : CompositorTestsBase
             s.AssertRects(new Rect(30, 50, 20, 10), new Rect(40, 55, 20, 10));
         }
     }
+
+    [Fact]
+    public void Control_Should_Not_Invalidate_Sibling_Rects_When_Inserted_Below()
+    {
+        using (var s = new CompositorCanvas())
+        {
+            for (var c = 0; c < 2; c++)
+            {
+                s.Canvas.Children.Add(new Border
+                {
+                    Background = Brushes.Red, Width = 20, Height = 10,
+                    [Canvas.LeftProperty] = 30, [Canvas.TopProperty] = 50 + c * 20
+                });
+            }
+            s.RunJobs();
+            s.Events.Rects.Clear();
+
+            s.Canvas.Children.Insert(0, new Border
+            {
+                Background = Brushes.Blue, Width = 20, Height = 10,
+                [Canvas.LeftProperty] = 100, [Canvas.TopProperty] = 50
+            });
+
+            s.AssertRects(new Rect(100, 50, 20, 10));
+        }
+    }
 }
