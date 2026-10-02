@@ -326,7 +326,6 @@ namespace Avalonia.Controls.UnitTests
                     new Button
                     {
                         Name = "PART_Button",
-                        // Both built-in themes keep the drop-down button out of the tab order.
                         Focusable = false
                     }.RegisterInNameScope(scope);
                 var calendar =
