@@ -17,6 +17,7 @@ namespace ControlCatalog.Pages
             Color.FromRgb(0xFB, 0xE9, 0xE7), // deep orange
         ];
 
+        private bool _initialized;
         private int _pageCount;
 
         public ContentPageFirstLookPage()
@@ -27,6 +28,10 @@ namespace ControlCatalog.Pages
 
         private async void OnLoaded(object? sender, RoutedEventArgs e)
         {
+            if (_initialized)
+                return;
+
+            _initialized = true;
             await DemoNav.PushAsync(MakePage("Root Page", "ContentPage inside a NavigationPage.\nUse the options to navigate."));
             UpdateStatus();
         }

@@ -12,11 +12,12 @@ using MiniMvvm;
 namespace ControlCatalog.Controls
 {
     /// <summary>
-    /// A catalog page for controls with many substantial samples. The page shows its <see cref="Description"/>
-    /// and a grouped grid of cards built from <see cref="Samples"/>, and opens a sample on the hosting
-    /// <see cref="NavigationPage"/>. Keeping the samples on the host stack leaves a single navigation bar on
-    /// screen: the page title and the drawer toggle here, the sample title and the back button once a sample
-    /// is open. Samples are constructed only when opened.
+    /// A catalog page for controls with many substantial samples. The page shows its <see cref="Description"/>,
+    /// the first <see cref="SampleGroups.Overview"/> sample live, and a grouped grid of cards built from the
+    /// other <see cref="Samples"/>. A card opens its sample on the hosting <see cref="NavigationPage"/>. Keeping
+    /// the samples on the host stack leaves a single navigation bar on screen: the page title and the drawer
+    /// toggle here, the sample title and the back button once a sample is open. Card samples are constructed
+    /// only when opened.
     /// </summary>
     public class SampleGalleryPage : ContentPage
     {
@@ -31,8 +32,13 @@ namespace ControlCatalog.Controls
             AvaloniaProperty.RegisterDirect<SampleGalleryPage, IReadOnlyList<SampleInfoGroup>>(
                 nameof(Groups), o => o.Groups);
 
+        public static readonly DirectProperty<SampleGalleryPage, Control?> OverviewContentProperty =
+            AvaloniaProperty.RegisterDirect<SampleGalleryPage, Control?>(
+                nameof(OverviewContent), o => o.OverviewContent);
+
         private IReadOnlyList<SampleInfo> _samples = [];
         private IReadOnlyList<SampleInfoGroup> _groups = [];
+        private Control? _overviewContent;
         private bool _opening;
 
         public SampleGalleryPage()
@@ -65,6 +71,12 @@ namespace ControlCatalog.Controls
             private set => SetAndRaise(GroupsProperty, ref _groups, value);
         }
 
+        public Control? OverviewContent
+        {
+            get => _overviewContent;
+            private set => SetAndRaise(OverviewContentProperty, ref _overviewContent, value);
+        }
+
         public ICommand OpenSampleCommand { get; }
 
         // Pages derive from this class, and a theme is looked up by the exact type.
@@ -76,12 +88,34 @@ namespace ControlCatalog.Controls
 
             if (change.Property == SamplesProperty)
             {
-                // GroupBy keeps first appearance order, so unknown groups stay in registry order at the end.
-                Groups = Samples
-                    .GroupBy(sample => sample.Group)
-                    .OrderBy(group => SampleGroups.IndexOf(group.Key))
-                    .Select(group => new SampleInfoGroup(group.Key, group.ToArray()))
-                    .ToArray();
+                UpdateSamples();
+            }
+        }
+
+        private void UpdateSamples()
+        {
+            var overview = Samples.FirstOrDefault(sample => sample.Group == SampleGroups.Overview);
+
+            OverviewContent = overview is null ? null : CreateContent(overview);
+
+            // GroupBy keeps first appearance order, so unknown groups stay in registry order at the end.
+            Groups = Samples
+                .Where(sample => sample != overview)
+                .GroupBy(sample => sample.Group)
+                .OrderBy(group => SampleGroups.IndexOf(group.Key))
+                .Select(group => new SampleInfoGroup(group.Key, group.ToArray()))
+                .ToArray();
+        }
+
+        private static Control CreateContent(SampleInfo sample)
+        {
+            try
+            {
+                return sample.Factory();
+            }
+            catch (Exception ex)
+            {
+                return CreateErrorContent(sample, ex);
             }
         }
 
@@ -96,22 +130,12 @@ namespace ControlCatalog.Controls
             _opening = true;
             try
             {
-                Control content;
-                try
-                {
-                    content = sample.Factory();
-                }
-                catch (Exception ex)
-                {
-                    content = CreateErrorContent(sample, ex);
-                }
-
                 var page = new ContentPage
                 {
                     Header = sample.Title,
                     // Transparent like the catalog pages, so window transparency shows through.
                     Background = Brushes.Transparent,
-                    Content = content,
+                    Content = CreateContent(sample),
                     HorizontalContentAlignment = HorizontalAlignment.Stretch,
                     VerticalContentAlignment = VerticalAlignment.Stretch
                 };

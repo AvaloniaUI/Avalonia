@@ -33,34 +33,35 @@
     <Border Margin="12"
             BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
             BorderThickness="1"
-            CornerRadius="6"
-            ClipToBounds="True">
-      <DrawerPage x:Name="DemoDrawer"
-                  Header="First Look"
-                  DrawerLength="250">
-        <DrawerPage.DrawerHeader>
-          <Border Padding="16" Background="#1976D2">
-            <TextBlock Text="Menu" FontSize="18" FontWeight="SemiBold" Foreground="White" />
-          </Border>
-        </DrawerPage.DrawerHeader>
-        <DrawerPage.Drawer>
-          <ListBox x:Name="DrawerMenu" SelectionChanged="OnMenuSelectionChanged">
-            <ListBoxItem Content="Home" />
-            <ListBoxItem Content="Settings" />
-            <ListBoxItem Content="Profile" />
-            <ListBoxItem Content="About" />
-          </ListBox>
-        </DrawerPage.Drawer>
-        <DrawerPage.Content>
-          <ContentPage Header="Home">
-            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="8">
-              <TextBlock Text="Home Page" FontSize="20" FontWeight="SemiBold" HorizontalAlignment="Center" />
-              <TextBlock Text="Swipe from the left edge or use the hamburger button to open the drawer."
-                         FontSize="13" Opacity="0.7" TextWrapping="Wrap" TextAlignment="Center" MaxWidth="300" />
-            </StackPanel>
-          </ContentPage>
-        </DrawerPage.Content>
-      </DrawerPage>
+            CornerRadius="6">
+      <Border CornerRadius="5" ClipToBounds="True">
+        <DrawerPage x:Name="DemoDrawer"
+                    Header="First Look"
+                    DrawerLength="250">
+          <DrawerPage.DrawerHeader>
+            <Border Padding="16" Background="#1976D2">
+              <TextBlock Text="Menu" FontSize="18" FontWeight="SemiBold" Foreground="White" />
+            </Border>
+          </DrawerPage.DrawerHeader>
+          <DrawerPage.Drawer>
+            <ListBox x:Name="DrawerMenu" SelectionChanged="OnMenuSelectionChanged">
+              <ListBoxItem Content="Home" />
+              <ListBoxItem Content="Settings" />
+              <ListBoxItem Content="Profile" />
+              <ListBoxItem Content="About" />
+            </ListBox>
+          </DrawerPage.Drawer>
+          <DrawerPage.Content>
+            <ContentPage Header="Home">
+              <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="8">
+                <TextBlock Text="Home Page" FontSize="20" FontWeight="SemiBold" HorizontalAlignment="Center" />
+                <TextBlock Text="Swipe from the left edge or use the hamburger button to open the drawer."
+                           FontSize="13" Opacity="0.7" TextWrapping="Wrap" TextAlignment="Center" MaxWidth="300" />
+              </StackPanel>
+            </ContentPage>
+          </DrawerPage.Content>
+        </DrawerPage>
+      </Border>
     </Border>
   </DockPanel>
 </UserControl>
