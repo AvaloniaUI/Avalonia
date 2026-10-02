@@ -41,10 +41,6 @@ public class NativeMenuItemTests : ScopedTestBase
         Assert.False(target.IsEnabled);
     }
 
-    /// <summary>
-    /// Mirrors commands such as <c>RelayCommand&lt;int&gt;</c>, which cannot execute until
-    /// they are given a parameter of the expected type.
-    /// </summary>
     private sealed class IntParameterCommand : ICommand
     {
         public event EventHandler? CanExecuteChanged { add { } remove { } }

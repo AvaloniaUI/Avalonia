@@ -222,9 +222,7 @@ namespace Avalonia.Controls
             }
             else if (change.Property == CommandParameterProperty && Command is not null)
             {
-                // XAML can assign the parameter after the command, so the result of the
-                // first query is stale. Without a command there is nothing to query, and
-                // CanExecuteChanged would overwrite an explicit IsEnabled value.
+                // The parameter can be assigned after the command, which makes the first query stale.
                 CanExecuteChanged();
             }
         }
