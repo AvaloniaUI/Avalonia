@@ -379,6 +379,7 @@ namespace Avalonia.Layout
                 var previousDesiredSize = DesiredSize;
                 var desiredSize = default(Size);
 
+                InvalidateArrange();
                 IsMeasureValid = true;
 
                 try
