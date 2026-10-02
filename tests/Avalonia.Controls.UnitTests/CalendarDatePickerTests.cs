@@ -198,6 +198,25 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Shift_Tab_From_TextBox_Should_Move_Focus_To_Previous_Control()
+        {
+            using (UnitTestApplication.Start(FocusServices))
+            {
+                var before = new Button();
+                var datePicker = new CalendarDatePicker { Template = CreateTemplate() };
+                var root = new TestRoot(new StackPanel { Children = { before, datePicker, new Button() } });
+                root.LayoutManager.ExecuteInitialLayoutPass();
+                var textBox = GetTextBox(datePicker);
+                textBox.Focus();
+
+                var previous = KeyboardNavigationHandler.GetNext(textBox, NavigationDirection.Previous);
+                previous?.Focus(NavigationMethod.Tab, KeyModifiers.Shift);
+
+                Assert.Same(before, root.FocusManager.GetFocusedElement());
+            }
+        }
+
+        [Fact]
         public void Tab_Focus_Should_Move_Focus_To_TextBox()
         {
             using (UnitTestApplication.Start(FocusServices))
