@@ -217,6 +217,49 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Tab_Into_CalendarDatePicker_Should_Focus_TextBox_And_Select_Text()
+        {
+            using (UnitTestApplication.Start(FocusServices))
+            {
+                var before = new Button();
+                var after = new Button();
+                var datePicker = new CalendarDatePicker
+                {
+                    Template = CreateTemplate(),
+                    SelectedDate = new DateTime(2026, 4, 22)
+                };
+                var root = new TestRoot(new StackPanel { Children = { before, datePicker, after } });
+                root.LayoutManager.ExecuteInitialLayoutPass();
+                var textBox = GetTextBox(datePicker);
+                Assert.False(string.IsNullOrEmpty(textBox.Text));
+
+                var next = KeyboardNavigationHandler.GetNext(before, NavigationDirection.Next);
+                next?.Focus(NavigationMethod.Tab);
+
+                Assert.Same(textBox, root.FocusManager.GetFocusedElement());
+                Assert.Equal(textBox.Text, textBox.SelectedText);
+            }
+        }
+
+        [Fact]
+        public void Shift_Tab_Into_CalendarDatePicker_Should_Focus_TextBox()
+        {
+            using (UnitTestApplication.Start(FocusServices))
+            {
+                var after = new Button();
+                var datePicker = new CalendarDatePicker { Template = CreateTemplate() };
+                var root = new TestRoot(new StackPanel { Children = { new Button(), datePicker, after } });
+                root.LayoutManager.ExecuteInitialLayoutPass();
+                after.Focus();
+
+                var previous = KeyboardNavigationHandler.GetNext(after, NavigationDirection.Previous);
+                previous?.Focus(NavigationMethod.Tab, KeyModifiers.Shift);
+
+                Assert.Same(GetTextBox(datePicker), root.FocusManager.GetFocusedElement());
+            }
+        }
+
+        [Fact]
         public void Tab_Focus_Should_Move_Focus_To_TextBox()
         {
             using (UnitTestApplication.Start(FocusServices))
@@ -282,7 +325,9 @@ namespace Avalonia.Controls.UnitTests
                 var button =
                     new Button
                     {
-                        Name = "PART_Button"
+                        Name = "PART_Button",
+                        // Both built-in themes keep the drop-down button out of the tab order.
+                        Focusable = false
                     }.RegisterInNameScope(scope);
                 var calendar =
                     new Calendar
