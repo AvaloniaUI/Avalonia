@@ -137,7 +137,6 @@ public class CompositorInvalidationTests : CompositorTestsBase
     {
         using (var s = new CompositorCanvas())
         {
-            // The siblings draw nothing themselves, so only their reordering can invalidate anything.
             var back = new Decorator
             {
                 [Canvas.LeftProperty] = 30, [Canvas.TopProperty] = 50,

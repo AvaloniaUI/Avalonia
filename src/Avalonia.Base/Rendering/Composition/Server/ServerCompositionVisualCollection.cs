@@ -22,14 +22,10 @@ namespace Avalonia.Rendering.Composition.Server
                 newEnd--;
             }
 
-            // Visuals that enter or leave the list invalidate their area when their Parent changes. If one of the
-            // ranges is empty, the change is only an insertion or a removal and the remaining visuals keep their
-            // relative order.
+            // A pure insertion or removal: the Parent change of the affected visual already invalidates its area.
             if (oldEnd == start || newEnd == start)
                 return;
 
-            // A visual that only moves within the list keeps its Parent and all of its other properties, so
-            // nothing else redraws the area where its order relative to the siblings has changed.
             for (var c = start; c < newEnd; c++)
                 newList[c].InvalidateZOrder();
         }
