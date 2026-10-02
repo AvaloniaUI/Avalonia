@@ -12,12 +12,11 @@ using MiniMvvm;
 namespace ControlCatalog.Controls
 {
     /// <summary>
-    /// A catalog page for controls with many substantial samples. The page shows its <see cref="Description"/>,
-    /// the first <see cref="SampleGroups.Overview"/> sample live, and a grouped grid of cards built from the
-    /// other <see cref="Samples"/>. A card opens its sample on the hosting <see cref="NavigationPage"/>. Keeping
-    /// the samples on the host stack leaves a single navigation bar on screen: the page title and the drawer
-    /// toggle here, the sample title and the back button once a sample is open. Card samples are constructed
-    /// only when opened.
+    /// A catalog page for controls with many substantial samples. The page shows its <see cref="Description"/>
+    /// and a grouped grid of cards built from <see cref="Samples"/>, and opens a sample on the hosting
+    /// <see cref="NavigationPage"/>. Keeping the samples on the host stack leaves a single navigation bar on
+    /// screen: the page title and the drawer toggle here, the sample title and the back button once a sample
+    /// is open. The first Overview sample is shown live above the cards. The others are constructed when opened.
     /// </summary>
     public class SampleGalleryPage : ContentPage
     {

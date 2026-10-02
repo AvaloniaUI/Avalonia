@@ -116,10 +116,8 @@ A card pushes its sample on the host `NavigationPage` rather than on a navigatio
 shell keeps a single navigation bar: the page title and the drawer toggle on the gallery, the sample title
 and the back button once a sample is open.
 
-The first Overview sample is not a card: the gallery shows it live under the description, so the control is
-on screen as soon as the page opens. It sits inside the gallery's scrolling area and takes the height its
-content needs, so it must not bring its own `ScrollViewer` or page padding; a `SampleSection` as the root is the
-usual shape.
+The first Overview sample is not a card: the gallery builds it with the page and shows it live above the cards,
+so the control is on screen as soon as the page opens.
 
 The registry must be reachable without constructing the page, so declare it as an `internal static readonly`
 field (the convention is `Demos`) and pass it when the page is registered in `MainWindowViewModel_PageList`:
