@@ -87,7 +87,19 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
             return;
         if (_updating)
             throw new InvalidOperationException("Visual was invalidated during the render pass");
-        _dirty.Add(visual);
+
+        if (visual.CompositionVisual is null)
+        {
+            // The visual has left the tree and has nothing more to synchronize. Updates don't run while rendering
+            // is stopped, so keeping it queued would keep it alive until rendering resumes.
+            _dirty.Remove(visual);
+            _recalculateChildren.Remove(visual);
+        }
+        else
+        {
+            _dirty.Add(visual);
+        }
+
         QueueUpdate();
     }
 
