@@ -164,6 +164,12 @@ partial class ServerCompositionVisual
         AttHelper_ParentChanged();
     }
     
+    public void InvalidateZOrder()
+    {
+        _delayPropagateIsDirtyForRender = true;
+        EnqueueOwnPropertiesRecompute();
+    }
+
     protected void AddExtraDirtyRect(LtrbRect rect)
     {
         _extraDirtyRect = _delayPropagateHasExtraDirtyRects ? _extraDirtyRect.Union(rect) : rect;

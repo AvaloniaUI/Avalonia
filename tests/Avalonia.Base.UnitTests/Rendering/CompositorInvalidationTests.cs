@@ -131,4 +131,59 @@ public class CompositorInvalidationTests : CompositorTestsBase
             s.AssertRects(new Rect(40, 60, 20, 10));
         }
     }
+
+    [Fact]
+    public void Sibling_Controls_Should_Invalidate_Rects_When_ZIndex_Order_Changes()
+    {
+        using (var s = new CompositorCanvas())
+        {
+            var back = new Decorator
+            {
+                [Canvas.LeftProperty] = 30, [Canvas.TopProperty] = 50,
+                ZIndex = 1,
+                Child = new Border { Width = 20, Height = 10, Background = Brushes.Red }
+            };
+            var front = new Decorator
+            {
+                [Canvas.LeftProperty] = 40, [Canvas.TopProperty] = 55,
+                ZIndex = 2,
+                Child = new Border { Width = 20, Height = 10, Background = Brushes.Blue }
+            };
+            s.Canvas.Children.Add(back);
+            s.Canvas.Children.Add(front);
+            s.RunJobs();
+            s.Events.Rects.Clear();
+
+            back.ZIndex = 2;
+            front.ZIndex = 1;
+
+            s.AssertRects(new Rect(30, 50, 20, 10), new Rect(40, 55, 20, 10));
+        }
+    }
+
+    [Fact]
+    public void Control_Should_Not_Invalidate_Sibling_Rects_When_Inserted_Below()
+    {
+        using (var s = new CompositorCanvas())
+        {
+            for (var c = 0; c < 2; c++)
+            {
+                s.Canvas.Children.Add(new Border
+                {
+                    Background = Brushes.Red, Width = 20, Height = 10,
+                    [Canvas.LeftProperty] = 30, [Canvas.TopProperty] = 50 + c * 20
+                });
+            }
+            s.RunJobs();
+            s.Events.Rects.Clear();
+
+            s.Canvas.Children.Insert(0, new Border
+            {
+                Background = Brushes.Blue, Width = 20, Height = 10,
+                [Canvas.LeftProperty] = 100, [Canvas.TopProperty] = 50
+            });
+
+            s.AssertRects(new Rect(100, 50, 20, 10));
+        }
+    }
 }
