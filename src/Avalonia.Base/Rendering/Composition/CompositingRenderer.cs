@@ -90,8 +90,7 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
 
         if (visual.CompositionVisual is null)
         {
-            // The visual has left the tree and has nothing more to synchronize. Updates don't run while rendering
-            // is stopped, so keeping it queued would keep it alive until rendering resumes.
+            // Queuing a detached visual would keep it alive for as long as rendering is stopped.
             _dirty.Remove(visual);
             _recalculateChildren.Remove(visual);
         }

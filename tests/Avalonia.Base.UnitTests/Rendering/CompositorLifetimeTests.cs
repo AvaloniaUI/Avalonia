@@ -67,11 +67,9 @@ public class CompositorLifetimeTests : CompositorTestsBase
         services.Canvas.Children.Remove(removed);
         services.RunJobs();
 
-        // Nothing drains the renderer while it is stopped, so it must not hold on to visuals that left the tree.
         Assert.False(services.Renderer.HasPendingUpdateForUnitTests(removed));
         Assert.False(services.Renderer.HasPendingUpdateForUnitTests(removedChild));
 
-        // Visuals still in the tree stay queued until rendering resumes.
         Assert.True(services.Renderer.HasPendingUpdateForUnitTests(kept));
         Assert.True(services.Renderer.HasPendingUpdateForUnitTests(services.Canvas));
 
