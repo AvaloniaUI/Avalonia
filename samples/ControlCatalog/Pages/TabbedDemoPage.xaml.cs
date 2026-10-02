@@ -54,19 +54,17 @@ namespace ControlCatalog.Pages
             new(SampleGroups.Features, "Disabled Tabs",
                 "IsTabEnabled attached property: disable individual tabs so they cannot be selected.",
                 () => new TabbedPageDisabledTabsPage()),
-
-            // Performance
-            new(SampleGroups.Performance, "Performance Monitor",
-                "Track tab count, live page instances, and managed heap size. Observe how GC reclaims memory after removing tabs.",
-                () => new TabbedPagePerformancePage()),
-
-            // Composition
             new(SampleGroups.Features, "With NavigationPage",
                 "Embed a NavigationPage inside each TabbedPage tab for drill-down navigation.",
                 () => new TabbedPageWithNavigationPage()),
             new(SampleGroups.Features, "With DrawerPage",
                 "Combine TabbedPage with DrawerPage: a global navigation drawer sits over tabbed content.",
                 () => new TabbedPageWithDrawerPage()),
+
+            // Performance
+            new(SampleGroups.Performance, "Performance Monitor",
+                "Track tab count, live page instances, and managed heap size. Observe how GC reclaims memory after removing tabs.",
+                () => new TabbedPagePerformancePage()),
 
             // Showcases
             new(SampleGroups.Showcases, "Pulse Fitness",

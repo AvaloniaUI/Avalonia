@@ -23,14 +23,12 @@ namespace ControlCatalog.Pages
                 "Set page header content: a string, icon, or any custom control in the navigation bar.",
                 () => new NavigationPageTitlePage()),
 
-            // Data
+            // Features
             new(SampleGroups.Features, "Pass Data", "Pass data during navigation via constructor arguments or DataContext.",
                 () => new NavigationPagePassDataPage()),
             new(SampleGroups.Features, "MVVM Navigation",
                 "Keep navigation decisions in view models by routing NavigationPage push and pop operations through a small INavigationService.",
                 () => new NavigationPageMvvmPage()),
-
-            // Features
             new(SampleGroups.Features, "Attached Methods",
                 "Per-page navigation bar and back button control via static attached methods.",
                 () => new NavigationPageAttachedMethodsPage()),
