@@ -17,6 +17,7 @@ namespace Avalonia.Browser;
 internal class BrowserWindowingPlatform : IWindowingPlatform
 {
     internal static ManualRawEventGrouperDispatchQueue? EventGrouperDispatchQueue;
+    internal static BrowserAtomicsWakeupEvent? WakeupEvent;
 
     internal static readonly bool IsThreadingEnabled = DetectThreadSupport();
 
@@ -97,9 +98,12 @@ internal class BrowserWindowingPlatform : IWindowingPlatform
         if (IsThreadingEnabled)
         {
             EventGrouperDispatchQueue = new();
-            Dispatcher.InitializeUIThreadDispatcher(
-                new ManagedDispatcherImpl(
-                    new ManualRawEventGrouperDispatchQueueDispatcherInputProvider(EventGrouperDispatchQueue)));
+            var dispatcherImpl = new ManagedDispatcherImpl(
+                new ManualRawEventGrouperDispatchQueueDispatcherInputProvider(EventGrouperDispatchQueue),
+                WakeupEvent ?? throw new InvalidOperationException("Browser backend wasn't initialized. WakeupEvent is null."));
+            dispatcherImpl.BeforeWait += BrowserMultiThreadedDispatcherHooks.OnBeforeWait;
+            dispatcherImpl.AfterWakeup += BrowserMultiThreadedDispatcherHooks.OnAfterWakeup;
+            Dispatcher.InitializeUIThreadDispatcher(dispatcherImpl);
         }
         else
         {
