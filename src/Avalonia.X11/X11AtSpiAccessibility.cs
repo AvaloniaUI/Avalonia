@@ -31,6 +31,7 @@ namespace Avalonia.X11
             _ = InitializeAsync();
         }
 
+        // Tracking is UI thread only.
         internal void TrackWindow(X11Window window) => _trackedWindows.Add(window);
         internal void UntrackWindow(X11Window window) => _trackedWindows.Remove(window);
 
@@ -118,15 +119,19 @@ namespace Avalonia.X11
             {
                 var server = new AtSpiServer();
                 await server.StartAsync();
-                _server = server;
 
-                // Register any already-tracked windows.
-                foreach (var window in _trackedWindows)
+                // Publish the server and register the tracked windows on the UI thread.
+                // Peers need UI thread access, and window tracking only happens there.
+                await Dispatcher.UIThread.InvokeAsync(() =>
                 {
-                    var peer = TryGetWindowPeer(window);
-                    if (peer is not null)
-                        server.AddWindow(peer);
-                }
+                    _server = server;
+                    foreach (var window in _trackedWindows)
+                    {
+                        var peer = TryGetWindowPeer(window);
+                        if (peer is not null)
+                            server.AddWindow(peer);
+                    }
+                });
 
                 return true;
             }
