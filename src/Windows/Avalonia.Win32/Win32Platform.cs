@@ -174,6 +174,12 @@ namespace Avalonia.Win32
                 }
             }
 
+            if (msg == (uint)WindowsMessage.WM_DISPLAYCHANGE)
+            {
+                Screen?.OnChanged();
+                UpdateTimerFps();
+            }
+
             if (msg == (uint)WindowsMessage.WM_SETTINGCHANGE)
             {
                 if (PlatformSettings is Win32PlatformSettings win32PlatformSettings)
