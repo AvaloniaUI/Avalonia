@@ -1474,6 +1474,23 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public async Task TryEnterFullscreenAsync_Forwards_Screen_To_Platform_Impl()
+        {
+            var windowImpl = MockWindowingPlatform.CreateWindowMock();
+            var screen = new PlatformScreen(Mock.Of<IPlatformHandle>());
+            windowImpl.Setup(x => x.TryEnterFullscreenAsync(screen)).Returns(Task.FromResult(true));
+
+            var windowingPlatform = new MockWindowingPlatform(() => windowImpl.Object);
+            using (UnitTestApplication.Start(new TestServices(windowingPlatform: windowingPlatform)))
+            {
+                var target = new Window();
+
+                Assert.True(await target.TryEnterFullscreenAsync(screen));
+                windowImpl.Verify(x => x.TryEnterFullscreenAsync(screen), Times.Once);
+            }
+        }
+
+        [Fact]
         public void WindowState_UsableGetter_Setter_Updates_Only_After_Platform_Callback()
         {
             var windowImpl = MockWindowingPlatform.CreateWindowMock();

@@ -635,6 +635,13 @@ class WXdgTopLevel : WXdgShellSurface, IWXdgTopLevel
     private Size? _maxSize;
     private string? _title;
 
+    // States from the last sealed configure — the compositor's view of the surface.
+    private XdgToplevelStates _lastStates;
+    // The SetFullscreen request the UI thread wants an answer for (0 = none), and
+    // whether its wl_display.sync round trip has come back yet. See SetFullscreen.
+    private int _fullscreenRequestId;
+    private bool _fullscreenRequestSynced;
+
     private ZxdgToplevelDecorationV1? _decoration;
     // Disable SSD support completely and don't allow re-enabling it because we can't
     // TODO: Wait for V2 version of the protocol to gain more adoption and implement it on our side
@@ -701,7 +708,80 @@ class WXdgTopLevel : WXdgShellSurface, IWXdgTopLevel
 
     public void SetMaximized() => _xdgTopLevel?.SetMaximized();
     public void UnsetMaximized() => _xdgTopLevel?.UnsetMaximized();
-    public void SetFullscreen() => _xdgTopLevel?.SetFullscreen(null!);
+    public void SetFullscreen(object? outputId, int requestId)
+    {
+        if (_xdgTopLevel is null || Connection is null)
+        {
+            if (requestId != 0)
+                _topLevelEventSink.OnFullscreenRequestCompleted(requestId, false);
+            return;
+        }
+
+        _xdgTopLevel.SetFullscreen(ResolveOutput(outputId)!);
+
+        if (requestId == 0)
+            return;
+
+        // The answer is the first configure the compositor emits after processing
+        // this request. A configure that is already on the wire when the request
+        // goes out tells us nothing, so a wl_display.sync is sent right behind it:
+        // everything the compositor emitted before the request is delivered before
+        // the sync's callback. Once that fires, either the states already say
+        // fullscreen (the response came back before the sync, or the surface was
+        // fullscreen to begin with and the compositor has nothing new to say), or
+        // the next configure is the response.
+        CompleteFullscreenRequest(false);
+        _fullscreenRequestId = requestId;
+        _fullscreenRequestSynced = false;
+        // The callback must live on the connection's queue like every other object here,
+        // or its done event is never dispatched.
+        Connection.Display.Sync(new FullscreenSyncListener(this, requestId), Connection.Queue);
+    }
+
+    private sealed class FullscreenSyncListener(WXdgTopLevel p, int requestId) : WlCallback.Listener
+    {
+        protected override void Done(WlCallback eventSender, uint callbackData)
+        {
+            eventSender.Dispose();
+            if (p._fullscreenRequestId != requestId)
+                return;
+            if ((p._lastStates & XdgToplevelStates.Fullscreen) != 0)
+                p.CompleteFullscreenRequest(true);
+            else
+                p._fullscreenRequestSynced = true;
+        }
+    }
+
+    private void CompleteFullscreenRequest(bool fullscreen)
+    {
+        var requestId = _fullscreenRequestId;
+        if (requestId == 0)
+            return;
+        _fullscreenRequestId = 0;
+        _fullscreenRequestSynced = false;
+        _topLevelEventSink.OnFullscreenRequestCompleted(requestId, fullscreen);
+    }
+
+    /// <summary>
+    /// Maps an opaque output token (<c>Output.Id</c>, as published in the screen
+    /// snapshots) back to the <c>wl_output</c> it belongs to. Returns null — the
+    /// protocol's "compositor picks" — for a null token, and for a token whose
+    /// output has gone away between the UI thread reading it and this call
+    /// landing on the worker (hotplug races are normal here).
+    /// </summary>
+    private WlOutput? ResolveOutput(object? outputId)
+    {
+        if (outputId is null)
+            return null;
+
+        foreach (var output in Globals?.Outputs.Outputs ?? [])
+        {
+            if (ReferenceEquals(output.Id, outputId))
+                return output.WlOutput;
+        }
+
+        return null;
+    }
     public void UnsetFullscreen() => _xdgTopLevel?.UnsetFullscreen();
     public void SetMinimized() => _xdgTopLevel?.SetMinimized();
 
@@ -786,9 +866,13 @@ class WXdgTopLevel : WXdgShellSurface, IWXdgTopLevel
         batch.Serial = serial;
         batch.MaxSize = CalculateMaxSize();
         _pendingBatch = new();
-        
+        _lastStates = batch.States;
+
         _topLevelEventSink.OnConfigure(batch);
         BasicInitCompletedTcs.TrySetResult(batch);
+
+        if (_fullscreenRequestSynced)
+            CompleteFullscreenRequest((batch.States & XdgToplevelStates.Fullscreen) != 0);
         
         base.OnConfigureBatchComplete(serial);
     }
@@ -843,6 +927,9 @@ class WXdgTopLevel : WXdgShellSurface, IWXdgTopLevel
         _xdgTopLevel?.Destroy();
         _xdgTopLevel = null;
         _pendingBatch = new();
+        _lastStates = XdgToplevelStates.None;
+        // The compositor that was going to answer is gone.
+        CompleteFullscreenRequest(false);
         base.OnDisconnected();
     }
 
