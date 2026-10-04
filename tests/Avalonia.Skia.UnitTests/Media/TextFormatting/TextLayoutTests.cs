@@ -805,6 +805,38 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         }
 
         [Fact]
+        public void Should_HitTestTextRange_Split_LeftToRight_Runs_In_RightToLeft()
+        {
+            const string text = "אבגד abc";
+
+            using (Start())
+            {
+                var foreground = new SolidColorBrush(Colors.Red).ToImmutable();
+
+                var spans = new[]
+                {
+                    new ValueSpan<TextRunProperties>(6, 2,
+                        new GenericTextRunProperties(Typeface.Default, 12, foregroundBrush: foreground))
+                };
+
+                var layout = new TextLayout(
+                    text,
+                    Typeface.Default,
+                    12.0f,
+                    Brushes.Black.ToImmutable(),
+                    flowDirection: FlowDirection.RightToLeft,
+                    textStyleOverrides: spans);
+
+                var abc = layout.HitTestTextRange(5, 3).Single();
+                var a = layout.HitTestTextRange(5, 1).Single();
+                var c = layout.HitTestTextRange(7, 1).Single();
+
+                Assert.Equal(abc.Left, a.Left, 5);
+                Assert.Equal(abc.Right, c.Right, 5);
+            }
+        }
+
+        [Fact]
         public void Should_HitTestTextRange()
         {
             using (Start())
