@@ -7,6 +7,9 @@ namespace Avalonia.FreeDesktop.AtSpi
     {
         public static AtSpiRole ToAtSpiRole(AutomationControlType controlType, AutomationPeer? peer = null)
         {
+            if (peer?.GetHeadingLevel() > 0)
+                return AtSpiRole.Heading;
+
             return controlType switch
             {
                 AutomationControlType.None => AtSpiRole.Panel,
@@ -70,6 +73,7 @@ namespace Avalonia.FreeDesktop.AtSpi
                 AtSpiRole.ComboBox => "combo box",
                 AtSpiRole.Entry => "entry",
                 AtSpiRole.Label => "label",
+                AtSpiRole.Heading => "heading",
                 AtSpiRole.Image => "image",
                 AtSpiRole.List => "list",
                 AtSpiRole.ListItem => "list item",
