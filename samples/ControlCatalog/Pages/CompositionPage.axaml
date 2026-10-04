@@ -9,7 +9,8 @@
         <Style Selector="ItemsControl ContentPresenter">
           <Setter Property="Transitions">
             <Transitions>
-              <OffsetCompositionAnimation Duration="0:0:0.4"/>
+              <Vector3DCompositionTransition Property="Composition.Offset" 
+                                            Duration="0:0:0.4"/>
             </Transitions>
           </Setter>
         </Style>

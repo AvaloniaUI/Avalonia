@@ -102,12 +102,12 @@ namespace Avalonia.Controls
             /// <summary>
             /// Used by themes to define the initial scale value of the Pending scale animation
             /// </summary>
-            public Vector3 ScaleStartValue { get; } = new Vector3(1.5f, 1.5f, 1);
+            public Vector3D ScaleStartValue { get; } = new Vector3D(1.5f, 1.5f, 1);
 
             /// <summary>
             /// Used by themes to define the final scale value of the Pending scale animation
             /// </summary>
-            public Vector3 ScaleEndValue { get; } = new Vector3(1f, 1f, 1);
+            public Vector3D ScaleEndValue { get; } = new Vector3D(1f, 1f, 1);
         }
 
         private const float MinimumIndicatorOpacity = 0.4f;
