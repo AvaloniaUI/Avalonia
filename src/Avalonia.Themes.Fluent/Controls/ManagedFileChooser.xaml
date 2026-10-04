@@ -4,6 +4,8 @@
         xmlns:internal="using:Avalonia.Dialogs.Internal"
         xmlns:converters="clr-namespace:Avalonia.Controls.Converters;assembly=Avalonia.Controls"
         x:ClassModifier="internal">
+  <BoxShadows x:Key="ManagedFileChooserQuickLinksBoxShadow">inset -6 0 3 -3 #20000000</BoxShadows>
+
   <Design.PreviewWith>
     <Border Padding="20" Width="800" Height="500">
       <dialogs:ManagedFileChooser/>
@@ -283,7 +285,7 @@
       <Setter Property="Padding" Value="{DynamicResource ManagedFileChooserQuickLinksPadding}"/>
       <Setter Property="Template">
         <ControlTemplate>
-          <Border Name="border" BoxShadow="inset -6 0 3 -3 #20000000" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+          <Border Name="border" BoxShadow="{DynamicResource ManagedFileChooserQuickLinksBoxShadow}" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
             <ScrollViewer Name="PART_ScrollViewer" HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}" VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}">
               <ItemsPresenter Name="PART_ItemsPresenter"
                               ItemsPanel="{TemplateBinding ItemsPanel}"

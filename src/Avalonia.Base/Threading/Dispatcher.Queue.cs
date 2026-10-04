@@ -208,6 +208,16 @@ public partial class Dispatcher
                 else
                     ExecuteJob(job);
             }
+
+            // Yield after each job once shutdown has started, so frames that were asked to exit
+            // can unwind before the next job runs; ShutdownImpl then aborts whatever is left
+            if (HasShutdownStarted)
+            {
+                // Dispatcher thread, no lock needed to read _hasShutdownFinished
+                if (!_hasShutdownFinished && HasJobsWithPriority(DispatcherPriority.MinimumActiveValue))
+                    RequestProcessing();
+                return;
+            }
         }
     }
 

@@ -7,7 +7,6 @@
     <NoWarn>$(NoWarn);CS0649;CA1847</NoWarn>
     <NukeTelemetryVersion>1</NukeTelemetryVersion>
     <TargetFramework>$(AvsCurrentTargetFramework)</TargetFramework>
-    <UseMicroComGenerator>true</UseMicroComGenerator>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,8 +20,6 @@
     <PackageDownload Include="dotnet-ilrepack" Version="[2.0.44]" />
     <PackageDownload Include="CycloneDX" Version="[6.2.0]" />
   </ItemGroup>
-
-  <Import Project="..\build\MicroCOM.props" />
 
   <ItemGroup>
     <NukeMetadata Include="**\*.json" Exclude="bin\**;obj\**" />

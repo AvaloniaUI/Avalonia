@@ -19,7 +19,7 @@ internal static partial class CanvasHelper
         }
         else
         {
-            AvaloniaSynchronizationContext.InstallIfNeeded();
+            using var _ = JsCallbackHelper.EnsureDispatcherContext();
             BrowserTopLevelImpl
                 .TryGetTopLevel(topLevelId)?.Surface?.OnSizeChanged(width, height, dpr);
             return Task.CompletedTask;
