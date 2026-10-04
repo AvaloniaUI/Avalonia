@@ -40,7 +40,6 @@ namespace Avalonia.Controls
         private EventHandler? _canExecuteChangeHandler = default;
         private EventHandler CanExecuteChangedHandler => _canExecuteChangeHandler ??= new(CanExecuteChanged);
 
-        // Not IsAttachedToLogicalTree: styles set and clear Command while that already reports the new state.
         private bool _isSubscribedToCommand;
 
         /// <summary>
