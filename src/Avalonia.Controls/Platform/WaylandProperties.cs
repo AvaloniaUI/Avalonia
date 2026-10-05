@@ -7,7 +7,7 @@ namespace Avalonia.Controls;
 /// <summary>
 /// Set of Wayland specific properties and events that allow deeper customization of the application per platform.
 /// </summary>
-public class WaylandProperties
+public static class WaylandProperties
 {
     /// <summary>
     /// Defines the <c>AppId</c> attached property.
