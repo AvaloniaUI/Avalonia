@@ -87,6 +87,67 @@ namespace Avalonia.Base.UnitTests.Rendering
             }
         }
 
+        [Theory]
+        [InlineData(42, 5, "00042")]
+        [InlineData(0, 3, "000")]
+        [InlineData(12345678, 8, "12345678")]
+        [InlineData(1000, 3, "999")]
+        [InlineData(-5, 3, "000")]
+        public void DrawDigits_Matches_Drawing_The_Padded_Text(int value, int digitCount, string expectedText)
+        {
+            using (Start())
+            {
+                var renderer = CreateRenderer();
+
+                var digits = Capture(c => renderer.DrawDigits(c, value, digitCount, Brushes.White));
+                var text = Capture(c => renderer.DrawAsciiText(c, expectedText.AsSpan(), Brushes.White));
+
+                Assert.Equal(text.Count, digits.Count);
+
+                for (var i = 0; i < text.Count; i++)
+                {
+                    Assert.Same(text[i].Glyph, digits[i].Glyph);
+                    Assert.Equal(text[i].X, digits[i].X, 6);
+                }
+            }
+        }
+
+        [Fact]
+        public void ShapedText_Is_Measured_Once_And_Drawn_As_A_Single_Run()
+        {
+            using (Start())
+            {
+                var renderer = CreateRenderer();
+                using var shaped = renderer.Shape(" FPS: ");
+
+                Assert.Equal(renderer.MeasureAsciiText(" FPS: ".AsSpan()).Width, shaped.Width, 6);
+                Assert.Single(Capture(c => renderer.DrawShapedText(c, shaped, Brushes.White)));
+            }
+        }
+
+        [Fact]
+        public void FpsCounter_Layout_Does_Not_Depend_On_The_Numbers()
+        {
+            using (Start())
+            {
+                var counter = new FpsCounter(CreateRenderer());
+                var rects = new List<Rect?>();
+
+                var first = Capture(c => rects.Add(counter.RenderFps(c, 1000, 1000, 1, 1, false, null)));
+                var second = Capture(c => rects.Add(counter.RenderFps(c, 1000, 1000, 99999, 88888, false, null)));
+
+                Assert.Equal(rects[0], rects[1]);
+                Assert.Equal(first.Count, second.Count);
+
+                // Labels, and every digit cell, stay where they were no matter which digits are shown.
+                for (var i = 0; i < first.Count; i++)
+                {
+                    if (first[i].Glyph.Equals(second[i].Glyph))
+                        Assert.Equal(first[i].X, second[i].X, 6);
+                }
+            }
+        }
+
         private static double MeasureGlyph(char c)
         {
             var glyphTypeface = Typeface.Default.GlyphTypeface;
@@ -98,18 +159,21 @@ namespace Avalonia.Base.UnitTests.Rendering
             => new(Typeface.Default.GlyphTypeface, EmSize);
 
         private static List<double> Draw(DiagnosticTextRenderer renderer, string text)
+            => Capture(context => renderer.DrawAsciiText(context, text.AsSpan(), Brushes.White)).ConvertAll(d => d.X);
+
+        private static List<(double X, IGlyphRunImpl Glyph)> Capture(Action<ImmediateDrawingContext> draw)
         {
-            var drawn = new List<double>();
+            var drawn = new List<(double, IGlyphRunImpl)>();
             var impl = new Mock<IDrawingContextImpl>();
             var transform = Matrix.Identity;
             impl.SetupGet(x => x.Transform).Returns(() => transform);
             impl.SetupSet(x => x.Transform = It.IsAny<Matrix>()).Callback<Matrix>(m => transform = m);
             impl.Setup(x => x.DrawGlyphRun(It.IsAny<IBrush?>(), It.IsAny<IGlyphRunImpl>()))
-                .Callback<IBrush?, IGlyphRunImpl>((_, _) => drawn.Add(transform.M31));
+                .Callback<IBrush?, IGlyphRunImpl>((_, glyph) => drawn.Add((transform.M31, glyph)));
 
             using (var context = new ImmediateDrawingContext(impl.Object, false))
             {
-                renderer.DrawAsciiText(context, text.AsSpan(), Brushes.White);
+                draw(context);
             }
 
             return drawn;

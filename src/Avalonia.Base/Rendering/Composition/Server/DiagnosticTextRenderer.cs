@@ -12,7 +12,10 @@ namespace Avalonia.Rendering.Composition.Server
         private const char FirstChar = (char)32;
         private const char LastChar = (char)126;
 
+        private readonly GlyphTypeface _glyphTypeface;
+        private readonly double _fontRenderingEmSize;
         private readonly GlyphRun[] _runs = new GlyphRun[LastChar - FirstChar + 1];
+        private readonly double[] _digitOffsets = new double[10];
         private readonly double _lineHeight;
         private readonly double _digitCellWidth;
 
@@ -21,8 +24,15 @@ namespace Avalonia.Rendering.Composition.Server
             return _lineHeight;
         }
 
+        /// <summary>
+        /// The width of the cell every digit is centered in.
+        /// </summary>
+        public double DigitCellWidth => _digitCellWidth;
+
         public DiagnosticTextRenderer(GlyphTypeface glyphTypeface, double fontRenderingEmSize)
         {
+            _glyphTypeface = glyphTypeface;
+            _fontRenderingEmSize = fontRenderingEmSize;
             _lineHeight = glyphTypeface.Metrics.LineSpacing * fontRenderingEmSize / glyphTypeface.Metrics.DesignEmHeight;
 
             var chars = new char[LastChar - FirstChar + 1];
@@ -38,6 +48,62 @@ namespace Avalonia.Rendering.Composition.Server
             for (var c = '0'; c <= '9'; c++)
             {
                 _digitCellWidth = Math.Max(_digitCellWidth, _runs[c - FirstChar].Bounds.Width);
+            }
+
+            for (var digit = 0; digit < _digitOffsets.Length; digit++)
+            {
+                _digitOffsets[digit] = (_digitCellWidth - _runs['0' + digit - FirstChar].Bounds.Width) / 2.0;
+            }
+        }
+
+        /// <summary>
+        /// Shapes <paramref name="text"/> into a single glyph run that can be drawn with
+        /// <see cref="DrawShapedText"/> without any per-frame measuring or shaping.
+        /// Glyphs advance by their natural width, so digits are not placed in cells; use
+        /// <see cref="DrawDigits"/> for values that change.
+        /// </summary>
+        public ShapedText Shape(string text)
+        {
+            var chars = new char[text.Length];
+            var glyphs = new ushort[text.Length];
+
+            for (var i = 0; i < text.Length; i++)
+            {
+                var c = text[i] is >= FirstChar and <= LastChar ? text[i] : ' ';
+                chars[i] = c;
+                glyphs[i] = _glyphTypeface.CharacterToGlyphMap[c];
+            }
+
+            return new ShapedText(new GlyphRun(_glyphTypeface, _fontRenderingEmSize, chars, glyphs));
+        }
+
+        public void DrawShapedText(ImmediateDrawingContext context, ShapedText text, IImmutableBrush foreground)
+        {
+            if (text.GlyphRun.GlyphInfos.Count > 0)
+                context.PlatformImpl.DrawGlyphRun(foreground, text.GlyphRun.PlatformImpl.Item);
+        }
+
+        /// <summary>
+        /// Draws a non-negative <paramref name="value"/> zero padded to <paramref name="digitCount"/> digits,
+        /// each in its own <see cref="DigitCellWidth"/> wide cell, without formatting a string.
+        /// Values that do not fit are clamped to the largest representable value.
+        /// </summary>
+        public void DrawDigits(ImmediateDrawingContext context, int value, int digitCount, IImmutableBrush foreground)
+        {
+            var divisor = 1L;
+            for (var i = 1; i < digitCount; i++)
+                divisor *= 10;
+
+            var remaining = Math.Clamp(value, 0, divisor * 10 - 1);
+
+            for (var i = 0; i < digitCount; i++)
+            {
+                var digit = (int)(remaining / divisor);
+                remaining %= divisor;
+                divisor /= 10;
+
+                using (context.PushPreTransform(Matrix.CreateTranslation(i * _digitCellWidth + _digitOffsets[digit], 0.0)))
+                    context.PlatformImpl.DrawGlyphRun(foreground, _runs['0' + digit - FirstChar].PlatformImpl.Item);
             }
         }
 
@@ -74,6 +140,24 @@ namespace Avalonia.Rendering.Composition.Server
                 offset += charIsNumber ? _digitCellWidth : run.Bounds.Width;
             }
 
+        }
+
+        /// <summary>
+        /// A piece of text shaped once by <see cref="Shape"/>.
+        /// </summary>
+        public sealed class ShapedText : IDisposable
+        {
+            internal ShapedText(GlyphRun glyphRun)
+            {
+                GlyphRun = glyphRun;
+                Width = glyphRun.Bounds.Width;
+            }
+
+            internal GlyphRun GlyphRun { get; }
+
+            public double Width { get; }
+
+            public void Dispose() => GlyphRun.Dispose();
         }
     }
 }
