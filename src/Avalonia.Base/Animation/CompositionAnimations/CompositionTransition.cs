@@ -49,12 +49,6 @@ namespace Avalonia.Animation
         private Easing _easing = new SplineEasing(new KeySpline(0.25, 0.1, 0.25, 1.0));
 
         /// <summary>
-        /// Defines the <see cref="IsEnabled"/> property.
-        /// </summary>
-        public static readonly StyledProperty<bool> IsEnabledProperty = AvaloniaProperty.Register<CompositionTransitionBase, bool>(
-            nameof(IsEnabled), defaultValue: true);
-
-        /// <summary>
         /// Defines the <see cref="IterationCount"/> property.
         /// </summary>
         public static readonly StyledProperty<int> IterationCountProperty = AvaloniaProperty.Register<CompositionTransitionBase, int>(
@@ -130,15 +124,6 @@ namespace Avalonia.Animation
         public event EventHandler? AnimationInvalidated;
 
         /// <summary>
-        /// Gets or sets a value indicating whether the transition is enabled.
-        /// </summary>
-        public bool IsEnabled
-        {
-            get => GetValue(IsEnabledProperty);
-            set => SetValue(IsEnabledProperty, value);
-        }
-
-        /// <summary>
         /// Gets or sets the number of times the animation repeats.
         /// </summary>
         public int IterationCount
@@ -185,7 +170,7 @@ namespace Avalonia.Animation
 
         CompositionAnimation? ICompositionTransition.GetCompositionAnimation(Visual parent)
         {
-            return !IsEnabled ? null : GetCompositionAnimation(parent);
+            return GetCompositionAnimation(parent);
         }
 
         /// <summary>
@@ -230,7 +215,7 @@ namespace Avalonia.Animation
             _attachedVisual = visual;
             _animation = animation;
 
-            if (IsEnabled && _attachedVisual != null && _animation?.Target is { } newTarget && ElementComposition.GetElementVisual(_attachedVisual) is { } newCompositionVisual)
+            if (_attachedVisual != null && _animation?.Target is { } newTarget && ElementComposition.GetElementVisual(_attachedVisual) is { } newCompositionVisual)
             {
                 newCompositionVisual.StartAnimation(newTarget, _animation);
             }
@@ -241,21 +226,6 @@ namespace Avalonia.Animation
             base.OnPropertyChanged(change);
 
             if (change.Property == DurationProperty || change.Property == DelayProperty)
-                RaiseAnimationInvalidated();
-            else if (change.Property == IsEnabledProperty)
-                OnEnabledChanged();
-        }
-
-        private void OnEnabledChanged()
-        {
-            if (_attachedVisual != null && _animation?.Target is { } target && ElementComposition.GetElementVisual(_attachedVisual) is { } compositionVisual)
-            {
-                if (IsEnabled)
-                    compositionVisual.StartAnimation(target, _animation);
-                else
-                    compositionVisual.StopAnimation(target);
-            }
-            else
                 RaiseAnimationInvalidated();
         }
 
