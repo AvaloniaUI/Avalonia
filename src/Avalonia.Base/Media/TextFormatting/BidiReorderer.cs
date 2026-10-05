@@ -82,9 +82,9 @@ namespace Avalonia.Media.TextFormatting
 
                     textRuns[index] = current.Run;
 
-                    var indexedRun = indexedTextRuns[index];
+                    var indexedRun = indexedTextRuns[current.RunIndex];
 
-                    indexedRun.RunIndex = current.RunIndex;
+                    indexedRun.RunIndex = index;
 
                     indexedRun.NextRunIndex = current.NextRunIndex;
 
