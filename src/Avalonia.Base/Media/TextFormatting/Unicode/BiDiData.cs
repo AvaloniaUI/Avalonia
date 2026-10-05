@@ -98,12 +98,12 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
                 var dirBit = 1U << (int)dir;
 
-                if (!HasEmbeddings.HasValue && (dirBit & embeddingMask) != 0U)
+                if ((dirBit & embeddingMask) != 0U)
                 {
                     HasEmbeddings = true;
                 }
 
-                if (!HasIsolates.HasValue && (dirBit & isolateMask) != 0U)
+                if ((dirBit & isolateMask) != 0U)
                 {
                     HasIsolates = true;
                 }
