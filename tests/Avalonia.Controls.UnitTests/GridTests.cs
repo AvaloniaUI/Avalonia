@@ -1310,6 +1310,244 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Shared_Size_Group_Is_Registered_For_Definitions_Assigned_As_A_Collection()
+        {
+            // Definitions supplied through the ColumnDefinitions setter - an object initializer, a
+            // shared resource, or ColumnDefinitions="Auto,*" - are already in the collection when the
+            // grid claims it, so they never pass through the collection-changed handler that joins
+            // them to the parent tree.
+            var grids = new[]
+            {
+                new Grid
+                {
+                    ColumnDefinitions = new ColumnDefinitions
+                    {
+                        new ColumnDefinition { Width = GridLength.Auto, SharedSizeGroup = "A" },
+                        new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) },
+                    },
+                },
+                new Grid
+                {
+                    ColumnDefinitions = new ColumnDefinitions
+                    {
+                        new ColumnDefinition { Width = GridLength.Auto, SharedSizeGroup = "A" },
+                        new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) },
+                    },
+                },
+            };
+            grids[0].Children.Add(new Border { Width = 50, Height = 10 });
+
+            var scope = new StackPanel
+            {
+                [Grid.IsSharedSizeScopeProperty] = true,
+                Children = { grids[0], grids[1] },
+            };
+            var root = new TestRoot(scope);
+
+            root.ExecuteInitialLayoutPass();
+            // Shared groups validate after layout and apply any resulting invalidation on the next pass.
+            root.LayoutManager.ExecuteLayoutPass();
+
+            Assert.Equal(50, grids[0].ColumnDefinitions[0].ActualWidth);
+            Assert.Equal(50, grids[1].ColumnDefinitions[0].ActualWidth);
+        }
+
+        [Fact]
+        public void Replacing_Definition_Collection_Releases_Its_Shared_Size_Group()
+        {
+            // The outgoing definitions are no longer reachable from the grid, so nothing resets their
+            // measured minimum. Left registered, they keep the group pinned at whatever size they
+            // last contributed.
+            var grid = new Grid();
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto, SharedSizeGroup = "A" });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            grid.Children.Add(new Border { Width = 50, Height = 10 });
+
+            var other = new Grid();
+            other.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto, SharedSizeGroup = "A" });
+            other.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+
+            var scope = new StackPanel
+            {
+                [Grid.IsSharedSizeScopeProperty] = true,
+                Children = { grid, other },
+            };
+            var root = new TestRoot(scope);
+
+            root.ExecuteInitialLayoutPass();
+            // Shared groups validate after layout and apply any resulting invalidation on the next pass.
+            root.LayoutManager.ExecuteLayoutPass();
+            Assert.Equal(50, other.ColumnDefinitions[0].ActualWidth);
+
+            grid.ColumnDefinitions = new ColumnDefinitions
+            {
+                new ColumnDefinition { Width = GridLength.Auto },
+                new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) },
+            };
+            root.LayoutManager.ExecuteLayoutPass();
+            root.LayoutManager.ExecuteLayoutPass();
+
+            Assert.Equal(0, other.ColumnDefinitions[0].ActualWidth);
+        }
+
+        [Fact]
+        public void Removing_Definition_Detaches_It_From_The_Grid()
+        {
+            var shared = new ColumnDefinition { Width = GridLength.Auto, SharedSizeGroup = "A" };
+            var grid = new Grid();
+            grid.ColumnDefinitions.Add(shared);
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            grid.Children.Add(new Border { Width = 50, Height = 10 });
+
+            var other = new Grid();
+            other.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto, SharedSizeGroup = "A" });
+            other.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+
+            var scope = new StackPanel
+            {
+                [Grid.IsSharedSizeScopeProperty] = true,
+                Children = { grid, other },
+            };
+            var root = new TestRoot(scope);
+
+            root.ExecuteInitialLayoutPass();
+            root.LayoutManager.ExecuteLayoutPass();
+            Assert.Equal(50, other.ColumnDefinitions[0].ActualWidth);
+
+            grid.ColumnDefinitions.Remove(shared);
+            root.LayoutManager.ExecuteLayoutPass();
+            root.LayoutManager.ExecuteLayoutPass();
+            Assert.Equal(0, other.ColumnDefinitions[0].ActualWidth);
+            Assert.Null(shared.Parent);
+
+            // A definition that has left the grid must no longer see the grid's scope.
+            shared.SharedSizeGroup = null;
+            shared.SharedSizeGroup = "A";
+            root.LayoutManager.ExecuteLayoutPass();
+            root.LayoutManager.ExecuteLayoutPass();
+            Assert.Equal(0, other.ColumnDefinitions[0].ActualWidth);
+        }
+
+        [Fact]
+        public void Moving_Definition_Between_Grids_Moves_Its_Shared_Size_Registration()
+        {
+            var shared = new ColumnDefinition { Width = GridLength.Auto, SharedSizeGroup = "A" };
+            var source = new Grid();
+            source.ColumnDefinitions.Add(shared);
+            source.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            source.Children.Add(new Border { Width = 50, Height = 10 });
+
+            var sourcePartner = new Grid();
+            sourcePartner.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto, SharedSizeGroup = "A" });
+            sourcePartner.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+
+            var target = new Grid();
+            target.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+
+            var targetPartner = new Grid();
+            targetPartner.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto, SharedSizeGroup = "A" });
+            targetPartner.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            targetPartner.Children.Add(new Border { Width = 20, Height = 10 });
+
+            var sourceScope = new StackPanel
+            {
+                [Grid.IsSharedSizeScopeProperty] = true,
+                Children = { source, sourcePartner },
+            };
+            var targetScope = new StackPanel
+            {
+                [Grid.IsSharedSizeScopeProperty] = true,
+                Children = { target, targetPartner },
+            };
+            var root = new TestRoot(new StackPanel { Children = { sourceScope, targetScope } });
+
+            root.ExecuteInitialLayoutPass();
+            root.LayoutManager.ExecuteLayoutPass();
+            Assert.Equal(50, sourcePartner.ColumnDefinitions[0].ActualWidth);
+            Assert.Equal(20, targetPartner.ColumnDefinitions[0].ActualWidth);
+
+            source.ColumnDefinitions.Remove(shared);
+            target.ColumnDefinitions.Insert(0, shared);
+            root.LayoutManager.ExecuteLayoutPass();
+            root.LayoutManager.ExecuteLayoutPass();
+
+            Assert.Same(target, shared.Parent);
+            Assert.Equal(0, sourcePartner.ColumnDefinitions[0].ActualWidth);
+            Assert.Equal(20, target.ColumnDefinitions[0].ActualWidth);
+        }
+
+        [Fact]
+        public void Reassigning_The_Same_Definition_Collection_Is_Inert()
+        {
+            var grid = new Grid();
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto, SharedSizeGroup = "A" });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            grid.Children.Add(new Border { Width = 50, Height = 10 });
+
+            var other = new Grid();
+            other.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto, SharedSizeGroup = "A" });
+            other.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+
+            var scope = new StackPanel
+            {
+                [Grid.IsSharedSizeScopeProperty] = true,
+                Children = { grid, other },
+            };
+            var root = new TestRoot(scope);
+
+            root.ExecuteInitialLayoutPass();
+            root.LayoutManager.ExecuteLayoutPass();
+            Assert.Equal(50, other.ColumnDefinitions[0].ActualWidth);
+
+            var definitions = grid.ColumnDefinitions;
+            grid.ColumnDefinitions = definitions;
+            root.LayoutManager.ExecuteLayoutPass();
+            root.LayoutManager.ExecuteLayoutPass();
+
+            Assert.Same(definitions, grid.ColumnDefinitions);
+            Assert.Equal(50, other.ColumnDefinitions[0].ActualWidth);
+        }
+
+        [Fact]
+        public void Shared_Size_Group_Is_Registered_For_Row_Definitions_Assigned_As_A_Collection()
+        {
+            var grids = new[]
+            {
+                new Grid
+                {
+                    RowDefinitions = new RowDefinitions
+                    {
+                        new RowDefinition { Height = GridLength.Auto, SharedSizeGroup = "A" },
+                        new RowDefinition { Height = new GridLength(1, GridUnitType.Star) },
+                    },
+                },
+                new Grid
+                {
+                    RowDefinitions = new RowDefinitions
+                    {
+                        new RowDefinition { Height = GridLength.Auto, SharedSizeGroup = "A" },
+                        new RowDefinition { Height = new GridLength(1, GridUnitType.Star) },
+                    },
+                },
+            };
+            grids[0].Children.Add(new Border { Width = 10, Height = 50 });
+
+            var scope = new StackPanel
+            {
+                Orientation = Layout.Orientation.Horizontal,
+                [Grid.IsSharedSizeScopeProperty] = true,
+                Children = { grids[0], grids[1] },
+            };
+            var root = new TestRoot(scope);
+
+            root.ExecuteInitialLayoutPass();
+            root.LayoutManager.ExecuteLayoutPass();
+
+            Assert.Equal(50, grids[0].RowDefinitions[0].ActualHeight);
+            Assert.Equal(50, grids[1].RowDefinitions[0].ActualHeight);
+        }
+
+        [Fact]
         public void Collection_Changes_Are_Tracked()
         {
             var grid = CreateGrid(

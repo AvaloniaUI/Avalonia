@@ -49,7 +49,7 @@ namespace Avalonia.Collections
     /// </remarks>
     public class AvaloniaList<T> : IAvaloniaList<T>, IList, INotifyCollectionChangedDebug
     {
-        private readonly List<T> _inner;
+        private List<T> _inner;
         private NotifyCollectionChangedEventHandler? _collectionChanged;
 
         /// <summary>
@@ -144,6 +144,16 @@ namespace Avalonia.Collections
 
         internal IAvaloniaListItemValidator<T>? Validator { get; set; }
 
+        private protected List<T> Inner
+        {
+            get => _inner;
+            set => _inner = value;
+        }
+
+        private protected virtual void OnMutating()
+        {
+        }
+
         /// <inheritdoc/>
         bool IList.IsFixedSize => false;
 
@@ -182,6 +192,7 @@ namespace Avalonia.Collections
 
                 if (!EqualityComparer<T>.Default.Equals(old, value))
                 {
+                    OnMutating();
                     _inner[index] = value;
 
                     if (_collectionChanged != null)
@@ -224,6 +235,9 @@ namespace Avalonia.Collections
         public virtual void Add(T item)
         {
             Validator?.Validate(item);
+
+            OnMutating();
+
             int index = _inner.Count;
             _inner.Add(item);
             NotifyAdd(item, index);
@@ -242,6 +256,8 @@ namespace Avalonia.Collections
         {
             if (Count > 0)
             {
+                OnMutating();
+
                 if (_collectionChanged != null)
                 {
                     var e = ResetBehavior == ResetBehavior.Reset ?
@@ -331,6 +347,9 @@ namespace Avalonia.Collections
         public virtual void Insert(int index, T item)
         {
             Validator?.Validate(item);
+
+            OnMutating();
+
             _inner.Insert(index, item);
             NotifyAdd(item, index);
         }
@@ -351,6 +370,8 @@ namespace Avalonia.Collections
             {
                 if (list.Count > 0)
                 {
+                    OnMutating();
+
                     if (list is ICollection<T> collection)
                     {
                         if (hasValidation)
@@ -395,6 +416,8 @@ namespace Avalonia.Collections
                 {
                     if (en.MoveNext())
                     {
+                        OnMutating();
+
                         // Avoid allocating list for collection notification if there is no event subscriptions.
                         List<T>? notificationItems = willRaiseCollectionChanged ?
                             new List<T>() :
@@ -438,6 +461,9 @@ namespace Avalonia.Collections
         public void Move(int oldIndex, int newIndex)
         {
             var item = this[oldIndex];
+
+            OnMutating();
+
             _inner.RemoveAt(oldIndex);
             _inner.Insert(newIndex, item);
 
@@ -462,6 +488,9 @@ namespace Avalonia.Collections
         {
             var items = _inner.GetRange(oldIndex, count);
             var modifiedNewIndex = newIndex;
+
+            OnMutating();
+
             _inner.RemoveRange(oldIndex, count);
 
             if (newIndex > oldIndex)
@@ -515,6 +544,7 @@ namespace Avalonia.Collections
 
             if (index != -1)
             {
+                OnMutating();
                 _inner.RemoveAt(index);
                 NotifyRemove(item , index);
                 return true;
@@ -558,6 +588,7 @@ namespace Avalonia.Collections
         public virtual void RemoveAt(int index)
         {
             T item = _inner[index];
+            OnMutating();
             _inner.RemoveAt(index);
             NotifyRemove(item , index);
         }
@@ -572,6 +603,7 @@ namespace Avalonia.Collections
             if (count > 0)
             {
                 var list = _inner.GetRange(index, count);
+                OnMutating();
                 _inner.RemoveRange(index, count);
                 NotifyRemove(list, index);
             }

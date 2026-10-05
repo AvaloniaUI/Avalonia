@@ -30,6 +30,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 {
     class TopLevelImpl : ITopLevelImpl, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfoWithWaitPolicy
     {
+        private readonly Context _context;
         private readonly AndroidKeyboardEventsHelper<TopLevelImpl> _keyboardHelper;
         private readonly AndroidMotionEventsHelper _pointerHelper;
         private readonly AndroidInputMethod<AvaloniaView> _textInputMethod;
@@ -51,6 +52,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 throw new ArgumentException("AvaloniaView.Context must not be null");
             }
 
+            _context = context;
             _view = new SurfaceViewImpl(context, this, placeOnTop);
             _textInputMethod = new AndroidInputMethod<AvaloniaView>(avaloniaView);
             _keyboardHelper = new AndroidKeyboardEventsHelper<TopLevelImpl>(this);
@@ -245,22 +247,15 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 };
             }
 
-            // Sets the default app NightMode to AppCompatDelegate.ModeNightFollowSystem when themeVariant is null. This
-            // allows app to follow the current OS night mode. Using either ModeNightNo or ModeNightYes will force the app
-            // to use one night mode, ignoring the system's configuration and preventing us from detecting system theme changes
-            // in View.OnConfigurationChanged. In this case, only Activity.OnConfigurationChanged is called when system theme is
-            // changed, but we don't have access to that method if the toplevel view is embedded in a custom activity
-            var nightMode = themeVariant == null ? AppCompatDelegate.ModeNightFollowSystem :
-                themeVariant == PlatformThemeVariant.Light ? AppCompatDelegate.ModeNightNo : AppCompatDelegate.ModeNightYes;
-
-            AppCompatDelegate.DefaultNightMode = nightMode;
-
-            if (nightMode == AppCompatDelegate.ModeNightFollowSystem && _view?.Context is { } context
-                && context.Resources?.Configuration is { } config)
+            if (_context is AppCompatActivity activity)
             {
-                var settings =
-                    AvaloniaLocator.Current.GetRequiredService<IPlatformSettings>() as AndroidPlatformSettings;
-                settings?.OnViewConfigurationChanged(context, config);
+                var nightMode = themeVariant == PlatformThemeVariant.Dark ?
+                    AppCompatDelegate.ModeNightYes :
+                    AppCompatDelegate.ModeNightNo;
+
+                // Don't use AppCompatDelegate.DefaultNightMode: doing so will force the app to use one night mode,
+                // ignoring the system's configuration and preventing us from detecting system theme changes.
+                activity.Delegate.SetLocalNightMode(nightMode);
             }
         }
 

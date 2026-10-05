@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading.Tasks;
 using Avalonia.Remote.Protocol;
@@ -25,6 +26,7 @@ namespace Avalonia.DesignerSupport.Remote
             _disposed = true;
         }
 
+        [UnconditionalSuppressMessage("Trimming", "IL2075", Justification = "Debug method")]
         void Dump(object o, string pad)
         {
             foreach (var p in o.GetType().GetProperties())

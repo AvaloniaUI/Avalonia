@@ -75,8 +75,8 @@ internal class ImmediateRenderer
             }
 
             IEnumerable<Visual> childrenEnumerable = visual.HasNonUniformZIndexChildren
-                ? visual.VisualChildren.OrderBy(x => x, ZIndexComparer.Instance)
-                : visual.VisualChildren;
+                ? visual.TypedVisualChildren.OrderBy(x => x, ZIndexComparer.Instance)
+                : visual.TypedVisualChildren;
 
             if (visual.ClipToBounds)
             {

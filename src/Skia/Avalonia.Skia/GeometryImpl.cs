@@ -3,7 +3,6 @@ using System.Diagnostics.CodeAnalysis;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Skia.Helpers;
-using Avalonia.Utilities;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -53,7 +52,7 @@ namespace Avalonia.Skia
                 return PathContainsCore(_pathCache.ExpandedPath, point);
             }
         }
-        
+
         /// <summary>
         /// Check Skia path if it contains a point.
         /// </summary>
@@ -96,7 +95,7 @@ namespace Avalonia.Skia
                 var closed = SKPathHelper.CreateClosedPath(path);
                 return new StreamGeometryImpl(closed, closed);
             }
-            
+
             return new StreamGeometryImpl(new SKPath(), null);
         }
 
@@ -171,13 +170,43 @@ namespace Avalonia.Skia
             }
         }
 
+        /// <inheritdoc />
+        public IntersectionResult GetFillIntersectionResult(IGeometryImpl geometry)
+        {
+            if (geometry is  not GeometryImpl other)
+                return IntersectionResult.Empty;
+
+            return HitTestPath(FillPath, other.FillPath);
+
+            static IntersectionResult HitTestPath(SKPath? path1, SKPath? path2)
+            {
+                if (path1 == null || path2 == null)
+                    return IntersectionResult.Empty;
+
+                var region = new SKRegion(path1);
+                var otherRegion = new SKRegion(path2);
+
+                if (region.Intersects(otherRegion))
+                {
+                    if (region.Contains(otherRegion))
+                        return IntersectionResult.FullyInside;
+
+                    if (otherRegion.Contains(region))
+                        return IntersectionResult.FullyContains;
+                    return IntersectionResult.Intersects;
+                }
+
+                return IntersectionResult.Empty;
+            }
+        }
+
         private struct PathCache : IDisposable
         {
             private int _penHash;
             private SKPath? _path, _cachedFor;
             private Rect? _renderBounds;
             private static readonly SKPath s_emptyPath = new();
-            
+
             public Rect RenderBounds => _renderBounds ??= (_path ?? _cachedFor ?? s_emptyPath).TightBounds.ToAvaloniaRect();
             public SKPath ExpandedPath => _path ?? s_emptyPath;
 

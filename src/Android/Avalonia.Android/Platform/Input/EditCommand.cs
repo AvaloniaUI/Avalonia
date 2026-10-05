@@ -1,4 +1,5 @@
 ﻿using System;
+using Android.Views;
 using Avalonia.Input.TextInput;
 
 namespace Avalonia.Android.Platform.Input
@@ -175,6 +176,21 @@ namespace Avalonia.Android.Platform.Input
         public override void Apply(TextEditBuffer buffer)
         {
             buffer.Composition = default;
+        }
+    }
+
+    internal class KeyEventCommand : EditCommand
+    {
+        private readonly KeyEvent? _keyEvent;
+
+        public KeyEventCommand(KeyEvent? keyEvent)
+        {
+            _keyEvent = keyEvent;
+        }
+
+        public override void Apply(TextEditBuffer buffer)
+        {
+            buffer.DispatchKeyEvent(_keyEvent);
         }
     }
 }

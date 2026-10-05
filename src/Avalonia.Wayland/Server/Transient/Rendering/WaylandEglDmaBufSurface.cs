@@ -55,7 +55,10 @@ internal class WaylandEglDmaBufSurface : EglGlPlatformImageSurfaceBase, IPlatfor
             if (!_parent._surface.State.IsReady)
                 throw new RenderTargetNotReadyException();
 
-            EnsureSwapchain(sceneInfo.Size);
+            var size = sceneInfo.Size;
+            size = new PixelSize(Math.Max(1, size.Width), Math.Max(1, size.Height));
+
+            EnsureSwapchain(size);
 
             // Select least recently used free slot
             BufferSlot? freeSlot = null;
@@ -70,7 +73,7 @@ internal class WaylandEglDmaBufSurface : EglGlPlatformImageSurfaceBase, IPlatfor
 
             var capturedSlot = freeSlot;
             capturedSlot.LastUsedFrame = ++_frameCounter;
-            return BeginDraw(capturedSlot.EglImage!.Handle, sceneInfo.Size, sceneInfo.Scaling, () =>
+            return BeginDraw(capturedSlot.EglImage!.Handle, size, sceneInfo.Scaling, () =>
             {
                 // Stage per-frame state (frame callback + ack_configure +
                 // geometry + viewport/scale + min/max) into the next
@@ -79,7 +82,7 @@ internal class WaylandEglDmaBufSurface : EglGlPlatformImageSurfaceBase, IPlatfor
                 // issues the commit itself.
                 _parent._surface.OnBeforeNewBufferAttached(sceneInfo);
                 _parent._surface.WlSurface!.Attach(capturedSlot.WlBuffer!, 0, 0);
-                _parent._surface.WlSurface.DamageBuffer(0, 0, sceneInfo.Size.Width, sceneInfo.Size.Height);
+                _parent._surface.WlSurface.DamageBuffer(0, 0, size.Width, size.Height);
                 capturedSlot.Busy = true;
                 _parent._surface.WlSurface.Commit();
             });

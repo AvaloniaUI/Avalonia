@@ -76,6 +76,21 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<DatePicker, bool>(nameof(YearVisible), true);
 
         /// <summary>
+        /// Defines the <see cref="VerticalContentAlignment"/> property.
+        /// </summary>
+        public static readonly StyledProperty<VerticalAlignment> VerticalContentAlignmentProperty =
+            ContentControl.VerticalContentAlignmentProperty.AddOwner<DatePicker>();
+
+        /// <summary>
+        /// Gets or sets the vertical alignment of the content within the control.
+        /// </summary>
+        public VerticalAlignment VerticalContentAlignment
+        {
+            get => GetValue(VerticalContentAlignmentProperty);
+            set => SetValue(VerticalContentAlignmentProperty, value);
+        }
+
+        /// <summary>
         /// Defines the <see cref="SelectedDate"/> Property
         /// </summary>
         public static readonly StyledProperty<DateTimeOffset?> SelectedDateProperty =

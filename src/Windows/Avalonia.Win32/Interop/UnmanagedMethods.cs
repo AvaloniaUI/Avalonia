@@ -968,6 +968,13 @@ namespace Avalonia.Win32.Interop
         }
 
         [Flags]
+        public enum TrackPopupMenuFlags : uint
+        {
+            TPM_RIGHTBUTTON = 0x0002,
+            TPM_RETURNCMD = 0x0100,
+        }
+
+        [Flags]
         public enum PointerFlags
         {
             POINTER_FLAG_NONE = 0x00000000,
@@ -980,8 +987,8 @@ namespace Avalonia.Win32.Interop
             POINTER_FLAG_FOURTHBUTTON = 0x00000080,
             POINTER_FLAG_FIFTHBUTTON = 0x00000100,
             POINTER_FLAG_PRIMARY = 0x00002000,
-            POINTER_FLAG_CONFIDENCE = 0x00000400,
-            POINTER_FLAG_CANCELED = 0x00000800,
+            POINTER_FLAG_CONFIDENCE = 0x00004000,
+            POINTER_FLAG_CANCELED = 0x00008000,
             POINTER_FLAG_DOWN = 0x00010000,
             POINTER_FLAG_UPDATE = 0x00020000,
             POINTER_FLAG_UP = 0x00040000,
@@ -1398,8 +1405,15 @@ namespace Avalonia.Win32.Interop
         [DllImport("user32.dll")]
         public static extern IntPtr GetSystemMenu(IntPtr hWnd, bool bRevert);
 
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern uint TrackPopupMenu(IntPtr hMenu, TrackPopupMenuFlags uFlags, int x, int y, int nReserved,
+            IntPtr hWnd, IntPtr prcRect);
+
         [DllImport("user32.dll")]
         public static extern bool EnableMenuItem(IntPtr hMenu, uint uIDEnableItem, uint uEnable);
+
+        [DllImport("user32.dll")]
+        public static extern bool SetMenuDefaultItem(IntPtr hMenu, uint uItem, uint fByPos);
 
         [DllImport("user32.dll", SetLastError = true)]
         public static extern bool GetWindowPlacement(IntPtr hWnd, out WINDOWPLACEMENT lpwndpl);
@@ -1625,6 +1639,14 @@ namespace Avalonia.Win32.Interop
         [DllImport("ole32.dll", PreserveSig = true)]
         internal static extern int CoCreateInstance(in Guid clsid,
             IntPtr ignore1, int ignore2, in Guid iid, [Out] out IntPtr pUnkOuter);
+
+        [DllImport("ole32.dll", PreserveSig = true)]
+        internal static extern int CoMarshalInterThreadInterfaceInStream(
+            ref Guid riid, IntPtr unknown, out IntPtr stream);
+
+        [DllImport("ole32.dll", PreserveSig = true)]
+        internal static extern int CoGetInterfaceAndReleaseStream(
+            IntPtr stream, ref Guid riid, out IntPtr unknown);
 
         internal static T CreateInstance<T>(in Guid clsid, in Guid iid) where T : IUnknown
         {
@@ -2632,6 +2654,7 @@ namespace Avalonia.Win32.Interop
         public const uint DV_E_FORMATETC = 0x80040064;
         public const uint OLE_E_ADVISENOTSUPPORTED = 0x80040003;
         public const uint COR_E_OBJECTDISPOSED = 0x80131622;
+        public const int STATFLAG_NONAME = 1;
 
         [StructLayout(LayoutKind.Sequential)]
         public struct DROPFILES
@@ -2658,6 +2681,41 @@ namespace Avalonia.Win32.Interop
             public DVASPECT dwAspect;
             public int lindex;
             public TYMED tymed;
+        }
+
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+        internal unsafe struct FILEDESCRIPTORW
+        {
+            public const uint FD_FILESIZE = 0x00000040;
+            public const int FileNameLength = 260;
+
+            public uint dwFlags;
+            public Guid clsid;
+            public SIZE sizel;
+            public POINT pointl;
+            public uint dwFileAttributes;
+            public FILETIME ftCreationTime;
+            public FILETIME ftLastAccessTime;
+            public FILETIME ftLastWriteTime;
+            public uint nFileSizeHigh;
+            public uint nFileSizeLow;
+            public fixed char cFileName[FileNameLength];
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct STATSTG
+        {
+            public IntPtr pwcsName;
+            public uint type;
+            public ulong cbSize;
+            public FILETIME mtime;
+            public FILETIME ctime;
+            public FILETIME atime;
+            public uint grfMode;
+            public uint grfLocksSupported;
+            public Guid clsid;
+            public uint grfStateBits;
+            public uint reserved;
         }
 
         [Flags]

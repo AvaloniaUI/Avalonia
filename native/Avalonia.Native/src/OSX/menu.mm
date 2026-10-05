@@ -101,20 +101,29 @@ NSMenuItem* AvnAppMenuItem::GetNative()
 HRESULT AvnAppMenuItem::SetSubMenu (IAvnMenu* menu)
 {
     START_COM_CALL;
-    
+
     @autoreleasepool
     {
         if(menu != nullptr)
         {
             auto nsMenu = dynamic_cast<AvnAppMenu*>(menu)->GetNative();
-            
+
             [_native setSubmenu: nsMenu];
+
+            // Parity with -[NSMenu setSubmenu:forItem:]: without submenuAction: a click is dispatched to
+            // didSelectItem: and dismisses the menu instead of opening the submenu.
+            [_native setTarget: nil];
+            [_native setAction: @selector(submenuAction:)];
         }
         else
         {
             [_native setSubmenu: nullptr];
+
+            // The item is reused, so put its own action back.
+            [_native setTarget: _native];
+            [_native setAction: @selector(didSelectItem:)];
         }
-        
+
         return S_OK;
     }
 }

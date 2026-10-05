@@ -230,6 +230,87 @@ namespace Avalonia.Base.UnitTests.Styling
         }
 
         [Fact]
+        public void LogicalChildren_Can_Be_Added_During_AttachedToLogicalTree()
+        {
+            var root = new TestRoot();
+            var parent = new StyledElement();
+            var child1 = new StyledElement();
+            var child2 = new StyledElement();
+
+            parent.LogicalChildren.Add(child1);
+
+            child1.AttachedToLogicalTree += (_, _) => parent.LogicalChildren.Add(child2);
+
+            root.LogicalChildren.Add(parent);
+
+            Assert.Equal([child1, child2], parent.LogicalChildren);
+            Assert.True(((ILogical)child1).IsAttachedToLogicalTree);
+            Assert.True(((ILogical)child2).IsAttachedToLogicalTree);
+        }
+
+        [Fact]
+        public void LogicalChildren_Can_Be_Removed_During_AttachedToLogicalTree()
+        {
+            var root = new TestRoot();
+            var parent = new StyledElement();
+            var child1 = new StyledElement();
+            var child2 = new StyledElement();
+
+            parent.LogicalChildren.AddRange([child1, child2]);
+
+            child1.AttachedToLogicalTree += (_, _) => parent.LogicalChildren.Remove(child2);
+
+            root.LogicalChildren.Add(parent);
+
+            Assert.Equal([child1], parent.LogicalChildren);
+            Assert.True(((ILogical)child1).IsAttachedToLogicalTree);
+            Assert.False(((ILogical)child2).IsAttachedToLogicalTree);
+        }
+
+        [Fact]
+        public void LogicalChildren_Can_Be_Added_During_DetachedFromLogicalTree()
+        {
+            var root = new TestRoot();
+            var parent = new StyledElement();
+            var child1 = new StyledElement();
+            var child2 = new StyledElement();
+
+            parent.LogicalChildren.Add(child1);
+            root.LogicalChildren.Add(parent);
+
+            child1.DetachedFromLogicalTree += (_, _) => parent.LogicalChildren.Add(child2);
+
+            root.LogicalChildren.Remove(parent);
+
+            Assert.Equal([child1, child2], parent.LogicalChildren);
+            Assert.False(((ILogical)child1).IsAttachedToLogicalTree);
+            Assert.False(((ILogical)child2).IsAttachedToLogicalTree);
+        }
+
+        [Fact]
+        public void LogicalChildren_Can_Be_Removed_During_DetachedFromLogicalTree()
+        {
+            var root = new TestRoot();
+            var parent = new StyledElement();
+            var child1 = new StyledElement();
+            var child2 = new StyledElement();
+            var child2Detached = 0;
+
+            parent.LogicalChildren.AddRange([child1, child2]);
+            root.LogicalChildren.Add(parent);
+
+            child1.DetachedFromLogicalTree += (_, _) => parent.LogicalChildren.Remove(child2);
+            child2.DetachedFromLogicalTree += (_, _) => ++child2Detached;
+
+            root.LogicalChildren.Remove(parent);
+
+            Assert.Equal([child1], parent.LogicalChildren);
+            Assert.False(((ILogical)child1).IsAttachedToLogicalTree);
+            Assert.False(((ILogical)child2).IsAttachedToLogicalTree);
+            Assert.Equal(1, child2Detached);
+        }
+
+        [Fact]
         public void Parent_Should_Be_Null_When_DetachedFromLogicalTree_Called()
         {
             var target = new TestControl();

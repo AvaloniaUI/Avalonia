@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Threading;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
@@ -14,11 +15,12 @@ using MicroCom.Runtime;
 
 namespace Avalonia.Native
 {
-    class AvaloniaNativePlatform : IWindowingPlatform
+    internal sealed class AvaloniaNativePlatform : IWindowingPlatform, IDisposable
     {
         private readonly IAvaloniaNativeFactory _factory;
         private AvaloniaNativePlatformOptions? _options;
         private IPlatformGraphics? _platformGraphics;
+        private int _isDisposed;
 
         [DllImport("libAvaloniaNative")]
         static extern IntPtr CreateAvaloniaNative();
@@ -94,7 +96,7 @@ namespace Avalonia.Native
         {
             _options = options;
 
-            var applicationPlatform = new AvaloniaNativeApplicationPlatform();
+            var applicationPlatform = new AvaloniaNativeApplicationPlatform(this);
 
             var macOpts = AvaloniaLocator.Current.GetService<MacOSPlatformOptions>() ?? new MacOSPlatformOptions();
             
@@ -191,6 +193,15 @@ namespace Avalonia.Native
 
         private void OnProcessExit(object? sender, EventArgs e)
         {
+            // Self-dispose on exit, ensuring COM objects are properly released before the CLR shuts down.
+            Dispose();
+        }
+
+        public void Dispose()
+        {
+            if (Interlocked.CompareExchange(ref _isDisposed, 1, 0) != 0)
+                return;
+
             AppDomain.CurrentDomain.ProcessExit -= OnProcessExit;
             _factory.Dispose();
         }

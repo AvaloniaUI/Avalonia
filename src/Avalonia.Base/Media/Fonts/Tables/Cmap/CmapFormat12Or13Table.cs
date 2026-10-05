@@ -30,20 +30,28 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
             ushort reserved = reader.ReadUInt16();
             Debug.Assert(reserved == 0, "Reserved field must be 0.");
 
+            // Clamp the declared length to the buffer: a corrupt/huge length (or one with the high
+            // bit set, which would cast to a negative int) must not produce an out-of-range slice.
             uint length = reader.ReadUInt32();
-
-            _table = table.Slice(0, (int)length);
 
             Language = reader.ReadUInt32();
 
-            _groupCount = (int)reader.ReadUInt32();
+            var declaredGroupCount = reader.ReadUInt32();
 
             int groupsOffset = reader.Position;
-            int groupsLength = _groupCount * 12;
+            int minimumTableLength = Math.Min(groupsOffset, table.Length);
+            int declaredTableLength = (int)Math.Min(length, (uint)table.Length);
+            int tableLength = Math.Max(declaredTableLength, minimumTableLength);
 
-            Debug.Assert(length >= groupsOffset + groupsLength, "Length must cover all groups.");
+            _table = table.Slice(0, tableLength);
 
-            _groups = _table.Slice(groupsOffset, groupsLength);
+            // Each SequentialMapGroup is 12 bytes. Clamp the group count to what the (length-bounded)
+            // table actually holds — computed in long to avoid the `count * 12` int overflow that a
+            // hostile count (e.g. 0x20000000) would otherwise wrap to a negative slice length.
+            long maxGroups = _table.Length > groupsOffset ? (_table.Length - groupsOffset) / 12 : 0;
+            _groupCount = (int)Math.Min(declaredGroupCount, (uint)maxGroups);
+
+            _groups = _table.Slice(groupsOffset, _groupCount * 12);
         }
 
         /// <summary>
@@ -144,10 +152,24 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
 
             var groups = _groups.Span;
 
-            int start = (int)ReadUInt32BE(groups, index, 0);
-            int end = (int)ReadUInt32BE(groups, index, 4);
+            uint start = ReadUInt32BE(groups, index, 0);
+            uint end = ReadUInt32BE(groups, index, 4);
 
-            range = new CodepointRange(start, end);
+            // Group contents are attacker-controlled: consumers iterate the returned range one
+            // codepoint at a time, so an end beyond the Unicode range (or end == int.MaxValue,
+            // which makes a `<= end` loop condition a tautology) must not get through. Clamp to
+            // the Unicode range and map inverted/out-of-range groups to an empty range so that
+            // enumeration continues with the remaining groups.
+            const uint maxCodepoint = 0x10FFFF;
+
+            if (start > end || start > maxCodepoint)
+            {
+                range = new CodepointRange(0, -1);
+
+                return true;
+            }
+
+            range = new CodepointRange((int)start, (int)Math.Min(end, maxCodepoint));
 
             return true;
         }

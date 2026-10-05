@@ -20,7 +20,14 @@ static class ServerResourceHelperExtensions
         if (brush is ICompositionRenderResource<IBrush> resource)
             return resource.GetForCompositor(compositor);
         if (brush is CompositionBrush compositionBrush)
+        {
+            // The server object belongs to its own compositor's render loop;
+            // handing it to another compositor would share one resource across
+            // two render threads.
+            if (compositionBrush.Compositor != compositor)
+                ThrowForeignCompositor(compositionBrush);
             return compositionBrush.Server;
+        }
         ThrowNotCompatible(brush);
         return null;
     }
@@ -42,6 +49,10 @@ static class ServerResourceHelperExtensions
     [MethodImpl(MethodImplOptions.NoInlining), DoesNotReturn]
     static void ThrowNotCompatible(object o) =>
         throw new InvalidOperationException(o.GetType() + " is not compatible with composition");
+
+    [MethodImpl(MethodImplOptions.NoInlining), DoesNotReturn]
+    static void ThrowForeignCompositor(CompositionObject o) =>
+        throw new InvalidOperationException(o.GetType() + " belongs to a different compositor");
     
     public static ITransform? GetServer(this ITransform? transform, Compositor? compositor)
     {

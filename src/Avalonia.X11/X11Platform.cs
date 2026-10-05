@@ -83,8 +83,10 @@ namespace Avalonia.X11
                ? new UiThreadRenderTimer(DefaultFps)
                : new SleepLoopRenderTimer(DefaultFps);
 
-            var clipboardImpl = new X11ClipboardImpl(this);
+            var clipboardImpl = new X11ClipboardImpl(this, Info.Atoms.CLIPBOARD);
             var clipboard = new Input.Platform.Clipboard(clipboardImpl);
+            var primarySelection = new Input.Platform.Clipboard(new X11ClipboardImpl(this, Info.Atoms.PRIMARY));
+            var clipboardManager = new PlatformClipboardManager(clipboard, primarySelection);
 
             AvaloniaLocator.CurrentMutable.BindToSelf(this)
                 .Bind<IWindowingPlatform>().ToConstant(this);
@@ -100,6 +102,7 @@ namespace Avalonia.X11
                 .Bind<ICursorFactory>().ToConstant(new X11CursorFactory(Display))
                 .Bind<IClipboardImpl>().ToConstant(clipboardImpl)
                 .Bind<IClipboard>().ToConstant(clipboard)
+                .Bind<IPlatformClipboardManagerImpl>().ToConstant(clipboardManager)
                 .Bind<IPlatformDragSource>().ToConstant(new X11DragSource(this))
                 .Bind<IPlatformSettings>().ToSingleton<DBusPlatformSettings>()
                 .Bind<IPlatformIconLoader>().ToConstant(new X11IconLoader())
@@ -137,6 +140,15 @@ namespace Avalonia.X11
 
         public IntPtr DeferredDisplay { get; set; }
         public IntPtr Display { get; set; }
+
+        private X11DeferredDisplayDispatcher? _deferredDisplayDispatcher;
+
+        /// <summary>
+        /// Shared, lazily-created dispatcher that drains events (currently XShm completions) off the
+        /// DeferredDisplay connection for every window.
+        /// </summary>
+        internal X11DeferredDisplayDispatcher DeferredDisplayDispatcher =>
+            _deferredDisplayDispatcher ??= new X11DeferredDisplayDispatcher(DeferredDisplay);
 
         private static uint[] X11IconConverter(IWindowIconImpl? icon)
         {
@@ -505,6 +517,15 @@ namespace Avalonia
         /// if you have many windows 
         /// </summary>
         public bool? UseRetainedFramebuffer { get; set; }
+
+        /// <summary>
+        /// Enables the MIT-SHM extension for CPU rendering mode, which uses shared memory
+        /// to transfer the framebuffer contents to the X server instead of sending pixels
+        /// over the connection socket.
+        /// Only used when set to true and the extension is supported by the server.
+        /// The default value is null.
+        /// </summary>
+        public bool? UseXShmFramebuffer { get; set; }
 
         /// <summary>
         /// If this option is set to true, GMainLoop and GSource based dispatcher implementation will be used instead

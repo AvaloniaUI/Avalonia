@@ -261,6 +261,9 @@ namespace Avalonia.Controls
                 // Get next child.
                 var child = children[i];
 
+                // Measure the child.
+                child.Measure(layoutSlotSize);
+
                 bool isVisible = child.IsVisible;
 
                 if (isVisible && !hasVisibleChild)
@@ -268,8 +271,6 @@ namespace Avalonia.Controls
                     hasVisibleChild = true;
                 }
 
-                // Measure the child.
-                child.Measure(layoutSlotSize);
                 Size childDesiredSize = child.DesiredSize;
 
                 // Accumulate child size.

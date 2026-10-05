@@ -1,8 +1,11 @@
+using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Shapes;
+using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.UnitTests;
+using Avalonia.VisualTree;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
@@ -228,6 +231,58 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal("foo", target.Child.DataContext);
         }
       
+        [Fact]
+        public void Content_Presented_In_Viewbox_Should_Be_Reparented_When_Template_Changes()
+        {
+            // Issue #9551: a template containing Viewbox > ContentPresenter presenting a control
+            // that outlives the template. Swapping the template must disconnect the presented
+            // control so the new template's presenter can adopt it.
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            static FuncControlTemplate CreateTemplate()
+            {
+                return new FuncControlTemplate<TestTemplatedControl>((_, _) => new Viewbox
+                {
+                    Child = new ContentPresenter
+                    {
+                        [~ContentPresenter.ContentProperty] = new TemplateBinding(TestTemplatedControl.MyControlProperty),
+                    },
+                });
+            }
+
+            var child = new Canvas();
+            var target = new TestTemplatedControl
+            {
+                MyControl = child,
+                Template = CreateTemplate(),
+            };
+
+            var root = new TestRoot(target);
+            root.ExecuteInitialLayoutPass();
+
+            var oldPresenter = Assert.IsType<ContentPresenter>(child.GetVisualParent());
+
+            target.Template = CreateTemplate();
+            target.ApplyTemplate();
+            root.LayoutManager.ExecuteLayoutPass();
+
+            var newPresenter = Assert.IsType<ContentPresenter>(child.GetVisualParent());
+            Assert.NotSame(oldPresenter, newPresenter);
+            Assert.Same(root, child.GetVisualRoot());
+        }
+
+        private class TestTemplatedControl : Avalonia.Controls.Primitives.TemplatedControl
+        {
+            public static readonly StyledProperty<Control?> MyControlProperty =
+                AvaloniaProperty.Register<TestTemplatedControl, Control?>(nameof(MyControl));
+
+            public Control? MyControl
+            {
+                get => GetValue(MyControlProperty);
+                set => SetValue(MyControlProperty, value);
+            }
+        }
+
         private static bool TryGetScale(Viewbox viewbox, out Vector scale)
         {
             if (viewbox.InternalTransform is null)
