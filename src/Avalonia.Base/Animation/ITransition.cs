@@ -9,6 +9,10 @@ namespace Avalonia.Animation
     [NotClientImplementable, PrivateApi]
     public interface ITransition
     {
+        /// <summary>
+        /// Gets the property to be animated.
+        /// </summary>
+        AvaloniaProperty Property { get; set; }
     }
 
     [NotClientImplementable, PrivateApi]
@@ -32,10 +36,5 @@ namespace Avalonia.Animation
         /// Applies the transition to the specified <see cref="Animatable"/>.
         /// </summary>
         internal IDisposable Apply(Animatable control, IClock clock, object? oldValue, object? newValue);
-
-        /// <summary>
-        /// Gets the property to be animated.
-        /// </summary>
-        AvaloniaProperty Property { get; set; }
     }
 }

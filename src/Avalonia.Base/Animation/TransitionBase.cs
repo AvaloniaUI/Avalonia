@@ -78,7 +78,7 @@ namespace Avalonia.Animation
             set { SetAndRaise(EasingProperty, ref _easing, value); }
         }
 
-        /// <inheritdoc cref="IPropertyTransition.Property"/>
+        /// <inheritdoc cref="ITransition.Property"/>
         [DisallowNull]
         public AvaloniaProperty? Property
         {
@@ -86,7 +86,7 @@ namespace Avalonia.Animation
             set { SetAndRaise(PropertyProperty, ref _prop, value); }
         }
 
-        AvaloniaProperty IPropertyTransition.Property
+        AvaloniaProperty ITransition.Property
         {
             get => Property ?? throw new InvalidOperationException("Transition has no property specified.");
             set => Property = value;
