@@ -1022,7 +1022,7 @@ namespace Avalonia.Skia
                             var originOffsetX = originPoint.X - centerPoint.X;
                             var originOffsetY = originPoint.Y - centerPoint.Y;
                             var originIsOutside =
-                                originOffsetX * originOffsetX + originOffsetY * originOffsetY > radiusX * radiusX;
+                                originOffsetX * originOffsetX + originOffsetY * originOffsetY >= radiusX * radiusX;
 
                             var endOffset = stopOffsets[stopOffsets.Length - 1];
 

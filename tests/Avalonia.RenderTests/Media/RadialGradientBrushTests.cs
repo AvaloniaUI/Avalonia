@@ -130,6 +130,42 @@ namespace Avalonia.Skia.RenderTests
         }
 
         /// <summary>
+        /// Tests a GradientOrigin lying exactly on the circle described by Center/Radius:
+        /// the area past the tangent at the origin must be filled with the final stop color.
+        /// </summary>
+        [Fact]
+        public async Task RadialGradientBrush_RedBlue_Offset_On_Circle()
+        {
+            var target = new Decorator
+            {
+                Padding = new Thickness(8),
+                Width = 200,
+                Height = 200,
+                Child = new Border
+                {
+                    Background = Brushes.DarkRed,
+                    Child = new Border
+                    {
+                        Background = new RadialGradientBrush
+                        {
+                            GradientStops =
+                            {
+                                new GradientStop { Color = Colors.Red, Offset = 0 },
+                                new GradientStop { Color = Colors.Blue, Offset = 1 }
+                            },
+                            RadiusX = new RelativeScalar(0.25, RelativeUnit.Relative),
+                            RadiusY = new RelativeScalar(0.25, RelativeUnit.Relative),
+                            GradientOrigin = new RelativePoint(0.75, 0.5, RelativeUnit.Relative)
+                        }
+                    }
+                }
+            };
+
+            await RenderToFile(target);
+            CompareImages();
+        }
+
+        /// <summary>
         /// Tests using a GradientOrigin that falls outside of the circle described by Center/Radius.
         /// </summary>
         [Fact]
