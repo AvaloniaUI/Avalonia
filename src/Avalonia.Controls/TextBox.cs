@@ -1054,6 +1054,9 @@ namespace Avalonia.Controls
 
             if (change.Property == TextProperty)
             {
+                // Do not expose a selection with only one endpoint coerced to the new text.
+                using var _ = _imClient.BeginChange();
+
                 if (_needsUndoRedoSnapshotAfterTextChange)
                 {
                     _needsUndoRedoSnapshotAfterTextChange = false;
