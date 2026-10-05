@@ -77,6 +77,81 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Detaching_Should_Release_TextLayout()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var panel = new StackPanel();
+                var target = new TextBlock { Text = "Hello World" };
+                panel.Children.Add(target);
+                var root = new TestRoot(panel);
+
+                root.Measure(Size.Infinity);
+                root.Arrange(new Rect(root.DesiredSize));
+
+                Assert.True(target.HasTextLayout);
+
+                panel.Children.Remove(target);
+
+                Assert.False(target.HasTextLayout);
+            }
+        }
+
+        [Fact]
+        public void Detaching_Should_Release_TextLayout_Built_While_Measure_Is_Invalid()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var panel = new StackPanel();
+                var target = new TextBlock { Text = "Hello World" };
+                panel.Children.Add(target);
+                var root = new TestRoot(panel);
+
+                root.Measure(Size.Infinity);
+                root.Arrange(new Rect(root.DesiredSize));
+
+                // Reading the layout back is what a render pass does, and it can happen after
+                // the measure has been invalidated but before the next measure pass runs.
+                target.FontSize += 1;
+                _ = target.TextLayout;
+
+                Assert.False(target.IsMeasureValid);
+                Assert.True(target.HasTextLayout);
+
+                panel.Children.Remove(target);
+
+                Assert.False(target.HasTextLayout);
+            }
+        }
+
+        [Fact]
+        public void Reattaching_Should_Rebuild_TextLayout()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var panel = new StackPanel();
+                var target = new TextBlock { Text = "Hello World" };
+                panel.Children.Add(target);
+                var root = new TestRoot(panel);
+
+                root.Measure(Size.Infinity);
+                root.Arrange(new Rect(root.DesiredSize));
+
+                var expected = target.DesiredSize;
+                Assert.True(expected.Width > 0, $"DesiredSize was {expected}");
+
+                panel.Children.Remove(target);
+                panel.Children.Add(target);
+
+                root.Measure(Size.Infinity);
+                root.Arrange(new Rect(root.DesiredSize));
+
+                Assert.Equal(expected, target.DesiredSize);
+                Assert.Equal("Hello World", target.TextLayout.TextLines[0].TextRuns[0].Text.ToString());
+            }
+        }
+
+        [Fact]
         public void Calling_Arrange_With_Different_Size_Should_Update_Constraint_And_TextLayout()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
