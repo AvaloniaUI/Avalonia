@@ -8,57 +8,57 @@ namespace Avalonia.Animation
     public class Composition : AvaloniaObject
     {
         /// <summary>
-        /// Defines the <see cref="Visible"/> attached property.
+        /// Defines the Visible attached property.
         /// </summary>
         public readonly static AttachedProperty<bool> VisibleProperty = AvaloniaProperty.RegisterAttached<Composition, Visual, bool>("Visible", true);
 
         /// <summary>
-        /// Defines the <see cref="Opacity"/> attached property.
+        /// Defines the Opacity attached property.
         /// </summary>
         public readonly static AttachedProperty<float> OpacityProperty = AvaloniaProperty.RegisterAttached<Composition, Visual, float>("Opacity", 1f);
 
         /// <summary>
-        /// Defines the <see cref="ClipToBounds"/> attached property.
+        /// Defines the ClipToBounds attached property.
         /// </summary>
         public readonly static AttachedProperty<bool> ClipToBoundsProperty = AvaloniaProperty.RegisterAttached<Composition, Visual, bool>("ClipToBounds", true);
 
         /// <summary>
-        /// Defines the <see cref="Offset"/> attached property.
+        /// Defines the Offset attached property.
         /// </summary>
         public readonly static AttachedProperty<Vector3D> OffsetProperty = AvaloniaProperty.RegisterAttached<Composition, Visual, Vector3D>("Offset");
 
         /// <summary>
-        /// Defines the <see cref="Translation"/> attached property.
+        /// Defines the Translation attached property.
         /// </summary>
         public readonly static AttachedProperty<Vector3D> TranslationProperty = AvaloniaProperty.RegisterAttached<Composition, Visual, Vector3D>("Translation");
 
         /// <summary>
-        /// Defines the <see cref="Size"/> attached property.
+        /// Defines the Size attached property.
         /// </summary>
         public readonly static AttachedProperty<Vector> SizeProperty = AvaloniaProperty.RegisterAttached<Composition, Visual, Vector>("Size");
 
         /// <summary>
-        /// Defines the <see cref="AnchorPoint"/> attached property.
+        /// Defines the AnchorPoint attached property.
         /// </summary>
         public readonly static AttachedProperty<Vector> AnchorPointProperty = AvaloniaProperty.RegisterAttached<Composition, Visual, Vector>("AnchorPoint");
 
         /// <summary>
-        /// Defines the <see cref="CenterPoint"/> attached property.
+        /// Defines the CenterPoint attached property.
         /// </summary>
         public readonly static AttachedProperty<Vector3D> CenterPointProperty = AvaloniaProperty.RegisterAttached<Composition, Visual, Vector3D>("CenterPoint");
 
         /// <summary>
-        /// Defines the <see cref="RotationAngle"/> attached property.
+        /// Defines the RotationAngle attached property.
         /// </summary>
         public readonly static AttachedProperty<float> RotationAngleProperty = AvaloniaProperty.RegisterAttached<Composition, Visual, float>("RotationAngle");
 
         /// <summary>
-        /// Defines the <see cref="Orientation"/> attached property.
+        /// Defines the Orientation attached property.
         /// </summary>
         public readonly static AttachedProperty<Quaternion> OrientationProperty = AvaloniaProperty.RegisterAttached<Composition, Visual, Quaternion>("Orientation", Quaternion.Identity);
 
         /// <summary>
-        /// Defines the <see cref="Scale"/> attached property.
+        /// Defines the Scale attached property.
         /// </summary>
         public readonly static AttachedProperty<Vector3D> ScaleProperty = AvaloniaProperty.RegisterAttached<Composition, Visual, Vector3D>("Scale", new Vector3D(1, 1, 1));
 

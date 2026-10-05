@@ -70,7 +70,17 @@ namespace Avalonia.Animation
             = AvaloniaProperty.Register<CompositionKeyFrameInstance, object?>(
                 nameof(Value));
 
-        public object? Value => GetValue(InstanceValueProperty);
+        public object? Value
+        {
+            get
+            {
+                return GetValue(InstanceValueProperty);
+            }
+            set
+            {
+                SetValue(InstanceValueProperty, value);
+            }
+        }
 
         public float NormalizedProgressKey { get; set; }
         public Easing? Easing { get; set; }
