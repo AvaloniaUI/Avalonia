@@ -1,10 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-using Avalonia.Automation;
-using Avalonia.Automation.Peers;
 using Avalonia.DBus;
 using Avalonia.FreeDesktop.AtSpi.DBusXml;
 using static Avalonia.FreeDesktop.AtSpi.AtSpiConstants;
@@ -139,40 +136,7 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
 
         public ValueTask<AtSpiAttributeSet> GetAttributesAsync()
         {
-            var attrs = new AtSpiAttributeSet { ["toolkit"] = "Avalonia" };
-
-            var name = node.Peer.GetName();
-            if (!string.IsNullOrEmpty(name))
-                attrs["explicit-name"] = "true";
-
-            var acceleratorKey = node.Peer.GetAcceleratorKey();
-            if (!string.IsNullOrEmpty(acceleratorKey))
-                attrs["accelerator-key"] = acceleratorKey;
-
-            var accessKey = node.Peer.GetAccessKey();
-            if (!string.IsNullOrEmpty(accessKey))
-                attrs["access-key"] = accessKey;
-
-            var placeholderText = node.Peer.GetPlaceholderText();
-            if (!string.IsNullOrEmpty(placeholderText))
-                attrs["placeholder-text"] = placeholderText;
-
-            var headingLevel = node.Peer.GetHeadingLevel();
-            if (headingLevel > 0)
-                attrs["level"] = headingLevel.ToString(CultureInfo.InvariantCulture);
-
-            if (node.Peer is ControlAutomationPeer controlPeer)
-            {
-                var position = AutomationProperties.GetPositionInSet(controlPeer.Owner);
-                if (position > 0)
-                    attrs["posinset"] = position.ToString(CultureInfo.InvariantCulture);
-
-                var size = AutomationProperties.GetSizeOfSet(controlPeer.Owner);
-                if (size > 0)
-                    attrs["setsize"] = size.ToString(CultureInfo.InvariantCulture);
-            }
-
-            return ValueTask.FromResult(attrs);
+            return ValueTask.FromResult(AtSpiNode.GetAttributes(node.Peer));
         }
 
         public ValueTask<AtSpiObjectReference> GetApplicationAsync()

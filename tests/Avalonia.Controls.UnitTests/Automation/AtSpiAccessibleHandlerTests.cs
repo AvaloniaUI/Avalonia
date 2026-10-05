@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.FreeDesktop.AtSpi;
+using Avalonia.FreeDesktop.AtSpi.DBusXml;
 using Avalonia.FreeDesktop.AtSpi.Handlers;
 using Avalonia.UnitTests;
 using Xunit;
@@ -136,6 +137,33 @@ namespace Avalonia.Controls.UnitTests.Automation
             Assert.False(attributes.ContainsKey("posinset"));
             Assert.False(attributes.ContainsKey("setsize"));
             Assert.Equal((uint)AtSpiRole.Label, await handler.GetRoleAsync());
+        }
+
+        [Theory]
+        [InlineData("level", "2", true)]
+        [InlineData("posinset", "3", true)]
+        [InlineData("setsize", "4", true)]
+        [InlineData("level", "1", false)]
+        public async Task Collection_Matches_Heading_And_List_Attributes(string key, string value, bool expected)
+        {
+            var heading = new TextBlock { Text = "Section" };
+            AutomationProperties.SetHeadingLevel(heading, 2);
+            AutomationProperties.SetPositionInSet(heading, 3);
+            AutomationProperties.SetSizeOfSet(heading, 4);
+            await using var server = new AtSpiServer();
+            var node = server.GetOrCreateNode(ControlAutomationPeer.CreatePeerForElement(heading));
+            var rule = new AtSpiMatchRule(
+                States: [],
+                StateMatchType: 0,
+                Attributes: new AtSpiAttributeSet { [key] = value },
+                AttributeMatchType: 1,
+                Roles: [],
+                RoleMatchType: 0,
+                Interfaces: [],
+                InterfaceMatchType: 0,
+                Invert: false);
+
+            Assert.Equal(expected, AtSpiCollectionHandler.MatchesRule(node, rule));
         }
 
         private static AtSpiAccessibleHandler CreateHandler(Control control, AtSpiServer server)
