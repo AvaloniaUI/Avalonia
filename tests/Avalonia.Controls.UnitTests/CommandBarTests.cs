@@ -1196,6 +1196,59 @@ public class CommandBarItemWidthTests : ScopedTestBase
         Assert.Equal(2, visibleRight);
         Assert.Equal(4, visibleCollapsed);
     }
+
+    [Fact]
+    public void HiddenPrimaryCommand_DoesNotConsumeAvailableWidth()
+    {
+        var cb = CreateWithWidth(300);
+        cb.ItemWidthBottom = 100;
+
+        var first = new CommandBarButton();
+        var second = new CommandBarButton();
+        var hidden = new CommandBarButton { IsVisible = false };
+        var third = new CommandBarButton();
+
+        cb.PrimaryCommands!.Add(first);
+        cb.PrimaryCommands.Add(second);
+        cb.PrimaryCommands.Add(hidden);
+        cb.PrimaryCommands.Add(third);
+        cb.IsDynamicOverflowEnabled = true;
+
+        Assert.Equal(new ICommandBarElement[] { first, second, hidden, third }, cb.VisiblePrimaryCommands);
+        Assert.Empty(cb.OverflowItems);
+        Assert.False(hidden.IsInOverflow);
+    }
+
+    [Fact]
+    public void ChangingPrimaryCommandVisibility_UpdatesDynamicOverflow()
+    {
+        var cb = CreateWithWidth(300);
+        cb.ItemWidthBottom = 100;
+
+        var first = new CommandBarButton();
+        var second = new CommandBarButton();
+        var third = new CommandBarButton();
+        var fourth = new CommandBarButton();
+
+        cb.PrimaryCommands!.Add(first);
+        cb.PrimaryCommands.Add(second);
+        cb.PrimaryCommands.Add(third);
+        cb.PrimaryCommands.Add(fourth);
+        cb.IsDynamicOverflowEnabled = true;
+
+        Assert.Equal(new ICommandBarElement[] { first, second }, cb.VisiblePrimaryCommands);
+        Assert.Equal(new ICommandBarElement[] { third, fourth }, cb.OverflowItems);
+
+        third.IsVisible = false;
+
+        Assert.Equal(new ICommandBarElement[] { first, second, third, fourth }, cb.VisiblePrimaryCommands);
+        Assert.Empty(cb.OverflowItems);
+
+        third.IsVisible = true;
+
+        Assert.Equal(new ICommandBarElement[] { first, second }, cb.VisiblePrimaryCommands);
+        Assert.Equal(new ICommandBarElement[] { third, fourth }, cb.OverflowItems);
+    }
 }
 
 public class CommandBarOverflowKeyboardTests : ScopedTestBase
