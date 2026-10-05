@@ -41,7 +41,7 @@ internal static partial class DomHelper
     public static Task DarkModeChanged(bool isDarkMode, bool isHighContrast)
     {
         using var _ = JsCallbackHelper.EnsureDispatcherContext();
-        (AvaloniaLocator.Current.GetService<IPlatformSettings>() as BrowserPlatformSettings)?.OnColorValuesChanged(isDarkMode, isHighContrast);
+        (AvaloniaLocator.Current.GetService<IPlatformSettings>() as BrowserPlatformSettings)?.OnValuesChanged(isDarkMode, isHighContrast);
         return Task.CompletedTask;
     }
 
