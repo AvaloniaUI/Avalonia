@@ -87,14 +87,18 @@ namespace Avalonia.Animation
                 o => o._easing,
                 (o, v) => o._easing = v);
 
-        /// <summary>
-        /// Gets or sets the composition property targeted by the transition.
-        /// </summary>
+        /// <inheritdoc cref="ITransition.Property"/>
         [DisallowNull]
         public AvaloniaProperty? Property
         {
             get { return _property; }
             set { SetAndRaise(PropertyProperty, ref _property, value); }
+        }
+
+        AvaloniaProperty ITransition.Property
+        {
+            get => Property ?? throw new InvalidOperationException("Transition has no property specified.");
+            set => Property = value;
         }
 
         /// <summary>
