@@ -360,16 +360,21 @@ internal partial class RenderDataStream
         }
         else if (serverBrush != null)
         {
-            var strokeGeometry = targetGeometry.GetWidenedGeometry(clientPen ?? s_defaultStokePen);
-            var combined = new CombinedGeometry(new ImmutableGeometry(strokeGeometry), new ImmutableGeometry(targetGeometry));
-            if (combined.PlatformImpl is { } impl)
-                return currentGeometry.GetFillIntersectionResult(impl);
+            if (clientPen != null && clientPen.Thickness > 0)
+            {
+                var strokeGeometry = targetGeometry.GetWidenedGeometry(clientPen);
+                var combined = new CombinedGeometry(new ImmutableGeometry(strokeGeometry), new ImmutableGeometry(targetGeometry));
+                if (combined.PlatformImpl is { } impl)
+                    return currentGeometry.GetFillIntersectionResult(impl);
+            }
+            else
+            {
+                return currentGeometry.GetFillIntersectionResult(targetGeometry);
+            }
         }
 
         return IntersectionResult.Empty;
     }
-
-    private static readonly IPen s_defaultStokePen = new Pen() { Thickness = 0 };
 
     private static bool HitTestEllipse(IBrush? serverBrush, IPen? clientPen, Rect rect, Point p)
     {
