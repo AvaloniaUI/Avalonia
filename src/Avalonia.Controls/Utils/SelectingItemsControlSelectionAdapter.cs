@@ -170,17 +170,17 @@ namespace Avalonia.Controls.Utils
             }
         }
 
-        /// <summary>
-        /// Handles the mouse left button up event on the selector control.
-        /// </summary>
-        /// <param name="sender">The source object.</param>
-        /// <param name="e">The event data.</param>
         // The drop-down lives in its own popup, so letting it take focus takes focus away from the
         // text box: bindings that update on lost focus would then commit the text typed before the
         // item was picked, and never the item itself.
         private static void OnContainerPrepared(object? sender, ContainerPreparedEventArgs e)
             => e.Container.Focusable = false;
 
+        /// <summary>
+        /// Handles the mouse left button up event on the selector control.
+        /// </summary>
+        /// <param name="sender">The source object.</param>
+        /// <param name="e">The event data.</param>
         private void OnSelectorPointerReleased(object? sender, PointerReleasedEventArgs e)
         {
             if (e.InitialPressMouseButton == MouseButton.Left)
