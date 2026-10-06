@@ -400,9 +400,7 @@ namespace Avalonia.Controls
         {
             base.OnGotFocus(e);
 
-            // Focus also lands here when the drop-down button is clicked and when the calendar
-            // restores focus after swapping views. Forwarding those would close the drop-down,
-            // because focusing the text box closes it.
+            // Only keyboard focus on a closed picker goes to the text box, because that closes the drop-down.
             if (IsEnabled && _textBox != null && ReferenceEquals(e.Source, this)
                 && e.NavigationMethod != NavigationMethod.Pointer && !IsDropDownOpen)
             {
