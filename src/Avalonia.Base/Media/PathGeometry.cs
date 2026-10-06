@@ -81,6 +81,15 @@ namespace Avalonia.Media
             set { SetValue(FillRuleProperty, value); }
         }
 
+        private protected sealed override StreamGeometryContext CreateContext()
+        {
+            // Everything this geometry draws comes from its Figures collection, and that collection is
+            // turned into a shape again every time it changes. Drawing straight onto the shape, as the
+            // base class does, would be thrown away the next time that happens, so the drawing is
+            // turned into figures instead.
+            return new StreamGeometryContext(new PathGeometryContext(this));
+        }
+
         private protected sealed override IGeometryImpl? CreateDefiningGeometry()
         {
             var figures = Figures;
