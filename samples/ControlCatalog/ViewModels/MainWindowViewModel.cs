@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -38,7 +39,7 @@ namespace ControlCatalog.ViewModels
             {
                 (App.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.Shutdown();
             });
-            SettingsItem = new PageItem("Settings", () => new SettingsPage(SettingsViewModel), StreamGeometry.Parse(Icons.Settings), "Overview of everything in the catalog", null);
+            SettingsItem = new PageItem("Settings", () => new SettingsPage(SettingsViewModel), StreamGeometry.Parse(Icons.Settings), "Theme, transparency and window options", null);
             NavigateToPageCommand = MiniCommand.Create<PageItem>(NavigateToItem);
             SettingsCommand = MiniCommand.Create(async () =>
             {
@@ -75,6 +76,8 @@ namespace ControlCatalog.ViewModels
             field ??= _pageSections.Where(s => !string.IsNullOrEmpty(s.Title)).ToArray();
 
         public INavigation? Navigator { get; internal set; }
+
+        private bool _isSearching;
 
         public bool ExtendClientAreaEnabled
         {
@@ -119,18 +122,6 @@ namespace ControlCatalog.ViewModels
         }
 
         public bool CanMaximize
-        {
-            get;
-            set => RaiseAndSetIfChanged(ref field, value);
-        }
-
-        public bool ExpandAllSections
-        {
-            get;
-            set => RaiseAndSetIfChanged(ref field, value);
-        }
-
-        public string? OpenedSection
         {
             get;
             set => RaiseAndSetIfChanged(ref field, value);
@@ -187,7 +178,19 @@ namespace ControlCatalog.ViewModels
         public bool IsDrawerOpened
         {
             get;
-            set => RaiseAndSetIfChanged(ref field, value);
+            set
+            {
+                if (!RaiseAndSetIfChanged(ref field, value))
+                {
+                    return;
+                }
+
+                // With the drawer shut the page list is hidden, so the section itself carries the marker.
+                foreach (var section in _pageSections)
+                {
+                    section.IsExpanded = value && (_isSearching ? section.IsSectionVisible : section.IsCurrent);
+                }
+            }
         } = true;
 
         public SplitViewDisplayMode DisplayMode
@@ -252,12 +255,45 @@ namespace ControlCatalog.ViewModels
 
         public void NavigateToItem(PageItem item)
         {
-            NavigateTo(item);
+            _ = NavigateToAsync(item);
+        }
+
+        private async Task NavigateToAsync(PageItem? item)
+        {
+            if (item is null || Navigator is null)
+                return;
+
+            // A gallery may have pushed a sample on top of its page. Drop it first: replacing the top page
+            // would leave the previous page below the new one, and the shell would show a back button that
+            // leads to a page the drawer no longer selects.
+            if (Navigator.StackDepth > 1)
+                await Navigator.PopToRootAsync(null);
+
+            if (item != CurrentPageItem)
+            {
+                var page = item.CreatePage();
+                CurrentPageItem = item;
+
+                foreach (var section in _pageSections)
+                {
+                    // A section's own page counts too, so the section stays open when the drawer comes back.
+                    section.CurrentPage = section.PageItem == item || section.Title == item.Section ? item : null;
+
+                    if (section.IsCurrent && IsDrawerOpened)
+                    {
+                        section.IsExpanded = true;
+                    }
+                }
+
+                await Navigator.ReplaceAsync(page);
+
+                if (DisplayMode == SplitViewDisplayMode.CompactOverlay || DisplayMode == SplitViewDisplayMode.Overlay)
+                    IsDrawerOpened = false;
+            }
         }
 
         public void Filter(string? query = "")
         {
-            ExpandAllSections = false;
 
             // Left panel items are sorted alphabetically
             var allPages = _pageSections
@@ -266,6 +302,7 @@ namespace ControlCatalog.ViewModels
 
             var querySearchKey = query != null ? PageItem.CreateSearchKey(query) : "";
             var isDefaultVisible = string.IsNullOrWhiteSpace(query) || string.IsNullOrWhiteSpace(querySearchKey);
+            _isSearching = !isDefaultVisible;
 
             foreach (var page in allPages)
             {
@@ -274,7 +311,6 @@ namespace ControlCatalog.ViewModels
 
             if (!string.IsNullOrWhiteSpace(querySearchKey))
             {
-                ExpandAllSections = true;
                 foreach (var item in allPages)
                 {
                     if (item.MatchesSearch(querySearchKey))
@@ -283,23 +319,10 @@ namespace ControlCatalog.ViewModels
                     }
                 }
             }
-        }
 
-        private async void NavigateTo(PageItem? item)
-        {
-            if (item is null || Navigator is null)
-                return;
-
-            var page = item.CreatePage();
-
-            if (item != CurrentPageItem)
+            foreach (var section in _pageSections)
             {
-                CurrentPageItem = item;
-                OpenedSection = item.Section;
-                await Navigator.ReplaceAsync(page);
-
-                if (DisplayMode == SplitViewDisplayMode.CompactOverlay || DisplayMode == SplitViewDisplayMode.Overlay)
-                    IsDrawerOpened = false;
+                section.IsExpanded = isDefaultVisible ? section.IsCurrent : section.IsSectionVisible;
             }
         }
     }

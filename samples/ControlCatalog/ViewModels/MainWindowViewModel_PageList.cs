@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Media;
+using ControlCatalog.Controls;
 using ControlCatalog.Models;
 using ControlCatalog.Pages;
 
@@ -28,7 +29,7 @@ partial class MainWindowViewModel
         {
             s.Add<AutoCompleteBoxPage>("AutoCompleteBox", Icons.TextInput, "Text input with completion suggestions");
             s.Add<LabelsPage>("Label", Icons.Tag, "Captions with access keys for other controls");
-            s.Add<TextBoxPage>("TextBox", Icons.TextInput, "Single- and multi-line text editing");
+            s.Add<TextBoxPage>("TextBox", Icons.TextInput, "Single- and multi-line text editing", TextBoxPage.Demos);
             s.Add<TextBlockPage>("TextBlock", Icons.TextInput, "Styled read-only text display");
         }),
         Section("Collections & Data", Icons.Lists, s =>
@@ -133,10 +134,10 @@ partial class MainWindowViewModel
 
     private class HomeSectionBuilder(HomeSection section) : List<PageItem>
     {
-        public void Add<TPageType>(string header, string iconPath, string description) where TPageType : Page, new()
+        public void Add<TPageType>(string header, string iconPath, string description, IReadOnlyList<SampleInfo>? samples = null) where TPageType : Page, new()
         {
             var iconGeometry = StreamGeometry.Parse(iconPath);
-            Add(new PageItem(header, () => new TPageType(), iconGeometry, description, section));
+            Add(new PageItem(header, () => new TPageType(), iconGeometry, description, section, samples));
         }
 
         public async virtual Task Navigate(INavigation navigation) { }
