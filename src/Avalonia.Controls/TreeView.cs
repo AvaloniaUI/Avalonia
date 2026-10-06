@@ -434,8 +434,7 @@ namespace Avalonia.Controls
                         MarkContainerSelected(container, false);
                     }
 
-                    // A reset carries no OldItems or NewItems, so diff against the last
-                    // reported selection instead.
+                    // A reset carries no item lists, so the delta comes from the last reported selection.
                     (removed, added) = GetSelectionDelta();
 
                     if (SelectedItems.Count > 0)
@@ -474,8 +473,7 @@ namespace Avalonia.Controls
                     break;
             }
 
-            // While suppressed, leave _reportedSelection alone so that the delta accumulates
-            // until the caller raises the event itself.
+            // Suppressed changes keep accumulating until the caller raises the event itself.
             if (!_suppressSelectionChanged)
             {
                 RaiseSelectionChanged(removed, added);
