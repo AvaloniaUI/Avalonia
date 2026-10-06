@@ -539,7 +539,9 @@ namespace Avalonia.Controls.Primitives
                 // container theme which has bound the IsSelected property. Update our selection
                 // based on the selection state of the container.
                 var containerIsSelected = GetIsSelected(container);
-                UpdateSelection(index, containerIsSelected, toggleModifier: true);
+
+                if (containerIsSelected != Selection.IsSelected(index))
+                    UpdateSelection(index, containerIsSelected, toggleModifier: true);
             }
 
             if (Selection.AnchorIndex == index)
@@ -601,6 +603,28 @@ namespace Avalonia.Controls.Primitives
             base.OnInitialized();
 
             TryInitializeSelectionSource(_selection, _updateState is null);
+            SelectInlineItemsMarkedAsSelected();
+        }
+
+        // Inline items are their own containers, but a container is only read when it's realized, and a
+        // ComboBox doesn't realize its items until the drop-down is first opened.
+        private void SelectInlineItemsMarkedAsSelected()
+        {
+            if (ItemsSource is not null || Selection.Count > 0)
+                return;
+
+            var multiple = SelectionMode.HasAllFlags(SelectionMode.Multiple);
+
+            for (var i = 0; i < ItemsView.Count; ++i)
+            {
+                if (ItemsView[i] is Control container && container.IsSet(IsSelectedProperty) && GetIsSelected(container))
+                {
+                    Selection.Select(i);
+
+                    if (!multiple)
+                        break;
+                }
+            }
         }
 
         /// <inheritdoc />
