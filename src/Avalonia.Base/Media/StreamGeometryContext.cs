@@ -13,7 +13,7 @@ namespace Avalonia.Media
     /// </remarks>
     public class StreamGeometryContext : IGeometryContext
     {
-        private readonly IStreamGeometryContextImpl _impl;
+        private readonly IGeometryContext _impl;
         private readonly Action? _onDispose;
 
         private Point _currentPoint;
@@ -27,7 +27,7 @@ namespace Avalonia.Media
         {
         }
 
-        internal StreamGeometryContext(IStreamGeometryContextImpl impl, Action? onDispose)
+        internal StreamGeometryContext(IGeometryContext impl, Action? onDispose = null)
         {
             _impl = impl;
             _onDispose = onDispose;

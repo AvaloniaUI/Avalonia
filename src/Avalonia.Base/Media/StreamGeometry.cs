@@ -63,18 +63,9 @@ namespace Avalonia.Media
 
         private protected virtual StreamGeometryContext CreateContext()
         {
-            // Whatever is drawn here changes the shape, so anything already displaying this geometry
-            // needs to redraw. That is done when the context is disposed, because at that point the
-            // caller has finished drawing. Doing it when the context is handed out would announce a
-            // change that nobody has made yet, and a listener looking at the geometry would see a
-            // half drawn shape.
             return new StreamGeometryContext(StreamImpl.Open(), InvalidateGeometry);
         }
 
-        // When a Transform is set, the geometry holds a wrapper around the shape instead of the shape
-        // itself, so the wrapper is asked for the shape inside it. This starts from PlatformImpl
-        // rather than the field below, because PathGeometry derives from this class and builds its
-        // shape from its Figures collection, which reading the field would skip.
         private IStreamGeometryImpl StreamImpl => (IStreamGeometryImpl)(PlatformImpl is ITransformedGeometryImpl transformed
             ? transformed.SourceGeometry
             : PlatformImpl!);

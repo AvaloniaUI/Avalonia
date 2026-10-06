@@ -5,7 +5,7 @@ using Avalonia.Platform;
 
 namespace Avalonia.Visuals.Platform
 {
-    public class PathGeometryContext : IStreamGeometryContextImpl
+    public class PathGeometryContext : IGeometryContext
     {
         private PathFigure? _currentFigure;
         private PathGeometry? _pathGeometry;
