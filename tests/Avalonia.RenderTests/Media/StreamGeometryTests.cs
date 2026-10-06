@@ -108,6 +108,32 @@ namespace Avalonia.Skia.RenderTests
         }
 
         [Fact]
+        public async Task PathGeometry_Can_Be_Opened_With_A_Transform()
+        {
+            var geometry = new PathGeometry { Transform = new TranslateTransform(0, 40) };
+
+            using (var context = geometry.Open())
+            {
+                context.BeginFigure(new Point(20, 20), false);
+                context.LineTo(new Point(100, 100));
+                context.LineTo(new Point(180, 20));
+                context.EndFigure(false);
+            }
+
+            var target = new Path
+            {
+                Data = geometry,
+                Stroke = new SolidColorBrush(Colors.SeaGreen),
+                StrokeThickness = 6,
+                Width = 200,
+                Height = 200
+            };
+
+            await RenderToFile(target);
+            CompareImages();
+        }
+
+        [Fact]
         public async Task PathGeometry_Can_Be_Opened()
         {
             var geometry = new PathGeometry();
