@@ -12,7 +12,7 @@
         CanMaximize="{Binding CanMaximize}"
         WindowDrawnDecorations.TitleBarDecorations="{Binding TitleBarDecorations}"
         Win32Properties.WindowCornerPreference="{Binding Win32WindowCornerPreference}"
-        x:Class="ControlCatalog.MainWindow" 
+        x:Class="ControlCatalog.MainWindow"
         WindowState="{Binding SettingsViewModel.WindowState, Mode=TwoWay}"
         WindowDecorations="{Binding SettingsViewModel.CurrentWindowDecorations}"
         FlowDirection="{Binding SettingsViewModel.CurrentFlowDirection}"
@@ -40,13 +40,13 @@
       </NativeMenuItem>
       <NativeMenuItem Header="Options">
         <NativeMenu>
-          <NativeMenuItem Header="Check Me (None)" 
+          <NativeMenuItem Header="Check Me (None)"
                           ToggleType="None" />
-          <NativeMenuItem Header="Check Me (CheckBox)" 
+          <NativeMenuItem Header="Check Me (CheckBox)"
                           ToggleType="CheckBox" />
-          <NativeMenuItem Header="Check Me (Radio 1)" 
+          <NativeMenuItem Header="Check Me (Radio 1)"
                           ToggleType="Radio" />
-          <NativeMenuItem Header="Check Me (Radio 2)" 
+          <NativeMenuItem Header="Check Me (Radio 2)"
                           ToggleType="Radio" />
         </NativeMenu>
       </NativeMenuItem>
@@ -59,8 +59,14 @@
     </DataTemplate>
   </Window.DataTemplates>
   <Panel>
-    <Panel Margin="{Binding $parent[local:MainWindow].OffScreenMargin}">
-      <local:MainView Margin="{Binding $parent[local:MainWindow].WindowDecorationMargin}" />
-    </Panel>
+    <ContentControl Name="ContentHost" 
+                    Content="{Binding}" 
+                    Margin="{Binding $parent[local:MainWindow].OffScreenMargin}">
+      <ContentControl.ContentTemplate>
+        <DataTemplate x:DataType="vm:MainWindowViewModel">
+          <local:MainView Margin="{Binding $parent[local:MainWindow].WindowDecorationMargin}" />
+        </DataTemplate>
+      </ContentControl.ContentTemplate>
+    </ContentControl>
   </Panel>
 </Window>

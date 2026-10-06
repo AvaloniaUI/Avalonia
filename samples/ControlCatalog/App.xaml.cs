@@ -158,10 +158,11 @@ namespace ControlCatalog
 
                     if (oldWindow != null)
                     {
-                        oldWindow.Content = null;
+                        var vm = oldWindow.DataContext;
+                        oldWindow.DataContext = null;
                         var controlTheme = app.FindResource(app.ActualThemeVariant, typeof(Window)) as ControlTheme;
                         oldWindow.Theme = controlTheme;
-                        oldWindow.Content = new MainView();
+                        oldWindow.DataContext = vm;
                     }
                     else
                     {
