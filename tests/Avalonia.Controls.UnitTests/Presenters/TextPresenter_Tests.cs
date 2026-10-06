@@ -138,12 +138,9 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
                 var initialCaret = presenter.GetCaretPoints();
 
-                // Changing the width during arrange invalidates the TextLayout.
+                // Changing the width during arrange recreates the TextLayout. Center alignment
+                // moves the text, so the caret position needs to be recalculated as well.
                 presenter.Arrange(new Rect(0, 0, 300, presenter.DesiredSize.Height));
-
-                // Recreate the layout using the final width. Center alignment moves
-                // the text, so the caret position needs to be recalculated as well.
-                _ = presenter.TextLayout;
 
                 var arrangedCaret = presenter.GetCaretPoints();
 
