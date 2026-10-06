@@ -9,8 +9,9 @@ namespace Avalonia.Browser;
 
 // Dispatcher backend for single-threaded WASM. The browser event loop is the only loop:
 // wake-ups are posted as macrotasks and everything runs on the main thread, so no locking is needed.
-internal partial class BrowserSingleThreadedDispatcherImpl
-    : IDispatcherImplWithPendingInput, IDispatcherImplWithExplicitBackgroundProcessing
+// Pending input is deliberately not queried: the browser dispatches input between our tasks on its own,
+// and gating low-priority jobs on isInputPending starves them for as long as the pointer keeps moving.
+internal partial class BrowserSingleThreadedDispatcherImpl : IDispatcherImplWithExplicitBackgroundProcessing
 {
     private static BrowserSingleThreadedDispatcherImpl? s_instance;
 
@@ -23,16 +24,11 @@ internal partial class BrowserSingleThreadedDispatcherImpl
     public BrowserSingleThreadedDispatcherImpl()
     {
         s_instance = this;
-        CanQueryPendingInput = JsCanQueryPendingInput();
     }
 
     public bool CurrentThreadIsLoopThread => Thread.CurrentThread == _thread;
 
     public long Now => _clock.ElapsedMilliseconds;
-
-    public bool CanQueryPendingInput { get; }
-
-    public bool HasPendingInput => CanQueryPendingInput && JsHasPendingInput();
 
     public event Action? Signaled;
     public event Action? Timer;
@@ -68,12 +64,6 @@ internal partial class BrowserSingleThreadedDispatcherImpl
             _timerSet = true;
         }
     }
-
-    [JSImport("SingleThreadedDispatcherHelper.canQueryPendingInput", AvaloniaModule.MainModuleName)]
-    private static partial bool JsCanQueryPendingInput();
-
-    [JSImport("SingleThreadedDispatcherHelper.hasPendingInput", AvaloniaModule.MainModuleName)]
-    private static partial bool JsHasPendingInput();
 
     [JSImport("SingleThreadedDispatcherHelper.signal", AvaloniaModule.MainModuleName)]
     private static partial void JsSignal();
