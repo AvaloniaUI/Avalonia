@@ -80,6 +80,9 @@ namespace Avalonia.Controls
         static CalendarDatePicker()
         {
             FocusableProperty.OverrideDefaultValue<CalendarDatePicker>(true);
+
+            // The picker forwards focus to its text box, so as a tab stop it would trap Shift+Tab.
+            IsTabStopProperty.OverrideDefaultValue<CalendarDatePicker>(false);
         }
 
         /// <summary>

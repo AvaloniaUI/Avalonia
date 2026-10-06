@@ -49,7 +49,6 @@
                  RadiusX="12"
                  RadiusY="12"
                  Fill="#22C55E"
-                 Stroke="#14532D"
                  StrokeThickness="{Binding #StrokeThickness.Value}" />
 
       <Path x:Name="Star"

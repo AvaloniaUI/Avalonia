@@ -21,7 +21,8 @@ jobs:
   publish:
     name: Publish PR NuGet Packages
     if: >-
-      github.event.workflow_run.event == 'pull_request'
+      github.repository == 'AvaloniaUI/Avalonia'
+      && github.event.workflow_run.event == 'pull_request'
       && github.event.workflow_run.conclusion == 'success'
       && vars.ALL_FEED_UPLOAD_URL != ''
     runs-on: ubuntu-24.04
