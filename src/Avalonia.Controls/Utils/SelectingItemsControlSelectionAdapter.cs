@@ -170,9 +170,7 @@ namespace Avalonia.Controls.Utils
             }
         }
 
-        // The drop-down lives in its own popup, so letting it take focus takes focus away from the
-        // text box: bindings that update on lost focus would then commit the text typed before the
-        // item was picked, and never the item itself.
+        // Items stay non focusable so that picking one keeps the focus in the text box.
         private static void OnContainerPrepared(object? sender, ContainerPreparedEventArgs e)
             => e.Container.Focusable = false;
 
