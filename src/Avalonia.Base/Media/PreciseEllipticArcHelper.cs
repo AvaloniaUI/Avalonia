@@ -53,7 +53,7 @@ using System;
 
 namespace Avalonia.Media
 {
-    static class PreciseEllipticArcHelper
+    internal static class PreciseEllipticArcHelper
     {
         /// <summary>
         /// This class represents an elliptical arc on a 2D plane.
@@ -77,7 +77,7 @@ namespace Avalonia.Media
         /// to use it for pie-charts rendering. If these lines are not included, the curve is not 
         /// naturally closed.
         /// </summary>
-        public sealed class EllipticalArc
+        private sealed class EllipticalArc
         {
 
             private const double TwoPi = 2 * Math.PI;
