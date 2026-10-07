@@ -38,7 +38,8 @@
             <controls:SampleSection.Options>
               <StackPanel Spacing="8">
 
-                <TextBlock Text="ColorModel" />
+                <TextBlock Text="ColorModel"
+                           Classes="sample-caption" />
                 <ComboBox x:Name="ColorModelComboBox"
                           SelectedItem="{x:Static ColorModel.Rgba}"
                           HorizontalAlignment="Stretch">
@@ -46,7 +47,8 @@
                   <x:Static Member="ColorModel.Hsva" />
                 </ComboBox>
 
-                <TextBlock Text="ColorSpectrumComponents" />
+                <TextBlock Text="ColorSpectrumComponents"
+                           Classes="sample-caption" />
                 <ComboBox x:Name="ColorSpectrumComponentsComboBox"
                           SelectedItem="{x:Static ColorSpectrumComponents.HueSaturation}"
                           HorizontalAlignment="Stretch">
@@ -58,7 +60,8 @@
                   <x:Static Member="ColorSpectrumComponents.ValueSaturation" />
                 </ComboBox>
 
-                <TextBlock Text="ColorSpectrumShape" />
+                <TextBlock Text="ColorSpectrumShape"
+                           Classes="sample-caption" />
                 <ComboBox x:Name="ColorSpectrumShapeComboBox"
                           SelectedItem="{x:Static ColorSpectrumShape.Ring}"
                           HorizontalAlignment="Stretch">
