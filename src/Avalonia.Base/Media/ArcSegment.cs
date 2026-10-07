@@ -1,5 +1,4 @@
 using System;
-using System.Globalization;
 
 namespace Avalonia.Media
 {
@@ -36,63 +35,69 @@ namespace Avalonia.Media
                 = AvaloniaProperty.Register<ArcSegment, SweepDirection>(nameof(SweepDirection), SweepDirection.Clockwise);
 
         /// <summary>
-        /// Gets or sets a value indicating whether this instance is large arc.
+        /// Gets or sets a value indicating whether the arc should follow the longer path around an ellipse rather than the shorter one.
         /// </summary>
+        /// <remarks>
+        /// Set to <c>true</c> to draw the arc greater than 180 degrees; otherwise, <c>false</c>.
+        /// </remarks>
         /// <value>
-        /// <c>true</c> if this instance is large arc; otherwise, <c>false</c>.
+        /// <c>true</c> if this instance is a large arc; otherwise, <c>false</c>.
         /// </value>
         public bool IsLargeArc
         {
-            get { return GetValue(IsLargeArcProperty); }
-            set { SetValue(IsLargeArcProperty, value); }
+            get => GetValue(IsLargeArcProperty);
+            set => SetValue(IsLargeArcProperty, value);
         }
 
         /// <summary>
-        /// Gets or sets the point.
+        /// Gets or sets the destination point where the arc ends.
         /// </summary>
         /// <value>
-        /// The point.
+        /// The destination point.
         /// </value>
         public Point Point
         {
-            get { return GetValue(PointProperty); }
-            set { SetValue(PointProperty, value); }
+            get => GetValue(PointProperty);
+            set => SetValue(PointProperty, value);
         }
 
         /// <summary>
-        /// Gets or sets the rotation angle.
+        /// Gets or sets the rotation angle (in degrees) of the ellipse that specifies the path of the arc; positive values are clockwise.
         /// </summary>
+        /// <remarks>
+        /// This will rotate the entire arc relative to the X-axis and is not commonly used.
+        /// </remarks>
         /// <value>
         /// The rotation angle.
         /// </value>
         public double RotationAngle
         {
-            get { return GetValue(RotationAngleProperty); }
-            set { SetValue(RotationAngleProperty, value); }
+            get => GetValue(RotationAngleProperty);
+            set => SetValue(RotationAngleProperty, value);
         }
 
         /// <summary>
-        /// Gets or sets the size.
+        /// Gets or sets the radii of an ellipse whose path is used to draw the arc.
         /// </summary>
         /// <value>
         /// The size.
         /// </value>
         public Size Size
         {
-            get { return GetValue(SizeProperty); }
-            set { SetValue(SizeProperty, value); }
+            get => GetValue(SizeProperty);
+            set => SetValue(SizeProperty, value);
         }
 
         /// <summary>
-        /// Gets or sets the sweep direction.
+        /// Gets or sets the sweep direction which indicates whether the arc is drawn in the Clockwise or Counterclockwise direction.
         /// </summary>
         /// <value>
         /// The sweep direction.
         /// </value>
         public SweepDirection SweepDirection
         {
-            get { return GetValue(SweepDirectionProperty); }
-            set { SetValue(SweepDirectionProperty, value); }
+            get => GetValue(SweepDirectionProperty);
+            set => SetValue(SweepDirectionProperty, value);
         }
 
         internal override void ApplyTo(StreamGeometryContext ctx)
