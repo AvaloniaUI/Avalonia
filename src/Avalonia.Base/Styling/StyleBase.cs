@@ -18,15 +18,10 @@ namespace Avalonia.Styling
         private IResourceDictionary? _resources;
         private List<SetterBase>? _setters;
         private List<IAnimation>? _animations;
-        // Shared instances are cached per FrameType: the same ControlTheme can
-        // be attached to a control both as its own Theme and as a
-        // TemplatedParentTheme, and a single StyleInstance object must never be
-        // inserted twice into the same ValueStore (nor shared across different
-        // frame types). The vast majority of styles only ever have a single
-        // shared instance, so we keep a plain field for that case and only
-        // allocate an array indexed by FrameType once a second frame type is
-        // shared. (InlineDictionary requires a class type key, so it cannot be
-        // used here.)
+        // Shared style instances are cached per FrameType. Most styles only ever
+        // have a single shared instance, so we keep a plain field for that case
+        // and lazily upgrade to an array indexed by FrameType when a second
+        // frame type is shared.
         private StyleInstance? _sharedInstance;
         private FrameType _sharedInstanceType;
         private StyleInstance?[]? _sharedInstances;
@@ -129,9 +124,7 @@ namespace Avalonia.Styling
 
             StyleInstance instance;
 
-            var shared = GetSharedInstance(type);
-
-            if (shared is not null && canShareInstance)
+            if (canShareInstance && GetSharedInstance(type) is { } shared)
             {
                 instance = shared;
             }
