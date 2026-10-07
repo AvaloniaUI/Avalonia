@@ -22,9 +22,14 @@ namespace Avalonia.Styling
         // be attached to a control both as its own Theme and as a
         // TemplatedParentTheme, and a single StyleInstance object must never be
         // inserted twice into the same ValueStore (nor shared across different
-        // frame types). InlineDictionary requires a class type key, so a
-        // fixed-size array indexed by FrameType is used instead.
-        private readonly StyleInstance?[] _sharedInstances = new StyleInstance?[3];
+        // frame types). The vast majority of styles only ever have a single
+        // shared instance, so we keep a plain field for that case and only
+        // allocate an array indexed by FrameType once a second frame type is
+        // shared. (InlineDictionary requires a class type key, so it cannot be
+        // used here.)
+        private StyleInstance? _sharedInstance;
+        private FrameType _sharedInstanceType;
+        private StyleInstance?[]? _sharedInstances;
 
         public IList<IStyle> Children => _children ??= new(this);
 
@@ -124,8 +129,7 @@ namespace Avalonia.Styling
 
             StyleInstance instance;
 
-            var slotIndex = (int)type;
-            var shared = _sharedInstances[slotIndex];
+            var shared = GetSharedInstance(type);
 
             if (shared is not null && canShareInstance)
             {
@@ -153,13 +157,44 @@ namespace Avalonia.Styling
                 if (canShareInstance)
                 {
                     instance.MakeShared();
-                    _sharedInstances[slotIndex] = instance;
+                    SetSharedInstance(type, instance);
                 }
             }
 
             ao.GetValueStore().AddFrame(instance);
             instance.ApplyAnimations(ao);
             return instance;
+        }
+
+        private StyleInstance? GetSharedInstance(FrameType type)
+        {
+            if (_sharedInstances is not null)
+            {
+                return _sharedInstances[(int)type];
+            }
+
+            return _sharedInstance is not null && _sharedInstanceType == type ? _sharedInstance : null;
+        }
+
+        private void SetSharedInstance(FrameType type, StyleInstance instance)
+        {
+            if (_sharedInstances is not null)
+            {
+                _sharedInstances[(int)type] = instance;
+            }
+            else if (_sharedInstance is null)
+            {
+                _sharedInstance = instance;
+                _sharedInstanceType = type;
+            }
+            else
+            {
+                var arr = new StyleInstance?[3];
+                arr[(int)_sharedInstanceType] = _sharedInstance;
+                arr[(int)type] = instance;
+                _sharedInstances = arr;
+                _sharedInstance = null;
+            }
         }
 
         internal virtual void SetParent(StyleBase? parent) => Parent = parent;
