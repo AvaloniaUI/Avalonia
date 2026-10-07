@@ -57,6 +57,15 @@ partial class MediaContext
 
 
     /// <summary>
+    /// Raised right before the compositors are committed (after this frame's layout pass has settled), only when a
+    /// commit is actually about to be sent. The Wayland embedding subcompositor (Avalonia.Wayland.Embedding)
+    /// subscribes so the embedded toolkit paints its enqueued windows HERE rather than during layout; any visual
+    /// invalidation it triggers is folded into the same commit (the <see cref="_requestedCommits"/> snapshot is taken
+    /// after this runs).
+    /// </summary>
+    internal static event Action? BeforeCommitCompositors;
+
+    /// <summary>
     /// Triggers a composition commit if any batches are waiting to be sent,
     /// handles throttling
     /// </summary>
@@ -74,7 +83,9 @@ partial class MediaContext
         if (_requestedCommits.Count == 0)
             // Nothing to do, and there are no pending commits
             return false;
-        
+
+        BeforeCommitCompositors?.Invoke();
+
         foreach (var c in _requestedCommits.ToArray())
             CommitCompositor(c);
         

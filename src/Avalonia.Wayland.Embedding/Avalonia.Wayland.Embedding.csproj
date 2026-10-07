@@ -1,0 +1,53 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>$(AvsCurrentTargetFramework);$(AvsLegacyTargetFrameworks)</TargetFrameworks>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <EnableRuntimeMarshalling>true</EnableRuntimeMarshalling>
+    <!-- Surface the NWayland-generated avalonia_embed bindings on disk for inspection/diffing. -->
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)\GeneratedFiles</CompilerGeneratedFilesOutputPath>
+    <!-- The NWayland generator emits embed_toplevel/mark_content_surface dispatch that forwards a
+         nullable wl string (token/cookie) into a non-null listener parameter without a `!`, tripping
+         CS8604 in generated code we can't hand-edit. Keep it a visible warning, but don't let it fail
+         the Release build (TreatWarningsAsErrors). Our own code stays clean of CS8604. -->
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);CS8604</WarningsNotAsErrors>
+  </PropertyGroup>
+
+  <Import Project="..\..\build\NullableEnable.props" />
+  <!-- CrossThreadProxyGenerator (UI→compositor proxies) + [GenerateCrossThreadProxy] attribute. -->
+  <Import Project="..\..\build\SourceGenerators.props" />
+
+  <!-- The generator attributes are already compiled into (and exposed by) Avalonia.Base via InternalsVisibleTo;
+       don't compile a second copy here or the two types collide (CS0436). -->
+  <ItemGroup>
+    <Compile Remove="..\Shared\SourceGeneratorAttributes.cs" />
+    <None Include="..\Shared\SourceGeneratorAttributes.cs" Visible="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Avalonia.Wayland.Embedding.Tests, PublicKey=$(AvaloniaPublicKey)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\packages\Avalonia\Avalonia.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Avalonia.X11\X11KeyTransform.cs" Link="Compositor\X11\X11KeyTransform.cs" />
+    <Compile Include="..\Avalonia.X11\Keysyms.cs" Link="Compositor\X11\Keysyms.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Server-side Wayland I/O + the standard .Server protocol bindings
+         (core / xdg-shell / xdg-foreign-v2 / text-input-v3) ship transitively. -->
+    <PackageReference Include="NWayland.Server" />
+    <!-- Source generator: emits the internal avalonia_embed bindings from the XML below. -->
+    <PackageReference Include="NWayland.Generator" PrivateAssets="all" />
+    <!-- org_kde_kwin_server_decoration (D9) is NOT pulled in by NWayland.Server — reference it explicitly. -->
+    <PackageReference Include="NWayland.Protocols.Plasma" />
+
+    <AdditionalFiles Include="Protocols\avalonia_embed_v1.xml"
+                     NWaylandNamespace="Avalonia.Wayland.Embedding.Protocol"
+                     NWaylandVisibility="internal" />
+  </ItemGroup>
+</Project>
