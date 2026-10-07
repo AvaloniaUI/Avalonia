@@ -53,10 +53,6 @@ namespace Avalonia.Controls
         private IList? _selectedItems;
         private bool _syncingSelectedItems;
         private bool _suppressSelectionChanged;
-
-        /// <summary>
-        /// The selection as of the last <see cref="SelectingItemsControl.SelectionChangedEvent"/>.
-        /// </summary>
         private readonly List<object> _reportedSelection = new();
 
         /// <summary>
