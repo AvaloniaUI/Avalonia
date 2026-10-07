@@ -25,21 +25,19 @@
       "type": "string",
       "enum": [
         "BuildToNuGetCache",
-        "CiAzureLinux",
-        "CiAzureOSX",
-        "CiAzureWindows",
+        "CiLinux",
+        "CiMacOS",
+        "CiWindows",
         "Clean",
         "Compile",
         "CompileNative",
         "CreateIntermediateNugetPackages",
         "CreateNugetPackages",
-        "CreateSbom",
         "DownloadApiBaselinePackages",
-        "GenerateCppHeaders",
+        "EmbedSbom",
         "GenerateUnicodeData",
         "InitDnx",
         "OutputApiDiff",
-        "OutputVersion",
         "Package",
         "RunCoreLibsTests",
         "RunHtmlPreviewerTests",
@@ -48,8 +46,7 @@
         "RunTests",
         "RunToolsTests",
         "ValidateApiDiff",
-        "VerifyXamlCompilation",
-        "ZipFiles"
+        "VerifyXamlCompilation"
       ]
     },
     "Verbosity": {

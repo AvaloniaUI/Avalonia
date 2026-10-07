@@ -330,6 +330,18 @@ namespace Avalonia.Controls.Presenters
             AttachToScrollViewer();
         }
 
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnDetachedFromVisualTree(e);
+
+            // A replaced template no longer has the ScrollViewer as an ancestor and must
+            // release its content. Keep the bindings when the entire owner is detached.
+            if (this.FindAncestorOfType<ScrollViewer>() == null)
+            {
+                DetachFromScrollViewer();
+            }
+        }
+
         /// <summary>
         /// Locates the first <see cref="ScrollViewer"/> ancestor and binds to it. Properties which have been set through other means are not bound.
         /// </summary>
@@ -342,9 +354,7 @@ namespace Avalonia.Controls.Presenters
 
             if (owner == null)
             {
-                _owner = null;
-                _ownerSubscriptions?.Dispose();
-                _ownerSubscriptions = null;
+                DetachFromScrollViewer();
                 return;
             }
 
@@ -370,6 +380,16 @@ namespace Avalonia.Controls.Presenters
             static bool NotDisabled(ScrollBarVisibility v) => v != ScrollBarVisibility.Disabled;
 
             IDisposable? IfUnset<T>(T property, Func<T, IDisposable> func) where T : AvaloniaProperty => IsSet(property) ? null : func(property);
+        }
+
+        /// <summary>
+        /// Clears the owning <see cref="ScrollViewer"/> and disposes the bindings to it.
+        /// </summary>
+        private void DetachFromScrollViewer()
+        {
+            _owner = null;
+            _ownerSubscriptions?.Dispose();
+            _ownerSubscriptions = null;
         }
 
         /// <inheritdoc/>

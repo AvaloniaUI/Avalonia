@@ -3,6 +3,8 @@ using System.Linq;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data.Converters;
+using Avalonia.Harfbuzz;
+using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
@@ -195,6 +197,107 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Shift_Tab_From_TextBox_Should_Move_Focus_To_Previous_Control()
+        {
+            using (UnitTestApplication.Start(FocusServices))
+            {
+                var before = new Button();
+                var datePicker = new CalendarDatePicker { Template = CreateTemplate() };
+                var root = new TestRoot(new StackPanel { Children = { before, datePicker, new Button() } });
+                root.LayoutManager.ExecuteInitialLayoutPass();
+                var textBox = GetTextBox(datePicker);
+                textBox.Focus();
+
+                var previous = KeyboardNavigationHandler.GetNext(textBox, NavigationDirection.Previous);
+                previous?.Focus(NavigationMethod.Tab, KeyModifiers.Shift);
+
+                Assert.Same(before, root.FocusManager.GetFocusedElement());
+            }
+        }
+
+        [Fact]
+        public void Tab_Into_CalendarDatePicker_Should_Focus_TextBox_And_Select_Text()
+        {
+            using (UnitTestApplication.Start(FocusServices))
+            {
+                var before = new Button();
+                var after = new Button();
+                var datePicker = new CalendarDatePicker
+                {
+                    Template = CreateTemplate(),
+                    SelectedDate = new DateTime(2026, 4, 22)
+                };
+                var root = new TestRoot(new StackPanel { Children = { before, datePicker, after } });
+                root.LayoutManager.ExecuteInitialLayoutPass();
+                var textBox = GetTextBox(datePicker);
+                Assert.False(string.IsNullOrEmpty(textBox.Text));
+
+                var next = KeyboardNavigationHandler.GetNext(before, NavigationDirection.Next);
+                next?.Focus(NavigationMethod.Tab);
+
+                Assert.Same(textBox, root.FocusManager.GetFocusedElement());
+                Assert.Equal(textBox.Text, textBox.SelectedText);
+            }
+        }
+
+        [Fact]
+        public void Shift_Tab_Into_CalendarDatePicker_Should_Focus_TextBox()
+        {
+            using (UnitTestApplication.Start(FocusServices))
+            {
+                var after = new Button();
+                var datePicker = new CalendarDatePicker { Template = CreateTemplate() };
+                var root = new TestRoot(new StackPanel { Children = { new Button(), datePicker, after } });
+                root.LayoutManager.ExecuteInitialLayoutPass();
+                after.Focus();
+
+                var previous = KeyboardNavigationHandler.GetNext(after, NavigationDirection.Previous);
+                previous?.Focus(NavigationMethod.Tab, KeyModifiers.Shift);
+
+                Assert.Same(GetTextBox(datePicker), root.FocusManager.GetFocusedElement());
+            }
+        }
+
+        [Fact]
+        public void Tab_Focus_Should_Move_Focus_To_TextBox()
+        {
+            using (UnitTestApplication.Start(FocusServices))
+            {
+                var datePicker = new CalendarDatePicker { Template = CreateTemplate() };
+                var root = new TestRoot(datePicker);
+                root.LayoutManager.ExecuteInitialLayoutPass();
+
+                datePicker.Focus(NavigationMethod.Tab);
+
+                Assert.Same(GetTextBox(datePicker), root.FocusManager.GetFocusedElement());
+            }
+        }
+
+        [Fact]
+        public void Programmatic_Focus_Should_Move_Focus_To_TextBox()
+        {
+            using (UnitTestApplication.Start(FocusServices))
+            {
+                var datePicker = new CalendarDatePicker { Template = CreateTemplate() };
+                var root = new TestRoot(datePicker);
+                root.LayoutManager.ExecuteInitialLayoutPass();
+
+                datePicker.Focus();
+
+                Assert.Same(GetTextBox(datePicker), root.FocusManager.GetFocusedElement());
+            }
+        }
+
+        private static TestServices FocusServices => TestServices.MockThreadingInterface.With(
+            fontManagerImpl: new HeadlessFontManagerStub(),
+            standardCursorFactory: Mock.Of<ICursorFactory>(),
+            textShaperImpl: new HarfBuzzTextShaper(),
+            renderInterface: new HeadlessPlatformRenderInterface(),
+            keyboardDevice: () => new KeyboardDevice(),
+            keyboardNavigation: () => new KeyboardNavigationHandler(),
+            inputManager: new InputManager());
+
         private static TestServices Services => TestServices.MockThreadingInterface.With(
             standardCursorFactory: Mock.Of<ICursorFactory>());
 
@@ -222,7 +325,8 @@ namespace Avalonia.Controls.UnitTests
                 var button =
                     new Button
                     {
-                        Name = "PART_Button"
+                        Name = "PART_Button",
+                        Focusable = false
                     }.RegisterInNameScope(scope);
                 var calendar =
                     new Calendar

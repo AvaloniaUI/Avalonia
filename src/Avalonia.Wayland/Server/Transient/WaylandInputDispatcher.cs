@@ -290,9 +290,13 @@ partial class WaylandInputDispatcher : IDisposable
         //    every scroll source (wheel + touchpad/continuous), regardless of version.
         //
         // For Avalonia (1.0 == one detent), value120/120 is the right unit when present.
-        // For continuous sources (touchpad), there is no value120 and we fall back to the
-        // raw axis value. We accumulate the two streams independently and combine at frame
+        // For continuous sources (touchpad), there is no value120 and we scale the raw axis
+        // value by AxisUnitsPerDetent. We accumulate the two streams independently and combine at frame
         // flush time, preferring v120 per axis when present). This is robust to either event order.
+
+        // Logical px per detent for continuous sources, as assumed by GTK3, Qt, SDL and Chromium
+        private const double AxisUnitsPerDetent = 10;
+
         private bool _frameHasAxis;
         private ulong _frameAxisTimestamp;
         private double _frameAxisRawX;
@@ -439,9 +443,9 @@ partial class WaylandInputDispatcher : IDisposable
                 handler._frameActions.Add(() =>
                 {
                     // Combine v120 (notches) with raw axis (continuous). Per axis, prefer v120
-                    // if any v120 event fired this frame; otherwise fall back to the raw axis.
-                    var deltaX = handler._frameV120SeenX ? handler._frameV120X : handler._frameAxisRawX;
-                    var deltaY = handler._frameV120SeenY ? handler._frameV120Y : handler._frameAxisRawY;
+                    // if any v120 event fired this frame; otherwise scale the raw axis.
+                    var deltaX = handler._frameV120SeenX ? handler._frameV120X : handler._frameAxisRawX / AxisUnitsPerDetent;
+                    var deltaY = handler._frameV120SeenY ? handler._frameV120Y : handler._frameAxisRawY / AxisUnitsPerDetent;
                     if (deltaX != 0 || deltaY != 0)
                     {
                         // Wayland: positive = scroll down/right. Avalonia: positive Y = scroll up.

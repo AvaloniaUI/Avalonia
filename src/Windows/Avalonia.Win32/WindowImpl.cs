@@ -118,6 +118,7 @@ namespace Avalonia.Win32
         private static POINTER_INFO[]? s_historyInfos;
         private static MOUSEMOVEPOINT[]? s_mouseHistoryInfos;
         private PlatformThemeVariant _currentThemeVariant;
+        private Win32TopLevelSceneInfo _sceneInfo = new(PlatformThemeVariant.Light);
 
         public WindowImpl()
         {
@@ -215,6 +216,10 @@ namespace Avalonia.Win32
         public Action? LostFocus { get; set; }
 
         public Action<WindowTransparencyLevel>? TransparencyLevelChanged { get; set; }
+
+        public object? PlatformSpecificSceneInfo => _sceneInfo;
+
+        public Action<object?>? PlatformSpecificSceneInfoChanged { get; set; }
 
         public Thickness BorderThickness
         {
@@ -437,43 +442,29 @@ namespace Avalonia.Win32
             return false;
         }
 
+        // The composition effects themselves are applied by the render target on the render thread,
+        // based on the transparency level and theme variant it receives with RenderTargetSceneInfo.
+        // Here we only adjust the DWM window attributes that have to be set from the UI thread.
+
         private bool SetTransparencyTransparent()
         {
-            if (CompositionEffectsSurface is { } surface)
-            {
-                surface.SetBlur(BlurEffect.None);
+            if (CompositionEffectsSurface is not null)
                 return true;
-            }
-            else
-            {
-                return SetLegacyTransparency(true);
-            }
+
+            return SetLegacyTransparency(true);
         }
 
         private bool SetTransparencyAcrylicBlur()
         {
             SetUseHostBackdropBrush(true);
             SetLegacyTransparency(false);
-
-            CompositionEffectsSurface!.SetBlur(BlurEffect.Acrylic);
             return true;
         }
 
-        /// <summary>
-        /// Sets the transparency mica
-        /// </summary>
-        /// <exception cref="ArgumentOutOfRangeException"></exception>
         private bool SetTransparencyMica()
         {
             SetUseHostBackdropBrush(false);
             SetLegacyTransparency(false);
-
-            CompositionEffectsSurface!.SetBlur(_currentThemeVariant switch
-            {
-                PlatformThemeVariant.Light => BlurEffect.MicaLight,
-                PlatformThemeVariant.Dark => BlurEffect.MicaDark,
-                _ => throw new ArgumentOutOfRangeException()
-            });
             return true;
         }
 
@@ -775,21 +766,19 @@ namespace Avalonia.Win32
         {
             e.Pointer.Capture(null);
 
+            if (!e.Pointer.IsPrimary)
+            {
+                throw new InvalidOperationException("BeginMoveDrag Failed");
+            }
+
             Dispatcher.UIThread.Post(() =>
             {
-                if (e.Pointer.IsPrimary)
-                {
-                    // SendMessage's return value is dependent on the message send.  WM_SYSCOMMAND
-                    // and WM_LBUTTONUP return value just signify whether the WndProc handled the
-                    // message or not, so they are not interesting
+                // SendMessage's return value is dependent on the message send.  WM_SYSCOMMAND
+                // and WM_LBUTTONUP return value just signify whether the WndProc handled the
+                // message or not, so they are not interesting
 
-                    SendMessage(_hwnd, (int)WindowsMessage.WM_SYSCOMMAND, (IntPtr)SC_MOUSEMOVE, IntPtr.Zero);
-                    SendMessage(_hwnd, (int)WindowsMessage.WM_LBUTTONUP, IntPtr.Zero, IntPtr.Zero);
-                }
-                else
-                {
-                    throw new InvalidOperationException("BeginMoveDrag Failed");
-                }
+                SendMessage(_hwnd, (int)WindowsMessage.WM_SYSCOMMAND, (IntPtr)SC_MOUSEMOVE, IntPtr.Zero);
+                SendMessage(_hwnd, (int)WindowsMessage.WM_LBUTTONUP, IntPtr.Zero, IntPtr.Zero);
             }, DispatcherPriority.Send);
         }
 
@@ -951,6 +940,11 @@ namespace Avalonia.Win32
         public unsafe void SetFrameThemeVariant(PlatformThemeVariant? themeVariant)
         {
             _currentThemeVariant = themeVariant ?? Win32Platform.Instance.PlatformSettings.GetColorValues().ThemeVariant;
+            if (_sceneInfo.ThemeVariant != _currentThemeVariant)
+            {
+                _sceneInfo = new Win32TopLevelSceneInfo(_currentThemeVariant);
+                PlatformSpecificSceneInfoChanged?.Invoke(_sceneInfo);
+            }
             if (Win32Platform.WindowsVersion.Build >= 22000)
             {
                 var pvUseBackdropBrush = _currentThemeVariant == PlatformThemeVariant.Dark ? 1 : 0;

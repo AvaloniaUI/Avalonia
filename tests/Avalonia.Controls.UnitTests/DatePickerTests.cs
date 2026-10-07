@@ -255,6 +255,42 @@ namespace Avalonia.Controls.UnitTests
         public void Selector_ScrollDown_Should_Work(string selectorName)
             => TestSelectorScrolling(selectorName, panel => panel.ScrollDown());
 
+        [Theory]
+        [InlineData(false, 120d, 40d)]
+        [InlineData(true, 12000d, 6040d)]
+        public void Selector_ItemHeight_Change_Should_Update_Layout_State(
+            bool shouldLoop,
+            double expectedExtentHeight,
+            double expectedOffsetY)
+        {
+            using var app = UnitTestApplication.Start(Services);
+
+            var panel = new DateTimePickerPanel
+            {
+                MinimumValue = 1,
+                MaximumValue = 3,
+                ShouldLoop = shouldLoop,
+                ItemHeight = 20,
+            };
+
+            panel.Measure(new Size(100, 100));
+            panel.Arrange(new Rect(0, 0, 100, 100));
+            panel.SelectedValue = 2;
+
+            panel.ItemHeight = 40;
+
+            Assert.Equal(expectedExtentHeight, panel.Extent.Height);
+            Assert.Equal(expectedOffsetY, panel.Offset.Y);
+            Assert.All(panel.Children, child => Assert.Equal(40, child.Height));
+
+            panel.Measure(new Size(100, 100));
+            panel.Arrange(new Rect(0, 0, 100, 100));
+
+            var selectedItem = Assert.Single(panel.Children.OfType<ListBoxItem>().Where(item => item.IsSelected));
+            Assert.Equal(2, selectedItem.Tag);
+            Assert.Equal(50, selectedItem.Bounds.Center.Y);
+        }
+
         private static void TestSelectorScrolling(string selectorName, Action<DateTimePickerPanel> scroll)
         {
             using var app = UnitTestApplication.Start(Services);

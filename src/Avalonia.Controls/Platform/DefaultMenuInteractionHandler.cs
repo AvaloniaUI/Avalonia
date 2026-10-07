@@ -279,8 +279,6 @@ namespace Avalonia.Controls.Platform
             Menu?.Close();
         }
 
-        internal static MenuItem? GetMenuItem(StyledElement? item) => (MenuItem?)GetMenuItemCore(item);
-
         internal void AttachCore(IMenu menu)
         {
             if (Menu != null)
