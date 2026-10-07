@@ -1,3 +1,4 @@
+using System;
 using Avalonia.Platform;
 
 namespace Avalonia.Media
@@ -12,7 +13,8 @@ namespace Avalonia.Media
     /// </remarks>
     public class StreamGeometryContext : IGeometryContext
     {
-        private readonly IStreamGeometryContextImpl _impl;
+        private readonly IGeometryContext _impl;
+        private readonly Action? _onDispose;
 
         private Point _currentPoint;
 
@@ -21,8 +23,14 @@ namespace Avalonia.Media
         /// </summary>
         /// <param name="impl">The platform-specific implementation.</param>
         public StreamGeometryContext(IStreamGeometryContextImpl impl)
+            : this(impl, null)
+        {
+        }
+
+        internal StreamGeometryContext(IGeometryContext impl, Action? onDispose = null)
         {
             _impl = impl;
+            _onDispose = onDispose;
         }
 
         /// <summary>
@@ -97,6 +105,7 @@ namespace Avalonia.Media
         public void Dispose()
         {
             _impl.Dispose();
+            _onDispose?.Invoke();
         }
     }
 }
