@@ -60,7 +60,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="UseFloatingPlaceholder"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> UseFloatingPlaceholderProperty =
-            AvaloniaProperty.Register<AutoCompleteBox, bool>(nameof(UseFloatingPlaceholder));
+            TextBox.UseFloatingPlaceholderProperty.AddOwner<AutoCompleteBox>();
 
         /// <summary>
         /// Identifies the <see cref="MinimumPrefixLength" /> property.
