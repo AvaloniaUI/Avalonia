@@ -32,6 +32,42 @@
     <ProjectReference Include="..\MiniMvvm\MiniMvvm.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <AvaloniaXaml Update="Pages\Composition\BrushAnimationsPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Update="Pages\Composition\CompositionHomePage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Update="Pages\Composition\CustomAnimationPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Update="Pages\Composition\ExplicitAnimationsPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Update="Pages\Composition\ImplicitAnimationsPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Pages\Composition\BrushAnimationsPage.xaml.cs">
+      <DependentUpon>BrushAnimationsPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Pages\Composition\CompositionHomePage.xaml.cs">
+      <DependentUpon>CompositionHomePage.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Pages\Composition\CustomAnimationPage.xaml.cs">
+      <DependentUpon>CustomAnimationPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Pages\Composition\ExplicitAnimationsPage.xaml.cs">
+      <DependentUpon>ExplicitAnimationsPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Pages\Composition\ImplicitAnimationsPage.xaml.cs">
+      <DependentUpon>ImplicitAnimationsPage.xaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
   <Import Project="..\..\build\BuildTargets.targets" />
   <Import Project="..\..\build\SourceGenerators.props" />
   <Import Project="..\..\build\SkiaSharp.props" />
