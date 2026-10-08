@@ -33,7 +33,6 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Moq" />
-    <PackageReference Include="SixLabors.ImageSharp" />
     <PackageReference Include="System.Reactive" />
   </ItemGroup>
   <Import Project="..\..\build\XUnit.props" />

@@ -1,26 +1,10 @@
+using System;
 using System.IO;
 using System.Runtime.CompilerServices;
-using Avalonia.Controls;
-using Avalonia.Media.Imaging;
-using Avalonia.Rendering;
-using SixLabors.ImageSharp;
-using Xunit;
-using Avalonia.Platform;
 using System.Threading.Tasks;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reactive.Disposables;
-using System.Threading;
+using Avalonia.Controls;
 using Avalonia.Media;
-using Avalonia.Rendering.Composition;
-using Avalonia.Skia;
-using Avalonia.Threading;
-using Avalonia.UnitTests;
-using Avalonia.Utilities;
-using SixLabors.ImageSharp.PixelFormats;
-using Image = SixLabors.ImageSharp.Image;
+using Xunit;
 
 namespace Avalonia.Skia.RenderTests
 {
@@ -53,7 +37,7 @@ namespace Avalonia.Skia.RenderTests
             {
                 Directory.CreateDirectory(OutputPath);
             }
-            
+
             var immediatePath = Path.Combine(OutputPath, testName + ".immediate.out.png");
             var compositedPath = Path.Combine(OutputPath, testName + ".composited.out.png");
             await TestRenderHelper.RenderToFile(target, immediatePath, true, dpi);
@@ -67,9 +51,9 @@ namespace Avalonia.Skia.RenderTests
             var immediatePath = Path.Combine(OutputPath, testName + ".immediate.out.png");
             var compositedPath = Path.Combine(OutputPath, testName + ".composited.out.png");
 
-            using (var expected = Image.Load<Rgba32>(expectedPath))
-            using (var immediate = skipImmediate ? null: Image.Load<Rgba32>(immediatePath))
-            using (var composited = skipCompositor ? null : Image.Load<Rgba32>(compositedPath))
+            using (var expected = TestRenderHelper.LoadImage(expectedPath))
+            using (var immediate = skipImmediate ? null: TestRenderHelper.LoadImage(immediatePath))
+            using (var composited = skipCompositor ? null : TestRenderHelper.LoadImage(compositedPath))
             {
                 if (!skipImmediate)
                 {
