@@ -86,45 +86,43 @@ namespace Avalonia.Media
             /// Coefficients for error estimation while using quadratic Bezier curves for approximation,
             /// 0 ≤ b/a ≤ 0.25
             /// </summary>
-            private static readonly double[][][] Coeffs2Low =
+            private static readonly double[][][] Coeffs2Low = {
+            new[]
             {
-                new[]
-                {
-                    new[] {3.92478, -13.5822, -0.233377, 0.0128206},
-                    new[] {-1.08814, 0.859987, 3.62265E-4, 2.29036E-4},
-                    new[] {-0.942512, 0.390456, 0.0080909, 0.00723895},
-                    new[] {-0.736228, 0.20998, 0.0129867, 0.0103456}
-                },
-                new[]
-                {
-                    new[] {-0.395018, 6.82464, 0.0995293, 0.0122198},
-                    new[] {-0.545608, 0.0774863, 0.0267327, 0.0132482},
-                    new[] {0.0534754, -0.0884167, 0.012595, 0.0343396},
-                    new[] {0.209052, -0.0599987, -0.00723897, 0.00789976}
-                }
-            };
+                new[] {3.92478, -13.5822, -0.233377, 0.0128206},
+                new[] {-1.08814, 0.859987, 3.62265E-4, 2.29036E-4},
+                new[] {-0.942512, 0.390456, 0.0080909, 0.00723895},
+                new[] {-0.736228, 0.20998, 0.0129867, 0.0103456}
+            },
+            new[]
+            {
+                new[] {-0.395018, 6.82464, 0.0995293, 0.0122198},
+                new[] {-0.545608, 0.0774863, 0.0267327, 0.0132482},
+                new[] {0.0534754, -0.0884167, 0.012595, 0.0343396},
+                new[] {0.209052, -0.0599987, -0.00723897, 0.00789976}
+            }
+        };
 
             /// <summary>
             /// Coefficients for error estimation while using quadratic Bezier curves for approximation,
             /// 0.25 ≤ b/a ≤ 1
             /// </summary>
-            private static readonly double[][][] Coeffs2High =
+            private static readonly double[][][] Coeffs2High = {
+            new[]
             {
-                new[]
-                {
-                    new[] {0.0863805, -11.5595, -2.68765, 0.181224},
-                    new[] {0.242856, -1.81073, 1.56876, 1.68544},
-                    new[] {0.233337, -0.455621, 0.222856, 0.403469},
-                    new[] {0.0612978, -0.104879, 0.0446799, 0.00867312}
-                },
-                new[]
-                {
-                    new[] {0.028973, 6.68407, 0.171472, 0.0211706},
-                    new[] {0.0307674, -0.0517815, 0.0216803, -0.0749348},
-                    new[] {-0.0471179, 0.1288, -0.0781702, 2.0},
-                    new[] {-0.0309683, 0.0531557, -0.0227191, 0.0434511}
-                }
-            };
+                new[] {0.0863805, -11.5595, -2.68765, 0.181224},
+                new[] {0.242856, -1.81073, 1.56876, 1.68544},
+                new[] {0.233337, -0.455621, 0.222856, 0.403469},
+                new[] {0.0612978, -0.104879, 0.0446799, 0.00867312}
+            },
+            new[]
+            {
+                new[] {0.028973, 6.68407, 0.171472, 0.0211706},
+                new[] {0.0307674, -0.0517815, 0.0216803, -0.0749348},
+                new[] {-0.0471179, 0.1288, -0.0781702, 2.0},
+                new[] {-0.0309683, 0.0531557, -0.0227191, 0.0434511}
+            }
+        };
 
             /// <summary>
             /// Safety factor to convert the "best" error approximation into a "max bound" error
@@ -135,46 +133,43 @@ namespace Avalonia.Media
             /// Coefficients for error estimation while using cubic Bezier curves for approximation,
             /// 0.25 ≤ b/a ≤ 1
             /// </summary>
-            private static readonly double[][][] Coeffs3Low =
+            private static readonly double[][][] Coeffs3Low = {
+            new[]
             {
-                new[]
-                {
-                    new[] {3.85268, -21.229, -0.330434, 0.0127842},
-                    new[] {-1.61486, 0.706564, 0.225945, 0.263682},
-                    new[] {-0.910164, 0.388383, 0.00551445, 0.00671814},
-                    new[] {-0.630184, 0.192402, 0.0098871, 0.0102527}
-                },
-                new[]
-                {
-                    new[] {-0.162211, 9.94329, 0.13723, 0.0124084},
-                    new[] {-0.253135, 0.00187735, 0.0230286, 0.01264},
-                    new[] {-0.0695069, -0.0437594, 0.0120636, 0.0163087},
-                    new[] {-0.0328856, -0.00926032, -0.00173573, 0.00527385}
-                }
-            };
+                new[] {3.85268, -21.229, -0.330434, 0.0127842},
+                new[] {-1.61486, 0.706564, 0.225945, 0.263682},
+                new[] {-0.910164, 0.388383, 0.00551445, 0.00671814},
+                new[] {-0.630184, 0.192402, 0.0098871, 0.0102527}
+            },
+            new[]
+            {
+                new[] {-0.162211, 9.94329, 0.13723, 0.0124084},
+                new[] {-0.253135, 0.00187735, 0.0230286, 0.01264},
+                new[] {-0.0695069, -0.0437594, 0.0120636, 0.0163087},
+                new[] {-0.0328856, -0.00926032, -0.00173573, 0.00527385}
+            }
+        };
 
             /// <summary>
             /// Coefficients for error estimation while using cubic Bezier curves for approximation,
             /// 0.25 ≤ b/a ≤ 1
             /// </summary>
-            private static readonly double[][][] Coeffs3High =
+            private static readonly double[][][] Coeffs3High = {
+            new[]
             {
-                new[]
-                {
-                    new[] {0.0899116, -19.2349, -4.11711, 0.183362},
-                    new[] {0.138148, -1.45804, 1.32044, 1.38474},
-                    new[] {0.230903, -0.450262, 0.219963, 0.414038},
-                    new[] {0.0590565, -0.101062, 0.0430592, 0.0204699}
-                },
-                new[]
-                {
-                    new[] {0.0164649, 9.89394, 0.0919496, 0.00760802},
-                    new[] {0.0191603, -0.0322058, 0.0134667, -0.0825018},
-                    new[] {0.0156192, -0.017535, 0.00326508, -0.228157},
-                    new[] {-0.0236752, 0.0405821, -0.0173086, 0.176187}
-                }
-            };
-
+                new[] {0.0899116, -19.2349, -4.11711, 0.183362},
+                new[] {0.138148, -1.45804, 1.32044, 1.38474},
+                new[] {0.230903, -0.450262, 0.219963, 0.414038},
+                new[] {0.0590565, -0.101062, 0.0430592, 0.0204699}
+            },
+            new[]
+            {
+                new[] {0.0164649, 9.89394, 0.0919496, 0.00760802},
+                new[] {0.0191603, -0.0322058, 0.0134667, -0.0825018},
+                new[] {0.0156192, -0.017535, 0.00326508, -0.228157},
+                new[] {-0.0236752, 0.0405821, -0.0173086, 0.176187}
+            }
+        };
             /// <summary>
             /// Safety factor to convert the "best" error approximation into a "max bound" error
             /// </summary>
@@ -291,7 +286,6 @@ namespace Avalonia.Media
             /// Indicator used for an early escape in intersection test
             /// </summary>
             internal double G;
-
             /// <summary>
             /// Indicator used for an early escape in intersection test
             /// </summary>
@@ -338,7 +332,6 @@ namespace Avalonia.Media
                     lambda2, isPieSlice)
             {
             }
-
             /// <summary>
             /// Builds an elliptical arc from its canonical geometrical elements
             /// </summary>
@@ -378,7 +371,6 @@ namespace Avalonia.Media
                 ComputeBounds();
                 ComputeDerivedFlatnessParameters();
             }
-
             /// <summary>
             /// Build a full ellipse from its canonical geometrical elements
             /// </summary>
