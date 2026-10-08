@@ -4,6 +4,7 @@
     <EnableNETAnalyzers>false</EnableNETAnalyzers>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
+    <IsShipping>false</IsShipping>
   </PropertyGroup>
 
   <ItemGroup>
