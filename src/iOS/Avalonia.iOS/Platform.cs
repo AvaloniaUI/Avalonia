@@ -43,6 +43,16 @@ namespace Avalonia
         {
             iOSRenderingMode.Metal, iOSRenderingMode.OpenGl
         };
+
+        /// <summary>
+        /// Gets or sets whether rendering follows the display refresh rate, up to 120 Hz on ProMotion displays.
+        /// The default value is true.
+        /// </summary>
+        /// <remarks>
+        /// On iPhone, rates above 60 Hz also need CADisableMinimumFrameDurationOnPhone set to true in the app's Info.plist.
+        /// Set this to false to keep the system's default rate, for example if the app can't sustain high frame rates.
+        /// </remarks>
+        public bool EnableHighRefreshRate { get; set; } = true;
     }
 
     public static class IOSApplicationExtensions
