@@ -6,9 +6,8 @@ using Avalonia.Controls;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Interactions;
-using SixLabors.ImageSharp.PixelFormats;
+using SkiaSharp;
 using Xunit;
-using Xunit.Sdk;
 
 namespace Avalonia.IntegrationTests.Appium
 {
@@ -222,12 +221,12 @@ namespace Avalonia.IntegrationTests.Appium
 
             window.Click();
 
-            var img = SixLabors.ImageSharp.Image.Load<Rgba32>(screenshot.AsByteArray);
-            var topLeftColor = img[10, 10];
-            var centerColor = img[img.Width / 2, img.Height / 2];
+            using var img = SKBitmap.Decode(screenshot.AsByteArray);
+            var topLeftColor = img.GetPixel(10, 10);
+            var centerColor = img.GetPixel(img.Width / 2, img.Height / 2);
 
-            Assert.Equal(new Rgba32(0, 128, 0), topLeftColor);
-            Assert.Equal(new Rgba32(255, 0, 0), centerColor);
+            Assert.Equal(new SKColor(0, 128, 0), topLeftColor);
+            Assert.Equal(new SKColor(255, 0, 0), centerColor);
         }
 
         [Fact]
@@ -243,12 +242,12 @@ namespace Avalonia.IntegrationTests.Appium
 
             window.Click();
 
-            var img = SixLabors.ImageSharp.Image.Load<Rgba32>(screenshot.AsByteArray);
-            var topLeftColor = img[10, 10];
-            var centerColor = img[img.Width / 2, img.Height / 2];
+            using var img = SKBitmap.Decode(screenshot.AsByteArray);
+            var topLeftColor = img.GetPixel(10, 10);
+            var centerColor = img.GetPixel(img.Width / 2, img.Height / 2);
 
-            Assert.Equal(new Rgba32(0, 128, 0), topLeftColor);
-            Assert.Equal(new Rgba32(255, 0, 0), centerColor);
+            Assert.Equal(new SKColor(0, 128, 0), topLeftColor);
+            Assert.Equal(new SKColor(255, 0, 0), centerColor);
         }
 
         [PlatformFact(TestPlatforms.Windows)]
