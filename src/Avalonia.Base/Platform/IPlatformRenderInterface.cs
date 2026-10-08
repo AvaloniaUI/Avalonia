@@ -38,10 +38,14 @@ namespace Avalonia.Platform
         IGeometryImpl CreateRectangleGeometry(Rect rect);
 
         /// <summary>
-        /// Creates a stream geometry implementation.
+        /// Creates a builder used to define a stream geometry.
         /// </summary>
-        /// <returns>An <see cref="IStreamGeometryImpl"/>.</returns>
-        IStreamGeometryImpl CreateStreamGeometry();
+        /// <param name="source">
+        /// A geometry created by this render interface whose figures the new geometry starts with,
+        /// or null to start with an empty geometry. <paramref name="source"/> itself isn't modified.
+        /// </param>
+        /// <returns>An <see cref="IStreamGeometryBuilder"/> used to build a geometry.</returns>
+        IStreamGeometryBuilder CreateStreamGeometryBuilder(IGeometryImpl? source = null);
 
         /// <summary>
         /// Creates a geometry group implementation.

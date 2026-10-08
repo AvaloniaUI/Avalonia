@@ -13,8 +13,7 @@ namespace Avalonia.Media
     /// </remarks>
     public class StreamGeometryContext : IGeometryContext
     {
-        private readonly IGeometryContext _impl;
-        private readonly Action? _onDispose;
+        private readonly IGeometryContext _context;
 
         private Point _currentPoint;
 
@@ -22,15 +21,15 @@ namespace Avalonia.Media
         /// Initializes a new instance of the <see cref="StreamGeometryContext"/> class.
         /// </summary>
         /// <param name="impl">The platform-specific implementation.</param>
+        [Obsolete($"Use {nameof(StreamGeometry)}.{nameof(StreamGeometry.Open)} instead.")]
         public StreamGeometryContext(IStreamGeometryContextImpl impl)
-            : this(impl, null)
         {
+            _context = impl;
         }
 
-        internal StreamGeometryContext(IGeometryContext impl, Action? onDispose = null)
+        internal StreamGeometryContext(IGeometryContext context)
         {
-            _impl = impl;
-            _onDispose = onDispose;
+            _context = context;
         }
 
         /// <summary>
@@ -39,13 +38,13 @@ namespace Avalonia.Media
         /// <param name="fillRule"></param>
         public void SetFillRule(FillRule fillRule)
         {
-            _impl.SetFillRule(fillRule);
+            _context.SetFillRule(fillRule);
         }
 
         /// <inheritdoc />
         public void ArcTo(Point point, Size size, double rotationAngle, bool isLargeArc, SweepDirection sweepDirection, bool isStroked = true)
         {
-            _impl.ArcTo(point, size, rotationAngle, isLargeArc, sweepDirection, isStroked);
+            _context.ArcTo(point, size, rotationAngle, isLargeArc, sweepDirection, isStroked);
             _currentPoint = point;
         }
 
@@ -62,35 +61,35 @@ namespace Avalonia.Media
         /// <inheritdoc/>
         public void BeginFigure(Point startPoint, bool isFilled = true)
         {
-            _impl.BeginFigure(startPoint, isFilled);
+            _context.BeginFigure(startPoint, isFilled);
             _currentPoint = startPoint;
         }
 
         /// <inheritdoc/>
         public void CubicBezierTo(Point controlPoint1, Point controlPoint2, Point endPoint, bool isStroked = true)
         {
-            _impl.CubicBezierTo(controlPoint1, controlPoint2, endPoint, isStroked);
+            _context.CubicBezierTo(controlPoint1, controlPoint2, endPoint, isStroked);
             _currentPoint = endPoint;
         }
 
         /// <inheritdoc/>
         public void QuadraticBezierTo(Point controlPoint, Point endPoint, bool isStroked = true)
         {
-            _impl.QuadraticBezierTo(controlPoint, endPoint, isStroked);
+            _context.QuadraticBezierTo(controlPoint, endPoint, isStroked);
             _currentPoint = endPoint;
         }
 
         /// <inheritdoc/>
         public void LineTo(Point point, bool isStroked = true)
         {
-            _impl.LineTo(point, isStroked);
+            _context.LineTo(point, isStroked);
             _currentPoint = point;
         }
 
         /// <inheritdoc/>
         public void EndFigure(bool isClosed)
         {
-            _impl.EndFigure(isClosed);
+            _context.EndFigure(isClosed);
         }
 
         /// <summary>
@@ -98,8 +97,7 @@ namespace Avalonia.Media
         /// </summary>
         public void Dispose()
         {
-            _impl.Dispose();
-            _onDispose?.Invoke();
+            _context.Dispose();
         }
     }
 }

@@ -1,8 +1,10 @@
+using Avalonia.Platform;
+
 namespace Avalonia.Media
 {
     public abstract class PathSegment : AvaloniaObject
     {
-        internal abstract void ApplyTo(StreamGeometryContext ctx);
+        internal abstract void ApplyTo(IGeometryContext ctx);
 
         public static readonly StyledProperty<bool> IsStrokedProperty =
             AvaloniaProperty.Register<PathSegment, bool>(nameof(IsStroked), true);
