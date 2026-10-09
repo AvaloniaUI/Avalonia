@@ -1,0 +1,18 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             xmlns:viewModels="using:ControlCatalog.ViewModels"
+             x:DataType="viewModels:CompositionAnimationViewModel"
+             x:Class="ControlCatalog.Pages.Composition.ExplicitAnimationsPage">
+  <DockPanel>
+    <Button
+      Margin="10"
+      Click="Button_Click"
+      DockPanel.Dock="Top">
+      Thread.Sleep(2000);
+    </Button>
+    <Control x:Name="SolidVisualHost" />
+  </DockPanel>
+</UserControl>

@@ -32,6 +32,7 @@
     <ProjectReference Include="..\MiniMvvm\MiniMvvm.csproj" />
   </ItemGroup>
 
+
   <Import Project="..\..\build\BuildTargets.targets" />
   <Import Project="..\..\build\SourceGenerators.props" />
   <Import Project="..\..\build\SkiaSharp.props" />
