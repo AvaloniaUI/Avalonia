@@ -10,7 +10,7 @@ namespace Avalonia.Controls.Platform;
 public class ManagedDispatcherImpl : IControlledDispatcherImpl, IDispatcherImplWithExplicitBackgroundProcessing
 {
     private readonly IManagedDispatcherInputProvider? _inputProvider;
-    private readonly AutoResetEvent _wakeup = new(false);
+    private readonly IWakeupEvent _wakeup;
     private bool _signaled;
     private readonly object _lock = new();
     private readonly Stopwatch _clock = Stopwatch.StartNew();
@@ -24,10 +24,50 @@ public class ManagedDispatcherImpl : IControlledDispatcherImpl, IDispatcherImplW
         void DispatchNextInputEvent();
     }
 
+    /// <summary>
+    /// Auto-reset wake-up primitive the loop blocks on. <see cref="Set"/> may be called from any thread,
+    /// <see cref="Wait"/> only from the loop thread.
+    /// </summary>
+    public interface IWakeupEvent
+    {
+        void Set();
+        void Wait(TimeSpan? timeout);
+    }
+
+    private sealed class AutoResetWakeupEvent : IWakeupEvent
+    {
+        private readonly AutoResetEvent _event = new(false);
+        public void Set() => _event.Set();
+        public void Wait(TimeSpan? timeout)
+        {
+            if (timeout.HasValue)
+                _event.WaitOne(timeout.Value);
+            else
+                _event.WaitOne();
+        }
+    }
+
     public ManagedDispatcherImpl(IManagedDispatcherInputProvider? inputProvider)
+        : this(inputProvider, new AutoResetWakeupEvent())
+    {
+    }
+
+    public ManagedDispatcherImpl(IManagedDispatcherInputProvider? inputProvider, IWakeupEvent wakeupEvent)
     {
         _inputProvider = inputProvider;
+        _wakeup = wakeupEvent;
     }
+
+    /// <summary>
+    /// Raised on the loop thread right before it blocks on the wake-up event because it found nothing to do.
+    /// </summary>
+    public event Action? BeforeWait;
+
+    /// <summary>
+    /// Raised on the loop thread right after the wake-up event returns, before the loop re-examines its state.
+    /// Also raised after a timed-out wait. Handlers are expected to enqueue dispatcher operations, not run work.
+    /// </summary>
+    public event Action? AfterWakeup;
 
     public bool CurrentThreadIsLoopThread => _loopThread == Thread.CurrentThread;
     public void Signal()
@@ -135,15 +175,17 @@ public class ManagedDispatcherImpl : IControlledDispatcherImpl, IDispatcherImplW
                 nextTimer = _nextTimer;
             }
 
+            TimeSpan? waitFor = null;
             if (nextTimer != null)
             {
-                var waitFor = nextTimer.Value - _clock.Elapsed;
-                if (waitFor.TotalMilliseconds < 1)
+                waitFor = nextTimer.Value - _clock.Elapsed;
+                if (waitFor.Value.TotalMilliseconds < 1)
                     continue;
-                _wakeup.WaitOne(waitFor);
             }
-            else
-                _wakeup.WaitOne();
+
+            BeforeWait?.Invoke();
+            _wakeup.Wait(waitFor);
+            AfterWakeup?.Invoke();
         }
 
         registration.Dispose();

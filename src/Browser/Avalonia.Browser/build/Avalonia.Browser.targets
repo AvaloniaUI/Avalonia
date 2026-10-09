@@ -4,6 +4,11 @@
     <WasmBuildNative Condition="'$(WasmBuildNative)' == ''">true</WasmBuildNative>
   </PropertyGroup>
 
+  <!-- Wake-up primitive for the multithreaded dispatcher, see BrowserAtomicsWakeupEvent -->
+  <ItemGroup Condition="'$(WasmEnableThreads)' == 'true'">
+    <NativeFileReference Include="$(MSBuildThisFileDirectory)../native/avalonia_browser_dispatcher.c" />
+  </ItemGroup>
+
   <ItemGroup>
     <!-- So we can access Emscripten APIs -->
     <EmccExportedRuntimeMethod Include="GL" />
