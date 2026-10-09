@@ -120,11 +120,14 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 
         public void OnEvent(object? sender, WeakEvent ev, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == _property.Name || string.IsNullOrEmpty(e.PropertyName))
+            if (e.PropertyName == _property.Name || string.IsNullOrEmpty(e.PropertyName) ||
+                (ListensForIndexerNames && CommonPropertyNames.IsIndexerChange(e.PropertyName)))
             {
                 SendCurrentValue();
             }
         }
+
+        protected virtual bool ListensForIndexerNames => _property.Name == CommonPropertyNames.IndexerName;
 
         protected override void SubscribeCore()
         {
@@ -170,6 +173,8 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
             _index = argument;
         }
 
+        protected override bool ListensForIndexerNames =>
+            !(_reference.TryGetTarget(out var o) && o is INotifyCollectionChanged);
 
         protected override void SubscribeCore()
         {
