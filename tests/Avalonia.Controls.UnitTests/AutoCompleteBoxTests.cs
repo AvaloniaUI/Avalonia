@@ -410,6 +410,88 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Does_Not_Throw_When_ItemsSource_Is_Cleared_And_Refilled_After_Selection()
+        {
+            // Reproduces https://github.com/AvaloniaUI/Avalonia/issues/6128:
+            // an async search pattern clears and refills the ItemsSource
+            // (FoundItems.Clear(); FoundItems.AddRange(items);) while a selection
+            // is still held. Selecting an item afterwards must not throw
+            // ArgumentOutOfRangeException from SelectedItems enumeration.
+            RunTest((control, textbox) =>
+            {
+                var items = new ObservableCollection<string>(CreateSimpleStringArray());
+                control.ItemsSource = items;
+                control.FilterMode = AutoCompleteFilterMode.None;
+
+                // Open the drop-down and select an item (as a pointer click would).
+                textbox.Text = "a";
+                Dispatcher.UIThread.RunJobs();
+                Assert.True(control.IsDropDownOpen);
+                control.SelectedItem = "able";
+                Dispatcher.UIThread.RunJobs();
+
+                // Simulate the async search result arriving.
+                items.Clear();
+                foreach (var item in new[] { "new1", "new2", "new3" })
+                {
+                    items.Add(item);
+                }
+                Dispatcher.UIThread.RunJobs();
+
+                // Re-open the drop-down and select again; this goes through
+                // CloseDropDown -> adapter.SelectedItem -> SelectingItemsControl
+                // -> SelectionModel.CommitOperation -> SelectionChanged, where
+                // SelectedItems is enumerated.
+                textbox.Text = "n";
+                Dispatcher.UIThread.RunJobs();
+                Assert.True(control.IsDropDownOpen);
+                control.SelectedItem = "new2";
+                Dispatcher.UIThread.RunJobs();
+
+                Assert.Equal("new2", control.SelectedItem);
+            });
+        }
+
+        [Fact]
+        public void Does_Not_Throw_When_DropDown_Closes_After_ItemsSource_Was_Cleared_And_Refilled()
+        {
+            // Reproduces the exact stack of https://github.com/AvaloniaUI/Avalonia/issues/6128:
+            // the drop-down is open, the ItemsSource is cleared and refilled by an
+            // async search, and then the drop-down closes. CloseDropDown sets
+            // SelectionAdapter.SelectedItem = null, which commits a deselection on
+            // the inner SelectingItemsControl's SelectionModel and enumerates
+            // Selection.SelectedItems while raising SelectionChanged.
+            RunTest((control, textbox) =>
+            {
+                var items = new ObservableCollection<string>(CreateSimpleStringArray());
+                control.ItemsSource = items;
+                control.FilterMode = AutoCompleteFilterMode.None;
+
+                // Open the drop-down and select an item (as a pointer click would).
+                textbox.Text = "a";
+                Dispatcher.UIThread.RunJobs();
+                Assert.True(control.IsDropDownOpen);
+                control.SelectedItem = "able";
+                Dispatcher.UIThread.RunJobs();
+
+                // Simulate the async search result arriving while the drop-down is open.
+                items.Clear();
+                foreach (var item in new[] { "new1", "new2", "new3" })
+                {
+                    items.Add(item);
+                }
+                Dispatcher.UIThread.RunJobs();
+
+                // Close the drop-down: CloseDropDown -> adapter.SelectedItem = null
+                // -> deselection commit -> SelectionChanged -> SelectedItems enumeration.
+                control.IsDropDownOpen = false;
+                Dispatcher.UIThread.RunJobs();
+
+                Assert.False(control.IsDropDownOpen);
+            });
+        }
+
+        [Fact]
         public void Text_Validation()
         {
             RunTest((control, textbox) =>
