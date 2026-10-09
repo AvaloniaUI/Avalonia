@@ -80,6 +80,9 @@ namespace Avalonia.Controls
         static CalendarDatePicker()
         {
             FocusableProperty.OverrideDefaultValue<CalendarDatePicker>(true);
+
+            // The picker forwards focus to its text box, so as a tab stop it would trap Shift+Tab.
+            IsTabStopProperty.OverrideDefaultValue<CalendarDatePicker>(false);
         }
 
         /// <summary>
@@ -397,7 +400,9 @@ namespace Avalonia.Controls
         {
             base.OnGotFocus(e);
 
-            if (IsEnabled && _textBox != null && ReferenceEquals(e.Source, this))
+            // Only keyboard focus on a closed picker goes to the text box, because that closes the drop-down.
+            if (IsEnabled && _textBox != null && ReferenceEquals(e.Source, this)
+                && e.NavigationMethod != NavigationMethod.Pointer && !IsDropDownOpen)
             {
                 _textBox.Focus(e.NavigationMethod);
 

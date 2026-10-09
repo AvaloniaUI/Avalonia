@@ -14,6 +14,12 @@ namespace Avalonia;
 public class WaylandPlatformOptions
 {
     /// <summary>
+    /// The default AppId for Wayland windows (xdg_toplevel.set_app_id).
+    /// If null, defaults to the entry assembly name.
+    /// </summary>
+    public string? AppId { get; set; }
+
+    /// <summary>
     /// The name of the Wayland display to connect to (e.g. <c>wayland-0</c>). When <c>null</c>,
     /// the <c>WAYLAND_DISPLAY</c> environment variable is used. Ignored when <see cref="DisplayFd"/> is set.
     /// </summary>
@@ -90,4 +96,16 @@ public class WaylandPlatformOptions
     /// Only used when <see cref="UseGLibMainLoop"/> is enabled.
     /// </summary>
     public Action<Exception>? ExternalGLibMainLoopExceptionLogger { get; set; }
+
+    public WaylandPlatformOptions()
+    {
+        try
+        {
+            AppId = System.Reflection.Assembly.GetEntryAssembly()?.GetName().Name;
+        }
+        catch
+        {
+            //
+        }
+    }
 }

@@ -296,7 +296,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
                 window.Content = target;
                 window.ApplyTemplate();
-                
+
                 int closedCount = 0;
 
                 target.Closed += (sender, args) =>
@@ -561,7 +561,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Assert.False(beginCalled);
             }
         }
-        
+
         [Fact]
         public void Popup_Host_Type_Should_Match_Platform_Preference()
         {
@@ -595,8 +595,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 window.ApplyStyling();
                 window.ApplyTemplate();
 
-                var target = new Popup() 
-                { 
+                var target = new Popup()
+                {
                     PlacementTarget = window ,
                     IsLightDismissEnabled = true,
                     OverlayDismissEventPassThrough = true,
@@ -670,7 +670,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     OverlayPopupHost overlayPopupHost => overlayPopupHost.Tests_KeyboardNavigationHandler,
                     _ => throw new InvalidOperationException("Unknown popup host type")
                 };
-                
+
                 handler.Move(focusManager.GetFocusedElement()!, NavigationDirection.Next);
 #pragma warning restore CS0618 // Type or member is obsolete
                 Assert.Same(textBox, focusManager.GetFocusedElement());
@@ -760,6 +760,46 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Assert.NotNull(focusManager);
                 var focus = focusManager.GetFocusedElement();
                 Assert.Same(window, focus);
+            }
+        }
+
+        [Fact]
+        public void Closing_Popup_Clears_Focus_When_Previously_Focused_Element_Is_Disabled()
+        {
+            using (CreateServicesWithFocus())
+            {
+                var target = new Button();
+                var otherButton = new Button();
+                var popupButton = new Button();
+                var popup = new Popup
+                {
+                    PlacementTarget = target,
+                    Child = popupButton
+                };
+
+                var window = PreparedWindow(new StackPanel { Children = { target, otherButton, popup } });
+
+                target.Focus();
+                popup.Open();
+
+                if (popup.Host is OverlayPopupHost host)
+                {
+                    host.Measure(Size.Infinity);
+                    host.Arrange(new Rect(host.DesiredSize));
+                }
+
+                Assert.True(popupButton.Focus());
+
+                target.IsEnabled = false;
+
+                popup.Close();
+
+                Assert.False(popupButton.IsFocused);
+                Assert.Null(KeyboardDevice.Instance!.FocusedElement);
+                Assert.Null(window.FocusManager.GetFocusedElement());
+
+                Assert.True(otherButton.Focus());
+                Assert.Same(otherButton, KeyboardDevice.Instance.FocusedElement);
             }
         }
 
@@ -1095,18 +1135,18 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var childPopup = new Popup() {
                     Width = 20,
                     Height = 20,
-                    PlacementTarget = parentPopup, 
+                    PlacementTarget = parentPopup,
                     Placement = PlacementMode.AnchorAndGravity,
                     PlacementAnchor = PopupAnchor.TopLeft,
                     PlacementGravity = PopupGravity.BottomRight
                 };
                 ((ISetLogicalParent)childPopup).SetParent(childPopup.PlacementTarget);
-                
+
                 var window = PreparedWindow(parentPopup);
                 window.Show();
                 parentPopup.Open();
                 childPopup.Open();
-                
+
                 if (childPopup.Host is PopupRoot popupRoot)
                 {
                     var raised = false;
@@ -1122,7 +1162,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     window.Position = new PixelPoint(10, 10);
                     Assert.True(raised);
                 }
-            }            
+            }
         }
 
         [Fact]
@@ -1180,7 +1220,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             // The popup's bounds will now include the child's margin, but the positioning system should have substracted this
             // to keep the child's bounds stable. Thus the popup as a whole should have moved upwards and to the left.
             var expected = initialPosition - new Point(ChildMarginLength, ChildMarginLength);
-            
+
             Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
             Assert.Equal(expected, GetPopupPosition());
         }
@@ -1255,7 +1295,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     Assert.Equal(new Point(50, 50), e.GetPosition(popupContent));
                 });
 
-                // The event is raised on the parent in root coordinates (which in this case are 
+                // The event is raised on the parent in root coordinates (which in this case are
                 // the same as screen coordinates).
                 popupParent.AddHandler(Button.PointerPressedEvent, (s, e) =>
                 {
@@ -1451,7 +1491,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Assert.Equal(true, target.IsUsingOverlayLayer);
             }
         }
-        
+
         [Fact]
         public void Closing_Previous_Light_Dismiss_Popup_Should_Not_Affect_Overlay_For_Next_Popup()
         {
@@ -1604,7 +1644,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 keyboardNavigation: () => new KeyboardNavigationHandler()));
         }
 
-       
+
         private static PointerPressedEventArgs CreatePointerPressedEventArgs(Window source, Point p)
         {
             var pointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);
@@ -1623,7 +1663,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             return new MockWindowingPlatform(() =>
             {
                 var mock = MockWindowingPlatform.CreateWindowMock();
-                
+
                 mock.Setup(x => x.CreatePopup()).Returns(() =>
                 {
                     if (UsePopupHost)

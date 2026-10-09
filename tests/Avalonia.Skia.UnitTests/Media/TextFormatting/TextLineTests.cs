@@ -888,24 +888,67 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
-        [Fact]
-        public void Should_Throw_ArgumentOutOfRangeException_For_Zero_TextLength()
+        [Theory]
+        [InlineData("abc", 0, 0)]
+        [InlineData("abc", 0, 1)]
+        [InlineData("abc", 0, 3)]
+        [InlineData("a\r\nb\r\n", 0, 2)]
+        [InlineData("a\r\nb\r\n", 0, 3)]
+        [InlineData("a\r\nb\r\n", 3, 3)]
+        [InlineData("a\r\nb\r\n", 3, 6)]
+        [InlineData("\r\n", 0, 0)]
+        public void Should_GetTextBounds_For_Zero_TextLength(string text, int lineStart, int rangeStart)
         {
             using (Start())
             {
-                var typeface = Typeface.Default;
-
-                var defaultProperties = new GenericTextRunProperties(typeface);
-                var textSource = new CustomTextBufferTextSource(new TextCharacters("1234", defaultProperties));
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+                var textSource = new SingleBufferTextSource(text, defaultProperties);
                 var formatter = new TextFormatterImpl();
 
-                var textLine =
-                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                using var textLine =
+                    formatter.FormatLine(textSource, lineStart, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(defaultProperties));
+
+                Assert.NotNull(textLine);
+                Assert.Equal(lineStart, textLine.FirstTextSourceIndex);
+
+                Assert.Empty(textLine.GetTextBounds(rangeStart, 0));
+            }
+        }
+
+        [Theory]
+        [InlineData("abc", 0, 0, 3)]
+        [InlineData("abc", 0, 1, 1)]
+        [InlineData("a\r\nb\r\n", 3, 3, 1)]
+        public void Should_GetTextBounds_For_Non_Empty_TextLength(
+            string text, int lineStart, int rangeStart, int rangeLength)
+        {
+            using (Start())
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+                var textSource = new SingleBufferTextSource(text, defaultProperties);
+                var formatter = new TextFormatterImpl();
+
+                using var textLine =
+                    formatter.FormatLine(textSource, lineStart, double.PositiveInfinity,
                         new GenericTextParagraphProperties(defaultProperties));
 
                 Assert.NotNull(textLine);
 
-                Assert.Throws<ArgumentOutOfRangeException>(() => textLine.GetTextBounds(0, 0));
+                var bounds = Assert.Single(textLine.GetTextBounds(rangeStart, rangeLength));
+                var start = textLine.GetDistanceFromCharacterHit(new CharacterHit(rangeStart));
+                var end = textLine.GetDistanceFromCharacterHit(new CharacterHit(rangeStart + rangeLength));
+
+                Assert.Equal(start, bounds.Rectangle.Left, 3);
+                Assert.Equal(end - start, bounds.Rectangle.Width, 3);
+                Assert.Equal(0, bounds.Rectangle.Top);
+                Assert.Equal(textLine.Height, bounds.Rectangle.Height);
+                Assert.Equal(FlowDirection.LeftToRight, bounds.FlowDirection);
+
+                var runBounds = Assert.Single(bounds.TextRunBounds);
+
+                Assert.Equal(rangeStart, runBounds.TextSourceCharacterIndex);
+                Assert.Equal(rangeLength, runBounds.Length);
             }
         }
 

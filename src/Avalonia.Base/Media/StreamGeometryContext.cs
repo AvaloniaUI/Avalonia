@@ -1,3 +1,4 @@
+using System;
 using Avalonia.Platform;
 
 namespace Avalonia.Media
@@ -12,7 +13,8 @@ namespace Avalonia.Media
     /// </remarks>
     public class StreamGeometryContext : IGeometryContext
     {
-        private readonly IStreamGeometryContextImpl _impl;
+        private readonly IGeometryContext _impl;
+        private readonly Action? _onDispose;
 
         private Point _currentPoint;
 
@@ -21,8 +23,14 @@ namespace Avalonia.Media
         /// </summary>
         /// <param name="impl">The platform-specific implementation.</param>
         public StreamGeometryContext(IStreamGeometryContextImpl impl)
+            : this(impl, null)
+        {
+        }
+
+        internal StreamGeometryContext(IGeometryContext impl, Action? onDispose = null)
         {
             _impl = impl;
+            _onDispose = onDispose;
         }
 
         /// <summary>
@@ -42,16 +50,10 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Draws an arc to the specified point using polylines, quadratic or cubic Bezier curves
-        /// Significantly more precise when drawing elliptic arcs with extreme width:height ratios.
+        /// Draws an arc to the specified point using polylines, quadratic or cubic Bezier curves.
+        /// This is significantly more precise when drawing elliptic arcs with extreme width:height ratios.
         /// </summary>
-        /// <param name="point">The destination point.</param>
-        /// <param name="size">The radii of an oval whose perimeter is used to draw the angle.</param>
-        /// <param name="rotationAngle">The rotation angle (in radians) of the oval that specifies the curve.</param>
-        /// <param name="isLargeArc">true to draw the arc greater than 180 degrees; otherwise, false.</param>
-        /// <param name="sweepDirection">
-        /// A value that indicates whether the arc is drawn in the Clockwise or Counterclockwise direction.
-        /// </param>
+        /// <inheritdoc cref="ArcTo"/>
         public void PreciseArcTo(Point point, Size size, double rotationAngle, bool isLargeArc, SweepDirection sweepDirection)
         {
             PreciseEllipticArcHelper.ArcTo(this, _currentPoint, point, size, rotationAngle, isLargeArc, sweepDirection);
@@ -97,6 +99,7 @@ namespace Avalonia.Media
         public void Dispose()
         {
             _impl.Dispose();
+            _onDispose?.Invoke();
         }
     }
 }

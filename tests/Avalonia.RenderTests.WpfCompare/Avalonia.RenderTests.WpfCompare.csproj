@@ -17,7 +17,6 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Moq" />
-    <PackageReference Include="SixLabors.ImageSharp" />
     <PackageReference Include="System.Reactive" />
     <PackageReference Include="Xunit.StaFact" />
   </ItemGroup>
