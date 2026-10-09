@@ -117,13 +117,11 @@ namespace Avalonia.X11
 
             try
             {
-                var server = new AtSpiServer();
-                await server.StartAsync();
-
-                // Publish the server and register the tracked windows on the UI thread.
-                // Peers need UI thread access, and window tracking only happens there.
-                await Dispatcher.UIThread.InvokeAsync(() =>
+                // Server startup and peer access require the UI thread.
+                await Dispatcher.UIThread.InvokeAsync(async () =>
                 {
+                    var server = new AtSpiServer();
+                    await server.StartAsync();
                     _server = server;
                     foreach (var window in _trackedWindows)
                     {
