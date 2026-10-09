@@ -13,10 +13,10 @@ namespace Avalonia.Media
         /// </summary>
         /// <remarks>
         /// The default implementation returns <c>default</c>. Shaper implementations
-        /// that support variation (e.g. HarfBuzz via <c>Font.SetVariationCoordsNormalized</c>)
-        /// override this property alongside <see cref="WithVariation"/> to
-        /// report whatever variation coordinates are configured on the underlying
-        /// shaping font. The member is <c>internal</c> because it traffics in normalized
+        /// that support variation (the HarfBuzz shaper, through
+        /// <c>hb_font_set_var_coords_normalized</c>) override this property alongside
+        /// <see cref="WithVariation"/> to report the variation coordinates configured on
+        /// the underlying shaping font. The member is <c>internal</c> because it traffics in normalized
         /// (font-relative) coordinates — only Avalonia's own shaper backends implement
         /// it; user code speaks user-space <see cref="FontVariationSettings"/> at the
         /// <see cref="GlyphTypeface"/> layer.
@@ -33,11 +33,16 @@ namespace Avalonia.Media
         /// </param>
         /// <remarks>
         /// <para>
-        /// The default implementation returns <c>this</c> unchanged — the same no-op
-        /// contract used by <see cref="IPlatformTypeface.WithVariation"/>. Shapers
-        /// override this to derive a new shaping font configured for the requested
-        /// variation while sharing face-level state (HarfBuzz <c>hb_face_t</c>, parsed
-        /// shaping tables) with the source.
+        /// The default implementation returns <c>this</c> unchanged, the same contract
+        /// used by <see cref="IPlatformTypeface.WithVariation"/>: a shaper without
+        /// variation support shapes every variation at the default instance. The
+        /// HarfBuzz shaper returns <c>this</c> for its own position and otherwise a new
+        /// instance owning an <c>hb_font_t</c> sub-font with the requested normalized
+        /// coordinates, so shaped advances include HVAR deltas.
+        /// </para>
+        /// <para>
+        /// A distinct returned instance is owned by the caller: disposing it releases only
+        /// its own shaping font, never the face state shared with <c>this</c>.
         /// </para>
         /// <para>
         /// Overrides must share face-level resources between the returned instance and
