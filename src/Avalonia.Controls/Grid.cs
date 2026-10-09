@@ -2133,11 +2133,11 @@ namespace Avalonia.Controls
                 double[] roundingErrors = RoundingErrors;
                 double roundedTakenSize = 0;
 
-                // round each of the allocated sizes, keeping track of the deltas
+                // truncate each of the allocated sizes, keeping track of the deltas
                 for (int i = 0; i < definitions.Count; ++i)
                 {
                     DefinitionBase def = definitions[i];
-                    double roundedSize = LayoutHelper.RoundLayoutValue(def.SizeCache, dpi);
+                    double roundedSize = TruncateLayoutValue(def.SizeCache, dpi);
                     roundingErrors[i] = (roundedSize - def.SizeCache);
                     def.SizeCache = roundedSize;
                     roundedTakenSize += roundedSize;
@@ -2209,7 +2209,7 @@ namespace Avalonia.Controls
                             final = Math.Max(final, definition.MinSizeForArrange);
                             if (final < definition.SizeCache)
                             {
-                                adjustedSize -= dpiIncrement;
+                                adjustedSize = LayoutHelper.RoundLayoutValueUp(adjustedSize - dpiIncrement, dpi);
                             }
                             definition.SizeCache = final;
                             i--;
@@ -2225,7 +2225,7 @@ namespace Avalonia.Controls
                             final = Math.Max(final, definition.MinSizeForArrange);
                             if (final > definition.SizeCache)
                             {
-                                adjustedSize += dpiIncrement;
+                                adjustedSize = LayoutHelper.RoundLayoutValueUp(adjustedSize + dpiIncrement, dpi);
                             }
                             definition.SizeCache = final;
                             i++;
@@ -2288,6 +2288,21 @@ namespace Avalonia.Controls
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Calculates the value to be used for layout rounding at high DPI by truncating the value.
+        /// </summary>
+        /// <param name="value">Input value to be truncated.</param>
+        /// <param name="dpiScale">Ratio of screen's DPI to layout DPI</param>
+        /// <returns>Adjusted value that will produce layout rounding on screen at high dpi.</returns>
+        [SuppressMessage("ReSharper", "CompareOfFloatsByEqualityOperator", Justification = "The DPI scale should have been normalized.")]
+        private static double TruncateLayoutValue(double value, double dpiScale)
+        {
+            // If DPI == 1, don't use DPI-aware rounding.
+            return dpiScale == 1 ?
+                Math.Truncate(value) :
+                Math.Truncate(value * dpiScale) / dpiScale;
         }
 
         /// <summary>
