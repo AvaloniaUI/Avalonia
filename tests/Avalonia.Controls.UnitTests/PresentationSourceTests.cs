@@ -34,6 +34,19 @@ public sealed class PresentationSourceTests : ScopedTestBase
     }
 
     [Fact]
+    public void ChromeHitTest_Should_Return_Null_After_Closing()
+    {
+        using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+        var windowImpl = MockWindowingPlatform.CreateWindowMock();
+        var window = new Window(windowImpl.Object);
+        var inputRoot = (IInputRoot)window.PresentationSource;
+
+        windowImpl.Object.Closed!();
+
+        Assert.Null(inputRoot.HitTestChromeElement(new Point(10, 10)));
+    }
+
+    [Fact]
     public void ChromeHitTest_Prefers_Overlay_Over_Content()
     {
         var overlay = new Border

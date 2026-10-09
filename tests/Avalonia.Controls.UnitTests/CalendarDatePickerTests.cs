@@ -289,6 +289,37 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Pointer_Focus_Should_Not_Move_Focus_To_TextBox()
+        {
+            using (UnitTestApplication.Start(FocusServices))
+            {
+                var datePicker = new CalendarDatePicker { Template = CreateTemplate() };
+                var root = new TestRoot(datePicker);
+                root.LayoutManager.ExecuteInitialLayoutPass();
+
+                datePicker.Focus(NavigationMethod.Pointer);
+
+                Assert.Same(datePicker, root.FocusManager.GetFocusedElement());
+            }
+        }
+
+        [Fact]
+        public void Focus_Should_Not_Close_An_Open_DropDown()
+        {
+            using (UnitTestApplication.Start(FocusServices))
+            {
+                var datePicker = new CalendarDatePicker { Template = CreateTemplate() };
+                var root = new TestRoot(datePicker);
+                root.LayoutManager.ExecuteInitialLayoutPass();
+
+                datePicker.IsDropDownOpen = true;
+                datePicker.Focus();
+
+                Assert.True(datePicker.IsDropDownOpen);
+            }
+        }
+
         private static TestServices FocusServices => TestServices.MockThreadingInterface.With(
             fontManagerImpl: new HeadlessFontManagerStub(),
             standardCursorFactory: Mock.Of<ICursorFactory>(),
