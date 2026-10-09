@@ -401,5 +401,8 @@ internal partial class WindowImpl : WindowBaseImpl, IWindowImpl, IWaylandOptions
     {
         _shadowExtents = extents;
         _surfaceProxy?.SetShadowExtents(extents);
+        InvalidateChildPositions();
     }
+
+    internal override PixelPoint WindowGeometryOrigin => new((int)_shadowExtents.Left, (int)_shadowExtents.Top);
 }
