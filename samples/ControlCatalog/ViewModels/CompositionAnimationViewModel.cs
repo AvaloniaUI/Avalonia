@@ -1,4 +1,5 @@
-﻿using Avalonia.Collections;
+﻿using Avalonia;
+using Avalonia.Collections;
 using Avalonia.Media;
 using ControlCatalog.Models;
 using MiniMvvm;
@@ -7,11 +8,77 @@ namespace ControlCatalog.ViewModels
 {
     internal class CompositionAnimationViewModel : ViewModelBase
     {
+        private const int AnimationPadding = 30;
         public AvaloniaList<CompositionPageColorItem> ColorItems { get; }
+
+        public double ElipseCanvasLeft
+        {
+            get => field;
+            set { RaiseAndSetIfChanged(ref field, value); }
+        }
+
+        public double ElipseCanvasTop
+        {
+            get => field;
+            set { RaiseAndSetIfChanged(ref field, value); }
+        }
+
+        public float ElipseCanvasOpacity
+        {
+            get => field;
+            set { RaiseAndSetIfChanged(ref field, value); }
+        }
+
+        public bool AnimateElipse
+        {
+            get => field;
+            set { RaiseAndSetIfChanged(ref field, value); }
+        } = false;
+
+        public Vector3D AnimationCue1Value { get; } = new Vector3D(AnimationPadding, AnimationPadding, 0);
+
+        public Vector3D AnimationCue2Value
+        {
+            get => field;
+            set { RaiseAndSetIfChanged(ref field, value); }
+        }
+
+        public Vector3D AnimationCue3Value
+        {
+            get => field;
+            set { RaiseAndSetIfChanged(ref field, value); }
+        }
+
+        public Vector3D AnimationCue4Value
+        {
+            get => field;
+            set { RaiseAndSetIfChanged(ref field, value); }
+        }
+
+        public Size ExplicitAnimationCanvasSize
+        {
+            get => field;
+            set { RaiseAndSetIfChanged(ref field, value); }
+        }
 
         public CompositionAnimationViewModel()
         {
             ColorItems = CreateColorItems();
+
+            this.PropertyChanged += CompositionAnimationViewModel_PropertyChanged;
+        }
+
+        private void CompositionAnimationViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(ExplicitAnimationCanvasSize))
+            {
+                if (ExplicitAnimationCanvasSize.Height > 0 && ExplicitAnimationCanvasSize.Width > 0)
+                {
+                    AnimationCue2Value = new Vector3D(ExplicitAnimationCanvasSize.Width - AnimationPadding, AnimationPadding, 0);
+                    AnimationCue3Value = new Vector3D(ExplicitAnimationCanvasSize.Width - AnimationPadding, ExplicitAnimationCanvasSize.Height - AnimationPadding, 0);
+                    AnimationCue4Value = new Vector3D(AnimationPadding, ExplicitAnimationCanvasSize.Height - AnimationPadding, 0);
+                }
+            }
         }
 
         private static AvaloniaList<CompositionPageColorItem> CreateColorItems()

@@ -24,6 +24,10 @@ namespace ControlCatalog.Pages.Composition
             ("Explore", "Brush Animations",
                 "Animate various brushes on the composition thread",
                 () => new BrushAnimationsPage()),
+
+            ("Explore", "Xaml Composition Animations",
+                "Easily attach XAML-based compositions to visual elements.",
+                () => new XamlCompositionAnimationsPage()),
         };
 
         public CompositionHomePage()
