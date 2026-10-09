@@ -1,0 +1,452 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Default">
+      <StaticResource x:Key="TabbedPageBackground" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TabbedPageTabStripBackground" ResourceKey="SolidBackgroundFillColorTransparent" />
+      <StaticResource x:Key="TabbedPageTabStripBorderBrush" ResourceKey="DividerStrokeColorDefault" />
+      <StaticResource x:Key="TabbedPageTabItemBackground" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TabbedPageTabItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondary" />
+      <StaticResource x:Key="TabbedPageTabItemBackgroundPressed" ResourceKey="SubtleFillColorTertiary" />
+      <StaticResource x:Key="TabbedPageTabItemBackgroundDisabled" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TabbedPageTabItemBackgroundSelected" ResourceKey="SubtleFillColorSecondary" />
+      <StaticResource x:Key="TabbedPageTabItemBackgroundSelectedPointerOver" ResourceKey="SubtleFillColorTertiary" />
+      <StaticResource x:Key="TabbedPageTabItemBackgroundSelectedPressed" ResourceKey="SubtleFillColorSecondary" />
+      <StaticResource x:Key="TabbedPageTabItemBackgroundSelectedDisabled" ResourceKey="SubtleFillColorSecondary" />
+      <StaticResource x:Key="TabbedPageTabItemForeground" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TabbedPageTabItemForegroundPointerOver" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TabbedPageTabItemForegroundPressed" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="TabbedPageTabItemForegroundDisabled" ResourceKey="TextFillColorDisabled" />
+      <StaticResource x:Key="TabbedPageTabItemForegroundSelected" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TabbedPageTabItemForegroundSelectedPointerOver" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TabbedPageTabItemForegroundSelectedPressed" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="TabbedPageTabItemForegroundSelectedDisabled" ResourceKey="TextFillColorDisabled" />
+      <StaticResource x:Key="TabbedPageTabItemBorderBrush" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TabbedPageTabItemBorderBrushPointerOver" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TabbedPageTabItemBorderBrushPressed" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TabbedPageTabItemBorderBrushDisabled" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TabbedPageTabItemBorderBrushSelected" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TabbedPageTabItemBorderBrushSelectedPointerOver" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TabbedPageTabItemBorderBrushSelectedPressed" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TabbedPageTabItemBorderBrushSelectedDisabled" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TopTabbedPageTabItemForeground" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TopTabbedPageTabItemForegroundPointerOver" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TopTabbedPageTabItemForegroundPressed" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="TopTabbedPageTabItemForegroundDisabled" ResourceKey="TextFillColorDisabled" />
+      <StaticResource x:Key="TopTabbedPageTabItemForegroundSelected" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TopTabbedPageTabItemForegroundSelectedPointerOver" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TopTabbedPageTabItemForegroundSelectedPressed" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="TopTabbedPageTabItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondary" />
+      <StaticResource x:Key="TopTabbedPageTabItemBackgroundPressed" ResourceKey="SubtleFillColorTertiary" />
+      <StaticResource x:Key="TopTabbedPageTabItemBackgroundSelected" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TopTabbedPageTabItemBackgroundSelectedPointerOver" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TopTabbedPageTabItemBackgroundSelectedPressed" ResourceKey="SubtleFillColorTransparent" />
+    </ResourceDictionary>
+    <ResourceDictionary x:Key="Dark">
+      <StaticResource x:Key="TabbedPageBackground" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TabbedPageTabStripBackground" ResourceKey="SolidBackgroundFillColorTransparent" />
+      <StaticResource x:Key="TabbedPageTabStripBorderBrush" ResourceKey="DividerStrokeColorDefault" />
+      <StaticResource x:Key="TabbedPageTabItemBackground" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TabbedPageTabItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondary" />
+      <StaticResource x:Key="TabbedPageTabItemBackgroundPressed" ResourceKey="SubtleFillColorTertiary" />
+      <StaticResource x:Key="TabbedPageTabItemBackgroundDisabled" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TabbedPageTabItemBackgroundSelected" ResourceKey="SubtleFillColorSecondary" />
+      <StaticResource x:Key="TabbedPageTabItemBackgroundSelectedPointerOver" ResourceKey="SubtleFillColorTertiary" />
+      <StaticResource x:Key="TabbedPageTabItemBackgroundSelectedPressed" ResourceKey="SubtleFillColorSecondary" />
+      <StaticResource x:Key="TabbedPageTabItemBackgroundSelectedDisabled" ResourceKey="SubtleFillColorSecondary" />
+      <StaticResource x:Key="TabbedPageTabItemForeground" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TabbedPageTabItemForegroundPointerOver" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TabbedPageTabItemForegroundPressed" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="TabbedPageTabItemForegroundDisabled" ResourceKey="TextFillColorDisabled" />
+      <StaticResource x:Key="TabbedPageTabItemForegroundSelected" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TabbedPageTabItemForegroundSelectedPointerOver" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TabbedPageTabItemForegroundSelectedPressed" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="TabbedPageTabItemForegroundSelectedDisabled" ResourceKey="TextFillColorDisabled" />
+      <StaticResource x:Key="TabbedPageTabItemBorderBrush" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TabbedPageTabItemBorderBrushPointerOver" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TabbedPageTabItemBorderBrushPressed" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TabbedPageTabItemBorderBrushDisabled" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TabbedPageTabItemBorderBrushSelected" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TabbedPageTabItemBorderBrushSelectedPointerOver" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TabbedPageTabItemBorderBrushSelectedPressed" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TabbedPageTabItemBorderBrushSelectedDisabled" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TopTabbedPageTabItemForeground" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TopTabbedPageTabItemForegroundPointerOver" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TopTabbedPageTabItemForegroundPressed" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="TopTabbedPageTabItemForegroundDisabled" ResourceKey="TextFillColorDisabled" />
+      <StaticResource x:Key="TopTabbedPageTabItemForegroundSelected" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TopTabbedPageTabItemForegroundSelectedPointerOver" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TopTabbedPageTabItemForegroundSelectedPressed" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="TopTabbedPageTabItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondary" />
+      <StaticResource x:Key="TopTabbedPageTabItemBackgroundPressed" ResourceKey="SubtleFillColorTertiary" />
+      <StaticResource x:Key="TopTabbedPageTabItemBackgroundSelected" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TopTabbedPageTabItemBackgroundSelectedPointerOver" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TopTabbedPageTabItemBackgroundSelectedPressed" ResourceKey="SubtleFillColorTransparent" />
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
+  <Design.PreviewWith>
+    <Border Width="400" Height="400">
+      <TabbedPage>
+        <ContentPage Header="Home">
+          <TextBlock Text="Home page" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        </ContentPage>
+        <ContentPage Header="Favorites">
+          <TextBlock Text="Favorites page" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        </ContentPage>
+        <ContentPage Header="Profile">
+          <TextBlock Text="Profile page" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        </ContentPage>
+      </TabbedPage>
+    </Border>
+  </Design.PreviewWith>
+
+  <!-- Backgrounds -->
+  <SolidColorBrush x:Key="TabbedPageTabItemHeaderBackgroundUnselected" Color="Transparent" />
+  <SolidColorBrush x:Key="TabbedPageTabItemHeaderBackgroundSelected" Color="Transparent" />
+  <SolidColorBrush x:Key="TabbedPageTabItemHeaderBackgroundSelectedPointerOver" Color="Transparent" />
+  <SolidColorBrush x:Key="TabbedPageTabItemHeaderBackgroundSelectedPressed" Color="Transparent" />
+  <SolidColorBrush x:Key="TabbedPageTabItemHeaderBackgroundDisabled" Color="Transparent" />
+
+  <!-- Foregrounds (override via TabbedPageTabItemHeaderForegroundSelected / TabbedPageTabItemHeaderForegroundUnselected resources) -->
+  <x:Double x:Key="TabbedPageTabItemHeaderPipeThickness">3</x:Double>
+  <x:Double x:Key="TabbedPageTabItemHeaderVerticalPipeHeight">18</x:Double>
+
+  <CornerRadius x:Key="TabbedPageTabItemHeaderIndicatorCornerRadius">1.5</CornerRadius>
+  <Thickness x:Key="TabbedPageTabItemHeaderIndicatorMargin">0</Thickness>
+
+  <!-- Tab item sizing & shape -->
+  <x:Double x:Key="TabbedPageTabItemHeaderMinHeight">48</x:Double>
+  <CornerRadius x:Key="TabbedPageTabItemHeaderCornerRadius">0</CornerRadius>
+  <Thickness x:Key="TabbedPageTabItemHeaderPadding">8,4</Thickness>
+  <Thickness x:Key="TabbedPageTabItemHeaderMargin">0</Thickness>
+
+  <!-- Icon + text header layout -->
+  <x:Double x:Key="TabbedPageTabItemHeaderIconSize">20</x:Double>
+  <x:Double x:Key="TabbedPageTabItemHeaderFontSize">12</x:Double>
+  <x:Double x:Key="TabbedPageTabItemHeaderSpacing">4</x:Double>
+
+  <!-- Tab strip (bar) styling. Divider edge defaults to the top (Bottom placement);
+  the other placements are corrected via TabStripPlacement styles below. -->
+  <CornerRadius x:Key="TabbedPageTabStripCornerRadius">0</CornerRadius>
+  <Thickness x:Key="TabbedPageTabStripBorderThickness">0,1,0,0</Thickness>
+  <Thickness x:Key="TabbedPageTabStripMargin">0</Thickness>
+  <Thickness x:Key="TabbedPageTabStripPadding">0</Thickness>
+
+  <x:Double x:Key="TabbedPageTabItemSelectionIndicatorHeight">3</x:Double>
+  <x:Double x:Key="TabbedPageTabItemSelectionIndicatorWidth">16</x:Double>
+  <x:Double x:Key="TabbedPageTabItemSelectionIndicatorRadius">2</x:Double>
+
+  <!-- TabbedPage TabControl theme -->
+  <ControlTheme x:Key="TabbedPageTabControlTheme" TargetType="TabControl">
+    <Setter Property="Background" Value="{DynamicResource TabbedPageTabStripBackground}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource TabbedPageTabStripCornerRadius}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource TabbedPageTabStripBorderBrush}" />
+    <Setter Property="BorderThickness" Value="{DynamicResource TabbedPageTabStripBorderThickness}" />
+    <Setter Property="Padding" Value="{DynamicResource TabbedPageTabStripPadding}" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <DockPanel>
+          <Border Name="PART_TabStrip"
+                  Background="{TemplateBinding Background}"
+                  BackgroundSizing="InnerBorderEdge"
+                  CornerRadius="{TemplateBinding CornerRadius}"
+                  BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}"
+                  Margin="{DynamicResource TabbedPageTabStripMargin}"
+                  Padding="{TemplateBinding Padding}"
+                  DockPanel.Dock="{TemplateBinding TabStripPlacement}">
+            <ItemsPresenter Name="PART_ItemsPresenter">
+              <ItemsPresenter.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <UniformGrid Rows="1" />
+                </ItemsPanelTemplate>
+              </ItemsPresenter.ItemsPanel>
+            </ItemsPresenter>
+          </Border>
+          <Panel ClipToBounds="True">
+            <ContentPresenter Name="PART_SelectedContentHost2"
+                              HorizontalContentAlignment="Stretch"
+                              VerticalContentAlignment="Stretch"
+                              IsVisible="False" />
+            <ContentPresenter Name="PART_SelectedContentHost"
+                              HorizontalContentAlignment="Stretch"
+                              VerticalContentAlignment="Stretch" />
+          </Panel>
+        </DockPanel>
+      </ControlTemplate>
+    </Setter>
+
+    <Style Selector="^[TabStripPlacement=Left] /template/ ItemsPresenter#PART_ItemsPresenter > UniformGrid,
+    ^[TabStripPlacement=Right] /template/ ItemsPresenter#PART_ItemsPresenter > UniformGrid">
+      <Setter Property="Rows" Value="0" />
+      <Setter Property="Columns" Value="1" />
+    </Style>
+
+    <!-- Keep the 1px divider on the edge that faces the content for each placement. -->
+    <Style Selector="^[TabStripPlacement=Top]">
+      <Setter Property="BorderThickness" Value="0,0,0,1" />
+    </Style>
+    <Style Selector="^[TabStripPlacement=Left]">
+      <Setter Property="BorderThickness" Value="0,0,1,0" />
+    </Style>
+    <Style Selector="^[TabStripPlacement=Right]">
+      <Setter Property="BorderThickness" Value="1,0,0,0" />
+    </Style>
+  </ControlTheme>
+
+  <!-- TabbedPage TabItem theme -->
+  <ControlTheme x:Key="TabbedPageTabItemTheme" TargetType="TabItem">
+    <Setter Property="FontSize" Value="{DynamicResource TabbedPageTabItemHeaderFontSize}" />
+    <Setter Property="FontWeight" Value="{DynamicResource TabItemHeaderThemeFontWeight}" />
+    <Setter Property="Background" Value="{DynamicResource TabbedPageTabItemBackground}" />
+    <Setter Property="Foreground" Value="{DynamicResource TabbedPageTabItemForeground}" />
+    <Setter Property="Padding" Value="{DynamicResource TabbedPageTabItemHeaderPadding}" />
+    <Setter Property="Margin" Value="{DynamicResource TabbedPageTabItemHeaderMargin}" />
+    <Setter Property="MinHeight" Value="{DynamicResource TabbedPageTabItemHeaderMinHeight}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource TabbedPageTabItemHeaderCornerRadius}" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="IndicatorTemplate">
+      <DataTemplate>
+        <Border Background="{DynamicResource AccentFillColorDefaultBrush}"
+                CornerRadius="{DynamicResource TabbedPageTabItemHeaderIndicatorCornerRadius}"
+                Margin="{DynamicResource TabbedPageTabItemHeaderIndicatorMargin}"
+                Width="{DynamicResource TabbedPageTabItemSelectionIndicatorWidth}"
+                Height="{DynamicResource TabbedPageTabItemSelectionIndicatorHeight}"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch" />
+      </DataTemplate>
+    </Setter>
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Panel>
+          <Border Name="PART_LayoutRoot"
+                  Background="{TemplateBinding Background}"
+                  BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}"
+                  CornerRadius="{TemplateBinding CornerRadius}"
+                  Padding="{TemplateBinding Padding}">
+            <StackPanel Name="PART_HeaderPanel"
+                        Spacing="{DynamicResource TabbedPageTabItemHeaderSpacing}"
+                        HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                        VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
+              <ContentPresenter Name="PART_IconPresenter"
+                                Content="{TemplateBinding Icon}"
+                                ContentTemplate="{TemplateBinding IconTemplate}"
+                                HorizontalAlignment="Center"
+                                IsVisible="{TemplateBinding Icon, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                Width="{DynamicResource TabbedPageTabItemHeaderIconSize}"
+                                Height="{DynamicResource TabbedPageTabItemHeaderIconSize}" />
+              <ContentPresenter Name="PART_ContentPresenter"
+                                HorizontalAlignment="Center"
+                                HorizontalContentAlignment="Center"
+                                Content="{TemplateBinding Header}"
+                                ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                FontFamily="{TemplateBinding FontFamily}"
+                                FontSize="{TemplateBinding FontSize}"
+                                FontWeight="{TemplateBinding FontWeight}" />
+            </StackPanel>
+          </Border>
+          <ContentPresenter Name="PART_SelectedPipe"
+                            VerticalAlignment="Bottom"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Stretch"
+                            VerticalContentAlignment="Stretch"
+                            Content="{TemplateBinding DataContext}"
+                            ContentTemplate="{TemplateBinding IndicatorTemplate}"
+                            IsVisible="False" />
+        </Panel>
+      </ControlTemplate>
+    </Setter>
+
+    <!-- Pointer-over -->
+    <Style Selector="^:pointerover">
+
+      <Style Selector="^ /template/ Border#PART_LayoutRoot">
+        <Setter Property="Background" Value="{DynamicResource TabbedPageTabItemBackgroundPointerOver}" />
+        <Setter Property="TextElement.Foreground" Value="{DynamicResource TabbedPageTabItemForegroundPointerOver}" />
+      </Style>
+    </Style>
+
+    <!-- Pressed -->
+    <Style Selector="^:pressed">
+
+      <Style Selector="^ /template/ Border#PART_LayoutRoot">
+        <Setter Property="Background" Value="{DynamicResource TabbedPageTabItemBackgroundPressed}" />
+        <Setter Property="TextElement.Foreground" Value="{DynamicResource TabbedPageTabItemForegroundPressed}" />
+      </Style>
+    </Style>
+
+    <!-- Disabled -->
+    <Style Selector="^:disabled">
+
+      <Style Selector="^ /template/ Border#PART_LayoutRoot">
+        <Setter Property="Background" Value="{DynamicResource TabbedPageTabItemBackgroundDisabled}" />
+        <Setter Property="TextElement.Foreground" Value="{DynamicResource TabbedPageTabItemForegroundDisabled}" />
+      </Style>
+    </Style>
+
+    <!-- Selected state -->
+    <Style Selector="^:selected">
+
+      <Style Selector="^ /template/ Border#PART_LayoutRoot">
+        <Setter Property="Background" Value="{DynamicResource TabbedPageTabItemBackgroundSelected}" />
+        <Setter Property="TextElement.Foreground" Value="{DynamicResource TabbedPageTabItemForegroundSelected}" />
+      </Style>
+
+      <Style Selector="^ /template/ ContentPresenter#PART_SelectedPipe">
+        <Setter Property="IsVisible" Value="True" />
+      </Style>
+
+      <!-- Pointer-over -->
+      <Style Selector="^:pointerover">
+        <Style Selector="^ /template/ Border#PART_LayoutRoot">
+          <Setter Property="Background" Value="{DynamicResource TabbedPageTabItemBackgroundSelectedPointerOver}" />
+          <Setter Property="TextElement.Foreground" Value="{DynamicResource TabbedPageTabItemForegroundSelectedPointerOver}" />
+        </Style>
+      </Style>
+
+      <!-- Pressed -->
+      <Style Selector="^:pressed">
+
+        <Style Selector="^ /template/ Border#PART_LayoutRoot">
+          <Setter Property="Background" Value="{DynamicResource TabbedPageTabItemBackgroundSelectedPressed}" />
+          <Setter Property="TextElement.Foreground" Value="{DynamicResource TabbedPageTabItemForegroundSelectedPressed}" />
+        </Style>
+      </Style>
+
+      <!-- Disabled -->
+      <Style Selector="^:disabled">
+
+        <Style Selector="^ /template/ Border#PART_LayoutRoot">
+          <Setter Property="Background" Value="{DynamicResource TabbedPageTabItemBackgroundSelectedDisabled}" />
+          <Setter Property="TextElement.Foreground" Value="{DynamicResource TabbedPageTabItemForegroundSelectedDisabled}" />
+        </Style>
+      </Style>
+    </Style>
+
+    <!-- Placement-specific pipe positioning -->
+    <Style Selector="^[TabStripPlacement=Top] /template/ ContentPresenter#PART_SelectedPipe">
+      <Setter Property="VerticalAlignment" Value="Bottom" />
+    </Style>
+    <Style Selector="^[TabStripPlacement=Bottom] /template/ ContentPresenter#PART_SelectedPipe">
+      <Setter Property="VerticalAlignment" Value="Top" />
+    </Style>
+
+    <Style Selector="^[TabStripPlacement=Top], ^[TabStripPlacement=Bottom]">
+
+      <Style Selector="^ /template/ Border#PART_LayoutRoot">
+        <Setter Property="TextElement.Foreground" Value="{DynamicResource TopTabbedPageTabItemForegroundPointerOver}" />
+      </Style>
+
+      <!-- Pointer-over -->
+      <Style Selector="^:pointerover">
+
+        <Style Selector="^ /template/ Border#PART_LayoutRoot">
+          <Setter Property="Background" Value="{DynamicResource TopTabbedPageTabItemBackgroundPointerOver}" />
+          <Setter Property="TextElement.Foreground" Value="{DynamicResource TopTabbedPageTabItemForegroundPointerOver}" />
+        </Style>
+      </Style>
+
+      <!-- Pressed -->
+      <Style Selector="^:pressed">
+
+        <Style Selector="^ /template/ Border#PART_LayoutRoot">
+          <Setter Property="Background" Value="{DynamicResource TopTabbedPageTabItemBackgroundPressed}" />
+          <Setter Property="TextElement.Foreground" Value="{DynamicResource TopTabbedPageTabItemForegroundPressed}" />
+        </Style>
+      </Style>
+
+      <!-- Disabled -->
+      <Style Selector="^:disabled">
+
+        <Style Selector="^ /template/ Border#PART_LayoutRoot">
+          <Setter Property="TextElement.Foreground" Value="{DynamicResource TopTabbedPageTabItemForegroundDisabled}" />
+        </Style>
+      </Style>
+
+      <!-- Selected state -->
+      <Style Selector="^:selected">
+
+        <Style Selector="^ /template/ Border#PART_LayoutRoot">
+          <Setter Property="Background" Value="{DynamicResource TopTabbedPageTabItemBackgroundSelected}" />
+          <Setter Property="TextElement.Foreground" Value="{DynamicResource TopTabbedPageTabItemForegroundSelected}" />
+        </Style>
+
+        <Style Selector="^ /template/ ContentPresenter#PART_SelectedPipe">
+          <Setter Property="IsVisible" Value="True" />
+        </Style>
+
+        <!-- Pointer-over -->
+        <Style Selector="^:pointerover">
+          <Style Selector="^ /template/ Border#PART_LayoutRoot">
+            <Setter Property="Background" Value="{DynamicResource TopTabbedPageTabItemBackgroundSelectedPointerOver}" />
+            <Setter Property="TextElement.Foreground" Value="{DynamicResource TopTabbedPageTabItemForegroundSelectedPointerOver}" />
+          </Style>
+        </Style>
+
+        <!-- Pressed -->
+        <Style Selector="^:pressed">
+
+          <Style Selector="^ /template/ Border#PART_LayoutRoot">
+            <Setter Property="Background" Value="{DynamicResource TopTabbedPageTabItemBackgroundSelectedPressed}" />
+            <Setter Property="TextElement.Foreground" Value="{DynamicResource TopTabbedPageTabItemForegroundSelectedPressed}" />
+          </Style>
+        </Style>
+      </Style>
+    </Style>
+
+    <Style Selector="^[TabStripPlacement=Right]">
+      <Setter Property="IndicatorTemplate">
+        <DataTemplate>
+          <Border Background="{DynamicResource AccentFillColorDefaultBrush}"
+                  CornerRadius="{DynamicResource TabbedPageTabItemHeaderIndicatorCornerRadius}"
+                  Margin="{DynamicResource TabbedPageTabItemHeaderIndicatorMargin}"
+                  Height="{DynamicResource TabbedPageTabItemSelectionIndicatorWidth}"
+                  Width="{DynamicResource TabbedPageTabItemSelectionIndicatorHeight}" />
+        </DataTemplate>
+      </Setter>
+    </Style>
+    <Style Selector="^[TabStripPlacement=Right] /template/ ContentPresenter#PART_SelectedPipe">
+      <Setter Property="HorizontalAlignment" Value="Right" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="^[TabStripPlacement=Left]">
+      <Setter Property="IndicatorTemplate">
+        <DataTemplate>
+          <Border Background="{DynamicResource AccentFillColorDefaultBrush}"
+                  CornerRadius="{DynamicResource TabbedPageTabItemHeaderIndicatorCornerRadius}"
+                  Margin="{DynamicResource TabbedPageTabItemHeaderIndicatorMargin}"
+                  Height="{DynamicResource TabbedPageTabItemSelectionIndicatorWidth}"
+                  Width="{DynamicResource TabbedPageTabItemSelectionIndicatorHeight}" />
+        </DataTemplate>
+      </Setter>
+    </Style>
+    <Style Selector="^[TabStripPlacement=Left] /template/ ContentPresenter#PART_SelectedPipe">
+      <Setter Property="HorizontalAlignment" Value="Left" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <!-- Focus visible -->
+    <Style Selector="^:focus-visible /template/ Border#PART_LayoutRoot">
+      <Setter Property="BorderBrush" Value="{DynamicResource FocusStrokeColorOuter}" />
+      <Setter Property="BorderThickness" Value="2" />
+    </Style>
+  </ControlTheme>
+
+  <ControlTheme x:Key="{x:Type TabbedPage}" TargetType="TabbedPage" BasedOn="{StaticResource DefaultTabbedPageTheme}"/>
+  <ControlTheme x:Key="DefaultTabbedPageTheme" TargetType="TabbedPage">
+    <Setter Property="Background" Value="{DynamicResource TabbedPageBackground}" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Panel Background="{TemplateBinding Background}">
+          <TabControl Name="PART_TabControl"
+                      Theme="{StaticResource TabbedPageTabControlTheme}"
+                      ItemContainerTheme="{StaticResource TabbedPageTabItemTheme}"
+                      HorizontalAlignment="Stretch"
+                      VerticalAlignment="Stretch" />
+        </Panel>
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+</ResourceDictionary>

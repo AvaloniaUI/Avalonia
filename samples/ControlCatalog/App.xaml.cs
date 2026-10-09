@@ -16,6 +16,7 @@ namespace ControlCatalog
     {
         private readonly Styles _themeStylesContainer = new();
         private FluentTheme? _fluentTheme;
+        private Avalonia.Themes.Fluent2.Fluent2Theme? _fluent2Theme;
         private SimpleTheme? _simpleTheme;
         private IStyle? _colorPickerFluent, _colorPickerSimple;
 
@@ -31,11 +32,12 @@ namespace ControlCatalog
             AvaloniaXamlLoader.Load(this);
 
             _fluentTheme = (FluentTheme)Resources["FluentTheme"]!;
+            _fluent2Theme = (Avalonia.Themes.Fluent2.Fluent2Theme)Resources["Fluent2Theme"]!;
             _simpleTheme = (SimpleTheme)Resources["SimpleTheme"]!;
             _colorPickerFluent = (IStyle)Resources["ColorPickerFluent"]!;
             _colorPickerSimple = (IStyle)Resources["ColorPickerSimple"]!;
 
-            SetCatalogThemes(CatalogTheme.Fluent);
+            SetCatalogThemes(CatalogTheme.Fluent2, skipWindowCreation: true);
         }
 
         public override void OnFrameworkInitializationCompleted()
@@ -106,12 +108,12 @@ namespace ControlCatalog
 
         private CatalogTheme _prevTheme;
         public static CatalogTheme CurrentTheme => ((App)Current!)._prevTheme;
-        public static void SetCatalogThemes(CatalogTheme theme)
+        public static void SetCatalogThemes(CatalogTheme theme, bool skipWindowCreation = false)
         {
             var app = (App)Current!;
             var prevTheme = app._prevTheme;
             app._prevTheme = theme;
-            var shouldReopenWindow = prevTheme != theme;
+            var shouldReopenWindow = prevTheme != theme && !skipWindowCreation;
 
             if (app._themeStylesContainer.Count == 0)
             {
@@ -123,6 +125,11 @@ namespace ControlCatalog
             if (theme == CatalogTheme.Fluent)
             {
                 app._themeStylesContainer[0] = app._fluentTheme!;
+                app._themeStylesContainer[1] = app._colorPickerFluent!;
+            }
+            else if (theme == CatalogTheme.Fluent2)
+            {
+                app._themeStylesContainer[0] = app._fluent2Theme!;
                 app._themeStylesContainer[1] = app._colorPickerFluent!;
             }
             else if (theme == CatalogTheme.Simple)

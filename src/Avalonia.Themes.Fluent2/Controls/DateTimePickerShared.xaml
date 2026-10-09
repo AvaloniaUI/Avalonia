@@ -1,0 +1,164 @@
+<!--
+// (c) Copyright Microsoft Corporation.
+// This source is subject to the Microsoft Public License (Ms-PL).
+// Please see https://go.microsoft.com/fwlink/?LinkID=131993 for details.
+// All other rights reserved.
+-->
+
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:ClassModifier="internal">
+  <Design.PreviewWith>
+    <Border Padding="20" Width="200">
+      <StackPanel Spacing="20">
+        <ListBoxItem Theme="{DynamicResource FluentDateTimePickerItem}">Standard Item</ListBoxItem>
+        <ListBoxItem Theme="{DynamicResource FluentDateTimePickerItem}" Classes="MonthItem">Month Item</ListBoxItem>
+        <RepeatButton Theme="{DynamicResource FluentDateTimePickerButton}">Button</RepeatButton>
+        <RepeatButton Theme="{DynamicResource FluentDateTimePickerUpButton}" IsVisible="True" Opacity="1"/>
+        <RepeatButton Theme="{DynamicResource FluentDateTimePickerDownButton}" IsVisible="True" Opacity="1"/>
+      </StackPanel>
+    </Border>
+  </Design.PreviewWith>
+
+  <x:Double x:Key="LoopingSelectorUpDownButtonHeight">34</x:Double>
+
+  <ControlTheme x:Key="FluentDateTimePickerItem" TargetType="ListBoxItem" BasedOn="{StaticResource FluentListBoxItemTheme}">
+    <Setter Property="Padding" Value="{DynamicResource DatePickerFlyoutPresenterItemPadding}"/>
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+
+    <Style Selector="^:selected">
+      <Setter Property="IsHitTestVisible" Value="False"/>
+      <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource TextOnAccentFillColorPrimary}"/>
+      </Style>
+      <Style Selector="^ /template/ Rectangle#SelectionIndicator">
+        <Setter Property="IsVisible" Value="False"/>
+        <Setter Property="Height" Value="0"/>
+      </Style>
+    </Style>
+    <Style Selector="^.MonthItem">
+      <Setter Property="Padding" Value="{DynamicResource DatePickerFlyoutPresenterMonthPadding}"/>
+      <Setter Property="HorizontalContentAlignment" Value="Left" />
+    </Style>
+  </ControlTheme>
+
+  <ControlTheme x:Key="FluentDateTimePickerButton" TargetType="Button">
+    <Setter Property="Background" Value="{DynamicResource DateTimePickerFlyoutButtonBackground}" />
+    <Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
+    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
+    <Setter Property="HorizontalContentAlignment" Value="Center"/>
+    <Setter Property="VerticalContentAlignment" Value="Center"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Background="{TemplateBinding Background}">
+          <ContentPresenter x:Name="PART_ContentPresenter"
+                  Background="{DynamicResource SubtleFillColorTransparent}"
+                  BackgroundSizing="{TemplateBinding BackgroundSizing}"
+                  BorderBrush="{DynamicResource DateTimePickerFlyoutButtonBorderBrush}"
+                  BorderThickness="{DynamicResource DateTimeFlyoutButtonBorderThickness}"
+                  Content="{TemplateBinding Content}"
+                  Foreground="{TemplateBinding Foreground}"
+                  ContentTemplate="{TemplateBinding ContentTemplate}"
+                  Padding="{TemplateBinding Padding}"
+                  HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                  VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                  CornerRadius="{TemplateBinding CornerRadius}">
+            <ContentPresenter.Transitions>
+              <Transitions>
+                <BrushTransition Property="Background" Duration="{DynamicResource ControlFasterAnimationDuration}" />
+              </Transitions>
+            </ContentPresenter.Transitions>
+          </ContentPresenter>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+
+    <!-- Foreground is styled on the control (not the presenter) because the glyph Paths used
+         as content bind their Stroke to the parent button's Foreground. -->
+    <Style Selector="^:pointerover">
+      <Setter Property="Foreground" Value="{DynamicResource DateTimePickerFlyoutButtonForegroundPointerOver}"/>
+    </Style>
+    <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource DateTimePickerFlyoutButtonBackgroundPointerOver}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource DateTimePickerFlyoutButtonBorderBrushPointerOver}"/>
+    </Style>
+
+    <Style Selector="^:pressed">
+      <Setter Property="Foreground" Value="{DynamicResource DateTimePickerFlyoutButtonForegroundPressed}"/>
+    </Style>
+    <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource DateTimePickerFlyoutButtonBackgroundPressed}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource DateTimePickerFlyoutButtonBorderBrushPressed}"/>
+    </Style>
+  </ControlTheme>
+
+  <ControlTheme x:Key="FluentDateTimePickerUpButton" TargetType="RepeatButton" BasedOn="{StaticResource FluentDateTimePickerButton}">
+    <Setter Property="VerticalAlignment" Value="Top"/>
+    <Setter Property="Height" Value="{DynamicResource LoopingSelectorUpDownButtonHeight}" />
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="Focusable" Value="False" />
+    <Setter Property="Background" Value="{DynamicResource AcrylicBackgroundFillColorDefaultBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondary}" />
+    <Setter Property="IsVisible" Value="False"/>
+    <Setter Property="Opacity" Value="0"/>
+    <Setter Property="Transitions">
+      <Transitions>
+        <DoubleTransition Property="Opacity" Duration="{StaticResource ControlFastAnimationDuration}" />
+      </Transitions>
+    </Setter>
+    <Setter Property="Content">
+      <Template>
+        <Path Stroke="{Binding $parent[RepeatButton].Foreground}"
+              StrokeThickness="1"
+              StrokeLineCap="Round"
+              StrokeJoin="Round"
+              Data="M 0,4.5 L 4.5,0 L 9,4.5"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center"/>
+      </Template>
+    </Setter>
+    <!-- Re-declared after this theme's Foreground setter so the hover/press swaps still win. -->
+    <Style Selector="^:pointerover">
+      <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimary}"/>
+    </Style>
+    <Style Selector="^:pressed">
+      <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimary}"/>
+    </Style>
+  </ControlTheme>
+
+  <ControlTheme x:Key="FluentDateTimePickerDownButton" TargetType="RepeatButton" BasedOn="{StaticResource FluentDateTimePickerButton}">
+    <Setter Property="VerticalAlignment" Value="Bottom"/>
+    <Setter Property="Height" Value="{DynamicResource LoopingSelectorUpDownButtonHeight}" />
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="Focusable" Value="False" />
+    <Setter Property="Background" Value="{DynamicResource AcrylicBackgroundFillColorDefaultBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondary}" />
+    <Setter Property="IsVisible" Value="False"/>
+    <Setter Property="Opacity" Value="0"/>
+    <Setter Property="Transitions">
+      <Transitions>
+        <DoubleTransition Property="Opacity" Duration="{StaticResource ControlFastAnimationDuration}" />
+      </Transitions>
+    </Setter>
+    <Setter Property="Content">
+      <Template>
+        <Path Stroke="{Binding $parent[RepeatButton].Foreground}"
+              StrokeThickness="1"
+              StrokeLineCap="Round"
+              StrokeJoin="Round"
+              Data="M 0,0 L 4.5,4.5 L 9,0"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center"/>
+      </Template>
+    </Setter>
+    <!-- Re-declared after this theme's Foreground setter so the hover/press swaps still win. -->
+    <Style Selector="^:pointerover">
+      <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimary}"/>
+    </Style>
+    <Style Selector="^:pressed">
+      <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimary}"/>
+    </Style>
+  </ControlTheme>
+</ResourceDictionary>
