@@ -95,7 +95,7 @@ namespace Avalonia.Controls.Shapes
                     context.ArcTo(
                         endPoint,
                         new Size(radiusX, radiusY),
-                        rotationAngle: angleGap,
+                        rotationAngle: 0.0,
                         isLargeArc: angleGap >= Math.PI,
                         SweepDirection.Clockwise);
                     context.EndFigure(false);
