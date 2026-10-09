@@ -34,9 +34,9 @@ partial class MainWindowViewModel
         }),
         Section("Collections & Data", Icons.Lists, s =>
         {
-            s.Add<Pages.CarouselPage>("Carousel", Icons.Slides, "Cycle through a collection of items");
+            s.Add<Pages.CarouselPage>("Carousel", Icons.Slides, "Cycle through a collection of items", Pages.CarouselPage.Demos);
             s.Add<ListBoxPage>("ListBox", Icons.List, "A selectable, virtualized list of items");
-            s.Add<PipsPagerPage>("PipsPager", Icons.HorizontalDots, "Dot-style pager for paginated content");
+            s.Add<PipsPagerPage>("PipsPager", Icons.HorizontalDots, "Dot-style pager for paginated content", PipsPagerPage.Demos);
             s.Add<RefreshContainerPage>("RefreshContainer", Icons.Refresh, "Pull-to-refresh for scrollable content");
             s.Add<TableViewPage>("TableView", Icons.Grid, "Tabular data with resizable, sortable columns");
             s.Add<TreeViewPage>("TreeView", Icons.Tree, "Hierarchical data with expandable nodes");
@@ -49,7 +49,7 @@ partial class MainWindowViewModel
         }),
         Section("Menus & Flyouts", Icons.Menus, s =>
         {
-            s.Add<CommandBarPage>("CommandBar", Icons.Terminal, "A toolbar of commands with an overflow menu");
+            s.Add<CommandBarPage>("CommandBar", Icons.Terminal, "A toolbar of commands with an overflow menu", CommandBarPage.Demos);
             s.Add<ContextFlyoutPage>("ContextFlyout", Icons.Menu, "Attach flyouts shown on right-click");
             s.Add<ContextMenuPage>("ContextMenu", Icons.Menu, "Traditional right-click context menus");
             s.Add<FlyoutsPage>("Flyouts", Icons.Flyout, "Lightweight popups anchored to controls");
@@ -57,12 +57,12 @@ partial class MainWindowViewModel
         }),
         Section("Navigation & Pages", Icons.HamburgerUnread, s =>
         {
-            s.Add<CarouselDemoPage>("CarouselPage", Icons.Slides, "Swipeable page-based navigation");
-            s.Add<ContentDemoPage>("ContentPage", Icons.Document, "A page that hosts a single content view");
-            s.Add<DrawerDemoPage>("DrawerPage", Icons.Drawer, "A page with a sliding navigation drawer");
-            s.Add<NavigationDemoPage>("NavigationPage", Icons.Navigation, "Stack-based page navigation");
+            s.Add<CarouselDemoPage>("CarouselPage", Icons.Slides, "Swipeable page-based navigation", CarouselDemoPage.Demos);
+            s.Add<ContentDemoPage>("ContentPage", Icons.Document, "A page that hosts a single content view", ContentDemoPage.Demos);
+            s.Add<DrawerDemoPage>("DrawerPage", Icons.Drawer, "A page with a sliding navigation drawer", DrawerDemoPage.Demos);
+            s.Add<NavigationDemoPage>("NavigationPage", Icons.Navigation, "Stack-based page navigation", NavigationDemoPage.Demos);
             s.Add<SplitViewPage>("SplitView", Icons.Split, "A collapsible pane beside content");
-            s.Add<TabbedDemoPage>("TabbedPage", Icons.Tab, "Tab-based page navigation");
+            s.Add<TabbedDemoPage>("TabbedPage", Icons.Tab, "Tab-based page navigation", TabbedDemoPage.Demos);
             s.Add<TabControlPage>("TabControl", Icons.Tab, "Switch between tabbed content views");
             s.Add<TabStripPage>("TabStrip", Icons.Tab, "A standalone strip of selectable tabs");
         }),
