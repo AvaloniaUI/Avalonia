@@ -25,7 +25,7 @@ namespace ControlCatalog
 
         private void MainView_Loaded(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
-            if (DataContext == null)
+            if (DataContext is not MainWindowViewModel vm)
                 return;
 
             SizeChanged += OnDrawerSizeChanged;
@@ -33,7 +33,7 @@ namespace ControlCatalog
 
             if (Application.Current is { } app)
             {
-                app.RequestedThemeVariant = ThemeVariant.Default;
+                app.RequestedThemeVariant = vm.SettingsViewModel.CurrentThemeVariant;
             }
         }
 
@@ -97,7 +97,9 @@ namespace ControlCatalog
             {
                 ViewModel.Navigator = NavPage;
 
-                ViewModel.NavigateToItem(ViewModel.HomeItem);
+                ViewModel.CurrentPageItem = null;
+
+                ViewModel.NavigateToItem(ViewModel.LastActivePageItem ?? MainWindowViewModel.HomeItem);
             }
         }
 
