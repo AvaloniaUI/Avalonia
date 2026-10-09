@@ -33,7 +33,6 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Moq" />
-    <PackageReference Include="SixLabors.ImageSharp" />
     <PackageReference Include="System.Reactive" />
     <PackageReference Include="unofficial.mesa.softwarerenderer" />
   </ItemGroup>

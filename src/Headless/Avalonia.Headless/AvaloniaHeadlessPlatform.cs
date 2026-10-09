@@ -132,6 +132,20 @@ namespace Avalonia.Headless
         /// </summary>
         // TODO13: Change the default to true to match the other platforms.
         public bool? UseSharedMouseDevice { get; set; }
+
+        /// <summary>
+        /// When false, top-level windows always report a <see cref="PixelPoint"/> origin position and ignore
+        /// moves, as on Wayland where the compositor owns window placement. Popups still report their
+        /// position relative to their parent. The default value is true.
+        /// </summary>
+        public bool SupportsWindowPositioning { get; set; } = true;
+
+        /// <summary>
+        /// When true, desktop scaling is always 1 and screen coordinates (window position, PointToScreen,
+        /// PointToClient) are logical units regardless of render scaling, as on macOS and Wayland.
+        /// The default value is false: screen coordinates are physical pixels, as on Windows and X11.
+        /// </summary>
+        public bool UseLogicalDesktopCoordinates { get; set; }
     }
 
     public static class AvaloniaHeadlessPlatformExtensions

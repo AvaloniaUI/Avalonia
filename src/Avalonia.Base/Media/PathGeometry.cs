@@ -81,6 +81,11 @@ namespace Avalonia.Media
             set { SetValue(FillRuleProperty, value); }
         }
 
+        private protected sealed override StreamGeometryContext CreateContext()
+        {
+            return new StreamGeometryContext(new PathGeometryContext(this));
+        }
+
         private protected sealed override IGeometryImpl? CreateDefiningGeometry()
         {
             var figures = Figures;
