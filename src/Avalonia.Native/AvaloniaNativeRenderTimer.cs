@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Threading;
 using Avalonia.Native.Interop;
 using Avalonia.Rendering;
 
@@ -8,14 +9,18 @@ namespace Avalonia.Native;
 internal sealed class AvaloniaNativeRenderTimer : NativeCallbackBase, IRenderTimer, IAvnActionCallback
 {
     private readonly IAvnPlatformRenderTimer _platformRenderTimer;
+    private readonly StateChangedCallback _stateChangedCallback;
     private readonly Stopwatch _stopwatch;
+    private readonly object _lock = new();
     private volatile Action<TimeSpan>? _tick;
-    private bool _registered;
+    private Timer? _fallbackTimer;
+    private bool _running;
 
-    public AvaloniaNativeRenderTimer(IAvnPlatformRenderTimer platformRenderTimer)
+    public AvaloniaNativeRenderTimer(IAvaloniaNativeFactory factory)
     {
-        _platformRenderTimer = platformRenderTimer;
         _stopwatch = Stopwatch.StartNew();
+        _stateChangedCallback = new StateChangedCallback(this);
+        _platformRenderTimer = factory.CreatePlatformRenderTimer(this, _stateChangedCallback);
     }
 
     public Action<TimeSpan>? Tick
@@ -26,12 +31,21 @@ internal sealed class AvaloniaNativeRenderTimer : NativeCallbackBase, IRenderTim
             if (value != null)
             {
                 _tick = value;
-                EnsureRegistered();
-                _platformRenderTimer.Start();
+                lock (_lock)
+                {
+                    _running = true;
+                    _platformRenderTimer.Start();
+                    UpdateFallbackTimer();
+                }
             }
             else
             {
-                _platformRenderTimer.Stop();
+                lock (_lock)
+                {
+                    _running = false;
+                    _platformRenderTimer.Stop();
+                    UpdateFallbackTimer();
+                }
                 _tick = null;
             }
         }
@@ -39,22 +53,42 @@ internal sealed class AvaloniaNativeRenderTimer : NativeCallbackBase, IRenderTim
 
     public bool RunsInBackground => _platformRenderTimer.RunsInBackground().FromComBool();
 
-    private void EnsureRegistered()
-    {
-        if (!_registered)
-        {
-            _registered = true;
-            var registrationResult = _platformRenderTimer.RegisterTick(this);
-            if (registrationResult != 0)
-            {
-                throw new InvalidOperationException(
-                    $"Avalonia.Native was not able to start the RenderTimer. Native error code is: {registrationResult}");
-            }
-        }
-    }
-
+    // Invoked both by the native CVDisplayLink and by the managed fallback timer.
     public void Run()
     {
         _tick?.Invoke(_stopwatch.Elapsed);
+    }
+
+    private void OnPlatformStateChanged()
+    {
+        lock (_lock)
+            UpdateFallbackTimer();
+    }
+
+    // Must be called while holding _lock. Runs a software timer whenever CoreVideo cannot
+    // provide a display link (e.g. during a wake-from-sleep reconfiguration race) and stops
+    // it as soon as the native CVDisplayLink is available to drive ticks itself.
+    private void UpdateFallbackTimer()
+    {
+        var needsFallback = _running && _platformRenderTimer.NeedsFallbackTimer != 0;
+        if (needsFallback)
+        {
+            _fallbackTimer ??= new Timer(static state => ((AvaloniaNativeRenderTimer)state!).Run(),
+                this, TimeSpan.Zero, TimeSpan.FromSeconds(1.0 / 60.0));
+        }
+        else if (_fallbackTimer != null)
+        {
+            _fallbackTimer.Dispose();
+            _fallbackTimer = null;
+        }
+    }
+
+    private sealed class StateChangedCallback : NativeCallbackBase, IAvnActionCallback
+    {
+        private readonly AvaloniaNativeRenderTimer _owner;
+
+        public StateChangedCallback(AvaloniaNativeRenderTimer owner) => _owner = owner;
+
+        public void Run() => _owner.OnPlatformStateChanged();
     }
 }
