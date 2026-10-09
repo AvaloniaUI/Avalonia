@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Animation.Easings;
-using Avalonia.Rendering.Composition;
 using Avalonia.Rendering.Composition.Animations;
 
 namespace Avalonia.Animation
@@ -119,9 +118,6 @@ namespace Avalonia.Animation
                 o => o._property,
                 (o, v) => o._property = v);
 
-        private Visual? _attachedVisual;
-        private KeyFrameAnimation? _animation;
-
         /// <summary>
         /// Occurs when the transition's animation needs to be recreated.
         /// </summary>
@@ -198,30 +194,6 @@ namespace Avalonia.Animation
                 keyFrameAnimation.IterationCount = IterationCount;
                 keyFrameAnimation.StopBehavior = StopBehavior;
                 keyFrameAnimation.InsertExpressionKeyFrame(1.0f, "this.FinalValue", Easing);
-            }
-        }
-
-        internal void Detach()
-        {
-            if (_attachedVisual != null && _animation?.Target is { } oldTarget && ElementComposition.GetElementVisual(_attachedVisual) is { } oldCompositionVisual)
-            {
-                oldCompositionVisual.StopAnimation(oldTarget);
-            }
-
-            _animation = null;
-            _attachedVisual = null;
-        }
-
-        internal void Attach(Visual? visual, KeyFrameAnimation? animation)
-        {
-            Detach();
-
-            _attachedVisual = visual;
-            _animation = animation;
-
-            if (_attachedVisual != null && _animation?.Target is { } newTarget && ElementComposition.GetElementVisual(_attachedVisual) is { } newCompositionVisual)
-            {
-                newCompositionVisual.StartAnimation(newTarget, _animation);
             }
         }
 
