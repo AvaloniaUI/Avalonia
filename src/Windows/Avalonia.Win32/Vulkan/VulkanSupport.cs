@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using Avalonia.Logging;
 using Avalonia.Platform;
 using Avalonia.Platform.Surfaces;
 using Avalonia.Vulkan;
@@ -13,8 +14,9 @@ internal class VulkanSupport
     [DllImport("vulkan-1.dll")]
     private static extern IntPtr vkGetInstanceProcAddr(IntPtr instance, string name);
     
-    public static VulkanPlatformGraphics? TryInitialize(VulkanOptions options) =>
-        VulkanPlatformGraphics.TryCreate(options ?? new(), new VulkanPlatformSpecificOptions
+    public static VulkanPlatformGraphics? TryInitialize(VulkanOptions options)
+    {
+        return VulkanPlatformGraphics.TryCreate(options ?? new(), new VulkanPlatformSpecificOptions
         {
             RequiredInstanceExtensions = { "VK_KHR_win32_surface" },
             GetProcAddressDelegate = vkGetInstanceProcAddr,
@@ -24,6 +26,7 @@ internal class VulkanSupport
                 [typeof(IVulkanKhrSurfacePlatformSurfaceFactory)] = new VulkanSurfaceFactory()
             }
         });
+    }
 
     internal class VulkanSurfaceFactory : IVulkanKhrSurfacePlatformSurfaceFactory
     {
