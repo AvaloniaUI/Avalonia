@@ -419,6 +419,14 @@ namespace Avalonia.iOS
             set => _topLevel.Content = value;
         }
 
+        /// <inheritdoc />
+        public override void WillMoveToWindow(UIWindow? window)
+        {
+            base.WillMoveToWindow(window);
+            if (window is null)
+                _input.ResetTouches();
+        }
+
         internal void SetRenderTarget(Metal.MetalRenderTarget target)
         {
             _currentRenderTarget = target;
@@ -433,6 +441,7 @@ namespace Avalonia.iOS
 
                 if (disposing)
                 {
+                    _input.ResetTouches();
                     _accessWrapper.Dispose();
                     _topLevel.Dispose();
                 }
