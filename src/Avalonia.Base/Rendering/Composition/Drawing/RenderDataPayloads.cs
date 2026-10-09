@@ -73,6 +73,19 @@ internal struct DrawCustomPayload : IRenderDataPayload<DrawCustomPayload>
     public int Operation;
 }
 
+internal struct DrawRecordingPayload : IRenderDataPayload<DrawRecordingPayload>
+{
+    public static RenderDataOpcode Opcode => RenderDataOpcode.DrawRecording;
+
+    // A compositor-bound child sets ServerRenderData + ClientRenderData; an
+    // immutable child sets Stream. The unused handles are the null handle, not
+    // zero, since zero is a valid resource slot.
+    public int ServerRenderData;
+    public int ClientRenderData;
+    public int Stream;
+    public Matrix Transform;
+}
+
 internal struct PushClipPayload : IRenderDataPayload<PushClipPayload>
 {
     public static RenderDataOpcode Opcode => RenderDataOpcode.PushClip;
