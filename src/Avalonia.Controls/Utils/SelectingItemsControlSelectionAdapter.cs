@@ -48,6 +48,7 @@ namespace Avalonia.Controls.Utils
                 {
                     _selector.SelectionChanged -= OnSelectionChanged;
                     _selector.PointerReleased -= OnSelectorPointerReleased;
+                    _selector.ContainerPrepared -= OnContainerPrepared;
                 }
 
                 _selector = value;
@@ -56,6 +57,10 @@ namespace Avalonia.Controls.Utils
                 {
                     _selector.SelectionChanged += OnSelectionChanged;
                     _selector.PointerReleased += OnSelectorPointerReleased;
+                    _selector.ContainerPrepared += OnContainerPrepared;
+
+                    foreach (var container in _selector.GetRealizedContainers())
+                        container.Focusable = false;
                 }
             }
         }
@@ -164,6 +169,10 @@ namespace Avalonia.Controls.Utils
                 }
             }
         }
+
+        // Items stay non focusable so that picking one keeps the focus in the text box.
+        private static void OnContainerPrepared(object? sender, ContainerPreparedEventArgs e)
+            => e.Container.Focusable = false;
 
         /// <summary>
         /// Handles the mouse left button up event on the selector control.
