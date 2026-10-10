@@ -610,31 +610,29 @@ namespace Avalonia.Controls
         {
             static bool IsSelectable(object? o) => (o as AvaloniaObject)?.GetValue(IsEnabledProperty) ?? true;
 
-            var count = ItemCount;
+            static int WrapIndex(int index, int count) => ((index % count) + count) % count;
 
-            for (int i = startIndex + step; i != startIndex; i += step)
+            var count = ItemCount;
+            var index = startIndex;
+
+            for (var inspected = 0; inspected < count; ++inspected)
             {
-                if (i < 0 || i >= count)
+                index += step;
+
+                if (index < 0 || index >= count)
                 {
-                    if (wrap)
-                    {
-                        if (i < 0)
-                            i += count;
-                        else if (i >= count)
-                            i %= count;
-                    }
-                    else
-                    {
+                    if (!wrap)
                         return false;
-                    }
+
+                    index = WrapIndex(index, count);
                 }
 
-                var item = ItemsView[i];
-                var container = ContainerFromIndex(i);
-                
+                var item = ItemsView[index];
+                var container = ContainerFromIndex(index);
+
                 if (IsSelectable(item) && IsSelectable(container))
                 {
-                    SelectedIndex = i;
+                    SelectedIndex = index;
                     return true;
                 }
             }

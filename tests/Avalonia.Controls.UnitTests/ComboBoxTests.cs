@@ -190,6 +190,96 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void WrapSelection_With_Empty_Items_Does_Not_Throw()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var target = new ComboBox
+                {
+                    Template = GetTemplate(),
+                    WrapSelection = true
+                };
+                var root = new TestRoot(target);
+                target.ApplyTemplate();
+                target.Presenter!.ApplyTemplate();
+                target.Focus();
+                Assert.True(target.IsFocused);
+
+                target.RaiseEvent(new KeyEventArgs
+                {
+                    RoutedEvent = InputElement.KeyDownEvent,
+                    Key = Key.Down,
+                });
+                target.RaiseEvent(new KeyEventArgs
+                {
+                    RoutedEvent = InputElement.KeyDownEvent,
+                    Key = Key.Up,
+                });
+
+                Assert.Equal(-1, target.SelectedIndex);
+            }
+        }
+
+        [Fact(Timeout = 2000)]
+        public void WrapSelection_With_All_Items_Disabled_Does_Not_Hang()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var target = new ComboBox
+                {
+                    Items =
+                    {
+                        new ComboBoxItem { Content = "a", IsEnabled = false },
+                        new ComboBoxItem { Content = "b", IsEnabled = false },
+                        new ComboBoxItem { Content = "c", IsEnabled = false }
+                    },
+                    Template = GetTemplate(),
+                    WrapSelection = true
+                };
+                var root = new TestRoot(target);
+                target.ApplyTemplate();
+                target.Presenter!.ApplyTemplate();
+                target.Focus();
+                Assert.True(target.IsFocused);
+
+                target.RaiseEvent(new KeyEventArgs
+                {
+                    RoutedEvent = InputElement.KeyDownEvent,
+                    Key = Key.Down,
+                });
+
+                Assert.Equal(-1, target.SelectedIndex);
+            }
+        }
+
+        [Fact]
+        public void WrapSelection_On_Single_Item_With_Nothing_Selected_Does_Not_Throw()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var target = new ComboBox
+                {
+                    Items = { new ComboBoxItem { Content = "only" } },
+                    Template = GetTemplate(),
+                    WrapSelection = true
+                };
+                var root = new TestRoot(target);
+                target.ApplyTemplate();
+                target.Presenter!.ApplyTemplate();
+                target.Focus();
+                Assert.True(target.IsFocused);
+
+                target.RaiseEvent(new KeyEventArgs
+                {
+                    RoutedEvent = InputElement.KeyDownEvent,
+                    Key = Key.Up,
+                });
+
+                Assert.Equal(0, target.SelectedIndex);
+            }
+        }
+
+        [Fact]
         public void Focuses_Next_Item_On_Key_Down()
         {
             using (UnitTestApplication.Start(TestServices.RealFocus))
