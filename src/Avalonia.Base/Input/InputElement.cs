@@ -236,6 +236,12 @@ namespace Avalonia.Input
             LostFocusEvent.AddClassHandler<InputElement>((x, e) => x.OnLostFocusCore(e));
             GettingFocusEvent.AddClassHandler<InputElement>((x, e) => x.OnGettingFocus(e));
             LosingFocusEvent.AddClassHandler<InputElement>((x, e) => x.OnLosingFocus(e));
+            // KeyBindings are processed as the KeyDown event bubbles, immediately before the element's own
+            // OnKeyDown. This means that a focused control (e.g. TextBox handling Ctrl+V) gets a chance to
+            // handle a key before KeyBindings defined on its ancestors, and that KeyBindings closer to the
+            // focused element take priority over those further up the tree (including HotKeys, which are
+            // registered on the TopLevel).
+            KeyDownEvent.AddClassHandler<InputElement>((x, e) => x.HandleKeyBindings(e));
             KeyDownEvent.AddClassHandler<InputElement>((x, e) => x.OnKeyDown(e));
             KeyUpEvent.AddClassHandler<InputElement>((x, e) => x.OnKeyUp(e));
             TextInputEvent.AddClassHandler<InputElement>((x, e) => x.OnTextInput(e));
@@ -539,6 +545,36 @@ namespace Avalonia.Input
         }
 
         public List<KeyBinding> KeyBindings { get; } = new List<KeyBinding>();
+
+        private void HandleKeyBindings(KeyEventArgs e)
+        {
+            if (e.Handled || e.Route != RoutingStrategies.Bubble || KeyBindings.Count == 0)
+                return;
+
+            KeyBinding[]? bindingsCopy = null;
+
+            // Create a copy of the KeyBindings list if there's a binding which matches the event.
+            // If we don't do this the foreach loop will throw an InvalidOperationException when the KeyBindings
+            // list is changed. This can happen when a new view is loaded which adds its own KeyBindings.
+            foreach (var binding in KeyBindings)
+            {
+                if (binding.Gesture?.Matches(e) == true)
+                {
+                    bindingsCopy = KeyBindings.ToArray();
+                    break;
+                }
+            }
+
+            if (bindingsCopy is null)
+                return;
+
+            foreach (var binding in bindingsCopy)
+            {
+                if (e.Handled)
+                    break;
+                binding.TryHandle(e);
+            }
+        }
 
         /// <summary>
         /// Allows a derived class to override the enabled state of the control.
