@@ -376,6 +376,14 @@ namespace Avalonia.Controls
             base.OnPointerReleased(e);
         }
 
+        /// <inheritdoc/>
+        protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
+        {
+            base.OnPointerCaptureLost(e);
+
+            PseudoClasses.Set(pcPressed, false);
+        }
+
         public override bool UpdateSelectionFromEvent(Control container, RoutedEventArgs eventArgs)
         {
             if (base.UpdateSelectionFromEvent(container, eventArgs))
