@@ -427,7 +427,7 @@ namespace Avalonia.Media.TextFormatting
                 {
                     characterHit = currentLine.GetCharacterHitFromDistance(point.X);
 
-                    return GetHitTestResult(currentLine, characterHit, new Point(point.X, point.Y - currentY));
+                    return GetHitTestResult(currentLine, characterHit, new Point(point.X - currentLine.Start, point.Y - currentY));
                 }
 
                 currentY += currentLine.Height;
@@ -440,7 +440,7 @@ namespace Avalonia.Media.TextFormatting
 
             characterHit = currentLine.GetCharacterHitFromDistance(point.X);
 
-            return GetHitTestResult(currentLine, characterHit, new Point(point.X, point.Y - (currentY - currentLine.Height)));
+            return GetHitTestResult(currentLine, characterHit, new Point(point.X - currentLine.Start, point.Y - (currentY - currentLine.Height)));
         }
 
 
@@ -480,7 +480,9 @@ namespace Avalonia.Media.TextFormatting
         /// </summary>
         /// <param name="textLine">The line that was hit.</param>
         /// <param name="characterHit">The character hit within the line.</param>
-        /// <param name="linePoint">The point, relative to the top-left of <paramref name="textLine"/>.</param>
+        /// <param name="linePoint">
+        /// The point, relative to the top of <paramref name="textLine"/> and its <see cref="TextLine.Start"/>.
+        /// </param>
         private TextHitTestResult GetHitTestResult(TextLine textLine, CharacterHit characterHit, Point linePoint)
         {
             var (x, y) = linePoint;
