@@ -1186,6 +1186,37 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        [InlineData(TextAlignment.Center, FlowDirection.LeftToRight)]
+        [InlineData(TextAlignment.Right, FlowDirection.LeftToRight)]
+        [InlineData(TextAlignment.Center, FlowDirection.RightToLeft)]
+        [InlineData(TextAlignment.Right, FlowDirection.RightToLeft)]
+        [Theory]
+        public void HitTestPoint_Should_Report_IsInside_For_Point_Inside_Aligned_Line(TextAlignment alignment, FlowDirection flowDirection)
+        {
+            using (Start())
+            {
+                const string text = "Hello";
+
+                var layout = new TextLayout(
+                    text,
+                    Typeface.Default,
+                    12,
+                    Brushes.Black,
+                    textAlignment: alignment,
+                    flowDirection: flowDirection,
+                    maxWidth: 200);
+
+                var textLine = Assert.Single(layout.TextLines);
+
+                Assert.True(textLine.Start > 0);
+
+                var hit = layout.HitTestPoint(new Point(textLine.Start + textLine.Width - 1, textLine.Height / 2));
+
+                Assert.Equal(text.Length - 1, hit.CharacterHit.FirstCharacterIndex);
+                Assert.True(hit.IsInside);
+            }
+        }
+
         [Fact]
         public void Should_Get_CharacterHit_From_Distance_RTL()
         {
