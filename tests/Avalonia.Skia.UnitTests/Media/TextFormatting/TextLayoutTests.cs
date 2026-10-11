@@ -1155,6 +1155,37 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        [InlineData("First line\nSecond line\nThird line", TextWrapping.NoWrap)]
+        [InlineData("First line Second line Third line", TextWrapping.Wrap)]
+        [Theory]
+        public void HitTestPoint_Should_Report_IsInside_For_Point_Inside_Any_Line(string text, TextWrapping wrapping)
+        {
+            using (Start())
+            {
+                var layout = new TextLayout(
+                    text,
+                    Typeface.Default,
+                    12,
+                    Brushes.Black,
+                    textWrapping: wrapping,
+                    maxWidth: 80);
+
+                Assert.Equal(3, layout.TextLines.Count);
+
+                var top = 0.0;
+
+                foreach (var textLine in layout.TextLines)
+                {
+                    var hit = layout.HitTestPoint(new Point(5, top + textLine.Height / 2));
+
+                    Assert.Equal(textLine.FirstTextSourceIndex, hit.CharacterHit.FirstCharacterIndex);
+                    Assert.True(hit.IsInside);
+
+                    top += textLine.Height;
+                }
+            }
+        }
+
         [Fact]
         public void Should_Get_CharacterHit_From_Distance_RTL()
         {
