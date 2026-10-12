@@ -1217,6 +1217,91 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        [InlineData(TextAlignment.Center, FlowDirection.LeftToRight)]
+        [InlineData(TextAlignment.Right, FlowDirection.LeftToRight)]
+        [InlineData(TextAlignment.Center, FlowDirection.RightToLeft)]
+        [InlineData(TextAlignment.Right, FlowDirection.RightToLeft)]
+        [Theory]
+        public void HitTestPoint_Should_Not_Report_IsInside_For_Point_Outside_Aligned_Line(TextAlignment alignment, FlowDirection flowDirection)
+        {
+            using (Start())
+            {
+                var layout = new TextLayout(
+                    "Hello",
+                    Typeface.Default,
+                    12,
+                    Brushes.Black,
+                    textAlignment: alignment,
+                    flowDirection: flowDirection,
+                    maxWidth: 200);
+
+                var textLine = Assert.Single(layout.TextLines);
+
+                Assert.True(textLine.Start > 0);
+
+                var middle = textLine.Height / 2;
+
+                Assert.False(layout.HitTestPoint(new Point(textLine.Start - 1, middle)).IsInside);
+                Assert.False(layout.HitTestPoint(new Point(textLine.Start + textLine.Width + 1, middle)).IsInside);
+                Assert.False(layout.HitTestPoint(new Point(textLine.Start + 1, -1)).IsInside);
+                Assert.False(layout.HitTestPoint(new Point(textLine.Start + 1, textLine.Height + 1)).IsInside);
+            }
+        }
+
+        [InlineData(TextAlignment.Center, FlowDirection.LeftToRight)]
+        [InlineData(TextAlignment.Right, FlowDirection.LeftToRight)]
+        [InlineData(TextAlignment.Center, FlowDirection.RightToLeft)]
+        [InlineData(TextAlignment.Right, FlowDirection.RightToLeft)]
+        [Theory]
+        public void HitTestPoint_Should_Match_Left_Aligned_Layout_When_Translated_By_Line_Start(TextAlignment alignment, FlowDirection flowDirection)
+        {
+            using (Start())
+            {
+                const string text = "Hello\nWorld";
+
+                TextLayout CreateLayout(TextAlignment textAlignment) => new TextLayout(
+                    text,
+                    Typeface.Default,
+                    12,
+                    Brushes.Black,
+                    textAlignment: textAlignment,
+                    flowDirection: flowDirection,
+                    maxWidth: 200);
+
+                var reference = CreateLayout(TextAlignment.Left);
+                var aligned = CreateLayout(alignment);
+
+                Assert.Equal(2, aligned.TextLines.Count);
+
+                var top = 0.0;
+
+                for (var i = 0; i < aligned.TextLines.Count; i++)
+                {
+                    var referenceLine = reference.TextLines[i];
+                    var alignedLine = aligned.TextLines[i];
+
+                    Assert.True(alignedLine.Start > 0);
+                    Assert.Equal(0, referenceLine.Start);
+
+                    var y = top + alignedLine.Height / 2;
+
+                    // Before the line, inside it, and past its end, including the newline.
+                    foreach (var dx in new[] { -5, 1, alignedLine.Width / 2, alignedLine.Width - 1, alignedLine.Width + 3 })
+                    {
+                        var expected = reference.HitTestPoint(new Point(dx, y));
+                        var actual = aligned.HitTestPoint(new Point(alignedLine.Start + dx, y));
+
+                        Assert.Equal(expected.CharacterHit, actual.CharacterHit);
+                        Assert.Equal(expected.TextPosition, actual.TextPosition);
+                        Assert.Equal(expected.IsInside, actual.IsInside);
+                        Assert.Equal(expected.IsTrailing, actual.IsTrailing);
+                    }
+
+                    top += alignedLine.Height;
+                }
+            }
+        }
+
         [Fact]
         public void Should_Get_CharacterHit_From_Distance_RTL()
         {
