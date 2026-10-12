@@ -65,7 +65,7 @@ internal partial class X11Screens
                 x11.RootWindow,
                 atom,
                 IntPtr.Zero,
-                new IntPtr(0x7fffffff),
+                new IntPtr(int.MaxValue),
                 false,
                 AnyPropertyType,
                 out var type,
