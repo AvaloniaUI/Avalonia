@@ -8,6 +8,7 @@ internal static partial class InputHelper
 {
     public static Task RedirectInputAsync(int topLevelId, Action<BrowserTopLevelImpl> handler)
     {
+        using var _ = JsCallbackHelper.EnsureDispatcherContext();
         if (BrowserTopLevelImpl.TryGetTopLevel(topLevelId) is { } topLevelImpl)
             handler(topLevelImpl);
         return Task.CompletedTask;
@@ -15,6 +16,7 @@ internal static partial class InputHelper
 
     public static Task<T> RedirectInputRetunAsync<T>(int topLevelId, Func<BrowserTopLevelImpl, T> handler, T @default)
     {
+        using var _ = JsCallbackHelper.EnsureDispatcherContext();
         if (BrowserTopLevelImpl.TryGetTopLevel(topLevelId) is { } topLevelImpl)
             return Task.FromResult(handler(topLevelImpl));
         return Task.FromResult(@default);

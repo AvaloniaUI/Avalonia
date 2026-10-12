@@ -10,6 +10,9 @@ using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
+using Avalonia.Styling;
+using Avalonia.Themes.Fluent;
+using Avalonia.Themes.Simple;
 using Avalonia.VisualTree;
 using Avalonia.UnitTests;
 using Xunit;
@@ -19,6 +22,92 @@ namespace Avalonia.Controls.UnitTests
     public class ComboBoxTests : ScopedTestBase
     {
         MouseTestHelper _helper = new MouseTestHelper();
+
+        [Fact]
+        public void Item_Marked_As_Selected_Is_Selected_Before_The_DropDown_Is_Opened()
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var target = new ComboBox
+            {
+                Items =
+                {
+                    new ComboBoxItem { Content = "Item 1", IsSelected = true },
+                    new ComboBoxItem { Content = "Item 2" }
+                }
+            };
+
+            var window = new Window { Content = target };
+            window.Show();
+            window.LayoutManager.ExecuteInitialLayoutPass();
+
+            Assert.Equal(0, target.SelectedIndex);
+            Assert.Same(target.Items[0], target.SelectedItem);
+        }
+
+        [Fact]
+        public void Item_Marked_As_Selected_Stays_Selected_When_The_DropDown_Is_Opened()
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var target = new ComboBox
+            {
+                Items =
+                {
+                    new ComboBoxItem { Content = "Item 1", IsSelected = true },
+                    new ComboBoxItem { Content = "Item 2" }
+                }
+            };
+
+            var window = new Window { Content = target };
+            window.Show();
+            window.LayoutManager.ExecuteInitialLayoutPass();
+
+            target.IsDropDownOpen = true;
+            window.LayoutManager.ExecuteLayoutPass();
+            target.IsDropDownOpen = false;
+            window.LayoutManager.ExecuteLayoutPass();
+
+            Assert.Equal(0, target.SelectedIndex);
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Can_Open_DropDown_After_Replacing_Application_Theme(bool fluent)
+        {
+            IStyle CreateTheme() => fluent ? new FluentTheme() : new SimpleTheme();
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow.With(theme: CreateTheme));
+            var target = new ComboBox
+            {
+                ItemsSource = new[] { "Foo", "Bar" },
+                SelectedIndex = 0,
+            };
+            var window = new Window { Content = target };
+            window.Show();
+            window.LayoutManager.ExecuteInitialLayoutPass();
+
+            for (var i = 0; i < 3; ++i)
+            {
+                target.IsDropDownOpen = true;
+                window.LayoutManager.ExecuteLayoutPass();
+                target.IsDropDownOpen = false;
+                window.LayoutManager.ExecuteLayoutPass();
+
+                Application.Current!.Styles.Clear();
+                Application.Current.Styles.Add(CreateTheme());
+                Application.Current.RequestedThemeVariant = i % 2 == 0 ? ThemeVariant.Dark : ThemeVariant.Light;
+                window.LayoutManager.ExecuteLayoutPass();
+
+                target.IsDropDownOpen = true;
+                window.LayoutManager.ExecuteLayoutPass();
+                Assert.NotNull(target.ContainerFromIndex(0));
+                Assert.Equal(0, target.SelectedIndex);
+                target.IsDropDownOpen = false;
+                window.LayoutManager.ExecuteLayoutPass();
+            }
+            window.Close();
+        }
 
         [Fact]
         public void Clicking_On_Control_Toggles_IsDropDownOpen()

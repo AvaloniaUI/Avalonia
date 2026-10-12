@@ -1,4 +1,4 @@
-﻿using Avalonia.Media;
+using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Utilities;
@@ -481,6 +481,7 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
             public double Opacity => 1;
             public ITransform? Transform => null;
             public RelativePoint TransformOrigin => default;
+            public ITransform? RelativeTransform => null;
             public void AddRefOnCompositor(Compositor c) => AddRefCount++;
             public void ReleaseOnCompositor(Compositor c) => ReleaseCount++;
             public IBrush GetForCompositor(Compositor c) => this;
@@ -507,6 +508,7 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
             public double Opacity => 1;
             public ITransform? Transform => null;
             public RelativePoint TransformOrigin => default;
+            public ITransform? RelativeTransform => null;
             public void AddRefOnCompositor(Compositor c) => AddRefCount++;
             public void ReleaseOnCompositor(Compositor c) { }
             public IBrush GetForCompositor(Compositor c) => this;

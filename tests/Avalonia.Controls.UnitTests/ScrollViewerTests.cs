@@ -19,6 +19,34 @@ namespace Avalonia.Controls.UnitTests
         private readonly MouseTestHelper _mouse = new();
 
         [Fact]
+        public void Presenter_Preserves_Owner_Bindings_When_ScrollViewer_Is_Reattached()
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+            var content = new Border { Width = 200, Height = 200 };
+            var target = new ScrollViewer { Content = content };
+            var window = new Window { Content = target, Width = 100, Height = 100 };
+            window.Show();
+            window.LayoutManager.ExecuteInitialLayoutPass();
+            var presenter = Assert.IsType<ScrollContentPresenter>(target.Presenter);
+            Assert.Same(content, presenter.Child);
+
+            window.Content = null;
+            Assert.Same(content, presenter.Child);
+            var replacement = new Border { Width = 300, Height = 300 };
+            target.Content = replacement;
+            Assert.Null(presenter.Child);
+
+            window.Content = target;
+            window.LayoutManager.ExecuteLayoutPass();
+            Assert.Same(presenter, target.Presenter);
+            Assert.Same(replacement, presenter.Child);
+            target.Offset = new Vector(0, 20);
+            Assert.Equal(target.Offset, presenter.Offset);
+            Assert.Equal(20, presenter.Offset.Y);
+            window.Close();
+        }
+
+        [Fact]
         public void Content_Is_Created()
         {
             var target = new ScrollViewer

@@ -214,7 +214,7 @@ namespace Avalonia.Media.TextFormatting
         /// </summary>
         /// <param name="firstTextSourceCharacterIndex">index of first character of specified range</param>
         /// <param name="textLength">number of characters of the specified range</param>
-        /// <returns>an array of bounding rectangles.</returns>
+        /// <returns>A list of bounding rectangles, or an empty list for an empty range.</returns>
         public abstract IReadOnlyList<TextBounds> GetTextBounds(int firstTextSourceCharacterIndex, int textLength);
 
         public abstract void Dispose();

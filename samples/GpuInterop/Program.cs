@@ -9,7 +9,9 @@ namespace GpuInterop
     {
         public static void Main(string[] args)
         {
-            var demoType = OperatingSystem.IsWindows() && args.AsSpan().Contains("--d3d") ? DemoType.D3D11 : DemoType.Vulkan;
+            var demoType = (OperatingSystem.IsWindows() && args.AsSpan().Contains("--d3d")) ? DemoType.D3D11
+                : args.AsSpan().Contains("--dmabuf") ? DemoType.VulkanDmaBuf
+                : DemoType.Vulkan;
             BuildAvaloniaAppCore(demoType).StartWithClassicDesktopLifetime(args);
         }
 
@@ -25,7 +27,9 @@ namespace GpuInterop
                 })
                 .With(new X11PlatformOptions
                 {
-                    RenderingMode = [X11RenderingMode.Vulkan]
+                    // The dma-buf demo imports its rendered frames through the EGL/OpenGL
+                    // compositor (EglExternalObjectsFeature), so it requires an EGL backend.
+                    RenderingMode = [demoType == DemoType.VulkanDmaBuf ? X11RenderingMode.Egl : X11RenderingMode.Vulkan]
                 })
                 .With(new VulkanOptions
                 {

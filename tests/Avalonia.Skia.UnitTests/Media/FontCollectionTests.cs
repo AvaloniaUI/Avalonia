@@ -193,9 +193,95 @@ namespace Avalonia.Skia.UnitTests.Media
             }
         }
 
+        [Fact]
+        public void Should_Ignore_Family_Name_Casing_When_Resolving_A_Synthetic_Match()
+        {
+            var fontManager = new AliasFontManagerImpl(alias: "MyAlias");
+
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: fontManager)))
+            {
+                var fontCollection = new TestSystemFontCollection(fontManager);
+
+                Assert.True(fontCollection.TryGetGlyphTypeface(
+                    "MyAlias", FontStyle.Normal, FontWeight.Normal, FontStretch.Normal, out _));
+
+                // Casing must not decide whether a request gets a synthesised bold. A cache keyed
+                // ordinally sends this lookup past the synthesis branch and down the family-name
+                // search, which returns the nearest match raw - so the very same family renders
+                // faux-bold under one casing and regular weight under another.
+                Assert.True(fontCollection.TryGetGlyphTypeface(
+                    "MYALIAS", FontStyle.Normal, FontWeight.Black, FontStretch.Normal, out var upperCase));
+
+                Assert.Equal(FontSimulations.Bold, upperCase.FontSimulations);
+
+                var creationsAfterFirstCall = fontManager.StreamTypefaceCreations;
+
+                Assert.True(fontCollection.TryGetGlyphTypeface(
+                    "MyAlias", FontStyle.Normal, FontWeight.Black, FontStretch.Normal, out var mixedCase));
+
+                // One shared cache entry, so the other casing neither re-synthesises nor gets a
+                // second instance of the same face.
+                Assert.Same(upperCase, mixedCase);
+                Assert.Equal(creationsAfterFirstCall, fontManager.StreamTypefaceCreations);
+            }
+        }
+
+        [Fact]
+        public void Should_Not_Cache_A_Family_Twice_When_The_Platform_Returns_Another_Casing()
+        {
+            // The platform reports the family as "Noto Mono"; the caller asks in lower case, as any
+            // XAML author may.
+            var fontManager = new AliasFontManagerImpl(alias: "Noto Mono");
+
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: fontManager)))
+            {
+                var fontCollection = new TestSystemFontCollection(fontManager);
+
+                Assert.True(fontCollection.TryGetGlyphTypeface(
+                    "noto mono", FontStyle.Normal, FontWeight.Normal, FontStretch.Normal, out _));
+
+                // A cache keyed ordinally stores the requested casing beside the platform's own, but
+                // AddFontFamily de-duplicates case-insensitively and publishes only the first of the
+                // two, leaving the second bucket unreachable from every family-name search.
+                Assert.Single(fontCollection.GlyphTypefaceCache);
+                Assert.Equal(fontCollection.GlyphTypefaceCache.Count, fontCollection.Count);
+            }
+        }
+
+        [Fact]
+        public void Should_Reuse_An_Already_Cached_Synthetic_Glyph_Typeface()
+        {
+            var fontManager = new AliasFontManagerImpl(alias: "MyAlias");
+
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: fontManager)))
+            {
+                var fontCollection = new TestSystemFontCollection(fontManager);
+
+                Assert.True(fontCollection.TryGetGlyphTypeface(
+                    "MyAlias", FontStyle.Normal, FontWeight.Normal, FontStretch.Normal, out var regular));
+
+                Assert.True(fontCollection.TryCreateSyntheticGlyphTypeface(
+                    regular, FontStyle.Normal, FontWeight.Black, FontStretch.Normal, out var first));
+
+                Assert.Equal(FontSimulations.Bold, first.FontSimulations);
+
+                var creationsAfterFirstCall = fontManager.StreamTypefaceCreations;
+
+                Assert.True(fontCollection.TryCreateSyntheticGlyphTypeface(
+                    regular, FontStyle.Normal, FontWeight.Black, FontStretch.Normal, out var second));
+
+                // A second synthesis builds a GlyphTypeface that then loses the cache slot to the
+                // first one, so it is returned to the caller but never cached and never disposed -
+                // and GlyphTypeface has no finalizer, so its native typeface is retained until the
+                // process exits.
+                Assert.Same(first, second);
+                Assert.Equal(creationsAfterFirstCall, fontManager.StreamTypefaceCreations);
+            }
+        }
+
         /// <summary>
         /// Font manager whose <c>MyAlias</c> family resolves through the platform but is absent from
-        /// the installed family list — the shape of a platform alias (for instance Android's
+        /// the installed family list, the shape of a platform alias (for instance Android's
         /// <c>&lt;alias name="arial" to="sans-serif"/&gt;</c> in <c>/system/etc/fonts.xml</c>).
         /// Such a family cannot be found again by the family-name search, so nothing repairs a
         /// missing cache entry.
@@ -219,7 +305,9 @@ namespace Avalonia.Skia.UnitTests.Media
                 _alias = alias;
             }
 
-            /// <summary>Number of typefaces created from a stream, i.e. of synthetic emboldenings.</summary>
+            /// <summary>Number of typefaces created from a stream: both the alias resolution and every
+            /// synthetic emboldening go through this overload, so the counter also proves that a cached
+            /// result short-circuits the platform call.</summary>
             public int StreamTypefaceCreations { get; private set; }
 
             public string GetDefaultFontFamilyName() => _inner.GetDefaultFontFamilyName();
@@ -231,7 +319,7 @@ namespace Avalonia.Skia.UnitTests.Media
                 FontStretch stretch, [NotNullWhen(true)] out IPlatformTypeface? platformTypeface)
             {
                 // The alias always resolves to the regular face of the backing font, never to the
-                // requested weight — exactly what a platform alias does.
+                // requested weight, exactly what a platform alias does.
                 if (string.Equals(familyName, _alias, StringComparison.OrdinalIgnoreCase))
                 {
                     using var stream = OpenBackingFont();

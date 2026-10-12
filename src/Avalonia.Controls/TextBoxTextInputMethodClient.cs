@@ -76,10 +76,11 @@ namespace Avalonia.Controls
                     return;
                 }
 
-                _parent.SelectionStart = value.Start;
-                _parent.SelectionEnd = value.End;
-
-                RaiseSelectionChanged();
+                using (BeginChange())
+                {
+                    _parent.SelectionStart = value.Start;
+                    _parent.SelectionEnd = value.End;
+                }
             }
         }
 
