@@ -31,16 +31,25 @@ internal partial class X11Screens
         }
 
 
-        protected unsafe void UpdateWorkArea()
+        protected void UpdateWorkArea()
         {
-            var rect = default(PixelRect);
-            //Fallback value
-            rect = rect.Union(Bounds);
-            WorkingArea = Bounds;
+            // _NET_WORKAREA is one rect for the whole desktop; prefer mutter's per-monitor rects when available
+            var gtkAtom = XInternAtom(x11.Display, "_GTK_WORKAREAS_D0", true);
+            var wa = (gtkAtom != IntPtr.Zero ? ReadRects(gtkAtom) : null)?
+                         .FirstOrDefault(r => r.Width > 0 && r.Height > 0 && Bounds.Intersect(r) == r)
+                     ?? ReadRects(x11.Atoms._NET_WORKAREA)?.FirstOrDefault()
+                     ?? Bounds;
 
+            WorkingArea = Bounds.Intersect(wa);
+            if (WorkingArea.Width <= 0 || WorkingArea.Height <= 0)
+                WorkingArea = Bounds;
+        }
+
+        private PixelRect[]? ReadRects(IntPtr atom)
+        {
             var res = XGetWindowProperty(x11.Display,
                 x11.RootWindow,
-                x11.Atoms._NET_WORKAREA,
+                atom,
                 IntPtr.Zero,
                 new IntPtr(128),
                 false,
@@ -51,17 +60,24 @@ internal partial class X11Screens
                 out var bytesAfter,
                 out var prop);
 
-            if (res != (int)Status.Success || type == IntPtr.Zero ||
-                format == 0 || bytesAfter.ToInt64() != 0 || count.ToInt64() % 4 != 0)
-                return;
+            if (res != (int)Status.Success || type == IntPtr.Zero)
+                return null;
 
-            var pwa = (IntPtr*)prop;
-            var wa = new PixelRect(pwa[0].ToInt32(), pwa[1].ToInt32(), pwa[2].ToInt32(), pwa[3].ToInt32());
+            try
+            {
+                if (format == 0 || bytesAfter.ToInt64() != 0 || count.ToInt64() % 4 != 0)
+                    return null;
 
-            WorkingArea = Bounds.Intersect(wa);
-            if (WorkingArea.Width <= 0 || WorkingArea.Height <= 0)
-                WorkingArea = Bounds;
-            XFree(prop);
+                var p = (IntPtr*)prop;
+                var rects = new PixelRect[count.ToInt64() / 4];
+                for (var i = 0; i < rects.Length; i++)
+                    rects[i] = new PixelRect(p[i * 4].ToInt32(), p[i * 4 + 1].ToInt32(), p[i * 4 + 2].ToInt32(), p[i * 4 + 3].ToInt32());
+                return rects;
+            }
+            finally
+            {
+                XFree(prop);
+            }
         }
     }
 
