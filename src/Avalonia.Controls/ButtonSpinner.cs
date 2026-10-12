@@ -85,42 +85,6 @@ namespace Avalonia.Controls
             }
         }
 
-        private Button? _popupDecreaseButton;
-        private Button? PopupDecreaseButton
-        {
-            get => _popupDecreaseButton;
-            set
-            {
-                if (_popupDecreaseButton != null)
-                {
-                    _popupDecreaseButton.Click -= OnDecreaseButtonClick;
-                }
-                _popupDecreaseButton = value;
-                if (_popupDecreaseButton != null)
-                {
-                    _popupDecreaseButton.Click += OnDecreaseButtonClick;
-                }
-            }
-        }
-
-        private Button? _popupIncreaseButton;
-        private Button? PopupIncreaseButton
-        {
-            get => _popupIncreaseButton;
-            set
-            {
-                if (_popupIncreaseButton != null)
-                {
-                    _popupIncreaseButton.Click -= OnIncreaseButtonClick;
-                }
-                _popupIncreaseButton = value;
-                if (_popupIncreaseButton != null)
-                {
-                    _popupIncreaseButton.Click += OnIncreaseButtonClick;
-                }
-            }
-        }
-
         /// <summary>
         /// Initializes static members of the <see cref="ButtonSpinner"/> class.
         /// </summary>
@@ -161,8 +125,6 @@ namespace Avalonia.Controls
         {
             IncreaseButton = e.NameScope.Find<Button>("PART_IncreaseButton");
             DecreaseButton = e.NameScope.Find<Button>("PART_DecreaseButton");
-            PopupIncreaseButton = e.NameScope.Find<Button>("PART_PopupIncreaseButton");
-            PopupDecreaseButton = e.NameScope.Find<Button>("PART_PopupDecreaseButton");
             SetButtonUsage();
         }
 
@@ -302,16 +264,6 @@ namespace Avalonia.Controls
             if (DecreaseButton != null)
             {
                 DecreaseButton.IsEnabled = AllowSpin && ((ValidSpinDirection & ValidSpinDirections.Decrease) == ValidSpinDirections.Decrease);
-            }
-
-            if (PopupIncreaseButton != null)
-            {
-                PopupIncreaseButton.IsEnabled = AllowSpin && ((ValidSpinDirection & ValidSpinDirections.Increase) == ValidSpinDirections.Increase);
-            }
-
-            if (PopupDecreaseButton != null)
-            {
-                PopupDecreaseButton.IsEnabled = AllowSpin && ((ValidSpinDirection & ValidSpinDirections.Decrease) == ValidSpinDirections.Decrease);
             }
         }
 
