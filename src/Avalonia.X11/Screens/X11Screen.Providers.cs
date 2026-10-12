@@ -10,7 +10,7 @@ namespace Avalonia.X11.Screens;
 
 internal partial class X11Screens
 {
-    internal unsafe class X11Screen(MonitorInfo info, X11Info x11, IScalingProvider? scalingProvider, int id) : PlatformScreen(new PlatformHandle(info.Name, "XRandRMonitorName"))
+    internal unsafe class X11Screen(MonitorInfo info, X11Info x11, X11Globals globals, IScalingProvider? scalingProvider, int id) : PlatformScreen(new PlatformHandle(info.Name, "XRandRMonitorName"))
     {
         public Size? PhysicalSize { get; set; }
 
@@ -33,16 +33,30 @@ internal partial class X11Screens
 
         protected void UpdateWorkArea()
         {
-            // _NET_WORKAREA is one rect for the whole desktop; prefer mutter's per-monitor rects when available
-            var gtkAtom = XInternAtom(x11.Display, "_GTK_WORKAREAS_D0", true);
-            var wa = (gtkAtom != IntPtr.Zero ? ReadRects(gtkAtom) : null)?
-                         .FirstOrDefault(r => r.Width > 0 && r.Height > 0 && Bounds.Intersect(r) == r)
-                     ?? ReadRects(x11.Atoms._NET_WORKAREA)?.FirstOrDefault()
-                     ?? Bounds;
-
-            WorkingArea = Bounds.Intersect(wa);
+            WorkingArea = Bounds.Intersect(GetWorkArea() ?? Bounds);
             if (WorkingArea.Width <= 0 || WorkingArea.Height <= 0)
                 WorkingArea = Bounds;
+        }
+
+        private PixelRect? GetWorkArea()
+        {
+            var desktop = XGetWindowPropertyAsIntPtrArray(x11.Display, x11.RootWindow,
+                x11.Atoms._NET_CURRENT_DESKTOP, x11.Atoms.CARDINAL) is { Length: > 0 } d ? (int)d[0] : 0;
+
+            if (globals.NetSupported?.Contains(x11.Atoms._GTK_WORKAREAS) == true
+                && ReadRects(x11.Atoms.GetAtom("_GTK_WORKAREAS_D" + desktop)) is { } gtk)
+            {
+                foreach (var r in gtk)
+                    if (Bounds.Intersects(r))
+                        return r;
+            }
+
+            if (ReadRects(x11.Atoms._NET_WORKAREA) is not { Length: > 0 } all)
+                return null;
+
+            // _NET_WORKAREA is a single rect spanning all monitors, so like GTK only apply it to the primary one
+            var wa = all[desktop < all.Length ? desktop : 0];
+            return IsPrimary || Bounds.Contains(wa) ? wa : null;
         }
 
         private PixelRect[]? ReadRects(IntPtr atom)
@@ -51,7 +65,7 @@ internal partial class X11Screens
                 x11.RootWindow,
                 atom,
                 IntPtr.Zero,
-                new IntPtr(128),
+                new IntPtr(0x7fffffff),
                 false,
                 AnyPropertyType,
                 out var type,
@@ -83,7 +97,7 @@ internal partial class X11Screens
 
     internal class FallBackScreen : X11Screen
     {
-        public FallBackScreen(PixelRect pixelRect, X11Info x11) : base(default, x11, null, 0)
+        public FallBackScreen(PixelRect pixelRect, X11Info x11, X11Globals globals) : base(default, x11, globals, null, 0)
         {
             Bounds = pixelRect;
             DisplayName = "Default";
@@ -126,6 +140,7 @@ internal partial class X11Screens
     {
         private MonitorInfo[]? _cache;
         private readonly X11Info _x11;
+        private readonly X11Globals _globals;
         private readonly IntPtr _window;
         private readonly IScalingProvider _scalingProvider;
 
@@ -136,6 +151,7 @@ internal partial class X11Screens
         public Randr15ScreensImpl(AvaloniaX11Platform platform)
         {
             _x11 = platform.Info;
+            _globals = platform.Globals;
             _window = CreateEventWindow(platform, OnEvent);
             _scalingProvider = GetScalingProvider(platform);
             XRRSelectInput(_x11.Display, _window,
@@ -148,12 +164,16 @@ internal partial class X11Screens
                 scalingWithChanges.SettingsChanged += () => Changed?.Invoke();
 
             platform.Globals.RootPropertyChanged += OnRootPropertyChanged;
+            platform.Globals.NetSupportedChanged += PostChanged;
         }
+
+        private void PostChanged() => Dispatcher.UIThread.Post(() => Changed?.Invoke(), DispatcherPriority.Normal);
 
         private void OnRootPropertyChanged(IntPtr atom)
         {
-            if (atom == _x11.Atoms._NET_WORKAREA)
-                Dispatcher.UIThread.Post(() => Changed?.Invoke(), DispatcherPriority.Normal);
+            if (atom == _x11.Atoms._NET_WORKAREA || atom == _x11.Atoms._NET_CURRENT_DESKTOP
+                || _x11.Atoms.GetAtomName(atom)?.StartsWith("_GTK_WORKAREAS_D", StringComparison.Ordinal) == true)
+                PostChanged();
         }
 
         private void OnEvent(ref XEvent ev)
@@ -348,7 +368,7 @@ internal partial class X11Screens
             {
                 if (infos[i].Name == key)
                 {
-                    return new X11Screen(infos[i], _x11, _scalingProvider, i);
+                    return new X11Screen(infos[i], _x11, _globals, _scalingProvider, i);
                 }
             }
 
@@ -373,6 +393,7 @@ internal partial class X11Screens
     private class FallbackScreensImpl : IX11RawScreenInfoProvider
     {
         private readonly X11Info _info;
+        private readonly X11Globals _globals;
         private XGeometry _geo;
 
         public event Action? Changed
@@ -384,6 +405,7 @@ internal partial class X11Screens
         public FallbackScreensImpl(AvaloniaX11Platform platform)
         {
             _info = platform.Info;
+            _globals = platform.Globals;
             if (UpdateRootWindowGeometry())
                 platform.Globals.RootGeometryChangedChanged += () => UpdateRootWindowGeometry();
         }
@@ -392,7 +414,7 @@ internal partial class X11Screens
 
         public X11Screen CreateScreenFromKey(nint key)
         {
-            return new FallBackScreen(new PixelRect(0, 0, _geo.width, _geo.height), _info);
+            return new FallBackScreen(new PixelRect(0, 0, _geo.width, _geo.height), _info, _globals);
         }
 
         public MonitorInfo GetMonitorInfoByKey(nint key)
