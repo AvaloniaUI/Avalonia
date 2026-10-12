@@ -93,11 +93,6 @@
                           Padding="{TemplateBinding Padding}"
                           HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                           VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}">
-          <ContentPresenter.Transitions>
-            <Transitions>
-              <BrushTransition Property="Background" Duration="{DynamicResource ControlFasterAnimationDuration}" />
-            </Transitions>
-          </ContentPresenter.Transitions>
         </ContentPresenter>
       </ControlTemplate>
     </Setter>
