@@ -51,12 +51,49 @@ internal partial class X11Screens
                         return r;
             }
 
-            if (ReadRects(x11.Atoms._NET_WORKAREA) is not { Length: > 0 } all)
+            var wa = ReadRects(x11.Atoms._NET_WORKAREA) is { Length: > 0 } all
+                ? all[desktop < all.Length ? desktop : 0]
+                : (PixelRect?)null;
+            if (wa is { } single && Bounds.Contains(single))
+                return wa;
+
+            // _NET_WORKAREA is a single rect spanning all monitors, so compute this monitor's area from the struts
+            // and, like GTK, only apply _NET_WORKAREA to the primary monitor if that isn't possible
+            return GetStrutWorkArea() ?? (IsPrimary ? wa : null);
+        }
+
+        private PixelRect? GetStrutWorkArea()
+        {
+            var clients = XGetWindowPropertyAsIntPtrArray(x11.Display, x11.RootWindow,
+                x11.Atoms._NET_CLIENT_LIST, x11.Atoms.WINDOW);
+            if (clients == null || !XGetGeometry(x11.Display, x11.RootWindow, out _, out _, out _, out var w, out var h, out _, out _))
                 return null;
 
-            // _NET_WORKAREA is a single rect spanning all monitors, so like GTK only apply it to the primary one
-            var wa = all[desktop < all.Length ? desktop : 0];
-            return IsPrimary || Bounds.Contains(wa) ? wa : null;
+            int left = Bounds.X, top = Bounds.Y, right = Bounds.Right, bottom = Bounds.Bottom;
+            foreach (var client in clients)
+            {
+                var s = XGetWindowPropertyAsIntPtrArray(x11.Display, client, x11.Atoms._NET_WM_STRUT_PARTIAL,
+                            x11.Atoms.CARDINAL) is { Length: >= 12 } partial
+                    ? partial
+                    : XGetWindowPropertyAsIntPtrArray(x11.Display, client, x11.Atoms._NET_WM_STRUT, x11.Atoms.CARDINAL);
+                if (s is not { Length: >= 4 })
+                    continue;
+
+                var full = s.Length < 12;
+                if (s[0] > 0 && Hits(0, full ? 0 : s[4], s[0], full ? h : s[5] - s[4] + 1))
+                    left = Math.Max(left, (int)s[0]);
+                if (s[1] > 0 && Hits(w - s[1], full ? 0 : s[6], s[1], full ? h : s[7] - s[6] + 1))
+                    right = Math.Min(right, w - (int)s[1]);
+                if (s[2] > 0 && Hits(full ? 0 : s[8], 0, full ? w : s[9] - s[8] + 1, s[2]))
+                    top = Math.Max(top, (int)s[2]);
+                if (s[3] > 0 && Hits(full ? 0 : s[10], h - s[3], full ? w : s[11] - s[10] + 1, s[3]))
+                    bottom = Math.Min(bottom, h - (int)s[3]);
+            }
+
+            return new PixelRect(left, top, right - left, bottom - top);
+
+            bool Hits(nint x, nint y, nint width, nint height) =>
+                Bounds.Intersects(new PixelRect((int)x, (int)y, (int)width, (int)height));
         }
 
         private PixelRect[]? ReadRects(IntPtr atom)
