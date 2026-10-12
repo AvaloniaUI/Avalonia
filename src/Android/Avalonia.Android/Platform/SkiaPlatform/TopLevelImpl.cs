@@ -120,7 +120,12 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public void SetCursor(ICursorImpl? cursor)
         {
-            //still not implemented
+            cursor ??= CursorImpl.DefaultCursor;
+
+            if(cursor is CursorImpl androidCursor)
+            {
+                ViewCompat.SetPointerIcon(_view, androidCursor.PointerIcon);
+            }
         }
 
         public void SetInputRoot(IInputRoot inputRoot)
