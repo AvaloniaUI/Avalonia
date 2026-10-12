@@ -8,7 +8,7 @@
        so a 20px text line fits the 24px compact min-height (same 1/3 rhythm as compact ComboBoxPadding). -->
   <Thickness x:Key="TextControlThemePadding">10,1,6,3</Thickness>
   <!-- Base 12,0,12,0: v1's -8 horizontal trim applied; vertical stays 0 because the Fluent 2 row height
-       comes from ListBoxItemMinHeight (defined locally in Controls/ListBoxItem.xaml, not overridable here). -->
+       comes from ListBoxItemMinHeight (defined locally in Controls/ListBoxItem.axaml, not overridable here). -->
   <x:Double x:Key="ListBoxItemMinHeight">24</x:Double>
   <Thickness x:Key="ListBoxItemPadding">4,0,4,0</Thickness>
   <x:Double x:Key="ListViewItemMinHeight">24</x:Double>

@@ -9,27 +9,27 @@
       <ResourceDictionary.MergedDictionaries>
         <!-- Keep custom palettes higher priority than default BaseColorsPalette and SystemAccentColors
              As that's an only place for user to redefine palette in a good way -->
-        <ResourceInclude Source="/Accents/BaseColorsPalette.xaml" />
-        <ResourceInclude Source="/Accents/Fluent2ColorPalette.xaml" />
+        <ResourceInclude Source="/Accents/BaseColorsPalette.axaml" />
+        <ResourceInclude Source="/Accents/Fluent2ColorPalette.axaml" />
         <accents:SystemAccentColors />
         <fluent:ColorPaletteResourcesCollection />
 
         <!-- Invariant strings, then culture-aware overrides: the provider is merged after the
              invariant dictionary so a translation for the current UI culture wins, and it
              returns false for untranslated cultures, falling back to invariant. -->
-        <ResourceInclude Source="/Strings/InvariantResources.xaml" />
+        <ResourceInclude Source="/Strings/InvariantResources.axaml" />
         <strings:LocalizedStringsProvider />
 
         <!-- Resources and brushes will be merged into current dictionary for slightly better
              performance and possible optimizations (MergeResourceInclude must come last) -->
-        <MergeResourceInclude Source="/Accents/BaseResources.xaml" />
-        <MergeResourceInclude Source="/Accents/Fluent2TokenResources.xaml" />
+        <MergeResourceInclude Source="/Accents/BaseResources.axaml" />
+        <MergeResourceInclude Source="/Accents/Fluent2TokenResources.axaml" />
       </ResourceDictionary.MergedDictionaries>
       
       <!-- These are not part of MergedDictionaries so we can add or remove them easier -->
-      <ResourceInclude x:Key="CompactStyles" Source="/DensityStyles/Compact.xaml" />
+      <ResourceInclude x:Key="CompactStyles" Source="/DensityStyles/Compact.axaml" />
     </ResourceDictionary>
   </Styles.Resources>
   
-  <StyleInclude Source="/Controls/FluentControls.xaml" />
+  <StyleInclude Source="/Controls/FluentControls.axaml" />
 </Styles>

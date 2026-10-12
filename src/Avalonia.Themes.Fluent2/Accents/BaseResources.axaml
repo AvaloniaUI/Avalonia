@@ -56,13 +56,13 @@
   <x:Double x:Key="FlyoutThemeMinHeight">40</x:Double>
   <x:Double x:Key="FlyoutThemeMaxHeight">758</x:Double>
 
-  <!-- Moved from FlyoutPresenter.xaml -->
+  <!-- Moved from FlyoutPresenter.axaml -->
   <Thickness x:Key="FlyoutBorderThemePadding">0</Thickness>
 
-  <!-- Moved from MenuItem.xaml -->
+  <!-- Moved from MenuItem.axaml -->
   <Thickness x:Key="MenuFlyoutScrollerMargin">0,2,0,2</Thickness>
 
-  <!-- Moved from Menu.xaml -->
+  <!-- Moved from Menu.axaml -->
   <Thickness x:Key="MenuBarItemPadding">10,4,10,4</Thickness>
 
   <ResourceDictionary.ThemeDictionaries>

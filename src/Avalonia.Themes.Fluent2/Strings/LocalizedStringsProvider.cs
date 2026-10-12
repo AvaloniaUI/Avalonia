@@ -9,7 +9,7 @@ namespace Avalonia.Themes.Fluent2.Strings;
 /// Answers the theme's string resource keys with a translation for
 /// <see cref="CultureInfo.CurrentUICulture"/>. Returns false for cultures without a
 /// translation (and for all other keys), which falls the lookup through to the
-/// invariant English values in InvariantResources.xaml.
+/// invariant English values in InvariantResources.axaml.
 /// </summary>
 internal sealed class LocalizedStringsProvider : ResourceProvider
 {
