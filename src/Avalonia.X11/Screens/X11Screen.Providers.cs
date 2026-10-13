@@ -41,7 +41,7 @@ internal partial class X11Screens
         private PixelRect? GetWorkArea()
         {
             var desktop = XGetWindowPropertyAsIntPtrArray(x11.Display, x11.RootWindow,
-                x11.Atoms._NET_CURRENT_DESKTOP, x11.Atoms.CARDINAL) is { Length: > 0 } d ? (int)d[0] : 0;
+                x11.Atoms._NET_CURRENT_DESKTOP, x11.Atoms.CARDINAL) is { Length: > 0 } d ? (uint)d[0] : 0u;
 
             if (globals.NetSupported?.Contains(x11.Atoms._GTK_WORKAREAS) == true
                 && ReadRects(x11.Atoms.GetAtom("_GTK_WORKAREAS_D" + desktop)) is { } gtk)
@@ -96,40 +96,13 @@ internal partial class X11Screens
                 Bounds.Intersects(new PixelRect((int)x, (int)y, (int)width, (int)height));
         }
 
-        private PixelRect[]? ReadRects(IntPtr atom)
-        {
-            var res = XGetWindowProperty(x11.Display,
-                x11.RootWindow,
-                atom,
-                IntPtr.Zero,
-                new IntPtr(int.MaxValue),
-                false,
-                AnyPropertyType,
-                out var type,
-                out var format,
-                out var count,
-                out var bytesAfter,
-                out var prop);
-
-            if (res != (int)Status.Success || type == IntPtr.Zero)
-                return null;
-
-            try
-            {
-                if (format == 0 || bytesAfter.ToInt64() != 0 || count.ToInt64() % 4 != 0)
-                    return null;
-
-                var p = (IntPtr*)prop;
-                var rects = new PixelRect[count.ToInt64() / 4];
-                for (var i = 0; i < rects.Length; i++)
-                    rects[i] = new PixelRect(p[i * 4].ToInt32(), p[i * 4 + 1].ToInt32(), p[i * 4 + 2].ToInt32(), p[i * 4 + 3].ToInt32());
-                return rects;
-            }
-            finally
-            {
-                XFree(prop);
-            }
-        }
+        private PixelRect[]? ReadRects(IntPtr atom) =>
+            XGetWindowPropertyAsIntPtrArray(x11.Display, x11.RootWindow, atom, x11.Atoms.CARDINAL) is { } v
+            && v.Length % 4 == 0
+                ? Enumerable.Range(0, v.Length / 4)
+                    .Select(i => new PixelRect((int)v[i * 4], (int)v[i * 4 + 1], (int)v[i * 4 + 2], (int)v[i * 4 + 3]))
+                    .ToArray()
+                : null;
     }
 
     internal class FallBackScreen : X11Screen
