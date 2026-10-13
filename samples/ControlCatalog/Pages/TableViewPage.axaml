@@ -23,10 +23,27 @@
 
   </ContentPage.Resources>
 
-  <DockPanel>
+  <ContentPage.Styles>
 
-    <StackPanel Orientation="Horizontal"
-                DockPanel.Dock="Top">
+    <!-- TableViewColumn is not a visual; the query looks for its container starting at the column's logical parent, the TableView. -->
+    <ContainerQuery Name="TablePage" Query="max-width:700">
+      <Style Selector="TableView.responsive TableViewColumn.tertiary">
+        <Setter Property="IsVisible" Value="False" />
+      </Style>
+    </ContainerQuery>
+
+    <ContainerQuery Name="TablePage" Query="max-width:500">
+      <Style Selector="TableView.responsive TableViewColumn.secondary">
+        <Setter Property="IsVisible" Value="False" />
+      </Style>
+    </ContainerQuery>
+
+  </ContentPage.Styles>
+
+  <DockPanel Container.Name="TablePage"
+             Container.Sizing="Width">
+
+    <WrapPanel DockPanel.Dock="Top">
 
       <CheckBox Name="UseStarSizes"
                 Content="Use star-sized columns"
@@ -43,10 +60,16 @@
                 IsChecked="True"
                 Margin="8" />
 
-    </StackPanel>
+      <CheckBox Name="HideColumnsWhenNarrow"
+                Content="Hide columns when narrow"
+                IsChecked="True"
+                Margin="8" />
+
+    </WrapPanel>
 
     <TableView ItemsSource="{Binding Countries}"
-               CanUserResizeColumns="{Binding #CanUserResizeColumns.IsChecked}">
+               CanUserResizeColumns="{Binding #CanUserResizeColumns.IsChecked}"
+               Classes.responsive="{Binding #HideColumnsWhenNarrow.IsChecked}">
       <TableView.Columns>
         <TableViewColumn Header="Name"
                          Binding="{Binding Name}"
@@ -56,14 +79,17 @@
                          IsVisible="{Binding #ShowRegionColumn.IsChecked}"
                          Width="{Binding #UseStarSizes.IsChecked, Converter={StaticResource TableViewColumnWidthConverter}, ConverterParameter=2}" />
         <TableViewColumn Header="Population"
+                         Classes="secondary"
                          Binding="{Binding Population, StringFormat=N0}"
                          Width="{Binding #UseStarSizes.IsChecked, Converter={StaticResource TableViewColumnWidthConverter}, ConverterParameter=1.5}"
                          HorizontalContentAlignment="Right" />
         <TableViewColumn Header="Area"
+                         Classes="tertiary"
                          Binding="{Binding Area, StringFormat=N0}"
                          Width="{Binding #UseStarSizes.IsChecked, Converter={StaticResource TableViewColumnWidthConverter}, ConverterParameter=1}"
                          HorizontalContentAlignment="Right" />
         <TableViewColumn Header="GDP"
+                         Classes="tertiary"
                          Binding="{Binding GDP, StringFormat=N0}"
                          Width="{Binding #UseStarSizes.IsChecked, Converter={StaticResource TableViewColumnWidthConverter}, ConverterParameter=1}"
                          CellTheme="{StaticResource GdpCellTheme}"
