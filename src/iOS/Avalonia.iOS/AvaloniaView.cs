@@ -427,6 +427,15 @@ namespace Avalonia.iOS
                 _input.ResetTouches();
         }
 
+        /// <inheritdoc />
+        public override void MovedToWindow()
+        {
+            base.MovedToWindow();
+#if !TVOS
+            DisplayLinkTimer.WarnIfLimitedTo60Hz(Window?.WindowScene?.Screen);
+#endif
+        }
+
         internal void SetRenderTarget(Metal.MetalRenderTarget target)
         {
             _currentRenderTarget = target;

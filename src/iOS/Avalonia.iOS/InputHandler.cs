@@ -138,7 +138,8 @@ internal sealed class InputHandler
 #if !TVOS
         // UIKit delivers touches at the main thread's display link rate, which stays at 60 Hz on ProMotion displays
         // unless a main thread display link asks for more. One process-wide link is kept while any view has touches down.
-        var holds = _knownTouches.Count > 0 && DisplayLinkTimer.CanExceed60Hz;
+        var holds = _knownTouches.Count > 0
+            && (_holdsTouchDisplayLink || DisplayLinkTimer.CanExceed60Hz(_view.Window?.WindowScene?.Screen));
         if (holds == _holdsTouchDisplayLink)
             return;
 
@@ -402,14 +403,13 @@ internal sealed class InputHandler
         if (_momentumDisplayLink is not { } link)
             return;
 
-        // The deceleration rate and velocity are per 60 Hz frame, scale them to the time since the last update.
+        // The deceleration rate and velocity are per 60 Hz frame, so scale them by the elapsed time.
         var timestamp = link.TargetTimestamp;
         var frames = (timestamp - (_lastMomentumTimestamp > 0 ? _lastMomentumTimestamp : link.Timestamp)) * 60;
         _lastMomentumTimestamp = timestamp;
-        // Don't catch up with a long stall (such as a trip to the background) in a single jump.
-        frames = Math.Min(frames, 4);
+        frames = Math.Min(frames, 4); // No big jump after a stall.
         var deceleration = Math.Pow(DecelerationRate, frames);
-        // The distance that per-frame steps would have covered: DecelerationRate per step, summed over the frames.
+        // Distance the per-frame steps would have covered.
         var distance = DecelerationRate * (1 - deceleration) / (1 - DecelerationRate);
         var delta = new Vector(_momentumVelocityX * distance, _momentumVelocityY * distance);
         _momentumVelocityX *= deceleration;
