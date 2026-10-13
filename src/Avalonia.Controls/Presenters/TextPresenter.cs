@@ -1010,7 +1010,6 @@ namespace Avalonia.Controls.Presenters
             }
         }
 
-        internal Rect GetCursorRectangle() => CursorRectangle;
 
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
