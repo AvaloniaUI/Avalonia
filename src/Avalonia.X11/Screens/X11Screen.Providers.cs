@@ -51,11 +51,11 @@ internal partial class X11Screens
                         return r;
             }
 
-            var wa = ReadRects(x11.Atoms._NET_WORKAREA) is { Length: > 0 } all
+            PixelRect? wa = ReadRects(x11.Atoms._NET_WORKAREA) is { Length: > 0 } all
                 ? all[desktop < all.Length ? desktop : 0]
-                : (PixelRect?)null;
+                : null;
             if (wa is { } single && Bounds.Contains(single))
-                return wa;
+                return single;
 
             // _NET_WORKAREA is a single rect spanning all monitors, so compute this monitor's area from the struts
             // and, like GTK, only apply _NET_WORKAREA to the primary monitor if that isn't possible
