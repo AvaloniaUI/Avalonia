@@ -266,7 +266,7 @@ namespace Avalonia.Controls
             });
             ScalingChanged += OnScalingChangedUpdateDecorations;
 
-            CreatePlatformImplBinding(TitleProperty, title => PlatformImpl!.SetTitle(title));
+            CreatePlatformImplBinding(TitleProperty, title => PlatformImpl!.SetTitle(title?.Replace("\0", string.Empty)));
             CreatePlatformImplBinding(IconProperty, SetEffectiveIcon);
             CreatePlatformImplBinding(CanResizeProperty, canResize => PlatformImpl!.CanResize(canResize));
             CreatePlatformImplBinding(CanMinimizeProperty, canMinimize => PlatformImpl!.SetCanMinimize(canMinimize));
