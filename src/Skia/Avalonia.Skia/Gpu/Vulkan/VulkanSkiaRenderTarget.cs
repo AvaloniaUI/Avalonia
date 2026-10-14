@@ -24,8 +24,7 @@ class VulkanSkiaRenderTarget : ISkiaGpuRenderTarget
 
     public ISkiaGpuRenderSession BeginRenderingSession(IRenderTarget.RenderTargetSceneInfo sceneInfo)
     {
-        // TODO: use expectedPixelSize
-        var session = _target.BeginDraw();
+        var session = _target.BeginDraw(sceneInfo);
         bool success = false;
         try
         {

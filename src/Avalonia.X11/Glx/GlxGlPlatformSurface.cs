@@ -26,7 +26,6 @@ namespace Avalonia.X11.Glx
         {
             private readonly GlxContext _context;
             private readonly EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo _info;
-            private PixelSize? _lastSize;
 
             public RenderTarget(GlxContext context,  EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo info)
             {
@@ -43,27 +42,25 @@ namespace Avalonia.X11.Glx
             public IGlPlatformSurfaceRenderingSession BeginDraw(IRenderTarget.RenderTargetSceneInfo sceneInfo)
             {
                 var size = sceneInfo.Size;
-                //if (expectedSize.HasValue)
+                var beginDrawScope = (_info as EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfoWithBeginDraw)
+                    ?.BeginDraw(sceneInfo);
+                try
                 {
-                    XLib.XConfigureResizeWindow(_context.Display.X11Info.DeferredDisplay,
-                        _info.Handle, size.Width, size.Height);
-                    XLib.XFlush(_context.Display.X11Info.DeferredDisplay);
-
-                    if (_lastSize != size)
-                    {
-                        XLib.XSync(_context.Display.X11Info.DeferredDisplay, true);
-                        _lastSize = size;
-                    }
                     _context.Glx.WaitX();
-                }
 
-                
-                var oldContext = _context.MakeCurrent(_info.Handle);
-                
-                // Reset to default FBO first
-                _context.GlInterface.BindFramebuffer(GL_FRAMEBUFFER, 0);
-                    
-                return new Session(_context, _info, size, oldContext);
+                    var oldContext = _context.MakeCurrent(_info.Handle);
+
+                    // Reset to default FBO first
+                    _context.GlInterface.BindFramebuffer(GL_FRAMEBUFFER, 0);
+
+                    var session = new Session(_context, _info, size, oldContext, beginDrawScope);
+                    beginDrawScope = null;
+                    return session;
+                }
+                finally
+                {
+                    beginDrawScope?.Dispose();
+                }
             }
 
             private class Session : IGlPlatformSurfaceRenderingSession
@@ -72,16 +69,18 @@ namespace Avalonia.X11.Glx
                 private readonly EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo _info;
                 private readonly PixelSize? _size;
                 private readonly IDisposable _clearContext;
+                private readonly IDisposable? _beginDrawScope;
                 public IGlContext Context => _context;
 
                 public Session(GlxContext context, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo info,
                     PixelSize? size,
-                    IDisposable clearContext)
+                    IDisposable clearContext, IDisposable? beginDrawScope)
                 {
                     _context = context;
                     _info = info;
                     _size = size;
                     _clearContext = clearContext;
+                    _beginDrawScope = beginDrawScope;
                 }
 
                 public void Dispose()
@@ -91,6 +90,7 @@ namespace Avalonia.X11.Glx
                     _context.Display.SwapBuffers(_info.Handle);
                     _context.Glx.WaitX();
                     _clearContext.Dispose();
+                    _beginDrawScope?.Dispose();
                 }
 
                 public PixelSize Size => _size ?? _info.Size;

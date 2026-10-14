@@ -49,15 +49,18 @@ internal class VulkanSupport
             new XidSurface(_display, (INativePlatformHandleSurface)handle);
     }
 
-    class XidSurface : IVulkanKhrSurfacePlatformSurface 
+    class XidSurface : IVulkanKhrSurfacePlatformSurfaceWithBeginDraw
     {
         private readonly IntPtr _display;
         private readonly INativePlatformHandleSurface _handle;
+        // Null for XIDs that aren't an X11Window render child (nothing of ours sizes those).
+        private readonly X11RenderWindowResizer? _resizer;
 
         public XidSurface(IntPtr display, INativePlatformHandleSurface handle)
         {
             _display = display;
             _handle = handle;
+            _resizer = (handle as X11Window.SurfacePlatformHandle)?.RenderWindowResizer;
         }
 
         public void Dispose()
@@ -66,7 +69,15 @@ internal class VulkanSupport
         }
 
         public double Scaling => _handle.Scaling;
-        public PixelSize Size => _handle.Size;
+
+        // Render thread: size the child to the scene before the swapchain is validated against it.
+        public IDisposable? BeginDraw(IRenderTarget.RenderTargetSceneInfo sceneInfo)
+        {
+            _resizer?.Resize(sceneInfo.Size);
+            return null;
+        }
+
+        public PixelSize Size => _resizer?.Size ?? _handle.Size;
         public ulong CreateSurface(IVulkanPlatformGraphicsContext context) =>
             CreateXlibSurface(_display, _handle.Handle, context.Instance);
     }

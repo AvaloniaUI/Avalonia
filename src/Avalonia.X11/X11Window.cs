@@ -70,7 +70,7 @@ namespace Avalonia.X11
         private X11Window? _transientParent;
         private RawEventGrouper? _rawEventGrouper;
         private bool _useRenderWindow = false;
-        private bool _useCompositorDrivenRenderWindowResize = false;
+        private readonly X11RenderWindowResizer? _renderWindowResizer;
         private bool _usePositioningFlags = false;
         private X11WindowMode _mode;
         private IWindowIconImpl? _iconImpl;
@@ -126,7 +126,9 @@ namespace Avalonia.X11
 
             XVisualInfo? visualInfo = null;
 
-            // OpenGL seems to be do weird things to it's current window which breaks resize sometimes
+            // OpenGL seems to be do weird things to it's current window which breaks resize sometimes.
+            // The render child is sized from the render thread to the scene being drawn (see
+            // X11RenderWindowResizer), never from the UI thread.
             _useRenderWindow = glfeature != null;
 
             var glx = glfeature as GlxPlatformGraphics;
@@ -134,9 +136,6 @@ namespace Avalonia.X11
             if (glx != null)
             {
                 visualInfo = *glx.Display.VisualInfo;
-                // TODO: We should query this from the active render surface, however we don't actually track what
-                // the target sufrace currently is
-                _useCompositorDrivenRenderWindowResize = true;
             }
             else if (egl != null)
             {
@@ -198,6 +197,8 @@ namespace Avalonia.X11
                     (int)CreateWindowArgs.InputOutput,
                     visual,
                     new UIntPtr((uint)renderValueMask), ref attr);
+                _renderWindowResizer = new X11RenderWindowResizer(_x11.DeferredDisplay, _renderHandle,
+                    new PixelSize(defaultWidth, defaultHeight));
             }
             else
             {
@@ -252,9 +253,9 @@ namespace Avalonia.X11
             
             if (egl != null)
                 surfaces.Insert(0,
-                    new EglGlPlatformSurface(new SurfaceInfo(this, _x11.DeferredDisplay, _handle, _renderHandle)));
+                    new EglGlPlatformSurface(new SurfaceInfo(this, _renderWindowResizer!, _renderHandle)));
             if (glx != null)
-                surfaces.Insert(0, new GlxGlPlatformSurface(new SurfaceInfo(this, _x11.DeferredDisplay, _handle, _renderHandle)));
+                surfaces.Insert(0, new GlxGlPlatformSurface(new SurfaceInfo(this, _renderWindowResizer!, _renderHandle)));
 
             surfaces.Add(new SurfacePlatformHandle(this));
 
@@ -325,32 +326,28 @@ namespace Avalonia.X11
             XSync(_x11.Display, false);
         }
 
-        private class SurfaceInfo  : EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo
+        private class SurfaceInfo : EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfoWithBeginDraw
         {
             private readonly X11Window _window;
-            private readonly IntPtr _display;
-            private readonly IntPtr _parent;
+            private readonly X11RenderWindowResizer _resizer;
 
-            public SurfaceInfo(X11Window window, IntPtr display, IntPtr parent, IntPtr xid)
+            public SurfaceInfo(X11Window window, X11RenderWindowResizer resizer, IntPtr xid)
             {
                 _window = window;
-                _display = display;
-                _parent = parent;
+                _resizer = resizer;
                 Handle = xid;
             }
+
             public IntPtr Handle { get; }
 
-            public PixelSize Size
+            // Render thread: size the child to the scene before the GL surface is used at that size.
+            public IDisposable? BeginDraw(IRenderTarget.RenderTargetSceneInfo sceneInfo)
             {
-                get
-                {
-                    XLockDisplay(_display);
-                    XGetGeometry(_display, _parent, out var geo);
-                    XResizeWindow(_display, Handle, geo.width, geo.height);
-                    XUnlockDisplay(_display);
-                    return new PixelSize(geo.width, geo.height);
-                }
+                _resizer.Resize(sceneInfo.Size);
+                return null;
             }
+
+            public PixelSize Size => _resizer.Size;
 
             public double Scaling => _window.RenderScaling;
         }
@@ -721,9 +718,6 @@ namespace Avalonia.X11
 
                     }, DispatcherPriority.AsyncRenderTargetResize);
                 
-                if (_useRenderWindow && !_useCompositorDrivenRenderWindowResize)
-                    XConfigureResizeWindow(_x11.Display, _renderHandle, ev.ConfigureEvent.width,
-                        ev.ConfigureEvent.height);
                 if (_xSyncState == XSyncState.WaitConfigure)
                 {
                     _xSyncState = XSyncState.WaitPaint;
@@ -1351,8 +1345,6 @@ namespace Avalonia.X11
             var pixelSize = ToPixelSize(clientSize);
             UpdateSizeHints(pixelSize);
             XConfigureResizeWindow(_x11.Display, _handle, pixelSize);
-            if (_useRenderWindow && !_useCompositorDrivenRenderWindowResize)
-                XConfigureResizeWindow(_x11.Display, _renderHandle, pixelSize);
             XFlush(_x11.Display);
 
             if (force || !_wasMappedAtLeastOnce || (_overrideRedirect && needImmediatePopupResize))
@@ -1779,6 +1771,8 @@ namespace Avalonia.X11
             public PixelSize Size => _owner.ToPixelSize(_owner.ClientSize);
 
             public double Scaling => _owner.RenderScaling;
+
+            internal X11RenderWindowResizer? RenderWindowResizer => _owner._renderWindowResizer;
 
             public SurfacePlatformHandle(X11Window owner)
             {

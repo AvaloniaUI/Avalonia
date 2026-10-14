@@ -14,10 +14,23 @@ namespace Avalonia.OpenGL.Egl
             double Scaling { get; }
         }
         
+        //TODO13: merge
         [PrivateApi]
         public interface IEglWindowGlPlatformSurfaceInfoWithWaitPolicy : IEglWindowGlPlatformSurfaceInfo
         {
             public bool SkipWaits { get; }
+        }
+
+        /// <summary>
+        /// Lets the platform adjust the native window to the scene that is about to be rendered, e.g. resize a
+        /// child window used as the render target. Called on the render thread before <see cref="IEglWindowGlPlatformSurfaceInfo.Size"/>
+        /// is read for the frame. The returned disposable, if any, is disposed once the frame has been presented.
+        /// </summary>
+        //TODO13: merge
+        [PrivateApi]
+        public interface IEglWindowGlPlatformSurfaceInfoWithBeginDraw : IEglWindowGlPlatformSurfaceInfo
+        {
+            IDisposable? BeginDraw(IRenderTarget.RenderTargetSceneInfo sceneInfo);
         }
         
         private readonly IEglWindowGlPlatformSurfaceInfo _info;
@@ -57,20 +70,31 @@ namespace Avalonia.OpenGL.Egl
 
             public override IGlPlatformSurfaceRenderingSession BeginDrawCore(IRenderTarget.RenderTargetSceneInfo sceneInfo)
             {
-                // TODO: use expectedPixelSize
-                var handle = _info.Handle;
-                var size = _info.Size;
-                if (size != _currentSize
-                    || _handle != handle
-                    || _glSurface == null)
+                var beginDrawScope = (_info as IEglWindowGlPlatformSurfaceInfoWithBeginDraw)?.BeginDraw(sceneInfo);
+                try
                 {
-                    _glSurface?.Dispose();
-                    _glSurface = null;
-                    _glSurface = Context.Display.CreateWindowSurface(handle);
-                    _currentSize = size;
-                    _handle = handle;
+                    var handle = _info.Handle;
+                    var size = _info.Size;
+                    if (size != _currentSize
+                        || _handle != handle
+                        || _glSurface == null)
+                    {
+                        _glSurface?.Dispose();
+                        _glSurface = null;
+                        _glSurface = Context.Display.CreateWindowSurface(handle);
+                        _currentSize = size;
+                        _handle = handle;
+                    }
+
+                    var session = base.BeginDraw(_glSurface, size, _info.Scaling,
+                        onFinish: beginDrawScope == null ? null : beginDrawScope.Dispose);
+                    beginDrawScope = null;
+                    return session;
                 }
-                return base.BeginDraw(_glSurface, size, _info.Scaling);
+                finally
+                {
+                    beginDrawScope?.Dispose();
+                }
             }
         }
     }

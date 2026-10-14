@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Platform;
 using Avalonia.Platform.Surfaces;
 using Avalonia.Metadata;
 
@@ -8,6 +9,8 @@ namespace Avalonia.Vulkan;
 public interface IVulkanRenderTarget : IDisposable, IPlatformRenderSurfaceRenderTarget
 {
     IVulkanRenderSession BeginDraw();
+    //TODO13: merge
+    IVulkanRenderSession BeginDraw(IRenderTarget.RenderTargetSceneInfo sceneInfo) => BeginDraw();
 }
 
 [NotClientImplementable]

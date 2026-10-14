@@ -50,32 +50,50 @@ internal class VulkanKhrRenderTarget : IVulkanRenderTarget
     }
 
 
-    public IVulkanRenderSession BeginDraw()
-    {
-        var l = _context.EnsureCurrent();
-        _display.CommandBufferPool.FreeUsedCommandBuffers();
-        if (_display.EnsureSwapchainAvailable() || _image == null)
-        {
-            DestroyImage();
-            CreateImage();
-        }
-        else
-            _image.TransitionLayout(VkImageLayout.VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-                VkAccessFlags.VK_ACCESS_NONE);
+    public IVulkanRenderSession BeginDraw() => BeginDrawCore(null);
 
-        return new RenderingSession(_display, _image!, IsRgba, _platformSurface.Scaling, l);
+    public IVulkanRenderSession BeginDraw(IRenderTarget.RenderTargetSceneInfo sceneInfo) => BeginDrawCore(sceneInfo);
+
+    private IVulkanRenderSession BeginDrawCore(IRenderTarget.RenderTargetSceneInfo? sceneInfo)
+    {
+        var beginDrawScope = sceneInfo is { } info
+            ? (_platformSurface as IVulkanKhrSurfacePlatformSurfaceWithBeginDraw)?.BeginDraw(info)
+            : null;
+        try
+        {
+            var l = _context.EnsureCurrent();
+            _display.CommandBufferPool.FreeUsedCommandBuffers();
+            if (_display.EnsureSwapchainAvailable() || _image == null)
+            {
+                DestroyImage();
+                CreateImage();
+            }
+            else
+                _image.TransitionLayout(VkImageLayout.VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                    VkAccessFlags.VK_ACCESS_NONE);
+
+            var session = new RenderingSession(_display, _image!, IsRgba, _platformSurface.Scaling, l, beginDrawScope);
+            beginDrawScope = null;
+            return session;
+        }
+        finally
+        {
+            beginDrawScope?.Dispose();
+        }
     }
 
     public class RenderingSession : IVulkanRenderSession
     {
         private readonly VulkanImage _image;
         private readonly IDisposable _dispose;
+        private readonly IDisposable? _beginDrawScope;
 
         public RenderingSession(VulkanDisplay display, VulkanImage image, bool isRgba, double scaling,
-            IDisposable dispose)
+            IDisposable dispose, IDisposable? beginDrawScope = null)
         {
             _image = image;
             _dispose = dispose;
+            _beginDrawScope = beginDrawScope;
             Display = display;
             IsRgba = isRgba;
             Scaling = scaling;
@@ -100,6 +118,7 @@ internal class VulkanKhrRenderTarget : IVulkanRenderTarget
             finally
             {
                 _dispose.Dispose();
+                _beginDrawScope?.Dispose();
             }
         }
     }
