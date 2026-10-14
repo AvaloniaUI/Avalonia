@@ -1718,7 +1718,10 @@ namespace Avalonia.Win32.Interop
         [DllImport("comdlg32.dll")]
         public static extern int CommDlgExtendedError();
 
-        public static bool ShCoreAvailable => LoadLibrary("shcore.dll") != IntPtr.Zero;
+        private static readonly Lazy<bool> s_getDpiForMonitorAvailable = new(() =>
+            GetProcAddress(LoadLibrary("shcore.dll"), nameof(GetDpiForMonitor)) != IntPtr.Zero);
+
+        public static bool GetDpiForMonitorAvailable => s_getDpiForMonitorAvailable.Value;
 
         [DllImport("shcore.dll")]
         public static extern void SetProcessDpiAwareness(PROCESS_DPI_AWARENESS value);
