@@ -631,6 +631,10 @@
     auto name = _peer->GetName();
     if (name != nullptr)
     {
+        NSString* announcement = GetNSStringAndRelease(name);
+        if (announcement.length == 0)
+            return;
+
         NSAccessibilityPriorityLevel priority = NSAccessibilityPriorityLow;
         switch (_peer->GetLiveSetting())
         {
@@ -645,7 +649,7 @@
         }
 
         NSDictionary <NSString *, id> *userInfo = @{
-            NSAccessibilityAnnouncementKey: GetNSStringAndRelease(name),
+            NSAccessibilityAnnouncementKey: announcement,
             NSAccessibilityPriorityKey: @(priority)
         };
 
