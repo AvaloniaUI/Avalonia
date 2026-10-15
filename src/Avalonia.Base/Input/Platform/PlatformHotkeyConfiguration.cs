@@ -9,6 +9,20 @@ namespace Avalonia.Input.Platform
     public sealed class PlatformHotkeyConfiguration
     {
         [PrivateApi]
+        public static PlatformHotkeyConfiguration Apple
+        {
+            get
+            {
+                var hotkeys = new PlatformHotkeyConfiguration(KeyModifiers.Meta, wholeWordTextActionModifiers: KeyModifiers.Alt);
+                hotkeys.MoveCursorToTheStartOfLine.Add(new KeyGesture(Key.Left, hotkeys.CommandModifiers));
+                hotkeys.MoveCursorToTheStartOfLineWithSelection.Add(new KeyGesture(Key.Left, hotkeys.CommandModifiers | hotkeys.SelectionModifiers));
+                hotkeys.MoveCursorToTheEndOfLine.Add(new KeyGesture(Key.Right, hotkeys.CommandModifiers));
+                hotkeys.MoveCursorToTheEndOfLineWithSelection.Add(new KeyGesture(Key.Right, hotkeys.CommandModifiers | hotkeys.SelectionModifiers));
+                return hotkeys;
+            }
+        }
+
+        [PrivateApi]
         public PlatformHotkeyConfiguration() : this(KeyModifiers.Control)
         {
 
