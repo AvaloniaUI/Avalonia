@@ -135,17 +135,16 @@ internal class CompositionTargetOverlays
     {
         if (DebugOverlays.HasFlag(RendererDebugOverlays.Fps))
         {
-            var nativeMem = ByteSizeHelper.ToString((ulong)(
+            var nativeMem = (ulong)(
                 (_target.Compositor.BatchMemoryPool.CurrentUsage + _target.Compositor.BatchMemoryPool.CurrentPool) *
-                _target.Compositor.BatchMemoryPool.BufferSize), false);
-            var managedMem = ByteSizeHelper.ToString((ulong)(
+                _target.Compositor.BatchMemoryPool.BufferSize);
+            var managedMem = (ulong)(
                 (_target.Compositor.BatchObjectPool.CurrentUsage + _target.Compositor.BatchObjectPool.CurrentPool) *
                 _target.Compositor.BatchObjectPool.ArraySize *
-                IntPtr.Size), false);
+                IntPtr.Size);
 
-            _oldFpsCounterRect = FpsCounter?.RenderFps(targetContext,
-                FormattableString.Invariant($"M:{managedMem} / N:{nativeMem} V:{_target.VisitedVisuals:0000} R:{_target.RenderedVisuals:0000}"),
-                hasLayer, _oldFpsCounterRect);
+            _oldFpsCounterRect = FpsCounter?.RenderFps(targetContext, managedMem, nativeMem,
+                _target.VisitedVisuals, _target.RenderedVisuals, hasLayer, _oldFpsCounterRect);
         }
 
         var top = 0.0;

@@ -8,7 +8,6 @@
             xmlns:viewModels="using:ControlCatalog.ViewModels"
             d:DesignWidth="1200"
             d:DesignHeight="720"
-            CornerRadius="20"
             x:DataType="viewModels:MainWindowViewModel"
             DrawerLayoutBehavior="Split"
             IsOpen="{Binding IsDrawerOpened , Mode=TwoWay}"
@@ -28,15 +27,6 @@
       <ControlTheme x:Key="{x:Type local:MainView}"
                     TargetType="local:MainView"
                     BasedOn="{StaticResource {x:Type DrawerPage}}" />
-
-      <ResourceDictionary.ThemeDictionaries>
-        <ResourceDictionary x:Key="Dark">
-          <Color x:Key="PageBackgroundColor">#FF171717</Color>
-        </ResourceDictionary>
-        <ResourceDictionary x:Key="Default">
-          <Color x:Key="PageBackgroundColor">#FFF2F2F2</Color>
-        </ResourceDictionary>
-      </ResourceDictionary.ThemeDictionaries>
     </ResourceDictionary>
   </DrawerPage.Resources>
   <DrawerPage.Styles>
@@ -89,21 +79,12 @@
               <DataTemplate x:DataType="models:HomeSection">
                 <controls:HomeItemExpander Theme="{StaticResource HomeSectionExpander}" Margin="1"
                                            IsVisible="{Binding IsSectionVisible}"
-                                           IsExpanded="{Binding $parent[local:MainView].ViewModel.ExpandAllSections, Mode=OneWay}"
+                                           IsExpanded="{Binding IsExpanded, Mode=TwoWay}"
                                            Command="{Binding $parent[local:MainView].ViewModel.NavigateToPageCommand}"
                                            CommandParameter="{Binding PageItem}"
                                            CanExpand="{Binding $parent[local:MainView].ViewModel.IsDrawerOpened}">
                   <controls:HomeItemExpander.IsSelected>
-                    <MultiBinding  Mode="OneWay" Converter="{x:Static BoolConverters.Or}">
-                      <MultiBinding Mode="OneWay" Converter="{x:Static ObjectConverters.AreAllEqual}">
-                        <Binding Path="$parent[local:MainView].ViewModel.CurrentPageItem.Header"/>
-                        <Binding Path="Title"/>
-                      </MultiBinding>
-                      <MultiBinding Mode="OneWay" Converter="{x:Static ObjectConverters.AreAllEqual}">
-                        <Binding Path="$parent[local:MainView].ViewModel.OpenedSection"/>
-                        <Binding Path="Title"/>
-                      </MultiBinding>
-                    </MultiBinding>
+                    <Binding Path="ShowsSelection" Mode="OneWay"/>
                   </controls:HomeItemExpander.IsSelected>
                   <controls:HomeItemExpander.Header>
                     <FlexPanel Classes="navItemFlex">
@@ -111,7 +92,7 @@
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
                                 Data="{Binding IconData}"/>
-                      <TextBlock Text="{Binding Title}" Classes="itemLabel"
+                      <TextBlock Text="{Binding Title}"
                                  VerticalAlignment="Center"
                                  Margin="12,0,0,0"
                                  Flex.Grow="1"
@@ -120,7 +101,7 @@
                     </FlexPanel>
                   </controls:HomeItemExpander.Header>
                   <controls:HomeItemExpander.Content>
-                    <ItemsControl ItemsSource="{Binding Items}" Margin="10,0,0,0">
+                    <ItemsControl ItemsSource="{Binding Items}" Margin="22,2,0,4">
                       <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                           <StackPanel Orientation="Vertical"/>
@@ -144,7 +125,7 @@
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center"
                                         Data="{Binding IconData}"/>
-                              <TextBlock Text="{Binding Header}"  Classes="itemLabel"
+                              <TextBlock Text="{Binding Header}"
                                          VerticalAlignment="Center"
                                          Margin="12,0,0,0"
                                          Flex.Grow="1"
@@ -229,7 +210,7 @@
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     Data="{Binding SettingsItem.IconData}"/>
-          <TextBlock Text="{Binding SettingsItem.Header}"  Classes="itemLabel"
+          <TextBlock Text="{Binding SettingsItem.Header}"
                      VerticalAlignment="Center"
                      Margin="12,0,0,0"
                      Flex.Grow="1"

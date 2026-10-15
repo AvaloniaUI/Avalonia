@@ -1,69 +1,58 @@
-<TabbedPage x:Class="ControlCatalog.Pages.PointersPage"
+<!-- Not a ScrollPage: the canvas has to fill the page, and touch drags must draw rather than scroll. -->
+<ContentPage x:Class="ControlCatalog.Pages.PointersPage"
              xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             Header="Pointers"
-             xmlns:local="using:ControlCatalog.Pages">
-    <ContentPage Theme="{StaticResource ScrollPage}" Header="Contacts">
-      <local:PointerContactsTab />
-    </ContentPage>
-    <ContentPage Theme="{StaticResource ScrollPage}" Header="IntermediatePoints">
-      <Panel TextElement.Foreground="Black">
-        <local:PointerCanvas x:Name="IntermediatePointsCanvas"
-                             DrawOnlyPoints="True"
-                             Status="{Binding #Status1TextBlock.Text, Mode=OneWayToSource}"
-                             ThreadSleep="{Binding #ThreadSleepSlider.Value}" />
-        <Border Width="300"
-                Height="60"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Top">
-          <StackPanel Background="LightYellow">
-            <TextBlock Text="{Binding #ThreadSleepSlider.Value, StringFormat='Thread sleep: {0} / 500'}" />
+             xmlns:local="using:ControlCatalog.Pages"
+             Header="Pointers">
+  <DockPanel>
+    <!-- Settings and stats sit above the canvas rather than over it, so they never block input and canvas repaints
+         never redraw them. The stats keep a fixed height, so updating them never resizes the canvas. -->
+    <Border DockPanel.Dock="Top"
+            Padding="12,8"
+            Background="{DynamicResource CatalogStageBackground}"
+            BorderBrush="{DynamicResource CatalogCardBorderBrush}"
+            BorderThickness="0,0,0,1">
+      <StackPanel Spacing="6">
+        <WrapPanel ItemSpacing="16" LineSpacing="4">
+          <StackPanel Width="180">
+            <TextBlock Classes="sample-options-title"
+                       Text="{Binding #ThreadSleepSlider.Value, StringFormat='Sleep in handler: {0} ms'}" />
             <Slider x:Name="ThreadSleepSlider"
-                    Value="50"
                     Maximum="500"
-                    Minimum="0" />
+                    IsSnapToTickEnabled="True"
+                    TickFrequency="1" />
           </StackPanel>
-        </Border>
-        <TextBlock x:Name="Status1TextBlock"
-                   HorizontalAlignment="Left"
-                   VerticalAlignment="Top" />
-      </Panel>
-    </ContentPage>
-    <ContentPage Theme="{StaticResource ScrollPage}" Header="Pressure">
-      <Panel TextElement.Foreground="Black">
-        <local:PointerCanvas x:Name="PressureCanvas"
-                             DrawOnlyPoints="False"
-                             Status="{Binding #Status2TextBlock.Text, Mode=OneWayToSource}"
-                             ThreadSleep="0" />
-        <TextBlock x:Name="Status2TextBlock"
-                   HorizontalAlignment="Left"
-                   VerticalAlignment="Top" />
-      </Panel>
-    </ContentPage>
-    <ContentPage Theme="{StaticResource ScrollPage}" Header="Capture">
-      <WrapPanel>
-        <Border Name="BorderCapture1"
-                MinWidth="250"
-                MinHeight="170"
-                Margin="5"
-                Padding="50"
-                Background="{DynamicResource SystemAccentColor}"
-                PointerPressed="Border_PointerPressed" PointerReleased="Border_PointerReleased" PointerCaptureLost="Border_PointerCaptureLost"
-                PointerMoved="Border_PointerUpdated" PointerEntered="Border_PointerUpdated" PointerExited="Border_PointerUpdated"
-                ToolTip.Placement="Bottom">
-          <TextBlock>Capture 1</TextBlock>
-        </Border>
-        <Border Name="BorderCapture2"
-                MinWidth="250"
-                MinHeight="170"
-                Margin="5"
-                Padding="50"
-                Background="{DynamicResource SystemAccentColor}"
-                PointerPressed="Border_PointerPressed" PointerReleased="Border_PointerReleased" PointerCaptureLost="Border_PointerCaptureLost"
-                PointerMoved="Border_PointerUpdated" PointerEntered="Border_PointerUpdated" PointerExited="Border_PointerUpdated"
-                ToolTip.Placement="Bottom">
-          <TextBlock>Capture 2</TextBlock>
-        </Border>
-      </WrapPanel>
-    </ContentPage>
-</TabbedPage>
+          <StackPanel Width="180">
+            <TextBlock Classes="sample-options-title"
+                       Text="{Binding #LoadWorkSlider.Value, StringFormat='Load: {0} ms per 100 ms'}" />
+            <Slider x:Name="LoadWorkSlider"
+                    Maximum="90"
+                    IsSnapToTickEnabled="True"
+                    TickFrequency="1" />
+          </StackPanel>
+        </WrapPanel>
+        <!-- Tabular digits keep the numbers from jittering as they change. -->
+        <DockPanel TextElement.FontSize="12" TextElement.FontFeatures="+tnum">
+          <ToggleButton x:Name="DetailsToggle"
+                        DockPanel.Dock="Right"
+                        Padding="10,2"
+                        Content="Details" />
+          <TextBlock VerticalAlignment="Center"
+                     TextTrimming="CharacterEllipsis"
+                     Text="{Binding #Canvas.Status}"
+                     ToolTip.Tip="Delay is measured relative to the fastest event seen so far" />
+        </DockPanel>
+        <TextBlock FontSize="12"
+                   FontFeatures="+tnum"
+                   Foreground="{DynamicResource CatalogSubtleForeground}"
+                   TextTrimming="CharacterEllipsis"
+                   IsVisible="{Binding #DetailsToggle.IsChecked}"
+                   Text="{Binding #Canvas.StatusDetails}" />
+      </StackPanel>
+    </Border>
+    <local:PointerCanvas x:Name="Canvas"
+                         ClipToBounds="True"
+                         ThreadSleep="{Binding #ThreadSleepSlider.Value}"
+                         LoadWork="{Binding #LoadWorkSlider.Value}" />
+  </DockPanel>
+</ContentPage>

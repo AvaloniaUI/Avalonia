@@ -39,6 +39,10 @@ namespace Avalonia.OpenGL.Egl
             {
                 GlInterface = GlInterface.FromNativeUtf8GetProcAddress(version, _egl.GetProcAddress);
                 _features = features.ToDictionary(x => x.Key, x => x.Value(this));
+
+                if (!_features.ContainsKey(typeof(IGlContextExternalObjectsFeature))
+                        && EglExternalObjectsFeature.TryCreate(this) is { } externalObjects)
+                    _features[typeof(IGlContextExternalObjectsFeature)] = externalObjects;
             }
         }
 

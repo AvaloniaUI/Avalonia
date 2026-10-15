@@ -876,15 +876,6 @@ namespace Avalonia.Win32
                         break;
                     }
 
-                case WindowsMessage.WM_DISPLAYCHANGE:
-                    {
-                        Screen?.OnChanged();
-
-                        Win32Platform.UpdateTimerFps();
-
-                        return IntPtr.Zero;
-                    }
-
                 case WindowsMessage.WM_KILLFOCUS:
                     if (Imm32InputMethod.Current.IsComposing)
                     {

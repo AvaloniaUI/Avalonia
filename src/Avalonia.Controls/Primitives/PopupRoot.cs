@@ -34,6 +34,7 @@ namespace Avalonia.Controls.Primitives
         private Size _popupSize;
         private Thickness _childMargin;
         private bool _needsUpdate;
+        private bool _hasInitialPosition;
 
         /// <summary>
         /// Initializes static members of the <see cref="PopupRoot"/> class.
@@ -130,6 +131,7 @@ namespace Avalonia.Controls.Primitives
         public void Dispose()
         {
             PlatformImpl?.Dispose();
+            _hasInitialPosition = false;
             EnsureClosed();
         }
 
@@ -213,8 +215,18 @@ namespace Avalonia.Controls.Primitives
                 reposition = true;
             }
 
+            if (_hasInitialPosition && _popupPositionRequest?.Placement == PlacementMode.Pointer)
+            {
+                reposition = false;
+            }
+
             if (reposition)
             {
+                if (_popupPositionRequest != null)
+                {
+                    _hasInitialPosition = true;
+                }
+
                 _needsUpdate = true;
                 UpdatePosition();
             }

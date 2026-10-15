@@ -11,6 +11,7 @@
     <Nullable>enable</Nullable>
     <NoWarn>$(NoWarn);CS8002</NoWarn> <!-- ignore signing warnings for samples -->
     <EnableRuntimeMarshalling>true</EnableRuntimeMarshalling>
+    <IsShipping>false</IsShipping>
     <ApplicationIcon>$(SharedAssetsPath)icon.ico</ApplicationIcon> <!-- defualt icon shared between projects -->
   </PropertyGroup>
 

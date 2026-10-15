@@ -2708,6 +2708,32 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Changing_Visibility_Hides_Text_Selection_Handles()
+        {
+            using (UnitTestApplication.Start(TestServices.FocusableWindow))
+            {
+                var target = new TextBox { Text = "0123" };
+                InputMethod.SetIsInputMethodEnabled(target, true);
+                var window = new Window { Content = target };
+                window.Show();
+
+                var textPresenter = target.FindDescendantOfType<TextPresenter>();
+                var touch = new TouchTestHelper();
+                touch.Tap(target, new Point(700, 300));
+                touch.Tap(target, new Point(700, 300));
+
+                target.Focus();
+                var canvas = textPresenter?.TextSelectionHandleCanvas;
+
+                Assert.True(canvas?.ShowHandles);
+
+                target.IsVisible = false;
+
+                Assert.False(canvas?.ShowHandles);
+            }
+        }
+
+        [Fact]
         public void Paste_Raises_Event_When_No_Clipboard_Is_Available()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))

@@ -120,5 +120,32 @@ namespace Avalonia.Controls.UnitTests.Presenters
                 Assert.Same(textLayout, presenter.TextLayout);
             }
         }
+
+        [Fact]
+        public void Caret_Points_Should_Be_Recalculated_When_Centered_TextLayout_Is_Recreated()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var presenter = new TextPresenter
+                {
+                    Text = "hello",
+                    CaretIndex = 5,
+                    TextAlignment = TextAlignment.Center,
+                    UseLayoutRounding = false
+                };
+
+                presenter.Measure(Size.Infinity);
+
+                var initialCaret = presenter.GetCaretPoints();
+
+                // Changing the width during arrange recreates the TextLayout. Center alignment
+                // moves the text, so the caret position needs to be recalculated as well.
+                presenter.Arrange(new Rect(0, 0, 300, presenter.DesiredSize.Height));
+
+                var arrangedCaret = presenter.GetCaretPoints();
+
+                Assert.True(arrangedCaret.Item1.X > initialCaret.Item1.X);
+            }
+        }
     }
 }

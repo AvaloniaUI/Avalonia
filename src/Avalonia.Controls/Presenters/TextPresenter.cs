@@ -698,6 +698,11 @@ namespace Avalonia.Controls.Presenters
 
                 _textLayout?.Dispose();
                 _textLayout = null;
+
+                // Recreate the layout using the arranged width and update the caret
+                // against exactly the same layout that will be rendered.
+                _ = TextLayout;
+                EnsureCaretBounds();
             }
 
             return finalSize;

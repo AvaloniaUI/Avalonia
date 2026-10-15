@@ -122,7 +122,6 @@
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
     <File Path="azure-pipelines-integrationtests.yml" />
-    <File Path="azure-pipelines.yml" />
     <File Path="CODE_OF_CONDUCT.md" />
     <File Path="CONTRIBUTING.md" />
     <File Path="Directory.Build.props" />
