@@ -48,8 +48,8 @@ internal static partial class InputHelper
         RedirectInputAsync(topLevelId, t => t.InputHandler.TextInputMethod.OnCompositionUpdate(data));
 
     [JSExport]
-    public static Task OnCompositionEnd(int topLevelId, string? data) =>
-        RedirectInputAsync(topLevelId, t => t.InputHandler.TextInputMethod.OnCompositionEnd(data));
+    public static Task OnCompositionEnd(int topLevelId, double timeStamp, string? data) =>
+        RedirectInputAsync(topLevelId, t => t.InputHandler.TextInputMethod.OnCompositionEnd((ulong)timeStamp, data));
 
     [JSExport]
     public static Task OnDragDrop(int topLevelId, string type, double offsetX, double offsetY, int modifiers, JSObject dataTransfer, JSObject items) =>

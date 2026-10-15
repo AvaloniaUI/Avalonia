@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Runtime.InteropServices.JavaScript;
 using Avalonia.Browser.Interop;
 using Avalonia.Collections.Pooled;
@@ -13,7 +12,6 @@ internal class BrowserInputHandler
 {
     private readonly BrowserTopLevelImpl _topLevelImpl;
     private readonly JSObject _container;
-    private readonly Stopwatch _sw = Stopwatch.StartNew();
     private readonly TouchDevice _touchDevice;
     private readonly PenDevice _penDevice;
     private readonly MouseDevice _wheelMouseDevice;
@@ -41,8 +39,6 @@ internal class BrowserInputHandler
 
     public BrowserTextInputMethod TextInputMethod { get; }
     public BrowserInputPane InputPane { get; }
-    
-    public ulong Timestamp => (ulong)_sw.ElapsedMilliseconds;
 
     internal void SetInputRoot(IInputRoot inputRoot)
     {
@@ -170,11 +166,12 @@ internal class BrowserInputHandler
                && dropEffect != DragDropEffects.None;
     }
 
-    internal bool RawTextEvent(string text)
+    // timestamp is the DOM event's timeStamp, the same clock as queued input records.
+    internal bool RawTextEvent(ulong timestamp, string text)
     {
         if (_inputRoot is { })
         {
-            var args = new RawTextInputEventArgs(BrowserWindowingPlatform.Keyboard, Timestamp, _inputRoot, text);
+            var args = new RawTextInputEventArgs(BrowserWindowingPlatform.Keyboard, timestamp, _inputRoot, text);
             ScheduleDirectInput(args);
 
             return args.Handled;

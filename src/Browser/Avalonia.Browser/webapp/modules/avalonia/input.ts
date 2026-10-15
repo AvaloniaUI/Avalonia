@@ -394,7 +394,7 @@ export class InputHelper {
 
         const compositionEndHandler = (args: CompositionEvent) => {
             InputQueue.flush();
-            JsExports.InputHelper.OnCompositionEnd(topLevelId, args.data);
+            JsExports.InputHelper.OnCompositionEnd(topLevelId, args.timeStamp, args.data);
             args.preventDefault();
         };
         element.addEventListener("compositionend", compositionEndHandler);
