@@ -157,39 +157,39 @@
                     BackgroundSizing="InnerBorderEdge"
                     BorderBrush="{TemplateBinding BorderBrush}"
                     BorderThickness="{TemplateBinding BorderThickness}"
-                    CornerRadius="{TemplateBinding CornerRadius}">
-              <DockPanel LastChildFill="True">
-                <StackPanel Name="PART_SpinnerPanel"
-                            Spacing="4"
-                            Margin="4"
-                            DockPanel.Dock="Right"
-                            Orientation="Horizontal"
-                            IsVisible="{TemplateBinding ShowButtonSpinner}">
-                  <RepeatButton Name="PART_IncreaseButton"
-                                CornerRadius="{TemplateBinding CornerRadius}"
-                                Theme="{StaticResource FluentButtonSpinnerRepeatButton}">
-                    <PathIcon Width="{TemplateBinding FontSize}"
-                              Height="{TemplateBinding FontSize}"
-                              Data="{StaticResource ButtonSpinnerIncreaseButtonIcon}" />
-                  </RepeatButton>
+                    CornerRadius="{TemplateBinding CornerRadius}"/>
 
-                  <RepeatButton Name="PART_DecreaseButton"
-                                Theme="{StaticResource FluentButtonSpinnerRepeatButton}"
-                                CornerRadius="{TemplateBinding CornerRadius}">
-                    <PathIcon Width="{TemplateBinding FontSize}"
-                              Height="{TemplateBinding FontSize}"
-                              Data="{StaticResource ButtonSpinnerDecreaseButtonIcon}" />
-                  </RepeatButton>
-                </StackPanel>
+            <DockPanel LastChildFill="True">
+              <StackPanel Name="PART_SpinnerPanel"
+                          Spacing="4"
+                          Margin="4"
+                          DockPanel.Dock="Right"
+                          Orientation="Horizontal"
+                          IsVisible="{TemplateBinding ShowButtonSpinner}">
+                <RepeatButton Name="PART_IncreaseButton"
+                              CornerRadius="{TemplateBinding CornerRadius}"
+                              Theme="{StaticResource FluentButtonSpinnerRepeatButton}">
+                  <PathIcon Width="{TemplateBinding FontSize}"
+                            Height="{TemplateBinding FontSize}"
+                            Data="{StaticResource ButtonSpinnerIncreaseButtonIcon}" />
+                </RepeatButton>
 
-                <ContentPresenter Name="PART_ContentPresenter"
-                                  Content="{TemplateBinding Content}"
-                                  ContentTemplate="{TemplateBinding ContentTemplate}"
-                                  HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                  VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                                  Padding="{TemplateBinding Padding}" />
-              </DockPanel>
-            </Border>
+                <RepeatButton Name="PART_DecreaseButton"
+                              Theme="{StaticResource FluentButtonSpinnerRepeatButton}"
+                              CornerRadius="{TemplateBinding CornerRadius}">
+                  <PathIcon Width="{TemplateBinding FontSize}"
+                            Height="{TemplateBinding FontSize}"
+                            Data="{StaticResource ButtonSpinnerDecreaseButtonIcon}" />
+                </RepeatButton>
+              </StackPanel>
+
+              <ContentPresenter Name="PART_ContentPresenter"
+                                Content="{TemplateBinding Content}"
+                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                Padding="{TemplateBinding Padding}" />
+            </DockPanel>
           </Grid>
         </DataValidationErrors>
       </ControlTemplate>
