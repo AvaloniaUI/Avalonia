@@ -54,15 +54,18 @@ internal static unsafe class BrowserInputQueue
     /// Decodes every queued record into the per-top-level <see cref="RawEventGrouper"/>.
     /// Does not dispatch anything by itself.
     /// </summary>
-    public static void Drain()
+    public static void Drain() => DrainCore();
+
+    // Returns the event decoded from the last record, or null when the queue was empty or that record produced none.
+    private static RawInputEventArgs? DrainCore()
     {
         if (s_control == null || s_draining)
-            return;
+            return null;
 
         s_draining = true;
         try
         {
-            DrainSegments();
+            return DrainSegments();
         }
         finally
         {
@@ -71,7 +74,8 @@ internal static unsafe class BrowserInputQueue
     }
 
     /// <summary>
-    /// Drains the queue and dispatches everything inline, returning the handled state of the last event.
+    /// Drains the queue and dispatches everything inline, returning the handled state of the last record decoded.
+    /// JS calls this right after posting a record, so that is the record whose DOM handler is asking.
     /// Only valid on a single-threaded runtime, where the dispatcher runs on the browser main thread.
     /// </summary>
     public static bool FlushSync()
@@ -79,7 +83,7 @@ internal static unsafe class BrowserInputQueue
         if (s_draining)
             return false;
 
-        Drain();
+        var posted = DrainCore();
 
         if (BrowserWindowingPlatform.AutomaticEventGrouperDispatchQueue is not { } queue)
             return false;
@@ -87,7 +91,8 @@ internal static unsafe class BrowserInputQueue
         s_draining = true;
         try
         {
-            return queue.DrainAll();
+            queue.DrainAll();
+            return posted?.Handled ?? false;
         }
         finally
         {
@@ -95,8 +100,10 @@ internal static unsafe class BrowserInputQueue
         }
     }
 
-    private static void DrainSegments()
+    private static RawInputEventArgs? DrainSegments()
     {
+        RawInputEventArgs? last = null;
+
         // Full fence: the clear must be visible before the tail is read below.
         Interlocked.Exchange(ref s_control->WakeRequested, 0);
 
@@ -105,7 +112,7 @@ internal static unsafe class BrowserInputQueue
         {
             var tail = (byte*)Volatile.Read(ref s_control->Tail);
             if (head == tail)
-                return;
+                return last;
 
             var end = (byte*)Volatile.Read(ref s_segment->End);
             if (head == end)
@@ -123,7 +130,7 @@ internal static unsafe class BrowserInputQueue
                 if (record->Size < sizeof(RecordHeader) || head + record->Size > limit)
                     throw new InvalidOperationException("Corrupted browser input queue.");
 
-                Decode(record);
+                last = Decode(record);
                 head += record->Size;
             }
 
@@ -131,36 +138,25 @@ internal static unsafe class BrowserInputQueue
         }
     }
 
-    private static void Decode(RecordHeader* record)
+    private static RawInputEventArgs? Decode(RecordHeader* record) => record->Type switch
     {
-        switch (record->Type)
-        {
-            case RecordType.PointerMove:
-            case RecordType.PointerDown:
-            case RecordType.PointerUp:
-            case RecordType.PointerCancel:
-                DecodePointer((PointerRecord*)record);
-                break;
-            case RecordType.Wheel:
-                DecodeWheel((WheelRecord*)record);
-                break;
-            case RecordType.KeyDown:
-            case RecordType.KeyUp:
-                DecodeKey((KeyRecord*)record);
-                break;
-        }
-    }
+        RecordType.PointerMove or RecordType.PointerDown or RecordType.PointerUp or RecordType.PointerCancel =>
+            DecodePointer((PointerRecord*)record),
+        RecordType.Wheel => DecodeWheel((WheelRecord*)record),
+        RecordType.KeyDown or RecordType.KeyUp => DecodeKey((KeyRecord*)record),
+        _ => null
+    };
 
-    private static void DecodePointer(PointerRecord* record)
+    private static RawInputEventArgs? DecodePointer(PointerRecord* record)
     {
         var type = record->Header.Type;
         var pointerType = record->PointerType;
 
         // Only touch cancellation is meaningful to Avalonia.
         if (type == RecordType.PointerCancel && pointerType != BrowserPointerType.Touch)
-            return;
+            return null;
         if (BrowserTopLevelImpl.TryGetTopLevel(record->TopLevelId) is not { } topLevel)
-            return;
+            return null;
 
         var eventType = type switch
         {
@@ -185,15 +181,15 @@ internal static unsafe class BrowserInputQueue
                 intermediatePoints.Add(ToRawPoint(points + i));
         }
 
-        topLevel.InputHandler.OnQueuedPointerEvent(eventType, pointerType, (long)record->PointerId,
+        return topLevel.InputHandler.OnQueuedPointerEvent(eventType, pointerType, (long)record->PointerId,
             (ulong)record->TimeStamp, ToRawPoint(&record->Point),
             ToModifiers(record->KeyModifiers, record->Buttons, pointerType), intermediatePoints);
     }
 
-    private static void DecodeWheel(WheelRecord* record)
+    private static RawInputEventArgs? DecodeWheel(WheelRecord* record)
     {
         if (BrowserTopLevelImpl.TryGetTopLevel(record->TopLevelId) is not { } topLevel)
-            return;
+            return null;
 
         var (scaleX, scaleY) = record->DeltaMode switch
         {
@@ -202,22 +198,22 @@ internal static unsafe class BrowserInputQueue
             _ => (1.0, 1.0)
         };
 
-        topLevel.InputHandler.OnQueuedWheelEvent((ulong)record->TimeStamp,
+        return topLevel.InputHandler.OnQueuedWheelEvent((ulong)record->TimeStamp,
             new Point(record->OffsetX, record->OffsetY),
             new Vector(record->DeltaX * scaleX, record->DeltaY * scaleY),
             ToModifiers(record->KeyModifiers, record->Buttons, BrowserPointerType.Mouse));
     }
 
-    private static void DecodeKey(KeyRecord* record)
+    private static RawInputEventArgs? DecodeKey(KeyRecord* record)
     {
         if (BrowserTopLevelImpl.TryGetTopLevel(record->TopLevelId) is not { } topLevel)
-            return;
+            return null;
 
         var chars = (char*)(record + 1);
         var key = new string(chars, 0, record->KeyLength);
         var code = new string(chars + record->KeyLength, 0, record->CodeLength);
 
-        topLevel.InputHandler.OnQueuedKeyEvent(
+        return topLevel.InputHandler.OnQueuedKeyEvent(
             record->Header.Type == RecordType.KeyDown ? RawKeyEventType.KeyDown : RawKeyEventType.KeyUp,
             (ulong)record->TimeStamp, code, key, ToModifiers(record->KeyModifiers, 0, BrowserPointerType.Mouse));
     }

@@ -79,9 +79,13 @@ export class InputQueue {
         this.controlPtr = controlPtr;
     }
 
-    public static postPointer(type: PointerRecordType, topLevelId: number, args: PointerEvent): void {
+    /**
+     * Returns Avalonia's handled state for presses dispatched inside the DOM handler: true or false on the
+     * single-threaded runtime, undefined when it isn't known (other record types, threads, not attached).
+     */
+    public static postPointer(type: PointerRecordType, topLevelId: number, args: PointerEvent): boolean | undefined {
         if (!this.isAttached) {
-            return;
+            return undefined;
         }
 
         let coalesced: PointerEvent[] | undefined;
@@ -119,8 +123,10 @@ export class InputQueue {
         // Presses are dispatched inside the DOM handler: actions that need a user gesture, like focusing
         // the text input to bring up the iOS on-screen keyboard, must run before the handler returns.
         if (type === RecordType.PointerDown || type === RecordType.PointerUp) {
-            this.flushSync();
+            return this.flushSync();
         }
+
+        return undefined;
     }
 
     public static postWheel(topLevelId: number, args: WheelEvent): void {
@@ -154,9 +160,12 @@ export class InputQueue {
         this.commit(p + size);
     }
 
-    public static postKey(type: KeyRecordType, topLevelId: number, args: KeyboardEvent): boolean {
+    /**
+     * Returns Avalonia's handled state on the single-threaded runtime, undefined when it isn't known.
+     */
+    public static postKey(type: KeyRecordType, topLevelId: number, args: KeyboardEvent): boolean | undefined {
         if (!this.isAttached) {
-            return false;
+            return undefined;
         }
 
         const key = args.key ?? "";
@@ -211,6 +220,13 @@ export class InputQueue {
     }
 
     /**
+     * Whether the hidden text input element has DOM focus, i.e. an Avalonia text input client is active.
+     */
+    public static isTextInputFocused(): boolean {
+        return document.activeElement?.classList.contains("avalonia-input-element") ?? false;
+    }
+
+    /**
      * Returns the address to write a record of the given size at, starting a new segment if needed.
      * May grow WASM memory, so heap views must be fetched after it.
      */
@@ -256,9 +272,10 @@ export class InputQueue {
         }
     }
 
-    private static flushSync(): boolean {
+    private static flushSync(): boolean | undefined {
+        // With threads the dispatcher runs elsewhere, so the handled state isn't known before the DOM handler returns.
         if (this.threadingEnabled) {
-            return false;
+            return undefined;
         }
 
         return JsExports.InputHelper.FlushInputSync() as boolean;

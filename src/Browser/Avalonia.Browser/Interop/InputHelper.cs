@@ -25,8 +25,8 @@ internal static partial class InputHelper
     public static partial void AttachInputQueue(int controlBlockPtr, bool threadingEnabled);
 
     /// <summary>
-    /// Drains the input queue and dispatches everything inline. Returns the handled state of the last event,
-    /// which is the one whose DOM handler is asking. Single-threaded runtime only.
+    /// Drains the input queue and dispatches everything inline. Returns the handled state of the record just
+    /// posted, which is the one whose DOM handler is asking. Single-threaded runtime only.
     /// </summary>
     [JSExport]
     public static bool FlushInputSync()

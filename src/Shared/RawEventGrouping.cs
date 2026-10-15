@@ -82,12 +82,10 @@ internal class AutomaticRawEventGrouperDispatchQueue : IRawEventGrouperDispatchQ
 
     /// <summary>
     /// Dispatches every queued event inline, bypassing the dispatcher.
-    /// Returns the handled state of the last event dispatched, or false when the queue was empty.
     /// Used by backends that need a synchronous handled result for an event they have just enqueued.
     /// </summary>
-    public bool DrainAll()
+    public void DrainAll()
     {
-        RawInputEventArgs? last = null;
         while (true)
         {
             RawInputEventArgs args;
@@ -100,10 +98,7 @@ internal class AutomaticRawEventGrouperDispatchQueue : IRawEventGrouperDispatchQ
             }
 
             handler(args);
-            last = args;
         }
-
-        return last?.Handled ?? false;
     }
 
     private void DispatchFromQueue()

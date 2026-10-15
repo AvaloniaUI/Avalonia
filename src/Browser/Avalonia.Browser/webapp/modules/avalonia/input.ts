@@ -329,10 +329,12 @@ export class InputHelper {
 
     public static subscribeKeyEvents(element: HTMLInputElement, topLevelId: number) {
         // Key events go through the input queue and are flushed synchronously, so Avalonia's handled
-        // state is known before the browser applies the default action.
+        // state is known before the browser applies the default action. Only handled keys suppress it;
+        // when the state isn't known (multithreaded runtime) the default is always suppressed.
         const keyDownHandler = (args: KeyboardEvent) => {
             const handled = InputQueue.postKey(RecordType.KeyDown, topLevelId, args);
-            if (!handled || this.clipboardState !== ClipboardState.Pending) {
+            // A pending clipboard read needs the browser's paste action, which follows an unprevented keydown.
+            if (handled !== false && this.clipboardState !== ClipboardState.Pending) {
                 args.preventDefault();
             }
         };
@@ -340,7 +342,7 @@ export class InputHelper {
 
         const keyUpHandler = (args: KeyboardEvent) => {
             const handled = InputQueue.postKey(RecordType.KeyUp, topLevelId, args);
-            if (!handled) {
+            if (handled !== false) {
                 args.preventDefault();
             }
 
@@ -413,21 +415,25 @@ export class InputHelper {
     ) {
         // Pointer and wheel events are encoded into the input queue and consumed by C# in one batch
         // per burst; pointer presses are flushed synchronously on the single-threaded runtime.
-        // The browser default action is suppressed unconditionally.
+        // The browser default action of moves and wheel is always suppressed. A mouse or pen press lets it through
+        // when Avalonia left the press unhandled, unless the hidden text input has focus, which the default action
+        // (compatibility mousedown) would take away. Touch presses are always suppressed: touch input doesn't
+        // report a handled state.
+        const pointerPressHandler = (type: RecordType.PointerDown | RecordType.PointerUp, args: PointerEvent) => {
+            const handled = InputQueue.postPointer(type, topLevelId, args);
+            if (handled !== false || args.pointerType === "touch" || InputQueue.isTextInputFocused()) {
+                args.preventDefault();
+            }
+        };
+
         const pointerMoveHandler = (args: PointerEvent) => {
             InputQueue.postPointer(RecordType.PointerMove, topLevelId, args);
             args.preventDefault();
         };
 
-        const pointerDownHandler = (args: PointerEvent) => {
-            InputQueue.postPointer(RecordType.PointerDown, topLevelId, args);
-            args.preventDefault();
-        };
+        const pointerDownHandler = (args: PointerEvent) => pointerPressHandler(RecordType.PointerDown, args);
 
-        const pointerUpHandler = (args: PointerEvent) => {
-            InputQueue.postPointer(RecordType.PointerUp, topLevelId, args);
-            args.preventDefault();
-        };
+        const pointerUpHandler = (args: PointerEvent) => pointerPressHandler(RecordType.PointerUp, args);
 
         const pointerCancelHandler = (args: PointerEvent) => {
             InputQueue.postPointer(RecordType.PointerCancel, topLevelId, args);

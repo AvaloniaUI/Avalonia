@@ -46,14 +46,15 @@ internal class BrowserInputHandler
         _inputRoot = inputRoot;
     }
 
-    internal void OnQueuedPointerEvent(
+    // The OnQueued* methods return the event handed to the grouper, so the queue can report its handled state.
+    internal RawInputEventArgs? OnQueuedPointerEvent(
         RawPointerEventType eventType, BrowserPointerType pointerType, long pointerId, ulong timestamp,
         RawPointerPoint point, RawInputModifiers modifiers, PooledList<RawPointerPoint>? intermediatePoints)
     {
         if (_inputRoot is null)
         {
             intermediatePoints?.Dispose();
-            return;
+            return null;
         }
 
         var device = GetPointerDevice(pointerType, pointerId);
@@ -72,23 +73,25 @@ internal class BrowserInputHandler
             };
 
         _rawEventGrouper.HandleEvent(args);
+        return args;
     }
 
-    internal void OnQueuedWheelEvent(ulong timestamp, Point position, Vector deltaPixels, RawInputModifiers modifiers)
+    internal RawInputEventArgs? OnQueuedWheelEvent(ulong timestamp, Point position, Vector deltaPixels, RawInputModifiers modifiers)
     {
         if (_inputRoot is null)
-            return;
+            return null;
 
         var args = new RawMouseWheelEventArgs(_wheelMouseDevice, timestamp, _inputRoot, position,
             -deltaPixels / 50, modifiers);
 
         _rawEventGrouper.HandleEvent(args);
+        return args;
     }
 
-    internal void OnQueuedKeyEvent(RawKeyEventType type, ulong timestamp, string domCode, string domKey, RawInputModifiers modifiers)
+    internal RawInputEventArgs? OnQueuedKeyEvent(RawKeyEventType type, ulong timestamp, string domCode, string domKey, RawInputModifiers modifiers)
     {
         if (_inputRoot is null)
-            return;
+            return null;
 
         var physicalKey = KeyInterop.PhysicalKeyFromDomCode(domCode);
         var key = KeyInterop.KeyFromDomKey(domKey, physicalKey);
@@ -106,6 +109,7 @@ internal class BrowserInputHandler
         );
 
         _rawEventGrouper.HandleEvent(args);
+        return args;
     }
 
     public bool OnDragEvent(string type, double offsetX, double offsetY, int keyModifiers, int buttons, JSObject dataTransfer, JSObject items)
