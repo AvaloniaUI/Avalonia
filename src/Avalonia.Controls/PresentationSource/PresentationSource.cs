@@ -149,7 +149,11 @@ internal partial class PresentationSource : IPresentationSource, IInputRoot, IDi
 
     WindowDecorationsElementRole? IInputRoot.HitTestChromeElement(Point point)
     {
-        var visual = RootVisual.GetVisualAt(point, ChromeHitTestFilter);
+        // RootVisual is cleared when the top level closes, but the platform can still hit-test the window.
+        if (RootVisual is not { } rootVisual)
+            return null;
+
+        var visual = rootVisual.GetVisualAt(point, ChromeHitTestFilter);
         return GetChromeRoleFromVisual(visual);
     }
 }

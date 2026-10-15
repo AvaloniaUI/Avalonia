@@ -128,7 +128,7 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
             }
         }
 
-        private static bool MatchesRule(AtSpiNode node, AtSpiMatchRule rule)
+        internal static bool MatchesRule(AtSpiNode node, AtSpiMatchRule rule)
         {
             var match = MatchesStates(node, rule.States, (MatchType)rule.StateMatchType)
                      && MatchesRoles(node, rule.Roles, (MatchType)rule.RoleMatchType)
@@ -225,11 +225,7 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
             if (ruleAttrs == null || ruleAttrs.Count == 0)
                 return true;
 
-            // Build node attributes (same as AccessibleHandler.GetAttributesAsync)
-            var nodeAttrs = new Dictionary<string, string>(StringComparer.Ordinal) { ["toolkit"] = "Avalonia" };
-            var name = node.Peer.GetName();
-            if (!string.IsNullOrEmpty(name))
-                nodeAttrs["explicit-name"] = "true";
+            var nodeAttrs = AtSpiNode.GetAttributes(node.Peer);
 
             return matchType switch
             {

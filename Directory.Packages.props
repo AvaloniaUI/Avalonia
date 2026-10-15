@@ -53,7 +53,6 @@
     <PackageVersion Include="Silk.NET.Vulkan" Version="2.22.0" />
     <PackageVersion Include="Silk.NET.Vulkan.Extensions.EXT" Version="2.22.0" />
     <PackageVersion Include="Silk.NET.Vulkan.Extensions.KHR" Version="2.22.0" />
-    <PackageVersion Include="SixLabors.ImageSharp" Version="2.1.12" />
     <PackageVersion Include="SkiaSharp" Version="3.119.4" />
     <PackageVersion Include="SkiaSharp.NativeAssets.Linux" Version="3.119.4" />
     <PackageVersion Include="SkiaSharp.NativeAssets.WebAssembly" Version="3.119.4" />
@@ -65,6 +64,7 @@
     <PackageVersion Include="System.Reactive" Version="6.1.0" />
     <PackageVersion Include="System.Reflection.Emit" Version="4.7.0" />
     <PackageVersion Include="System.Runtime.CompilerServices.Unsafe" Version="6.1.2" />
+    <PackageVersion Include="System.Security.Cryptography.Pkcs" Version="9.0.21" />
     <PackageVersion Include="System.Text.Json" Version="10.0.0" />
     <PackageVersion Include="System.Text.RegularExpressions" Version="4.3.1" />
     <PackageVersion Include="Tmds.DBus.Protocol" Version="0.94.1" />
