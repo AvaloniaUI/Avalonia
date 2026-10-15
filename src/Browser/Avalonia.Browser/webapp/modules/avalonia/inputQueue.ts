@@ -2,82 +2,45 @@ import { JsExports } from "./jsExports";
 import { RuntimeAPI } from "../../types/dotnet";
 import { SingleThreadedDispatcherHelper } from "./singleThreadedDispatcher";
 import { MultiThreadedDispatcherHelper } from "./multiThreadedDispatcher";
+import {
+    ControlBlock,
+    DomKeyModifiers,
+    KeyRecord,
+    PointerRecord,
+    PointerType,
+    PointRecord,
+    RecordHeader,
+    RecordType,
+    SegmentHeader,
+    WheelRecord
+} from "./inputLayout.g";
 
 /*
  * Producer side of the browser input queue.
  *
- * The queue is a chain of segments in WASM linear memory. JS appends encoded records to the last
- * segment; when a record doesn't fit, it allocates a new segment with malloc and links it in.
- * C# reads the chain in order and frees every segment it has read past.
+ * The queue is a chain of segments in WASM linear memory. JS appends records to the last segment; when a record
+ * doesn't fit, it allocates a new segment with malloc and links it in. C# reads the chain in order and frees every
+ * segment it has read past.
  *
- * Layouts below must match BrowserInputQueue.cs.
- *
- * Control block (all i32):
- *   0 abiVersion  4 segmentSize  8 head (C#)  12 tail (JS)  16 wakeRequested
- *   head and tail are absolute addresses; the queue is empty when they are equal.
- *   JS sets wakeRequested after publishing a tail and posts a wake if it was clear; C# clears it
- *   before reading the tail, so a record published after the consumer's last read always gets a wake.
- * Segment header (all i32):
- *   0 next  4 end   both 0 until the segment is sealed; records follow the header.
- * Record header:
- *   0 type u16  2 reserved u16  4 size u32  8 topLevelId i32  12 reserved i32
- * Records are 8-byte aligned.
+ * The layout is defined by the structs in BrowserInputLayout.cs; inputLayout.g.ts is generated from them at build
+ * time. Records copy DOM event fields as they are; C# maps them to Avalonia input.
  */
 
-export enum RawInputModifiers {
-    None = 0,
-    Alt = 1,
-    Control = 2,
-    Shift = 4,
-    Meta = 8,
+export type PointerRecordType =
+    RecordType.PointerMove | RecordType.PointerDown | RecordType.PointerUp | RecordType.PointerCancel;
+export type KeyRecordType = RecordType.KeyDown | RecordType.KeyUp;
 
-    LeftMouseButton = 16,
-    RightMouseButton = 32,
-    MiddleMouseButton = 64,
-    XButton1MouseButton = 128,
-    XButton2MouseButton = 256,
-    KeyboardMask = Alt | Control | Shift | Meta,
-
-    PenInverted = 512,
-    PenEraser = 1024,
-    PenBarrelButton = 2048
+// Typed views over the WASM heap. Generated offsets are aligned to their field type, so p >> 3 and p >> 2
+// address f64 and 32-bit fields exactly.
+interface Heap {
+    buffer: ArrayBufferLike;
+    f64: Float64Array;
+    f32: Float32Array;
+    i32: Int32Array;
+    u16: Uint16Array;
 }
 
-export enum InputRecordType {
-    PointerMove = 1,
-    PointerDown = 2,
-    PointerUp = 3,
-    PointerCancel = 4,
-    Wheel = 5,
-    KeyDown = 6,
-    KeyUp = 7
-}
-
-const enum PointerType {
-    Mouse = 0,
-    Touch = 1,
-    Pen = 2
-}
-
-const AbiVersion = 1;
-const OffsetAbiVersion = 0;
-const OffsetSegmentSize = 4;
-const OffsetTail = 12;
-const OffsetWakeRequested = 16;
-
-const SegmentHeaderSize = 8;
-const OffsetNext = 0;
-const OffsetEnd = 4;
-
-const HeaderSize = 16;
-const PointerRecordSize = HeaderSize + 64;
-const CoalescedPointsOffset = PointerRecordSize + 8;
-const CoalescedPointSize = 32;
 const MaxCoalescedPoints = 256;
-const WheelRecordSize = HeaderSize + 48;
-// A wheel notch is 3 lines in line mode and 100 pixels in pixel mode, so a line is a third of that.
-const WheelLinePixels = 100 / 3;
-const KeyRecordHeaderSize = HeaderSize + 20;
 
 export class InputQueue {
     private static runtime: RuntimeAPI | undefined;
@@ -90,7 +53,7 @@ export class InputQueue {
     private static limit = 0;
     private static tail = 0;
 
-    private static view: DataView | undefined;
+    private static heap: Heap | undefined;
 
     public static get isAttached(): boolean {
         return this.controlPtr !== 0;
@@ -106,60 +69,48 @@ export class InputQueue {
         }
 
         const i32 = runtime.localHeapViewI32();
-        const abiVersion = i32[(controlPtr + OffsetAbiVersion) >> 2];
-        if (abiVersion !== AbiVersion) {
-            throw new Error(`Input queue ABI mismatch: C# ${abiVersion}, JS ${AbiVersion}`);
-        }
-
         this.runtime = runtime;
-        this.controlPtr = controlPtr;
         this.threadingEnabled = threadingEnabled;
-        this.segmentSize = i32[(controlPtr + OffsetSegmentSize) >> 2];
+        this.segmentSize = i32[(controlPtr + ControlBlock.SegmentSize) >> 2];
         // C# hands over an empty queue, so the tail is at the start of the first segment.
-        this.tail = Atomics.load(i32, (controlPtr + OffsetTail) >> 2);
-        this.segment = this.tail - SegmentHeaderSize;
+        this.tail = Atomics.load(i32, (controlPtr + ControlBlock.Tail) >> 2);
+        this.segment = this.tail - SegmentHeader.$size;
         this.limit = this.tail + this.segmentSize;
+        this.controlPtr = controlPtr;
     }
 
-    public static postPointer(type: InputRecordType, topLevelId: number, args: PointerEvent): void {
+    public static postPointer(type: PointerRecordType, topLevelId: number, args: PointerEvent): void {
         if (!this.isAttached) {
             return;
         }
 
-        let size = PointerRecordSize;
         let coalesced: PointerEvent[] | undefined;
         let count = 0;
-        if (type === InputRecordType.PointerMove) {
-            size = CoalescedPointsOffset;
-            if (typeof args.getCoalescedEvents === "function") {
-                coalesced = args.getCoalescedEvents();
-                // The last coalesced event is the event itself; it is the primary point.
-                count = Math.max(0, Math.min(coalesced.length - 1, MaxCoalescedPoints));
-                size += count * CoalescedPointSize;
-            }
+        if (type === RecordType.PointerMove && typeof args.getCoalescedEvents === "function") {
+            coalesced = args.getCoalescedEvents();
+            // The last coalesced event is the event itself; it is the primary point.
+            count = Math.max(0, Math.min(coalesced.length - 1, MaxCoalescedPoints));
         }
 
+        const size = InputQueue.alignUp(PointerRecord.$size + count * PointRecord.$size);
         const p = this.reserve(size);
-        const view = this.getView();
-        this.writeHeader(view, p, type, size, topLevelId);
+        const h = this.getHeap();
+        InputQueue.writeHeader(h, p + PointerRecord.Header, type, size);
+        h.f64[(p + PointerRecord.TimeStamp) >> 3] = args.timeStamp;
+        h.f64[(p + PointerRecord.PointerId) >> 3] = args.pointerId;
+        InputQueue.writePoint(h, p + PointerRecord.Point, args);
+        h.i32[(p + PointerRecord.TopLevelId) >> 2] = topLevelId;
+        h.i32[(p + PointerRecord.PointerType) >> 2] = InputQueue.getPointerType(args);
+        h.i32[(p + PointerRecord.Button) >> 2] = args.button;
+        h.i32[(p + PointerRecord.Buttons) >> 2] = args.buttons;
+        h.i32[(p + PointerRecord.KeyModifiers) >> 2] = InputQueue.getKeyModifiers(args);
+        h.i32[(p + PointerRecord.CoalescedCount) >> 2] = count;
 
-        // pointer body, offsets relative to the end of the header
-        const b = p + HeaderSize;
-        view.setFloat64(b + 0, args.timeStamp, true);
-        view.setFloat64(b + 8, args.pointerId, true);
-        view.setUint8(b + 16, InputQueue.getPointerType(args));
-        view.setInt32(b + 20, args.button, true);
-        view.setInt32(b + 24, InputQueue.getModifiers(args), true);
-        InputQueue.writePoint(view, b + 32, args);
-
-        if (type === InputRecordType.PointerMove) {
-            view.setInt32(p + PointerRecordSize, count, true);
-            if (coalesced) {
-                // Keep the latest points when there are more than fit.
-                const first = coalesced.length - 1 - count;
-                for (let i = 0; i < count; i++) {
-                    InputQueue.writePoint(view, p + CoalescedPointsOffset + i * CoalescedPointSize, coalesced[first + i]);
-                }
+        if (coalesced) {
+            // Keep the latest points when there are more than fit.
+            const first = coalesced.length - 1 - count;
+            for (let i = 0; i < count; i++) {
+                InputQueue.writePoint(h, p + PointerRecord.$size + i * PointRecord.$size, coalesced[first + i]);
             }
         }
 
@@ -167,7 +118,7 @@ export class InputQueue {
 
         // Presses are dispatched inside the DOM handler: actions that need a user gesture, like focusing
         // the text input to bring up the iOS on-screen keyboard, must run before the handler returns.
-        if (type === InputRecordType.PointerDown || type === InputRecordType.PointerUp) {
+        if (type === RecordType.PointerDown || type === RecordType.PointerUp) {
             this.flushSync();
         }
     }
@@ -177,42 +128,55 @@ export class InputQueue {
             return;
         }
 
-        const p = this.reserve(WheelRecordSize);
-        const view = this.getView();
-        this.writeHeader(view, p, InputRecordType.Wheel, WheelRecordSize, topLevelId);
-        const b = p + HeaderSize;
-        view.setFloat64(b + 0, args.timeStamp, true);
-        view.setFloat64(b + 8, args.offsetX, true);
-        view.setFloat64(b + 16, args.offsetY, true);
-        InputQueue.writeWheelDelta(view, b + 24, args);
-        view.setInt32(b + 40, InputQueue.getModifiers(args), true);
+        // Deltas are read before deltaMode: Firefox reports pixels unless a script checks deltaMode first.
+        const deltaX = args.deltaX;
+        const deltaY = args.deltaY;
+        const deltaMode = args.deltaMode;
+        // Only read for page mode, the only one that needs it: reading the client size may force a layout.
+        const target = deltaMode === WheelEvent.DOM_DELTA_PAGE ? args.currentTarget as HTMLElement | null : null;
 
-        this.commit(p + WheelRecordSize);
+        const size = WheelRecord.$size;
+        const p = this.reserve(size);
+        const h = this.getHeap();
+        InputQueue.writeHeader(h, p + WheelRecord.Header, RecordType.Wheel, size);
+        h.f64[(p + WheelRecord.TimeStamp) >> 3] = args.timeStamp;
+        h.f64[(p + WheelRecord.OffsetX) >> 3] = args.offsetX;
+        h.f64[(p + WheelRecord.OffsetY) >> 3] = args.offsetY;
+        h.f64[(p + WheelRecord.DeltaX) >> 3] = deltaX;
+        h.f64[(p + WheelRecord.DeltaY) >> 3] = deltaY;
+        h.i32[(p + WheelRecord.TopLevelId) >> 2] = topLevelId;
+        h.i32[(p + WheelRecord.DeltaMode) >> 2] = deltaMode;
+        h.i32[(p + WheelRecord.Buttons) >> 2] = args.buttons;
+        h.i32[(p + WheelRecord.KeyModifiers) >> 2] = InputQueue.getKeyModifiers(args);
+        h.i32[(p + WheelRecord.PageWidth) >> 2] = target?.clientWidth ?? 0;
+        h.i32[(p + WheelRecord.PageHeight) >> 2] = target?.clientHeight ?? 0;
+
+        this.commit(p + size);
     }
 
-    public static postKey(type: InputRecordType, topLevelId: number, args: KeyboardEvent): boolean {
+    public static postKey(type: KeyRecordType, topLevelId: number, args: KeyboardEvent): boolean {
         if (!this.isAttached) {
             return false;
         }
 
         const key = args.key ?? "";
         const code = args.code ?? "";
-        const size = InputQueue.alignUp(KeyRecordHeaderSize + (key.length + code.length) * 2);
+        const size = InputQueue.alignUp(KeyRecord.$size + (key.length + code.length) * 2);
 
         const p = this.reserve(size);
-        const view = this.getView();
-        this.writeHeader(view, p, type, size, topLevelId);
-        const b = p + HeaderSize;
-        view.setFloat64(b + 0, args.timeStamp, true);
-        view.setInt32(b + 8, InputQueue.getModifiers(args), true);
-        view.setInt32(b + 12, key.length, true);
-        view.setInt32(b + 16, code.length, true);
-        let offset = p + KeyRecordHeaderSize;
-        for (let i = 0; i < key.length; i++, offset += 2) {
-            view.setUint16(offset, key.charCodeAt(i), true);
+        const h = this.getHeap();
+        InputQueue.writeHeader(h, p + KeyRecord.Header, type, size);
+        h.f64[(p + KeyRecord.TimeStamp) >> 3] = args.timeStamp;
+        h.i32[(p + KeyRecord.TopLevelId) >> 2] = topLevelId;
+        h.i32[(p + KeyRecord.KeyModifiers) >> 2] = InputQueue.getKeyModifiers(args);
+        h.i32[(p + KeyRecord.KeyLength) >> 2] = key.length;
+        h.i32[(p + KeyRecord.CodeLength) >> 2] = code.length;
+        let index = (p + KeyRecord.$size) >> 1;
+        for (let i = 0; i < key.length; i++) {
+            h.u16[index++] = key.charCodeAt(i);
         }
-        for (let i = 0; i < code.length; i++, offset += 2) {
-            view.setUint16(offset, code.charCodeAt(i), true);
+        for (let i = 0; i < code.length; i++) {
+            h.u16[index++] = code.charCodeAt(i);
         }
 
         this.commit(p + size);
@@ -235,6 +199,18 @@ export class InputQueue {
     }
 
     /**
+     * Packs the modifier keys of a DOM event as BrowserInputLayout.DomKeyModifiers.
+     */
+    public static getKeyModifiers(args: KeyboardEvent | MouseEvent): number {
+        let modifiers = 0;
+        if (args.altKey) { modifiers |= DomKeyModifiers.Alt; }
+        if (args.ctrlKey) { modifiers |= DomKeyModifiers.Control; }
+        if (args.shiftKey) { modifiers |= DomKeyModifiers.Shift; }
+        if (args.metaKey) { modifiers |= DomKeyModifiers.Meta; }
+        return modifiers;
+    }
+
+    /**
      * Returns the address to write a record of the given size at, starting a new segment if needed.
      * May grow WASM memory, so heap views must be fetched after it.
      */
@@ -244,31 +220,31 @@ export class InputQueue {
         }
 
         const capacity = Math.max(this.segmentSize, size);
-        const segment = this.getRuntime().Module._malloc(SegmentHeaderSize + capacity) as unknown as number;
+        const segment = this.getRuntime().Module._malloc(SegmentHeader.$size + capacity) as unknown as number;
         if (!segment) {
             throw new Error("Unable to allocate input queue segment");
         }
 
-        const i32 = this.heapI32();
-        i32[(segment + OffsetNext) >> 2] = 0;
-        i32[(segment + OffsetEnd) >> 2] = 0;
+        const i32 = this.getHeap().i32;
+        i32[(segment + SegmentHeader.Next) >> 2] = 0;
+        i32[(segment + SegmentHeader.End) >> 2] = 0;
 
         // Seal the current segment: end first, then next. The tail published by commit() comes last,
         // so C# only moves on once both are visible.
-        Atomics.store(i32, (this.segment + OffsetEnd) >> 2, this.tail);
-        Atomics.store(i32, (this.segment + OffsetNext) >> 2, segment);
+        Atomics.store(i32, (this.segment + SegmentHeader.End) >> 2, this.tail);
+        Atomics.store(i32, (this.segment + SegmentHeader.Next) >> 2, segment);
 
         this.segment = segment;
-        this.limit = segment + SegmentHeaderSize + capacity;
-        return segment + SegmentHeaderSize;
+        this.limit = segment + SegmentHeader.$size + capacity;
+        return segment + SegmentHeader.$size;
     }
 
     private static commit(tail: number): void {
         this.tail = tail;
-        const i32 = this.heapI32();
-        Atomics.store(i32, (this.controlPtr + OffsetTail) >> 2, tail);
+        const i32 = this.getHeap().i32;
+        Atomics.store(i32, (this.controlPtr + ControlBlock.Tail) >> 2, tail);
 
-        if (Atomics.exchange(i32, (this.controlPtr + OffsetWakeRequested) >> 2, 1) === 0) {
+        if (Atomics.exchange(i32, (this.controlPtr + ControlBlock.WakeRequested) >> 2, 1) === 0) {
             if (this.threadingEnabled) {
                 // Wakes the dispatcher thread directly; it drains the queue after waking up.
                 MultiThreadedDispatcherHelper.signal();
@@ -288,38 +264,18 @@ export class InputQueue {
         return JsExports.InputHelper.FlushInputSync() as boolean;
     }
 
-    private static writeHeader(view: DataView, p: number, type: InputRecordType, size: number, topLevelId: number): void {
-        view.setUint16(p + 0, type, true);
-        view.setUint16(p + 2, 0, true);
-        view.setUint32(p + 4, size, true);
-        view.setInt32(p + 8, topLevelId, true);
-        view.setInt32(p + 12, 0, true);
+    private static writeHeader(h: Heap, p: number, type: RecordType, size: number): void {
+        h.i32[(p + RecordHeader.Type) >> 2] = type;
+        h.i32[(p + RecordHeader.Size) >> 2] = size;
     }
 
-    private static writePoint(view: DataView, p: number, args: PointerEvent): void {
-        view.setFloat64(p + 0, args.offsetX, true);
-        view.setFloat64(p + 8, args.offsetY, true);
-        view.setFloat32(p + 16, args.pressure, true);
-        view.setFloat32(p + 20, args.tiltX, true);
-        view.setFloat32(p + 24, args.tiltY, true);
-        view.setFloat32(p + 28, args.twist, true);
-    }
-
-    // Writes deltaX and deltaY in pixels.
-    private static writeWheelDelta(view: DataView, p: number, args: WheelEvent): void {
-        // Deltas are read before deltaMode: Firefox reports pixels unless a script checks deltaMode first.
-        let deltaX = args.deltaX;
-        let deltaY = args.deltaY;
-        if (args.deltaMode === WheelEvent.DOM_DELTA_LINE) {
-            deltaX *= WheelLinePixels;
-            deltaY *= WheelLinePixels;
-        } else if (args.deltaMode === WheelEvent.DOM_DELTA_PAGE) {
-            const target = args.currentTarget as HTMLElement | null;
-            deltaX *= target?.clientWidth ?? 0;
-            deltaY *= target?.clientHeight ?? 0;
-        }
-        view.setFloat64(p + 0, deltaX, true);
-        view.setFloat64(p + 8, deltaY, true);
+    private static writePoint(h: Heap, p: number, args: PointerEvent): void {
+        h.f64[(p + PointRecord.OffsetX) >> 3] = args.offsetX;
+        h.f64[(p + PointRecord.OffsetY) >> 3] = args.offsetY;
+        h.f32[(p + PointRecord.Pressure) >> 2] = args.pressure;
+        h.f32[(p + PointRecord.TiltX) >> 2] = args.tiltX;
+        h.f32[(p + PointRecord.TiltY) >> 2] = args.tiltY;
+        h.f32[(p + PointRecord.Twist) >> 2] = args.twist;
     }
 
     private static getPointerType(args: PointerEvent): PointerType {
@@ -337,12 +293,18 @@ export class InputQueue {
     }
 
     // Views are re-validated on every use: memory growth replaces the underlying buffer.
-    private static getView(): DataView {
+    private static getHeap(): Heap {
         const buffer = this.getRuntime().localHeapViewU8().buffer;
-        if (this.view?.buffer !== buffer) {
-            this.view = new DataView(buffer);
+        if (this.heap?.buffer !== buffer) {
+            this.heap = {
+                buffer,
+                f64: new Float64Array(buffer),
+                f32: new Float32Array(buffer),
+                i32: new Int32Array(buffer),
+                u16: new Uint16Array(buffer)
+            };
         }
-        return this.view;
+        return this.heap;
     }
 
     private static getRuntime(): RuntimeAPI {
@@ -350,31 +312,5 @@ export class InputQueue {
             throw new Error("Input queue is not attached");
         }
         return this.runtime;
-    }
-
-    private static heapI32(): Int32Array {
-        return this.getRuntime().localHeapViewI32();
-    }
-
-    public static getModifiers(args: KeyboardEvent | PointerEvent | WheelEvent | DragEvent): number {
-        let modifiers = RawInputModifiers.None;
-
-        if (args.ctrlKey) { modifiers |= RawInputModifiers.Control; }
-        if (args.altKey) { modifiers |= RawInputModifiers.Alt; }
-        if (args.shiftKey) { modifiers |= RawInputModifiers.Shift; }
-        if (args.metaKey) { modifiers |= RawInputModifiers.Meta; }
-
-        const pointerArgs = args as PointerEvent;
-        const buttons = pointerArgs.buttons;
-        if (buttons) {
-            if (buttons & 1) { modifiers |= RawInputModifiers.LeftMouseButton; }
-            if (buttons & 2) { modifiers |= (pointerArgs.pointerType === "pen" ? RawInputModifiers.PenBarrelButton : RawInputModifiers.RightMouseButton); }
-            if (buttons & 4) { modifiers |= RawInputModifiers.MiddleMouseButton; }
-            if (buttons & 8) { modifiers |= RawInputModifiers.XButton1MouseButton; }
-            if (buttons & 16) { modifiers |= RawInputModifiers.XButton2MouseButton; }
-            if (buttons & 32) { modifiers |= RawInputModifiers.PenEraser; }
-        }
-
-        return modifiers;
     }
 }

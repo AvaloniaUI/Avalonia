@@ -52,8 +52,8 @@ internal static partial class InputHelper
         RedirectInputAsync(topLevelId, t => t.InputHandler.TextInputMethod.OnCompositionEnd((ulong)timeStamp, data));
 
     [JSExport]
-    public static Task OnDragDrop(int topLevelId, string type, double offsetX, double offsetY, int modifiers, JSObject dataTransfer, JSObject items) =>
-        RedirectInputAsync(topLevelId, t => t.InputHandler.OnDragEvent(type, offsetX, offsetY, modifiers, dataTransfer, items));
+    public static Task OnDragDrop(int topLevelId, string type, double offsetX, double offsetY, int keyModifiers, int buttons, JSObject dataTransfer, JSObject items) =>
+        RedirectInputAsync(topLevelId, t => t.InputHandler.OnDragEvent(type, offsetX, offsetY, keyModifiers, buttons, dataTransfer, items));
 
     [JSExport]
     public static Task OnKeyboardGeometryChange(int topLevelId, double x, double y, double width, double height) =>

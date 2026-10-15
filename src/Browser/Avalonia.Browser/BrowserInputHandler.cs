@@ -5,6 +5,7 @@ using Avalonia.Browser.Interop;
 using Avalonia.Collections.Pooled;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using BrowserPointerType = Avalonia.Browser.BrowserInputLayout.PointerType;
 
 namespace Avalonia.Browser;
 
@@ -73,13 +74,13 @@ internal class BrowserInputHandler
         _rawEventGrouper.HandleEvent(args);
     }
 
-    internal void OnQueuedWheelEvent(ulong timestamp, Point position, double deltaX, double deltaY, RawInputModifiers modifiers)
+    internal void OnQueuedWheelEvent(ulong timestamp, Point position, Vector deltaPixels, RawInputModifiers modifiers)
     {
         if (_inputRoot is null)
             return;
 
         var args = new RawMouseWheelEventArgs(_wheelMouseDevice, timestamp, _inputRoot, position,
-            new Vector(-(deltaX / 50), -(deltaY / 50)), modifiers);
+            -deltaPixels / 50, modifiers);
 
         _rawEventGrouper.HandleEvent(args);
     }
@@ -107,7 +108,7 @@ internal class BrowserInputHandler
         _rawEventGrouper.HandleEvent(args);
     }
 
-    public bool OnDragEvent(string type, double offsetX, double offsetY, int modifiers, JSObject dataTransfer, JSObject items)
+    public bool OnDragEvent(string type, double offsetX, double offsetY, int keyModifiers, int buttons, JSObject dataTransfer, JSObject items)
     {
         var eventType = type switch
         {
@@ -157,7 +158,8 @@ internal class BrowserInputHandler
             return false;
         }
 
-        var dropEffect = RawDragEvent(eventType, position, (RawInputModifiers)modifiers, new BrowserDragDataTransfer(items), effectAllowed);
+        var modifiers = BrowserInputQueue.ToModifiers((BrowserInputLayout.DomKeyModifiers)keyModifiers, buttons, BrowserPointerType.Mouse);
+        var dropEffect = RawDragEvent(eventType, position, modifiers, new BrowserDragDataTransfer(items), effectAllowed);
         dataTransfer.SetProperty("dropEffect", dropEffect.ToString().ToLowerInvariant());
 
         // Note, due to complications of JS interop, we ignore this return value.

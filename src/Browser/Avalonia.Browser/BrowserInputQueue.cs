@@ -5,58 +5,29 @@ using Avalonia.Browser.Interop;
 using Avalonia.Collections.Pooled;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using static Avalonia.Browser.BrowserInputLayout;
+using BrowserPointerType = Avalonia.Browser.BrowserInputLayout.PointerType;
 
 namespace Avalonia.Browser;
 
 /// <summary>
 /// Consumer side of the browser input queue.
-/// The queue is a chain of segments in WASM linear memory. JavaScript appends encoded input records
-/// to the last segment, allocating a new one with malloc when a record doesn't fit, and this class
-/// decodes them into raw input events, freeing every segment it has read past.
+/// The queue is a chain of segments in WASM linear memory. JavaScript appends input records to the last segment,
+/// allocating a new one with malloc when a record doesn't fit, and this class decodes them into raw input events,
+/// freeing every segment it has read past. JS copies DOM event fields as they are; mapping them to Avalonia's
+/// input model happens here. See <see cref="BrowserInputLayout"/> for the layout.
 /// </summary>
 internal static unsafe class BrowserInputQueue
 {
-    // Layouts (bytes). Must match inputQueue.ts.
-    // Control block, all i32:
-    //   0 abiVersion  4 segmentSize  8 head (C#)  12 tail (JS)  16 wakeRequested
-    // head and tail are absolute addresses; the queue is empty when they are equal.
-    // JS sets wakeRequested after publishing a tail and posts a wake if it was clear; C# clears it
-    // before reading the tail, so a record published after the last read always gets a wake.
-    private const int AbiVersion = 1;
-    private const int ControlBlockSize = 20;
-    private const int OffsetAbiVersion = 0;
-    private const int OffsetSegmentSize = 4;
-    private const int OffsetHead = 8;
-    private const int OffsetTail = 12;
-    private const int OffsetWakeRequested = 16;
-
-    // Segment header, all i32: 0 next (0 until sealed)  4 end (0 until sealed). Records follow it.
-    // JS writes end, then next, then publishes a tail in the next segment.
-    private const int SegmentHeaderSize = 8;
-    private const int OffsetNext = 0;
-    private const int OffsetEnd = 4;
-
-    // Record header: 0 type u16  2 reserved u16  4 size u32  8 topLevelId i32  12 reserved i32
-    private const int HeaderSize = 16;
-    private const int OffsetType = 0;
-    private const int OffsetSize = 4;
-    private const int OffsetTopLevelId = 8;
-
     private const int DefaultSegmentSize = 64 * 1024;
 
-    private enum RecordType : ushort
-    {
-        PointerMove = 1,
-        PointerDown = 2,
-        PointerUp = 3,
-        PointerCancel = 4,
-        Wheel = 5,
-        KeyDown = 6,
-        KeyUp = 7
-    }
+    // A wheel notch is 3 lines in line mode and 100 pixels in pixel mode, so a line is a third of that.
+    private const double WheelLinePixels = 100.0 / 3;
+    private const int DomDeltaLine = 1;
+    private const int DomDeltaPage = 2;
 
-    private static byte* s_control;
-    private static byte* s_segment;
+    private static ControlBlock* s_control;
+    private static SegmentHeader* s_segment;
     private static bool s_draining;
 
     public static void Initialize()
@@ -65,16 +36,16 @@ internal static unsafe class BrowserInputQueue
             return;
 
         // Segments are allocated by JS with the same malloc, and freed here with NativeMemory.Free.
-        s_segment = (byte*)NativeMemory.Alloc(SegmentHeaderSize + DefaultSegmentSize);
-        *(int*)(s_segment + OffsetNext) = 0;
-        *(int*)(s_segment + OffsetEnd) = 0;
+        s_segment = (SegmentHeader*)NativeMemory.Alloc((nuint)(sizeof(SegmentHeader) + DefaultSegmentSize));
+        *s_segment = default;
 
-        s_control = (byte*)NativeMemory.Alloc(ControlBlockSize);
-        *(int*)(s_control + OffsetAbiVersion) = AbiVersion;
-        *(int*)(s_control + OffsetSegmentSize) = DefaultSegmentSize;
-        *(int*)(s_control + OffsetHead) = (int)(nint)(s_segment + SegmentHeaderSize);
-        *(int*)(s_control + OffsetTail) = (int)(nint)(s_segment + SegmentHeaderSize);
-        *(int*)(s_control + OffsetWakeRequested) = 0;
+        s_control = (ControlBlock*)NativeMemory.Alloc((nuint)sizeof(ControlBlock));
+        *s_control = new ControlBlock
+        {
+            SegmentSize = DefaultSegmentSize,
+            Head = (int)(nint)(s_segment + 1),
+            Tail = (int)(nint)(s_segment + 1)
+        };
 
         InputHelper.AttachInputQueue((int)(nint)s_control, BrowserWindowingPlatform.IsThreadingEnabled);
     }
@@ -127,92 +98,69 @@ internal static unsafe class BrowserInputQueue
     private static void DrainSegments()
     {
         // Full fence: the clear must be visible before the tail is read below.
-        Interlocked.Exchange(ref *(int*)(s_control + OffsetWakeRequested), 0);
+        Interlocked.Exchange(ref s_control->WakeRequested, 0);
 
-        var head = (byte*)*(int*)(s_control + OffsetHead);
+        var head = (byte*)s_control->Head;
         while (true)
         {
-            var tail = (byte*)Volatile.Read(ref *(int*)(s_control + OffsetTail));
+            var tail = (byte*)Volatile.Read(ref s_control->Tail);
             if (head == tail)
                 return;
 
-            var end = (byte*)Volatile.Read(ref *(int*)(s_segment + OffsetEnd));
+            var end = (byte*)Volatile.Read(ref s_segment->End);
             if (head == end)
             {
                 // Sealed and fully read. The tail has moved on, so the next segment is linked already.
-                var next = (byte*)Volatile.Read(ref *(int*)(s_segment + OffsetNext));
+                var next = (SegmentHeader*)Volatile.Read(ref s_segment->Next);
                 NativeMemory.Free(s_segment);
                 s_segment = next;
-                head = next + SegmentHeaderSize;
+                head = (byte*)(next + 1);
             }
             else
             {
-                var type = (RecordType)(*(ushort*)(head + OffsetType));
-                var size = *(int*)(head + OffsetSize);
+                var record = (RecordHeader*)head;
                 var limit = end != null ? end : tail;
-                if (size < HeaderSize || head + size > limit)
+                if (record->Size < sizeof(RecordHeader) || head + record->Size > limit)
                     throw new InvalidOperationException("Corrupted browser input queue.");
 
-                Decode(type, head);
-                head += size;
+                Decode(record);
+                head += record->Size;
             }
 
-            Volatile.Write(ref *(int*)(s_control + OffsetHead), (int)(nint)head);
+            Volatile.Write(ref s_control->Head, (int)(nint)head);
         }
     }
 
-    private static void Decode(RecordType type, byte* record)
+    private static void Decode(RecordHeader* record)
     {
-        var topLevelId = *(int*)(record + OffsetTopLevelId);
-        if (BrowserTopLevelImpl.TryGetTopLevel(topLevelId) is not { } topLevel)
-            return;
-
-        var handler = topLevel.InputHandler;
-        var body = record + HeaderSize;
-
-        switch (type)
+        switch (record->Type)
         {
             case RecordType.PointerMove:
             case RecordType.PointerDown:
             case RecordType.PointerUp:
             case RecordType.PointerCancel:
-                DecodePointer(type, body, handler);
+                DecodePointer((PointerRecord*)record);
                 break;
             case RecordType.Wheel:
-                DecodeWheel(body, handler);
+                DecodeWheel((WheelRecord*)record);
                 break;
             case RecordType.KeyDown:
             case RecordType.KeyUp:
-                DecodeKey(type, body, handler);
+                DecodeKey((KeyRecord*)record);
                 break;
         }
     }
 
-    private static void DecodePointer(RecordType type, byte* body, BrowserInputHandler handler)
+    private static void DecodePointer(PointerRecord* record)
     {
-        // pointer body layout, offsets relative to body start (see inputQueue.ts):
-        //  0 timeStamp f64, 8 pointerId f64, 16 pointerType u8, 20 button i32, 24 modifiers i32,
-        // 32 offsetX f64, 40 offsetY f64, 48 pressure f32, 52 tiltX f32, 56 tiltY f32, 60 twist f32
-        // PointerMove appends: 64 pointCount i32, 72 points[pointCount] x 32 bytes
-        var timeStamp = (ulong)*(double*)(body + 0);
-        var pointerId = (long)*(double*)(body + 8);
-        var pointerType = (BrowserPointerType)body[16];
-        var button = *(int*)(body + 20);
-        var modifiers = (RawInputModifiers)(*(int*)(body + 24));
-        var point = ReadPoint(body + 32);
+        var type = record->Header.Type;
+        var pointerType = record->PointerType;
 
-        PooledList<RawPointerPoint>? intermediatePoints = null;
-        if (type == RecordType.PointerMove)
-        {
-            var pointCount = *(int*)(body + 64);
-            if (pointCount > 0)
-            {
-                intermediatePoints = new PooledList<RawPointerPoint>(pointCount);
-                var points = body + 72;
-                for (var i = 0; i < pointCount; i++)
-                    intermediatePoints.Add(ReadPoint(points + i * 32));
-            }
-        }
+        // Only touch cancellation is meaningful to Avalonia.
+        if (type == RecordType.PointerCancel && pointerType != BrowserPointerType.Touch)
+            return;
+        if (BrowserTopLevelImpl.TryGetTopLevel(record->TopLevelId) is not { } topLevel)
+            return;
 
         var eventType = type switch
         {
@@ -221,32 +169,101 @@ internal static unsafe class BrowserInputQueue
                 : RawPointerEventType.Move,
             RecordType.PointerDown => pointerType == BrowserPointerType.Touch
                 ? RawPointerEventType.TouchBegin
-                : ButtonDownType(button),
+                : ButtonDownType(record->Button),
             RecordType.PointerUp => pointerType == BrowserPointerType.Touch
                 ? RawPointerEventType.TouchEnd
-                : ButtonUpType(button),
-            RecordType.PointerCancel => RawPointerEventType.TouchCancel,
-            _ => RawPointerEventType.Move
+                : ButtonUpType(record->Button),
+            _ => RawPointerEventType.TouchCancel
         };
 
-        // Only touch cancellation is meaningful to Avalonia.
-        if (type == RecordType.PointerCancel && pointerType != BrowserPointerType.Touch)
+        PooledList<RawPointerPoint>? intermediatePoints = null;
+        if (type == RecordType.PointerMove && record->CoalescedCount > 0)
         {
-            intermediatePoints?.Dispose();
-            return;
+            var points = (PointRecord*)(record + 1);
+            intermediatePoints = new PooledList<RawPointerPoint>(record->CoalescedCount);
+            for (var i = 0; i < record->CoalescedCount; i++)
+                intermediatePoints.Add(ToRawPoint(points + i));
         }
 
-        handler.OnQueuedPointerEvent(eventType, pointerType, pointerId, timeStamp, point, modifiers, intermediatePoints);
+        topLevel.InputHandler.OnQueuedPointerEvent(eventType, pointerType, (long)record->PointerId,
+            (ulong)record->TimeStamp, ToRawPoint(&record->Point),
+            ToModifiers(record->KeyModifiers, record->Buttons, pointerType), intermediatePoints);
     }
 
-    private static RawPointerPoint ReadPoint(byte* p) => new()
+    private static void DecodeWheel(WheelRecord* record)
     {
-        Position = new Point(*(double*)(p + 0), *(double*)(p + 8)),
-        Pressure = *(float*)(p + 16),
-        XTilt = *(float*)(p + 20),
-        YTilt = *(float*)(p + 24),
-        Twist = *(float*)(p + 28)
+        if (BrowserTopLevelImpl.TryGetTopLevel(record->TopLevelId) is not { } topLevel)
+            return;
+
+        var (scaleX, scaleY) = record->DeltaMode switch
+        {
+            DomDeltaLine => (WheelLinePixels, WheelLinePixels),
+            DomDeltaPage => ((double)record->PageWidth, (double)record->PageHeight),
+            _ => (1.0, 1.0)
+        };
+
+        topLevel.InputHandler.OnQueuedWheelEvent((ulong)record->TimeStamp,
+            new Point(record->OffsetX, record->OffsetY),
+            new Vector(record->DeltaX * scaleX, record->DeltaY * scaleY),
+            ToModifiers(record->KeyModifiers, record->Buttons, BrowserPointerType.Mouse));
+    }
+
+    private static void DecodeKey(KeyRecord* record)
+    {
+        if (BrowserTopLevelImpl.TryGetTopLevel(record->TopLevelId) is not { } topLevel)
+            return;
+
+        var chars = (char*)(record + 1);
+        var key = new string(chars, 0, record->KeyLength);
+        var code = new string(chars + record->KeyLength, 0, record->CodeLength);
+
+        topLevel.InputHandler.OnQueuedKeyEvent(
+            record->Header.Type == RecordType.KeyDown ? RawKeyEventType.KeyDown : RawKeyEventType.KeyUp,
+            (ulong)record->TimeStamp, code, key, ToModifiers(record->KeyModifiers, 0, BrowserPointerType.Mouse));
+    }
+
+    private static RawPointerPoint ToRawPoint(PointRecord* p) => new()
+    {
+        Position = new Point(p->OffsetX, p->OffsetY),
+        Pressure = p->Pressure,
+        XTilt = p->TiltX,
+        YTilt = p->TiltY,
+        Twist = p->Twist
     };
+
+    /// <summary>
+    /// Maps DOM modifier keys and the MouseEvent.buttons bit mask to Avalonia modifiers.
+    /// </summary>
+    internal static RawInputModifiers ToModifiers(DomKeyModifiers keys, int buttons, BrowserPointerType pointerType)
+    {
+        var modifiers = RawInputModifiers.None;
+
+        if ((keys & DomKeyModifiers.Alt) != 0)
+            modifiers |= RawInputModifiers.Alt;
+        if ((keys & DomKeyModifiers.Control) != 0)
+            modifiers |= RawInputModifiers.Control;
+        if ((keys & DomKeyModifiers.Shift) != 0)
+            modifiers |= RawInputModifiers.Shift;
+        if ((keys & DomKeyModifiers.Meta) != 0)
+            modifiers |= RawInputModifiers.Meta;
+
+        if ((buttons & 1) != 0)
+            modifiers |= RawInputModifiers.LeftMouseButton;
+        if ((buttons & 2) != 0)
+            modifiers |= pointerType == BrowserPointerType.Pen
+                ? RawInputModifiers.PenBarrelButton
+                : RawInputModifiers.RightMouseButton;
+        if ((buttons & 4) != 0)
+            modifiers |= RawInputModifiers.MiddleMouseButton;
+        if ((buttons & 8) != 0)
+            modifiers |= RawInputModifiers.XButton1MouseButton;
+        if ((buttons & 16) != 0)
+            modifiers |= RawInputModifiers.XButton2MouseButton;
+        if ((buttons & 32) != 0)
+            modifiers |= RawInputModifiers.PenEraser;
+
+        return modifiers;
+    }
 
     private static RawPointerEventType ButtonDownType(int button) => button switch
     {
@@ -269,41 +286,4 @@ internal static unsafe class BrowserInputQueue
         5 => RawPointerEventType.XButton1Up, // should be pen eraser button
         _ => RawPointerEventType.Move
     };
-
-    private static void DecodeWheel(byte* body, BrowserInputHandler handler)
-    {
-        // wheel body: 0 timeStamp f64, 8 offsetX f64, 16 offsetY f64, 24 deltaX f64, 32 deltaY f64,
-        // 40 modifiers i32. JS converts line and page deltas to pixels.
-        var timeStamp = (ulong)*(double*)(body + 0);
-        var position = new Point(*(double*)(body + 8), *(double*)(body + 16));
-        var deltaX = *(double*)(body + 24);
-        var deltaY = *(double*)(body + 32);
-        var modifiers = (RawInputModifiers)(*(int*)(body + 40));
-
-        handler.OnQueuedWheelEvent(timeStamp, position, deltaX, deltaY, modifiers);
-    }
-
-    private static void DecodeKey(RecordType type, byte* body, BrowserInputHandler handler)
-    {
-        // key body: 0 timeStamp f64, 8 modifiers i32, 12 keyLength i32, 16 codeLength i32,
-        // 20 key u16[keyLength], then code u16[codeLength]
-        var timeStamp = (ulong)*(double*)(body + 0);
-        var modifiers = (RawInputModifiers)(*(int*)(body + 8));
-        var keyLength = *(int*)(body + 12);
-        var codeLength = *(int*)(body + 16);
-        var chars = (char*)(body + 20);
-        var key = keyLength > 0 ? new string(chars, 0, keyLength) : string.Empty;
-        var code = codeLength > 0 ? new string(chars + keyLength, 0, codeLength) : string.Empty;
-
-        handler.OnQueuedKeyEvent(
-            type == RecordType.KeyDown ? RawKeyEventType.KeyDown : RawKeyEventType.KeyUp,
-            timeStamp, code, key, modifiers);
-    }
-}
-
-internal enum BrowserPointerType : byte
-{
-    Mouse = 0,
-    Touch = 1,
-    Pen = 2
 }

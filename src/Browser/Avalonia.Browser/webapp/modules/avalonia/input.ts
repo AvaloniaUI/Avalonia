@@ -2,7 +2,8 @@ import { CaretHelper } from "./caretHelper";
 import { JsExports } from "./jsExports";
 import { IMemoryView } from "../../types/dotnet";
 import { StorageItem } from "../storage/storageItem";
-import { InputQueue, InputRecordType } from "./inputQueue";
+import { InputQueue } from "./inputQueue";
+import { RecordType } from "./inputLayout.g";
 
 /*
 * This is a hack to handle older Firefox (before v127 from June 2024) clipboard events in a more convenient way for framework users.
@@ -330,7 +331,7 @@ export class InputHelper {
         // Key events go through the input queue and are flushed synchronously, so Avalonia's handled
         // state is known before the browser applies the default action.
         const keyDownHandler = (args: KeyboardEvent) => {
-            const handled = InputQueue.postKey(InputRecordType.KeyDown, topLevelId, args);
+            const handled = InputQueue.postKey(RecordType.KeyDown, topLevelId, args);
             if (!handled || this.clipboardState !== ClipboardState.Pending) {
                 args.preventDefault();
             }
@@ -338,7 +339,7 @@ export class InputHelper {
         element.addEventListener("keydown", keyDownHandler);
 
         const keyUpHandler = (args: KeyboardEvent) => {
-            const handled = InputQueue.postKey(InputRecordType.KeyUp, topLevelId, args);
+            const handled = InputQueue.postKey(RecordType.KeyUp, topLevelId, args);
             if (!handled) {
                 args.preventDefault();
             }
@@ -414,22 +415,22 @@ export class InputHelper {
         // per burst; pointer presses are flushed synchronously on the single-threaded runtime.
         // The browser default action is suppressed unconditionally.
         const pointerMoveHandler = (args: PointerEvent) => {
-            InputQueue.postPointer(InputRecordType.PointerMove, topLevelId, args);
+            InputQueue.postPointer(RecordType.PointerMove, topLevelId, args);
             args.preventDefault();
         };
 
         const pointerDownHandler = (args: PointerEvent) => {
-            InputQueue.postPointer(InputRecordType.PointerDown, topLevelId, args);
+            InputQueue.postPointer(RecordType.PointerDown, topLevelId, args);
             args.preventDefault();
         };
 
         const pointerUpHandler = (args: PointerEvent) => {
-            InputQueue.postPointer(InputRecordType.PointerUp, topLevelId, args);
+            InputQueue.postPointer(RecordType.PointerUp, topLevelId, args);
             args.preventDefault();
         };
 
         const pointerCancelHandler = (args: PointerEvent) => {
-            InputQueue.postPointer(InputRecordType.PointerCancel, topLevelId, args);
+            InputQueue.postPointer(RecordType.PointerCancel, topLevelId, args);
         };
 
         const wheelHandler = (args: WheelEvent) => {
@@ -467,7 +468,7 @@ export class InputHelper {
 
             // Drag events bypass the input queue; flushing first keeps them ordered after queued input.
             InputQueue.flush();
-            JsExports.InputHelper.OnDragDrop(topLevelId, args.type, args.offsetX, args.offsetY, InputQueue.getModifiers(args), dataTransfer, items);
+            JsExports.InputHelper.OnDragDrop(topLevelId, args.type, args.offsetX, args.offsetY, InputQueue.getKeyModifiers(args), args.buttons, dataTransfer, items);
         };
         const overAndDropHandler = (args: DragEvent) => {
             args.preventDefault();
