@@ -351,7 +351,8 @@ namespace Avalonia.Controls
                     var focusManager = FocusManager.GetFocusManager(this);
                     if (focusManager?.GetFocusedElement() is { } focus)
                     {
-                        var nextFocus = KeyboardNavigationHandler.GetNext(focus, NavigationDirection.Next);
+                        var direction = e.Key.ToNavigationDirection(e.KeyModifiers) ?? NavigationDirection.Next;
+                        var nextFocus = KeyboardNavigationHandler.GetNext(focus, direction);
                         nextFocus?.Focus(NavigationMethod.Tab);
                         e.Handled = true;
                     }
@@ -416,6 +417,39 @@ namespace Avalonia.Controls
             SetInitialFocus(items);
         }
 
+        // The culture decides which column comes first, so tab follows the columns on screen rather than the template.
+        private static void SetTabOrder(TemplateItems items)
+        {
+            ReadOnlySpan<(Panel host, DateTimePickerPanel selector)> selectors =
+            [
+                (items._monthHost, items._monthSelector),
+                (items._dayHost, items._daySelector),
+                (items._yearHost, items._yearSelector),
+            ];
+
+            var tabIndex = 1;
+
+            for (var column = 0; column < selectors.Length * 2; column++)
+            {
+                foreach (var (host, selector) in selectors)
+                {
+                    if (host.IsVisible && Grid.GetColumn(host) == column)
+                        selector.TabIndex = tabIndex++;
+                }
+            }
+
+            items._acceptButton.TabIndex = tabIndex++;
+
+            if (items._dismissButton is { } dismissButton)
+                dismissButton.TabIndex = tabIndex;
+        }
+
+        internal void SetInitialFocus()
+        {
+            if (_templateItems is { } items)
+                SetInitialFocus(items);
+        }
+
         private void SetGrid(TemplateItems items)
         {
             var fmt = CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern;
@@ -459,6 +493,7 @@ namespace Avalonia.Controls
 
             ConfigureSpacer(items._firstSpacer, columnIndex > 1, 1);
             ConfigureSpacer(items._secondSpacer, columnIndex > 2, 3);
+            SetTabOrder(items);
             return;
 
             static void ConfigureSpacer(Control? spacer, bool visible, int column)

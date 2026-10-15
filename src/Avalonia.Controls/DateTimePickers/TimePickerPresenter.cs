@@ -244,7 +244,8 @@ namespace Avalonia.Controls
                 case Key.Tab:
                     if (FocusManager.GetFocusManager(this)?.GetFocusedElement() is { } focus)
                     {
-                        var nextFocus = KeyboardNavigationHandler.GetNext(focus, NavigationDirection.Next);
+                        var direction = e.Key.ToNavigationDirection(e.KeyModifiers) ?? NavigationDirection.Next;
+                        var nextFocus = KeyboardNavigationHandler.GetNext(focus, direction);
                         nextFocus?.Focus(NavigationMethod.Tab);
                         e.Handled = true;
                     }
@@ -312,6 +313,12 @@ namespace Avalonia.Controls
             items._hourSelector.Focus(NavigationMethod.Pointer);
         }
 
+        internal void SetInitialFocus()
+        {
+            if (_templateItems is { } items)
+                items._hourSelector.Focus(NavigationMethod.Pointer);
+        }
+
         private void SetGrid(TemplateItems items)
         {
             var use24HourClock = ClockIdentifier == "24HourClock";
@@ -358,6 +365,24 @@ namespace Avalonia.Controls
             }
 
             items._pickerContainer.ColumnDefinitions = columnsD;
+            SetTabOrder(items);
+        }
+
+        private static void SetTabOrder(TemplateItems items)
+        {
+            var tabIndex = 1;
+
+            items._hourSelector.TabIndex = tabIndex++;
+            items._minuteSelector.TabIndex = tabIndex++;
+
+            if (items._secondSelector is { } secondSelector)
+                secondSelector.TabIndex = tabIndex++;
+
+            items._periodSelector.TabIndex = tabIndex++;
+            items._acceptButton.TabIndex = tabIndex++;
+
+            if (items._dismissButton is { } dismissButton)
+                dismissButton.TabIndex = tabIndex;
         }
 
         private void OnDismissButtonClicked(object? sender, RoutedEventArgs e)
