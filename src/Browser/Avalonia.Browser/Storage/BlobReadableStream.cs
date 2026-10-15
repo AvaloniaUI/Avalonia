@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Buffers;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.JavaScript;
 using System.Threading;
 using System.Threading.Tasks;
@@ -64,17 +66,40 @@ internal class BlobReadableStream : Stream
 
     public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
     {
-        var numBytesToRead = (int)Math.Min(buffer.Length, Length - _position);
-        var bytesRead = await StreamHelper.SliceAsync(JSReference, _position, numBytesToRead);
-        if (bytesRead.Length != numBytesToRead)
+        var numBytesToRead = (int)Math.Clamp(Length - _position, 0, buffer.Length);
+        if (numBytesToRead == 0)
+        {
+            return 0;
+        }
+
+        // Blob data is copied by JS directly into the managed buffer. Non-array memory goes through a pooled array.
+        int bytesRead;
+        if (MemoryMarshal.TryGetArray<byte>(buffer, out var segment))
+        {
+            bytesRead = await StreamHelper.ReadIntoAsync(JSReference, _position, segment.Slice(0, numBytesToRead));
+        }
+        else
+        {
+            var rented = ArrayPool<byte>.Shared.Rent(numBytesToRead);
+            try
+            {
+                bytesRead = await StreamHelper.ReadIntoAsync(JSReference, _position, new ArraySegment<byte>(rented, 0, numBytesToRead));
+                rented.AsSpan(0, bytesRead).CopyTo(buffer.Span);
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(rented);
+            }
+        }
+
+        if (bytesRead != numBytesToRead)
         {
             throw new EndOfStreamException("Failed to read the requested number of bytes from the stream.");
         }
 
-        _position += bytesRead.Length;
-        bytesRead.CopyTo(buffer);
+        _position += bytesRead;
 
-        return bytesRead.Length;
+        return bytesRead;
     }
 
     public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
