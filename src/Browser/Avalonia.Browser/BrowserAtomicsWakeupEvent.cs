@@ -24,9 +24,14 @@ internal sealed class BrowserAtomicsWakeupEvent : ManagedDispatcherImpl.IWakeupE
 
     public void Wait(TimeSpan? timeout)
     {
-        var timeoutNs = timeout.HasValue
-            ? (long)Math.Max(0, timeout.Value.TotalMilliseconds * 1_000_000)
-            : -1;
+        // Integer ticks avoid the double round-trip; a timeout too long to express in nanoseconds waits forever.
+        var timeoutNs = timeout?.Ticks switch
+        {
+            null => -1,
+            <= 0 => 0,
+            >= long.MaxValue / TimeSpan.NanosecondsPerTick => -1,
+            { } ticks => ticks * TimeSpan.NanosecondsPerTick
+        };
         avn_wakeup_wait(_ptr, timeoutNs);
     }
 
