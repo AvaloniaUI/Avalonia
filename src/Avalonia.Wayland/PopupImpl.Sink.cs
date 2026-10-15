@@ -66,11 +66,14 @@ partial class PopupImpl
             // The compositor's suggested size is intentionally IGNORED
             // for now: per xdg_surface.configure, this is a *suggested*
             // surface change, and the framework's positioner-supplied
-            // size is the authoritative one we use for layout. The
-            // worker→UI plumbing is kept because we may want to revisit
-            // this for compositor-driven shrink-to-fit behaviour.
-            _ = batch.Width;
-            _ = batch.Height;
+            // size is the authoritative one we use for layout. We may
+            // want to revisit this for compositor-driven shrink-to-fit
+            // behaviour.
+            if (batch.Geometry is { } g)
+            {
+                Parent._configuredGeometry = g;
+                Parent.UpdatePosition();
+            }
 
             // Ack the configure on next commit.
             _surfaceProxy?.SetPendingAckSerial(batch.Serial);
