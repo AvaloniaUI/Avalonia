@@ -17,6 +17,7 @@ namespace Avalonia.Media.Immutable
         /// <param name="spreadMethod">The spread method.</param>
         /// <param name="center">The center point for the gradient.</param>
         /// <param name="angle">The starting angle for the gradient.</param>
+        // TODO13: remove, folding relativeTransform into the overload below as an optional parameter.
         public ImmutableConicGradientBrush(
             IReadOnlyList<ImmutableGradientStop> gradientStops,
             double opacity = 1,
@@ -25,7 +26,32 @@ namespace Avalonia.Media.Immutable
             GradientSpreadMethod spreadMethod = GradientSpreadMethod.Pad,
             RelativePoint? center = null,
             double angle = 0)
-            : base(gradientStops, opacity, transform, transformOrigin, spreadMethod)
+            : this(gradientStops, opacity, transform, transformOrigin, spreadMethod, center, angle, null)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ImmutableConicGradientBrush"/> class.
+        /// </summary>
+        /// <param name="gradientStops">The gradient stops.</param>
+        /// <param name="opacity">The opacity of the brush.</param>
+        /// <param name="transform">The transform of the brush.</param>
+        /// <param name="transformOrigin">The transform origin of the brush</param>
+        /// <param name="spreadMethod">The spread method.</param>
+        /// <param name="center">The center point for the gradient.</param>
+        /// <param name="angle">The starting angle for the gradient.</param>
+        /// <param name="relativeTransform">The transform of the brush in the relative coordinate
+        /// space of the area being painted, applied before <paramref name="transform"/>.</param>
+        public ImmutableConicGradientBrush(
+            IReadOnlyList<ImmutableGradientStop> gradientStops,
+            double opacity,
+            ImmutableTransform? transform,
+            RelativePoint? transformOrigin,
+            GradientSpreadMethod spreadMethod,
+            RelativePoint? center,
+            double angle,
+            ImmutableTransform? relativeTransform)
+            : base(gradientStops, opacity, transform, transformOrigin, spreadMethod, relativeTransform)
         {
             Center = center ?? RelativePoint.Center;
             Angle = angle;

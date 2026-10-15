@@ -12,8 +12,9 @@
     <!-- Alpha position should match CSS (and default slider order) instead of XAML/WinUI -->
     <Setter Property="HexInputAlphaPosition" Value="Trailing" />
     <Setter Property="Height" Value="32" />
-    <Setter Property="Width" Value="64" />
     <Setter Property="MinWidth" Value="64" />
+    <Setter Property="HorizontalAlignment" Value="Left" />
+    <Setter Property="VerticalAlignment" Value="Center" />
     <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
     <Setter Property="VerticalContentAlignment" Value="Stretch"/>
     <Setter Property="Content">
@@ -38,9 +39,13 @@
     <Setter Property="Template">
       <ControlTemplate TargetType="{x:Type ColorPicker}">
         <DropDownButton CornerRadius="{TemplateBinding CornerRadius}"
+                        MinHeight="{TemplateBinding MinHeight}"
+                        MinWidth="{TemplateBinding MinWidth}"
                         Height="{TemplateBinding Height}"
                         Width="{TemplateBinding Width}"
                         Content="{TemplateBinding Content}"
+                        HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                        VerticalAlignment="{TemplateBinding VerticalAlignment}"
                         HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                         VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                         ContentTemplate="{TemplateBinding ContentTemplate}"

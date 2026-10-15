@@ -1,8 +1,7 @@
 <Project>
   <PropertyGroup>
     <EmccFlags Condition="'$(AvaloniaAllowWebGl2)' == 'true'">$(EmccFlags) -sUSE_WEBGL2=1 -sMAX_WEBGL_VERSION=2 -lGL </EmccFlags>
-    <_AvNativeBinaryType Condition="'$(WasmEnableThreads)' == 'True'">mt</_AvNativeBinaryType>
-    <_AvNativeBinaryType Condition="'$(WasmEnableThreads)' != 'True'">st</_AvNativeBinaryType>
+    <WasmBuildNative Condition="'$(WasmBuildNative)' == ''">true</WasmBuildNative>
   </PropertyGroup>
 
   <ItemGroup>
@@ -10,47 +9,130 @@
     <EmccExportedRuntimeMethod Include="GL" />
     <EmccExportedRuntimeMethod Include="PThread" Condition="'$(WasmEnableThreads)' == 'true'" />
   </ItemGroup>
-  
-  <!-- Fallback for applications without StaticWebAssetsEnabled (legacy WASM SDK) -->
-  <ItemGroup Condition="'$(ShouldIncludeAvaloniaLegacyAssets)' == 'true'">
-    <WasmExtraFilesToDeploy Include="$(MSBuildThisFileDirectory)/../staticwebassets/**/*.*" TargetPath="$(_AvaloniaRuntimeAssetsLocation)/%(FileName)%(Extension)" />
-  </ItemGroup>
 
-  <PropertyGroup Condition="'$(ShouldIncludeNativeSkiaSharp)' == 'true' or '$(ShouldIncludeNativeHarfBuzzSharp)' == 'true'">
-    <WasmBuildNative Condition="'$(WasmBuildNative)' == ''">true</WasmBuildNative>
+  <!-- staticwebassets/ in the package, wwwroot/ in the repo. -->
+  <PropertyGroup>
+    <_AvaloniaBrowserJsDir Condition="Exists('$(MSBuildThisFileDirectory)../staticwebassets/avalonia.js')">$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)../staticwebassets'))</_AvaloniaBrowserJsDir>
+    <_AvaloniaBrowserJsDir Condition="'$(_AvaloniaBrowserJsDir)' == ''">$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)../wwwroot'))</_AvaloniaBrowserJsDir>
   </PropertyGroup>
 
-  <!-- Revisit after https://github.com/mono/SkiaSharp/pull/2620 is merged and released. -->
-  <ItemGroup Condition="'$(TargetFrameworkVersion)' != '' and '$(ShouldIncludeNativeSkiaSharp)' == 'true'">
-    <NativeFileReference Include="$(SkiaSharpStaticLibraryPath)\3.1.34\$(_AvNativeBinaryType)\*.a"
-                         Condition="$([MSBuild]::VersionEquals($(TargetFrameworkVersion), '8.0'))" />
-    <NativeFileReference Include="$(SkiaSharpStaticLibraryPath)\3.1.56\$(_AvNativeBinaryType)\*.a"
-                         Condition="$([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '9.0'))" />
+  <!-- Legacy WASM projects have no static web assets pipeline. -->
+  <ItemGroup Condition="'$(UsingMicrosoftNETSdkStaticWebAssets)' != 'true'">
+    <WasmExtraFilesToDeploy Include="$(_AvaloniaBrowserJsDir)**/*.*"
+                            Exclude="$(_AvaloniaBrowserJsDir)avalonia-sw.js*"
+                            TargetPath="_content/Avalonia.Browser/%(FileName)%(Extension)" />
+    <WasmExtraFilesToDeploy Include="$(_AvaloniaBrowserJsDir)avalonia-sw.js*"
+                            TargetPath="%(FileName)%(Extension)" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFrameworkVersion)' != '' and '$(ShouldIncludeNativeHarfBuzzSharp)' == 'True'">
-    <NativeFileReference Include="$(HarfBuzzSharpStaticLibraryPath)\3.1.34\$(_AvNativeBinaryType)\*.a"
-                         Condition="$([MSBuild]::VersionEquals($(TargetFrameworkVersion), '8.0'))" />
-    <NativeFileReference Include="$(HarfBuzzSharpStaticLibraryPath)\3.1.56\$(_AvNativeBinaryType)\*.a"
-                         Condition="$([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '9.0'))" />
-  </ItemGroup>
+  <!--
+    Assets are defined in the app's build, not packed from this project.
+    A hard fingerprint renames the file, which static hosting needs,
+    but it does not survive `dotnet pack` on the .NET 10 SDK:
+    the packed props record the resolved name and drop the marker.
+    Evaluating the expression in the app keeps it intact.
+    Mirrors _ResolveBlazorWasmOutputs in Microsoft.NET.Sdk.BlazorWebAssembly.
+    .NET 11 fixes pack, but only for consumers on the .NET 11 SDK.
+  -->
+  <Target Name="_AvaloniaBrowserDefineStaticWebAssets"
+          Condition="'$(UsingMicrosoftNETSdkStaticWebAssets)' == 'true'"
+          AfterTargets="ResolveProjectStaticWebAssets"
+          DependsOnTargets="ResolveStaticWebAssetsConfiguration;ResolveReferences">
 
-  <!-- https://github.com/dotnet/runtime/issues/109289 -->
-  <Target Name="Issue109289_Workaround"
-          Condition="'$(DisableIssue109289Workaround)' != 'true' AND $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '9.0'))"
-          AfterTargets="_BrowserWasmWriteRspForLinking">
+    <PropertyGroup>
+      <!--
+        Re-check now that the project reference has been built.
+        esbuild writes wwwroot/, so file scope evaluation cannot see it on a clean tree,
+        and a staticwebassets/ left over from before that change must not win.
+      -->
+      <_AvaloniaBrowserJsDir Condition="Exists('$(MSBuildThisFileDirectory)../wwwroot/avalonia.js')">$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)../wwwroot'))</_AvaloniaBrowserJsDir>
+    </PropertyGroup>
+
+    <!-- Design time builds do not build the project reference, so wwwroot may legitimately be absent. -->
+    <Error Condition="!Exists('$(_AvaloniaBrowserJsDir)avalonia.js') and '$(DesignTimeBuild)' != 'true'"
+           Code="AVA3002"
+           Text="Avalonia.Browser JavaScript assets were not found in '$(_AvaloniaBrowserJsDir)'. This usually indicates a packaging error." />
+
+    <PropertyGroup>
+      <!--
+        A renamed file only resolves through the import map,
+        which the SDK emits only when OverrideHtmlAssetPlaceholders is on.
+        Without it, keep the plain names so existing apps keep working.
+      -->
+      <_AvaloniaBrowserFingerprintJs Condition="'$(OverrideHtmlAssetPlaceholders)' == 'true' and '$(StaticWebAssetsFingerprintContent)' != 'false'">true</_AvaloniaBrowserFingerprintJs>
+      <_AvaloniaBrowserFingerprintJs Condition="'$(_AvaloniaBrowserFingerprintJs)' == ''">false</_AvaloniaBrowserFingerprintJs>
+    </PropertyGroup>
+
+    <ItemGroup Condition="Exists('$(_AvaloniaBrowserJsDir)avalonia.js')">
+      <!-- Imported by specifier, so the import map rewrites them. -->
+      <_AvaloniaBrowserFingerprintedJs Include="$(_AvaloniaBrowserJsDir)avalonia.js;$(_AvaloniaBrowserJsDir)storage.js" />
+      <!-- Loaded by URL (sourceMappingURL), which the import map does not rewrite. -->
+      <_AvaloniaBrowserContentJs Include="$(_AvaloniaBrowserJsDir)avalonia.js.map;$(_AvaloniaBrowserJsDir)storage.js.map" />
+      <!--
+        serviceWorker.register resolves against the document and scopes the worker to its own directory.
+        The save picker polyfill looks it up with getRegistration(), which matches the document URL,
+        so the worker only resolves from the app root.
+      -->
+      <_AvaloniaBrowserRootJs Include="$(_AvaloniaBrowserJsDir)avalonia-sw.js;$(_AvaloniaBrowserJsDir)avalonia-sw.js.map" />
+
+      <!-- Separate update: %(Filename) would be a self-reference (MSB4120). -->
+      <_AvaloniaBrowserFingerprintedJs>
+        <RelativePath>_content/Avalonia.Browser/%(Filename)%(Extension)</RelativePath>
+      </_AvaloniaBrowserFingerprintedJs>
+      <_AvaloniaBrowserContentJs>
+        <RelativePath>_content/Avalonia.Browser/%(Filename)%(Extension)</RelativePath>
+      </_AvaloniaBrowserContentJs>
+      <_AvaloniaBrowserRootJs>
+        <RelativePath>%(Filename)%(Extension)</RelativePath>
+      </_AvaloniaBrowserRootJs>
+      <_AvaloniaBrowserPlainJs Include="@(_AvaloniaBrowserContentJs);@(_AvaloniaBrowserRootJs)" />
+
+      <_AvaloniaBrowserJsFingerprintPattern Include="Js" Pattern="*.js" Expression="#[.{fingerprint}]!" />
+    </ItemGroup>
+
+    <DefineStaticWebAssets
+      Condition="'@(_AvaloniaBrowserFingerprintedJs)' != ''"
+      CandidateAssets="@(_AvaloniaBrowserFingerprintedJs)"
+      FingerprintCandidates="$(_AvaloniaBrowserFingerprintJs)"
+      FingerprintPatterns="@(_AvaloniaBrowserJsFingerprintPattern)"
+      SourceId="$(PackageId)"
+      SourceType="Computed"
+      AssetKind="All"
+      AssetRole="Primary"
+      CopyToOutputDirectory="PreserveNewest"
+      CopyToPublishDirectory="PreserveNewest"
+      ContentRoot="$(_AvaloniaBrowserJsDir)"
+      BasePath="$(StaticWebAssetBasePath)">
+      <Output TaskParameter="Assets" ItemName="_AvaloniaBrowserStaticWebAsset" />
+    </DefineStaticWebAssets>
+
+    <DefineStaticWebAssets
+      Condition="'@(_AvaloniaBrowserPlainJs)' != ''"
+      CandidateAssets="@(_AvaloniaBrowserPlainJs)"
+      FingerprintCandidates="false"
+      SourceId="$(PackageId)"
+      SourceType="Computed"
+      AssetKind="All"
+      AssetRole="Primary"
+      CopyToOutputDirectory="PreserveNewest"
+      CopyToPublishDirectory="PreserveNewest"
+      ContentRoot="$(_AvaloniaBrowserJsDir)"
+      BasePath="$(StaticWebAssetBasePath)">
+      <Output TaskParameter="Assets" ItemName="_AvaloniaBrowserStaticWebAsset" />
+    </DefineStaticWebAssets>
+
+    <DefineStaticWebAssetEndpoints
+      Condition="'@(_AvaloniaBrowserStaticWebAsset)' != ''"
+      CandidateAssets="@(_AvaloniaBrowserStaticWebAsset)"
+      ExistingEndpoints="@(StaticWebAssetEndpoint)"
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)">
+      <Output TaskParameter="Endpoints" ItemName="_AvaloniaBrowserStaticWebAssetEndpoint" />
+    </DefineStaticWebAssetEndpoints>
+
     <ItemGroup>
-      <_WasmLinkStepArgs Remove="@(_EmccLinkStepArgs)" />
-      <_EmccLinkStepArgs Remove="&quot;%(_WasmNativeFileForLinking.Identity)&quot;" />
-      <_WasmLinkDependencies Remove="@(_WasmNativeFileForLinking)" />
-
-      <_SkiaSharpToReorder Include="@(_WasmNativeFileForLinking)" Condition="$([System.String]::Copy('%(FullPath)').Contains('SkiaSharp'))" />
-      <_WasmNativeFileForLinking Remove="@(_SkiaSharpToReorder)" />
-      <_WasmNativeFileForLinking Include="@(_SkiaSharpToReorder)" />
-
-      <_EmccLinkStepArgs Include="&quot;%(_WasmNativeFileForLinking.Identity)&quot;" />
-      <_WasmLinkDependencies Include="@(_WasmNativeFileForLinking)" />
-      <_WasmLinkStepArgs Include="@(_EmccLinkStepArgs)" />
+      <StaticWebAsset Include="@(_AvaloniaBrowserStaticWebAsset)" />
+      <StaticWebAssetEndpoint Include="@(_AvaloniaBrowserStaticWebAssetEndpoint)" />
     </ItemGroup>
   </Target>
+
 </Project>

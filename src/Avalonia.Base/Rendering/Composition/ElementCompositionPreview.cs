@@ -24,6 +24,14 @@ public static class ElementComposition
             compositionVisual.Compositor != visual.CompositionVisual.Compositor)
             throw new InvalidOperationException("Composition visuals belong to different compositor instances");
         
+        // Un-parent the previous child here rather than waiting for the renderer to
+        // reconcile the children, because that sync may never run again for this element:
+        // a child cleared from OnDetachedFromVisualTree is cleared before
+        // DetachFromCompositor discards the element's composition visual, and a child
+        // left parented there cannot be attached anywhere else.
+        if (visual.ChildCompositionVisual is { } oldChild && !ReferenceEquals(oldChild, compositionVisual))
+            visual.CompositionVisual?.Children.Remove(oldChild);
+
         visual.ChildCompositionVisual = compositionVisual;
         visual.GetPresentationSource()?.Renderer.RecalculateChildren(visual);
     }

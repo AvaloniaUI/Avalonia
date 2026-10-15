@@ -45,6 +45,7 @@ namespace Avalonia.Controls
 
         private bool _canCopy;
         private int _wordSelectionStart = -1;
+        private (int Start, int End) _selectionAtPointerPress;
 
         static SelectableTextBlock()
         {
@@ -268,9 +269,11 @@ namespace Avalonia.Controls
 
             ITextSource textSource;
 
-            if (_textRuns != null)
+            if (HasComplexContent)
             {
-                textSource = new InlinesTextSource(_textRuns, textStyleOverrides);
+                EnsureTextRuns();
+
+                textSource = new InlinesTextSource(_textRuns!, textStyleOverrides);
             }
             else
             {
@@ -374,6 +377,8 @@ namespace Avalonia.Controls
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
             base.OnPointerPressed(e);
+
+            _selectionAtPointerPress = GetSelectionRange();
 
             var text = HasComplexContent ? Inlines?.Text : Text;
             var clickInfo = e.GetCurrentPoint(this);
@@ -509,7 +514,8 @@ namespace Avalonia.Controls
 
                 var hit = TextLayout.HitTestPoint(point);
 
-                var caretIndex = hit.TextPosition;
+                // A point below the text hits one past its end, so clamp it as TextBox does for its caret.
+                var caretIndex = TextBox.CoerceCaretIndex(this, hit.TextPosition);
 
                 // see if mouse clicked inside current selection
                 // if it did not, we change the selection to where the user clicked
@@ -524,7 +530,24 @@ namespace Avalonia.Controls
                 }
             }
 
+            var selection = GetSelectionRange();
+            if (e.InitialPressMouseButton == MouseButton.Left &&
+                selection.Start != selection.End &&
+                selection != _selectionAtPointerPress)
+            {
+                // The pointer gesture changed the selection, publish it to the primary selection.
+                _ = PrimarySelectionHelper.PublishTextAsync(this, GetSelection);
+            }
+
             e.Pointer.Capture(null);
+        }
+
+        private (int Start, int End) GetSelectionRange()
+        {
+            var selectionStart = SelectionStart;
+            var selectionEnd = SelectionEnd;
+
+            return (Math.Min(selectionStart, selectionEnd), Math.Max(selectionStart, selectionEnd));
         }
 
         private void OnInlinesInvalidated(object? sender, EventArgs e) => OnTextOrInlinesChanged();

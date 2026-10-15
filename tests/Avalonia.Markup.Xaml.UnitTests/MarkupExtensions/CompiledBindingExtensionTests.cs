@@ -1457,6 +1457,26 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         }
 
         [Fact]
+        public void SupportCastToNestedTypeInExpression()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='using:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions'>
+    <ContentControl Content='{CompiledBinding $parent.((local:OuterClass+NestedClass)DataContext).NestedProperty}' Name='contentControl' />
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var contentControl = window.GetControl<ContentControl>("contentControl");
+
+                window.DataContext = new OuterClass.NestedClass { NestedProperty = "hello" };
+
+                Assert.Equal("hello", contentControl.Content);
+            }
+        }
+
+        [Fact]
         public void SupportCastToTypeInExpression_DifferentTypeEvaluatesToNull()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
@@ -2823,6 +2843,14 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     public class TestData
     {
         public string? StringProperty { get; set; }
+    }
+
+    public class OuterClass
+    {
+        public class NestedClass
+        {
+            public string NestedProperty { get; set; } = "nested value";
+        }
     }
 
     public class TestDataContextBaseClass {}
