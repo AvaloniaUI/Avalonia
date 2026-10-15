@@ -16,10 +16,9 @@ internal sealed class WriteableStream : Stream
     // Unfortunatelly we can't read current length/position, so we need to keep it C#-side only.
     private long _length, _position;
 
-    internal WriteableStream(JSObject jSReference, long initialLength)
+    internal WriteableStream(JSObject jSReference)
     {
         _jSReference = jSReference;
-        _length = initialLength;
     }
 
     private JSObject JSReference => _jSReference ?? throw new ObjectDisposedException(nameof(WriteableStream));
