@@ -38,6 +38,10 @@ namespace ControlCatalog.Pages
                 "Errors raised by a model through INotifyDataErrorInfo, and errors set directly through DataValidationErrors.",
                 () => new TextBoxValidationPage()),
 
+            new(SampleGroups.Features, "Spell Checking",
+                "Underlines and suggestions, languages, inputs that are never checked, and a custom provider.",
+                () => new TextBoxSpellCheckPage()),
+
             new(SampleGroups.Events, "Text, Clipboard and Undo",
                 "TextChanging and TextChanged, the three cancellable clipboard events, and the undo stack.",
                 () => new TextBoxEditingPage()),
