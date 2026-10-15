@@ -395,7 +395,7 @@ namespace Avalonia.Controls.UnitTests
             public List<string> CheckedTexts { get; } = new();
             public SpellCheckContextGate Session { get; }
 
-            public IReadOnlyList<CultureInfo> SupportedCultures => Array.Empty<CultureInfo>();
+            public IReadOnlyList<CultureInfo> AvailableCultures => Array.Empty<CultureInfo>();
 
             public ISpellCheckContext CreateContext(CultureInfo culture) =>
                 new RecordingSpellCheckContext(this);

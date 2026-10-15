@@ -96,7 +96,7 @@ namespace Avalonia.LeakTests
             public int ContextsCreated;
             public int ContextsDisposed;
 
-            public IReadOnlyList<CultureInfo> SupportedCultures => Array.Empty<CultureInfo>();
+            public IReadOnlyList<CultureInfo> AvailableCultures => Array.Empty<CultureInfo>();
 
             public ISpellCheckContext CreateContext(CultureInfo culture)
             {

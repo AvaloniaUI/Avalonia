@@ -16,7 +16,7 @@ internal sealed class IOSSpellCheckProvider : ISpellCheckProvider
 {
     private string[]? _availableLanguages;
 
-    public IReadOnlyList<CultureInfo> SupportedCultures
+    public IReadOnlyList<CultureInfo> AvailableCultures
     {
         get
         {

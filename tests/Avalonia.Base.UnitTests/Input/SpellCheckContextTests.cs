@@ -10,7 +10,7 @@ namespace Avalonia.Base.UnitTests.Input;
 public class SpellCheckContextTests
 {
     [Fact]
-    public void Disposing_Cancels_Pending_Operations_And_Rejects_New_Ones()
+    public async Task Disposing_Cancels_Pending_Operations_And_Rejects_New_Ones()
     {
         var context = new FakeContext();
         var cancellationToken = Xunit.TestContext.Current.CancellationToken;
@@ -26,28 +26,34 @@ public class SpellCheckContextTests
         context.CheckCompletion.SetResult(Array.Empty<ISpellCheckResult>());
         context.SuggestionCompletion.SetResult(Array.Empty<string>());
 
-        Assert.True(check.IsCanceled);
-        Assert.True(suggestions.IsCanceled);
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => check);
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => suggestions);
         Assert.Throws<ObjectDisposedException>(() => { _ = context.CheckAsync("again".AsMemory(), cancellationToken); });
         Assert.Throws<ObjectDisposedException>(() => { _ = result.SuggestAsync(cancellationToken); });
     }
 
     [Fact]
-    public void Checks_Do_Not_Cancel_Each_Other()
+    public async Task A_Second_Check_Does_Not_Cancel_The_First()
     {
         var context = new FakeContext();
         var cancellationToken = Xunit.TestContext.Current.CancellationToken;
 
         var first = context.CheckAsync("first".AsMemory(), cancellationToken).AsTask();
         var firstToken = context.CheckToken;
-        context.CheckCompletion.SetResult(Array.Empty<ISpellCheckResult>());
+        var firstCompletion = context.CheckCompletion;
+        var second = context.CheckAsync("second".AsMemory(), cancellationToken).AsTask();
 
         Assert.False(firstToken.IsCancellationRequested);
-        Assert.True(first.IsCompletedSuccessfully);
+
+        context.CheckCompletion.SetResult(Array.Empty<ISpellCheckResult>());
+        firstCompletion.SetResult(Array.Empty<ISpellCheckResult>());
+
+        Assert.Empty(await first);
+        Assert.Empty(await second);
     }
 
     [Fact]
-    public void Caller_Cancellation_Throws_Instead_Of_Returning_Partial_Results()
+    public async Task Caller_Cancellation_Throws_Instead_Of_Returning_Partial_Results()
     {
         var context = new FakeContext();
         using var cancellation = new CancellationTokenSource();
@@ -56,7 +62,7 @@ public class SpellCheckContextTests
         cancellation.Cancel();
         context.CheckCompletion.SetResult(new ISpellCheckResult[] { new TestResult(context) });
 
-        Assert.True(check.IsCanceled);
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => check);
     }
 
     [Fact]

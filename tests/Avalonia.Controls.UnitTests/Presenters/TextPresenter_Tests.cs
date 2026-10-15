@@ -4,11 +4,9 @@ using System.Runtime.InteropServices;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
-using Avalonia.Input.TextInput;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.UnitTests;
-using Avalonia.Utilities;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Presenters

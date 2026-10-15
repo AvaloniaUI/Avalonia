@@ -25,11 +25,11 @@ internal sealed class MacOSSpellCheckProvider : ISpellCheckProvider
     public static MacOSSpellCheckProvider GetShared(IAvaloniaNativeFactory factory) =>
         s_shared ??= new MacOSSpellCheckProvider(factory.CreateSpellCheckProvider());
 
-    public IReadOnlyList<CultureInfo> SupportedCultures
+    public IReadOnlyList<CultureInfo> AvailableCultures
     {
         get
         {
-            using var values = _native.SupportedCultures;
+            using var values = _native.AvailableCultures;
             var cultures = new List<CultureInfo>((int)values.Count);
 
             foreach (var value in values.ToStringArray())
@@ -69,7 +69,8 @@ internal sealed class MacOSSpellCheckProvider : ISpellCheckProvider
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var text = textMemory.ToString();
+            // AppKit receives a NUL terminated string; a space keeps the offsets and the text after it.
+            var text = textMemory.ToString().Replace('\0', ' ');
             using var value = text.ToAvnString();
             using var ranges = _native.Check(value);
             var count = ranges.Count;

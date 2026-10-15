@@ -361,7 +361,8 @@ namespace Avalonia.Win32
 
             if (featureType == typeof(ISpellCheckProvider))
             {
-                return Win32SpellCheckProvider.GetForCurrentThread();
+                var spellCheckProvider = Win32SpellCheckProvider.GetForCurrentThread();
+                return spellCheckProvider.IsAvailable ? spellCheckProvider : null;
             }
 
             if (featureType == typeof(IInputPane))
@@ -1730,3 +1731,4 @@ namespace Avalonia.Win32
         }
     }
 }
+

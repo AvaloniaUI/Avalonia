@@ -52,6 +52,14 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(new[] { "This" }, await movedAgain.SuggestAsync(TestContext.Current.CancellationToken));
         }
 
+        [Fact]
+        public void Suggestions_That_Only_Change_Case_Are_Kept()
+        {
+            var suggestions = SpellChecker.NormalizeSuggestions("monday", new[] { "monday", "Monday", "MONDAY" });
+
+            Assert.Equal(new[] { "Monday" }, suggestions);
+        }
+
         private sealed class DescribedSpellCheckResult : ISpellCheckResult
         {
             public int Start => 0;

@@ -11,7 +11,7 @@ internal static class SpellChecker
 {
     private const int MaxSuggestionCount = 8;
     // Native checks may block the UI thread. Limit chunk size and yield between calls.
-    internal const int MaxProviderCheckLength = 2048;
+    internal const int MaxProviderCheckLength = 1024;
 
     public static async ValueTask<IReadOnlyList<ISpellCheckResult>> CheckRangesAsync(
         string text,
@@ -77,16 +77,14 @@ internal static class SpellChecker
         }
 
         var normalized = new List<string>(Math.Min(suggestions.Count, MaxSuggestionCount));
-        var seen = new HashSet<string>(StringComparer.CurrentCultureIgnoreCase)
-        {
-            word
-        };
+        var seen = new HashSet<string>(StringComparer.CurrentCultureIgnoreCase);
 
         foreach (var suggestion in suggestions)
         {
             var value = suggestion.Trim();
 
-            if (value.Length == 0 || !seen.Add(value))
+            // A suggestion that only changes the case, such as Monday for monday, is still a correction.
+            if (value.Length == 0 || string.Equals(value, word, StringComparison.Ordinal) || !seen.Add(value))
             {
                 continue;
             }

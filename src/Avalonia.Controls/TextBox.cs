@@ -1006,14 +1006,14 @@ namespace Avalonia.Controls
         {
             var presenter = e.NameScope.Get<TextPresenter>("PART_TextPresenter");
 
-            if (!ReferenceEquals(_presenter, presenter) && IsAttachedToVisualTree)
+            if (!ReferenceEquals(_presenter, presenter))
             {
                 if (_presenter is not null)
                 {
-                    _presenter.PropertyChanged -= PresenterPropertyChanged;
+                    _presenter.PropertyChanged -= SpellCheckPresenterPropertyChanged;
                 }
 
-                presenter.PropertyChanged += PresenterPropertyChanged;
+                presenter.PropertyChanged += SpellCheckPresenterPropertyChanged;
             }
 
             _presenter = presenter;
@@ -1079,10 +1079,14 @@ namespace Avalonia.Controls
 
                     DeleteSelection();
                 }
-
-                _spellCheckManager?.OnViewportChanged();
             }
-            else if (e.Property == Visual.BoundsProperty ||
+        }
+
+        private void SpellCheckPresenterPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+        {
+            // Preedit, size, font, alignment and bidi changes can expose different text without moving the viewport.
+            if (e.Property == TextPresenter.PreeditTextProperty ||
+                e.Property == Visual.BoundsProperty ||
                 e.Property.Name is nameof(TextPresenter.FontSize)
                     or nameof(TextPresenter.FontStyle)
                     or nameof(TextPresenter.FontWeight)
@@ -1094,7 +1098,6 @@ namespace Avalonia.Controls
                     or nameof(TextPresenter.TextWrapping)
                     or nameof(TextPresenter.LineHeight))
             {
-                // Alignment and bidi changes can expose different text without moving the viewport.
                 _spellCheckManager?.OnViewportChanged();
             }
         }
@@ -1178,7 +1181,7 @@ namespace Avalonia.Controls
 
             if (change.Property == SpellCheck.IsEnabledProperty ||
                 change.Property == SpellCheck.ProviderProperty ||
-                change.Property == SpellCheck.LanguageProperty ||
+                change.Property == SpellCheck.LanguagesProperty ||
                 change.Property == TextInputOptions.ContentTypeProperty ||
                 change.Property == TextInputOptions.IsSensitiveProperty ||
                 change.Property == TextInputOptions.LocaleHintsProperty ||
@@ -1290,7 +1293,7 @@ namespace Avalonia.Controls
             CancelSpellCheckSuggestionQuery();
             ClearSpellCheckSuggestions();
 
-            if (IsReadOnly)
+            if (IsReadOnly || !TryGetSpellCheckSuggestionIndex(contextRequested, out var suggestionIndex))
             {
                 return;
             }
@@ -1308,12 +1311,12 @@ namespace Avalonia.Controls
             var selectionStart = SelectionStart;
             var selectionEnd = SelectionEnd;
 
-            if (TryGetSpellCheckSuggestionIndex(contextRequested, out var suggestionIndex))
+            if (suggestionIndex is { } clickedIndex)
             {
                 // Check the clicked word without changing the control's selection.
-                caretIndex = suggestionIndex;
-                selectionStart = suggestionIndex;
-                selectionEnd = suggestionIndex;
+                caretIndex = clickedIndex;
+                selectionStart = clickedIndex;
+                selectionEnd = clickedIndex;
             }
 
             var suggestions = manager.SuggestAsync(
@@ -1353,21 +1356,28 @@ namespace Avalonia.Controls
             }
         }
 
+        // Returns false when the pointer is outside the text. A null index means there is no pointer, so the caret is used.
         private bool TryGetSpellCheckSuggestionIndex(
             ContextRequestedEventArgs? contextRequested,
-            out int suggestionIndex)
+            out int? suggestionIndex)
         {
-            suggestionIndex = 0;
+            suggestionIndex = null;
 
             if (contextRequested is null ||
                 _presenter is null ||
                 !contextRequested.TryGetPosition(_presenter, out var point) ||
                 Text is not { } text)
             {
-                return false;
+                return true;
             }
 
             point = new Point(point.X, point.Y - _presenter.GetTextVerticalOffset());
+
+            if (!IsOverText(_presenter.TextLayout, point))
+            {
+                return false;
+            }
+
             var hit = _presenter.TextLayout.HitTestPoint(point).CharacterHit;
             suggestionIndex = MathUtilities.Clamp(
                 _presenter.GetTextPositionFromLayoutPosition(
@@ -1376,6 +1386,24 @@ namespace Avalonia.Controls
                 text.Length);
 
             return true;
+        }
+
+        // TextHitTestResult.IsInside only works for the first line, so check the hit line's extent directly.
+        private static bool IsOverText(TextLayout layout, Point point)
+        {
+            var top = 0d;
+
+            foreach (var line in layout.TextLines)
+            {
+                if (point.Y < top + line.Height)
+                {
+                    return point.Y >= top && point.X >= line.Start && point.X <= line.Start + line.Width;
+                }
+
+                top += line.Height;
+            }
+
+            return false;
         }
 
         private async void UpdateSpellCheckSuggestionsAsync(
@@ -1738,7 +1766,8 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Replaces the misspelled word found by the last context request.
-        /// Does nothing if there is none, the text changed, or the control is read-only.
+        /// Does nothing if there is none (for example after the caret or text changed), if the control is read-only,
+        /// or if the replacement would exceed <see cref="MaxLength"/>.
         /// </summary>
         /// <param name="suggestion">The replacement text.</param>
         [Unstable("ApplySpellCheckSuggestion is theme plumbing and may change in a minor release.")]
@@ -1753,7 +1782,8 @@ namespace Avalonia.Controls
                 start < 0 ||
                 length <= 0 ||
                 Text is not { } text ||
-                start + length > text.Length)
+                start + length > text.Length ||
+                (MaxLength > 0 && text.Length - length + textInput.Length > MaxLength))
             {
                 ClearSpellCheckSuggestions();
                 return;

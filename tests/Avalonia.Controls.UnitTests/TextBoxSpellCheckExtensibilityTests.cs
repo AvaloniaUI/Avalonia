@@ -5,13 +5,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
-using Avalonia.Data;
 using Avalonia.Harfbuzz;
 using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Input.TextInput;
-using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
 using Avalonia.Threading;
@@ -131,7 +129,7 @@ namespace Avalonia.Controls.UnitTests
         {
             public int CheckCount { get; private set; }
 
-            public IReadOnlyList<CultureInfo> SupportedCultures => Array.Empty<CultureInfo>();
+            public IReadOnlyList<CultureInfo> AvailableCultures => Array.Empty<CultureInfo>();
 
             public ISpellCheckContext CreateContext(CultureInfo culture) => new Session(this);
 
@@ -165,7 +163,7 @@ namespace Avalonia.Controls.UnitTests
 
             public int CheckCount { get; private set; }
 
-            public IReadOnlyList<CultureInfo> SupportedCultures => Array.Empty<CultureInfo>();
+            public IReadOnlyList<CultureInfo> AvailableCultures => Array.Empty<CultureInfo>();
 
             public ISpellCheckContext CreateContext(CultureInfo culture) => new Session(this);
 

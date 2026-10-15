@@ -1209,7 +1209,7 @@ interface IAvnStringArray : IUnknown
 [uuid(78ac196c-fca9-4cf5-aef4-547a8745393e)]
 interface IAvnSpellCheckProvider : IUnknown
 {
-     HRESULT GetSupportedCultures(IAvnStringArray** ppv);
+     HRESULT GetAvailableCultures(IAvnStringArray** ppv);
      HRESULT TryCreateContext(IAvnString* culture, IAvnSpellCheckContext** ppv);
 }
 

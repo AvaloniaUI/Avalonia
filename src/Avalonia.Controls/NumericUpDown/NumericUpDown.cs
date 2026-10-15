@@ -8,7 +8,6 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
 using Avalonia.Input;
-using Avalonia.Input.TextInput;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Reactive;
@@ -393,8 +392,6 @@ namespace Avalonia.Controls
         /// </summary>
         public NumericUpDown()
         {
-            // Let the inner TextBox inherit this opt-out; explicit values can still override it.
-            SetCurrentValue(SpellCheck.IsEnabledProperty, false);
             Initialized += (sender, e) =>
             {
                 if (!_internalValueSet && IsInitialized)

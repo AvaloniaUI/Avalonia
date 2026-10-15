@@ -42,3 +42,4 @@
   <x:String x:Key="StringScrollBarScrollLeft">Scroll Left</x:String>
   <x:String x:Key="StringScrollBarScrollRight">Scroll Right</x:String>
 </ResourceDictionary>
+

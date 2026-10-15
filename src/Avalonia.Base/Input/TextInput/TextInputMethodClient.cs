@@ -114,16 +114,6 @@ namespace Avalonia.Input.TextInput
         }
     }
 
-    /// <summary>
-    /// Supplies control-specific state to the platform input method.
-    /// </summary>
-    internal interface ITextInputMethodClientOptions
-    {
-        bool IsPasswordInput { get; }
-
-        event EventHandler? TextInputOptionsChanged;
-    }
-
     public record struct TextSelection(int Start, int End);
 
     public enum ContextMenuAction

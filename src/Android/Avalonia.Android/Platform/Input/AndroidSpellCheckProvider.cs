@@ -28,7 +28,7 @@ internal sealed class AndroidSpellCheckProvider : ISpellCheckProvider
             ?.JavaCast<TextServicesManager>();
     }
 
-    public IReadOnlyList<CultureInfo> SupportedCultures
+    public IReadOnlyList<CultureInfo> AvailableCultures
     {
         get
         {
@@ -391,6 +391,19 @@ internal sealed class AndroidSpellCheckProvider : ISpellCheckProvider
 
         public bool WasCanceled { get; private set; }
 
+        // A timeout fires on a timer thread and can race with disposal; an exception there would end the process.
+        private static void CancelSession(SpellCheckerSession session)
+        {
+            try
+            {
+                session.Cancel();
+            }
+            catch (Exception)
+            {
+                // The session was already closed.
+            }
+        }
+
         public Task<SentenceSuggestionsInfo[]?> GetSentenceSuggestionsAsync(
             SpellCheckerSession session,
             string text,
@@ -404,7 +417,7 @@ internal sealed class AndroidSpellCheckProvider : ISpellCheckProvider
             var registration = cancellationToken.Register(() =>
             {
                 WasCanceled = true;
-                session.Cancel();
+                CancelSession(session);
                 completion.TrySetCanceled(cancellationToken);
             });
 
@@ -441,7 +454,7 @@ internal sealed class AndroidSpellCheckProvider : ISpellCheckProvider
             var registration = cancellationToken.Register(() =>
             {
                 WasCanceled = true;
-                session.Cancel();
+                CancelSession(session);
                 completion.TrySetCanceled(cancellationToken);
             });
 

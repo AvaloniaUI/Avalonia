@@ -21,14 +21,21 @@ static NSString* ResolveSpellCheckLanguage(NSString* requested)
     if (neutral.length == 0)
         return nil;
 
+    // Prefer the neutral language over any regional variant, whatever order AppKit lists them in.
     for (NSString* candidate in available)
     {
         NSString* normalizedCandidate = [candidate stringByReplacingOccurrencesOfString:@"_" withString:@"-"];
-        if ([normalizedCandidate caseInsensitiveCompare:neutral] == NSOrderedSame ||
-            [normalizedCandidate.lowercaseString hasPrefix:[neutral.lowercaseString stringByAppendingString:@"-"]])
-        {
+        if ([normalizedCandidate caseInsensitiveCompare:neutral] == NSOrderedSame)
             return candidate;
-        }
+    }
+
+    NSString* regionalPrefix = [neutral.lowercaseString stringByAppendingString:@"-"];
+
+    for (NSString* candidate in available)
+    {
+        NSString* normalizedCandidate = [candidate stringByReplacingOccurrencesOfString:@"_" withString:@"-"];
+        if ([normalizedCandidate.lowercaseString hasPrefix:regionalPrefix])
+            return candidate;
     }
 
     return nil;
@@ -158,7 +165,7 @@ class AvnSpellCheckProvider : public virtual ComSingleObject<IAvnSpellCheckProvi
 public:
     FORWARD_IUNKNOWN()
 
-    virtual HRESULT GetSupportedCultures(IAvnStringArray** ppv) override
+    virtual HRESULT GetAvailableCultures(IAvnStringArray** ppv) override
     {
         START_COM_CALL;
 

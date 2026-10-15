@@ -42,6 +42,8 @@ public class EnchantSpellCheckProviderTests
     [Fact]
     public void Enchant_Returns_No_Context_For_A_Culture_Without_A_Dictionary()
     {
+        Assert.SkipWhen(EnchantSpellCheckProvider.Instance.AvailableCultures.Count == 0, "libenchant-2 with dictionaries is not installed.");
+
         Assert.Null(EnchantSpellCheckProvider.Instance.CreateContext(CultureInfo.GetCultureInfo("yo-NG")));
     }
 

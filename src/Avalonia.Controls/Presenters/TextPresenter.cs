@@ -112,7 +112,6 @@ namespace Avalonia.Controls.Presenters
         private TextLayout? _spellCheckGeometryLayout;
         private double _spellCheckGeometryTop;
         private StreamGeometry? _spellCheckGeometry;
-        private IBrush? _spellCheckPenBrush;
         private IPen? _spellCheckPen;
         private static readonly ImmutableSolidColorBrush s_defaultSpellCheckErrorBrush = new(Color.FromRgb(0xE8, 0x11, 0x23));
 
@@ -526,15 +525,9 @@ namespace Avalonia.Controls.Presenters
                 return;
             }
 
-            var brush = s_defaultSpellCheckErrorBrush;
-            if (_spellCheckPen is null ||
-                !ReferenceEquals(_spellCheckPenBrush, brush) ||
-                _spellCheckPen.Thickness != thickness)
+            if (_spellCheckPen is null || _spellCheckPen.Thickness != thickness)
             {
-                _spellCheckPen = brush is IImmutableBrush immutableBrush
-                    ? new ImmutablePen(immutableBrush, thickness, lineJoin: PenLineJoin.Round)
-                    : new Pen(brush, thickness, lineJoin: PenLineJoin.Round);
-                _spellCheckPenBrush = brush;
+                _spellCheckPen = new ImmutablePen(s_defaultSpellCheckErrorBrush, thickness, lineJoin: PenLineJoin.Round);
             }
 
             context.DrawGeometry(null, _spellCheckPen, _spellCheckGeometry);

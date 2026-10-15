@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Avalonia.Input;
 using Avalonia.Input.TextInput;
 using Avalonia.Platform;
-using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Moq;
@@ -51,7 +50,7 @@ namespace Avalonia.Controls.UnitTests
 
         private sealed class Provider : ISpellCheckProvider
         {
-            public IReadOnlyList<CultureInfo> SupportedCultures => Array.Empty<CultureInfo>();
+            public IReadOnlyList<CultureInfo> AvailableCultures => Array.Empty<CultureInfo>();
 
             public ISpellCheckContext CreateContext(CultureInfo culture) => new Context();
 

@@ -20,14 +20,12 @@ public class SpellCheckPolicyTests
     public void Content_Type_Decides_Whether_Spell_Checking_Is_Allowed(TextInputContentType contentType, bool expected)
     {
         Assert.Equal(expected, SpellCheckPolicy.IsAllowed(contentType, isSensitive: false));
-        Assert.Equal(expected, SpellCheckPolicy.IsAllowed(new TextInputOptions { ContentType = contentType }));
     }
 
     [Fact]
     public void Sensitive_Input_Is_Never_Spell_Checked()
     {
         Assert.False(SpellCheckPolicy.IsAllowed(TextInputContentType.Normal, isSensitive: true));
-        Assert.False(SpellCheckPolicy.IsAllowed(new TextInputOptions { IsSensitive = true }));
     }
 
     [Fact]

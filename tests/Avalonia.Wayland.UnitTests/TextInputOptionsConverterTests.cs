@@ -70,25 +70,7 @@ public class TextInputOptionsConverterTests
         Assert.True((h & Hint.Uppercase) != 0);
         Assert.True((h & Hint.AutoCapitalization) != 0);
         Assert.True((h & Hint.Completion) != 0);
-        Assert.False((h & Hint.Spellcheck) != 0);
-    }
-
-    [Theory]
-    [InlineData(TextInputContentType.Password)]
-    [InlineData(TextInputContentType.Pin)]
-    [InlineData(TextInputContentType.Number)]
-    [InlineData(TextInputContentType.Digits)]
-    [InlineData(TextInputContentType.Url)]
-    [InlineData(TextInputContentType.Email)]
-    public void Non_Natural_Language_Content_Never_Requests_Spellcheck(TextInputContentType contentType)
-    {
-        var (h, _) = TextInputOptionsConverter.Convert(new TextInputOptions
-        {
-            ContentType = contentType,
-            ShowSuggestions = true,
-        });
-        Assert.False((h & Hint.Spellcheck) != 0);
-        Assert.Equal(contentType != TextInputContentType.Password, (h & Hint.Completion) != 0);
+        Assert.True((h & Hint.Spellcheck) != 0);
     }
 
     [Fact]

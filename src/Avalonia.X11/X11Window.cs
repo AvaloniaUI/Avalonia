@@ -1191,7 +1191,6 @@ namespace Avalonia.X11
                 _transparencyHelper.Dispose();
                 _transparencyHelper = null;
             }
-
             
             if (_imeControl != null)
             {

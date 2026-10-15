@@ -8,7 +8,6 @@ using Avalonia.Dialogs.Internal;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
-using Avalonia.Input.TextInput;
 
 namespace Avalonia.Dialogs
 {
@@ -21,8 +20,6 @@ namespace Avalonia.Dialogs
 
         public ManagedFileChooser()
         {
-            // Opt out for file names and paths, including the inner TextBoxes.
-            SetCurrentValue(SpellCheck.IsEnabledProperty, false);
             AddHandler(PointerPressedEvent, OnPointerPressed, RoutingStrategies.Tunnel);
         }
 

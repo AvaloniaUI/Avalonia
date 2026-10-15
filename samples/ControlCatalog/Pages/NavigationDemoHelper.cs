@@ -142,8 +142,6 @@ namespace ControlCatalog.Pages
                     groups[group] = new WrapPanel
                     {
                         Orientation = Orientation.Horizontal,
-                        ItemSpacing = 8,
-                        LineSpacing = 8,
                         HorizontalAlignment = HorizontalAlignment.Left
                     };
                     groupOrder.Add(group);
@@ -154,8 +152,9 @@ namespace ControlCatalog.Pages
 
                 var card = new Button
                 {
-                    Width = 160,
+                    Width = 170,
                     MinHeight = 80,
+                    Margin = new Thickness(0, 0, 8, 8),
                     VerticalAlignment = VerticalAlignment.Top,
                     HorizontalContentAlignment = HorizontalAlignment.Left,
                     VerticalContentAlignment = VerticalAlignment.Top,
@@ -185,7 +184,24 @@ namespace ControlCatalog.Pages
 
                 card.Click += async (_, _) =>
                 {
-                    var headerGrid = CreateDetailHeader(demoTitle, async () => await nav.PopAsync(null));
+                    var headerGrid = new Grid { ColumnDefinitions = new ColumnDefinitions("*, Auto") };
+                    headerGrid.Children.Add(new TextBlock
+                    {
+                        Text = demoTitle,
+                        VerticalAlignment = VerticalAlignment.Center
+                    });
+                    var closeBtn = new Button
+                    {
+                        Content = new PathIcon { Data = CloseIcon },
+                        Background = Brushes.Transparent,
+                        BorderThickness = new Thickness(0),
+                        Padding = new Thickness(8, 4),
+                        VerticalAlignment = VerticalAlignment.Center
+                    };
+                    Grid.SetColumn(closeBtn, 1);
+                    headerGrid.Children.Add(closeBtn);
+                    closeBtn.Click += async (_, _) => await nav.PopAsync(null);
+
                     var page = new ContentPage
                     {
                         Header = headerGrid,
@@ -221,37 +237,6 @@ namespace ControlCatalog.Pages
             };
             NavigationPage.SetHasNavigationBar(homePage, false);
             return homePage;
-        }
-
-        private static Grid CreateDetailHeader(string title, Func<System.Threading.Tasks.Task> closeAsync)
-        {
-            var headerGrid = new Grid
-            {
-                ColumnDefinitions = new ColumnDefinitions("*, Auto"),
-                Margin = new Thickness(0)
-            };
-            headerGrid.Children.Add(new TextBlock
-            {
-                Text = title,
-                VerticalAlignment = VerticalAlignment.Center
-            });
-            var closeBtn = new Button
-            {
-                Content = new PathIcon
-                {
-                    Data = CloseIcon,
-                    Width = 16,
-                    Height = 16
-                },
-                Background = Brushes.Transparent,
-                BorderThickness = new Thickness(0),
-                Padding = new Thickness(8, 4),
-                VerticalAlignment = VerticalAlignment.Center
-            };
-            Grid.SetColumn(closeBtn, 1);
-            headerGrid.Children.Add(closeBtn);
-            closeBtn.Click += async (_, _) => await closeAsync();
-            return headerGrid;
         }
     }
 }

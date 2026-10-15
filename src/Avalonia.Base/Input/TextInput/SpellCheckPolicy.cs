@@ -1,6 +1,6 @@
 namespace Avalonia.Input.TextInput;
 
-// Input that is never spell checked or autocorrected, by the framework or by native keyboards.
+// Input that is never spell checked.
 internal static class SpellCheckPolicy
 {
     public static bool IsAllowed(TextInputContentType contentType, bool isSensitive, bool hasPasswordChar = false)
@@ -15,6 +15,4 @@ internal static class SpellCheckPolicy
                 TextInputContentType.Url or
                 TextInputContentType.Email);
     }
-
-    public static bool IsAllowed(TextInputOptions options) => IsAllowed(options.ContentType, options.IsSensitive);
 }

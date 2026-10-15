@@ -12,7 +12,10 @@ partial class AvaloniaView
         public UITextAutocapitalizationType AutocapitalizationType { get; private set; }
 
         [Export("autocorrectionType")]
-        public UITextAutocorrectionType AutocorrectionType => GetAutocorrectionType(_view._options);
+        public UITextAutocorrectionType AutocorrectionType =>
+            _view._options?.ShowSuggestions == false ?
+                UITextAutocorrectionType.No :
+                UITextAutocorrectionType.Yes;
 
         [Export("keyboardType")]
         public UIKeyboardType KeyboardType =>
@@ -63,32 +66,10 @@ partial class AvaloniaView
             || (_view._options?.IsSensitive ?? false);
 
         [Export("spellCheckingType")]
-        public UITextSpellCheckingType SpellCheckingType => GetSpellCheckingType(_view._options);
-
-        // Blocked fields never autocorrect. Other fields follow the user's keyboard setting.
-        internal static UITextAutocorrectionType GetAutocorrectionType(TextInputOptions? options)
-        {
-            options ??= TextInputOptions.Default;
-
-            if (options.ShowSuggestions == false || !SpellCheckPolicy.IsAllowed(options))
-            {
-                return UITextAutocorrectionType.No;
-            }
-
-            return options.ShowSuggestions == true ? UITextAutocorrectionType.Yes : UITextAutocorrectionType.Default;
-        }
-
-        internal static UITextSpellCheckingType GetSpellCheckingType(TextInputOptions? options)
-        {
-            options ??= TextInputOptions.Default;
-
-            if (options.ShowSuggestions == false || !SpellCheckPolicy.IsAllowed(options))
-            {
-                return UITextSpellCheckingType.No;
-            }
-
-            return options.ShowSuggestions == true ? UITextSpellCheckingType.Yes : UITextSpellCheckingType.Default;
-        }
+        public UITextSpellCheckingType SpellCheckingType => 
+            _view._options?.ShowSuggestions == false ?
+                UITextSpellCheckingType.No :
+                UITextSpellCheckingType.Yes;
 
         [Export("textContentType")] public NSString TextContentType { get; set; } = new NSString("text/plain");
 

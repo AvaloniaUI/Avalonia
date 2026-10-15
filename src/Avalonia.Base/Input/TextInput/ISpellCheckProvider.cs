@@ -8,6 +8,7 @@ namespace Avalonia.Input.TextInput;
 /// Creates spell checking contexts for text views.
 /// </summary>
 /// <remarks>
+/// Members are called from the UI thread, and the platform providers must only be used from it.
 /// A custom provider can act as a router: it can inspect the requested culture and delegate to the
 /// platform provider or to its own implementation.
 /// </remarks>
@@ -20,7 +21,7 @@ public interface ISpellCheckProvider
     /// <remarks>
     /// Intended for discovery. The value is a snapshot and may change when platform dictionaries change.
     /// </remarks>
-    IReadOnlyList<CultureInfo> SupportedCultures { get; }
+    IReadOnlyList<CultureInfo> AvailableCultures { get; }
 
     /// <summary>
     /// Creates a context that spell checks one text view in <paramref name="culture"/>.

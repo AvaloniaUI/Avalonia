@@ -8,7 +8,6 @@ using Android.Text;
 using Android.Views;
 using Android.Views.InputMethods;
 using Avalonia.Input.TextInput;
-using Avalonia.Threading;
 
 namespace Avalonia.Android.Platform.Input
 {
@@ -44,7 +43,6 @@ namespace Avalonia.Android.Platform.Input
         private readonly InputMethodManager _imm;
         private TextInputMethodClient? _client;
         private AvaloniaInputConnection? _inputConnection;
-        private int _optionsUpdateVersion;
 
         public AndroidInputMethod(TView host)
         {
@@ -196,18 +194,6 @@ namespace Avalonia.Android.Platform.Input
                 if (options.Multiline)
                     outAttrs.InputType |= InputTypes.TextFlagMultiLine;
 
-                if ((outAttrs.InputType & InputTypes.MaskClass) == InputTypes.ClassText)
-                {
-                    if (options.ShowSuggestions == false || !SpellCheckPolicy.IsAllowed(options))
-                    {
-                        outAttrs.InputType |= InputTypes.TextFlagNoSuggestions;
-                    }
-                    else if (options.ShowSuggestions == true)
-                    {
-                        outAttrs.InputType |= InputTypes.TextFlagAutoCorrect;
-                    }
-                }
-
                 outAttrs.ImeOptions = options.ReturnKeyType switch
                 {
                     TextInputReturnKeyType.Return => ImeFlags.NoEnterAction,
@@ -244,22 +230,6 @@ namespace Avalonia.Android.Platform.Input
 
                 return _inputConnection;
             });
-
-            // Recreate EditorInfo when options change. Defer so a focus switch can replace the client first.
-            var client = _client;
-            var version = ++_optionsUpdateVersion;
-
-            if (client is not null)
-            {
-                Dispatcher.UIThread.Post(() =>
-                {
-                    if (version == _optionsUpdateVersion && ReferenceEquals(client, _client))
-                    {
-                        _imm.RestartInput(View);
-                        _inputConnection?.UpdateState();
-                    }
-                }, DispatcherPriority.Input);
-            }
         }
     }
 }

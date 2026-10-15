@@ -32,16 +32,18 @@ public static class SpellCheck
             inherits: true);
 
     /// <summary>
-    /// Defines the Language attached property: a BCP 47 language tag such as <c>de-DE</c>. Inherited.
+    /// Defines the Languages attached property: BCP 47 language tags such as <c>de-DE</c>. Inherited.
     /// </summary>
     /// <remarks>
-    /// When null, the first valid <see cref="TextInputOptions.LocaleHintsProperty"/> entry is used, then the
-    /// preferred application language of the platform, then <see cref="CultureInfo.CurrentUICulture"/>.
-    /// A tag that cannot be resolved turns spell checking off for the control and logs a warning.
+    /// In XAML, several tags are separated by commas, for example <c>en-US, es-ES</c>.
+    /// With several languages a word is reported only when every language considers it misspelled.
+    /// When null or empty, the first valid <see cref="TextInputOptions.LocaleHintsProperty"/> entry is used,
+    /// then the preferred application language of the platform, then <see cref="CultureInfo.CurrentUICulture"/>.
+    /// Tags that cannot be resolved are skipped with a warning; if none resolve, spell checking is off for the control.
     /// </remarks>
-    public static readonly AttachedProperty<string?> LanguageProperty =
-        AvaloniaProperty.RegisterAttached<StyledElement, string?>(
-            "Language",
+    public static readonly AttachedProperty<IReadOnlyList<string>?> LanguagesProperty =
+        AvaloniaProperty.RegisterAttached<StyledElement, IReadOnlyList<string>?>(
+            "Languages",
             typeof(SpellCheck),
             inherits: true);
 
@@ -81,9 +83,10 @@ public static class SpellCheck
     public static void SetProvider(StyledElement element, ISpellCheckProvider? value) =>
         element.SetValue(ProviderProperty, value);
 
-    public static string? GetLanguage(StyledElement element) => element.GetValue(LanguageProperty);
+    public static IReadOnlyList<string>? GetLanguages(StyledElement element) => element.GetValue(LanguagesProperty);
 
-    public static void SetLanguage(StyledElement element, string? value) => element.SetValue(LanguageProperty, value);
+    public static void SetLanguages(StyledElement element, IReadOnlyList<string>? value) =>
+        element.SetValue(LanguagesProperty, value);
 
     [Unstable("SpellCheck.Suggestions is theme plumbing and may change in minor releases.")]
     public static IReadOnlyList<string> GetSuggestions(StyledElement element) =>

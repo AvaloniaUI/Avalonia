@@ -36,7 +36,7 @@ public partial class TextBoxSpellCheckPage : UserControl
     // A custom provider only implements the three public interfaces.
     private sealed class SampleSpellCheckProvider : ISpellCheckProvider
     {
-        public IReadOnlyList<CultureInfo> SupportedCultures { get; } =
+        public IReadOnlyList<CultureInfo> AvailableCultures { get; } =
             new[] { CultureInfo.InvariantCulture };
 
         // This sample checks one made up word, so it accepts any culture.

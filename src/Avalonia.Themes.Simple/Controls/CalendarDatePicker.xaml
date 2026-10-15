@@ -93,6 +93,7 @@
           </Grid.Styles>
 
           <TextBox Name="PART_TextBox"
+                   SpellCheck.IsEnabled="False"
                    Grid.Column="0"
                    Padding="{TemplateBinding Padding}"
                    HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"

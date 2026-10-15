@@ -32,7 +32,7 @@ internal sealed unsafe class Win32SpellCheckProvider : ISpellCheckProvider
     [ThreadStatic]
     private static Win32SpellCheckProvider? t_instance;
 
-    private readonly Dictionary<string, bool> _supportedLanguageTags = new(StringComparer.OrdinalIgnoreCase);
+    private readonly HashSet<string> _supportedLanguageTags = new(StringComparer.OrdinalIgnoreCase);
 
     // Creating a checker is expensive, so every context of a language shares one for the provider's lifetime.
     private readonly Dictionary<string, ISpellChecker> _spellCheckers = new(StringComparer.OrdinalIgnoreCase);
@@ -45,7 +45,10 @@ internal sealed unsafe class Win32SpellCheckProvider : ISpellCheckProvider
 
     public static Win32SpellCheckProvider GetForCurrentThread() => t_instance ??= new Win32SpellCheckProvider();
 
-    public IReadOnlyList<CultureInfo> SupportedCultures
+    // False on Windows 7, server editions without the spell checking component, or off the UI thread.
+    public bool IsAvailable => GetFactory() is not null;
+
+    public IReadOnlyList<CultureInfo> AvailableCultures
     {
         get
         {
@@ -126,6 +129,8 @@ internal sealed unsafe class Win32SpellCheckProvider : ISpellCheckProvider
                     : rented = ArrayPool<char>.Shared.Rent(text.Length + 1);
 
                 text.CopyTo(textBuffer);
+                // The checker reads a NUL terminated string; a space keeps the offsets and the text after it.
+                textBuffer.Slice(0, text.Length).Replace('\0', ' ');
                 textBuffer[text.Length] = '\0';
 
                 fixed (char* textPtr = textBuffer)
@@ -326,18 +331,24 @@ internal sealed unsafe class Win32SpellCheckProvider : ISpellCheckProvider
 
     private bool IsSupported(ISpellCheckerFactory factory, string languageTag)
     {
-        // Cache language support to avoid repeated COM calls.
-        if (_supportedLanguageTags.TryGetValue(languageTag, out var supported))
+        // Only supported languages are cached, because a language pack can be installed while the app runs.
+        if (_supportedLanguageTags.Contains(languageTag))
         {
-            return supported;
+            return true;
         }
+
+        bool supported;
 
         fixed (char* languageTagPtr = languageTag)
         {
             supported = factory.IsSupported(languageTagPtr) != 0;
         }
 
-        _supportedLanguageTags[languageTag] = supported;
+        if (supported)
+        {
+            _supportedLanguageTags.Add(languageTag);
+        }
+
         return supported;
     }
 

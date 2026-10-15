@@ -13,7 +13,6 @@ using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Input;
-using Avalonia.Input.TextInput;
 using Avalonia.Interactivity;
 
 namespace Avalonia.Controls
@@ -88,8 +87,6 @@ namespace Avalonia.Controls
         /// </summary>
         public CalendarDatePicker()
         {
-            // Let the inner TextBox inherit this opt-out for date input.
-            SetCurrentValue(SpellCheck.IsEnabledProperty, false);
             SetCurrentValue(FirstDayOfWeekProperty, DateTimeHelper.GetCurrentDateFormat().FirstDayOfWeek);
             _defaultText = string.Empty;
             SetCurrentValue(DisplayDateProperty, DateTime.Today);

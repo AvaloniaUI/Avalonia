@@ -86,6 +86,7 @@
                     Background="{TemplateBinding Background}" />
             <Grid ColumnDefinitions="*,Auto">
               <TextBox Name="PART_TextBox"
+                       SpellCheck.IsEnabled="False"
                        Foreground="{TemplateBinding Foreground}"
                        Background="Transparent"
                        BorderBrush="Transparent"

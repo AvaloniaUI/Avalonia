@@ -26,14 +26,13 @@ internal sealed unsafe class EnchantSpellCheckProvider : ISpellCheckProvider
     public static EnchantSpellCheckProvider Instance { get; } = new();
 
     private readonly Dictionary<string, IntPtr> _dictionaries = new(StringComparer.OrdinalIgnoreCase);
-    private readonly HashSet<string> _unsupportedDictionaries = new(StringComparer.OrdinalIgnoreCase);
     private IntPtr _broker;
     private bool _unavailable;
     private EnchantSpellCheckProvider()
     {
     }
 
-    public IReadOnlyList<CultureInfo> SupportedCultures
+    public IReadOnlyList<CultureInfo> AvailableCultures
     {
         get
         {
@@ -359,11 +358,6 @@ internal sealed unsafe class EnchantSpellCheckProvider : ISpellCheckProvider
                 return dictionary;
             }
 
-            if (_unsupportedDictionaries.Contains(languageTag))
-            {
-                continue;
-            }
-
             byte[]? rented = null;
 
             try
@@ -388,8 +382,6 @@ internal sealed unsafe class EnchantSpellCheckProvider : ISpellCheckProvider
                 _dictionaries[languageTag] = dictionary;
                 return dictionary;
             }
-
-            _unsupportedDictionaries.Add(languageTag);
         }
 
         return IntPtr.Zero;

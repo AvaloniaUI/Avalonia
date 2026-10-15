@@ -5,8 +5,6 @@ using System.Globalization;
 using System.Linq;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
-using Avalonia.Input.TextInput;
-using Avalonia.Interactivity;
 using Avalonia.Logging;
 using Avalonia.VisualTree;
 
@@ -78,11 +76,7 @@ namespace Avalonia.Controls
             return baseValue;
         }
 
-        public MaskedTextBox()
-        {
-            // Use a current value because an inherited opt-in would override a type default.
-            SetCurrentValue(SpellCheck.IsEnabledProperty, false);
-        }
+        public MaskedTextBox() { }
 
         /// <summary>
         ///  Constructs the MaskedTextBox with the specified MaskedTextProvider object.
@@ -91,7 +85,6 @@ namespace Avalonia.Controls
             "AVP1012:An AvaloniaObject should use SetCurrentValue when assigning its own StyledProperty or AttachedProperty values",
             Justification = "These values are being explicitly provided by a constructor parameter.")]
         public MaskedTextBox(MaskedTextProvider maskedTextProvider)
-            : this()
         {
             if (maskedTextProvider == null)
             {

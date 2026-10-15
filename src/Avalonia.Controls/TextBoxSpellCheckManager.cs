@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Controls.Presenters;
@@ -16,6 +18,9 @@ internal sealed class TextBoxSpellCheckManager : IDisposable
 {
     private static readonly TimeSpan CheckDelay = TimeSpan.FromMilliseconds(250);
     private static readonly HashSet<string> s_warnings = new(StringComparer.OrdinalIgnoreCase);
+    // Languages are resolved on every edit, so the resolved lists are cached.
+    private static readonly ConditionalWeakTable<IReadOnlyList<string>, CultureInfo[]?> s_languageLists = new();
+    private static readonly Dictionary<CultureInfo, CultureInfo[]> s_singleCultures = new();
     private const int MaxLayoutRetries = 3;
     private const int MaxProviderRetries = 3;
 
@@ -32,7 +37,7 @@ internal sealed class TextBoxSpellCheckManager : IDisposable
     private int _layoutRetries;
     private int _providerRetries;
     private ISpellCheckProvider? _contextProvider;
-    private CultureInfo? _contextCulture;
+    private IReadOnlyList<CultureInfo>? _contextCultures;
     private SpellCheckContextGate? _context;
 
     public TextBoxSpellCheckManager(TextBox owner)
@@ -59,7 +64,7 @@ internal sealed class TextBoxSpellCheckManager : IDisposable
 
     private void OnPreferredApplicationLanguageChanged(object? sender, EventArgs e)
     {
-        if (SpellCheck.GetLanguage(_owner) is null && ResolveLocaleHintCulture(_owner) is null)
+        if (GetExplicitCultures(_owner) is null && ResolveLocaleHintCulture(_owner) is null)
         {
             ScheduleCheck(invalidateResults: true);
         }
@@ -72,12 +77,12 @@ internal sealed class TextBoxSpellCheckManager : IDisposable
     {
         context = null;
 
-        if (!TryGetBaseContext(_owner, out text, out provider, out var culture))
+        if (!TryGetBaseContext(_owner, out text, out provider, out var cultures))
         {
             return false;
         }
 
-        context = GetOrCreateContext(provider, culture);
+        context = GetOrCreateContext(provider, cultures);
         return context is not null;
     }
 
@@ -86,11 +91,11 @@ internal sealed class TextBoxSpellCheckManager : IDisposable
         TextBox owner,
         [NotNullWhen(true)] out string? text,
         [NotNullWhen(true)] out ISpellCheckProvider? provider,
-        [NotNullWhen(true)] out CultureInfo? culture)
+        [NotNullWhen(true)] out IReadOnlyList<CultureInfo>? cultures)
     {
         text = owner.Text;
         provider = null;
-        culture = null;
+        cultures = null;
 
         if (!HasCheckableText(text))
         {
@@ -117,27 +122,80 @@ internal sealed class TextBoxSpellCheckManager : IDisposable
             return false;
         }
 
-        if (SpellCheck.GetLanguage(owner) is { Length: > 0 } explicitTag)
+        if (GetExplicitCultures(owner) is { } explicitCultures)
         {
-            // An explicit language that cannot be resolved must not fall back to checking in another language.
-            culture = TryGetCulture(explicitTag);
+            // Explicit languages that cannot be resolved must not fall back to checking in another language.
+            cultures = explicitCultures;
+            return explicitCultures.Length > 0;
+        }
 
-            if (culture is null)
+        var culture = ResolveLocaleHintCulture(owner) ?? ResolveSystemCulture();
+
+        if (!s_singleCultures.TryGetValue(culture, out var single))
+        {
+            single = new[] { culture };
+            s_singleCultures[culture] = single;
+        }
+
+        cultures = single;
+        return true;
+    }
+
+    // Null when SpellCheck.Languages is unset or has no tags; empty when no tag resolves.
+    private static CultureInfo[]? GetExplicitCultures(TextBox owner)
+    {
+        if (SpellCheck.GetLanguages(owner) is not { Count: > 0 } tags)
+        {
+            return null;
+        }
+
+        if (!s_languageLists.TryGetValue(tags, out var cultures))
+        {
+            cultures = ResolveExplicitCultures(tags);
+            s_languageLists.AddOrUpdate(tags, cultures);
+        }
+
+        return cultures;
+    }
+
+    private static CultureInfo[]? ResolveExplicitCultures(IReadOnlyList<string> tags)
+    {
+        var hasTags = false;
+        List<CultureInfo>? cultures = null;
+
+        for (var i = 0; i < tags.Count; i++)
+        {
+            var tag = tags[i];
+
+            if (string.IsNullOrWhiteSpace(tag))
             {
-                if (ShouldWarn(explicitTag))
+                continue;
+            }
+
+            hasTags = true;
+
+            if (TryGetCulture(tag) is { } culture)
+            {
+                cultures ??= new List<CultureInfo>();
+
+                if (!cultures.Contains(culture))
                 {
-                    Logger.TryGet(LogEventLevel.Warning, LogArea.Control)?.Log(
-                        null, "Spell check language '{Language}' cannot be resolved, so spell checking is off.", explicitTag);
+                    cultures.Add(culture);
                 }
-                return false;
+            }
+            else if (ShouldWarn(tag))
+            {
+                Logger.TryGet(LogEventLevel.Warning, LogArea.Control)?.Log(
+                    null, "Spell check language '{Language}' cannot be resolved and is skipped.", tag);
             }
         }
-        else
+
+        if (!hasTags)
         {
-            culture = ResolveLocaleHintCulture(owner) ?? ResolveSystemCulture();
+            return null;
         }
 
-        return true;
+        return cultures?.ToArray() ?? Array.Empty<CultureInfo>();
     }
 
     // Each problem is logged once per process, because this runs on every edit.
@@ -150,12 +208,15 @@ internal sealed class TextBoxSpellCheckManager : IDisposable
 
     private static bool IsSpellCheckAllowed(TextBox owner)
     {
-        return SpellCheckPolicy.IsAllowed(
+        // A mask describes structured input such as phone numbers or codes.
+        return owner is not MaskedTextBox { Mask.Length: > 0 } &&
+            SpellCheckPolicy.IsAllowed(
             TextInputOptions.GetContentType(owner),
             TextInputOptions.GetIsSensitive(owner),
             owner.PasswordChar != default);
     }
 
+    // Only the first hint: one language that accepts every word would turn all underlines off.
     private static CultureInfo? ResolveLocaleHintCulture(TextBox owner)
     {
         if (TextInputOptions.GetLocaleHints(owner) is not { Count: > 0 } hints)
@@ -373,6 +434,13 @@ internal sealed class TextBoxSpellCheckManager : IDisposable
 
         suggestions = SpellChecker.NormalizeSuggestions(word, suggestions);
 
+        if (_owner.MaxLength > 0)
+        {
+            // TextBox truncates input at MaxLength, which would corrupt a longer replacement.
+            var remaining = text.Length - result.Length;
+            suggestions = suggestions.Where(s => remaining + s.Length <= _owner.MaxLength).ToArray();
+        }
+
         if (suggestions.Count == 0)
         {
             return null;
@@ -453,7 +521,8 @@ internal sealed class TextBoxSpellCheckManager : IDisposable
                 return;
             }
 
-            SetResults(text, uncheckedRanges, results, merge: true, visibleRanges: visibleRanges);
+            // The viewport may have changed while the check ran, so apply to the current one.
+            SetResults(text, uncheckedRanges, results, merge: true);
             _providerRetries = 0;
         }
         catch (OperationCanceledException)
@@ -571,11 +640,12 @@ internal sealed class TextBoxSpellCheckManager : IDisposable
         _highlighter.Apply(_presenter, _resultCache.Results, visibleRanges, exclude, _owner.CaretIndex);
     }
 
-    private SpellCheckContextGate? GetOrCreateContext(ISpellCheckProvider provider, CultureInfo culture)
+    private SpellCheckContextGate? GetOrCreateContext(ISpellCheckProvider provider, IReadOnlyList<CultureInfo> cultures)
     {
         if (_context is not null &&
             ReferenceEquals(_contextProvider, provider) &&
-            Equals(_contextCulture, culture))
+            _contextCultures is not null &&
+            (ReferenceEquals(_contextCultures, cultures) || _contextCultures.SequenceEqual(cultures)))
         {
             return _context;
         }
@@ -584,26 +654,47 @@ internal sealed class TextBoxSpellCheckManager : IDisposable
         _resultCache.Clear();
         _highlighter.Clear(_presenter);
 
+        var contexts = new List<ISpellCheckContext>(cultures.Count);
+
+        foreach (var culture in cultures)
+        {
+            if (CreateContext(provider, culture) is { } context)
+            {
+                contexts.Add(context);
+            }
+        }
+
+        if (contexts.Count == 0)
+        {
+            return null;
+        }
+
+        _context = new SpellCheckContextGate(contexts.Count == 1 ? contexts[0] : new CompositeSpellCheckContext(contexts));
+        _contextProvider = provider;
+        _contextCultures = cultures;
+        return _context;
+    }
+
+    private static ISpellCheckContext? CreateContext(ISpellCheckProvider provider, CultureInfo culture)
+    {
         try
         {
-            if (provider.CreateContext(culture) is not { } context)
+            if (provider.CreateContext(culture) is { } context)
             {
-                // The invariant culture usually means no system language is set, for example LANG=C on Linux.
-                if (ShouldWarn(provider.GetType().FullName + "|" + culture.Name))
-                {
-                    Logger.TryGet(LogEventLevel.Warning, LogArea.Control)?.Log(
-                        provider,
-                        "Spell check provider {Provider} has no dictionary for {Culture}. Set SpellCheck.Language to choose one.",
-                        provider.GetType().Name,
-                        culture.Name.Length == 0 ? "the invariant culture" : culture.Name);
-                }
-                return null;
+                return context;
             }
 
-            _context = new SpellCheckContextGate(context);
-            _contextProvider = provider;
-            _contextCulture = culture;
-            return _context;
+            // The invariant culture usually means no system language is set, for example LANG=C on Linux.
+            if (ShouldWarn(provider.GetType().FullName + "|" + culture.Name))
+            {
+                Logger.TryGet(LogEventLevel.Warning, LogArea.Control)?.Log(
+                    provider,
+                    "Spell check provider {Provider} has no dictionary for {Culture}. Set SpellCheck.Languages to choose one.",
+                    provider.GetType().Name,
+                    culture.Name.Length == 0 ? "the invariant culture" : culture.Name);
+            }
+
+            return null;
         }
         catch (Exception ex)
         {
@@ -623,7 +714,7 @@ internal sealed class TextBoxSpellCheckManager : IDisposable
         {
             _context = null;
             _contextProvider = null;
-            _contextCulture = null;
+            _contextCultures = null;
             context.Dispose();
         }
     }
