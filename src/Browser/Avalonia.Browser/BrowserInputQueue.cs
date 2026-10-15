@@ -273,7 +273,7 @@ internal static unsafe class BrowserInputQueue
     private static void DecodeWheel(byte* body, BrowserInputHandler handler)
     {
         // wheel body: 0 timeStamp f64, 8 offsetX f64, 16 offsetY f64, 24 deltaX f64, 32 deltaY f64,
-        // 40 modifiers i32
+        // 40 modifiers i32. JS converts line and page deltas to pixels.
         var timeStamp = (ulong)*(double*)(body + 0);
         var position = new Point(*(double*)(body + 8), *(double*)(body + 16));
         var deltaX = *(double*)(body + 24);

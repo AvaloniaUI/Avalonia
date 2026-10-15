@@ -75,6 +75,8 @@ const CoalescedPointsOffset = PointerRecordSize + 8;
 const CoalescedPointSize = 32;
 const MaxCoalescedPoints = 256;
 const WheelRecordSize = HeaderSize + 48;
+// A wheel notch is 3 lines in line mode and 100 pixels in pixel mode, so a line is a third of that.
+const WheelLinePixels = 100 / 3;
 const KeyRecordHeaderSize = HeaderSize + 20;
 
 export class InputQueue {
@@ -182,8 +184,7 @@ export class InputQueue {
         view.setFloat64(b + 0, args.timeStamp, true);
         view.setFloat64(b + 8, args.offsetX, true);
         view.setFloat64(b + 16, args.offsetY, true);
-        view.setFloat64(b + 24, args.deltaX, true);
-        view.setFloat64(b + 32, args.deltaY, true);
+        InputQueue.writeWheelDelta(view, b + 24, args);
         view.setInt32(b + 40, InputQueue.getModifiers(args), true);
 
         this.commit(p + WheelRecordSize);
@@ -302,6 +303,23 @@ export class InputQueue {
         view.setFloat32(p + 20, args.tiltX, true);
         view.setFloat32(p + 24, args.tiltY, true);
         view.setFloat32(p + 28, args.twist, true);
+    }
+
+    // Writes deltaX and deltaY in pixels.
+    private static writeWheelDelta(view: DataView, p: number, args: WheelEvent): void {
+        // Deltas are read before deltaMode: Firefox reports pixels unless a script checks deltaMode first.
+        let deltaX = args.deltaX;
+        let deltaY = args.deltaY;
+        if (args.deltaMode === WheelEvent.DOM_DELTA_LINE) {
+            deltaX *= WheelLinePixels;
+            deltaY *= WheelLinePixels;
+        } else if (args.deltaMode === WheelEvent.DOM_DELTA_PAGE) {
+            const target = args.currentTarget as HTMLElement | null;
+            deltaX *= target?.clientWidth ?? 0;
+            deltaY *= target?.clientHeight ?? 0;
+        }
+        view.setFloat64(p + 0, deltaX, true);
+        view.setFloat64(p + 8, deltaY, true);
     }
 
     private static getPointerType(args: PointerEvent): PointerType {
