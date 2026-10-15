@@ -26,7 +26,7 @@ internal class BlobReadableStream : Stream
 
     public override bool CanRead => true;
 
-    public override bool CanSeek => false;
+    public override bool CanSeek => true;
 
     public override bool CanWrite => false;
 
@@ -35,19 +35,25 @@ internal class BlobReadableStream : Stream
     public override long Position
     {
         get => _position;
-        set => throw new NotSupportedException();
+        set => Seek(value, SeekOrigin.Begin);
     }
 
     public override void Flush() { }
 
     public override long Seek(long offset, SeekOrigin origin)
     {
-        return _position = origin switch
+        var position = origin switch
         {
             SeekOrigin.Current => _position + offset,
             SeekOrigin.End => _length + offset,
             _ => offset
         };
+        if (position < 0)
+        {
+            throw new IOException("An attempt was made to move the position before the beginning of the stream.");
+        }
+
+        return _position = position;
     }
 
     public override void SetLength(long value)
