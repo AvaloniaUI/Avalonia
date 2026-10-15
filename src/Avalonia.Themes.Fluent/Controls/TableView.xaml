@@ -68,11 +68,6 @@
       <Setter Property="Opacity" Value="1" />
     </Style>
 
-    <Style Selector="^[AllowAutoHide=True] /template/ DockPanel#ContentPanel">
-      <Setter Property="Grid.ColumnSpan" Value="2" />
-      <Setter Property="Grid.RowSpan" Value="2" />
-    </Style>
-
   </ControlTheme>
 
   <!-- TableView theme -->
