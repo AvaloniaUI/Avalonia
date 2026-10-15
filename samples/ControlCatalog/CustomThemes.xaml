@@ -1,0 +1,560 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:controls="using:ControlCatalog.Controls">
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Dark">
+      <Color x:Key="HamburgerBaseHighColor">#99FFFFFF</Color>
+      <Color x:Key="HamburgerChromeLowColor">#FF171717</Color>
+      <SolidColorBrush x:Key="CatalogCardBackground" Color="#2B2B33" />
+      <SolidColorBrush x:Key="CatalogCardBorderBrush" Color="#3A3A45" />
+      <SolidColorBrush x:Key="CatalogCardBorderBrushHover" Color="#8AB4FF" />
+      <SolidColorBrush x:Key="CatalogSubtleForeground" Color="#9C9CAB" />
+      <SolidColorBrush x:Key="CatalogAccentBackground" Color="#31395A" />
+      <SolidColorBrush x:Key="CatalogAccentForeground" Color="#8AB4FF" />
+      <SolidColorBrush x:Key="CatalogStageBackground" Color="#212129" />
+      <SolidColorBrush x:Key="CatalogCodeComment" Color="#8B949E" />
+      <SolidColorBrush x:Key="CatalogCodeKeyword" Color="#7EE787" />
+      <SolidColorBrush x:Key="CatalogCodeAttribute" Color="#D2A8FF" />
+      <SolidColorBrush x:Key="CatalogCodeString" Color="#A5D6FF" />
+    </ResourceDictionary>
+    <ResourceDictionary x:Key="Default">
+      <Color x:Key="HamburgerBaseHighColor">#99000000</Color>
+      <Color x:Key="HamburgerChromeLowColor">#FFF2F2F2</Color>
+      <SolidColorBrush x:Key="CatalogCardBackground" Color="#FFFFFF" />
+      <SolidColorBrush x:Key="CatalogCardBorderBrush" Color="#E5E5EA" />
+      <SolidColorBrush x:Key="CatalogCardBorderBrushHover" Color="#3E6DF3" />
+      <SolidColorBrush x:Key="CatalogSubtleForeground" Color="#64646E" />
+      <SolidColorBrush x:Key="CatalogAccentBackground" Color="#E8EFFD" />
+      <SolidColorBrush x:Key="CatalogAccentForeground" Color="#3462D9" />
+      <SolidColorBrush x:Key="CatalogStageBackground" Color="#F2F2F6" />
+      <SolidColorBrush x:Key="CatalogCodeComment" Color="#6A737D" />
+      <SolidColorBrush x:Key="CatalogCodeKeyword" Color="#22863A" />
+      <SolidColorBrush x:Key="CatalogCodeAttribute" Color="#6F42C1" />
+      <SolidColorBrush x:Key="CatalogCodeString" Color="#032F62" />
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
+
+  <ControlTheme x:Key="ButtonCardTheme" TargetType="Button">
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="VerticalAlignment" Value="Stretch" />
+    <Setter Property="Background" Value="{DynamicResource CatalogCardBackground}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource CatalogCardBorderBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="10" />
+    <Setter Property="Padding" Value="16, 14" />
+    <Setter Property="MinHeight" Value="118" />
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <ContentPresenter Name="PART_ContentPresenter"
+                          Background="{TemplateBinding Background}"
+                          BorderBrush="{TemplateBinding BorderBrush}"
+                          BorderThickness="{TemplateBinding BorderThickness}"
+                          CornerRadius="{TemplateBinding CornerRadius}"
+                          Padding="{TemplateBinding Padding}"
+                          Content="{TemplateBinding Content}"
+                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                          HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+      </ControlTemplate>
+    </Setter>
+
+    <Style Selector="^ /template/ ContentPresenter">
+      <Setter Property="BoxShadow" Value="0 1 3 0 #0D000000" />
+      <Setter Property="Transitions">
+        <Transitions>
+          <BrushTransition Property="BorderBrush" Duration="0:0:0.1" />
+        </Transitions>
+      </Setter>
+    </Style>
+
+    <Style Selector="^:pointerover /template/ ContentPresenter">
+      <Setter Property="BorderBrush" Value="{DynamicResource CatalogCardBorderBrushHover}" />
+    </Style>
+
+    <Style Selector="^:pressed /template/ ContentPresenter">
+      <Setter Property="Opacity" Value="0.8" />
+    </Style>
+
+    <Style Selector="^:disabled /template/ ContentPresenter">
+      <Setter Property="Opacity" Value="0.5" />
+    </Style>
+
+  </ControlTheme>
+
+  <x:Double x:Key="NavigationItemHeight">36</x:Double>
+  <BoxShadows x:Key="NavigationItemShadow">1 1 1 1 #2000, 0 0 1 1 #2fff</BoxShadows>
+  <Thickness x:Key="NavigationItemPadding">8,0,4,0</Thickness>
+  <Thickness x:Key="NavigationItemSelectionPillMargin">2,0,0,0</Thickness>
+  <x:Double x:Key="SelectionPipeHeight">12</x:Double>
+  <x:Double x:Key="SelectionPipeThickness">3</x:Double>
+
+  <ControlTheme x:Key="ScrollPage" TargetType="ContentPage">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border
+          BorderBrush="{TemplateBinding BorderBrush}"
+          BorderThickness="{TemplateBinding BorderThickness}"
+          Background="{TemplateBinding Background}"
+          CornerRadius="{TemplateBinding CornerRadius}">
+          <DockPanel>
+            <ContentPresenter Name="PART_TopCommandBar"
+                              DockPanel.Dock="Top"
+                              HorizontalContentAlignment="Stretch"
+                              IsVisible="False" />
+            <ContentPresenter Name="PART_BottomCommandBar"
+                              DockPanel.Dock="Bottom"
+                              HorizontalContentAlignment="Stretch"
+                              IsVisible="False" />
+
+            <ScrollViewer Padding="20"
+                          HorizontalScrollBarVisibility="Disabled">
+              <ContentPresenter Name="PART_ContentPresenter"
+                                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                Content="{TemplateBinding Content}"
+                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                CornerRadius="{TemplateBinding CornerRadius}" />
+            </ScrollViewer>
+          </DockPanel>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+  <!--
+    Catalog sample format.
+    SamplePage:        scrolling page, description under the shell title, SampleSections stacked inside.
+    SampleSection:     one example: title, description, live content on a stage, optional options panel that
+                       docks right on wide layouts and drops below the stage when the section is narrow.
+    SampleGalleryPage: a scroll page of sample cards for controls with many samples; a card pushes its sample
+                       on the host NavigationPage, so the shell keeps a single navigation bar.
+    Everything here uses the Catalog* brushes above so it renders correctly under Fluent and Simple, light and dark.
+    Pages stay transparent so window transparency shows through.
+  -->
+  <ControlTheme x:Key="{x:Type controls:SamplePage}" TargetType="controls:SamplePage">
+    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                Background="{TemplateBinding Background}"
+                CornerRadius="{TemplateBinding CornerRadius}">
+          <DockPanel>
+            <ContentPresenter Name="PART_TopCommandBar"
+                              DockPanel.Dock="Top"
+                              HorizontalContentAlignment="Stretch"
+                              IsVisible="False" />
+            <ContentPresenter Name="PART_BottomCommandBar"
+                              DockPanel.Dock="Bottom"
+                              HorizontalContentAlignment="Stretch"
+                              IsVisible="False" />
+            <ScrollViewer Padding="24,20,24,28"
+                          HorizontalScrollBarVisibility="Disabled"
+                          VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}">
+              <DockPanel VerticalSpacing="20">
+                <TextBlock Classes="sample-description"
+                           DockPanel.Dock="Top"
+                           Text="{TemplateBinding Description}"
+                           IsVisible="{TemplateBinding Description, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                <ContentPresenter Name="PART_ContentPresenter"
+                                  HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                  VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                  Content="{TemplateBinding Content}"
+                                  ContentTemplate="{TemplateBinding ContentTemplate}" />
+              </DockPanel>
+            </ScrollViewer>
+          </DockPanel>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+
+  <ControlTheme x:Key="CatalogQuietButtonTheme" TargetType="Button">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Padding" Value="8,2" />
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="Foreground" Value="{DynamicResource CatalogSubtleForeground}" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <ContentPresenter Background="Transparent"
+                          Padding="{TemplateBinding Padding}"
+                          Content="{TemplateBinding Content}"
+                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                          TextElement.Foreground="{TemplateBinding Foreground}" />
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^:pointerover">
+      <Setter Property="Foreground" Value="{DynamicResource CatalogAccentForeground}" />
+    </Style>
+  </ControlTheme>
+
+  <ControlTheme x:Key="{x:Type controls:CodeBlock}" TargetType="controls:CodeBlock">
+    <Setter Property="Background" Value="{DynamicResource CatalogStageBackground}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource CatalogBaseLowColor}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="6" />
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="{TemplateBinding CornerRadius}"
+                ClipToBounds="True">
+          <DockPanel>
+            <Grid Name="PART_Header" DockPanel.Dock="Top"
+                  ColumnDefinitions="Auto,*,Auto" Margin="4,3">
+              <ToggleButton Name="PART_Toggle"
+                            Theme="{StaticResource CatalogQuietButtonTheme}"
+                            Padding="6,2"
+                            IsChecked="{TemplateBinding IsExpanded, Mode=TwoWay}">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                  <PathIcon Name="PART_Chevron"
+                            Width="9" Height="9"
+                            Data="M4.29 2.29a1 1 0 0 1 1.42 0l5 5a1 1 0 0 1 0 1.42l-5 5a1 1 0 1 1-1.42-1.42L8.59 8 4.29 3.71a1 1 0 0 1 0-1.42z" />
+                  <TextBlock Text="{TemplateBinding Language}" FontSize="11" FontWeight="SemiBold" />
+                </StackPanel>
+              </ToggleButton>
+              <Button Name="PART_CopyButton" Grid.Column="2"
+                      Theme="{StaticResource CatalogQuietButtonTheme}"
+                      Content="Copy"
+                      FontSize="11"
+                      IsVisible="{TemplateBinding IsExpanded}"
+                      AutomationProperties.Name="Copy the snippet to the clipboard" />
+            </Grid>
+            <ScrollViewer Name="PART_Scroll"
+                          HorizontalScrollBarVisibility="Auto"
+                          VerticalScrollBarVisibility="Disabled"
+                          IsVisible="{TemplateBinding IsExpanded}"
+                          Padding="12,4,12,10">
+              <SelectableTextBlock Name="PART_Text"
+                                   Foreground="{TemplateBinding Foreground}"
+                                   FontFamily="Cascadia Mono,Consolas,Menlo,DejaVu Sans Mono"
+                                   FontSize="12" />
+            </ScrollViewer>
+          </DockPanel>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+
+    <Style Selector="^ /template/ ToggleButton#PART_Toggle:checked PathIcon#PART_Chevron">
+      <Setter Property="RenderTransform" Value="rotate(90deg)" />
+    </Style>
+
+  </ControlTheme>
+
+  <ControlTheme x:Key="{x:Type controls:SampleGroup}" TargetType="controls:SampleGroup">
+    <Setter Property="ItemsPanel">
+      <ItemsPanelTemplate>
+        <StackPanel Spacing="16" />
+      </ItemsPanelTemplate>
+    </Setter>
+    <Setter Property="Template">
+      <ControlTemplate>
+        <StackPanel Spacing="10">
+          <ContentPresenter Name="PART_HeaderPresenter"
+                            Content="{TemplateBinding Header}"
+                            ContentTemplate="{TemplateBinding HeaderTemplate}"
+                            TextElement.FontSize="13"
+                            TextElement.FontWeight="SemiBold"
+                            TextElement.Foreground="{DynamicResource CatalogSubtleForeground}" />
+          <ItemsPresenter Name="PART_ItemsPresenter" ItemsPanel="{TemplateBinding ItemsPanel}" />
+        </StackPanel>
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+
+  <ControlTheme x:Key="{x:Type controls:SampleSection}" TargetType="controls:SampleSection">
+    <Setter Property="Background" Value="{DynamicResource CatalogCardBackground}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource CatalogCardBorderBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="10" />
+    <Setter Property="Padding" Value="16" />
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="HorizontalContentAlignment" Value="Left" />
+    <Setter Property="VerticalContentAlignment" Value="Top" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="{TemplateBinding CornerRadius}"
+                Padding="{TemplateBinding Padding}">
+          <Grid RowDefinitions="Auto,Auto" RowSpacing="12">
+            <StackPanel Spacing="4">
+              <ContentPresenter Name="PART_HeaderPresenter"
+                                Content="{TemplateBinding Header}"
+                                ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                TextElement.FontSize="15"
+                                TextElement.FontWeight="SemiBold" />
+              <TextBlock Classes="sample-section-description"
+                         Text="{TemplateBinding Description}"
+                         IsVisible="{TemplateBinding Description, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+            </StackPanel>
+            <DockPanel Name="PART_Body" Grid.Row="1"
+                       HorizontalSpacing="12"
+                       VerticalSpacing="12">
+              <Border Name="PART_Options"
+                      DockPanel.Dock="Right"
+                      Width="228"
+                      IsVisible="False"
+                      BorderBrush="{DynamicResource CatalogBaseLowColor}"
+                      BorderThickness="1,0,0,0"
+                      Padding="12,0,0,0">
+                <StackPanel Spacing="8">
+                  <TextBlock Classes="sample-options-title" Text="Options" />
+                  <ContentPresenter Name="PART_OptionsPresenter"
+                                    Content="{TemplateBinding Options}"
+                                    HorizontalContentAlignment="Stretch" />
+                </StackPanel>
+              </Border>
+              <DockPanel Name="PART_Main" VerticalSpacing="12">
+                <controls:CodeBlock Name="PART_Code"
+                                    DockPanel.Dock="Bottom"
+                                    IsVisible="False"
+                                    Code="{TemplateBinding Code}"
+                                    Language="{TemplateBinding CodeLanguage}" />
+                <Border Name="PART_Stage"
+                        Background="{DynamicResource CatalogStageBackground}"
+                        CornerRadius="6"
+                        Padding="16"
+                        ClipToBounds="True"
+                        MinHeight="{TemplateBinding StageMinHeight}"
+                        Height="{TemplateBinding StageHeight}">
+                  <ContentPresenter Name="PART_ContentPresenter"
+                                    Content="{TemplateBinding Content}"
+                                    ContentTemplate="{TemplateBinding ContentTemplate}"
+                                    HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                    VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+                </Border>
+              </DockPanel>
+            </DockPanel>
+          </Grid>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+
+    <Style Selector="^:has-code /template/ controls|CodeBlock#PART_Code">
+      <Setter Property="IsVisible" Value="True" />
+    </Style>
+
+    <Style Selector="^:stage-flush /template/ Border#PART_Stage">
+      <Setter Property="Padding" Value="0" />
+    </Style>
+
+    <Style Selector="^:stage-none /template/ Border#PART_Stage">
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="Background" Value="Transparent" />
+    </Style>
+
+    <Style Selector="^:has-options /template/ Border#PART_Options">
+      <Setter Property="IsVisible" Value="True" />
+    </Style>
+
+    <Style Selector="^:fixed-stage /template/ DockPanel#PART_Main">
+      <Setter Property="VerticalAlignment" Value="Top" />
+    </Style>
+
+    <Style Selector="^:narrow /template/ Border#PART_Options">
+      <Setter Property="DockPanel.Dock" Value="Bottom" />
+      <Setter Property="Width" Value="NaN" />
+      <Setter Property="BorderThickness" Value="0,1,0,0" />
+      <Setter Property="Padding" Value="0,12,0,0" />
+    </Style>
+  </ControlTheme>
+
+  <ControlTheme x:Key="{x:Type controls:SampleGalleryPage}" TargetType="controls:SampleGalleryPage">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                Background="{TemplateBinding Background}">
+          <ScrollViewer Padding="24,20,24,28"
+                        HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Spacing="20">
+              <TextBlock Classes="sample-description"
+                         Text="{TemplateBinding Description}"
+                         IsVisible="{TemplateBinding Description, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+              <!-- ContentPage applies the safe area padding to this presenter. Its content has no templated
+                   parent, so it binds through $parent. -->
+              <ContentPresenter Name="PART_ContentPresenter" HorizontalContentAlignment="Stretch">
+                <ItemsControl ItemsSource="{Binding $parent[controls:SampleGalleryPage].Groups}">
+                  <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                      <StackPanel Spacing="20" />
+                    </ItemsPanelTemplate>
+                  </ItemsControl.ItemsPanel>
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="controls:SampleInfoGroup">
+                      <controls:SampleGroup Header="{Binding Header}" ItemsSource="{Binding Samples}">
+                        <controls:SampleGroup.ItemsPanel>
+                          <ItemsPanelTemplate>
+                            <controls:CardGrid MinItemWidth="220" />
+                          </ItemsPanelTemplate>
+                        </controls:SampleGroup.ItemsPanel>
+                        <controls:SampleGroup.ItemTemplate>
+                          <DataTemplate x:DataType="controls:SampleInfo">
+                            <Button Theme="{DynamicResource SampleCardTheme}"
+                                    Command="{Binding $parent[controls:SampleGalleryPage].OpenSampleCommand}"
+                                    CommandParameter="{Binding}"
+                                    AutomationProperties.Name="{Binding Title}"
+                                    AutomationProperties.HelpText="{Binding Description}">
+                              <StackPanel Spacing="4">
+                                <TextBlock Classes="sample-card-title" Text="{Binding Title}" />
+                                <TextBlock Classes="sample-card-description" Text="{Binding Description}" />
+                              </StackPanel>
+                            </Button>
+                          </DataTemplate>
+                        </controls:SampleGroup.ItemTemplate>
+                      </controls:SampleGroup>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </ContentPresenter>
+            </StackPanel>
+          </ScrollViewer>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+
+  <!-- Card used by SampleGalleryPage; same chrome as the home page cards (ButtonCardTheme). -->
+  <ControlTheme x:Key="SampleCardTheme" TargetType="Button" BasedOn="{StaticResource ButtonCardTheme}">
+    <Setter Property="MinHeight" Value="96" />
+    <Setter Property="Padding" Value="14,12" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="VerticalContentAlignment" Value="Top" />
+  </ControlTheme>
+
+  <ControlTheme x:Key="SelectableItemButton" TargetType="controls:SelectableButton">
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="VerticalAlignment" Value="Stretch" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Height" Value="{StaticResource NavigationItemHeight}" />
+    <Setter Property="Padding" Value="{DynamicResource NavigationItemPadding}" />
+    <Setter Property="CornerRadius" Value="8" />
+    <Setter Property="ClipToBounds" Value="False" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Name="PART_LayoutRoot"
+                HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="{TemplateBinding CornerRadius}">
+          <Panel>
+            <Border Name="PART_SelectedPipe"
+                    Width="{StaticResource SelectionPipeThickness}"
+                    Height="{DynamicResource SelectionPipeHeight}"
+                    Margin="{DynamicResource NavigationItemSelectionPillMargin}"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    Background="{DynamicResource CatalogAccentForeground}"
+                    IsVisible="False"
+                    CornerRadius="4"/>
+            <ContentPresenter Name="PART_ContentPresenter"
+                              Padding="{TemplateBinding Padding}"
+                              Margin="0"
+                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                              Content="{TemplateBinding Content}"
+                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                              TextElement.FontFamily="{TemplateBinding FontFamily}"
+                              TextElement.FontSize="{TemplateBinding FontSize}"
+                              TextElement.FontWeight="{TemplateBinding FontWeight}" />
+          </Panel>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+
+    <Style Selector="^:pointerover, ^:selected">
+      <Style Selector="^ /template/ Border#PART_LayoutRoot">
+        <Setter Property="Background" Value="{DynamicResource HamburgerChromeLowColor}" />
+        <Setter Property="BoxShadow" Value="{StaticResource NavigationItemShadow}" />
+      </Style>
+    </Style>
+
+    <Style Selector="^:selected">
+      <Style Selector="^ /template/ Border#PART_SelectedPipe">
+        <Setter Property="IsVisible" Value="True" />
+      </Style>
+    </Style>
+
+    <Style Selector="^:pressed /template/ Border#PART_LayoutRoot">
+      <Setter Property="Border.Background" Value="{DynamicResource HamburgerChromeLowColor}" />
+      <Setter Property="Border.BoxShadow" Value="{StaticResource NavigationItemShadow}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource HamburgerBaseHighColor}" />
+    </Style>
+  </ControlTheme>
+
+  <ControlTheme x:Key="HomeSectionExpander" TargetType="controls:HomeItemExpander">
+    <Setter Property="IsTabStop" Value="False"/>
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="VerticalAlignment" Value="Stretch" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="MinHeight" Value="{StaticResource NavigationItemHeight}" />
+    <Setter Property="Padding" Value="{DynamicResource NavigationItemPadding}" />
+    <Setter Property="CornerRadius" Value="8" />
+    <Setter Property="ClipToBounds" Value="False" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Name="PART_LayoutRoot"
+                HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="{TemplateBinding CornerRadius}">
+          <Grid RowDefinitions="Auto,*">
+            <controls:SelectableButton x:Name="ExpanderHeader"
+                                       HorizontalAlignment="Stretch"
+                                       MinHeight="{TemplateBinding MinHeight}"
+                                       CornerRadius="{TemplateBinding CornerRadius}"
+                                       IsEnabled="{TemplateBinding IsEnabled}"
+                                       Content="{TemplateBinding Header}"
+                                       Command="{TemplateBinding Command}"
+                                       CommandParameter="{TemplateBinding CommandParameter}"
+                                       Theme="{StaticResource SelectableItemButton}"
+                                       Background="{TemplateBinding Background}"
+                                       IsSelected="{TemplateBinding IsSelected}"
+                                       IsChecked="{TemplateBinding IsExpanded, Mode=TwoWay}"
+                                       ContentTemplate="{TemplateBinding HeaderTemplate}" >
+            </controls:SelectableButton>
+            <Border x:Name="ExpanderContent"
+                    Grid.Row="1"
+                    IsVisible="{TemplateBinding IsEffectivelyExpanded, Mode=TwoWay}"
+                    Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    MinHeight="{TemplateBinding MinHeight}"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    Padding="{TemplateBinding Padding}">
+              <ContentPresenter x:Name="PART_ContentPresenter"
+                                Content="{TemplateBinding Content}"
+                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                Foreground="{TemplateBinding Foreground}"
+                                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+            </Border>
+          </Grid>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+
+    <Style Selector="^:pointerover">
+      <Style Selector="^ /template/ controls|SelectableButton#ExpanderHeader">
+        <Setter Property="Background" Value="{DynamicResource HamburgerChromeLowColor}" />
+      </Style>
+    </Style>
+
+    <Style Selector="^:pressed /template/ Border#PART_LayoutRoot">
+      <Setter Property="Border.Background" Value="{DynamicResource HamburgerChromeLowColor}" />
+      <Setter Property="Border.BoxShadow" Value="{StaticResource NavigationItemShadow}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource HamburgerBaseHighColor}" />
+    </Style>
+  </ControlTheme>
+</ResourceDictionary>

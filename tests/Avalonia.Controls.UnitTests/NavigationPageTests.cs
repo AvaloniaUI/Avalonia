@@ -233,6 +233,50 @@ public class NavigationPageTests
             Assert.Equal(2, nav.StackDepth);
             Assert.Same(second, nav.CurrentPage);
         }
+
+        [Fact]
+        public async Task Push_Passes_Parameter_With_EventArgs()
+        {
+            var nav = new NavigationPage();
+            var root = new ContentPage();
+            object param = new object();
+            root.NavigatedTo += (s, e) =>
+            {
+                Assert.Same(e.Parameter, param);
+            };
+            await nav.PushAsync(root, null, param);
+        }
+
+        [Fact]
+        public async Task PushGeneric_Pushes_Page_With_Correct_Type()
+        {
+            var nav = new NavigationPage();
+            await nav.PushAsync<ContentPage>();
+
+            Assert.IsType<ContentPage>(nav.CurrentPage);
+        }
+
+        [Fact]
+        public async Task PushModal_Passes_Parameter_With_EventArgs()
+        {
+            var nav = new NavigationPage();
+            var root = new ContentPage();
+            object param = new object();
+            root.NavigatedTo += (s, e) =>
+            {
+                Assert.Same(e.Parameter, param);
+            };
+            await nav.PushModalAsync(root, null, param);
+        }
+
+        [Fact]
+        public async Task PushModalGeneric_Pushes_Page_With_Correct_Type()
+        {
+            var nav = new NavigationPage();
+            await nav.PushModalAsync<ContentPage>();
+
+            Assert.IsType<ContentPage>(nav.ModalContent);
+        }
     }
 
     public class ReentrantNavigationTests : ScopedTestBase
@@ -2261,6 +2305,28 @@ public class NavigationPageTests
 
             Assert.Equal(1, nav.StackDepth);
             Assert.Same(original, nav.CurrentPage);
+        }
+
+        [Fact]
+        public async Task Replace_Passes_Parameter_With_EventArgs()
+        {
+            var nav = new NavigationPage();
+            var root = new ContentPage();
+            object param = new object();
+            root.NavigatedTo += (s, e) =>
+            {
+                Assert.Same(e.Parameter, param);
+            };
+            await nav.ReplaceAsync(root, null, param);
+        }
+
+        [Fact]
+        public async Task ReplaceGeneric_Replace_Page_With_Correct_Type()
+        {
+            var nav = new NavigationPage();
+            await nav.ReplaceAsync<ContentPage>();
+
+            Assert.IsType<ContentPage>(nav.CurrentPage);
         }
     }
 

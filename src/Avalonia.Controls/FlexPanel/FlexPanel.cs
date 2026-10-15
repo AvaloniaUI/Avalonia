@@ -198,7 +198,7 @@ namespace Avalonia.Controls
             if (_visibleChildren is not { Length: > 0 } children)
             {
                 _state.Lines.Clear();
-                return availableSize;
+                return default;
             }
 
             var isColumn = Direction is FlexDirection.Column or FlexDirection.ColumnReverse;
@@ -254,7 +254,7 @@ namespace Avalonia.Controls
                 var (itemsCount, freeU) = GetLineMeasureU(flexLine, max.U, spacing.U);
                 var (lineMult, autoMargins, remainingFreeU) = GetLineMultInfo(flexLine, freeU);
 
-                if (lineMult != 0.0 && remainingFreeU != 0.0)
+                if (double.IsFinite(max.U) && lineMult != 0.0 && remainingFreeU != 0.0)
                 {
                     double maxV = 0.0;
                     for (var j = flexLine.First; j <= flexLine.Last; j++)

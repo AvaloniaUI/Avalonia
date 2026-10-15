@@ -3,11 +3,8 @@
 using System;
 using System.IO;
 using System.Runtime.CompilerServices;
-using Avalonia.Skia.RenderTests;
 using Avalonia.Skia.RenderTests.CrossUI;
 using CrossUI;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
 using Xunit;
 
 namespace Avalonia.Skia.RenderTests;

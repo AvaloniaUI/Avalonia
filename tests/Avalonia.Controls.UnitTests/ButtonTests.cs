@@ -9,6 +9,7 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Moq;
@@ -285,6 +286,37 @@ namespace Avalonia.Controls.UnitTests
             var root = new TestRoot { Child = target };
 
             root.Child = null;
+            Assert.Equal(0, command.SubscriptionCount);
+        }
+
+        [Fact]
+        public void Button_Subscribes_Once_To_Style_Set_Command_CanExecuteChanged_When_Added_To_Logical_Tree()
+        {
+            var command = new TestCommand(true);
+            var target = new Button();
+            var root = new TestRoot
+            {
+                Styles = { new Style(x => x.OfType<Button>()) { Setters = { new Setter(Button.CommandProperty, command) } } },
+                Child = target,
+            };
+
+            Assert.Same(command, target.Command);
+            Assert.Equal(1, command.SubscriptionCount);
+        }
+
+        [Fact]
+        public void Button_Unsubscribes_From_Style_Set_Command_CanExecuteChanged_When_Removed_From_Logical_Tree()
+        {
+            var command = new TestCommand(true);
+            var target = new Button();
+            var root = new TestRoot
+            {
+                Styles = { new Style(x => x.OfType<Button>()) { Setters = { new Setter(Button.CommandProperty, command) } } },
+                Child = target,
+            };
+
+            root.Child = null;
+
             Assert.Equal(0, command.SubscriptionCount);
         }
 

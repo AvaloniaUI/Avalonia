@@ -20,10 +20,6 @@ internal class BrowserWindowingPlatform : IWindowingPlatform
 
     internal static readonly bool IsThreadingEnabled = DetectThreadSupport();
 
-    internal static bool IsManagedDispatcherEnabled =>
-        IsThreadingEnabled &&
-        AvaloniaLocator.Current.GetService<BrowserPlatformOptions>()?.PreferManagedThreadDispatcher != false; 
-
     // Capture initial GlobalThis, so we can use it as a contextual bridge between threads.
     private static JSObject? s_globalThis;
     internal static JSObject GlobalThis
@@ -34,12 +30,18 @@ internal class BrowserWindowingPlatform : IWindowingPlatform
 
     static bool DetectThreadSupport()
     {
-        // TODO Replace with public API https://github.com/dotnet/runtime/issues/77541.
-        var prop = typeof(System.Threading.Thread).GetProperty("IsThreadStartSupported",
-            BindingFlags.Static | BindingFlags.NonPublic);
+        // .NET 11+ has the public RuntimeFeature.IsMultithreadingSupported (https://github.com/dotnet/runtime/issues/77541).
+        // Read it via reflection, as it's not in the reference assemblies of the TFMs we compile against.
+        var prop = typeof(System.Runtime.CompilerServices.RuntimeFeature).GetProperty("IsMultithreadingSupported",
+            BindingFlags.Static | BindingFlags.Public);
         if (prop != null && prop.GetValue(null) is bool value)
             return value;
-        // No property is found, try to start a thread and get an exception in the face if threads aren't available
+        // Older runtimes have the internal Thread.IsThreadStartSupported instead.
+        prop = typeof(System.Threading.Thread).GetProperty("IsThreadStartSupported",
+            BindingFlags.Static | BindingFlags.NonPublic);
+        if (prop != null && prop.GetValue(null) is bool legacyValue)
+            return legacyValue;
+        // No property is found, try to start a thread and get an exception in the face if threads aren't available.
         try
         {
 #pragma warning disable CA1416
@@ -98,7 +100,7 @@ internal class BrowserWindowingPlatform : IWindowingPlatform
             .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new Dictionary<Key, string>() { }))
             .Bind<IActivatableLifetime>().ToSingleton<BrowserActivatableLifetime>();
         
-        if (IsManagedDispatcherEnabled)
+        if (IsThreadingEnabled)
         {
             EventGrouperDispatchQueue = new();
             Dispatcher.InitializeUIThreadDispatcher(
@@ -107,7 +109,7 @@ internal class BrowserWindowingPlatform : IWindowingPlatform
         }
         else
         {
-            Dispatcher.InitializeUIThreadDispatcher(new BrowserDispatcherImpl());
+            Dispatcher.InitializeUIThreadDispatcher(new BrowserSingleThreadedDispatcherImpl());
         }
 
         // GC thread is the same as the main one when MT is disabled

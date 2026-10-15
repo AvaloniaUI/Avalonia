@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -132,7 +132,7 @@ internal partial class X11Screens
         {
             if (_indexedConfig != null)
             {
-                if (index > 0 && index < _indexedConfig.Count)
+                if (index >= 0 && index < _indexedConfig.Count)
                     return _indexedConfig[index];
                 return 1;
             }
