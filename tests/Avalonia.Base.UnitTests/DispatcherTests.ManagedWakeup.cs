@@ -52,7 +52,9 @@ public partial class DispatcherTests
         }, TestContext.Current.CancellationToken);
 
         dispatcher.MainLoop(cts.Token);
+#pragma warning disable xUnit1031
         poster.GetAwaiter().GetResult();
+#pragma warning restore xUnit1031
 
         Assert.True(executed);
         Assert.True(wakeup.WaitCount > 0);
@@ -87,13 +89,16 @@ public partial class DispatcherTests
         var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         var poster = Task.Run(async () =>
         {
+            // ReSharper disable once MethodSupportsCancellation
             await Task.Delay(100);
             Volatile.Write(ref externalPosted, true);
             dispatcher.Post(() => actions.Add("ExternalOperation"));
         }, TestContext.Current.CancellationToken);
 
         dispatcher.MainLoop(cts.Token);
+#pragma warning disable xUnit1031
         poster.GetAwaiter().GetResult();
+#pragma warning restore xUnit1031
 
         Assert.Equal("BeforeWait", actions[0]);
         var hookOperation = actions.IndexOf("HookOperation");
