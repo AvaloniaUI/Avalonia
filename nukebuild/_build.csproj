@@ -15,6 +15,7 @@
     <PackageReference Include="Numerge" />
     <PackageReference Include="Mono.Cecil" />
     <PackageReference Include="NuGet.Protocol" />
+    <PackageReference Include="System.Security.Cryptography.Pkcs" />
     <PackageReference Include="System.Security.Cryptography.Xml" VersionOverride="10.0.11" /> <!-- Local override to avoid security warnings --> 
     <PackageDownload Include="Microsoft.DotNet.ApiCompat.Tool" Version="[10.0.100]" />
     <PackageDownload Include="Microsoft.DotNet.ApiDiff.Tool" Version="[10.0.100-rtm.25531.102]" />
