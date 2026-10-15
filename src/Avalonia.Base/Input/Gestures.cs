@@ -29,6 +29,7 @@ namespace Avalonia.Input
         private static GestureState? s_gestureState = null;
         private static readonly WeakReference<object?> s_lastPress = new WeakReference<object?>(null);
         private static Point s_lastPressPoint;
+        private static PointerUpdateKind s_lastPressUpdateKind;
         private static CancellationTokenSource? s_holdCancellationToken;
         static Gestures()
         {
@@ -73,6 +74,7 @@ namespace Avalonia.Input
                     s_gestureState = new GestureState(GestureStateType.Pending, e.Pointer);
                     s_lastPress.SetTarget(source);
                     s_lastPressPoint = e.GetPosition((Visual)source);
+                    s_lastPressUpdateKind = e.GetCurrentPoint(visual).Properties.PointerUpdateKind;
                     s_holdCancellationToken = new CancellationTokenSource();
                     var token = s_holdCancellationToken.Token;
                     var settings = visual.GetPlatformSettings();
@@ -90,7 +92,8 @@ namespace Avalonia.Input
                         }, settings.HoldWaitDuration);
                     }
                 }
-                else if (e.ClickCount % 2 == 0 && e.GetCurrentPoint(visual).Properties.IsLeftButtonPressed)
+                else if (e.ClickCount % 2 == 0 && e.GetCurrentPoint(visual).Properties.IsLeftButtonPressed
+                    && s_lastPressUpdateKind == PointerUpdateKind.LeftButtonPressed)
                 {
                     if (s_lastPress.TryGetTarget(out var target) &&
                         target == source &&

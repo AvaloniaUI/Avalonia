@@ -209,6 +209,28 @@ namespace Avalonia.Base.UnitTests.Input
         }
 
         [Fact]
+        public void DoubleTapped_Should_Not_Be_Raised_For_A_Right_Click_Followed_By_A_Left_Click()
+        {
+            Border border = new Border();
+            var root = new TestRoot
+            {
+                Child = border
+            };
+            var doubleTapped = false;
+            var tapped = false;
+
+            root.AddHandler(InputElement.DoubleTappedEvent, (_, _) => doubleTapped = true);
+            root.AddHandler(InputElement.TappedEvent, (_, _) => tapped = true);
+
+            _mouse.Click(border, MouseButton.Right);
+            _mouse.Down(border, MouseButton.Left, clickCount: 2);
+            _mouse.Up(border, MouseButton.Left);
+
+            Assert.False(doubleTapped);
+            Assert.True(tapped);
+        }
+
+        [Fact]
         public void Hold_Should_Be_Raised_After_Hold_Duration()
         {
             using var scope = AvaloniaLocator.EnterScope();
