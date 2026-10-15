@@ -23,6 +23,54 @@ namespace Avalonia.Controls.UnitTests
     {
         MouseTestHelper _helper = new MouseTestHelper();
 
+        [Fact]
+        public void Item_Marked_As_Selected_Is_Selected_Before_The_DropDown_Is_Opened()
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var target = new ComboBox
+            {
+                Items =
+                {
+                    new ComboBoxItem { Content = "Item 1", IsSelected = true },
+                    new ComboBoxItem { Content = "Item 2" }
+                }
+            };
+
+            var window = new Window { Content = target };
+            window.Show();
+            window.LayoutManager.ExecuteInitialLayoutPass();
+
+            Assert.Equal(0, target.SelectedIndex);
+            Assert.Same(target.Items[0], target.SelectedItem);
+        }
+
+        [Fact]
+        public void Item_Marked_As_Selected_Stays_Selected_When_The_DropDown_Is_Opened()
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var target = new ComboBox
+            {
+                Items =
+                {
+                    new ComboBoxItem { Content = "Item 1", IsSelected = true },
+                    new ComboBoxItem { Content = "Item 2" }
+                }
+            };
+
+            var window = new Window { Content = target };
+            window.Show();
+            window.LayoutManager.ExecuteInitialLayoutPass();
+
+            target.IsDropDownOpen = true;
+            window.LayoutManager.ExecuteLayoutPass();
+            target.IsDropDownOpen = false;
+            window.LayoutManager.ExecuteLayoutPass();
+
+            Assert.Equal(0, target.SelectedIndex);
+        }
+
         [Theory]
         [InlineData(false)]
         [InlineData(true)]

@@ -136,25 +136,7 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
 
         public ValueTask<AtSpiAttributeSet> GetAttributesAsync()
         {
-            var attrs = new AtSpiAttributeSet { ["toolkit"] = "Avalonia" };
-
-            var name = node.Peer.GetName();
-            if (!string.IsNullOrEmpty(name))
-                attrs["explicit-name"] = "true";
-
-            var acceleratorKey = node.Peer.GetAcceleratorKey();
-            if (!string.IsNullOrEmpty(acceleratorKey))
-                attrs["accelerator-key"] = acceleratorKey;
-
-            var accessKey = node.Peer.GetAccessKey();
-            if (!string.IsNullOrEmpty(accessKey))
-                attrs["access-key"] = accessKey;
-
-            var placeholderText = node.Peer.GetPlaceholderText();
-            if (!string.IsNullOrEmpty(placeholderText))
-                attrs["placeholder-text"] = placeholderText;
-
-            return ValueTask.FromResult(attrs);
+            return ValueTask.FromResult(AtSpiNode.GetAttributes(node.Peer));
         }
 
         public ValueTask<AtSpiObjectReference> GetApplicationAsync()

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -7,6 +8,7 @@ using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
 using Avalonia.DBus;
+using Avalonia.FreeDesktop.AtSpi.DBusXml;
 using Avalonia.FreeDesktop.AtSpi.Handlers;
 using Avalonia.Logging;
 using static Avalonia.FreeDesktop.AtSpi.AtSpiConstants;
@@ -137,6 +139,49 @@ namespace Avalonia.FreeDesktop.AtSpi
 
             var visualTypeName = peer.GetClassName();
             return string.IsNullOrWhiteSpace(visualTypeName) ? string.Empty : visualTypeName;
+        }
+
+        /// <summary>
+        /// Builds the AT-SPI object attributes reported for a peer.
+        /// </summary>
+        /// <param name="peer">The peer to read attributes from.</param>
+        /// <returns>The attributes shared by Accessible.GetAttributes and Collection matching.</returns>
+        internal static AtSpiAttributeSet GetAttributes(AutomationPeer peer)
+        {
+            var attrs = new AtSpiAttributeSet { ["toolkit"] = "Avalonia" };
+
+            var name = peer.GetName();
+            if (!string.IsNullOrEmpty(name))
+                attrs["explicit-name"] = "true";
+
+            var acceleratorKey = peer.GetAcceleratorKey();
+            if (!string.IsNullOrEmpty(acceleratorKey))
+                attrs["accelerator-key"] = acceleratorKey;
+
+            var accessKey = peer.GetAccessKey();
+            if (!string.IsNullOrEmpty(accessKey))
+                attrs["access-key"] = accessKey;
+
+            var placeholderText = peer.GetPlaceholderText();
+            if (!string.IsNullOrEmpty(placeholderText))
+                attrs["placeholder-text"] = placeholderText;
+
+            var headingLevel = peer.GetHeadingLevel();
+            if (headingLevel > 0)
+                attrs["level"] = headingLevel.ToString(CultureInfo.InvariantCulture);
+
+            if (peer is ControlAutomationPeer controlPeer)
+            {
+                var position = AutomationProperties.GetPositionInSet(controlPeer.Owner);
+                if (position > 0)
+                    attrs["posinset"] = position.ToString(CultureInfo.InvariantCulture);
+
+                var size = AutomationProperties.GetSizeOfSet(controlPeer.Owner);
+                if (size > 0)
+                    attrs["setsize"] = size.ToString(CultureInfo.InvariantCulture);
+            }
+
+            return attrs;
         }
 
         internal void Attach(AtSpiNode? parent)
