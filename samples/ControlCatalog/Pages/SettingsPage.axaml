@@ -55,15 +55,9 @@
         <ComboBox x:Name="Decorations"
                   Grid.Column="1"
                   HorizontalAlignment="Stretch"
-                  SelectedIndex="{Binding SelectedDecorationIndex}"
-                  SelectionChanged="Decorations_SelectionChanged"
-                  ToolTip.Tip="System Decorations">
-          <ComboBox.Items>
-            <WindowDecorations>None</WindowDecorations>
-            <WindowDecorations>BorderOnly</WindowDecorations>
-            <WindowDecorations>Full</WindowDecorations>
-          </ComboBox.Items>
-        </ComboBox>
+                  SelectedItem="{Binding CurrentWindowDecorations}"
+                  ItemsSource="{Binding WindowDecorationsOptions}"
+                  ToolTip.Tip="System Decorations"/>
       </Grid>
     </Border>
 
@@ -72,14 +66,9 @@
         <Label>Theme</Label>
         <ComboBox HorizontalAlignment="Stretch"
                   Grid.Column="1"
-                  SelectedItem="{x:Static local:App.CurrentTheme}"
-                  SelectionChanged="Themes_SelectionChanged"
-                  ToolTip.Tip="Catalog Theme">
-          <ComboBox.Items>
-            <models:CatalogTheme>Fluent</models:CatalogTheme>
-            <models:CatalogTheme>Simple</models:CatalogTheme>
-          </ComboBox.Items>
-        </ComboBox>
+                  SelectedItem="{Binding CurrentCatalogTheme}"
+                  ItemsSource="{Binding CatalogThemes}"
+                  ToolTip.Tip="Catalog Theme"/>
       </Grid>
     </Border>
 
@@ -89,15 +78,9 @@
         <ComboBox HorizontalAlignment="Stretch"
                   Grid.Column="1"
                   DisplayMemberBinding="{Binding Key, x:DataType=ThemeVariant}"
-                  SelectedIndex="{Binding SelectedThemeVariantIndex}"
-                  SelectionChanged="ThemeVariants_SelectionChanged"
-                  ToolTip.Tip="Theme Variant">
-          <ComboBox.Items>
-            <ThemeVariant>Default</ThemeVariant>
-            <ThemeVariant>Light</ThemeVariant>
-            <ThemeVariant>Dark</ThemeVariant>
-          </ComboBox.Items>
-        </ComboBox>
+                  SelectedItem="{Binding CurrentThemeVariant}"
+                  ItemsSource="{Binding ThemeVariants}"
+                  ToolTip.Tip="Theme Variant"/>
       </Grid>
     </Border>
 
@@ -106,17 +89,9 @@
         <Label>Window Transparency</Label>
         <ComboBox HorizontalAlignment="Stretch"
                   Grid.Column="1"
-                  SelectedIndex="{Binding SelectedTransparencyLevelIndex}"
-                  SelectionChanged="TransparencyLevels_SelectionChanged"
-                  ToolTip.Tip="Window Transparency Level">
-          <ComboBox.Items>
-            <WindowTransparencyLevel>None</WindowTransparencyLevel>
-            <WindowTransparencyLevel>Transparent</WindowTransparencyLevel>
-            <WindowTransparencyLevel>Blur</WindowTransparencyLevel>
-            <WindowTransparencyLevel>AcrylicBlur</WindowTransparencyLevel>
-            <WindowTransparencyLevel>Mica</WindowTransparencyLevel>
-          </ComboBox.Items>
-        </ComboBox>
+                  SelectedItem="{Binding CurrentWindowTransparencyLevel}"
+                  ItemsSource="{Binding WindowTransparencyLevels}"
+                  ToolTip.Tip="Window Transparency Level"/>
       </Grid>
     </Border>
 
@@ -125,20 +100,15 @@
         <Label>Flow Direction</Label>
         <ComboBox HorizontalAlignment="Stretch"
                   Grid.Column="1"
-                  SelectedIndex="{Binding SelectedFlowDirectionIndex}"
-                  SelectionChanged="FlowDirection_SelectionChanged"
-                  ToolTip.Tip="Flow Direction">
-          <ComboBox.Items>
-            <FlowDirection>LeftToRight</FlowDirection>
-            <FlowDirection>RightToLeft</FlowDirection>
-          </ComboBox.Items>
-        </ComboBox>
+                  SelectedItem="{Binding CurrentFlowDirection}"
+                  ItemsSource="{Binding FlowDirections}"
+                  ToolTip.Tip="Flow Direction"/>
       </Grid>
     </Border>
 
     <Border Classes="card">
       <Grid ColumnSpacing="10" ColumnDefinitions="*,Auto">
-        <Label>Window State</Label>          
+        <Label>Window State</Label>
         <ComboBox HorizontalAlignment="Stretch"
                   Grid.Column="1"
                   ItemsSource="{Binding WindowStates}"
