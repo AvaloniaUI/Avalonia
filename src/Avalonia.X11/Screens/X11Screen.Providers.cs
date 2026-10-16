@@ -10,7 +10,7 @@ namespace Avalonia.X11.Screens;
 
 internal partial class X11Screens
 {
-    internal unsafe class X11Screen(MonitorInfo info, X11Info x11, IScalingProvider? scalingProvider, int id) : PlatformScreen(new PlatformHandle(info.Name, "XRandRMonitorName"))
+    internal unsafe class X11Screen(MonitorInfo info, X11Info x11, X11Globals globals, IScalingProvider? scalingProvider, int id) : PlatformScreen(new PlatformHandle(info.Name, "XRandRMonitorName"))
     {
         public Size? PhysicalSize { get; set; }
 
@@ -31,43 +31,83 @@ internal partial class X11Screens
         }
 
 
-        protected unsafe void UpdateWorkArea()
+        protected void UpdateWorkArea()
         {
-            var rect = default(PixelRect);
-            //Fallback value
-            rect = rect.Union(Bounds);
-            WorkingArea = Bounds;
-
-            var res = XGetWindowProperty(x11.Display,
-                x11.RootWindow,
-                x11.Atoms._NET_WORKAREA,
-                IntPtr.Zero,
-                new IntPtr(128),
-                false,
-                AnyPropertyType,
-                out var type,
-                out var format,
-                out var count,
-                out var bytesAfter,
-                out var prop);
-
-            if (res != (int)Status.Success || type == IntPtr.Zero ||
-                format == 0 || bytesAfter.ToInt64() != 0 || count.ToInt64() % 4 != 0)
-                return;
-
-            var pwa = (IntPtr*)prop;
-            var wa = new PixelRect(pwa[0].ToInt32(), pwa[1].ToInt32(), pwa[2].ToInt32(), pwa[3].ToInt32());
-
-            WorkingArea = Bounds.Intersect(wa);
+            WorkingArea = Bounds.Intersect(GetWorkArea() ?? Bounds);
             if (WorkingArea.Width <= 0 || WorkingArea.Height <= 0)
                 WorkingArea = Bounds;
-            XFree(prop);
         }
+
+        private PixelRect? GetWorkArea()
+        {
+            var desktop = XGetWindowPropertyAsIntPtrArray(x11.Display, x11.RootWindow,
+                x11.Atoms._NET_CURRENT_DESKTOP, x11.Atoms.CARDINAL) is { Length: > 0 } d ? (uint)d[0] : 0u;
+
+            if (globals.NetSupported?.Contains(x11.Atoms._GTK_WORKAREAS) == true
+                && ReadRects(x11.Atoms.GetAtom("_GTK_WORKAREAS_D" + desktop)) is { } gtk)
+            {
+                foreach (var r in gtk)
+                    if (Bounds.Intersects(r))
+                        return r;
+            }
+
+            PixelRect? wa = ReadRects(x11.Atoms._NET_WORKAREA) is { Length: > 0 } all
+                ? all[desktop < all.Length ? desktop : 0]
+                : null;
+            if (wa is { } single && Bounds.Contains(single))
+                return single;
+
+            // _NET_WORKAREA is a single rect spanning all monitors, so compute this monitor's area from the struts
+            // and, like GTK, only apply _NET_WORKAREA to the primary monitor if that isn't possible
+            return GetStrutWorkArea() ?? (IsPrimary ? wa : null);
+        }
+
+        private PixelRect? GetStrutWorkArea()
+        {
+            var clients = XGetWindowPropertyAsIntPtrArray(x11.Display, x11.RootWindow,
+                x11.Atoms._NET_CLIENT_LIST, x11.Atoms.WINDOW);
+            if (clients == null || !XGetGeometry(x11.Display, x11.RootWindow, out _, out _, out _, out var w, out var h, out _, out _))
+                return null;
+
+            int left = Bounds.X, top = Bounds.Y, right = Bounds.Right, bottom = Bounds.Bottom;
+            foreach (var client in clients)
+            {
+                var s = XGetWindowPropertyAsIntPtrArray(x11.Display, client, x11.Atoms._NET_WM_STRUT_PARTIAL,
+                            x11.Atoms.CARDINAL) is { Length: >= 12 } partial
+                    ? partial
+                    : XGetWindowPropertyAsIntPtrArray(x11.Display, client, x11.Atoms._NET_WM_STRUT, x11.Atoms.CARDINAL);
+                if (s is not { Length: >= 4 })
+                    continue;
+
+                var full = s.Length < 12;
+                if (s[0] > 0 && Hits(0, full ? 0 : s[4], s[0], full ? h : s[5] - s[4] + 1))
+                    left = Math.Max(left, (int)s[0]);
+                if (s[1] > 0 && Hits(w - s[1], full ? 0 : s[6], s[1], full ? h : s[7] - s[6] + 1))
+                    right = Math.Min(right, w - (int)s[1]);
+                if (s[2] > 0 && Hits(full ? 0 : s[8], 0, full ? w : s[9] - s[8] + 1, s[2]))
+                    top = Math.Max(top, (int)s[2]);
+                if (s[3] > 0 && Hits(full ? 0 : s[10], h - s[3], full ? w : s[11] - s[10] + 1, s[3]))
+                    bottom = Math.Min(bottom, h - (int)s[3]);
+            }
+
+            return new PixelRect(left, top, right - left, bottom - top);
+
+            bool Hits(nint x, nint y, nint width, nint height) =>
+                Bounds.Intersects(new PixelRect((int)x, (int)y, (int)width, (int)height));
+        }
+
+        private PixelRect[]? ReadRects(IntPtr atom) =>
+            XGetWindowPropertyAsIntPtrArray(x11.Display, x11.RootWindow, atom, x11.Atoms.CARDINAL) is { } v
+            && v.Length % 4 == 0
+                ? Enumerable.Range(0, v.Length / 4)
+                    .Select(i => new PixelRect((int)v[i * 4], (int)v[i * 4 + 1], (int)v[i * 4 + 2], (int)v[i * 4 + 3]))
+                    .ToArray()
+                : null;
     }
 
     internal class FallBackScreen : X11Screen
     {
-        public FallBackScreen(PixelRect pixelRect, X11Info x11) : base(default, x11, null, 0)
+        public FallBackScreen(PixelRect pixelRect, X11Info x11, X11Globals globals) : base(default, x11, globals, null, 0)
         {
             Bounds = pixelRect;
             DisplayName = "Default";
@@ -110,6 +150,7 @@ internal partial class X11Screens
     {
         private MonitorInfo[]? _cache;
         private readonly X11Info _x11;
+        private readonly X11Globals _globals;
         private readonly IntPtr _window;
         private readonly IScalingProvider _scalingProvider;
 
@@ -120,6 +161,7 @@ internal partial class X11Screens
         public Randr15ScreensImpl(AvaloniaX11Platform platform)
         {
             _x11 = platform.Info;
+            _globals = platform.Globals;
             _window = CreateEventWindow(platform, OnEvent);
             _scalingProvider = GetScalingProvider(platform);
             XRRSelectInput(_x11.Display, _window,
@@ -132,12 +174,16 @@ internal partial class X11Screens
                 scalingWithChanges.SettingsChanged += () => Changed?.Invoke();
 
             platform.Globals.RootPropertyChanged += OnRootPropertyChanged;
+            platform.Globals.NetSupportedChanged += PostChanged;
         }
+
+        private void PostChanged() => Dispatcher.UIThread.Post(() => Changed?.Invoke(), DispatcherPriority.Normal);
 
         private void OnRootPropertyChanged(IntPtr atom)
         {
-            if (atom == _x11.Atoms._NET_WORKAREA)
-                Dispatcher.UIThread.Post(() => Changed?.Invoke(), DispatcherPriority.Normal);
+            if (atom == _x11.Atoms._NET_WORKAREA || atom == _x11.Atoms._NET_CURRENT_DESKTOP
+                || _x11.Atoms.GetAtomName(atom)?.StartsWith("_GTK_WORKAREAS_D", StringComparison.Ordinal) == true)
+                PostChanged();
         }
 
         private void OnEvent(ref XEvent ev)
@@ -332,7 +378,7 @@ internal partial class X11Screens
             {
                 if (infos[i].Name == key)
                 {
-                    return new X11Screen(infos[i], _x11, _scalingProvider, i);
+                    return new X11Screen(infos[i], _x11, _globals, _scalingProvider, i);
                 }
             }
 
@@ -357,6 +403,7 @@ internal partial class X11Screens
     private class FallbackScreensImpl : IX11RawScreenInfoProvider
     {
         private readonly X11Info _info;
+        private readonly X11Globals _globals;
         private XGeometry _geo;
 
         public event Action? Changed
@@ -368,6 +415,7 @@ internal partial class X11Screens
         public FallbackScreensImpl(AvaloniaX11Platform platform)
         {
             _info = platform.Info;
+            _globals = platform.Globals;
             if (UpdateRootWindowGeometry())
                 platform.Globals.RootGeometryChangedChanged += () => UpdateRootWindowGeometry();
         }
@@ -376,7 +424,7 @@ internal partial class X11Screens
 
         public X11Screen CreateScreenFromKey(nint key)
         {
-            return new FallBackScreen(new PixelRect(0, 0, _geo.width, _geo.height), _info);
+            return new FallBackScreen(new PixelRect(0, 0, _geo.width, _geo.height), _info, _globals);
         }
 
         public MonitorInfo GetMonitorInfoByKey(nint key)
