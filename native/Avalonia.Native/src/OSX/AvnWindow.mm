@@ -38,7 +38,7 @@
     bool _isTitlebarSession;
     AvnMenu* _menu;
     ComPtr<IAvnAutomationPeer> _automationPeer;
-    AvnAutomationNode* _automationNode;
+    ComPtr<AvnAutomationNode> _automationNode;
 }
 
 -(AvnView* _Nullable) view
@@ -616,11 +616,11 @@
     if (automationPeer == nullptr || !automationPeer->IsRootProvider())
         return nil;
 
-    auto focusedPeer = automationPeer->RootProvider_GetFocus();
+    ComPtr<IAvnAutomationPeer> focusedPeer(automationPeer->RootProvider_GetFocus(), true);
     if (focusedPeer == nullptr)
         return nil;
 
-    return [AvnAccessibilityElement acquire:focusedPeer];
+    return [AvnAccessibilityElement acquire:focusedPeer.getRaw()];
 }
 
 - (NSString * _Nullable) accessibilityIdentifier
@@ -637,12 +637,26 @@
     auto parent = _parent.tryGet();
     if (parent && _automationPeer == nullptr)
     {
-        auto peer = parent->BaseEvents->GetAutomationPeer();
-        if (peer != nullptr)
+        _automationPeer.setNoAddRef(parent->BaseEvents->GetAutomationPeer());
+        if (_automationPeer != nullptr)
         {
-            _automationPeer = peer;
-            _automationNode = new AvnAutomationNode(self);
-            _automationPeer->SetNode(_automationNode);
+            ComPtr<IAvnAutomationNode> existing(_automationPeer->GetNode(), true);
+            auto node = existing != nullptr ? dynamic_cast<AvnAutomationNode*>(existing.getRaw()) : nullptr;
+
+            if (node != nullptr)
+            {
+                _automationNode = node;
+                _automationNode->SetOwner(self);
+            }
+            else if (existing == nullptr)
+            {
+                _automationNode = comnew<AvnAutomationNode>(self);
+                _automationPeer->SetNode(_automationNode.getRetainedReference());
+            }
+            else
+            {
+                NSLog(@"IAvnAutomationPeer.GetNode returned an unknown IAvnAutomationNode implementation.");
+            }
         }
     }
 

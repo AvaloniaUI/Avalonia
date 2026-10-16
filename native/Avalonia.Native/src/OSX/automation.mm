@@ -9,7 +9,7 @@
 @implementation AvnAccessibilityElement
 {
     ComPtr<IAvnAutomationPeer> _peer;
-    AvnAutomationNode* _node;
+    ComPtr<AvnAutomationNode> _node;
     NSMutableArray* _children;
     NSArray<NSString*>* _attributeNames;
 }
@@ -19,11 +19,21 @@
     if (peer == nullptr)
         return nil;
     
-    auto instance = peer->GetNode();
-    
-    if (instance != nullptr)
-        return dynamic_cast<AvnAutomationNode*>(instance)->GetOwner();
-    
+    ComPtr<IAvnAutomationNode> existing(peer->GetNode(), true);
+    auto node = existing != nullptr ? dynamic_cast<AvnAutomationNode*>(existing.getRaw()) : nullptr;
+
+    if (node != nullptr)
+    {
+        id owner = node->GetOwner();
+        if (owner != nil)
+            return owner;
+    }
+    else if (existing != nullptr)
+    {
+        NSLog(@"IAvnAutomationPeer.GetNode returned an unknown IAvnAutomationNode implementation.");
+        return nil;
+    }
+
     if (peer->IsInteropPeer())
     {
         auto view = (__bridge NSAccessibilityElement*)peer->InteropPeer_GetNativeControlHandle();
@@ -31,38 +41,43 @@
     }
     else if (peer->IsRootProvider())
     {
-        auto window = peer->RootProvider_GetWindow();
-        
+        ComPtr<IAvnWindowBase> window(peer->RootProvider_GetWindow(), true);
+
         if (window == nullptr)
         {
             NSLog(@"IRootProvider.PlatformImpl returned null or a non-WindowBaseImpl.");
             return nil;
         }
-        
-        auto holder = dynamic_cast<INSViewHolder*>(window);
+
+        auto holder = dynamic_cast<INSViewHolder*>(window.getRaw());
         auto view = holder->GetNSView();
         return (NSAccessibilityElement*)[view window];
     }
     else
     {
-        return [[AvnAccessibilityElement alloc] initWithPeer:peer];
+        // A peer keeps its node for life; an element released while its peer lives on
+        // is replaced by a fresh one behind the same node.
+        return [[AvnAccessibilityElement alloc] initWithPeer:peer node:node];
     }
 }
 
-- (AvnAccessibilityElement *)initWithPeer:(IAvnAutomationPeer *)peer
+- (AvnAccessibilityElement *)initWithPeer:(IAvnAutomationPeer *)peer node:(AvnAutomationNode *)node
 {
     self = [super init];
     _peer = peer;
-    _node = new AvnAutomationNode(self);
-    _peer->SetNode(_node);
-    return self;
-}
 
-- (void)dealloc
-{
-    if (_node)
-        delete _node;
-    _node = nullptr;
+    if (node != nullptr)
+    {
+        _node = node;
+        _node->SetOwner(self);
+    }
+    else
+    {
+        _node = comnew<AvnAutomationNode>(self);
+        _peer->SetNode(_node.getRetainedReference());
+    }
+
+    return self;
 }
 
 - (NSString *)description
@@ -335,7 +350,7 @@
 
 - (id)accessibilityParent
 {
-    auto parentPeer = _peer->GetParent();
+    ComPtr<IAvnAutomationPeer> parentPeer(_peer->GetParent(), true);
 
     if (parentPeer == nullptr)
         return [NSApplication sharedApplication];
@@ -350,42 +365,44 @@
     // AvnView instead of the target AvnAccessibilityElement.
     if (parentPeer->IsRootProvider())
     {
-        auto window = parentPeer->RootProvider_GetWindow();
+        ComPtr<IAvnWindowBase> window(parentPeer->RootProvider_GetWindow(), true);
         if (window != nullptr)
         {
-            auto holder = dynamic_cast<INSViewHolder*>(window);
+            auto holder = dynamic_cast<INSViewHolder*>(window.getRaw());
             if (holder != nullptr)
                 return holder->GetNSView();
         }
     }
 
-    return [AvnAccessibilityElement acquire:parentPeer];
+    return [AvnAccessibilityElement acquire:parentPeer.getRaw()];
 }
 
 - (id)accessibilityTopLevelUIElement
 {
-    auto rootPeer = _peer->GetRootPeer();
-    return [AvnAccessibilityElement acquire:rootPeer];
+    ComPtr<IAvnAutomationPeer> rootPeer(_peer->GetRootPeer(), true);
+    return [AvnAccessibilityElement acquire:rootPeer.getRaw()];
 }
 
 - (id)accessibilityWindow
 {
-    auto rootPeer = _peer->GetVisualRoot();
-    return [AvnAccessibilityElement acquire:rootPeer];
+    ComPtr<IAvnAutomationPeer> rootPeer(_peer->GetVisualRoot(), true);
+    return [AvnAccessibilityElement acquire:rootPeer.getRaw()];
 }
 
 - (id)accessibilityHorizontalScrollBar
 {
     if (_peer == nullptr)
         return nil;
-    return [AvnAccessibilityElement acquire:_peer->ScrollProvider_GetHorizontalScrollBar()];
+    ComPtr<IAvnAutomationPeer> scrollBar(_peer->ScrollProvider_GetHorizontalScrollBar(), true);
+    return [AvnAccessibilityElement acquire:scrollBar.getRaw()];
 }
 
 - (id)accessibilityVerticalScrollBar
 {
     if (_peer == nullptr)
         return nil;
-    return [AvnAccessibilityElement acquire:_peer->ScrollProvider_GetVerticalScrollBar()];
+    ComPtr<IAvnAutomationPeer> scrollBar(_peer->ScrollProvider_GetVerticalScrollBar(), true);
+    return [AvnAccessibilityElement acquire:scrollBar.getRaw()];
 }
 
 - (BOOL)isAccessibilityExpanded
@@ -572,7 +589,8 @@
     That's exactly what the code below does (templated parent, else walk to the nearest exposed ancestor).
 	*/
 
-    id target = [AvnAccessibilityElement acquire:_peer->GetTemplatedParent()];
+    ComPtr<IAvnAutomationPeer> templatedParent(_peer->GetTemplatedParent(), true);
+    id target = [AvnAccessibilityElement acquire:templatedParent.getRaw()];
     if (target == nil)
         target = self;
     while ([target isKindOfClass:[AvnAccessibilityElement class]] && ![(AvnAccessibilityElement*)target isAccessibilityElement])
@@ -665,7 +683,7 @@
 
 - (void)recalculateChildren
 {
-    auto childPeers = _peer->GetChildren();
+    ComPtr<IAvnAutomationPeerArray> childPeers(_peer->GetChildren(), true);
     auto childCount = childPeers != nullptr ? childPeers->GetCount() : 0;
 
     if (childCount > 0)
@@ -674,11 +692,11 @@
         
         for (int i = 0; i < childCount; ++i)
         {
-            IAvnAutomationPeer* child;
+            ComPtr<IAvnAutomationPeer> child;
             
-            if (childPeers->Get(i, &child) == S_OK)
+            if (childPeers->Get(i, child.getPPV()) == S_OK)
             {
-                id element = [AvnAccessibilityElement acquire:child];
+                id element = [AvnAccessibilityElement acquire:child.getRaw()];
                 [_children addObject:element];
             }
         }
