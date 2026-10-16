@@ -22,12 +22,12 @@ namespace Avalonia.Headless
         private readonly IKeyboardDevice _keyboard;
         private readonly IScreenImpl _screen;
         private readonly Stopwatch _st = Stopwatch.StartNew();
+        private readonly TouchDevice _touchDevice = new();
         private WriteableBitmap? _lastRenderedFrame;
         private readonly object _sync = new object();
         private readonly AvaloniaHeadlessPlatformOptions _options;
         private readonly HeadlessWindowImpl? _popupParent;
         private readonly IPopupPositioner? _popupPositioner;
-        private readonly List<HeadlessWindowImpl> _openPopups = new();
         public bool IsPopup { get; }
 
         public HeadlessWindowImpl(AvaloniaHeadlessPlatformOptions options)
@@ -47,21 +47,24 @@ namespace Avalonia.Headless
         {
             IsPopup = true;
             _popupParent = popupParent;
+            RenderScaling = popupParent.RenderScaling;
             _popupPositioner = new ManagedPopupPositioner(
                 new ManagedPopupPositionerPopupImplHelper(popupParent, PopupMoveResize));
         }
 
         private void PopupMoveResize(PixelPoint position, Size size, double scaling)
         {
-            Position = position;
+            _position = position;
             PositionChanged?.Invoke(position);
+            if (RenderScaling != scaling)
+                ((IHeadlessWindow)this).SetRenderScaling(scaling);
             DoResize(size, WindowResizeReason.Unspecified);
         }
 
         public void Dispose()
         {
-            _popupParent?._openPopups.Remove(this);
             Closed?.Invoke();
+            _touchDevice.Dispose();
             _lastRenderedFrame?.Dispose();
             _lastRenderedFrame = null;
         }
@@ -69,7 +72,7 @@ namespace Avalonia.Headless
         public Size ClientSize { get; set; }
         public Size? FrameSize => null;
         public double RenderScaling { get; private set; } = 1;
-        public double DesktopScaling => RenderScaling;
+        public double DesktopScaling => _options.UseLogicalDesktopCoordinates ? 1 : RenderScaling;
         public IPlatformRenderSurface[] Surfaces { get; }
         public Action<RawInputEventArgs>? Input { get; set; }
         public Action<Rect>? Paint { get; set; }
@@ -87,9 +90,9 @@ namespace Avalonia.Headless
 
         public IInputRoot? InputRoot { get; set; }
 
-        public Point PointToClient(PixelPoint point) => (point - Position).ToPoint(RenderScaling);
+        public Point PointToClient(PixelPoint point) => (point - Position).ToPoint(DesktopScaling);
 
-        public PixelPoint PointToScreen(Point point) => PixelPoint.FromPoint(point, RenderScaling) + Position;
+        public PixelPoint PointToScreen(Point point) => PixelPoint.FromPoint(point, DesktopScaling) + Position;
 
         public void SetCursor(ICursorImpl? cursor)
         {
@@ -101,9 +104,6 @@ namespace Avalonia.Headless
 
         public void Show(bool activate, bool isDialog)
         {
-            if (_popupParent != null && !_popupParent._openPopups.Contains(this))
-                _popupParent._openPopups.Add(this);
-
             if (activate)
             {
                 ZOrder = _nextGlobalZOrder++;
@@ -113,11 +113,11 @@ namespace Avalonia.Headless
 
         public void Hide()
         {
-            _popupParent?._openPopups.Remove(this);
             Dispatcher.UIThread.Post(() => Deactivated?.Invoke(), DispatcherPriority.Input);
         }
 
-        public PixelPoint Position { get; set; }
+        private PixelPoint _position;
+        public PixelPoint Position => IsPopup || _options.SupportsWindowPositioning ? _position : default;
         public Action<PixelPoint>? PositionChanged { get; set; }
         public void Activate()
         {
@@ -375,6 +375,12 @@ namespace Avalonia.Headless
                 point, delta, modifiers));
         }
 
+        void IHeadlessWindow.Touch(Point point, long touchPointId, RawPointerEventType type, RawInputModifiers modifiers)
+        {
+            Input?.Invoke(new RawTouchEventArgs(_touchDevice, Timestamp, InputRoot!,
+                type, point, modifiers, touchPointId));
+        }
+
         void IHeadlessWindow.DragDrop(Point point, RawDragEventType type, IDataTransfer data, DragDropEffects effects, RawInputModifiers modifiers)
         {
             var device = AvaloniaLocator.Current.GetRequiredService<IDragDropDevice>();
@@ -397,26 +403,13 @@ namespace Avalonia.Headless
 
         void IWindowImpl.Move(PixelPoint point)
         {
-            Position = point;
+            if (!_options.SupportsWindowPositioning)
+                return;
+            _position = point;
             PositionChanged?.Invoke(point);
         }
 
         public IPopupImpl? CreatePopup() => _options.OverlayPopups ? null : new HeadlessWindowImpl(this);
-
-        public IReadOnlyList<TopLevel> GetOpenPopups()
-        {
-            if (_openPopups.Count == 0)
-                return Array.Empty<TopLevel>();
-
-            var result = new List<TopLevel>(_openPopups.Count);
-            foreach (var popup in _openPopups)
-            {
-                if (popup.InputRoot is PresentationSource { FocusRoot: TopLevel topLevel })
-                    result.Add(topLevel);
-            }
-
-            return result;
-        }
 
         public void SetWindowManagerAddShadowHint(bool enabled)
         {

@@ -1,0 +1,137 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:ControlCatalog.Controls"
+             x:Class="ControlCatalog.Pages.TextBoxInputPage">
+  <ScrollViewer Padding="24,20,24,28">
+    <StackPanel Spacing="16">
+
+      <controls:SampleSection Header="Read-only and length"
+                              Description="IsReadOnly keeps the text selectable and copyable but stops edits. MaxLength caps how many characters the box will take."
+                              StageMinHeight="130">
+        <StackPanel Spacing="8">
+          <TextBox Name="LengthBox"
+                   Width="320"
+                   HorizontalAlignment="Left"
+                   PlaceholderText="At most 20 characters"
+                   MaxLength="20"
+                   Text="Editable" />
+          <TextBlock Name="LengthStatus" Classes="sample-caption" />
+        </StackPanel>
+        <controls:SampleSection.Options>
+          <StackPanel Spacing="8">
+            <CheckBox Content="IsReadOnly" IsChecked="{Binding #LengthBox.IsReadOnly}" />
+            <TextBlock Text="MaxLength (0 means no limit)" Classes="sample-caption" />
+            <NumericUpDown Value="{Binding #LengthBox.MaxLength}" Minimum="0" Maximum="60" Increment="5" FormatString="0" />
+          </StackPanel>
+        </controls:SampleSection.Options>
+        <controls:SampleSection.Code><x:String xml:space="preserve"><![CDATA[<TextBox IsReadOnly="True" MaxLength="20" />]]></x:String></controls:SampleSection.Code>
+      </controls:SampleSection>
+
+      <controls:SampleSection Header="Password characters"
+                              Description="PasswordChar changes what is drawn, not what is stored: Text still holds the real string. RevealPassword shows the characters again."
+                              StageMinHeight="130">
+        <StackPanel Spacing="8">
+          <TextBox Name="PasswordBox"
+                   Width="320"
+                   HorizontalAlignment="Left"
+                   PlaceholderText="Password"
+                   UseFloatingPlaceholder="True"
+                   PasswordChar="*"
+                   TextInputOptions.ContentType="Password"
+                   TextInputOptions.IsSensitive="True"
+                   Text="correct horse battery" />
+          <TextBlock Classes="sample-caption"
+                     Text="{Binding #PasswordBox.Text, StringFormat='Text is still: {0}'}" />
+        </StackPanel>
+        <controls:SampleSection.Options>
+          <StackPanel Spacing="8">
+            <CheckBox Content="RevealPassword" IsChecked="{Binding #PasswordBox.RevealPassword}" />
+            <TextBlock Text="PasswordChar" Classes="sample-caption" />
+            <ComboBox Name="PasswordCharCombo" SelectedIndex="0" HorizontalAlignment="Stretch">
+              <ComboBoxItem Content="Asterisk" />
+              <ComboBoxItem Content="Bullet" />
+              <ComboBoxItem Content="None (plain text)" />
+            </ComboBox>
+            <TextBlock Classes="sample-caption"
+                       TextWrapping="Wrap"
+                       Text="TextInputOptions.IsSensitive also asks the platform to keep the field out of screenshots and autofill history where that is supported." />
+          </StackPanel>
+        </controls:SampleSection.Options>
+        <controls:SampleSection.Code><x:String xml:space="preserve"><![CDATA[<TextBox PasswordChar="*"
+         RevealPassword="False"
+         TextInputOptions.ContentType="Password"
+         TextInputOptions.IsSensitive="True" />]]></x:String></controls:SampleSection.Code>
+      </controls:SampleSection>
+
+      <controls:SampleSection Header="Soft keyboard hints"
+                              Description="TextInputOptions describes the text so the platform can pick a keyboard layout. It is a hint, not a filter: a hardware keyboard can still type letters into a box marked Number."
+                              StageMinHeight="130">
+        <StackPanel Spacing="8">
+          <TextBox Name="HintBox"
+                   Width="320"
+                   HorizontalAlignment="Left"
+                   PlaceholderText="Try typing letters here" />
+          <TextBlock Classes="sample-caption"
+                     TextWrapping="Wrap"
+                     Text="On a phone or tablet the on-screen keyboard changes with ContentType. On desktop nothing is blocked, so use a converter or a MaskedTextBox when the value really has to be numeric." />
+        </StackPanel>
+        <controls:SampleSection.Options>
+          <StackPanel Spacing="8">
+            <TextBlock Text="TextInputOptions.ContentType" Classes="sample-caption" />
+            <ComboBox SelectedItem="{Binding #HintBox.(TextInputOptions.ContentType)}" HorizontalAlignment="Stretch">
+              <TextInputContentType>Normal</TextInputContentType>
+              <TextInputContentType>Alpha</TextInputContentType>
+              <TextInputContentType>Digits</TextInputContentType>
+              <TextInputContentType>Pin</TextInputContentType>
+              <TextInputContentType>Number</TextInputContentType>
+              <TextInputContentType>Email</TextInputContentType>
+              <TextInputContentType>Url</TextInputContentType>
+              <TextInputContentType>Name</TextInputContentType>
+              <TextInputContentType>Password</TextInputContentType>
+              <TextInputContentType>Social</TextInputContentType>
+              <TextInputContentType>Search</TextInputContentType>
+            </ComboBox>
+            <CheckBox Content="ShowSuggestions"
+                      IsThreeState="True"
+                      IsChecked="{Binding #HintBox.(TextInputOptions.ShowSuggestions)}" />
+            <CheckBox Content="Uppercase" IsChecked="{Binding #HintBox.(TextInputOptions.Uppercase)}" />
+            <CheckBox Content="AutoCapitalization" IsChecked="{Binding #HintBox.(TextInputOptions.AutoCapitalization)}" />
+          </StackPanel>
+        </controls:SampleSection.Options>
+        <controls:SampleSection.Code><x:String xml:space="preserve"><![CDATA[<TextBox TextInputOptions.ContentType="Number"
+         TextInputOptions.ShowSuggestions="False" />]]></x:String></controls:SampleSection.Code>
+      </controls:SampleSection>
+
+      <controls:SampleSection Header="MaskedTextBox"
+                              Description="MaskedTextBox is the one that really does restrict input: the mask fixes the shape of the value, L takes a letter, 9 takes an optional digit and 0 takes a required one."
+                              StageMinHeight="150">
+        <StackPanel Spacing="8">
+          <MaskedTextBox Name="MaskBox"
+                         Width="320"
+                         HorizontalAlignment="Left"
+                         Mask="(LLL) 999-0000"
+                         ResetOnSpace="False" />
+          <TextBlock Classes="sample-caption"
+                     Text="{Binding #MaskBox.MaskCompleted, StringFormat='MaskCompleted: {0}'}" />
+          <TextBlock Classes="sample-caption"
+                     Text="{Binding #MaskBox.MaskFull, StringFormat='MaskFull: {0}'}" />
+        </StackPanel>
+        <controls:SampleSection.Options>
+          <StackPanel Spacing="8">
+            <TextBlock Text="Mask" Classes="sample-caption" />
+            <ComboBox Name="MaskCombo" SelectedIndex="0" HorizontalAlignment="Stretch">
+              <ComboBoxItem Content="(LLL) 999-0000" />
+              <ComboBoxItem Content="0000-00-00" />
+              <ComboBoxItem Content="LL-0000" />
+            </ComboBox>
+            <CheckBox Content="ResetOnSpace" IsChecked="{Binding #MaskBox.ResetOnSpace}" />
+            <CheckBox Content="HidePromptOnLeave" IsChecked="{Binding #MaskBox.HidePromptOnLeave}" />
+            <CheckBox Content="AsciiOnly" IsChecked="{Binding #MaskBox.AsciiOnly}" />
+          </StackPanel>
+        </controls:SampleSection.Options>
+        <controls:SampleSection.Code><x:String xml:space="preserve"><![CDATA[<MaskedTextBox Mask="(LLL) 999-0000" ResetOnSpace="False" />]]></x:String></controls:SampleSection.Code>
+      </controls:SampleSection>
+
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

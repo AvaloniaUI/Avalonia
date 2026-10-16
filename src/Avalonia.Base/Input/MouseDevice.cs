@@ -220,9 +220,7 @@ namespace Avalonia.Input
                 }
                 finally
                 {
-                    _pointer.Capture(null, CaptureSource.Implicit);
-                    _pointer.CaptureGestureRecognizer(null);
-                    _pointer.IsGestureRecognitionSkipped = false;
+                    _pointer.CaptureLost(CaptureSource.Implicit);
                     _lastMouseDownButton = default;
                 }
                 return e.Handled;

@@ -17,7 +17,7 @@ namespace ControlCatalog.ViewModels
                 .Select(x => new StandardCursorModel(x))
                 .ToList();
 
-            var s = AssetLoader.Open(new Uri("avares://ControlCatalog/Assets/avalonia-32.png"));
+            var s = AssetLoader.Open(new Uri("avares://ControlCatalog/Assets/icon-32.png"));
             var bitmap = new Bitmap(s);
             CustomCursor = new Cursor(bitmap, new PixelPoint(16, 16));
         }

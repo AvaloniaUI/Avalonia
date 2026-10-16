@@ -77,7 +77,7 @@ namespace Avalonia.Rendering.Composition.Animations
     
     class ColorInterpolator : IInterpolator<Avalonia.Media.Color>
     {
-        static byte Lerp(float a, float b, float p) => (byte) Math.Max(0, Math.Min(255, (p * (b - a) + a)));
+        static byte Lerp(float a, float b, float p) => (byte)Math.Clamp(float.Lerp(a, b, p), 0, 255);
 
         public static Avalonia.Media.Color
             LerpRGB(Avalonia.Media.Color to, Avalonia.Media.Color from, float progress) =>

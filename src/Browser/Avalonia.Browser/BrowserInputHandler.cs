@@ -79,10 +79,12 @@ internal class BrowserInputHandler
         {
             coalescedEvents = new Lazy<IReadOnlyList<RawPointerPoint>?>(() =>
             {
+                if (argsObj.IsDisposed)
+                    return [];
+
                 // To minimize JS interop usage, we resolve all points properties in a single call.
                 const int itemsPerPoint = 6;
                 var pointsProps = InputHelper.GetCoalescedEvents(argsObj);
-                argsObj.Dispose();
                 s_intermediatePointsPooledList.Clear();
 
                 var pointsCount = pointsProps.Length / itemsPerPoint;
@@ -101,8 +103,17 @@ internal class BrowserInputHandler
             });
         }
 
-        return RawPointerEvent(type, pointerType!, point, (RawInputModifiers)modifier, pointerId,
-            coalescedEvents);
+        try
+        {
+            return RawPointerEvent(type, pointerType!, point, (RawInputModifiers)modifier, pointerId,
+                coalescedEvents);
+        }
+        finally
+        {
+            // Release the JS handle after processing the event.
+            // ImmediatePoints is only expected to be accessed synchronously during event processing.
+            argsObj.Dispose();
+        }
     }
 
     public bool OnPointerDown(string pointerType, long pointerId, int buttons, double offsetX, double offsetY,

@@ -45,7 +45,7 @@ namespace Avalonia.X11
 
         private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         private readonly IntPtr _currentIceConn;
-        private readonly IntPtr _currentSmcConn;
+        private IntPtr _currentSmcConn;
 
         private bool _saveYourselfPhase;
 
@@ -106,11 +106,17 @@ namespace Avalonia.X11
 
         public void Dispose()
         {
-            if (_currentSmcConn == IntPtr.Zero) return;
+            // Reachable from the Die callback, from HandleRequests() and from platform teardown,
+            // but SmcCloseConnection frees both the SmcConn and its IceConn.
+            var smcConn = Interlocked.Exchange(ref _currentSmcConn, IntPtr.Zero);
+            if (smcConn == IntPtr.Zero) return;
 
-            s_nativeToManagedMapper.TryRemove(_currentSmcConn, out _);
+            // The pump would otherwise keep using the IceConn we are about to free.
+            _cancellationTokenSource.Cancel();
 
-            _ = SMLib.SmcCloseConnection(_currentSmcConn, 1,
+            s_nativeToManagedMapper.TryRemove(smcConn, out _);
+
+            _ = SMLib.SmcCloseConnection(smcConn, 1,
                 new[] { $"{nameof(X11PlatformLifetimeEvents)} was disposed in managed code." });
         }
 
@@ -172,6 +178,8 @@ namespace Avalonia.X11
 
         private void HandleRequests()
         {
+            if (_cancellationTokenSource.IsCancellationRequested) return;
+
             if (ICELib.IceProcessMessages(_currentIceConn, out _, out _) ==
                 ICELib.IceProcessMessagesStatus.IceProcessMessagesIoError)
             {
@@ -188,8 +196,9 @@ namespace Avalonia.X11
 
         private void ShutdownCancelledHandler()
         {
-            if (_saveYourselfPhase)
-                SMLib.SmcSaveYourselfDone(_currentSmcConn, true);
+            var smcConn = _currentSmcConn;
+            if (_saveYourselfPhase && smcConn != IntPtr.Zero)
+                SMLib.SmcSaveYourselfDone(smcConn, true);
             _saveYourselfPhase = false;
         }
 

@@ -47,15 +47,17 @@ namespace Avalonia.PropertyStore
 
         public BindingExpressionBase AddBinding(
             AvaloniaProperty property,
-            UntypedBindingExpressionBase source)
+            BindingExpressionBase source)
         {
-            var priority = source.Priority;
+            var priority = source.DefaultPriority;
+
             if (priority == BindingPriority.LocalValue || property.IsDirect)
             {
                 DisposeExistingLocalValueBinding(property);
                 _localValueBindings ??= new();
                 _localValueBindings[property.Id] = source;
-                source.AttachAndStart(this, Owner, property, BindingPriority.LocalValue);
+                source.Attach(this, null, Owner, property, BindingPriority.LocalValue);
+                source.Start(produceValue: true);
                 return source;
             }
             else
@@ -67,7 +69,7 @@ namespace Avalonia.PropertyStore
                 frame.AddBinding(source);
 
                 if (effective is null || priority <= effective.Priority)
-                    source.Start();
+                    source.Start(produceValue: true);
 
                 return source;
             }
@@ -270,6 +272,20 @@ namespace Avalonia.PropertyStore
                 var effectiveValue = CreateEffectiveValue(property);
                 AddEffectiveValue(property, effectiveValue);
                 effectiveValue.SetLocalValueAndRaise(this, property, value);
+            }
+        }
+
+        public void SetLocalValue(AvaloniaProperty property, IValueEntry entry)
+        {
+            if (TryGetEffectiveValue(property, out var existing))
+            {
+                existing.SetLocalValueAndRaise(this, property, entry);
+            }
+            else
+            {
+                var effectiveValue = property.CreateEffectiveValue(Owner);
+                AddEffectiveValue(property, effectiveValue);
+                effectiveValue.SetLocalValueAndRaise(this, property, entry);
             }
         }
 
@@ -787,21 +803,20 @@ namespace Avalonia.PropertyStore
         }
 
         void IBindingExpressionSink.OnChanged(
-            UntypedBindingExpressionBase instance,
+            BindingExpressionBase instance,
             bool hasValueChanged,
-            bool hasErrorChanged,
-            object? value,
-            BindingError? error)
+            bool hasErrorChanged)
         {
             Dispatcher.UIThread.VerifyAccess();
             Debug.Assert(instance.TargetProperty is not null);
 
             var property = instance.TargetProperty;
+            IValueEntry entry = instance;
 
             if (property.IsDirect)
             {
                 if (hasValueChanged)
-                    property.RouteSetDirectValueUnchecked(Owner, value);
+                    property.RouteSetDirectValueUnchecked(Owner, entry);
             }
             else
             {
@@ -811,32 +826,26 @@ namespace Avalonia.PropertyStore
                 {
                     if (priority == BindingPriority.LocalValue)
                     {
-                        if (value != AvaloniaProperty.UnsetValue)
-                            SetLocalValue(property, value);
-                        else if (property == StyledElement.DataContextProperty)
-                            SetLocalValue(property, null);
-                        else
-                            ClearValue(property);
+                        SetLocalValue(property, entry);
                     }
                     else
                     {
                         if (TryGetEffectiveValue(property, out var existing))
                         {
                             if (priority <= existing.BasePriority)
-                                ReevaluateEffectiveValue(property, existing, changedValueEntry: instance);
+                                ReevaluateEffectiveValue(property, existing, changedValueEntry: entry);
                         }
                         else
                         {
-                            AddEffectiveValueAndRaise(property, instance, priority);
+                            AddEffectiveValueAndRaise(property, entry, priority);
                         }
                     }
                 }
             }
 
-            if (hasErrorChanged && instance.IsDataValidationEnabled)
+            if (hasErrorChanged && entry.GetDataValidationState(out var errorType, out var error))
             {
-                var e = error?.ErrorType.ToBindingValueType() ?? BindingValueType.Value;
-                Owner.OnUpdateDataValidation(property, e, error?.Exception);
+                Owner.OnUpdateDataValidation(property, errorType, error);
             }
         }
 
@@ -844,7 +853,7 @@ namespace Avalonia.PropertyStore
         /// Called by a binding expression when the binding produces completes.
         /// </summary>
         /// <param name="instance">The binding expression.</param>
-        void IBindingExpressionSink.OnCompleted(UntypedBindingExpressionBase instance)
+        void IBindingExpressionSink.OnCompleted(BindingExpressionBase instance)
         {
             Dispatcher.UIThread.VerifyAccess();
             Debug.Assert(instance.TargetProperty is not null);

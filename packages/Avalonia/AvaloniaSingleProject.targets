@@ -265,9 +265,64 @@
   </ItemGroup>
 
   <!-- Browser -->
-  <ItemGroup Condition=" '$(EnableDefaultItems)' == 'true' and '$(_AvaloniaBrowserTarget)' == 'true' and '$(BrowserProjectFolder)' != '' ">
+  <!-- Legacy WasmApp model (plain Microsoft.NET.Sdk): no static web assets pipeline, deploy by hand. -->
+  <ItemGroup Condition=" '$(EnableDefaultItems)' == 'true' and '$(_AvaloniaBrowserTarget)' == 'true' and '$(BrowserProjectFolder)' != '' and '$(UsingMicrosoftNETSdkStaticWebAssets)' != 'true' ">
     <WasmExtraFilesToDeploy Include="$(BrowserProjectFolder)/wwwroot/**/*.*" />
   </ItemGroup>
+
+  <!--
+    The static web assets SDK only discovers wwwroot at the project root, with no property to relocate it.
+    Single project keeps browser files under $(BrowserProjectFolder)wwwroot, so define them here instead.
+    The discovery pattern only feeds the manifest generators, which the dev server uses to watch the folder;
+    build and publish copy @(StaticWebAsset), so both are needed.
+  -->
+  <Target Name="_AvaloniaDefineBrowserStaticWebAssets"
+          Condition=" '$(EnableDefaultItems)' == 'true' and '$(_AvaloniaBrowserTarget)' == 'true' and '$(BrowserProjectFolder)' != '' and '$(UsingMicrosoftNETSdkStaticWebAssets)' == 'true' "
+          BeforeTargets="ResolveProjectStaticWebAssets"
+          DependsOnTargets="ResolveStaticWebAssetsConfiguration">
+
+    <PropertyGroup>
+      <_AvaloniaBrowserWebRoot>$([MSBuild]::NormalizeDirectory('$(MSBuildProjectDirectory)', '$(BrowserProjectFolder)', 'wwwroot'))</_AvaloniaBrowserWebRoot>
+      <_AvaloniaBrowserWebRootPattern>$(BrowserProjectFolder)wwwroot/**</_AvaloniaBrowserWebRootPattern>
+      <_AvaloniaBrowserWebRootPattern>$(_AvaloniaBrowserWebRootPattern.Replace('\', '/'))</_AvaloniaBrowserWebRootPattern>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <!-- Project-relative: DefineStaticWebAssets matches RelativePathPattern against the item spec. -->
+      <_AvaloniaBrowserWebRootFile Include="$(BrowserProjectFolder)wwwroot\**" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+    </ItemGroup>
+
+    <DefineStaticWebAssets
+      Condition=" '@(_AvaloniaBrowserWebRootFile)' != '' "
+      CandidateAssets="@(_AvaloniaBrowserWebRootFile)"
+      FingerprintCandidates="$(StaticWebAssetsFingerprintContent)"
+      FingerprintPatterns="@(StaticWebAssetFingerprintPattern)"
+      RelativePathPattern="$(_AvaloniaBrowserWebRootPattern)"
+      SourceType="Discovered"
+      SourceId="$(PackageId)"
+      ContentRoot="$(_AvaloniaBrowserWebRoot)"
+      BasePath="$(StaticWebAssetBasePath)">
+      <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
+      <Output TaskParameter="Assets" ItemName="_AvaloniaBrowserWebRootAsset" />
+    </DefineStaticWebAssets>
+
+    <DefineStaticWebAssetEndpoints
+      Condition=" '@(_AvaloniaBrowserWebRootAsset)' != '' "
+      CandidateAssets="@(_AvaloniaBrowserWebRootAsset)"
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)">
+      <Output TaskParameter="Endpoints" ItemName="StaticWebAssetEndpoint" />
+    </DefineStaticWebAssetEndpoints>
+
+    <ItemGroup>
+      <StaticWebAssetDiscoveryPattern Include="$(PackageId)\$(BrowserProjectFolder)wwwroot" Condition="Exists('$(_AvaloniaBrowserWebRoot)')">
+        <Source>$(PackageId)</Source>
+        <BasePath>$(StaticWebAssetBasePath)</BasePath>
+        <ContentRoot>$(_AvaloniaBrowserWebRoot)</ContentRoot>
+        <Pattern>**</Pattern>
+      </StaticWebAssetDiscoveryPattern>
+    </ItemGroup>
+
+  </Target>
 
   <!-- Tizen -->
   <ItemGroup Condition=" '$(EnableDefaultItems)' == 'true' and '$(_AvaloniaTizenTarget)' == 'true' and '$(TizenProjectFolder)' != '' ">

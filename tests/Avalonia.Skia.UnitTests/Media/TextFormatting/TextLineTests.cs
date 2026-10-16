@@ -888,24 +888,67 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
-        [Fact]
-        public void Should_Throw_ArgumentOutOfRangeException_For_Zero_TextLength()
+        [Theory]
+        [InlineData("abc", 0, 0)]
+        [InlineData("abc", 0, 1)]
+        [InlineData("abc", 0, 3)]
+        [InlineData("a\r\nb\r\n", 0, 2)]
+        [InlineData("a\r\nb\r\n", 0, 3)]
+        [InlineData("a\r\nb\r\n", 3, 3)]
+        [InlineData("a\r\nb\r\n", 3, 6)]
+        [InlineData("\r\n", 0, 0)]
+        public void Should_GetTextBounds_For_Zero_TextLength(string text, int lineStart, int rangeStart)
         {
             using (Start())
             {
-                var typeface = Typeface.Default;
-
-                var defaultProperties = new GenericTextRunProperties(typeface);
-                var textSource = new CustomTextBufferTextSource(new TextCharacters("1234", defaultProperties));
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+                var textSource = new SingleBufferTextSource(text, defaultProperties);
                 var formatter = new TextFormatterImpl();
 
-                var textLine =
-                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                using var textLine =
+                    formatter.FormatLine(textSource, lineStart, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(defaultProperties));
+
+                Assert.NotNull(textLine);
+                Assert.Equal(lineStart, textLine.FirstTextSourceIndex);
+
+                Assert.Empty(textLine.GetTextBounds(rangeStart, 0));
+            }
+        }
+
+        [Theory]
+        [InlineData("abc", 0, 0, 3)]
+        [InlineData("abc", 0, 1, 1)]
+        [InlineData("a\r\nb\r\n", 3, 3, 1)]
+        public void Should_GetTextBounds_For_Non_Empty_TextLength(
+            string text, int lineStart, int rangeStart, int rangeLength)
+        {
+            using (Start())
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+                var textSource = new SingleBufferTextSource(text, defaultProperties);
+                var formatter = new TextFormatterImpl();
+
+                using var textLine =
+                    formatter.FormatLine(textSource, lineStart, double.PositiveInfinity,
                         new GenericTextParagraphProperties(defaultProperties));
 
                 Assert.NotNull(textLine);
 
-                Assert.Throws<ArgumentOutOfRangeException>(() => textLine.GetTextBounds(0, 0));
+                var bounds = Assert.Single(textLine.GetTextBounds(rangeStart, rangeLength));
+                var start = textLine.GetDistanceFromCharacterHit(new CharacterHit(rangeStart));
+                var end = textLine.GetDistanceFromCharacterHit(new CharacterHit(rangeStart + rangeLength));
+
+                Assert.Equal(start, bounds.Rectangle.Left, 3);
+                Assert.Equal(end - start, bounds.Rectangle.Width, 3);
+                Assert.Equal(0, bounds.Rectangle.Top);
+                Assert.Equal(textLine.Height, bounds.Rectangle.Height);
+                Assert.Equal(FlowDirection.LeftToRight, bounds.FlowDirection);
+
+                var runBounds = Assert.Single(bounds.TextRunBounds);
+
+                Assert.Equal(rangeStart, runBounds.TextSourceCharacterIndex);
+                Assert.Equal(rangeLength, runBounds.Length);
             }
         }
 
@@ -1413,11 +1456,14 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
             foreach (var textRun in shapedTextRuns)
             {
+                // Glyph clusters are relative to the run's own text, so they only line up across a
+                // multi-run line once the run's start is added - same as BuildGlyphClusters.
+                var runOffset = TextTestHelper.GetStartCharIndex(textRun.Text);
                 var shapedBuffer = textRun.ShapedBuffer;
 
                 for (var index = 0; index < shapedBuffer.Length; index++)
                 {
-                    var currentCluster = shapedBuffer[index].GlyphCluster;
+                    var currentCluster = shapedBuffer[index].GlyphCluster + runOffset;
 
                     var advance = shapedBuffer[index].GlyphAdvance;
 
@@ -1427,13 +1473,10 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     }
                     else
                     {
-                        var rect = rects[index - 1];
+                        // Another glyph of the cluster that produced the last rect: widen it.
+                        var rect = rects[rects.Count - 1];
 
-                        rects.Remove(rect);
-
-                        rect = rect.WithWidth(rect.Width + advance);
-
-                        rects.Add(rect);
+                        rects[rects.Count - 1] = rect.WithWidth(rect.Width + advance);
                     }
 
                     currentX += advance;
@@ -1571,32 +1614,36 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.NotNull(textLine);
 
+                // Runs come in visual order: the Latin word sits leftmost, then the space, then the
+                // Hebrew word. The space belongs to the primary font, so it is a run of its own.
+                var latinRun = Assert.IsType<ShapedTextRun>(textLine.TextRuns[0]);
+                var spaceRun = Assert.IsType<ShapedTextRun>(textLine.TextRuns[1]);
+                var hebrewRun = Assert.IsType<ShapedTextRun>(textLine.TextRuns[2]);
+
+                var hebrewAndSpaceWidth = hebrewRun.Size.Width + spaceRun.Size.Width;
+
                 var textBounds = textLine.GetTextBounds(0, 4);
 
-                var secondRun = Assert.IsType<ShapedTextRun>(textLine.TextRuns[1]);
-
                 Assert.Equal(1, textBounds.Count);
-                Assert.Equal(secondRun.Size.Width, textBounds.Sum(x => x.Rectangle.Width));
+                Assert.Equal(hebrewAndSpaceWidth, textBounds.Sum(x => x.Rectangle.Width));
 
                 textBounds = textLine.GetTextBounds(4, 3);
-
-                var firstRun = Assert.IsType<ShapedTextRun>(textLine.TextRuns[0]);
 
                 Assert.Equal(1, textBounds.Count);
 
                 Assert.Equal(3, textBounds[0].TextRunBounds.Sum(x => x.Length));
-                Assert.Equal(firstRun.Size.Width, textBounds.Sum(x => x.Rectangle.Width));
+                Assert.Equal(latinRun.Size.Width, textBounds.Sum(x => x.Rectangle.Width));
 
                 textBounds = textLine.GetTextBounds(0, 5);
 
                 Assert.Equal(2, textBounds.Count);
                 Assert.Equal(5, textBounds.Sum(x => x.TextRunBounds.Sum(x => x.Length)));
 
-                Assert.Equal(secondRun.Size.Width, textBounds[1].Rectangle.Width);
+                Assert.Equal(hebrewAndSpaceWidth, textBounds[1].Rectangle.Width);
                 Assert.Equal(7.201171875, textBounds[0].Rectangle.Width);
 
                 Assert.Equal(textLine.Start + 7.201171875, textBounds[0].Rectangle.Right, 2);
-                Assert.Equal(textLine.Start + firstRun.Size.Width, textBounds[1].Rectangle.Left, 2);
+                Assert.Equal(textLine.Start + latinRun.Size.Width, textBounds[1].Rectangle.Left, 2);
 
                 textBounds = textLine.GetTextBounds(0, text.Length);
 
@@ -1737,13 +1784,16 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal(1, bounds.Count);
 
-                Assert.Equal(71.165859375, bounds[0].Rectangle.Right);
+                // The space between the Hebrew word and the digits is drawn with the primary font
+                // rather than the Hebrew fallback, which is 4.08 wider at this size, so everything
+                // laid out after it sits that much further right.
+                Assert.Equal(75.247031249999992, bounds[0].Rectangle.Right);
 
                 bounds = textLine.GetTextBounds(11, 1);
 
                 Assert.Equal(1, bounds.Count);
 
-                Assert.Equal(71.165859375, bounds[0].Rectangle.Left);
+                Assert.Equal(75.247031249999992, bounds[0].Rectangle.Left);
 
                 bounds = textLine.GetTextBounds(0, 25);
 

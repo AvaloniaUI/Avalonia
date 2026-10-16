@@ -94,7 +94,7 @@ namespace Avalonia.Win32
         {
             _iconImpl = (IconImpl?)icon;
             _iconStale = true;
-            UpdateIcon();
+            UpdateIcon(!_iconAdded);
         }
 
         /// <inheritdoc />
@@ -180,7 +180,7 @@ namespace Avalonia.Win32
 
         private double GetTaskBarMonScalingOrDefault()
         {
-            if (ShCoreAvailable && Win32Platform.WindowsVersion > PlatformConstants.Windows8_1)
+            if (GetDpiForMonitorAvailable)
             {
                 uint dpiX, dpiY;
 
@@ -376,6 +376,10 @@ namespace Avalonia.Win32
             if (!_disposedValue)
             {
                 UpdateIcon(true);
+                
+                s_trayIcons.Remove(_uniqueId);
+                _icon?.Dispose();
+                _icon = null;
 
                 _disposedValue = true;
             }

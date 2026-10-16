@@ -38,6 +38,11 @@
                 IsChecked="True"
                 Margin="8" />
 
+      <CheckBox Name="ShowRegionColumn"
+                Content="Show region column"
+                IsChecked="True"
+                Margin="8" />
+
     </StackPanel>
 
     <TableView ItemsSource="{Binding Countries}"
@@ -48,6 +53,7 @@
                          Width="{Binding #UseStarSizes.IsChecked, Converter={StaticResource TableViewColumnWidthConverter}, ConverterParameter=3}" />
         <TableViewColumn Header="Region"
                          Binding="{Binding Region}"
+                         IsVisible="{Binding #ShowRegionColumn.IsChecked}"
                          Width="{Binding #UseStarSizes.IsChecked, Converter={StaticResource TableViewColumnWidthConverter}, ConverterParameter=2}" />
         <TableViewColumn Header="Population"
                          Binding="{Binding Population, StringFormat=N0}"

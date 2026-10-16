@@ -1,4 +1,17 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project>
+  <!--
+    The browser TFM layers Microsoft.NET.Sdk.WebAssembly on top for static web assets.
+    Microsoft.NET.Sdk must be imported first in both pairs:
+    its Sdk.targets infers TargetFrameworkIdentifier, which the static web assets targets branch on.
+    Declaring it through the Sdk attribute appends its Sdk.targets last and silently disables the pipeline.
+  -->
+  <PropertyGroup>
+    <_AvaloniaSandboxBrowserTarget Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'browser'">true</_AvaloniaSandboxBrowserTarget>
+  </PropertyGroup>
+
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk.WebAssembly" Condition="'$(_AvaloniaSandboxBrowserTarget)' == 'true'" />
+
   <PropertyGroup>
     <TargetFrameworks>$(AvsCurrentTargetFramework);$(AvsCurrentAndroidTargetFramework);$(AvsCurrentBrowserTargetFramework)</TargetFrameworks>
     <TargetFrameworks Condition="'$(IncludeIOSTargetSamples)' == 'true'">$(TargetFrameworks);$(AvsCurrentIOSTargetFramework)</TargetFrameworks>
@@ -13,6 +26,17 @@
     <ApplicationTitle>Single Project Sandbox</ApplicationTitle>
     <ApplicationId>Avalonia.SingleProjectSandbox</ApplicationId>
   </PropertyGroup>
+
+  <!--
+    Hard-fingerprint our own scripts so they land in the generated importmap.
+    Package assets keep their names.
+  -->
+  <PropertyGroup Condition="'$(_AvaloniaSandboxBrowserTarget)' == 'true'">
+    <OverrideHtmlAssetPlaceholders>true</OverrideHtmlAssetPlaceholders>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(_AvaloniaSandboxBrowserTarget)' == 'true'">
+    <StaticWebAssetFingerprintPattern Include="JS" Pattern="*.js" Expression="#[.{fingerprint}]!" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\packages\Avalonia\Avalonia.csproj" />
@@ -30,4 +54,7 @@
 
   <Import Project="..\..\build\BuildTargets.targets" />
   <Import Project="..\..\build\SourceGenerators.props" />
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk.WebAssembly" Condition="'$(_AvaloniaSandboxBrowserTarget)' == 'true'" />
 </Project>

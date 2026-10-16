@@ -23,7 +23,7 @@ namespace Avalonia.Android
         private readonly ViewImpl _view;
         private readonly ExploreByTouchHelper _accessHelper;
 
-        private IDisposable? _timerSubscription;
+        private bool _isRendering;
         private bool _surfaceCreated;
 
         public AvaloniaView(Context context) : base(context)
@@ -106,13 +106,9 @@ namespace Avalonia.Android
             if (_root == null || !_surfaceCreated)
                 return;
 
-            if (isVisible && _timerSubscription == null)
+            if (isVisible && !_isRendering)
             {
-                if (AndroidPlatform.Timer is { } timer)
-                {
-                    _timerSubscription = timer.SubscribeView(this);
-                }
-
+                _isRendering = true;
                 _root.StartRendering();
 
                 if (_view.TryGetFeature<IInsetsManager>(out var insetsManager) == true)
@@ -120,11 +116,10 @@ namespace Avalonia.Android
                     (insetsManager as AndroidInsetsManager)?.ApplyStatusBarState();
                 }
             }
-            else if (!isVisible && _timerSubscription != null)
+            else if (!isVisible && _isRendering)
             {
+                _isRendering = false;
                 _root.StopRendering();
-                _timerSubscription?.Dispose();
-                _timerSubscription = null;
             }
         }
 

@@ -65,7 +65,11 @@ public class MouseDeviceTests
 
         // Pressing captures the pointer implicitly on the window's border.
         window.MouseDown(new Point(50, 50), MouseButton.Left);
-        window.GetOpenPopups()[0].MouseMove(new Point(40, 15));
+
+        var popupRoot = PopupTests.GetPopupTopLevel(popup);
+        AssertHelper.NotNull(popupRoot);
+
+        popupRoot.MouseMove(new Point(40, 15));
 
         AssertHelper.Same(TestApplication.UsesSharedMouseDevice ? target : popupChild, moveTarget);
 
