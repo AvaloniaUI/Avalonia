@@ -222,14 +222,16 @@ namespace Avalonia.Controls
 
         internal void SendNavigatedTo(NavigatedToEventArgs args)
         {
+            FocusFirstFocusableElement();
+            OnNavigatedTo(args);
+        }
+
+        private void FocusFirstFocusableElement()
+        {
             var focusManager = TopLevel.GetTopLevel(this)?.FocusManager;
             var focusedElement = focusManager?.GetFocusedElement();
             if (focusedElement is not Visual focusedVisual || !this.IsVisualAncestorOf(focusedVisual))
-            {
                 FocusManager.FindFirstFocusableElement(this)?.Focus(NavigationMethod.Unspecified);
-            }
-
-            OnNavigatedTo(args);
         }
 
         internal async Task SendNavigatingAsync(NavigatingFromEventArgs args)
@@ -270,6 +272,7 @@ namespace Avalonia.Controls
         {
             base.OnLoaded(e);
             UpdateContentSafeAreaPadding();
+            FocusFirstFocusableElement();
         }
 
         /// <summary>

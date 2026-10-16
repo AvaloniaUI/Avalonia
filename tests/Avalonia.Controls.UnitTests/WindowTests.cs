@@ -62,6 +62,28 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Show_Should_Focus_First_Focusable_Control()
+        {
+            using (UnitTestApplication.Start(TestServices.FocusableWindow))
+            {
+                var firstButton = new Button();
+                var secondButton = new Button();
+                var window = new Window
+                {
+                    Content = new StackPanel
+                    {
+                        Children = { firstButton, secondButton }
+                    }
+                };
+
+                window.Show();
+
+                Assert.Same(firstButton, window.FocusManager?.FindFirstFocusableElement());
+                Assert.Same(firstButton, window.FocusManager?.GetFocusedElement());
+            }
+        }
+
+        [Fact]
         public void IsVisible_Should_Be_True_After_ShowDialog()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))

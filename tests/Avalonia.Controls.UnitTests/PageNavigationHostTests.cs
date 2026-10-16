@@ -1,5 +1,6 @@
 using Avalonia.Collections;
 using Avalonia.Interactivity;
+using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -91,6 +92,23 @@ public class PageNavigationHostTests
             Assert.NotNull(args);
             Assert.Equal(NavigationType.Replace, args!.NavigationType);
             Assert.Same(first, args!.PreviousPage);
+        }
+
+        [Fact]
+        public void Page_Changed_Focuses_First_Focusable_Control_On_New_Page()
+        {
+            using var app = UnitTestApplication.Start(TestServices.FocusableWindow);
+            var firstPage = new ContentPage { Content = new Button() };
+            var secondButton = new Button();
+            var secondPage = new ContentPage { Content = secondButton };
+            var host = new PageNavigationHost { Page = firstPage };
+            var window = new Window { Content = host };
+            window.Show();
+
+            host.Page = secondPage;
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+            Assert.Same(secondButton, window.FocusManager?.GetFocusedElement());
         }
 
         [Fact]
