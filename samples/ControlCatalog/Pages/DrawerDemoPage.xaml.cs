@@ -1,63 +1,61 @@
-using System;
-using Avalonia.Controls;
-using Avalonia.Interactivity;
+using ControlCatalog.Controls;
 
 namespace ControlCatalog.Pages
 {
-    public partial class DrawerDemoPage : ContentPage
+    public partial class DrawerDemoPage : SampleGalleryPage
     {
-        private static readonly (string Group, string Title, string Description, Func<UserControl> Factory)[] Demos =
+        internal static readonly SampleInfo[] Demos =
         {
             // Overview
-            ("Overview", "First Look", "Basic DrawerPage with a navigation drawer, menu items, and detail content.",
+            new(SampleGroups.Overview, "First Look", "Basic DrawerPage with a navigation drawer, menu items, and detail content.",
                 () => new DrawerPageFirstLookPage()),
 
             // Features
-            ("Features", "Navigation",
+            new(SampleGroups.Features, "Navigation",
                 "Master-detail pattern: select a drawer menu item to navigate the detail via a NavigationPage with hamburger-to-back-button transition.",
                 () => new DrawerPageNavigationPage()),
-            ("Features", "Compact Rail",
+            new(SampleGroups.Features, "Compact Rail",
                 "CompactOverlay and CompactInline layout modes: a narrow icon rail is always visible and expands on open. Adjust rail width and open pane width.",
                 () => new DrawerPageCompactPage()),
-            ("Features", "Breakpoint",
+            new(SampleGroups.Features, "Breakpoint",
                 "DrawerBreakpointLength: below the threshold the drawer switches to Overlay mode automatically. Resize the window or adjust the slider to see the layout switch in real time.",
                 () => new DrawerPageBreakpointPage()),
-            ("Features", "Events",
+            new(SampleGroups.Features, "Events",
                 "Opened, Closing, and Closed drawer events plus NavigatedTo and NavigatedFrom page lifecycle events. Enable 'Cancel next close' to prevent the drawer from closing.",
                 () => new DrawerPageEventsPage()),
-            ("Features", "RTL Layout", "Right-to-left layout: drawer opens from the right edge with mirrored gestures.",
+            new(SampleGroups.Features, "RTL Layout", "Right-to-left layout: drawer opens from the right edge with mirrored gestures.",
                 () => new DrawerPageRtlPage()),
 
             // Appearance
-            ("Appearance", "Customization",
+            new(SampleGroups.Appearance, "Customization",
                 "Customize drawer behavior, layout mode, length, colors, header and footer.",
                 () => new DrawerPageCustomizationPage()),
-            ("Appearance", "Custom Flyout",
+            new(SampleGroups.Appearance, "Custom Flyout",
                 "Dark overlay menu with staggered item animations and CrossFade page transitions on the detail NavigationPage.",
                 () => new DrawerPageCustomFlyoutPage()),
-            ("Appearance", "Transitions",
+            new(SampleGroups.Appearance, "Transitions",
                 "Configure the detail NavigationPage transition. Choose CrossFade, PageSlide, or CompositePageTransition to animate detail page changes.",
                 () => new DrawerPageTransitionsPage()),
 
             // Performance
-            ("Performance", "Performance Monitor",
+            new(SampleGroups.Performance, "Performance Monitor",
                 "Track detail page swaps, live page instances, and managed heap size. Observe how GC reclaims memory after swapping pages.",
                 () => new DrawerPagePerformancePage()),
 
             // Showcases
-            ("Showcases", "AvaloniaFlix",
+            new(SampleGroups.Showcases, "AvaloniaFlix",
                 "Streaming app with DrawerPage wrapping NavigationPage. Hamburger auto-injected at root, back arrow on detail, and dark themed flyout menu.",
                 () => new AvaloniaFlixAppPage()),
-            ("Showcases", "L'Avenir Restaurant",
+            new(SampleGroups.Showcases, "L'Avenir Restaurant",
                 "Restaurant app with DrawerPage as the root container, NavigationPage for detail navigation, and TabbedPage bottom tabs for Menu, Reservations, and Profile.",
                 () => new LAvenirAppPage()),
-            ("Showcases", "EcoTracker",
+            new(SampleGroups.Showcases, "EcoTracker",
                 "Sustainability tracker with CompactInline drawer, eco leaf hamburger icon, crossfade compact/open menu transitions, and green-themed Home, Stats, Habits, and Community pages.",
                 () => new EcoTrackerAppPage()),
-            ("Showcases", "ModernApp",
+            new(SampleGroups.Showcases, "ModernApp",
                 "Travel social app using a top-placement DrawerPage. A slide-down nav pane gives access to Discover, My Trips, Profile, and Settings. Features destination cards, story circles, an experience feed, a stats profile, and a travel gallery.",
                 () => new ModernAppPage()),
-            ("Showcases", "Controls Gallery App",
+            new(SampleGroups.Showcases, "Controls Gallery App",
                 "Controls gallery app using DrawerPage CompactInline mode. Dark Fluent palette, accent pill selection indicator, search box that fades in when open, expandable category groups, and Settings pinned to the footer.",
                 () => new ControlsGalleryAppPage()),
         };
@@ -65,12 +63,7 @@ namespace ControlCatalog.Pages
         public DrawerDemoPage()
         {
             InitializeComponent();
-            Loaded += OnLoaded;
-        }
-
-        private async void OnLoaded(object? sender, RoutedEventArgs e)
-        {
-            await SampleNav.PushAsync(NavigationDemoHelper.CreateGalleryHomePage(SampleNav, Demos), null);
+            Samples = Demos;
         }
     }
 }

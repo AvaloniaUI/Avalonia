@@ -49,9 +49,10 @@
     <Border Margin="12"
             BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
             BorderThickness="1"
-            CornerRadius="6"
-            ClipToBounds="True">
-      <NavigationPage x:Name="DemoNav" />
+            CornerRadius="6">
+      <Border CornerRadius="5" ClipToBounds="True">
+        <NavigationPage x:Name="DemoNav" />
+      </Border>
     </Border>
   </DockPanel>
 </UserControl>
