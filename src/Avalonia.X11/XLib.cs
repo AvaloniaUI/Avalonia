@@ -120,6 +120,9 @@ namespace Avalonia.X11
         public static extern int XFlush(IntPtr display);
 
         [DllImport(libX11)]
+        public static extern IntPtr XNextRequest(IntPtr display);
+
+        [DllImport(libX11)]
         public static extern int XSetWMName(IntPtr display, IntPtr window, ref XTextProperty text_prop);
 
         [DllImport(libX11)]
