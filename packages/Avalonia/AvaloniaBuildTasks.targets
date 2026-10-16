@@ -183,6 +183,7 @@
       AssemblyOriginatorKeyFile="$(AssemblyOriginatorKeyFile)"
       SignAssembly="$(SignAssembly)"
       DelaySign="$(DelaySign)"
+      PublicSign="$(PublicSign)"
       SkipXamlCompilation="$(_AvaloniaSkipXamlCompilation)"
       DebuggerLaunch="$(AvaloniaXamlIlDebuggerLaunch)"
       CreateSourceInfo="$(AvaloniaXamlCreateSourceInfo)"

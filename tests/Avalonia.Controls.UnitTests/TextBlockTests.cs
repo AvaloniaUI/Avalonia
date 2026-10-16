@@ -1,9 +1,11 @@
-﻿using Avalonia.Controls.Documents;
+﻿using System.Text;
+using Avalonia.Controls.Documents;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.UnitTests;
+using Avalonia.VisualTree;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
@@ -73,6 +75,81 @@ namespace Avalonia.Controls.UnitTests
                 var constraint = LayoutHelper.RoundLayoutSizeUp(new Size(textLayout.Width, textLayout.Height), 1);
 
                 Assert.Equal(constraint, textBlock.DesiredSize);
+            }
+        }
+
+        [Fact]
+        public void Detaching_Should_Release_TextLayout()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var panel = new StackPanel();
+                var target = new TextBlock { Text = "Hello World" };
+                panel.Children.Add(target);
+                var root = new TestRoot(panel);
+
+                root.Measure(Size.Infinity);
+                root.Arrange(new Rect(root.DesiredSize));
+
+                Assert.True(target.HasTextLayout);
+
+                panel.Children.Remove(target);
+
+                Assert.False(target.HasTextLayout);
+            }
+        }
+
+        [Fact]
+        public void Detaching_Should_Release_TextLayout_Built_While_Measure_Is_Invalid()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var panel = new StackPanel();
+                var target = new TextBlock { Text = "Hello World" };
+                panel.Children.Add(target);
+                var root = new TestRoot(panel);
+
+                root.Measure(Size.Infinity);
+                root.Arrange(new Rect(root.DesiredSize));
+
+                // Reading the layout back is what a render pass does, and it can happen after
+                // the measure has been invalidated but before the next measure pass runs.
+                target.FontSize += 1;
+                _ = target.TextLayout;
+
+                Assert.False(target.IsMeasureValid);
+                Assert.True(target.HasTextLayout);
+
+                panel.Children.Remove(target);
+
+                Assert.False(target.HasTextLayout);
+            }
+        }
+
+        [Fact]
+        public void Reattaching_Should_Rebuild_TextLayout()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var panel = new StackPanel();
+                var target = new TextBlock { Text = "Hello World" };
+                panel.Children.Add(target);
+                var root = new TestRoot(panel);
+
+                root.Measure(Size.Infinity);
+                root.Arrange(new Rect(root.DesiredSize));
+
+                var expected = target.DesiredSize;
+                Assert.True(expected.Width > 0, $"DesiredSize was {expected}");
+
+                panel.Children.Remove(target);
+                panel.Children.Add(target);
+
+                root.Measure(Size.Infinity);
+                root.Arrange(new Rect(root.DesiredSize));
+
+                Assert.Equal(expected, target.DesiredSize);
+                Assert.Equal("Hello World", target.TextLayout.TextLines[0].TextRuns[0].Text.ToString());
             }
         }
 
@@ -615,6 +692,332 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void TextBlock_With_Wrap_MaxLines_CharacterEllipsis_Should_Show_Ellipsis_On_Last_Line()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            const double width = 106;
+            var unbounded = new TextBlock
+            {
+                Text = LongLoremText,
+                TextWrapping = TextWrapping.Wrap,
+                Width = width,
+                HorizontalAlignment = HorizontalAlignment.Left,
+                VerticalAlignment = VerticalAlignment.Top,
+            };
+
+            unbounded.Measure(Size.Infinity);
+            unbounded.Arrange(new Rect(0, 0, width, unbounded.DesiredSize.Height));
+
+            Assert.True(unbounded.TextLayout.TextLines.Count > 2);
+
+            var truncated = new TextBlock
+            {
+                Text = LongLoremText,
+                TextWrapping = TextWrapping.Wrap,
+                TextTrimming = TextTrimming.CharacterEllipsis,
+                MaxLines = 2,
+                Width = width,
+                HorizontalAlignment = HorizontalAlignment.Left,
+                VerticalAlignment = VerticalAlignment.Top,
+            };
+
+            truncated.Measure(Size.Infinity);
+            truncated.Arrange(new Rect(0, 0, width, truncated.DesiredSize.Height));
+
+            Assert.Equal(2, truncated.TextLayout.TextLines.Count);
+            Assert.Contains("…", GetLineText(truncated, 1));
+        }
+
+        [Fact]
+        public void TextBlock_With_Wrap_CharacterEllipsis_And_Height_Limit_Should_Show_Ellipsis_On_Last_Line()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            const double width = 180;
+
+            var unbounded = new TextBlock
+            {
+                Text = LongLoremText,
+                TextWrapping = TextWrapping.Wrap,
+                Width = width,
+                HorizontalAlignment = HorizontalAlignment.Left,
+                VerticalAlignment = VerticalAlignment.Top,
+            };
+
+            unbounded.Measure(Size.Infinity);
+            unbounded.Arrange(new Rect(0, 0, width, unbounded.DesiredSize.Height));
+
+            Assert.True(unbounded.TextLayout.TextLines.Count > 3);
+
+            var lineHeight = unbounded.TextLayout.TextLines[0].Height;
+            var constrainedHeight = lineHeight * 1.25;
+            var target = new TextBlock
+            {
+                Text = LongLoremText,
+                TextWrapping = TextWrapping.Wrap,
+                TextTrimming = TextTrimming.CharacterEllipsis,
+                Width = width,
+                Height = constrainedHeight,
+                HorizontalAlignment = HorizontalAlignment.Left,
+                VerticalAlignment = VerticalAlignment.Top,
+            };
+
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(0, 0, width, constrainedHeight));
+
+            Assert.True(target.TextLayout.TextLines.Count < unbounded.TextLayout.TextLines.Count);
+            Assert.Contains("…", GetLineText(target, target.TextLayout.TextLines.Count - 1));
+        }
+
+        [Fact]
+        public void TextBlock_With_Wrap_MaxLines_WordEllipsis_Should_Show_Ellipsis_On_Last_Line()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            const double width = 106;
+            var unbounded = new TextBlock
+            {
+                Text = LongLoremText,
+                TextWrapping = TextWrapping.Wrap,
+                Width = width,
+            };
+
+            unbounded.Measure(Size.Infinity);
+            unbounded.Arrange(new Rect(0, 0, width, unbounded.DesiredSize.Height));
+
+            Assert.True(unbounded.TextLayout.TextLines.Count > 2);
+
+            var truncated = new TextBlock
+            {
+                Text = LongLoremText,
+                TextWrapping = TextWrapping.Wrap,
+                TextTrimming = TextTrimming.WordEllipsis,
+                MaxLines = 2,
+                Width = width,
+            };
+
+            truncated.Measure(Size.Infinity);
+            truncated.Arrange(new Rect(0, 0, width, truncated.DesiredSize.Height));
+
+            Assert.Equal(2, truncated.TextLayout.TextLines.Count);
+            Assert.Contains("…", GetLineText(truncated, 1));
+        }
+
+        [Fact]
+        public void TextBlock_With_Wrap_WordEllipsis_And_Height_Limit_Should_Show_Ellipsis_On_Last_Line()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            const double width = 180;
+            var unbounded = new TextBlock
+            {
+                Text = LongLoremText,
+                TextWrapping = TextWrapping.Wrap,
+                Width = width,
+            };
+
+            unbounded.Measure(Size.Infinity);
+            unbounded.Arrange(new Rect(0, 0, width, unbounded.DesiredSize.Height));
+
+            Assert.True(unbounded.TextLayout.TextLines.Count > 3);
+
+            var lineHeight = unbounded.TextLayout.TextLines[0].Height;
+            var constrainedHeight = lineHeight * 1.25;
+            var target = new TextBlock
+            {
+                Text = LongLoremText,
+                TextWrapping = TextWrapping.Wrap,
+                TextTrimming = TextTrimming.WordEllipsis,
+                Width = width,
+                Height = constrainedHeight,
+            };
+
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(0, 0, width, constrainedHeight));
+
+            Assert.True(target.TextLayout.TextLines.Count < unbounded.TextLayout.TextLines.Count);
+            Assert.Contains("…", GetLineText(target, target.TextLayout.TextLines.Count - 1));
+        }
+
+        [Fact]
+        public void TextBlock_With_MaxLines_When_Text_Fully_Fits_Should_Not_Show_Ellipsis()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var target = new TextBlock
+            {
+                Text = "first line\r\nsecond line",
+                TextWrapping = TextWrapping.Wrap,
+                TextTrimming = TextTrimming.CharacterEllipsis,
+                MaxLines = 2,
+                Width = 200,
+            };
+
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(0, 0, 200, target.DesiredSize.Height));
+
+            Assert.Equal(2, target.TextLayout.TextLines.Count);
+            Assert.DoesNotContain("…", GetLineText(target, 1));
+        }
+
+        [Fact]
+        public void TextBlock_With_Overflow_And_MaxLines_Should_Not_Produce_Double_Ellipsis()
+        {
+            // A single very long word that overflows the width on line 1, which is also MaxLines = 1.
+            // The overflow path collapses the line first; the MaxLines path must not re-collapse it.
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            const double width = 80;
+            var target = new TextBlock
+            {
+                Text = "AAAAAAAAAAAAAAAAAAAAAAAAA BBBBBBBBBBBBBBBBBBBBBBBBB CCCCCCCCCCCCCCCCCCCCC",
+                TextWrapping = TextWrapping.NoWrap,
+                TextTrimming = TextTrimming.CharacterEllipsis,
+                MaxLines = 1,
+                Width = width,
+            };
+
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(0, 0, width, target.DesiredSize.Height));
+
+            var lastLineText = GetLineText(target, 0);
+
+            // Must contain exactly one ellipsis, not two.
+            Assert.Contains("…", lastLineText);
+            Assert.False(lastLineText.Contains("……"), $"Double ellipsis found in: {lastLineText}");
+        }
+
+        [Fact]
+        public void TextBlock_With_Overflow_And_MaxHeight_Should_Not_Produce_Double_Ellipsis()
+        {
+            // When a line overflows its width and is collapsed by the overflow handler, and then the
+            // MaxHeight gate is hit, no second ellipsis must appear. With the IsSplit guard on the
+            // MaxHeight path, CollapseForTruncation is not called here at all (the overflowed line
+            // ends at a hard paragraph break, so IsSplit=false). The single "…" comes from the
+            // overflow handler only.
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            const double width = 20;
+            var target = new TextBlock
+            {
+                Text = "AAAAAAAAAAAAAAAAAAAAAAAAA\r\nsecond line\r\nthird line",
+                TextWrapping = TextWrapping.NoWrap,
+                TextTrimming = TextTrimming.CharacterEllipsis,
+                Width = width,
+            };
+
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(0, 0, width, target.DesiredSize.Height));
+
+            var lineHeight = target.TextLayout.TextLines[0].Height;
+
+            target.Height = lineHeight * 1.25;
+
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(0, 0, width, target.Height));
+
+            var lastLineText = GetLineText(target, target.TextLayout.TextLines.Count - 1);
+
+            // Must contain exactly one ellipsis, not two.
+            Assert.Contains("…", lastLineText);
+            Assert.False(lastLineText.Contains("……"), $"Double ellipsis found in: {lastLineText}");
+        }
+
+        [Fact]
+        public void TextBlock_With_MaxHeight_And_Hidden_Content_After_NewLine_Should_Not_Show_Ellipsis()
+        {
+            // When a Height limit hides content that follows a hard paragraph break, no ellipsis is shown
+            // on the last visible line — matching WPF and CSS max-height+overflow:hidden behavior.
+            // The last visible line ("second line") was not itself trimmed, so no "…" is added.
+            // Contrast with MaxLines, where the behavior is intentionally different (see the MaxLines tests).
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var unbounded = new TextBlock
+            {
+                Text = "first line\r\nsecond line\r\nthird line",
+                Width = 200,
+            };
+
+            unbounded.Measure(Size.Infinity);
+            unbounded.Arrange(new Rect(0, 0, 200, unbounded.DesiredSize.Height));
+
+            Assert.True(unbounded.TextLayout.TextLines.Count >= 3);
+
+            var lineHeight = unbounded.TextLayout.TextLines[0].Height;
+
+            var target = new TextBlock
+            {
+                Text = "first line\r\nsecond line\r\nthird line",
+                TextTrimming = TextTrimming.CharacterEllipsis,
+                Width = 200,
+                Height = lineHeight * 2,
+            };
+
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(0, 0, 200, target.Height));
+
+            Assert.Equal(2, target.TextLayout.TextLines.Count);
+            Assert.DoesNotContain("…", GetLineText(target, 1));
+        }
+
+        [Fact]
+        public void TextBlock_With_Rtl_Wrap_MaxLines_CharacterEllipsis_Should_Show_Ellipsis_On_Last_Line()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            const double width = 120;
+            var unbounded = new TextBlock
+            {
+                Text = LongArabicText,
+                FlowDirection = FlowDirection.RightToLeft,
+                TextWrapping = TextWrapping.Wrap,
+                Width = width,
+            };
+
+            unbounded.Measure(Size.Infinity);
+            unbounded.Arrange(new Rect(0, 0, width, unbounded.DesiredSize.Height));
+
+            Assert.True(unbounded.TextLayout.TextLines.Count > 2);
+
+            var target = new TextBlock
+            {
+                Text = LongArabicText,
+                FlowDirection = FlowDirection.RightToLeft,
+                TextWrapping = TextWrapping.Wrap,
+                TextTrimming = TextTrimming.CharacterEllipsis,
+                MaxLines = 2,
+                Width = width,
+            };
+
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(0, 0, width, target.DesiredSize.Height));
+
+            Assert.Equal(2, target.TextLayout.TextLines.Count);
+            Assert.Contains("…", GetLineText(target, 1));
+        }
+
+        private static string GetLineText(TextBlock textBlock, int lineIndex)
+        {
+            var text = new StringBuilder();
+
+            foreach (var run in textBlock.TextLayout.TextLines[lineIndex].TextRuns)
+            {
+                text.Append(run.Text.ToString());
+            }
+
+            return text.ToString();
+        }
+
+        private const string LongLoremText =
+            "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. " +
+            "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. " +
+            "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.";
+
+        private const string LongArabicText =
+            "مرحبا بكم في اختبار التخطيط للنصوص الطويلة التي تلتف عبر عدة أسطر للتحقق من سلوك علامة الحذف عند الاقتصاص.";
+
+        [Fact]
         public void Should_Shape_Inlines_When_TextLayout_Is_Created_Before_Measure()
         {
             using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
@@ -806,6 +1209,77 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal(expected.DesiredSize, target.DesiredSize);
         }
+
+        [Fact]
+        public void Should_Render_Embedded_Control_In_Hidden_Subtree()
+        {
+            using var services = new CompositorTestServices();
+
+            var child = CreateTemplatedChild();
+            var target = new TextBlock { Inlines = new InlineCollection { new Run("Text "), new InlineUIContainer(child) } };
+            var page = new StackPanel { IsVisible = false, Children = { target } };
+
+            services.TopLevel.Content = new StackPanel { Children = { new TextBlock { Text = "Shown" }, page } };
+            services.RunJobs();
+
+            page.IsVisible = true;
+            services.RunJobs();
+
+            Assert.NotEmpty(child.GetVisualChildren());
+            Assert.Equal(new Size(20, 10), child.DesiredSize);
+        }
+
+        [Fact]
+        public void Should_Render_Embedded_Control_Shown_Later_In_Hidden_Subtree()
+        {
+            using var services = new CompositorTestServices();
+
+            var child = CreateTemplatedChild();
+            child.IsVisible = false;
+            var title = new Run("Text ");
+            var target = new TextBlock { Inlines = new InlineCollection { title, new InlineUIContainer(child) } };
+            var page = new StackPanel { IsVisible = false, Children = { target } };
+
+            services.TopLevel.Content = new StackPanel { Children = { new TextBlock { Text = "Shown" }, page } };
+            services.RunJobs();
+
+            child.IsVisible = true;
+            title.Text = "Other text ";
+            services.RunJobs();
+
+            page.IsVisible = true;
+            services.RunJobs();
+
+            Assert.NotEmpty(child.GetVisualChildren());
+        }
+
+        [Fact]
+        public void Should_Render_Embedded_Control_Shown_After_Its_Page_Was_Hidden()
+        {
+            using var services = new CompositorTestServices();
+
+            var child = CreateTemplatedChild();
+            child.IsVisible = false;
+            var target = new TextBlock { Inlines = new InlineCollection { new Run("Text "), new InlineUIContainer(child) } };
+            var page = new StackPanel { Children = { target } };
+
+            services.TopLevel.Content = page;
+            services.RunJobs();
+
+            page.IsVisible = false;
+            child.IsVisible = true;
+            services.RunJobs();
+
+            page.IsVisible = true;
+            services.RunJobs();
+
+            Assert.NotEmpty(child.GetVisualChildren());
+        }
+
+        private static Button CreateTemplatedChild() => new Button
+        {
+            Template = new FuncControlTemplate<Button>((_, _) => new Border { Width = 20, Height = 10 })
+        };
 
         private class TestTextBlock : TextBlock
         {

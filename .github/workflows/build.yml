@@ -28,6 +28,7 @@ jobs:
 
   linux:
     name: Linux
+    if: &if-main-repo github.repository == 'AvaloniaUI/Avalonia'
     runs-on: ubuntu-24.04
 
     steps:
@@ -55,6 +56,7 @@ jobs:
 
   macos:
     name: macOS
+    if: *if-main-repo
     runs-on: macos-26
     env:
       DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
@@ -93,6 +95,7 @@ jobs:
 
   windows:
     name: Windows
+    if: *if-main-repo
     runs-on: windows-2025
 
     steps:
@@ -122,6 +125,7 @@ jobs:
   # Expressions have no regex support, so a small job classifies the branch instead.
   branch-info:
     name: Branch Info
+    if: *if-main-repo
     runs-on: ubuntu-24.04
     outputs:
       is-release: ${{ steps.classify.outputs.is-release }}

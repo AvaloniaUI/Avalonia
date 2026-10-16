@@ -457,6 +457,7 @@ namespace Avalonia.Controls.Primitives
                 _presenter.RemoveHandler(TappedEvent, PresenterTapped);
                 _presenter.RemoveHandler(PointerPressedEvent, PresenterPressed);
                 _presenter.RemoveHandler(GotFocusEvent, PresenterFocused);
+                _presenter.IsEffectivelyVisibleChanged -= Presenter_IsEffectivelyVisibleChanged;
 
                 if (_textBox != null)
                 {
@@ -476,6 +477,7 @@ namespace Avalonia.Controls.Primitives
                 _presenter.AddHandler(TappedEvent, PresenterTapped);
                 _presenter.AddHandler(PointerPressedEvent, PresenterPressed, handledEventsToo: true);
                 _presenter.AddHandler(GotFocusEvent, PresenterFocused, handledEventsToo: true);
+                _presenter.IsEffectivelyVisibleChanged += Presenter_IsEffectivelyVisibleChanged;
 
                 _textBox = _presenter.FindAncestorOfType<TextBox>();
 
@@ -485,6 +487,14 @@ namespace Avalonia.Controls.Primitives
                     _textBox.AddHandler(ScrollGestureEvent, TextBoxScrolling, handledEventsToo: true);
                 }
             }
+        }
+
+        private void Presenter_IsEffectivelyVisibleChanged(object? sender, EventArgs e)
+        {
+            // If visibility changes, reset the canvas visibility states.
+            CloseFlyout();
+            ShowHandles = false;
+            EnsureVisible();
         }
 
         private void TextBoxScrolling(object? sender, ScrollGestureEventArgs e)
@@ -620,7 +630,7 @@ namespace Avalonia.Controls.Primitives
             private TextPresenter? _presenter;
 
             public event EventHandler? Invalidated;
-            
+
             private CompositeDisposable? _disposables;
 
             public void Attach(TextPresenter presenter)

@@ -529,7 +529,7 @@ namespace Avalonia.Win32
                     0,
                     SetWindowPosFlags.SWP_NOSIZE | SetWindowPosFlags.SWP_NOACTIVATE | SetWindowPosFlags.SWP_NOZORDER);
 
-                if (ShCoreAvailable && Win32Platform.WindowsVersion >= PlatformConstants.Windows8_1)
+                if (GetDpiForMonitorAvailable)
                 {
                     var monitor = MonitorFromWindow(Handle.Handle, MONITOR.MONITOR_DEFAULTTONEAREST);
 
@@ -1019,7 +1019,7 @@ namespace Avalonia.Win32
 
             RegisterTouchWindow(_hwnd, 0);
 
-            if (ShCoreAvailable && Win32Platform.WindowsVersion >= PlatformConstants.Windows8_1)
+            if (GetDpiForMonitorAvailable)
             {
                 var monitor = MonitorFromWindow(
                     _hwnd,
