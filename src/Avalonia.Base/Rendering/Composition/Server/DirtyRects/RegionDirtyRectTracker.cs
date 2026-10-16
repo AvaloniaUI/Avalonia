@@ -20,9 +20,9 @@ internal class RegionDirtyRectTracker : IDirtyRectTracker
     
     public void AddRect(LtrbRect rect) => _rects.Add(rect);
 
-    private LtrbPixelRect GetInflatedPixelRect(LtrbRect rc)
+    private LtrbPixelRect GetInflatedPixelRect(LtrbRect rc, LtrbRect bounds)
     {
-        var inflated = rc.Inflate(new Thickness(1)).IntersectOrEmpty(rc);
+        var inflated = rc.Inflate(new Thickness(1)).IntersectOrEmpty(bounds);
         var pixelRect = LtrbPixelRect.FromRectUnscaled(inflated);
         return pixelRect;
     }
@@ -31,7 +31,7 @@ internal class RegionDirtyRectTracker : IDirtyRectTracker
     {
         _region.Reset();
         foreach (var rc in _rects) 
-            _region.AddRect(GetInflatedPixelRect(rc));
+            _region.AddRect(GetInflatedPixelRect(rc, bounds));
         CombinedRect = _region.Bounds.ToLtrbRectUnscaled();
     }
 
@@ -56,5 +56,18 @@ internal class RegionDirtyRectTracker : IDirtyRectTracker
     }
 
     public LtrbRect CombinedRect { get; private set; }
+
+    public void CopyRects(List<PixelRect> rects)
+    {
+        rects.Clear();
+        foreach (var rect in _region.Rects)
+            rects.Add(rect.ToPixelRect());
+    }
+
+    public void CopyUninflatedRects(List<LtrbRect> rects)
+    {
+        rects.Clear();
+        rects.AddRange(_rects);
+    }
     
 }

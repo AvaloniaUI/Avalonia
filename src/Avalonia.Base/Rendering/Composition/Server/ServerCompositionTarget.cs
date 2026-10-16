@@ -28,6 +28,7 @@ namespace Avalonia.Rendering.Composition.Server
         private IRenderTarget? _renderTarget;
         private PixelSize _layerSize;
         private IDrawingContextLayerImpl? _layer;
+        private PartialPresentationDirtyRectHistory? _partialPresentationHistory;
         private Matrix _outputTransform = Matrix.Identity;
         private bool _updateRequested;
         private bool _redrawRequested;
@@ -97,6 +98,7 @@ namespace Avalonia.Rendering.Composition.Server
         partial void OnDebugOverlaysChanged()
         {
             _fullRedrawRequested = true;
+            _partialPresentationHistory = null;
             _overlays.OnChanged(DebugOverlays);
         }
 
@@ -156,6 +158,8 @@ namespace Avalonia.Rendering.Composition.Server
                 _renderTarget.Dispose();
                 _renderTarget = null;
                 _redrawRequested = true;
+                _fullRedrawRequested = true;
+                _partialPresentationHistory = null;
             }
 
             try
@@ -197,7 +201,7 @@ namespace Avalonia.Rendering.Composition.Server
             }
 
             var targetProperties = _renderTarget.Properties;
-            // Exact quarter turns keep pixel edges aligned.
+            // Exact quarter turns keep pixel edges aligned, including partial presentation clips.
             var outputTransform = targetProperties.RequiresRotationForOrientation switch
             {
                 SurfaceOrientation.Rotation90 => new Matrix(0, 1, -1, 0, PixelSize.Height, 0),
@@ -208,11 +212,15 @@ namespace Avalonia.Rendering.Composition.Server
             if (_outputTransform != outputTransform)
             {
                 _outputTransform = outputTransform;
+                _partialPresentationHistory = null;
                 _fullRedrawRequested = true;
             }
+            var usePartialPresentation = targetProperties.SupportsPartialPresentation
+                                         && DebugOverlays == RendererDebugOverlays.None;
             var needLayer = !outputTransform.IsIdentity || _overlays.RequireLayer
                             || !(targetProperties.IsSuitableForDirectRendering
-                                 && targetProperties.RetainsPreviousFrameContents);
+                                 && (targetProperties.RetainsPreviousFrameContents
+                                     || usePartialPresentation));
 
             IDrawingContextImpl renderTargetContext;
             RenderTargetDrawingContextProperties properties;
@@ -233,75 +241,143 @@ namespace Avalonia.Rendering.Composition.Server
                 return;
             }
             
-            using (renderTargetContext)
-            using (var renderTiming = Diagnostic.BeginCompositorRenderPass())
+            var renderBounds = new LtrbRect(0, 0, PixelSize.Width, PixelSize.Height);
+            IPartialPresentationFeature? partialPresentation = null;
+            PartialPresentationDirtyRectHistory? partialPresentationHistory = null;
+            try
             {
-                var fullRedraw = false;
-                
-                if(needLayer && (PixelSize != _layerSize || _layer == null || _layer.IsCorrupted))
+                using (renderTargetContext)
                 {
-                    _layer?.Dispose();
-                    _layer = null;
-                    _layer = renderTargetContext.CreateLayer(PixelSize);
-                    _layerSize = PixelSize;
-                    fullRedraw = true;
-                }
-                else if (!needLayer)
-                {
-                    _layer?.Dispose();
-                    _layer = null;
-                }
-
-                if (_fullRedrawRequested || (!needLayer && !properties.PreviousFrameIsRetained))
-                {
-                    _fullRedrawRequested = false;
-                    fullRedraw = true;
-                }
-
-                var renderBounds = new LtrbRect(0, 0, PixelSize.Width, PixelSize.Height);
-                if (fullRedraw)
-                {
-                    DirtyRects.Initialize(renderBounds);
-                    DirtyRects.AddRect(renderBounds);
-                }
-
-                if (!DirtyRects.IsEmpty)
-                {
-                    DirtyRects.FinalizeFrame(renderBounds);
-                    if (_layer != null)
+                    using (var renderTiming = Diagnostic.BeginCompositorRenderPass())
                     {
-                        using (var context = _layer.CreateDrawingContext())
-                            RenderRootToContextWithClip(context, Root);
+                        var recreateLayer = needLayer &&
+                                            (PixelSize != _layerSize || _layer == null || _layer.IsCorrupted);
+                        if (_fullRedrawRequested || recreateLayer
+                                                 || (!needLayer && !usePartialPresentation &&
+                                                     !properties.PreviousFrameIsRetained))
+                        {
+                            DirtyRects.Initialize(renderBounds);
+                            DirtyRects.AddRect(renderBounds);
+                        }
 
-                        renderTargetContext.Transform = Matrix.Identity;
-                        var rect = new PixelRect(PixelSize).ToRect(1);
-                        renderTargetContext.Clear(Colors.Transparent);
-                        renderTargetContext.Transform = outputTransform;
-                        if (_layer.CanBlit && outputTransform.IsIdentity)
-                            _layer.Blit(renderTargetContext);
-                        else
-                            renderTargetContext.DrawBitmap(_layer, 1, rect, rect);
-                        _overlays.Draw(renderTargetContext, true, outputTransform);
+                        DirtyRects.FinalizeFrame(renderBounds);
+
+                        // Overlay frames still need session completion, but use full presentation.
+                        if (targetProperties.SupportsPartialPresentation)
+                        {
+                            partialPresentation = renderTargetContext.GetFeature<IPartialPresentationFeature>()
+                                                  ?? throw new InvalidOperationException(
+                                                      "The render target did not provide its partial presentation feature after announcing it.");
+
+                            if (usePartialPresentation)
+                            {
+                                partialPresentationHistory = _partialPresentationHistory ??=
+                                    new PartialPresentationDirtyRectHistory();
+                                partialPresentationHistory.BeforeDraw(partialPresentation, DirtyRects);
+                            }
+                        }
+
+                        if (recreateLayer)
+                        {
+                            _layer?.Dispose();
+                            _layer = null;
+                            _layer = renderTargetContext.CreateLayer(PixelSize);
+                            _layerSize = PixelSize;
+                        }
+                        else if (!needLayer)
+                        {
+                            _layer?.Dispose();
+                            _layer = null;
+                        }
+
+                        // For retained layer we are rendering before taking partial presentation into consideration
+                        // since it's only concerned about _current_ frame's content
+                        if (_layer != null && !DirtyRects.IsEmpty)
+                            using (var context = _layer.CreateDrawingContext())
+                                RenderRootToContextWithClip(context, Root);
+
+                        // Replay dirty rect history and declare the rectangles before drawing to the output buffer.
+                        partialPresentationHistory?.BeforeTargetDraw(DirtyRects, renderBounds, outputTransform);
+
+                        if (_layer != null) // Intermediate buffer rendering path
+                        {
+                            renderTargetContext.Transform = Matrix.Identity;
+                            var rect = new PixelRect(PixelSize).ToRect(1);
+                            if (partialPresentationHistory != null)
+                            {
+                                // BufferDirtyRects are already merged by DirtyRects; the default GPU tracker
+                                // produces one rectangle. Multiple rectangles require opting into region clipping.
+                                // Native layer blits can ignore the canvas clip and clear the whole output.
+                                // Rectangular bitmap copies also work on framebuffers without stencil.
+                                foreach (var dirtyRect in partialPresentationHistory.BufferDirtyRects)
+                                {
+                                    renderTargetContext.Transform = Matrix.Identity;
+                                    renderTargetContext.PushClip(dirtyRect.ToRect(1));
+                                    try
+                                    {
+                                        renderTargetContext.Clear(Colors.Transparent);
+                                        renderTargetContext.Transform = outputTransform;
+                                        renderTargetContext.DrawBitmap(_layer, 1, rect, rect);
+                                    }
+                                    finally
+                                    {
+                                        renderTargetContext.PopClip();
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                renderTargetContext.Clear(Colors.Transparent);
+                                renderTargetContext.Transform = outputTransform;
+                                if (_layer.CanBlit && outputTransform.IsIdentity)
+                                    _layer.Blit(renderTargetContext);
+                                else
+                                    renderTargetContext.DrawBitmap(_layer, 1, rect, rect);
+                            }
+                            _overlays.Draw(renderTargetContext, true, outputTransform);
+                        }
+                        else // Direct rendering path
+                        {
+                            if (!DirtyRects.IsEmpty)
+                            {
+                                RenderRootToContextWithClip(renderTargetContext, Root);
+                                _overlays.Draw(renderTargetContext, false);
+                            }
+                        }
                     }
-                    else
-                    {
-                        RenderRootToContextWithClip(renderTargetContext, Root);
-                        _overlays.Draw(renderTargetContext, false);
-                    }
+
+                    // Report that the frame we've rendered is actually not garbage,
+                    // will be important when we ask for a drawing context next time
+                    // Not doing this may also skip presentation entirely
+                    partialPresentation?.Succeeded();
                 }
 
-                RenderedVisuals = 0;
-                VisitedVisuals = 0;
-
+                // Record frame into history
+                partialPresentationHistory?.AfterSuccessfulDraw();
+                // Reset state
+                _fullRedrawRequested = false;
                 _redrawRequested = false;
                 DirtyRects.Initialize(renderBounds);
+
+            }
+            catch
+            {
+                _fullRedrawRequested = true;
+                _redrawRequested = true;
+                _partialPresentationHistory = null;
+                throw;
+            }
+            finally
+            {
+                RenderedVisuals = 0;
+                VisitedVisuals = 0;
             }
         }
 
         void RenderRootToContextWithClip(IDrawingContextImpl context, ServerCompositionVisual root)
         {
             var useLayerClip = Compositor.Options.UseSaveLayerRootClip ?? false;
-            
+
             using (DirtyRects.BeginDraw(context))
             {
                 context.Clear(Colors.Transparent);
@@ -320,7 +396,7 @@ namespace Avalonia.Rendering.Composition.Server
                     context.PopLayer();
             }
         }
-        
+
         public void RequestUpdate() => _updateRequested = true;
 
         public void Dispose()
@@ -334,6 +410,8 @@ namespace Avalonia.Rendering.Composition.Server
 
         public void ResetRenderTarget()
         {
+            _partialPresentationHistory = null;
+            _fullRedrawRequested = true;
             if (_layer == null && _renderTarget == null)
                 return;
             try

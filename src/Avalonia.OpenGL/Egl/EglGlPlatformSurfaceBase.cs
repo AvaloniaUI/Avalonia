@@ -13,11 +13,25 @@ namespace Avalonia.OpenGL.Egl
     public abstract class EglPlatformSurfaceRenderTargetBase : IGlPlatformSurfaceRenderTarget
     {
         protected EglContext Context { get; }
+        private EglPartialPresentation? _partialPresentation;
+        private EglSurface? _partialPresentationSurface;
+        private bool _partialPresentationCorrupted;
+
+        [PrivateApi]
+        protected virtual bool UsePartialPresentation => false;
+
+        [PrivateApi]
+        protected virtual void OnSwapBuffersFailed() { }
 
         RenderTargetProperties IGlPlatformSurfaceRenderTarget.Properties => Properties;
 
         [PrivateApi]
-        protected virtual RenderTargetProperties Properties => default;
+        protected virtual RenderTargetProperties Properties => new()
+        {
+            SupportsPartialPresentation = UsePartialPresentation && Context.Display.SupportsBufferAge,
+            IsSuitableForDirectRendering = UsePartialPresentation && Context.StencilSize >= 8
+                && _partialPresentation?.PreferRetainedLayer != true
+        };
 
         protected EglPlatformSurfaceRenderTargetBase(EglContext context)
         {
@@ -26,12 +40,13 @@ namespace Avalonia.OpenGL.Egl
 
         public virtual void Dispose()
         {
-            
+            _partialPresentation?.Invalidate();
+            _partialPresentationSurface = null;
         }
 
         public IGlPlatformSurfaceRenderingSession BeginDraw(IRenderTarget.RenderTargetSceneInfo sceneInfo)
         {
-            if (Context.IsLost)
+            if (IsCorrupted)
                 throw new RenderTargetCorruptedException();
             
             return BeginDrawCore(sceneInfo);
@@ -75,17 +90,37 @@ namespace Avalonia.OpenGL.Egl
                 }
 
                 
+                EglPartialPresentation.Session? partial = null;
+                if (Properties.SupportsPartialPresentation)
+                {
+                    var display = Context.Display;
+                    _partialPresentation ??= new EglPartialPresentation(egli, display.Handle,
+                        display.SupportsPartialUpdate, display.SupportsSwapBuffersWithDamageKhr,
+                        display.SupportsSwapBuffersWithDamageExt, () => _partialPresentationCorrupted = true);
+                    // EGL can reuse a destroyed surface's native handle value.
+                    if (!ReferenceEquals(_partialPresentationSurface, surface))
+                    {
+                        _partialPresentation.Invalidate();
+                        _partialPresentationSurface = surface;
+                    }
+                    partial = _partialPresentation.BeginDraw(surface.DangerousGetHandle(), size, isYFlipped);
+                }
                 success = true;
-                return new Session(Context.Display, Context, surface, size, scaling,  restoreContext, onFinish, isYFlipped, SkipWaits, beforeSwap);
+                return new Session(Context.Display, Context, surface, size, scaling, restoreContext,
+                    onFinish, isYFlipped, SkipWaits, beforeSwap, partial, OnSwapBuffersFailed);
             }
             finally
             {
                 if(!success)
+                {
+                    if (Properties.SupportsPartialPresentation)
+                        _partialPresentation?.Invalidate();
                     restoreContext.Dispose();
+                }
             }
         }
 
-        private class Session : IGlPlatformSurfaceRenderingSession
+        private class Session : IGlPlatformSurfaceRenderingSessionWithPartialPresentation
         {
             private readonly EglContext _context;
             private readonly EglSurface _glSurface;
@@ -94,11 +129,14 @@ namespace Avalonia.OpenGL.Egl
             private readonly Action? _onFinish;
             private readonly Action? _beforeSwap;
             private readonly bool _skipWaits;
+            private readonly EglPartialPresentation.Session? _partial;
+            private readonly Action _onSwapFailed;
+            private bool _disposed;
 
             public Session(EglDisplay display, EglContext context,
                 EglSurface glSurface, PixelSize size, double scaling,
                 IDisposable restoreContext, Action? onFinish, bool isYFlipped, bool skipWaits,
-                Action? beforeSwap = null)
+                Action? beforeSwap, EglPartialPresentation.Session? partial, Action onSwapFailed)
             {
                 Size = size;
                 Scaling = scaling;
@@ -110,26 +148,60 @@ namespace Avalonia.OpenGL.Egl
                 _onFinish = onFinish;
                 _beforeSwap = beforeSwap;
                 _skipWaits = skipWaits;
+                _partial = partial;
+                _onSwapFailed = onSwapFailed;
             }
 
             public void Dispose()
             {
-                _context.GlInterface.Flush();
-                if (!_skipWaits)
-                    _display.EglInterface.WaitGL();
-                _beforeSwap?.Invoke();
-                _glSurface.SwapBuffers();
-                if (!_skipWaits)
+                if (_disposed)
+                    return;
+                _disposed = true;
+                var success = false;
+                try
                 {
-                    _display.EglInterface.WaitClient();
-                    _display.EglInterface.WaitGL();
-                    _display.EglInterface.WaitNative(EglConsts.EGL_CORE_NATIVE_ENGINE);
+                    if (_partial is { CanPresent: false })
+                        return;
+                    _context.GlInterface.Flush();
+                    if (!_skipWaits)
+                        _display.EglInterface.WaitGL();
+                    _beforeSwap?.Invoke();
+                    var presented = false;
+                    try
+                    {
+                        if (_partial != null)
+                            presented = _partial.Present();
+                        else
+                        {
+                            _glSurface.SwapBuffers();
+                            presented = true;
+                        }
+                    }
+                    finally
+                    {
+                        if (!presented)
+                            _onSwapFailed();
+                    }
+                    if (!presented)
+                        return;
+                    if (!_skipWaits)
+                    {
+                        _display.EglInterface.WaitClient();
+                        _display.EglInterface.WaitGL();
+                        _display.EglInterface.WaitNative(EglConsts.EGL_CORE_NATIVE_ENGINE);
+                    }
+                    success = true;
                 }
-
-                _restoreContext.Dispose();
-                _onFinish?.Invoke();
+                finally
+                {
+                    _partial?.Dispose();
+                    _restoreContext.Dispose();
+                    if (success)
+                        _onFinish?.Invoke();
+                }
             }
 
+            public IPartialPresentationFeature? PartialPresentation => _partial;
             public IGlContext Context => _context;
             public PixelSize Size { get; }
             public double Scaling { get; }
@@ -139,6 +211,6 @@ namespace Avalonia.OpenGL.Egl
         public virtual PlatformRenderTargetState State =>
             IsCorrupted ? PlatformRenderTargetState.Corrupted : PlatformRenderTargetState.Ready;
         
-        public virtual bool IsCorrupted => Context.IsLost;
+        public virtual bool IsCorrupted => Context.IsLost || _partialPresentationCorrupted;
     }
 }

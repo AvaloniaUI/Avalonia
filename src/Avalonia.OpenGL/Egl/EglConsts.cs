@@ -84,7 +84,7 @@ namespace Avalonia.OpenGL.Egl
 //        public const int  EGL_ALPHA_FORMAT_PRE = 0x308C;
 //        public const int  EGL_ALPHA_MASK_SIZE = 0x303E;
 //        public const int  EGL_BUFFER_PRESERVED = 0x3094;
-//        public const int  EGL_BUFFER_DESTROYED = 0x3095;
+        public const int  EGL_BUFFER_DESTROYED = 0x3095;
 //        public const int  EGL_CLIENT_APIS = 0x308D;
 //        public const int  EGL_COLORSPACE = 0x3087;
 //        public const int  EGL_COLORSPACE_sRGB = 0x3089;
@@ -105,7 +105,7 @@ namespace Avalonia.OpenGL.Egl
 //        public const int  EGL_RENDER_BUFFER = 0x3086;
 //        public const int  EGL_RGB_BUFFER = 0x308E;
 //        public const int  EGL_SINGLE_BUFFER = 0x3085;
-//        public const int  EGL_SWAP_BEHAVIOR = 0x3093;
+        public const int  EGL_SWAP_BEHAVIOR = 0x3093;
 //        public const int  EGL_UNKNOWN = -1;
 //        public const int  EGL_VERTICAL_RESOLUTION = 0x3091;
 //        public const int  EGL_CONFORMANT = 0x3042;
@@ -172,6 +172,9 @@ namespace Avalonia.OpenGL.Egl
 //        public const int  EGL_GL_TEXTURE_CUBE_MAP_NEGATIVE_Z = 0x30B8;
         public const int  EGL_IMAGE_PRESERVED = 0x30D2;
         public const int  EGL_NO_IMAGE = 0;
+
+        // EGL_EXT_buffer_age
+        public const int  EGL_BUFFER_AGE_EXT = 0x313D;
 
         // EGL_KHR_image_base
         public const int  EGL_IMAGE_PRESERVED_KHR = 0x30D2;

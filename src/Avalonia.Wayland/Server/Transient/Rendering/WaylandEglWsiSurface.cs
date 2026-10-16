@@ -43,10 +43,14 @@ internal sealed class WaylandEglWsiSurface : EglGlPlatformSurfaceBase, IPlatform
         public RenderTarget(WSurface surface, EglContext context) : base(context)
         {
             _surface = surface;
+            UsePartialPresentation = surface.Globals?.UsePartialPresentation == true;
             _surface.RegisterRenderTarget(this);
         }
 
         protected override bool SkipWaits => true;
+        protected override bool UsePartialPresentation { get; }
+
+        protected override void OnSwapBuffersFailed() => _surface.OnBufferAttachAborted();
 
         public override PlatformRenderTargetState State
         {
