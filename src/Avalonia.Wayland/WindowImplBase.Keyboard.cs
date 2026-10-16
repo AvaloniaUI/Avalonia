@@ -130,8 +130,10 @@ partial class WindowBaseImpl
             if (_keyRepeatTimer.Interval != repeatInterval)
                 _keyRepeatTimer.Interval = repeatInterval;
 
-            Parent.Input?.Invoke(new RawKeyEventArgs(Keyboard, 0, InputRoot,
-                RawKeyEventType.KeyDown, _repeatKey, _repeatModifiers, _repeatPhysicalKey, _repeatKeySymbol));
+            var args = new RawKeyEventArgs(Keyboard, 0, InputRoot,
+                RawKeyEventType.KeyDown, _repeatKey, _repeatModifiers, _repeatPhysicalKey, _repeatKeySymbol);
+            Parent.Input?.Invoke(args);
+            DispatchTextInputIfUnhandled(args);
         }
     }
 
