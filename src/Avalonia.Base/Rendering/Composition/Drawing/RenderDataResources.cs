@@ -1,6 +1,7 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Avalonia.Collections.Pooled;
+using Avalonia.Utilities;
 
 namespace Avalonia.Rendering.Composition.Drawing;
 
@@ -28,6 +29,23 @@ internal struct RenderDataResources : IDisposable
         handle = _resources.Count;
         _resources.Add(resource);
         _internMap.Add(resource, handle);
+        return handle;
+    }
+
+    // Takes this table's own reference to a shared resource, once per distinct resource, so the
+    // resource stays alive for as long as this table does even after its creator releases it.
+    public int InternShared<T>(IRef<T> reference) where T : class
+    {
+        _resources ??= new PooledList<object?>();
+        _internMap ??= new Dictionary<object, int>(ReferenceEqualityComparer.Instance);
+
+        var key = reference.Item;
+        if (_internMap.TryGetValue(key, out var handle))
+            return handle;
+
+        handle = _resources.Count;
+        _resources.Add(reference.Clone());
+        _internMap.Add(key, handle);
         return handle;
     }
 
