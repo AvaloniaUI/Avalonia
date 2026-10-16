@@ -16,6 +16,10 @@ internal static partial class UnmanagedMethods
     [LibraryImport("user32.dll")]
     public static partial int GetSystemMetrics(int nIndex);
 
+    [LibraryImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool ShowWindow(IntPtr hwnd, int nCmdShow);
+
     public struct RECT
     {
         public int left;
@@ -25,4 +29,6 @@ internal static partial class UnmanagedMethods
     }
 
     public const int SM_CMONITORS = 80;
+
+    public const int SW_MAXIMIZE = 3;
 }

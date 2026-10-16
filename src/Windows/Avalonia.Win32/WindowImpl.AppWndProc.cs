@@ -735,6 +735,10 @@ namespace Avalonia.Win32
                         var stateChanged = windowState != _lastWindowState;
                         _lastWindowState = windowState;
 
+                        // A Resized handler reads WindowState, so the window reports its new state before it reports its new size.
+                        if (stateChanged)
+                            WindowStateChanged?.Invoke(windowState);
+
                         if (Resized != null &&
                             (size == SizeCommand.Restored ||
                              size == SizeCommand.Maximized))
@@ -753,8 +757,6 @@ namespace Avalonia.Win32
                             newWindowProperties.WindowState = windowState;
 
                             UpdateWindowProperties(newWindowProperties);
-
-                            WindowStateChanged?.Invoke(windowState);
 
                             if (_isClientAreaExtended)
                             {
