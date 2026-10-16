@@ -1,7 +1,9 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Utils;
+using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Threading;
@@ -1267,6 +1269,33 @@ namespace Avalonia.Controls.UnitTests
             autoCompleteBox.ApplyTemplate();
             return autoCompleteBox;
         }
+        [Fact]
+        public void Selection_Adapter_Makes_DropDown_Items_Non_Focusable()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var listBox = CreateDropDownListBox();
+                _ = new SelectingItemsControlSelectionAdapter(listBox);
+
+                var root = new TestRoot(listBox);
+                root.LayoutManager.ExecuteInitialLayoutPass();
+
+                var containers = listBox.GetRealizedContainers().ToList();
+
+                Assert.NotEmpty(containers);
+                Assert.All(containers, container => Assert.False(container.Focusable));
+            }
+        }
+
+        private static ListBox CreateDropDownListBox() => new ListBox
+        {
+            ItemsSource = new[] { "aaa", "abb" },
+            Width = 100,
+            Height = 100,
+            Template = new FuncControlTemplate<ListBox>((_, scope) =>
+                new ItemsPresenter { Name = "PART_ItemsPresenter" }.RegisterInNameScope(scope))
+        };
+
         private TextBox GetTextBox(AutoCompleteBox control)
         {
             return control.GetTemplateDescendants()
