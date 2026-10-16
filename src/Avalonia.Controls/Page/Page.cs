@@ -3,7 +3,9 @@ using System.Threading.Tasks;
 using Avalonia.Automation;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -218,7 +220,17 @@ namespace Avalonia.Controls
         /// <returns><see langword="true"/> if the back press was handled.</returns>
         protected virtual bool OnSystemBackButtonPressed() => false;
 
-        internal void SendNavigatedTo(NavigatedToEventArgs args) => OnNavigatedTo(args);
+        internal void SendNavigatedTo(NavigatedToEventArgs args)
+        {
+            var focusManager = TopLevel.GetTopLevel(this)?.FocusManager;
+            var focusedElement = focusManager?.GetFocusedElement();
+            if (focusedElement is not Visual focusedVisual || !this.IsVisualAncestorOf(focusedVisual))
+            {
+                FocusManager.FindFirstFocusableElement(this)?.Focus(NavigationMethod.Unspecified);
+            }
+
+            OnNavigatedTo(args);
+        }
 
         internal async Task SendNavigatingAsync(NavigatingFromEventArgs args)
         {

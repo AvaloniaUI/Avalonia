@@ -1117,11 +1117,29 @@ namespace Avalonia.Controls
                 }
 
                 OnOpened(EventArgs.Empty);
+                if (!_wasShownBefore)
+                {
+                    FocusInitialElement();
+                }
                 if (!modal)
                     _wasShownBefore = true;
 
                 return result;
             }
+        }
+
+        private void FocusInitialElement()
+        {
+            var focusManager = FocusManager;
+            if (focusManager is null)
+                return;
+
+            var focusedElement = focusManager.GetFocusedElement();
+            if (focusedElement is Visual focusedVisual && TopLevel.GetTopLevel(focusedVisual) == this)
+                return;
+
+            var firstFocusableElement = focusManager.FindFirstFocusableElement();
+            firstFocusableElement?.Focus(NavigationMethod.Unspecified);
         }
 
         private void ResizePlatformImpl(Size size, WindowResizeReason reason)
