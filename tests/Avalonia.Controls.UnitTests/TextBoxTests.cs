@@ -2476,7 +2476,7 @@ namespace Avalonia.Controls.UnitTests
             var textPresenter = textBox.FindDescendantOfType<TextPresenter>();
             Assert.NotNull(textPresenter);
 
-            var oldCaretY = textPresenter.GetCursorRectangle().Top;
+            var oldCaretY = textPresenter.CursorRectangle.Top;
             Assert.NotEqual(0, oldCaretY);
 
             RaiseKeyEvent(textBox, Key.Back, KeyModifiers.None);
@@ -2485,7 +2485,7 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(2, textBox.CaretIndex);
             Assert.Equal(2, textPresenter.CaretIndex);
 
-            var caretY = textPresenter.GetCursorRectangle().Top;
+            var caretY = textPresenter.CursorRectangle.Top;
             Assert.Equal(oldCaretY, caretY);
         }
 
