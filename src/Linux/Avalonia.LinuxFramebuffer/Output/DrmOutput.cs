@@ -255,6 +255,7 @@ namespace Avalonia.LinuxFramebuffer.Output
                         _deferredContext.GlInterface.ClearColor(initialBufferSwappingColorR, initialBufferSwappingColorG,
                             initialBufferSwappingColorB, initialBufferSwappingColorA);
                         _deferredContext.GlInterface.Clear(GlConsts.GL_COLOR_BUFFER_BIT | GlConsts.GL_STENCIL_BUFFER_BIT);
+                        (session as IGlPlatformSurfaceRenderingSessionWithPartialPresentation)?.PartialPresentation?.Succeeded();
                     }
             }
 
@@ -300,7 +301,17 @@ namespace Avalonia.LinuxFramebuffer.Output
             }
         }
 
-        public IGlPlatformSurfaceRenderTarget CreateGlRenderTarget() => new RenderTarget(this);
+        private bool UsePartialPresentation => _outputOptions.UsePartialPresentation == true;
+
+        public IGlPlatformSurfaceRenderTarget CreateGlRenderTarget()
+        {
+            // A failed frame with a native dirty rectangle declaration needs a fresh EGL surface.
+            // The GBM swapchain and its current scanout buffer remain owned by this output.
+            if (_eglSurface.IsClosed)
+                _eglSurface = _eglDisplay.CreateWindowSurface(_gbmTargetSurface);
+            return new RenderTarget(this);
+        }
+
 
         public IGlPlatformSurfaceRenderTarget CreateGlRenderTarget(IGlContext context)
         {
@@ -328,7 +339,15 @@ namespace Avalonia.LinuxFramebuffer.Output
                 RequiresRotationForOrientation = _parent.Orientation
             };
 
+            protected override bool UsePartialPresentation => _parent.UsePartialPresentation;
             protected override bool SkipWaits => true;
+
+            public override void Dispose()
+            {
+                base.Dispose();
+                if (base.IsCorrupted && !Context.IsLost)
+                    _surface.Dispose();
+            }
 
             public override IGlPlatformSurfaceRenderingSession BeginDrawCore(IRenderTarget.RenderTargetSceneInfo sceneInfo)
             {

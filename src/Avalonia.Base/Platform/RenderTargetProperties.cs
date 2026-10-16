@@ -51,6 +51,12 @@ public readonly struct PlatformRenderTargetState
 public struct RenderTargetProperties
 {
     /// <summary>
+    /// Indicates that output drawing contexts expose <see cref="IPartialPresentationFeature"/>.
+    /// This capability does not guarantee that the acquired buffer has reusable contents.
+    /// </summary>
+    public bool SupportsPartialPresentation { get; init; }
+
+    /// <summary>
     /// Indicates that render target contents are preserved between CreateDrawingContext calls.
     /// Notable examples are retained CPU-memory framebuffers and
     /// swapchains with DXGI_SWAP_EFFECT_SEQUENTIAL/DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL
@@ -67,7 +73,7 @@ public struct RenderTargetProperties
     /// <summary>
     /// The clockwise rotation required when copying the scene into the native framebuffer.
     /// A nonzero rotation requires an intermediate layer. Scene sizes remain in scene coordinates;
-    /// the drawing context uses native framebuffer coordinates.
+    /// the drawing context and partial presentation rectangles use native framebuffer coordinates.
     /// </summary>
     public SurfaceOrientation RequiresRotationForOrientation { get; init; }
 }

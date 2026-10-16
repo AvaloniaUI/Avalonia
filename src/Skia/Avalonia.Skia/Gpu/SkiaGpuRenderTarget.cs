@@ -31,17 +31,24 @@ namespace Avalonia.Skia
             properties = default;
             var session = _renderTarget.BeginRenderingSession(sceneInfo);
 
-            var nfo = new DrawingContextImpl.CreateInfo
+            try
             {
-                GrContext = session.GrContext,
-                Surface = session.SkSurface,
-                Dpi = SkiaPlatform.DefaultDpi * session.ScaleFactor,
-                ScaleDrawingToDpi = false,
-                Gpu = _skiaGpu,
-                CurrentSession =  session
-            };
-
-            return new DrawingContextImpl(nfo, session);
+                var nfo = new DrawingContextImpl.CreateInfo
+                {
+                    GrContext = session.GrContext,
+                    Surface = session.SkSurface,
+                    Dpi = SkiaPlatform.DefaultDpi * session.ScaleFactor,
+                    ScaleDrawingToDpi = false,
+                    Gpu = _skiaGpu,
+                    CurrentSession = session
+                };
+                return new DrawingContextImpl(nfo, session);
+            }
+            catch
+            {
+                session.Dispose();
+                throw;
+            }
         }
         
         public PlatformRenderTargetState PlatformRenderTargetState => _renderTarget.State;
