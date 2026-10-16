@@ -11,13 +11,13 @@ namespace Avalonia.Styling.Activators
     /// </remarks>
     internal struct OrQueryActivatorBuilder
     {
+        private readonly StyledElement _target;
         private IStyleActivator? _single;
         private OrQueryActivator? _multiple;
-        private Visual _visual;
 
-        public OrQueryActivatorBuilder(Visual visual) : this()
+        public OrQueryActivatorBuilder(StyledElement target) : this()
         {
-            _visual = visual;
+            _target = target;
         }
 
         public int Count => _multiple?.Count ?? (_single is object ? 1 : 0);
@@ -37,7 +37,7 @@ namespace Avalonia.Styling.Activators
             {
                 if (_multiple is null)
                 {
-                    _multiple = new OrQueryActivator(_visual);
+                    _multiple = new OrQueryActivator(_target);
                     _multiple.Add(_single!);
                     _single = null;
                 }
