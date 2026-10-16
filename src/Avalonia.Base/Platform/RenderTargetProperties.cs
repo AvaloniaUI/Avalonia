@@ -63,6 +63,13 @@ public struct RenderTargetProperties
     /// framebuffers without a stencil attachment that is required for clipping with Skia 
     /// </summary>
     public bool IsSuitableForDirectRendering { get; init; }
+
+    /// <summary>
+    /// The clockwise rotation required when copying the scene into the native framebuffer.
+    /// A nonzero rotation requires an intermediate layer. Scene sizes remain in scene coordinates;
+    /// the drawing context uses native framebuffer coordinates.
+    /// </summary>
+    public SurfaceOrientation RequiresRotationForOrientation { get; init; }
 }
 
 [PrivateApi]
