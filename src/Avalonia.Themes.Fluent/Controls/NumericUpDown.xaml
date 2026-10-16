@@ -76,6 +76,7 @@
                          ShowButtonSpinner="{TemplateBinding ShowButtonSpinner}"
                          ButtonSpinnerLocation="{TemplateBinding ButtonSpinnerLocation}">
             <TextBox Name="PART_TextBox"
+                     SpellCheck.IsEnabled="False"
                      Background="Transparent"
                      BorderBrush="Transparent"
                      Margin="-1"

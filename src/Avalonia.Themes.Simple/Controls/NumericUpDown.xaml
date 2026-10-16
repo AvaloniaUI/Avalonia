@@ -25,6 +25,7 @@
                          CornerRadius="{TemplateBinding CornerRadius}"
                          ShowButtonSpinner="{TemplateBinding ShowButtonSpinner}">
             <TextBox Name="PART_TextBox"
+                     SpellCheck.IsEnabled="False"
                      MinWidth="20"
                      Margin="4"
                      Padding="{TemplateBinding Padding}"
