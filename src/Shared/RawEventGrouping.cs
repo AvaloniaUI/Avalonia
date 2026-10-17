@@ -71,36 +71,6 @@ internal class AutomaticRawEventGrouperDispatchQueue : IRawEventGrouperDispatchQ
         }
     }
 
-    public bool HasJobs
-    {
-        get
-        {
-            lock (_inputQueue)
-                return _inputQueue.Count > 0;
-        }
-    }
-
-    /// <summary>
-    /// Dispatches every queued event inline, bypassing the dispatcher.
-    /// Used by backends that need a synchronous handled result for an event they have just enqueued.
-    /// </summary>
-    public void DrainAll()
-    {
-        while (true)
-        {
-            RawInputEventArgs args;
-            Action<RawInputEventArgs> handler;
-            lock (_inputQueue)
-            {
-                if (_inputQueue.Count == 0)
-                    break;
-                (args, handler) = _inputQueue.Dequeue();
-            }
-
-            handler(args);
-        }
-    }
-
     private void DispatchFromQueue()
     {
         RawInputEventArgs args;
