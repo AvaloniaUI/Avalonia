@@ -170,16 +170,13 @@ namespace Avalonia.FreeDesktop.AtSpi
             if (headingLevel > 0)
                 attrs["level"] = headingLevel.ToString(CultureInfo.InvariantCulture);
 
-            if (peer is ControlAutomationPeer controlPeer)
-            {
-                var position = AutomationProperties.GetPositionInSet(controlPeer.Owner);
-                if (position > 0)
-                    attrs["posinset"] = position.ToString(CultureInfo.InvariantCulture);
+            var position = peer.GetPositionInSet();
+            if (position > 0)
+                attrs["posinset"] = position.ToString(CultureInfo.InvariantCulture);
 
-                var size = AutomationProperties.GetSizeOfSet(controlPeer.Owner);
-                if (size > 0)
-                    attrs["setsize"] = size.ToString(CultureInfo.InvariantCulture);
-            }
+            var size = peer.GetSizeOfSet();
+            if (size > 0)
+                attrs["setsize"] = size.ToString(CultureInfo.InvariantCulture);
 
             return attrs;
         }

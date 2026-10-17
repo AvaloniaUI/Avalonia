@@ -49,6 +49,12 @@ namespace Avalonia.Automation
         /// </summary>
         public static AutomationProperty HeadingLevelProperty { get; } = new AutomationProperty();
 
+        /// <summary>Identifies the one-based position of an element in its set.</summary>
+        public static AutomationProperty PositionInSetProperty { get; } = new AutomationProperty();
+
+        /// <summary>Identifies the number of elements in an element's set.</summary>
+        public static AutomationProperty SizeOfSetProperty { get; } = new AutomationProperty();
+
         /// <summary>
         /// Identifies the automation ID property. The automation ID property value is returned
         /// by the <see cref="AutomationPeer.GetAutomationId"/> method.
