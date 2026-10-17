@@ -61,13 +61,13 @@ public class ManagedDispatcherImpl : IControlledDispatcherImpl, IDispatcherImplW
     /// <summary>
     /// Raised on the loop thread right before it blocks on the wake-up event because it found nothing to do.
     /// </summary>
-    public event Action? BeforeWait;
+    internal event Action? BeforeWait;
 
     /// <summary>
     /// Raised on the loop thread right after the wake-up event returns, before the loop re-examines its state.
     /// Also raised after a timed-out wait. Handlers are expected to enqueue dispatcher operations, not run work.
     /// </summary>
-    public event Action? AfterWakeup;
+    internal event Action? AfterWakeup;
 
     public bool CurrentThreadIsLoopThread => _loopThread == Thread.CurrentThread;
     public void Signal()
