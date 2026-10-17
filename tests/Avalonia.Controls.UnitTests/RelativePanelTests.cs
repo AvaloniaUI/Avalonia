@@ -167,5 +167,36 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(desiredWidth, target.DesiredSize.Width);
             Assert.Equal(desiredHeight, target.DesiredSize.Height);
         }
+
+        [Fact]
+        public void Lays_Out_A_Chain_From_The_Right_Edge_Inside_Another_RelativePanel()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+            var right = new Rectangle { Height = 20, Width = 20 };
+            var middle = new Rectangle { Height = 20, Width = 20 };
+            var left = new Rectangle { Height = 20, Width = 20 };
+
+            RelativePanel.SetAlignRightWithPanel(right, true);
+            RelativePanel.SetLeftOf(middle, right);
+            RelativePanel.SetLeftOf(left, middle);
+
+            // Declared the way they read in markup, each one before the child it points at.
+            var target = new RelativePanel
+            {
+                Children =
+                {
+                    left, middle, right
+                }
+            };
+
+            var outer = new RelativePanel { Children = { target } };
+            RelativePanel.SetAlignTopWithPanel(target, true);
+
+            outer.Measure(new Size(400, 400));
+            outer.Arrange(new Rect(0, 0, 400, 400));
+
+            Assert.Equal(right.Bounds.Left, middle.Bounds.Right);
+            Assert.Equal(middle.Bounds.Left, left.Bounds.Right);
+        }
     }
 }
