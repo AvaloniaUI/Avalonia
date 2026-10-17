@@ -228,7 +228,7 @@ internal class RawEventGrouper : IDisposable
 
         // Points the platform already attached to the merged-in event
         // come after the previous primary point and before the new primary point.
-        if (current.IntermediatePoints?.Value is { Count: > 0 } currentPoints)
+        if (current.IntermediatePoints?.Value is { } currentPoints)
         {
             // ReSharper disable once ForCanBeConvertedToForeach
             for (var i = 0; i < currentPoints.Count; i++)
