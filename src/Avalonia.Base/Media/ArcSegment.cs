@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Platform;
 
 namespace Avalonia.Media
 {
@@ -100,7 +101,7 @@ namespace Avalonia.Media
             set => SetValue(SweepDirectionProperty, value);
         }
 
-        internal override void ApplyTo(StreamGeometryContext ctx)
+        internal override void ApplyTo(IGeometryContext ctx)
         {
             ctx.ArcTo(Point, Size, RotationAngle, IsLargeArc, SweepDirection, IsStroked);
         }
