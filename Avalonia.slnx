@@ -183,6 +183,7 @@
     <Project Path="src/tools/Avalonia.Analyzers.VisualBasic/Avalonia.Analyzers.VisualBasic.csproj">
       <BuildType Project="Release" />
     </Project>
+    <Project Path="src/tools/Avalonia.Browser.BuildTasks/Avalonia.Browser.BuildTasks.csproj" />
     <Project Path="src/tools/Avalonia.DBus.Generators/Avalonia.DBus.Generators.csproj" />
     <Project Path="src/tools/Avalonia.Designer.HostApp/Avalonia.Designer.HostApp.csproj" />
     <Project Path="src/tools/Avalonia.Generators/Avalonia.Generators.csproj" />

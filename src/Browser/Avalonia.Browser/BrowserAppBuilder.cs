@@ -155,6 +155,9 @@ public static class BrowserAppBuilder
 
         if (BrowserWindowingPlatform.IsThreadingEnabled)
         {
+            // Created on the main thread so its JS side can signal the dispatcher thread directly.
+            BrowserWindowingPlatform.WakeupEvent ??= new BrowserAtomicsWakeupEvent();
+            MultiThreadedDispatcherHelper.SetWakeupEvent(BrowserWindowingPlatform.WakeupEvent.Pointer);
             await RenderWorker.InitializeAsync();
         }
 
