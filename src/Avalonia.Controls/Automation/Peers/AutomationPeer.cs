@@ -338,6 +338,12 @@ namespace Avalonia.Automation.Peers
         /// </remarks>
         public int GetHeadingLevel() => GetHeadingLevelCore();
 
+        /// <summary>Gets the one-based position of the element in its set, or -1 when unknown.</summary>
+        public int GetPositionInSet() => GetPositionInSetCore();
+
+        /// <summary>Gets the number of elements in the set, or -1 when unknown.</summary>
+        public int GetSizeOfSet() => GetSizeOfSetCore();
+
 
         /// <summary>
         /// Gets the item type that is associated with this automation peer.
@@ -641,6 +647,8 @@ namespace Avalonia.Automation.Peers
         protected virtual string? GetPlaceholderTextCore() => null;
         protected virtual AutomationLandmarkType? GetLandmarkTypeCore() => null;
         protected virtual int GetHeadingLevelCore() => 0;
+        protected virtual int GetPositionInSetCore() => -1;
+        protected virtual int GetSizeOfSetCore() => -1;
         protected virtual string? GetItemTypeCore() => null;
         protected virtual string? GetItemStatusCore() => null;
         protected abstract AutomationPeer? GetParentCore();

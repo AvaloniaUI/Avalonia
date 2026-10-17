@@ -142,6 +142,31 @@ namespace Avalonia.Automation.Peers
         }
         protected override AutomationLandmarkType? GetLandmarkTypeCore() => AutomationProperties.GetLandmarkType(Owner);
         protected override int GetHeadingLevelCore() => AutomationProperties.GetHeadingLevel(Owner);
+        protected override int GetPositionInSetCore()
+        {
+            var position = AutomationProperties.GetPositionInSet(Owner);
+            if (position != AutomationProperties.AutomationPositionInSetDefault)
+                return position;
+
+            if (ItemsControl.ItemsControlFromItemContainer(Owner) is { } parent &&
+                parent.IndexFromContainer(Owner) is var index && index >= 0)
+                return index + 1;
+
+            return -1;
+        }
+
+        protected override int GetSizeOfSetCore()
+        {
+            var size = AutomationProperties.GetSizeOfSet(Owner);
+            if (size != AutomationProperties.AutomationSizeOfSetDefault)
+                return size;
+
+            if (ItemsControl.ItemsControlFromItemContainer(Owner) is { } parent &&
+                parent.IndexFromContainer(Owner) >= 0)
+                return parent.ItemCount;
+
+            return -1;
+        }
         protected override AutomationPeer? GetParentCore()
         {
             EnsureConnected();
