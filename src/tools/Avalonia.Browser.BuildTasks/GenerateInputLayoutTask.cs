@@ -57,11 +57,14 @@ public class GenerateInputLayoutTask : Task
 
     private static void AppendStruct(StringBuilder ts, Type type)
     {
+        // Pack = 1 rules out padding, so offsets computed here hold on the WASM runtime too.
+        if (type.StructLayoutAttribute is not { Value: LayoutKind.Sequential, Pack: 1 })
+            throw new InvalidOperationException($"{type.Name} must be [StructLayout(LayoutKind.Sequential, Pack = 1)].");
+
         var size = Marshal.SizeOf(type);
         ts.AppendLine().AppendLine($"export const enum {type.Name} {{").AppendLine($"    $size = {size},");
 
-        // Fail on implicit padding: without it, sequential layout is the same under any alignment rules,
-        // so offsets computed here hold on the WASM runtime too.
+        // JS typed array indexing and WASM atomics need naturally aligned fields.
         var end = 0;
         foreach (var field in type.GetFields(BindingFlags.Public | BindingFlags.Instance)
                      .OrderBy(f => (int)Marshal.OffsetOf(type, f.Name)))
@@ -76,8 +79,10 @@ public class GenerateInputLayoutTask : Task
             end = offset + SizeOf(field.FieldType);
         }
 
-        if (end != size || size % AlignmentOf(type) != 0)
+        if (end != size)
             throw new InvalidOperationException($"{type.Name} has trailing padding.");
+        if (size % AlignmentOf(type) != 0)
+            throw new InvalidOperationException($"{type.Name} size {size} is not a multiple of its alignment.");
 
         ts.AppendLine("}");
     }

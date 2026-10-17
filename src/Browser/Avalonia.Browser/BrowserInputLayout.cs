@@ -7,8 +7,8 @@ namespace Avalonia.Browser;
 /// Memory layout of the browser input queue, shared with inputQueue.ts.
 /// These types are the only definition of the layout: Avalonia.Browser.BuildTasks generates inputLayout.g.ts from
 /// them at build time, with each struct's field offsets and size and each enum's values.
-/// Structs must not contain implicit padding, so the layout is the same on every runtime; the generator fails the
-/// build otherwise. Records are 8-byte aligned. Variable-length data follows a record at sizeof(record).
+/// Structs are sequential with Pack = 1, so the layout is the same on every runtime.
+/// Records are 8-byte aligned. Variable-length data follows a record at sizeof(record).
 /// </summary>
 internal static class BrowserInputLayout
 {
@@ -17,7 +17,7 @@ internal static class BrowserInputLayout
     /// JS sets <see cref="WakeRequested"/> after publishing a tail and signals the dispatcher if it was clear;
     /// C# clears it before reading the tail, so a record published after the last read always gets a wake.
     /// </summary>
-    [StructLayout(LayoutKind.Sequential)]
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct ControlBlock
     {
         public int SegmentSize;
@@ -30,21 +30,21 @@ internal static class BrowserInputLayout
     /// Precedes the records of every segment. Both fields stay 0 until JS seals the segment:
     /// it writes <see cref="End"/>, then <see cref="Next"/>, then publishes a tail in the next segment.
     /// </summary>
-    [StructLayout(LayoutKind.Sequential)]
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct SegmentHeader
     {
         public int Next;
         public int End;
     }
 
-    [StructLayout(LayoutKind.Sequential)]
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct RecordHeader
     {
         public RecordType Type;
         public int Size;
     }
 
-    [StructLayout(LayoutKind.Sequential)]
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct PointRecord
     {
         public double OffsetX;
@@ -58,7 +58,7 @@ internal static class BrowserInputLayout
     /// <summary>
     /// <see cref="PointRecord"/>[<see cref="CoalescedCount"/>] follows, oldest first, excluding the primary point.
     /// </summary>
-    [StructLayout(LayoutKind.Sequential)]
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct PointerRecord
     {
         public RecordHeader Header;
@@ -76,7 +76,7 @@ internal static class BrowserInputLayout
     /// <summary>
     /// Deltas are in DOM <see cref="DeltaMode"/> units; the page size is the event target's client size.
     /// </summary>
-    [StructLayout(LayoutKind.Sequential)]
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct WheelRecord
     {
         public RecordHeader Header;
@@ -96,7 +96,7 @@ internal static class BrowserInputLayout
     /// <summary>
     /// UTF-16 key[<see cref="KeyLength"/>], then code[<see cref="CodeLength"/>] follow.
     /// </summary>
-    [StructLayout(LayoutKind.Sequential)]
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct KeyRecord
     {
         public RecordHeader Header;
