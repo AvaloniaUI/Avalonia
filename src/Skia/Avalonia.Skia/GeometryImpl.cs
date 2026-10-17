@@ -93,10 +93,10 @@ namespace Avalonia.Skia
                 // The path returned to us by skia here does not have closed figures.
                 // Fix that by calling CreateClosedPath.
                 var closed = SKPathHelper.CreateClosedPath(path);
-                return new StreamGeometryImpl(closed, closed);
+                return new SimpleGeometryImpl(closed, closed);
             }
-
-            return new StreamGeometryImpl(new SKPath(), null);
+            
+            return new SimpleGeometryImpl(new SKPath(), null);
         }
 
         /// <inheritdoc />
@@ -152,22 +152,10 @@ namespace Avalonia.Skia
 
             if (res)
             {
-                segmentGeometry = new StreamGeometryImpl(_skPathSegment, null);
+                segmentGeometry = new SimpleGeometryImpl(_skPathSegment, null);
             }
 
             return res;
-        }
-
-        /// <summary>
-        /// Invalidate all caches. Call after chaining path contents.
-        /// </summary>
-        protected void InvalidateCaches()
-        {
-            lock (_lock)
-            {
-                _pathCache.Dispose();
-                _pathCache = default;
-            }
         }
 
         /// <inheritdoc />

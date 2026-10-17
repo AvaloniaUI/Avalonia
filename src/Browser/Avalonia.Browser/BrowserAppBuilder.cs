@@ -111,7 +111,7 @@ public static class BrowserAppBuilder
                 {
                     tcs.TrySetException(ex);
                 }
-            });
+            }) { Name = "Avalonia UI Thread" };
 #pragma warning disable CA1416
             thread.Start();
 #pragma warning restore CA1416
