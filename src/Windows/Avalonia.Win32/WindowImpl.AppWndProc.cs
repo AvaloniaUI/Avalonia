@@ -237,8 +237,8 @@ namespace Avalonia.Win32
                     break;
 
                 case WindowsMessage.WM_SYSCOMMAND:
-                    // Disable system handling of Alt/F10 menu keys.
-                    if (GetSysCommand(wParam) == SysCommands.SC_KEYMENU && HighWord(ToInt32(lParam)) <= 0)
+                    // Disable system handling of Alt/F10 menu keys, but let Alt+Space open the system menu.
+                    if (GetSysCommand(wParam) == SysCommands.SC_KEYMENU && HighWord(ToInt32(lParam)) <= 0 && ToInt32(lParam) != ' ')
                         return IntPtr.Zero;
                     break;
 
