@@ -30,7 +30,7 @@ export type PointerRecordType =
     RecordType.PointerMove | RecordType.PointerDown | RecordType.PointerUp | RecordType.PointerCancel;
 export type KeyRecordType = RecordType.KeyDown | RecordType.KeyUp;
 
-// Typed views over the WASM heap. Generated offsets are aligned to their field type, so p >> 3 and p >> 2
+// Typed views over the WASM heap. Generated offsets are aligned to their field type, so p >>> 3 and p >>> 2
 // address f64 and 32-bit fields exactly.
 interface Heap {
     buffer: ArrayBufferLike;
@@ -71,9 +71,9 @@ export class InputQueue {
         const i32 = runtime.localHeapViewI32();
         this.runtime = runtime;
         this.threadingEnabled = threadingEnabled;
-        this.segmentSize = i32[(controlPtr + ControlBlock.SegmentSize) >> 2];
+        this.segmentSize = i32[(controlPtr + ControlBlock.SegmentSize) >>> 2];
         // C# hands over an empty queue, so the tail is at the start of the first segment.
-        this.tail = Atomics.load(i32, (controlPtr + ControlBlock.Tail) >> 2);
+        this.tail = Atomics.load(i32, (controlPtr + ControlBlock.Tail) >>> 2);
         this.segment = this.tail - SegmentHeader.$size;
         this.limit = this.tail + this.segmentSize;
         this.controlPtr = controlPtr;
@@ -100,15 +100,15 @@ export class InputQueue {
         const p = this.reserve(size);
         const h = this.getHeap();
         InputQueue.writeHeader(h, p + PointerRecord.Header, type, size);
-        h.f64[(p + PointerRecord.TimeStamp) >> 3] = args.timeStamp;
-        h.f64[(p + PointerRecord.PointerId) >> 3] = args.pointerId;
+        h.f64[(p + PointerRecord.TimeStamp) >>> 3] = args.timeStamp;
+        h.f64[(p + PointerRecord.PointerId) >>> 3] = args.pointerId;
         InputQueue.writePoint(h, p + PointerRecord.Point, args);
-        h.i32[(p + PointerRecord.TopLevelId) >> 2] = topLevelId;
-        h.i32[(p + PointerRecord.PointerType) >> 2] = InputQueue.getPointerType(args);
-        h.i32[(p + PointerRecord.Button) >> 2] = args.button;
-        h.i32[(p + PointerRecord.Buttons) >> 2] = args.buttons;
-        h.i32[(p + PointerRecord.KeyModifiers) >> 2] = InputQueue.getKeyModifiers(args);
-        h.i32[(p + PointerRecord.CoalescedCount) >> 2] = count;
+        h.i32[(p + PointerRecord.TopLevelId) >>> 2] = topLevelId;
+        h.i32[(p + PointerRecord.PointerType) >>> 2] = InputQueue.getPointerType(args);
+        h.i32[(p + PointerRecord.Button) >>> 2] = args.button;
+        h.i32[(p + PointerRecord.Buttons) >>> 2] = args.buttons;
+        h.i32[(p + PointerRecord.KeyModifiers) >>> 2] = InputQueue.getKeyModifiers(args);
+        h.i32[(p + PointerRecord.CoalescedCount) >>> 2] = count;
 
         if (coalesced) {
             // Keep the latest points when there are more than fit.
@@ -145,17 +145,17 @@ export class InputQueue {
         const p = this.reserve(size);
         const h = this.getHeap();
         InputQueue.writeHeader(h, p + WheelRecord.Header, RecordType.Wheel, size);
-        h.f64[(p + WheelRecord.TimeStamp) >> 3] = args.timeStamp;
-        h.f64[(p + WheelRecord.OffsetX) >> 3] = args.offsetX;
-        h.f64[(p + WheelRecord.OffsetY) >> 3] = args.offsetY;
-        h.f64[(p + WheelRecord.DeltaX) >> 3] = deltaX;
-        h.f64[(p + WheelRecord.DeltaY) >> 3] = deltaY;
-        h.i32[(p + WheelRecord.TopLevelId) >> 2] = topLevelId;
-        h.i32[(p + WheelRecord.DeltaMode) >> 2] = deltaMode;
-        h.i32[(p + WheelRecord.Buttons) >> 2] = args.buttons;
-        h.i32[(p + WheelRecord.KeyModifiers) >> 2] = InputQueue.getKeyModifiers(args);
-        h.i32[(p + WheelRecord.PageWidth) >> 2] = target?.clientWidth ?? 0;
-        h.i32[(p + WheelRecord.PageHeight) >> 2] = target?.clientHeight ?? 0;
+        h.f64[(p + WheelRecord.TimeStamp) >>> 3] = args.timeStamp;
+        h.f64[(p + WheelRecord.OffsetX) >>> 3] = args.offsetX;
+        h.f64[(p + WheelRecord.OffsetY) >>> 3] = args.offsetY;
+        h.f64[(p + WheelRecord.DeltaX) >>> 3] = deltaX;
+        h.f64[(p + WheelRecord.DeltaY) >>> 3] = deltaY;
+        h.i32[(p + WheelRecord.TopLevelId) >>> 2] = topLevelId;
+        h.i32[(p + WheelRecord.DeltaMode) >>> 2] = deltaMode;
+        h.i32[(p + WheelRecord.Buttons) >>> 2] = args.buttons;
+        h.i32[(p + WheelRecord.KeyModifiers) >>> 2] = InputQueue.getKeyModifiers(args);
+        h.i32[(p + WheelRecord.PageWidth) >>> 2] = target?.clientWidth ?? 0;
+        h.i32[(p + WheelRecord.PageHeight) >>> 2] = target?.clientHeight ?? 0;
 
         this.commit(p + size);
     }
@@ -175,12 +175,12 @@ export class InputQueue {
         const p = this.reserve(size);
         const h = this.getHeap();
         InputQueue.writeHeader(h, p + KeyRecord.Header, type, size);
-        h.f64[(p + KeyRecord.TimeStamp) >> 3] = args.timeStamp;
-        h.i32[(p + KeyRecord.TopLevelId) >> 2] = topLevelId;
-        h.i32[(p + KeyRecord.KeyModifiers) >> 2] = InputQueue.getKeyModifiers(args);
-        h.i32[(p + KeyRecord.KeyLength) >> 2] = key.length;
-        h.i32[(p + KeyRecord.CodeLength) >> 2] = code.length;
-        let index = (p + KeyRecord.$size) >> 1;
+        h.f64[(p + KeyRecord.TimeStamp) >>> 3] = args.timeStamp;
+        h.i32[(p + KeyRecord.TopLevelId) >>> 2] = topLevelId;
+        h.i32[(p + KeyRecord.KeyModifiers) >>> 2] = InputQueue.getKeyModifiers(args);
+        h.i32[(p + KeyRecord.KeyLength) >>> 2] = key.length;
+        h.i32[(p + KeyRecord.CodeLength) >>> 2] = code.length;
+        let index = (p + KeyRecord.$size) >>> 1;
         for (let i = 0; i < key.length; i++) {
             h.u16[index++] = key.charCodeAt(i);
         }
@@ -242,13 +242,13 @@ export class InputQueue {
         }
 
         const i32 = this.getHeap().i32;
-        i32[(segment + SegmentHeader.Next) >> 2] = 0;
-        i32[(segment + SegmentHeader.End) >> 2] = 0;
+        i32[(segment + SegmentHeader.Next) >>> 2] = 0;
+        i32[(segment + SegmentHeader.End) >>> 2] = 0;
 
         // Seal the current segment: end first, then next. The tail published by commit() comes last,
         // so C# only moves on once both are visible.
-        Atomics.store(i32, (this.segment + SegmentHeader.End) >> 2, this.tail);
-        Atomics.store(i32, (this.segment + SegmentHeader.Next) >> 2, segment);
+        Atomics.store(i32, (this.segment + SegmentHeader.End) >>> 2, this.tail);
+        Atomics.store(i32, (this.segment + SegmentHeader.Next) >>> 2, segment);
 
         this.segment = segment;
         this.limit = segment + SegmentHeader.$size + capacity;
@@ -258,9 +258,9 @@ export class InputQueue {
     private static commit(tail: number): void {
         this.tail = tail;
         const i32 = this.getHeap().i32;
-        Atomics.store(i32, (this.controlPtr + ControlBlock.Tail) >> 2, tail);
+        Atomics.store(i32, (this.controlPtr + ControlBlock.Tail) >>> 2, tail);
 
-        if (Atomics.exchange(i32, (this.controlPtr + ControlBlock.WakeRequested) >> 2, 1) === 0) {
+        if (Atomics.exchange(i32, (this.controlPtr + ControlBlock.WakeRequested) >>> 2, 1) === 0) {
             if (this.threadingEnabled) {
                 // Wakes the dispatcher thread directly; it drains the queue after waking up.
                 MultiThreadedDispatcherHelper.signal();
@@ -282,17 +282,17 @@ export class InputQueue {
     }
 
     private static writeHeader(h: Heap, p: number, type: RecordType, size: number): void {
-        h.i32[(p + RecordHeader.Type) >> 2] = type;
-        h.i32[(p + RecordHeader.Size) >> 2] = size;
+        h.i32[(p + RecordHeader.Type) >>> 2] = type;
+        h.i32[(p + RecordHeader.Size) >>> 2] = size;
     }
 
     private static writePoint(h: Heap, p: number, args: PointerEvent): void {
-        h.f64[(p + PointRecord.OffsetX) >> 3] = args.offsetX;
-        h.f64[(p + PointRecord.OffsetY) >> 3] = args.offsetY;
-        h.f32[(p + PointRecord.Pressure) >> 2] = args.pressure;
-        h.f32[(p + PointRecord.TiltX) >> 2] = args.tiltX;
-        h.f32[(p + PointRecord.TiltY) >> 2] = args.tiltY;
-        h.f32[(p + PointRecord.Twist) >> 2] = args.twist;
+        h.f64[(p + PointRecord.OffsetX) >>> 3] = args.offsetX;
+        h.f64[(p + PointRecord.OffsetY) >>> 3] = args.offsetY;
+        h.f32[(p + PointRecord.Pressure) >>> 2] = args.pressure;
+        h.f32[(p + PointRecord.TiltX) >>> 2] = args.tiltX;
+        h.f32[(p + PointRecord.TiltY) >>> 2] = args.tiltY;
+        h.f32[(p + PointRecord.Twist) >>> 2] = args.twist;
     }
 
     private static getPointerType(args: PointerEvent): PointerType {
