@@ -128,7 +128,7 @@ internal static unsafe class BrowserInputQueue
                 var record = (RecordHeader*)head;
                 var limit = end != null ? end : tail;
                 if (record->Size < sizeof(RecordHeader) || head + record->Size > limit)
-                    throw new InvalidOperationException("Corrupted browser input queue.");
+                    throw Corrupted();
 
                 last = Decode(record);
                 head += record->Size;
@@ -141,9 +141,9 @@ internal static unsafe class BrowserInputQueue
     private static RawInputEventArgs? Decode(RecordHeader* record) => record->Type switch
     {
         RecordType.PointerMove or RecordType.PointerDown or RecordType.PointerUp or RecordType.PointerCancel =>
-            DecodePointer((PointerRecord*)record),
-        RecordType.Wheel => DecodeWheel((WheelRecord*)record),
-        RecordType.KeyDown or RecordType.KeyUp => DecodeKey((KeyRecord*)record),
+            DecodePointer(As<PointerRecord>(record)),
+        RecordType.Wheel => DecodeWheel(As<WheelRecord>(record)),
+        RecordType.KeyDown or RecordType.KeyUp => DecodeKey(As<KeyRecord>(record)),
         _ => null
     };
 
@@ -173,11 +173,13 @@ internal static unsafe class BrowserInputQueue
         };
 
         PooledList<RawPointerPoint>? intermediatePoints = null;
-        if (type == RecordType.PointerMove && record->CoalescedCount > 0)
+        if (type == RecordType.PointerMove && record->CoalescedCount != 0)
         {
+            var count = record->CoalescedCount;
+            EnsureTrailer(&record->Header, sizeof(PointerRecord), (long)count * sizeof(PointRecord));
             var points = (PointRecord*)(record + 1);
-            intermediatePoints = new PooledList<RawPointerPoint>(record->CoalescedCount);
-            for (var i = 0; i < record->CoalescedCount; i++)
+            intermediatePoints = new PooledList<RawPointerPoint>(count);
+            for (var i = 0; i < count; i++)
                 intermediatePoints.Add(ToRawPoint(points + i));
         }
 
@@ -209,9 +211,15 @@ internal static unsafe class BrowserInputQueue
         if (BrowserTopLevelImpl.TryGetTopLevel(record->TopLevelId) is not { } topLevel)
             return null;
 
+        var keyLength = record->KeyLength;
+        var codeLength = record->CodeLength;
+        if (keyLength < 0 || codeLength < 0)
+            throw Corrupted();
+        EnsureTrailer(&record->Header, sizeof(KeyRecord), ((long)keyLength + codeLength) * sizeof(char));
+
         var chars = (char*)(record + 1);
-        var key = new string(chars, 0, record->KeyLength);
-        var code = new string(chars + record->KeyLength, 0, record->CodeLength);
+        var key = new string(chars, 0, keyLength);
+        var code = new string(chars + keyLength, 0, codeLength);
 
         return topLevel.InputHandler.OnQueuedKeyEvent(
             record->Header.Type == RecordType.KeyDown ? RawKeyEventType.KeyDown : RawKeyEventType.KeyUp,
@@ -282,4 +290,15 @@ internal static unsafe class BrowserInputQueue
         5 => RawPointerEventType.XButton1Up, // should be pen eraser button
         _ => RawPointerEventType.Move
     };
+
+    private static T* As<T>(RecordHeader* record) where T : unmanaged =>
+        record->Size >= sizeof(T) ? (T*)record : throw Corrupted();
+
+    private static void EnsureTrailer(RecordHeader* record, int recordSize, long trailerSize)
+    {
+        if (trailerSize < 0 || recordSize + trailerSize > record->Size)
+            throw Corrupted();
+    }
+
+    private static InvalidOperationException Corrupted() => new("Corrupted browser input queue.");
 }
