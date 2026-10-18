@@ -34,7 +34,8 @@ namespace Avalonia.Win32
     /// <summary>
     /// Window implementation for Win32 platform.
     /// </summary>
-    internal partial class WindowImpl : IWindowImpl, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo, IWin32OptionsTopLevelImpl
+    internal partial class WindowImpl : IWindowImpl, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo, IWin32OptionsTopLevelImpl,
+        ITopLevelBackgroundHint
     {
         private static readonly List<WindowImpl> s_instances = new();
 
@@ -337,8 +338,21 @@ namespace Avalonia.Win32
 
         private bool IsMouseInPointerEnabled => _wmPointerEnabled && IsMouseInPointerEnabled();
 
+        private long _backgroundHint = -1;
+
+        /// <summary>The top level's opaque background as 0xAARRGGBB, or -1 without one. Any thread.</summary>
+        internal long BackgroundHint => System.Threading.Interlocked.Read(ref _backgroundHint);
+
+        void ITopLevelBackgroundHint.SetBackgroundHint(Avalonia.Media.Color? color) =>
+            System.Threading.Interlocked.Exchange(ref _backgroundHint, color is { } c ? c.ToUInt32() : -1);
+
         public object? TryGetFeature(Type featureType)
         {
+            if (featureType == typeof(ITopLevelBackgroundHint))
+            {
+                return this;
+            }
+
             if (featureType == typeof(IScreenImpl))
             {
                 return Screen;

@@ -269,6 +269,11 @@ namespace Avalonia.Controls
                 PlatformImpl?.SetFrameThemeVariant((PlatformThemeVariant?)variant);
             });
 
+            CreatePlatformImplBinding(BackgroundProperty, background =>
+            {
+                PlatformImpl?.TryGetFeature<ITopLevelBackgroundHint>()?.SetBackgroundHint(SolidBackground(background));
+            });
+
             ClientSize = impl.ClientSize;
 
             var stylingParent = ((IStyleHost)this).StylingParent;
@@ -431,6 +436,14 @@ namespace Avalonia.Controls
         /// could not be retrieved.
         /// </returns>
         public IPlatformHandle? TryGetPlatformHandle() => PlatformImpl?.Handle;
+
+        private static Color? SolidBackground(IBrush? brush)
+        {
+            if (brush is not ISolidColorBrush solid)
+                return null;
+            var color = solid.Color;
+            return color.A == 255 && solid.Opacity >= 1 ? color : null;
+        }
 
         private protected void CreatePlatformImplBinding<TValue>(StyledProperty<TValue> property, Action<TValue> onValue)
         {
