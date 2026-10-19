@@ -9,18 +9,17 @@
     </Border>
   </Design.PreviewWith>
 
-  <CornerRadius x:Key="CalendarViewMonthYearItemCornerRadius">4</CornerRadius>
+  <CornerRadius x:Key="CalendarViewMonthYearItemCornerRadius">28</CornerRadius>
   <x:Double x:Key="CalendarViewMonthYearItemFontSize">14</x:Double>
 
   <ControlTheme x:Key="{x:Type CalendarButton}" TargetType="CalendarButton" BasedOn="{StaticResource DefaultCalendarButton}"/>
 
   <ControlTheme x:Key="DefaultCalendarButton" TargetType="CalendarButton">
     <Setter Property="ClickMode" Value="Release" />
-    <Setter Property="MinWidth" Value="56" />
-    <Setter Property="MinHeight" Value="48" />
-    <Setter Property="Margin" Value="1" />
+    <Setter Property="Width" Value="56" />
+    <Setter Property="Height" Value="56" />
+    <Setter Property="Margin" Value="1,9" />
     <Setter Property="Padding" Value="0,0,0,0" />
-    <!--These are actually set on the CalendarView in WinUI-->
     <Setter Property="Foreground" Value="{DynamicResource CalendarViewCalendarItemForeground}" />
     <Setter Property="Background" Value="{DynamicResource CalendarViewCalendarItemRevealBackground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource CalendarViewCalendarItemRevealBorderBrush}" />

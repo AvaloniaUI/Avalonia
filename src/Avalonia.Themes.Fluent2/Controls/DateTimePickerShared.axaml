@@ -24,7 +24,7 @@
       <Setter Property="IsHitTestVisible" Value="False"/>
       <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
         <Setter Property="Background" Value="Transparent" />
-        <Setter Property="Foreground" Value="{DynamicResource TextOnAccentFillColorPrimary}"/>
+        <Setter Property="Foreground" Value="{DynamicResource DatePickerFlyoutPresenterHighlightForeground}"/>
       </Style>
       <Style Selector="^ /template/ Rectangle#SelectionIndicator">
         <Setter Property="IsVisible" Value="False"/>

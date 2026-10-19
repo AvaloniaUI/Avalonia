@@ -41,6 +41,7 @@
       <StaticResource x:Key="DatePickerFlyoutPresenterBorderBrush" ResourceKey="SurfaceStrokeColorFlyout" />
       <StaticResource x:Key="DatePickerFlyoutPresenterSpacerFill" ResourceKey="DividerStrokeColorDefault" />
       <StaticResource x:Key="DatePickerFlyoutPresenterHighlightFill" ResourceKey="AccentFillColorDefaultBrush" />
+      <StaticResource x:Key="DatePickerFlyoutPresenterHighlightForeground" ResourceKey="TextOnAccentFillColorPrimary" />
 
       <StaticResource x:Key="DateTimePickerFlyoutButtonBackground" ResourceKey="SubtleFillColorTransparent" />
       <StaticResource x:Key="DateTimePickerFlyoutButtonBackgroundPointerOver" ResourceKey="SubtleFillColorSecondary" />
@@ -50,6 +51,7 @@
       <StaticResource x:Key="DateTimePickerFlyoutButtonBorderBrushPressed" ResourceKey="ControlStrokeColorDefault" />
       <StaticResource x:Key="DateTimePickerFlyoutButtonForegroundPointerOver" ResourceKey="TextFillColorPrimary" />
       <StaticResource x:Key="DateTimePickerFlyoutButtonForegroundPressed" ResourceKey="TextFillColorPrimary" />
+
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
       <StaticResource x:Key="DatePickerSpacerFill" ResourceKey="ControlStrokeColorDefault" />
@@ -70,6 +72,7 @@
       <StaticResource x:Key="DatePickerFlyoutPresenterBorderBrush" ResourceKey="SurfaceStrokeColorFlyout" />
       <StaticResource x:Key="DatePickerFlyoutPresenterSpacerFill" ResourceKey="DividerStrokeColorDefault" />
       <StaticResource x:Key="DatePickerFlyoutPresenterHighlightFill" ResourceKey="AccentFillColorDefaultBrush" />
+      <StaticResource x:Key="DatePickerFlyoutPresenterHighlightForeground" ResourceKey="TextOnAccentFillColorPrimary" />
 
       <StaticResource x:Key="DateTimePickerFlyoutButtonBackground" ResourceKey="SubtleFillColorTransparent" />
       <StaticResource x:Key="DateTimePickerFlyoutButtonBackgroundPointerOver" ResourceKey="SubtleFillColorSecondary" />
@@ -94,6 +97,8 @@
   <x:Double x:Key="DatePickerSpacerThemeWidth">1</x:Double>
   <Thickness x:Key="DatePickerFlyoutPresenterAcceptMargin">4,4,2,4</Thickness>
   <Thickness x:Key="DatePickerFlyoutPresenterDismissMargin">2,4,4,4</Thickness>
+  <StaticResource x:Key="DatePickerCornerRadius" ResourceKey="ControlCornerRadius" />
+  <StaticResource x:Key="DatePickerHighlightRectCornerRadius" ResourceKey="ControlCornerRadius" />
 
   <ControlTheme x:Key="FluentDatePickerFlyoutButton" TargetType="Button">
     <Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
@@ -144,7 +149,7 @@
     <Setter Property="Background" Value="{DynamicResource DatePickerButtonBackground}"/>
     <Setter Property="BorderBrush" Value="{DynamicResource DatePickerButtonBorderBrush}"/>
     <Setter Property="BorderThickness" Value="1"/>
-    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource DatePickerCornerRadius}" />
     <Setter Property="HorizontalAlignment" Value="Left" />
     <Setter Property="VerticalAlignment" Value="Center" />
     <Setter Property="MinWidth" Value="{DynamicResource DatePickerThemeMinWidth}" />
@@ -271,10 +276,11 @@
               </Panel>
 
               <Border Name="HighlightRect" IsHitTestVisible="False" ZIndex="-1"
-                      Background="{DynamicResource AccentFillColorDefaultBrush}"
-                      CornerRadius="{DynamicResource ControlCornerRadius}"
+                      Background="{DynamicResource DatePickerFlyoutPresenterHighlightFill}"
+                      CornerRadius="{DynamicResource DatePickerHighlightRectCornerRadius}"
                       Margin="4,2,4,2"
                       Grid.Column="0" VerticalAlignment="Center"
+                      Grid.ColumnSpan="5"
                       Height="{DynamicResource DatePickerFlyoutPresenterHighlightHeight}" />
               <Rectangle Name="PART_FirstSpacer"
                          Fill="{DynamicResource DatePickerFlyoutPresenterSpacerFill}"
