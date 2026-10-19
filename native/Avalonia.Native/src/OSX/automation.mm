@@ -98,7 +98,7 @@
         case AutomationImage: return NSAccessibilityImageRole;
         case AutomationListItem: return NSAccessibilityRowRole;
         case AutomationList: return NSAccessibilityListRole;
-        case AutomationMenu: return NSAccessibilityMenuBarRole;
+        case AutomationMenu: return NSAccessibilityMenuRole;
         case AutomationMenuBar: return NSAccessibilityMenuBarRole;
         case AutomationMenuItem: return NSAccessibilityMenuItemRole;
         case AutomationProgressBar: return NSAccessibilityProgressIndicatorRole;

@@ -16,7 +16,21 @@ namespace Avalonia.Browser;
 
 internal class BrowserWindowingPlatform : IWindowingPlatform
 {
-    internal static ManualRawEventGrouperDispatchQueue? EventGrouperDispatchQueue;
+    /// <summary>
+    /// Process-wide queue shared by every top level's <see cref="RawEventGrouper"/>.
+    /// Pumped by <see cref="ManagedDispatcherImpl"/> when the managed dispatcher is used,
+    /// otherwise an <see cref="AutomaticRawEventGrouperDispatchQueue"/> posting to the dispatcher at Input priority.
+    /// </summary>
+    internal static IRawEventGrouperDispatchQueue EventGrouperDispatchQueue =>
+        s_eventGrouperDispatchQueue ?? throw new InvalidOperationException("BrowserWindowingPlatform not registered.");
+
+    /// <summary>
+    /// The grouper queue when running without the managed dispatcher; null otherwise.
+    /// </summary>
+    internal static AutomaticRawEventGrouperDispatchQueue? AutomaticEventGrouperDispatchQueue { get; private set; }
+
+    private static IRawEventGrouperDispatchQueue? s_eventGrouperDispatchQueue;
+    internal static BrowserAtomicsWakeupEvent? WakeupEvent;
 
     internal static readonly bool IsThreadingEnabled = DetectThreadSupport();
 
@@ -96,21 +110,37 @@ internal class BrowserWindowingPlatform : IWindowingPlatform
             .Bind<IScreenImpl>().ToSingleton<BrowserScreens>()
             .Bind<IWindowingPlatform>().ToConstant(instance)
             .Bind<IPlatformIconLoader>().ToSingleton<IconLoaderStub>()
-            .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
-            .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new Dictionary<Key, string>() { }))
             .Bind<IActivatableLifetime>().ToSingleton<BrowserActivatableLifetime>();
-        
+
+        if (AvaloniaModule.IsApplePlatform())
+        {
+            AvaloniaLocator.CurrentMutable
+                .Bind<PlatformHotkeyConfiguration>().ToConstant(PlatformHotkeyConfiguration.Apple)
+                .Bind<KeyGestureFormatInfo>().ToConstant(KeyGestureFormatInfo.Apple);
+        }
+        else
+        {
+            AvaloniaLocator.CurrentMutable
+                .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
+                .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new Dictionary<Key, string>()));
+        }
+
         if (IsThreadingEnabled)
         {
-            EventGrouperDispatchQueue = new();
-            Dispatcher.InitializeUIThreadDispatcher(
-                new ManagedDispatcherImpl(
-                    new ManualRawEventGrouperDispatchQueueDispatcherInputProvider(EventGrouperDispatchQueue)));
+            var queue = new ManualRawEventGrouperDispatchQueue();
+            s_eventGrouperDispatchQueue = queue;
+            Dispatcher.InitializeUIThreadDispatcher(new ManagedDispatcherImpl(
+                new BrowserQueueDispatcherInputProvider(queue),
+                WakeupEvent ?? throw new InvalidOperationException("Browser backend wasn't initialized. WakeupEvent is null.")));
         }
         else
         {
             Dispatcher.InitializeUIThreadDispatcher(new BrowserSingleThreadedDispatcherImpl());
+            AutomaticEventGrouperDispatchQueue = new AutomaticRawEventGrouperDispatchQueue(Dispatcher.UIThread);
+            s_eventGrouperDispatchQueue = AutomaticEventGrouperDispatchQueue;
         }
+
+        BrowserInputQueue.Initialize();
 
         // GC thread is the same as the main one when MT is disabled
         if (IsThreadingEnabled)
