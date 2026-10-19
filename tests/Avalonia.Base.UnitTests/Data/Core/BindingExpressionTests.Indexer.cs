@@ -209,6 +209,23 @@ public partial class BindingExpressionTests
     }
 
     [Fact]
+    public void Should_Not_Track_NonIntegerIndexer_With_Unterminated_Indexer_PropertyName()
+    {
+        var data = new { Foo = new NonIntegerIndexer("Item[foo") };
+        data.Foo["foo"] = "bar";
+
+        var target = CreateTargetWithSource(data, o => o.Foo["foo"]);
+
+        Assert.Equal("bar", target.String);
+
+        data.Foo["foo"] = "bar2";
+
+        Assert.Equal("bar", target.String);
+
+        GC.KeepAlive(data);
+    }
+
+    [Fact]
     public void Should_Track_AvaloniaDictionary_Value()
     {
         var data = new { Foo = new AvaloniaDictionary<string, string> { ["foo"] = "bar" } };

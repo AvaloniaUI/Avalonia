@@ -8,6 +8,7 @@ namespace Avalonia.Data.Core
 
         // "Item[]" is what ObservableCollection<T> raises, "Item[key]" what AvaloniaDictionary raises.
         public static bool IsIndexerChange(string? propertyName) =>
-            propertyName == IndexerName || propertyName?.StartsWith(IndexerName + "[", StringComparison.Ordinal) == true;
+            propertyName == IndexerName ||
+            (propertyName?.StartsWith(IndexerName + "[", StringComparison.Ordinal) == true && propertyName.EndsWith(']'));
     }
 }
