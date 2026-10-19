@@ -206,7 +206,7 @@ namespace Avalonia.Rendering.Composition.Server
             {
                 renderTargetContext =
                     _renderTarget.CreateDrawingContext(
-                        new(PixelSize, Scaling, Size, TransparencyLevel, PlatformSpecificSceneInfo),
+                        new(PixelSize, Scaling, Size, TransparencyLevel, PlatformSpecificSceneInfo, BackgroundColor),
                         out properties);
             }
             catch (RenderTargetNotReadyException)

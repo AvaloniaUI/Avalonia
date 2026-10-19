@@ -24,7 +24,7 @@ namespace Avalonia.Win32.DirectX
 
         private IUnknown? _renderTexture;
         private PixelSize _bufferSize;
-        private long _backgroundApplied = -1;
+        private uint? _backgroundApplied;
         private EglSurface? _surface;
 
         public DxgiRenderTarget(EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo window, EglContext context, DxgiConnection connection) : base(context)
@@ -95,7 +95,7 @@ namespace Avalonia.Win32.DirectX
             var success = false;
             try
             {
-                ApplyBackground();
+                ApplyBackground(sceneInfo.BackgroundColor);
 
                 // The buffer takes the size of the frame being drawn, not the window's current
                 // client size: while the window is resized it runs ahead of the frame, and a
@@ -169,15 +169,13 @@ namespace Avalonia.Win32.DirectX
             }
         }
 
-        private void ApplyBackground()
+        private void ApplyBackground(Avalonia.Media.Color background)
         {
-            if (_window is not WindowImpl window)
+            // A transparent color means the scene has no opaque background: black, the swap chain's default.
+            var argb = background.A == 0 ? 0xFF000000u : background.ToUInt32();
+            if (argb == _backgroundApplied)
                 return;
-            var hint = window.BackgroundHint;
-            if (hint == _backgroundApplied)
-                return;
-            _backgroundApplied = hint;
-            var argb = hint < 0 ? 0xFF000000u : (uint)hint;
+            _backgroundApplied = argb;
             var color = new DXGI_RGBA
             {
                 r = ((argb >> 16) & 0xFF) / 255f,
@@ -197,14 +195,5 @@ namespace Avalonia.Win32.DirectX
             _surface?.Dispose();
             _renderTexture?.Dispose();
         }
-
-        internal static bool RectsEqual(in RECT l, in RECT r)
-        {
-            return (l.left == r.left)
-                && (l.top == r.top)
-                && (l.right == r.right)
-                && (l.bottom == r.bottom);
-        }
-
     }
 }
