@@ -31,37 +31,21 @@ internal partial class X11Screens
         }
 
 
-        protected unsafe void UpdateWorkArea()
+        protected void UpdateWorkArea()
         {
-            var rect = default(PixelRect);
             //Fallback value
-            rect = rect.Union(Bounds);
             WorkingArea = Bounds;
 
-            var res = XGetWindowProperty(x11.Display,
-                x11.RootWindow,
-                x11.Atoms._NET_WORKAREA,
-                IntPtr.Zero,
-                new IntPtr(128),
-                false,
-                AnyPropertyType,
-                out var type,
-                out var format,
-                out var count,
-                out var bytesAfter,
-                out var prop);
-
-            if (res != (int)Status.Success || type == IntPtr.Zero ||
-                format == 0 || bytesAfter.ToInt64() != 0 || count.ToInt64() % 4 != 0)
+            var pwa = XGetWindowPropertyAsIntPtrArray(x11.Display, x11.RootWindow,
+                x11.Atoms._NET_WORKAREA, x11.Atoms.CARDINAL);
+            if (pwa == null || pwa.Length % 4 != 0)
                 return;
 
-            var pwa = (IntPtr*)prop;
             var wa = new PixelRect(pwa[0].ToInt32(), pwa[1].ToInt32(), pwa[2].ToInt32(), pwa[3].ToInt32());
 
             WorkingArea = Bounds.Intersect(wa);
             if (WorkingArea.Width <= 0 || WorkingArea.Height <= 0)
                 WorkingArea = Bounds;
-            XFree(prop);
         }
     }
 
