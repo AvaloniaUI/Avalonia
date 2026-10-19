@@ -151,6 +151,7 @@
   </ResourceDictionary.ThemeDictionaries>
 
   <x:Double x:Key="ComboBoxThemeMinWidth">64</x:Double>
+  <x:Double x:Key="ComboBoxDropDownIconSize">10</x:Double>
   <Thickness x:Key="ComboBoxThemeBorderThickness">1</Thickness>
   <Thickness x:Key="ComboBoxDropdownBorderThickness">1</Thickness>
   <Thickness x:Key="ComboBoxItemThemePadding">11,5,11,7</Thickness>
@@ -283,8 +284,8 @@
                       Grid.Column="1"
                       UseLayoutRounding="False"
                       IsHitTestVisible="False"
-                      Height="12"
-                      Width="12"
+                      Width="{StaticResource ComboBoxDropDownIconSize}"
+                      Height="{StaticResource ComboBoxDropDownIconSize}"
                       Margin="0,0,14,0"
                       HorizontalAlignment="Right"
                       VerticalAlignment="Center"
