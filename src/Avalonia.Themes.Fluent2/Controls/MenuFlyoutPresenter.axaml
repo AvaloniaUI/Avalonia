@@ -50,7 +50,7 @@
   <x:Double x:Key="MenuFlyoutThemeMinHeight">32</x:Double>
   <Thickness x:Key="MenuFlyoutPresenterThemePadding">0,2,0,2</Thickness>
   <Thickness x:Key="MenuFlyoutItemChevronMargin">24,0,0,-1</Thickness>
-  <Thickness x:Key="MenuFlyoutSeparatorThemePadding">12,4,12,4</Thickness>
+  <Thickness x:Key="MenuFlyoutSeparatorThemePadding">-4,1,-4,1</Thickness>
   <Thickness x:Key="MenuFlyoutPresenterThemeBorderThickness">1</Thickness>
   <x:Double x:Key="HorizontalMenuFlyoutThemeMinWidth">32</x:Double>
   <Thickness x:Key="HorizontalMenuFlyoutItemMargin">2,0,2,0</Thickness>
@@ -84,7 +84,6 @@
                         VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}">
             <ItemsPresenter Name="PART_ItemsPresenter"
                             ItemsPanel="{TemplateBinding ItemsPanel}"
-                            Margin="{DynamicResource MenuFlyoutScrollerMargin}"
                             KeyboardNavigation.TabNavigation="Continue"
                             Grid.IsSharedSizeScope="True" />
           </ScrollViewer>
