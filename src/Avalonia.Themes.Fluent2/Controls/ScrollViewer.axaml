@@ -28,6 +28,8 @@
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 
+  <Thickness x:Key="ScrollViewerScrollBarMargin">1</Thickness>
+
   <ControlTheme x:Key="{x:Type ScrollViewer}" TargetType="ScrollViewer" BasedOn="{StaticResource DefaultScrollViewerTheme}"/>
 
   <ControlTheme x:Key="DefaultScrollViewerTheme" TargetType="ScrollViewer">
@@ -52,11 +54,13 @@
             </ScrollContentPresenter.GestureRecognizers>
           </ScrollContentPresenter>
           <ScrollBar Name="PART_HorizontalScrollBar"
-                     Orientation="Horizontal"
-                     Grid.Row="1"/>
+                     Margin="{StaticResource ScrollViewerScrollBarMargin}"
+                     Grid.Row="1"
+                     Orientation="Horizontal"/>
           <ScrollBar Name="PART_VerticalScrollBar"
-                     Orientation="Vertical"
-                     Grid.Column="1"/>
+                     Margin="{StaticResource ScrollViewerScrollBarMargin}"
+                     Grid.Column="1"
+                     Orientation="Vertical"/>
           <Panel x:Name="PART_ScrollBarsSeparator"
                  Grid.Row="1"
                  Grid.Column="1"

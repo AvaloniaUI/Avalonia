@@ -85,7 +85,7 @@
   <CornerRadius x:Key="ScrollBarThumbCornerRadius">3</CornerRadius>
   <x:Double x:Key="ScrollBarTrackCornerRadius">6</x:Double>
   <x:Double x:Key="ScrollBarSize">12</x:Double>
-  <x:Double x:Key="ScrollBarButtonArrowIconFontSize">10</x:Double>
+  <x:Double x:Key="ScrollBarButtonArrowIconSize">8</x:Double>
   <TransformOperations x:Key="ScrollBarVerticalThumbCollapsedTransform">scaleX(0.3333)</TransformOperations>
   <TransformOperations x:Key="ScrollBarHorizontalThumbCollapsedTransform">scaleY(0.3333)</TransformOperations>
 
@@ -287,8 +287,8 @@
                   </RepeatButton.Styles>
                   <PathIcon Data="{StaticResource CaretUpIcon}"
                             Classes="Arrow"
-                            Width="{DynamicResource ScrollBarButtonArrowIconFontSize}"
-                            Height="{DynamicResource ScrollBarButtonArrowIconFontSize}"/>
+                            Width="{DynamicResource ScrollBarButtonArrowIconSize}"
+                            Height="{DynamicResource ScrollBarButtonArrowIconSize}"/>
                 </RepeatButton>
 
                 <Track Grid.Row="1"
@@ -346,8 +346,8 @@
                   </RepeatButton.Styles>
                   <PathIcon Data="{StaticResource CaretDownIcon}"
                             Classes="Arrow"
-                            Width="{DynamicResource ScrollBarButtonArrowIconFontSize}"
-                            Height="{DynamicResource ScrollBarButtonArrowIconFontSize}"/>
+                            Width="{DynamicResource ScrollBarButtonArrowIconSize}"
+                            Height="{DynamicResource ScrollBarButtonArrowIconSize}"/>
                 </RepeatButton>
               </Grid>
             </Border>
@@ -404,8 +404,8 @@
                   </RepeatButton.Styles>
                   <PathIcon Data="{StaticResource CaretRightIcon}"
                             Classes="Arrow"
-                            Width="{DynamicResource ScrollBarButtonArrowIconFontSize}"
-                            Height="{DynamicResource ScrollBarButtonArrowIconFontSize}"/>
+                            Width="{DynamicResource ScrollBarButtonArrowIconSize}"
+                            Height="{DynamicResource ScrollBarButtonArrowIconSize}"/>
                 </RepeatButton>
 
                 <Track Grid.Column="1"
@@ -461,8 +461,8 @@
                   </RepeatButton.Styles>
                   <PathIcon Data="{StaticResource CaretLeftIcon}"
                             Classes="Arrow"
-                            Width="{DynamicResource ScrollBarButtonArrowIconFontSize}"
-                            Height="{DynamicResource ScrollBarButtonArrowIconFontSize}"/>
+                            Width="{DynamicResource ScrollBarButtonArrowIconSize}"
+                            Height="{DynamicResource ScrollBarButtonArrowIconSize}"/>
                 </RepeatButton>
               </Grid>
             </Border>

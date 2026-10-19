@@ -41,8 +41,8 @@
                 <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="Viewport.Height" />
               </MultiBinding>
             </RepeatButton.IsVisible>
-            <Viewbox Width="{DynamicResource ScrollBarButtonArrowIconFontSize}"
-                     Height="{DynamicResource ScrollBarButtonArrowIconFontSize}">
+            <Viewbox Width="{DynamicResource ScrollBarButtonArrowIconSize}"
+                     Height="{DynamicResource ScrollBarButtonArrowIconSize}">
               <Path VerticalAlignment="Center"
                     HorizontalAlignment="Center"
                     Data="M 19.091797 14.970703 L 10 5.888672 L 0.908203 14.970703 L 0.029297 14.091797 L 10 4.111328 L 19.970703 14.091797 Z"
@@ -67,8 +67,8 @@
                 <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="Viewport.Height" />
               </MultiBinding>
             </RepeatButton.IsVisible>
-            <Viewbox Width="{DynamicResource ScrollBarButtonArrowIconFontSize}"
-                     Height="{DynamicResource ScrollBarButtonArrowIconFontSize}">
+            <Viewbox Width="{DynamicResource ScrollBarButtonArrowIconSize}"
+                     Height="{DynamicResource ScrollBarButtonArrowIconSize}">
               <Path VerticalAlignment="Center"
                     HorizontalAlignment="Center"
                     Data="M 18.935547 4.560547 L 19.814453 5.439453 L 10 15.253906 L 0.185547 5.439453 L 1.064453 4.560547 L 10 13.496094 Z"
