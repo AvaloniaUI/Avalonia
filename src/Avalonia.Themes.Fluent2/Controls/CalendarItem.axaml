@@ -24,14 +24,14 @@
     <Setter Property="HorizontalAlignment" Value="Stretch" />
     <Setter Property="VerticalAlignment" Value="Stretch" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
-    <Setter Property="Background" Value="{DynamicResource CalendarViewNavigationButtonBackground}" />
+    <Setter Property="Background" Value="{DynamicResource CalendarNavigationButtonBackground}" />
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="Template">
       <ControlTemplate>
         <!-- HCA was changed here to ensure nav arrows display correctly -->
         <ContentPresenter Name="PART_ContentPresenter" Background="{TemplateBinding Background}"
                           BackgroundSizing="InnerBorderEdge"
-                          BorderBrush="{DynamicResource CalendarViewNavigationButtonBorderBrush}"
+                          BorderBrush="{DynamicResource CalendarNavigationButtonBorderBrush}"
                           BorderThickness="{TemplateBinding BorderThickness}"
                           CornerRadius="{TemplateBinding CornerRadius}"
                           Content="{TemplateBinding Content}"
@@ -49,15 +49,15 @@
 
     <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
       <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondary}" />
-      <Setter Property="BorderBrush" Value="{DynamicResource CalendarViewNavigationButtonBorderBrushPointerOver}" />
-      <Setter Property="Foreground" Value="{DynamicResource CalendarViewNavigationButtonForegroundPointerOver}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource CalendarNavigationButtonBorderBrushPointerOver}" />
+      <Setter Property="Foreground" Value="{DynamicResource CalendarNavigationButtonForegroundPointerOver}" />
     </Style>
     <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
       <Setter Property="Background" Value="{DynamicResource SubtleFillColorTertiary}" />
-      <Setter Property="Foreground" Value="{DynamicResource CalendarViewNavigationButtonForegroundPressed}" />
+      <Setter Property="Foreground" Value="{DynamicResource CalendarNavigationButtonForegroundPressed}" />
     </Style>
     <Style Selector="^:disabled /template/ ContentPresenter">
-      <Setter Property="Foreground" Value="{DynamicResource CalendarViewWeekDayForegroundDisabled}" />
+      <Setter Property="Foreground" Value="{DynamicResource CalendarWeekDayForegroundDisabled}" />
     </Style>
   </ControlTheme>
 
@@ -198,13 +198,13 @@
       </ControlTemplate>
     </Setter>
     <Style Selector="^ /template/ Button:pointerover > Path">
-      <Setter Property="Stroke" Value="{DynamicResource CalendarViewNavigationButtonForegroundPointerOver}" />
+      <Setter Property="Stroke" Value="{DynamicResource CalendarNavigationButtonForegroundPointerOver}" />
     </Style>
     <Style Selector="^ /template/ Button:pressed > Path">
-      <Setter Property="Stroke" Value="{DynamicResource CalendarViewNavigationButtonForegroundPressed}" />
+      <Setter Property="Stroke" Value="{DynamicResource CalendarNavigationButtonForegroundPressed}" />
     </Style>
     <Style Selector="^ /template/ Button:disabled > Path">
-      <Setter Property="Stroke" Value="{DynamicResource CalendarViewWeekDayForegroundDisabled}" />
+      <Setter Property="Stroke" Value="{DynamicResource CalendarWeekDayForegroundDisabled}" />
     </Style>
     <Style Selector="^:hasweeknumbers">
       <Setter Property="MinWidth" Value="332" />
