@@ -96,10 +96,21 @@ internal class BrowserWindowingPlatform : IWindowingPlatform
             .Bind<IScreenImpl>().ToSingleton<BrowserScreens>()
             .Bind<IWindowingPlatform>().ToConstant(instance)
             .Bind<IPlatformIconLoader>().ToSingleton<IconLoaderStub>()
-            .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
-            .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new Dictionary<Key, string>() { }))
             .Bind<IActivatableLifetime>().ToSingleton<BrowserActivatableLifetime>();
-        
+
+        if (AvaloniaModule.IsApplePlatform())
+        {
+            AvaloniaLocator.CurrentMutable
+                .Bind<PlatformHotkeyConfiguration>().ToConstant(PlatformHotkeyConfiguration.Apple)
+                .Bind<KeyGestureFormatInfo>().ToConstant(KeyGestureFormatInfo.Apple);
+        }
+        else
+        {
+            AvaloniaLocator.CurrentMutable
+                .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
+                .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new Dictionary<Key, string>()));
+        }
+
         if (IsThreadingEnabled)
         {
             EventGrouperDispatchQueue = new();
