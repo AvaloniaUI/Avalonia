@@ -2,7 +2,7 @@
 #include "AvnString.h"
 #include "menu.h"
 @interface AvnAppDelegate : NSObject<NSApplicationDelegate>
--(AvnAppDelegate* _Nonnull) initWithEvents: (IAvnApplicationEvents* _Nonnull) events;
+-(AvnAppDelegate* _Nonnull) initWithEvents: (const ComPtr<IAvnApplicationEvents>&) events;
 -(void) releaseEvents;
 @end
 
@@ -40,7 +40,7 @@ static bool IsOSShutdown()
 @implementation AvnAppDelegate
 ComPtr<IAvnApplicationEvents> _events;
 
-- (AvnAppDelegate *)initWithEvents:(IAvnApplicationEvents *)events
+- (AvnAppDelegate *)initWithEvents:(const ComPtr<IAvnApplicationEvents>&)events
 {
     _events = events;
     return self;
@@ -186,7 +186,7 @@ ComPtr<IAvnApplicationEvents> _events;
 }
 @end
 
-extern void InitializeAvnApp(IAvnApplicationEvents* events, bool disableAppDelegate)
+extern void InitializeAvnApp(const ComPtr<IAvnApplicationEvents>& events, bool disableAppDelegate)
 {
     if(!disableAppDelegate)
     {
@@ -210,36 +210,32 @@ extern void ReleaseAvnAppEvents()
 
 HRESULT AvnApplicationCommands::UnhideApp()
 {
-    START_COM_CALL;
     [[NSApplication sharedApplication] unhide:[NSApp delegate]];
     return S_OK;
 }
 
 HRESULT AvnApplicationCommands::HideApp()
 {
-    START_COM_CALL;
     [[NSApplication sharedApplication] hide:[NSApp delegate]];
     return S_OK;
 }
 
 HRESULT AvnApplicationCommands::ShowAll()
 {
-    START_COM_CALL;
     [[NSApplication sharedApplication] unhideAllApplications:[NSApp delegate]];
     return S_OK;
 }
 
 HRESULT AvnApplicationCommands::HideOthers()
 {
-    START_COM_CALL;
     [[NSApplication sharedApplication] hideOtherApplications:[NSApp delegate]];
     return S_OK;
 }
 
 
-extern IAvnApplicationCommands* CreateApplicationCommands()
+extern ComPtr<IAvnApplicationCommands> CreateApplicationCommands()
 {
-    return new AvnApplicationCommands();
+    return comnew<AvnApplicationCommands>();
 }
 
 extern void SetDockMenu(NSMenu* menu)

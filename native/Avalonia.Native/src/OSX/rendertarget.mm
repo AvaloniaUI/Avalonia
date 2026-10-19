@@ -18,7 +18,7 @@
 
 - (IOSurfaceHolder*) initWithSize: (AvnPixelSize) size
                         withScale: (float)scale
-                withOpenGlContext: (IAvnGlContext*) context
+                withOpenGlContext: (const ComPtr<IAvnGlContext>&) context
 {
     long bytesPerRow = IOSurfaceAlignProperty(kIOSurfaceBytesPerRow, size.Width * 4);
     long allocSize = IOSurfaceAlignProperty(kIOSurfaceAllocSize, size.Height * bytesPerRow);
@@ -113,8 +113,8 @@
 @end
 
 
-static IAvnGlSurfaceRenderTarget* CreateGlRenderTarget(IOSurfaceRenderTarget* target);
-static IAvnSoftwareRenderTarget* CreateSoftwareRenderTarget(IOSurfaceRenderTarget* target);
+static ComPtr<IAvnGlSurfaceRenderTarget> CreateGlRenderTarget(IOSurfaceRenderTarget* target);
+static ComPtr<IAvnSoftwareRenderTarget> CreateSoftwareRenderTarget(IOSurfaceRenderTarget* target);
 
 static bool SizeEquals(AvnPixelSize& left, AvnPixelSize& right)
 {
@@ -148,7 +148,7 @@ public:
     float _scale;
 }
 
-- (IOSurfaceRenderTarget*) initWithOpenGlContext: (IAvnGlContext*) context;
+- (IOSurfaceRenderTarget*) initWithOpenGlContext: (const ComPtr<IAvnGlContext>&) context;
 {
     self = [super init];
     _glContext = context;
@@ -257,8 +257,7 @@ public:
             return;
         _consumeSurfacesScheduled = true;
         __block auto strongSelf = self;
-        ComPtr<ConsumeSurfacesCallback> cb(new ConsumeSurfacesCallback(self), true);
-        PostDispatcherCallback(cb);
+        PostDispatcherCallback(comnew<ConsumeSurfacesCallback>(self));
     }
 }
 
@@ -295,12 +294,12 @@ public:
     }
 }
 
--(IAvnGlSurfaceRenderTarget*) createSurfaceRenderTarget
+-(ComPtr<IAvnGlSurfaceRenderTarget>) createSurfaceRenderTarget
 {
     return CreateGlRenderTarget(self);
 }
 
--(IAvnSoftwareRenderTarget*) createSoftwareRenderTarget
+-(ComPtr<IAvnSoftwareRenderTarget>) createSoftwareRenderTarget
 {
     return CreateSoftwareRenderTarget(self);
 }
@@ -314,7 +313,7 @@ class AvnGlRenderingSession : public ComSingleObject<IAvnGlSurfaceRenderingSessi
     IOSurfaceHolder* _surface;
 public:
     FORWARD_IUNKNOWN()
-    AvnGlRenderingSession(IOSurfaceRenderTarget* target, IOSurfaceHolder* surface, ComPtr<IUnknown> releaseContext)
+    AvnGlRenderingSession(IOSurfaceRenderTarget* target, IOSurfaceHolder* surface, const ComPtr<IUnknown>& releaseContext)
     {
         _target = target;
         // This happens in a synchronized block set up by AvnRenderTarget, so we take the current surface for this
@@ -325,8 +324,6 @@ public:
     
     virtual HRESULT GetPixelSize(AvnPixelSize* ret)  override
     {
-        START_COM_CALL;
-        
         if(!_surface)
             return E_FAIL;
         *ret = _surface->size;
@@ -335,8 +332,6 @@ public:
     
     virtual HRESULT GetScaling(double* ret)  override
     {
-        START_COM_CALL;
-        
         if(!_surface)
             return E_FAIL;
         *ret = _surface->scale;
@@ -362,26 +357,25 @@ public:
         _target = target;
     }
     
-    virtual HRESULT BeginDrawing(IAvnGlSurfaceRenderingSession** ret)  override
+    virtual HRESULT BeginDrawing(ComPtr<IAvnGlSurfaceRenderingSession>& ret)  override
     {
-        START_COM_ARP_CALL;
         ComPtr<IUnknown> releaseContext;
         @synchronized (_target->lock) {
             auto surface = [_target getNextSurfaceInSafeContext];
-            _target->_glContext->MakeCurrent(releaseContext.getPPV());
+            _target->_glContext->MakeCurrent(releaseContext);
             HRESULT res = [surface prepareForGlRender];
             if(res)
                 return res;
-            *ret = new AvnGlRenderingSession(_target, surface, releaseContext);
+            ret = comnew<AvnGlRenderingSession>(_target, surface, releaseContext);
             return S_OK;
         }
     }
 };
 
 
-static IAvnGlSurfaceRenderTarget* CreateGlRenderTarget(IOSurfaceRenderTarget* target)
+static ComPtr<IAvnGlSurfaceRenderTarget> CreateGlRenderTarget(IOSurfaceRenderTarget* target)
 {
-    return new AvnGlRenderTarget(target);
+    return comnew<AvnGlRenderTarget>(target);
 };
 
 
@@ -396,13 +390,12 @@ public:
     }
 
     HRESULT SetFrame(AvnFramebuffer *fb) override {
-        START_COM_ARP_CALL;
         [_target setSwFrame: fb];
         return 0;
     }
 };
 
-static IAvnSoftwareRenderTarget* CreateSoftwareRenderTarget(IOSurfaceRenderTarget* target)
+static ComPtr<IAvnSoftwareRenderTarget> CreateSoftwareRenderTarget(IOSurfaceRenderTarget* target)
 {
-    return new AvnSoftwareRenderTarget(target);
+    return comnew<AvnSoftwareRenderTarget>(target);
 };

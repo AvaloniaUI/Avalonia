@@ -109,8 +109,6 @@ public:
     
     virtual HRESULT SetApplicationTitle(char* utf8String) override
     {
-        START_COM_CALL;
-        
         @autoreleasepool
         {
             auto appTitle = [NSString stringWithUTF8String: utf8String];
@@ -132,8 +130,6 @@ public:
     
     virtual HRESULT SetShowInDock(int show) override
     {
-        START_COM_CALL;
-        
         @autoreleasepool
         {
             NSApplication* app = [NSApplication sharedApplication];
@@ -152,8 +148,6 @@ public:
     
     virtual HRESULT SetDisableSetProcessName(int disable)  override
     {
-        START_COM_CALL;
-        
         @autoreleasepool
         {
             disableSetProcessName = disable;
@@ -163,8 +157,6 @@ public:
     
     virtual HRESULT SetDisableAppDelegate(int disable) override
     {
-        START_COM_CALL;
-        
         @autoreleasepool {
             disableAppDelegate = disable;
             return S_OK;
@@ -214,12 +206,10 @@ public:
         _dispatcher = nullptr;
     }
     
-    virtual HRESULT Initialize(IAvnGCHandleDeallocatorCallback* deallocator,
-            IAvnApplicationEvents* events,
-            IAvnDispatcher* dispatcher) override
+    virtual HRESULT Initialize(const ComPtr<IAvnGCHandleDeallocatorCallback>& deallocator,
+            const ComPtr<IAvnApplicationEvents>& events,
+            const ComPtr<IAvnDispatcher>& dispatcher) override
     {
-        START_COM_CALL;
-        
         _deallocator = deallocator;
         _dispatcher = dispatcher;
         @autoreleasepool{
@@ -229,276 +219,162 @@ public:
         return S_OK;
     };
     
-    virtual IAvnMacOptions* GetMacOptions()  override
+    virtual ComPtr<IAvnMacOptions> GetMacOptions() override
     {
-        return (IAvnMacOptions*)new MacOptions();
+        return comnew<MacOptions>();
     }
     
-    virtual HRESULT CreateTopLevel(IAvnTopLevelEvents* cb,
-                                           IAvnTopLevel** ppv) override {
-        START_COM_CALL;
-        
-        @autoreleasepool
-        {
-            if(cb == nullptr || ppv == nullptr)
-                return E_POINTER;
-            *ppv = CreateAvnTopLevel(cb);
-            return S_OK;
-        }
+    virtual HRESULT CreateTopLevel(const ComPtr<IAvnTopLevelEvents>& cb, ComPtr<IAvnTopLevel>& ppv) override
+    {
+        if(cb == nullptr)
+            return E_POINTER;
+        ppv = CreateAvnTopLevel(cb);
+        return S_OK;
     }
     
-    virtual HRESULT CreateWindow(IAvnWindowEvents* cb, IAvnWindow** ppv)  override
+    virtual HRESULT CreateWindow(const ComPtr<IAvnWindowEvents>& cb, ComPtr<IAvnWindow>& ppv) override
     {
-        START_COM_CALL;
-        
-        @autoreleasepool
-        {
-            if(cb == nullptr || ppv == nullptr)
-                return E_POINTER;
-            *ppv = CreateAvnWindow(cb);
-            return S_OK;
-        }
+        if(cb == nullptr)
+            return E_POINTER;
+        ppv = CreateAvnWindow(cb);
+        return S_OK;
     };
     
-    virtual HRESULT CreatePopup(IAvnWindowEvents* cb, IAvnPopup** ppv) override
+    virtual HRESULT CreatePopup(const ComPtr<IAvnWindowEvents>& cb, ComPtr<IAvnPopup>& ppv) override
     {
-        START_COM_CALL;
-        
-        @autoreleasepool
-        {
-            if(cb == nullptr || ppv == nullptr)
-                return E_POINTER;
-            
-            *ppv = CreateAvnPopup(cb);
-            return S_OK;
-        }
+        if(cb == nullptr)
+            return E_POINTER;
+        ppv = CreateAvnPopup(cb);
+        return S_OK;
     }
     
-    virtual HRESULT CreatePlatformThreadingInterface(IAvnPlatformThreadingInterface** ppv)  override
+    virtual HRESULT CreatePlatformThreadingInterface(ComPtr<IAvnPlatformThreadingInterface>& ppv) override
     {
-        START_COM_CALL;
-        
-        @autoreleasepool
-        {
-            *ppv = CreatePlatformThreading();
-            return S_OK;
-        }
+        ppv = CreatePlatformThreading();
+        return S_OK;
     }
     
-    virtual HRESULT CreateStorageProvider(IAvnStorageProvider** ppv) override
+    virtual HRESULT CreateStorageProvider(ComPtr<IAvnStorageProvider>& ppv) override
     {
-        START_COM_CALL;
-        
-        @autoreleasepool
-        {
-            *ppv = ::CreateStorageProvider();
-            return  S_OK;
-        }
+        ppv = ::CreateStorageProvider();
+        return S_OK;
     }
     
-    virtual HRESULT CreateScreens (IAvnScreenEvents* cb, IAvnScreens** ppv) override
+    virtual HRESULT CreateScreens(const ComPtr<IAvnScreenEvents>& cb, ComPtr<IAvnScreens>& ppv) override
     {
-        START_COM_CALL;
-        
-        @autoreleasepool
-        {
-            *ppv = ::CreateScreens (cb);
-            return S_OK;
-        }
-    }
-
-    virtual HRESULT CreateClipboard(IAvnClipboard** ppv) override
-    {
-        START_COM_CALL;
-        
-        @autoreleasepool
-        {
-            *ppv = ::CreateClipboard(nil);
-            return S_OK;
-        }
-    }
-
-    virtual HRESULT CreateCursorFactory(IAvnCursorFactory** ppv) override
-    {
-        START_COM_CALL;
-        
-        @autoreleasepool
-        {
-            *ppv = ::CreateCursorFactory();
-            return S_OK;
-        }
-    }
-    
-    virtual HRESULT ObtainGlDisplay(IAvnGlDisplay** ppv) override
-    {
-        START_COM_CALL;
-        
-        @autoreleasepool
-        {
-            auto rv = ::GetGlDisplay();
-            if(rv == NULL)
-                return E_FAIL;
-            rv->AddRef();
-            *ppv = rv;
-            return S_OK;
-        }
-    }
-
-    virtual HRESULT ObtainMetalDisplay(IAvnMetalDisplay** ppv) override
-    {
-        START_COM_CALL;
-        @autoreleasepool
-        {
-            auto rv = ::GetMetalDisplay();
-            if(rv == NULL)
-                return E_FAIL;
-            rv->AddRef();
-            *ppv = rv;
-            return S_OK;
-        }
-    }
-
-
-    virtual HRESULT CreateTrayIcon (IAvnTrayIcon** ppv) override
-    {
-        START_COM_CALL;
-        
-        @autoreleasepool
-        {
-            *ppv = ::CreateTrayIcon();
-            return S_OK;
-        }
-    }
-    
-    virtual HRESULT CreateMenu (IAvnMenuEvents* cb, IAvnMenu** ppv) override
-    {
-        START_COM_CALL;
-        
-        @autoreleasepool
-        {
-            *ppv = ::CreateAppMenu(cb);
-            return S_OK;
-        }
-    }
-    
-    virtual HRESULT CreateMenuItem (IAvnMenuItem** ppv) override
-    {
-        START_COM_CALL;
-        
-        @autoreleasepool
-        {
-            *ppv = ::CreateAppMenuItem();
-            return S_OK;
-        }
-    }
-    
-    virtual HRESULT CreateMenuItemSeparator (IAvnMenuItem** ppv) override
-    {
-        START_COM_CALL;
-        
-        @autoreleasepool
-        {
-            *ppv = ::CreateAppMenuItemSeparator();
-            return S_OK;
-        }
-    }
-        
-    virtual HRESULT SetAppMenu (IAvnMenu* appMenu) override
-    {
-        START_COM_CALL;
-        
-        @autoreleasepool
-        {
-            ::SetAppMenu(appMenu);
-            return S_OK;
-        }
-    }
-    
-    virtual HRESULT SetServicesMenu (IAvnMenu* servicesMenu) override
-    {
-        START_COM_CALL;
-        
-        @autoreleasepool
-        {
-            ::SetServicesMenu(servicesMenu);
-            return S_OK;
-        }
-    }
-    
-    virtual HRESULT CreateApplicationCommands (IAvnApplicationCommands** ppv) override
-    {
-        START_COM_CALL;
-        
-        @autoreleasepool
-        {
-            *ppv = ::CreateApplicationCommands();
-            return S_OK;
-        }
-    }
-    
-    virtual HRESULT CreatePlatformSettings (IAvnPlatformSettings** ppv) override
-    {
-        START_COM_CALL;
-        
-        @autoreleasepool
-        {
-            *ppv = ::CreatePlatformSettings();
-            return S_OK;
-        }
-    }
-
-    virtual HRESULT CreatePlatformBehaviorInhibition(IAvnPlatformBehaviorInhibition** ppv) override
-    {
-        START_COM_CALL;
-        
-        @autoreleasepool
-        {
-            *ppv = ::CreatePlatformBehaviorInhibition();
-            return S_OK;
-        }
-    }
-    
-    virtual HRESULT CreatePlatformRenderTimer(IAvnPlatformRenderTimer** ppv) override
-    {
-        START_COM_CALL;
-        
-        @autoreleasepool
-        {
-            *ppv = ::CreatePlatformRenderTimer();
-            return S_OK;
-        }
-    }
-    
-    virtual HRESULT ImportMTLSharedEvent(void* event, IAvnMTLSharedEvent** ppv) override
-    {
-        START_COM_CALL;
-        *ppv = ::ImportMTLSharedEvent(event);
-        return *ppv != nullptr ? S_OK : E_FAIL;
-    }
-    
-    HRESULT CreateMemoryManagementHelper(IAvnNativeObjectsMemoryManagement **ppv) override {
-        START_COM_CALL;
-        *ppv = ::CreateMemoryManagementHelper();
+        ppv = ::CreateScreens(cb);
         return S_OK;
     }
 
-    virtual HRESULT SetDockMenu(IAvnMenu* dockMenu) override
+    virtual HRESULT CreateClipboard(ComPtr<IAvnClipboard>& ppv) override
     {
-        START_COM_CALL;
+        ppv = ::CreateClipboard(nil);
+        return S_OK;
+    }
 
-        @autoreleasepool
-        {
-            auto nativeMenu = dynamic_cast<AvnAppMenu*>(dockMenu);
-            ::SetDockMenu(nativeMenu != nullptr ? nativeMenu->GetNative() : nil);
-            return S_OK;
-        }
+    virtual HRESULT CreateCursorFactory(ComPtr<IAvnCursorFactory>& ppv) override
+    {
+        ppv = ::CreateCursorFactory();
+        return S_OK;
+    }
+    
+    virtual HRESULT ObtainGlDisplay(ComPtr<IAvnGlDisplay>& ppv) override
+    {
+        ppv = ::GetGlDisplay();
+        return ppv ? S_OK : E_FAIL;
+    }
+
+    virtual HRESULT ObtainMetalDisplay(ComPtr<IAvnMetalDisplay>& ppv) override
+    {
+        ppv = ::GetMetalDisplay();
+        return ppv ? S_OK : E_FAIL;
+    }
+
+    virtual HRESULT CreateTrayIcon(ComPtr<IAvnTrayIcon>& ppv) override
+    {
+        ppv = ::CreateTrayIcon();
+        return S_OK;
+    }
+    
+    virtual HRESULT CreateMenu(const ComPtr<IAvnMenuEvents>& cb, ComPtr<IAvnMenu>& ppv) override
+    {
+        ppv = ::CreateAppMenu(cb);
+        return S_OK;
+    }
+    
+    virtual HRESULT CreateMenuItem(ComPtr<IAvnMenuItem>& ppv) override
+    {
+        ppv = ::CreateAppMenuItem();
+        return S_OK;
+    }
+    
+    virtual HRESULT CreateMenuItemSeparator(ComPtr<IAvnMenuItem>& ppv) override
+    {
+        ppv = ::CreateAppMenuItemSeparator();
+        return S_OK;
+    }
+        
+    virtual HRESULT SetAppMenu(const ComPtr<IAvnMenu>& appMenu) override
+    {
+        ::SetAppMenu(appMenu);
+        return S_OK;
+    }
+    
+    virtual HRESULT SetServicesMenu(const ComPtr<IAvnMenu>& servicesMenu) override
+    {
+        ::SetServicesMenu(servicesMenu);
+        return S_OK;
+    }
+    
+    virtual HRESULT CreateApplicationCommands(ComPtr<IAvnApplicationCommands>& ppv) override
+    {
+        ppv = ::CreateApplicationCommands();
+        return S_OK;
+    }
+    
+    virtual HRESULT CreatePlatformSettings(ComPtr<IAvnPlatformSettings>& ppv) override
+    {
+        ppv = ::CreatePlatformSettings();
+        return S_OK;
+    }
+
+    virtual HRESULT CreatePlatformBehaviorInhibition(ComPtr<IAvnPlatformBehaviorInhibition>& ppv) override
+    {
+        ppv = ::CreatePlatformBehaviorInhibition();
+        return S_OK;
+    }
+    
+    virtual HRESULT CreatePlatformRenderTimer(ComPtr<IAvnPlatformRenderTimer>& ppv) override
+    {
+        ppv = ::CreatePlatformRenderTimer();
+        return S_OK;
+    }
+    
+    virtual HRESULT ImportMTLSharedEvent(void* event, ComPtr<IAvnMTLSharedEvent>& ppv) override
+    {
+        ppv = ::ImportMTLSharedEvent(event);
+        return ppv ? S_OK : E_FAIL;
+    }
+    
+    virtual HRESULT CreateMemoryManagementHelper(ComPtr<IAvnNativeObjectsMemoryManagement>& ppv) override
+    {
+        ppv = ::CreateMemoryManagementHelper();
+        return S_OK;
+    }
+
+    virtual HRESULT SetDockMenu(const ComPtr<IAvnMenu>& dockMenu) override
+    {
+        auto nativeMenu = dockMenu.dynamicCast<AvnAppMenu>();
+        ::SetDockMenu(nativeMenu ? nativeMenu->GetNative() : nil);
+        return S_OK;
     }
 
 };
 
+// C ABI entry point: the caller takes ownership of the returned reference
 extern "C" IAvaloniaNativeFactory* CreateAvaloniaNative()
 {
-    return new AvaloniaNative();
+    return comnew<AvaloniaNative>().getRetainedReference();
 };
 
 extern void FreeAvnGCHandle(void* handle)
@@ -507,7 +383,7 @@ extern void FreeAvnGCHandle(void* handle)
         _deallocator->FreeGCHandle(handle);
 }
 
-extern void PostDispatcherCallback(IAvnActionCallback* cb)
+extern void PostDispatcherCallback(const ComPtr<IAvnActionCallback>& cb)
 {
     _dispatcher->Post(cb);
 }

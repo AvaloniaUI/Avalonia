@@ -9,20 +9,17 @@
 #include <cstring>
 #include <memory>
 #include <utility>
-
-/**
- START_COM_CALL causes AddRef to be called at the beginning of a function.
- When a function is exited, it causes ReleaseRef to be called.
- This ensures that the object cannot be destroyed whilst the function is running.
- For example: Window Show is called, which triggers an event, and user calls Close inside the event
- causing the refcount to reach 0, and the object to be destroyed. Function then continues and this pointer
- will now be invalid.
- 
- START_COM_CALL protects against this scenario.
- */
-#define START_COM_CALL auto r = this->UnknownSelf()
+#include <type_traits>
+#include <cstddef>
 
 __IID_DEF(IUnknown, 0, 0, 0, C0, 00, 00, 00, 00, 00, 00, 46);
+
+class ComObject;
+template<class T> struct MicroComImpl;
+
+// Private IID: ComObject answers QueryInterface for it with its own ComObject pointer.
+// Objects implemented in C# do not know it and return E_NOINTERFACE.
+__IID_DEF(AvnComObjectSelf, 6c1e2a4b, 93d5, 4f0e, b7, 21, 5a, 8e, c3, 0d, 4f, 96);
 
 template<class TInterface>
 class ComPtr
@@ -32,51 +29,47 @@ private:
 public:
     ComPtr()
     {
-        _obj = 0;
+        _obj = nullptr;
     }
-    
-    ComPtr(TInterface* pObj)
-    {
-        _obj = 0;
 
-        if (pObj)
+    ComPtr(std::nullptr_t)
+    {
+        _obj = nullptr;
+    }
+
+    ComPtr(const ComPtr& ptr) : ComPtr()
+    {
+        _microcom_attach(ptr._obj, false);
+    }
+
+    ComPtr(ComPtr&& ptr) noexcept
+    {
+        _obj = ptr._obj;
+        ptr._obj = nullptr;
+    }
+
+    template<class U, class = typename std::enable_if<std::is_convertible<U*, TInterface*>::value>::type>
+    ComPtr(const ComPtr<U>& other) : ComPtr()
+    {
+        _microcom_attach(other._microcom_get(), false);
+    }
+
+    ComPtr& operator=(const ComPtr& other)
+    {
+        _microcom_attach(other._obj, false);
+        return *this;
+    }
+
+    ComPtr& operator=(ComPtr&& other) noexcept
+    {
+        if (this != &other)
         {
-            _obj = pObj;
-            _obj->AddRef();
+            auto old = _obj;
+            _obj = other._obj;
+            other._obj = nullptr;
+            if (old)
+                old->Release();
         }
-    }
-
-    ComPtr(TInterface* pObj, bool ownsHandle)
-    {
-        _obj = 0;
-
-        if (pObj)
-        {
-            _obj = pObj;
-            if(!ownsHandle)
-                _obj->AddRef();
-        }
-    }
-    
-    ComPtr(const ComPtr& ptr)
-    {
-        _obj = 0;
-        
-        if (ptr._obj)
-        {
-            _obj = ptr._obj;
-            _obj->AddRef();
-        }
-
-    }
-    
-    ComPtr& operator=(ComPtr other)
-    {
-        if(_obj != NULL)
-            _obj->Release();
-        _obj = other._obj;
-        if(_obj != NULL)
-            _obj->AddRef();
         return *this;
     }
 
@@ -85,33 +78,35 @@ public:
         if (_obj)
         {
             _obj->Release();
-            _obj = 0;
+            _obj = nullptr;
         }
     }
-    
-    TInterface* getRaw()
+
+    TInterface* getRetainedReference() const
     {
-        return _obj;
-    }
-    
-    TInterface* getRetainedReference()
-    {
-        if(_obj == NULL)
-            return NULL;
+        if (_obj == nullptr)
+            return nullptr;
         _obj->AddRef();
         return _obj;
     }
-    
-    template<class TCast> ComPtr<TCast> dynamicCast()
+
+    // Safe on objects implemented in C#: those yield null
+    template<class TCast> ComPtr<TCast> dynamicCast() const;
+
+    // MicroCom smart pointer contract
+    void _microcom_attach(TInterface* obj, bool owns)
     {
-        if(_obj == nullptr)
-            return nullptr;
-        return dynamic_cast<TCast*>(_obj);
+        if (obj && !owns)
+            obj->AddRef();
+        if (_obj)
+            _obj->Release();
+        _obj = obj;
     }
-    
-    TInterface** getPPV()
+
+    TInterface* _microcom_get() const { return _obj; }
+    TInterface** _microcom_out()
     {
-        if(_obj)
+        if (_obj)
         {
             _obj->Release();
             _obj = nullptr;
@@ -119,25 +114,19 @@ public:
         return &_obj;
     }
 
-    void setNoAddRef(TInterface* value)
+    TInterface* _microcom_detach()
     {
-        if(_obj != nullptr)
-            _obj->Release();
-        _obj = value;
+        auto rv = _obj;
+        _obj = nullptr;
+        return rv;
     }
-    
-    operator TInterface*() const
-    {
-        return _obj;
-    }
-    TInterface& operator*() const
-    {
-        return *_obj;
-    }
-    TInterface** operator&()
-    {
-        return &_obj;
-    }
+
+    explicit operator bool() const { return _obj != nullptr; }
+    bool operator==(std::nullptr_t) const { return _obj == nullptr; }
+    bool operator!=(std::nullptr_t) const { return _obj != nullptr; }
+    template<class U> bool operator==(const ComPtr<U>& other) const { return _obj == other._microcom_get(); }
+    template<class U> bool operator!=(const ComPtr<U>& other) const { return _obj != other._microcom_get(); }
+
     TInterface* operator->() const
     {
         return _obj;
@@ -147,7 +136,9 @@ public:
 template<class T, class... Args>
 ComPtr<T> comnew(Args&&... args)
 {
-    return ComPtr<T>(new T(std::forward<Args>(args)...), true);
+    ComPtr<T> rv;
+    rv._microcom_attach(new T(std::forward<Args>(args)...), true);
+    return rv;
 }
 
 /**
@@ -166,9 +157,7 @@ public:
 
     ComStaticPtr(const ComPtr<TInterface>& ptr)
     {
-        _obj = ptr;
-        if (_obj)
-            _obj->AddRef();
+        _obj = ptr.getRetainedReference();
     }
 
     ComStaticPtr(const ComStaticPtr&) = delete;
@@ -176,22 +165,13 @@ public:
     ComStaticPtr& operator=(const ComStaticPtr&) = delete;
     ComStaticPtr& operator=(ComStaticPtr&&) = delete;
 
-    void set(TInterface* obj)
+    void set(const ComPtr<TInterface>& obj)
     {
-        if (_obj == obj)
+        if (_obj == obj._microcom_get())
             return;
         if (_obj)
             _obj->Release();
-        _obj = obj;
-        if (_obj)
-            _obj->AddRef();
-    }
-
-    void setNoAddRef(TInterface* obj)
-    {
-        if (_obj)
-            _obj->Release();
-        _obj = obj;
+        _obj = obj.getRetainedReference();
     }
 
     void reset()
@@ -203,16 +183,14 @@ public:
         }
     }
 
-    TInterface* getRaw() const { return _obj; }
-    
-    template<class TCast> ComPtr<TCast> getComPtr()
+    operator ComPtr<TInterface>() const { return get(); }
+    ComPtr<TInterface> get() const
     {
-        if (_obj == nullptr)
-            return nullptr;
-        return dynamic_cast<TCast*>(_obj);
+        ComPtr<TInterface> rv;
+        rv._microcom_attach(_obj, false);
+        return rv;
     }
-
-    operator TInterface*() const { return _obj; }
+    explicit operator bool() const { return _obj != nullptr; }
     TInterface* operator->() const { return _obj; }
 };
 
@@ -273,7 +251,9 @@ public:
     virtual ::HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid,
                                                      void **ppvObject)
     {
-        if(0 == memcmp(riid, &IID_IUnknown, sizeof(GUID)))
+        if(0 == memcmp(riid, &IID_AvnComObjectSelf, sizeof(GUID)))
+            *ppvObject = this;
+        else if(0 == memcmp(riid, &IID_IUnknown, sizeof(GUID)))
             *ppvObject = (IUnknown*)this;
         else
         {
@@ -284,15 +264,30 @@ public:
         _refCount++;
         return S_OK;
     }
-    
-protected:
-   ComPtr<IUnknown> UnknownSelf()
-    {
-       return this;
-   }
-
 };
 
+template<class TInterface>
+template<class TCast>
+ComPtr<TCast> ComPtr<TInterface>::dynamicCast() const
+{
+    if (_obj == nullptr)
+        return nullptr;
+    ComPtr<ComObject> self;
+    if (_obj->QueryInterface(&IID_AvnComObjectSelf, (void**)self._microcom_out()) != S_OK || !self)
+        return nullptr;
+    ComPtr<TCast> rv;
+    rv._microcom_attach(dynamic_cast<TCast*>(self._microcom_get()), false);
+    return rv;
+}
+
+// Strong reference to the calling object, for passing `this` where a ComPtr is expected
+template<class T, class = typename std::enable_if<std::is_base_of<ComObject, T>::value>::type>
+ComPtr<T> comself(T* self)
+{
+    ComPtr<T> rv;
+    rv._microcom_attach(self, false);
+    return rv;
+}
 
 template<class TClass>
 class ComObjectWeakPtr
@@ -305,9 +300,11 @@ public:
     {
         if(_rawPtr == nullptr)
             return nullptr;
-        if(_token->Alive)
-            return _rawPtr;
-        return nullptr;
+        if(!_token->Alive)
+            return nullptr;
+        ComPtr<TClass> rv;
+        rv._microcom_attach(_rawPtr, false);
+        return rv;
     }
     
     template<class TCast> ComPtr<TCast> tryGetWithCast()
@@ -315,17 +312,22 @@ public:
         return tryGet().template dynamicCast<TCast>();
     }
     
-    ComObjectWeakPtr(TClass* obj)
+    template<class U, class = typename std::enable_if<std::is_convertible<U*, TClass*>::value>::type>
+    ComObjectWeakPtr(const ComPtr<U>& obj)
     {
-        _rawPtr = obj;
-        if(obj)
-            _token = obj->__GetWeakRefToken();
+        _rawPtr = static_cast<TClass*>(obj._microcom_get());
+        if(_rawPtr)
+            _token = _rawPtr->__GetWeakRefToken();
     }
     
     ComObjectWeakPtr()
     {
         _rawPtr = nullptr;
         _token = nullptr;
+    }
+
+    ComObjectWeakPtr(std::nullptr_t) : ComObjectWeakPtr()
+    {
     }
     
     bool operator==(const ComObjectWeakPtr& other) const { return _rawPtr == other._rawPtr; }
@@ -364,7 +366,7 @@ public:
     virtual ~ComUnknownObject(){}
 };
 
-template<class TInterface, GUID const* TIID> class ComSingleObject : public ComObject, public virtual TInterface
+template<class TInterface, GUID const* TIID> class ComSingleObject : public ComObject, public virtual MicroComImpl<TInterface>
 {
     BEGIN_INTERFACE_MAP()
     INTERFACE_MAP_ENTRY(TInterface, *TIID)
