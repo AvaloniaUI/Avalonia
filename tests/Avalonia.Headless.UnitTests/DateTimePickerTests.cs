@@ -65,7 +65,7 @@ public class DateTimePickerTests
 
         Open(picker);
 
-        var selectors = Selectors(picker).Where(selector => selector.IsVisible).ToArray();
+        var selectors = Selectors(picker).Where(selector => selector.IsEffectivelyVisible).ToArray();
         var content = (Visual)picker.GetVisualDescendants().OfType<Popup>().First().Child!;
         var leftToRight = selectors
             .OrderBy(selector => selector.TranslatePoint(new Point(), content)?.X ?? 0)
@@ -99,7 +99,7 @@ public class DateTimePickerTests
 
         Open(picker);
 
-        var selectors = Selectors(picker).Where(selector => selector.IsVisible).ToArray();
+        var selectors = Selectors(picker).Where(selector => selector.IsEffectivelyVisible).ToArray();
         var first = Focused(selectors);
 
         Tab(selectors, KeyModifiers.None);
@@ -126,7 +126,7 @@ public class DateTimePickerTests
 
         Open(picker);
 
-        var selectors = Selectors(picker).Where(selector => selector.IsVisible).ToArray();
+        var selectors = Selectors(picker).Where(selector => selector.IsEffectivelyVisible).ToArray();
         var content = picker.GetVisualDescendants().OfType<Popup>().First().Child!;
         var leftToRight = selectors
             .OrderBy(selector => selector.TranslatePoint(new Point(), content)?.X ?? 0)
@@ -160,7 +160,7 @@ public class DateTimePickerTests
 
         Open(picker);
 
-        var selectors = Selectors(picker).Where(selector => selector.IsVisible).ToArray();
+        var selectors = Selectors(picker).Where(selector => selector.IsEffectivelyVisible).ToArray();
         var first = Focused(selectors);
 
         Tab(selectors, KeyModifiers.None);
