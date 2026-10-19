@@ -1,7 +1,7 @@
 {
   "sdk": {
-    "version": "11.0.100-rc.1.26425.128",
-    "rollForward": "disable",
+    "version": "11.0.100-rc.2.26504.105",
+    "rollForward": "latestPatch",
     "allowPrerelease": true
   },
   "test": {
