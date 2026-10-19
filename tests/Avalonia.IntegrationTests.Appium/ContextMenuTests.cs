@@ -44,7 +44,7 @@ namespace Avalonia.IntegrationTests.Appium
             }
             finally
             {
-                new Actions(Session).SendKeys(Keys.Escape).Perform();
+                Session.FindElementByAccessibilityId("ContextMenuItem1").SendClick();
             }
         }
     }
