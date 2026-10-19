@@ -61,18 +61,19 @@ jobs:
     vmImage: 'windows-2025'
 
   steps:
-  - task: UseDotNet@2
-    displayName: 'Use .NET 10.0 Runtime'
-    inputs:
-        packageType: runtime
-        version: 10.0.x
+  # Repository targets .NET 11, which doesn't support old macOS runner we have
+  # For macOS integrational tests we don't need .NET 11 yet, so we rely on UseDotNet@2 alone
+  # TODO: it will be no longer needed once we migrate to GitHub CI with public runners
+  - script: rm global.json
+    displayName: 'Remove global.json'
+  - script: dotnet new globaljson --sdk-version 10.0.401 --roll-forward latestFeature
+    displayName: 'Create global.json'
 
   - task: UseDotNet@2
-    displayName: 'Use .NET SDK'
+    displayName: 'Use .NET 10.0 SDK'
     inputs:
-      packageType: sdk
-      useGlobalJson: true
-      includePreviewVersions: true
+        packageType: sdk
+        version: 10.0.x
 
   - task: Windows Application Driver@0
     inputs:
