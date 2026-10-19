@@ -989,6 +989,40 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        [Theory]
+        [InlineData("abc\ndef", TextWrapping.NoWrap)]
+        [InlineData("abc def", TextWrapping.Wrap)]
+        public void HitTestPoint_Should_Be_Inside_Text_Of_Any_Line(string text, TextWrapping textWrapping)
+        {
+            using (Start())
+            {
+                var layout = new TextLayout(
+                    text,
+                    Typeface.Default,
+                    12.0f,
+                    Brushes.Black.ToImmutable(),
+                    textWrapping: textWrapping,
+                    maxWidth: textWrapping == TextWrapping.Wrap ? 30 : double.PositiveInfinity);
+
+                Assert.Equal(2, layout.TextLines.Count);
+
+                var top = 0.0;
+
+                foreach (var textLine in layout.TextLines)
+                {
+                    var hit = layout.HitTestPoint(new Point(textLine.Width / 2, top + textLine.Height / 2));
+
+                    Assert.True(hit.IsInside);
+
+                    top += textLine.Height;
+                }
+
+                var lastLine = layout.TextLines[^1];
+
+                Assert.False(layout.HitTestPoint(new Point(lastLine.Width / 2, top + 1)).IsInside);
+            }
+        }
+
         [Fact]
         public void Should_HitTestTextRange()
         {
