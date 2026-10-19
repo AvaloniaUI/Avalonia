@@ -9,7 +9,7 @@ jobs:
   # TODO: it will be no longer needed once we migrate to GitHub CI with public runners
   - script: rm global.json
     displayName: 'Remove global.json'
-  - script: dotnet new globaljson --sdk-version 10.0.401 --roll-forward latestFeature
+  - script: dotnet new globaljson --sdk-version 10.0.401 --roll-forward latestFeature --test-runner Microsoft.Testing.Platform
     displayName: 'Create global.json'
 
   - task: UseDotNet@2
@@ -66,7 +66,7 @@ jobs:
   # TODO: it will be no longer needed once we migrate to GitHub CI with public runners
   - script: rm global.json
     displayName: 'Remove global.json'
-  - script: dotnet new globaljson --sdk-version 10.0.401 --roll-forward latestFeature
+  - script: dotnet new globaljson --sdk-version 10.0.401 --roll-forward latestFeature --test-runner Microsoft.Testing.Platform
     displayName: 'Create global.json'
 
   - task: UseDotNet@2
