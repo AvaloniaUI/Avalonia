@@ -1,9 +1,10 @@
-﻿using System.Text;
+using System.Text;
 using Avalonia.Controls.Documents;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Xunit;
@@ -1284,6 +1285,68 @@ namespace Avalonia.Controls.UnitTests
         private class TestTextBlock : TextBlock
         {
             public Size Constraint => _constraint;
+        }
+
+        [Fact]
+        public void Styles_Of_Inlines_Should_Be_Preserved_When_Styles_Are_Added_At_Runtime()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = new Window();
+                window.Styles.Add(new Style(x => x.OfType<Run>().Class("code"))
+                {
+                    Setters = { new Setter(TextElement.BackgroundProperty, Brushes.Red) },
+                });
+
+                var run = new Run("code");
+                run.Classes.Add("code");
+                var textBlock = new TextBlock();
+                textBlock.Inlines!.Add(run);
+                window.Content = textBlock;
+                window.Show();
+
+                Assert.Equal(Brushes.Red, run.Background);
+
+                window.Styles.Add(new Style(x => x.OfType<Border>())
+                {
+                    Setters = { new Setter(Border.OpacityProperty, 0.5) },
+                });
+                window.UpdateLayout();
+
+                Assert.Equal(Brushes.Red, run.Background);
+            }
+        }
+
+        [Fact]
+        public void Styles_Of_Nested_Inlines_Should_Be_Preserved_When_Styles_Are_Added_At_Runtime()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = new Window();
+                window.Styles.Add(new Style(x => x.OfType<Run>().Class("code"))
+                {
+                    Setters = { new Setter(TextElement.BackgroundProperty, Brushes.Red) },
+                });
+
+                var run = new Run("code");
+                run.Classes.Add("code");
+                var span = new Span();
+                span.Inlines.Add(run);
+                var textBlock = new TextBlock();
+                textBlock.Inlines!.Add(span);
+                window.Content = textBlock;
+                window.Show();
+
+                Assert.Equal(Brushes.Red, run.Background);
+
+                window.Styles.Add(new Style(x => x.OfType<Border>())
+                {
+                    Setters = { new Setter(Border.OpacityProperty, 0.5) },
+                });
+                window.UpdateLayout();
+
+                Assert.Equal(Brushes.Red, run.Background);
+            }
         }
     }
 }
