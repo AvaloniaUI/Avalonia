@@ -741,7 +741,7 @@ namespace Avalonia.Controls.Primitives
             if (InheritsTransform && placementTarget.TransformToVisual(topLevel) is { } m)
             {
                 scaleX = Math.Sqrt(m.M11 * m.M11 + m.M12 * m.M12);
-                scaleY = Math.Sqrt(m.M11 * m.M11 + m.M12 * m.M12);
+                scaleY = Math.Sqrt(m.M21 * m.M21 + m.M22 * m.M22);
 
                 // Ideally we'd only assign a ScaleTransform here when the scale != 1, but there's
                 // an issue with LayoutTransformControl in that it sets its LayoutTransform property
