@@ -325,7 +325,7 @@ namespace Avalonia.LinuxFramebuffer.Output
 
             protected override RenderTargetProperties Properties => base.Properties with
             {
-                RequiresRotationForOrientation = _parent.Orientation
+                RequiredRotationForOrientation = _parent.Orientation
             };
 
             protected override bool SkipWaits => true;

@@ -264,7 +264,7 @@ public class RenderTargetPresentationTests : TestBase
             public RenderTargetProperties Properties => new()
             {
                 IsSuitableForDirectRendering = _owner._direct,
-                RequiresRotationForOrientation = _owner.Orientation
+                RequiredRotationForOrientation = _owner.Orientation
             };
             public PlatformRenderTargetState State => PlatformRenderTargetState.Ready;
 
