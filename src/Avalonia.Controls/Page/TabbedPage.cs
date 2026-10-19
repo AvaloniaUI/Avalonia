@@ -705,12 +705,30 @@ namespace Avalonia.Controls
             if (!IsKeyboardNavigationEnabled || _tabControl == null)
                 return;
 
-            var resolved = ResolveTabPlacement();
-            bool isHorizontal = resolved == TabPlacement.Top || resolved == TabPlacement.Bottom;
-            bool isRtl = FlowDirection == Media.FlowDirection.RightToLeft;
+            bool _skipDirectionalNavigation = false, next = false, prev = false;
 
-            bool next = isHorizontal ? (isRtl ? e.Key == Key.Left : e.Key == Key.Right) : e.Key == Key.Down;
-            bool prev = isHorizontal ? (isRtl ? e.Key == Key.Right : e.Key == Key.Left) : e.Key == Key.Up;
+            // If focus is in tabbed page, but owned by a focusable element, we do not change pages.
+            if (IsKeyboardFocusWithin && !IsFocused)
+            {
+                // If focus is owned by a tab item, continue as usual.
+                if (!(KeyboardDevice.Instance?.FocusedElement is TabItem item && _tabControl.LogicalChildren.Contains(item)))
+                {
+                    // Focus is not on a tab item header, nor on the tabbed page element, but instead in a focusable child. We do not
+                    // change page.
+                    _skipDirectionalNavigation = true;
+                }
+            }
+
+            if (!_skipDirectionalNavigation)
+            {
+                var resolved = ResolveTabPlacement();
+                bool isHorizontal = resolved == TabPlacement.Top || resolved == TabPlacement.Bottom;
+                bool isRtl = FlowDirection == Media.FlowDirection.RightToLeft;
+
+                next = isHorizontal ? (isRtl ? e.Key == Key.Left : e.Key == Key.Right) : e.Key == Key.Down;
+                prev = isHorizontal ? (isRtl ? e.Key == Key.Right : e.Key == Key.Left) : e.Key == Key.Up;
+
+            }
 
             if (e.KeyModifiers.HasFlag(KeyModifiers.Control) && e.Key == Key.Tab)
             {
