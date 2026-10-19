@@ -151,7 +151,7 @@
   </ResourceDictionary.ThemeDictionaries>
 
   <x:Double x:Key="ComboBoxThemeMinWidth">64</x:Double>
-  <x:Double x:Key="ComboBoxDropDownIconSize">10</x:Double>
+  <x:Double x:Key="ComboBoxDropDownIconSize">8</x:Double>
   <Thickness x:Key="ComboBoxThemeBorderThickness">1</Thickness>
   <Thickness x:Key="ComboBoxDropdownBorderThickness">1</Thickness>
   <Thickness x:Key="ComboBoxItemThemePadding">11,5,11,7</Thickness>
