@@ -26,5 +26,26 @@ namespace Avalonia.IntegrationTests.Appium
             var clickedMenuItem = Session.FindElementByAccessibilityId("ContextMenuItem1");
             Assert.True(clickedMenuItem.GetIsFocused());
         }
+
+        [PlatformFact(TestPlatforms.MacOS)]
+        public void ContextMenu_Is_Reported_As_A_Menu()
+        {
+            var control = Session.FindElementByAccessibilityId("ShowContextMenu");
+
+            new Actions(Session)
+                .ContextClick(control)
+                .Perform();
+
+            try
+            {
+                var menus = Session.FindElements(
+                    By.XPath("//XCUIElementTypeMenu[@identifier='ShowContextMenuMenu']"));
+                Assert.Single(menus);
+            }
+            finally
+            {
+                Session.FindElementByAccessibilityId("ContextMenuItem1").SendClick();
+            }
+        }
     }
 }
