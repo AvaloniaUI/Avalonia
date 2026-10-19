@@ -34,7 +34,7 @@ namespace Avalonia.Rendering.Composition.Server
         public CompositorPools Pools { get; } = new();
         private readonly object _lock = new object();
         private Thread? _safeThread;
-        private bool _uiThreadIsInsideRender;
+        private volatile bool _uiThreadIsInsideRender;
         public PlatformRenderInterfaceContextManager RenderInterface { get; }
         internal static readonly object RenderThreadDisposeStartMarker = new();
         internal static readonly object RenderThreadJobsStartMarker = new();
@@ -182,7 +182,14 @@ namespace Avalonia.Rendering.Composition.Server
             _reusableToNotifyRenderedList.Clear();
         }
 
-        bool IRenderLoopTask.Render() => ExecuteRender(true, true, null);
+        bool IRenderLoopTask.Render()
+        {
+            // Monitor isn't fair: the render loop could keep re-taking the lock between frames
+            // while a synchronous render on the UI thread waits for it, so let the UI thread go first
+            if (_uiThreadIsInsideRender)
+                return true;
+            return ExecuteRender(true, true, null);
+        }
 
         /// <summary>
         /// Applies pending batches and draws every active target
