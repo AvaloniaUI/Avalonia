@@ -1,13 +1,5 @@
 <Project>
   <PropertyGroup>
     <AvaloniaAllowWebGl2 Condition="'$(AvaloniaAllowWebGl2)' == ''">true</AvaloniaAllowWebGl2>
-    <ShouldIncludeAvaloniaAssets Condition=" '$(ShouldIncludeAvaloniaAssets)' == '' ">true</ShouldIncludeAvaloniaAssets>
-    <ShouldIncludeAvaloniaLegacyAssets Condition=" '$(ShouldIncludeAvaloniaLegacyAssets)' == '' AND '$(ShouldIncludeAvaloniaAssets)' == 'true'">true</ShouldIncludeAvaloniaLegacyAssets>
-    <ShouldIncludeAvaloniaStaticAssets Condition=" '$(ShouldIncludeAvaloniaStaticAssets)' == '' AND '$(ShouldIncludeAvaloniaAssets)' == 'true'">true</ShouldIncludeAvaloniaStaticAssets>
-
-    <_AvaloniaRuntimeAssetsLocation>$(WasmRuntimeAssetsLocation)</_AvaloniaRuntimeAssetsLocation>
-    <_AvaloniaRuntimeAssetsLocation Condition="'$(_AvaloniaRuntimeAssetsLocation)' == ''">_framework</_AvaloniaRuntimeAssetsLocation>
   </PropertyGroup>
-
-  <Import Project="$(MSBuildThisFileDirectory)/../build/Microsoft.AspNetCore.StaticWebAssets.props" />
 </Project>

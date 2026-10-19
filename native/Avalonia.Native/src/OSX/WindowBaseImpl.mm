@@ -18,6 +18,7 @@
 #include "WindowImpl.h"
 #include "AvnTextInputMethod.h"
 #include "AvnView.h"
+#include <algorithm>
 
 @class AutoFitContentView;
 
@@ -206,9 +207,38 @@ HRESULT WindowBaseImpl::SetTopMost(bool value) {
     START_COM_CALL;
 
     @autoreleasepool {
-        [Window setLevel:value ? NSFloatingWindowLevel : NSNormalWindowLevel];
+        _isTopmost = value;
+
+        UpdateWindowLevel();
 
         return S_OK;
+    }
+}
+
+NSWindowLevel WindowBaseImpl::GetBaseWindowLevel() {
+    return _isTopmost ? NSFloatingWindowLevel : NSNormalWindowLevel;
+}
+
+void WindowBaseImpl::UpdateWindowLevel() {
+    if (Window == nullptr)
+        return;
+
+    auto level = GetBaseWindowLevel();
+
+    // An owned window must be able to come to the front of its owner.
+    // TODO: It shouldn't be necessary if we used `addChildWindow` API.
+    auto parent = Parent.tryGet();
+
+    if (parent != nullptr && parent->Window != nullptr)
+        level = std::max(level, [parent->Window level]);
+
+    [Window setLevel:level];
+
+    for (auto iterator = _children.begin(); iterator != _children.end(); iterator++) {
+        auto child = (*iterator).tryGet();
+
+        if (child != nullptr)
+            child->UpdateWindowLevel();
     }
 }
 
@@ -526,6 +556,8 @@ HRESULT WindowBaseImpl::SetParent(IAvnWindowBase *parent) {
 
             UpdateAppearance();
         }
+
+        UpdateWindowLevel();
 
         return S_OK;
     }

@@ -21,10 +21,6 @@ internal class BrowserWindowingPlatform : IWindowingPlatform
 
     internal static readonly bool IsThreadingEnabled = DetectThreadSupport();
 
-    internal static bool IsManagedDispatcherEnabled =>
-        IsThreadingEnabled &&
-        AvaloniaLocator.Current.GetService<BrowserPlatformOptions>()?.PreferManagedThreadDispatcher != false; 
-
     // Capture initial GlobalThis, so we can use it as a contextual bridge between threads.
     private static JSObject? s_globalThis;
     internal static JSObject GlobalThis
@@ -101,7 +97,7 @@ internal class BrowserWindowingPlatform : IWindowingPlatform
             .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new Dictionary<Key, string>() { }))
             .Bind<IActivatableLifetime>().ToSingleton<BrowserActivatableLifetime>();
         
-        if (IsManagedDispatcherEnabled)
+        if (IsThreadingEnabled)
         {
             EventGrouperDispatchQueue = new();
             Dispatcher.InitializeUIThreadDispatcher(
@@ -110,7 +106,7 @@ internal class BrowserWindowingPlatform : IWindowingPlatform
         }
         else
         {
-            Dispatcher.InitializeUIThreadDispatcher(new BrowserDispatcherImpl());
+            Dispatcher.InitializeUIThreadDispatcher(new BrowserSingleThreadedDispatcherImpl());
         }
 
         // GC thread is the same as the main one when MT is disabled

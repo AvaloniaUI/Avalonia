@@ -90,11 +90,6 @@ internal partial class Program
                 options.PreferFileDialogPolyfill = preferDialogsPolyfill;
             }
 
-            if (bool.TryParse(queryParams[nameof(options.PreferManagedThreadDispatcher)], out var preferManagedDispatcher))
-            {
-                options.PreferManagedThreadDispatcher = preferManagedDispatcher;
-            }
-
             if (queryParams[nameof(options.RenderingMode)] is { } renderingModePairs)
             {
                 options.RenderingMode = renderingModePairs
@@ -103,7 +98,6 @@ internal partial class Program
                     .ToArray();
             }
 
-            Console.WriteLine("DemoBrowserPlatformOptions.PreferManagedThreadDispatcher: " + options.PreferManagedThreadDispatcher);
             Console.WriteLine("DemoBrowserPlatformOptions.PreferFileDialogPolyfill: " + options.PreferFileDialogPolyfill);
             Console.WriteLine("DemoBrowserPlatformOptions.RenderingMode: " + string.Join(";", options.RenderingMode));
             return options;

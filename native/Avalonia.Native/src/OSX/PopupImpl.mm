@@ -25,9 +25,14 @@ private:
     PopupImpl(IAvnWindowEvents* events) : TopLevelImpl(events), WindowBaseImpl(events)
     {
         WindowEvents = events;
-        [Window setLevel:NSPopUpMenuWindowLevel];
+        UpdateWindowLevel();
     }
 protected:
+    virtual NSWindowLevel GetBaseWindowLevel() override
+    {
+        return NSPopUpMenuWindowLevel;
+    }
+
     virtual NSWindowStyleMask CalculateStyleMask() override
     {
         return NSWindowStyleMaskBorderless;
