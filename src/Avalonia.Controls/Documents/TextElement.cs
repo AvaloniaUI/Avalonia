@@ -350,6 +350,12 @@ namespace Avalonia.Controls.Documents
 
         }
 
+        internal override void InvalidateStyles(bool recurse)
+        {
+            base.InvalidateStyles(recurse);
+            InlineHost?.Invalidate();
+        }
+
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
