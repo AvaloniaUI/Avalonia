@@ -29,8 +29,9 @@ namespace Avalonia.Skia
                 FillPath = transformedPath;
             else if (source.FillPath != null)
             {
-                FillPath = transformedPath = source.FillPath.Clone();
+                transformedPath = source.FillPath.Clone();
                 transformedPath.Transform(matrix);
+                FillPath = CachePathBounds(transformedPath);
             }
         }
 

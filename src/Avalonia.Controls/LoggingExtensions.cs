@@ -9,6 +9,13 @@ namespace Avalonia
     public static class LoggingExtensions
     {
         /// <summary>
+        /// Returns the minimum level to log for a log area.
+        /// </summary>
+        /// <param name="area">The log area. Well-known values are listed in <see cref="LogArea"/>.</param>
+        /// <returns>The minimum level to log for <paramref name="area"/>.</returns>
+        public delegate LogEventLevel LogToTraceAreaVerbosity(string area);
+
+        /// <summary>
         /// Logs Avalonia events to the <see cref="System.Diagnostics.Trace"/> sink.
         /// </summary>
         /// <param name="builder">The app builder instance.</param>
@@ -18,6 +25,15 @@ namespace Avalonia
         public static AppBuilder LogToTrace(this AppBuilder builder,
             LogEventLevel level = LogEventLevel.Warning, params string[] areas) =>
             LogToDelegate(builder, s => Trace.WriteLine(s), level, areas);
+
+        /// <summary>
+        /// Logs Avalonia events to the <see cref="System.Diagnostics.Trace"/> sink.
+        /// </summary>
+        /// <param name="builder">The app builder instance.</param>
+        /// <param name="verbosityCallback">The callback that returns the minimum level to log for each area.</param>
+        /// <returns>The app builder instance.</returns>
+        public static AppBuilder LogToTrace(this AppBuilder builder, LogToTraceAreaVerbosity verbosityCallback) =>
+            LogToDelegate(builder, s => Trace.WriteLine(s), verbosityCallback);
 
 
         /// <summary>
@@ -48,6 +64,22 @@ namespace Avalonia
             params string[] areas)
         {
             Logger.Sink = new StringLogSink(logCallback, level, areas);
+            return builder;
+        }
+
+        /// <summary>
+        /// Logs Avalonia events to a custom delegate
+        /// </summary>
+        /// <param name="builder">The app builder instance.</param>
+        /// <param name="logCallback">The callback that's used for log events.</param>
+        /// <param name="verbosityCallback">The callback that returns the minimum level to log for each area.</param>
+        /// <returns>The app builder instance.</returns>
+        public static AppBuilder LogToDelegate(
+            this AppBuilder builder,
+            Action<string> logCallback,
+            LogToTraceAreaVerbosity verbosityCallback)
+        {
+            Logger.Sink = new StringLogSink(logCallback, verbosityCallback.Invoke);
             return builder;
         }
     }

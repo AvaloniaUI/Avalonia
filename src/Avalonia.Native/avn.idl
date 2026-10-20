@@ -7,9 +7,11 @@
 @clr-map long IntPtr
 @cpp-preamble @@
 #pragma once
-#include "com.h"
+#include "comimpl.h"
+#include "noarc.h"
 #include "stddef.h"
 @@
+@cpp-call-preamble START_ARP_CALL;
 
 enum AvnKey
 {

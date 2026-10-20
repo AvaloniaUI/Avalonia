@@ -1,5 +1,7 @@
-﻿using Avalonia.Controls;
+﻿using System.Collections.Generic;
+using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
+using Avalonia.Logging;
 using Avalonia.Markup.Xaml;
 using Avalonia.UnitTests;
 using Xunit;
@@ -65,6 +67,61 @@ namespace Avalonia.Base.UnitTests.Logging
                 window.ApplyTemplate();
                 window.Presenter!.ApplyTemplate();
                 Assert.Equal(1, calledTimes);
+            }
+        }
+
+        [Fact]
+        public void LogToDelegate_Should_Use_Verbosity_Callback_Per_Area()
+        {
+            var messages = new List<string>();
+
+            try
+            {
+                AppBuilder.Configure<Application>().LogToDelegate(messages.Add, static area => area switch
+                {
+                    LogArea.Binding => LogEventLevel.Information,
+                    _ => LogEventLevel.Warning,
+                });
+
+                var sink = Logger.Sink!;
+
+                Assert.True(sink.IsEnabled(LogEventLevel.Information, LogArea.Binding));
+                Assert.False(sink.IsEnabled(LogEventLevel.Debug, LogArea.Binding));
+                Assert.False(sink.IsEnabled(LogEventLevel.Information, LogArea.Layout));
+                Assert.True(sink.IsEnabled(LogEventLevel.Warning, LogArea.Layout));
+
+                sink.Log(LogEventLevel.Information, LogArea.Binding, null, "binding");
+                sink.Log(LogEventLevel.Information, LogArea.Layout, null, "layout");
+                sink.Log(LogEventLevel.Warning, LogArea.Layout, null, "warning");
+
+                Assert.Equal(new[] { "[Binding] binding", "[Layout] warning" }, messages);
+            }
+            finally
+            {
+                Logger.Sink = null;
+            }
+        }
+
+        [Fact]
+        public void LogToTrace_Should_Use_Verbosity_Callback_Per_Area()
+        {
+            try
+            {
+                AppBuilder.Configure<Application>().LogToTrace(static area => area switch
+                {
+                    LogArea.Binding => LogEventLevel.Information,
+                    _ => LogEventLevel.Warning,
+                });
+
+                var sink = Logger.Sink!;
+
+                Assert.True(sink.IsEnabled(LogEventLevel.Information, LogArea.Binding));
+                Assert.False(sink.IsEnabled(LogEventLevel.Information, LogArea.Layout));
+                Assert.True(sink.IsEnabled(LogEventLevel.Warning, LogArea.Layout));
+            }
+            finally
+            {
+                Logger.Sink = null;
             }
         }
     }
