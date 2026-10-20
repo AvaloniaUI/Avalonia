@@ -124,6 +124,7 @@ namespace Avalonia.Controls
             FocusableProperty.OverrideDefaultValue<ComboBox>(true);
             IsTextSearchEnabledProperty.OverrideDefaultValue<ComboBox>(true);
             PlatformFeedback.FeedbackTypeProperty.OverrideDefaultValue<ComboBox>(FeedbackType.Auto);
+            KeyDownEvent.AddClassHandler<ComboBox>((x, e) => x.OnKeyDownTunnel(e), RoutingStrategies.Tunnel);
         }
 
         /// <summary>
@@ -250,6 +251,26 @@ namespace Avalonia.Controls
             return NeedsContainer<ComboBoxItem>(item, out recycleKey);
         }
 
+        // Tunneling, because the popup's own keyboard navigation would otherwise handle Tab first
+        private void OnKeyDownTunnel(KeyEventArgs e)
+        {
+            // Tab should close the dropdown and move on.
+            if (e.Handled || e.Key != Key.Tab || !IsDropDownOpen ||
+                e.Source is not Visual source || _popup?.IsInsidePopup(source) != true)
+            {
+                return;
+            }
+
+            SetCurrentValue(IsDropDownOpenProperty, false);
+
+            // Closing the popup clears focus, so navigate from the ComboBox.
+            var direction = e.KeyModifiers.HasAllFlags(KeyModifiers.Shift)
+                ? NavigationDirection.Previous
+                : NavigationDirection.Next;
+            KeyboardNavigationHandler.GetNext(this, direction)?.Focus(NavigationMethod.Tab, e.KeyModifiers);
+            e.Handled = true;
+        }
+
         /// <inheritdoc/>
         protected override void OnKeyDown(KeyEventArgs e)
         {
@@ -274,6 +295,7 @@ namespace Avalonia.Controls
                 SetCurrentValue(IsDropDownOpenProperty, true);
                 e.Handled = true;
             }
+            // OnKeyDownTunnel handles the case where an item in the dropdown is focused
             else if (IsDropDownOpen && e.Key == Key.Tab)
             {
                 SetCurrentValue(IsDropDownOpenProperty, false);
