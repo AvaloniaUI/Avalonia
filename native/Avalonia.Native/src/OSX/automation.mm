@@ -524,6 +524,10 @@
     {
         return _peer->IsRangeValueProvider();
     }
+    else if (selector == @selector(setAccessibilityFocused:))
+    {
+        return _peer->IsKeyboardFocusable();
+    }
 
     return [super isAccessibilitySelectorAllowed:selector];
 }
