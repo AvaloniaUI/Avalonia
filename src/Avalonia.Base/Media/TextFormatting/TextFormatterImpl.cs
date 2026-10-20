@@ -863,6 +863,41 @@ namespace Avalonia.Media.TextFormatting
         }
 
         /// <summary>
+        /// The number of characters past the fitting length that are searched for a break opportunity.
+        /// A word that overflows the line by more than this has no opportunity in reach and is broken
+        /// at the fitting length instead, just like a word that does not fit with <see cref="TextWrapping.Wrap"/>.
+        /// </summary>
+        private const int MaxBreakLookahead = 4096;
+
+        /// <summary>
+        /// Creates an enumerator over the part of the run that can influence where the current line breaks.
+        /// Enumerating the whole run would scan all remaining text for every line of a long unbroken run.
+        /// </summary>
+        /// <param name="text">The text of the run.</param>
+        /// <param name="measuredLength">The number of characters of the run that fit the line.</param>
+        /// <param name="lookaheadLength">The number of characters the enumerator covers.</param>
+        private static LineBreakEnumerator CreateLineBreakEnumerator(
+            ReadOnlySpan<char> text, int measuredLength, out int lookaheadLength)
+        {
+            lookaheadLength = text.Length;
+
+            var limit = (long)Math.Max(measuredLength, 0) + MaxBreakLookahead;
+
+            if (limit < text.Length)
+            {
+                lookaheadLength = (int)limit;
+
+                // Keep surrogate pairs intact.
+                if (char.IsHighSurrogate(text[lookaheadLength - 1]) && char.IsLowSurrogate(text[lookaheadLength]))
+                {
+                    lookaheadLength++;
+                }
+            }
+
+            return new LineBreakEnumerator(text.Slice(0, lookaheadLength));
+        }
+
+        /// <summary>
         /// Performs text wrapping returns a list of text lines.
         /// </summary>
         /// <param name="textRuns"></param>
@@ -938,7 +973,8 @@ namespace Avalonia.Media.TextFormatting
                 {
                     case ShapedTextRun:
                         {
-                            var lineBreaker = new LineBreakEnumerator(currentRun.Text.Span);
+                            var lineBreaker = CreateLineBreakEnumerator(
+                                currentRun.Text.Span, measuredLength - currentLength, out var lookaheadLength);
 
                             while (lineBreaker.MoveNext(out var lineBreak))
                             {
@@ -950,6 +986,12 @@ namespace Avalonia.Media.TextFormatting
 
                                     currentPosition = currentLength + lineBreak.PositionWrap;
 
+                                    break;
+                                }
+
+                                if (lineBreak.PositionWrap == lookaheadLength && lookaheadLength < currentRunLength)
+                                {
+                                    //The enumerator reports the end of the lookahead as a break, but it is not an opportunity.
                                     break;
                                 }
 
@@ -1028,6 +1070,14 @@ namespace Avalonia.Media.TextFormatting
                                 {
                                     lastWrapPosition = currentLength + lineBreak.PositionWrap;
                                 }
+                            }
+
+                            if (!breakFound && lookaheadLength < currentRunLength)
+                            {
+                                //No opportunity within reach of the line: use the last one or break at the fitting length.
+                                currentPosition = lastWrapPosition == 0 ? measuredLength : lastWrapPosition;
+
+                                breakFound = true;
                             }
 
                             break;
