@@ -531,7 +531,7 @@ namespace Avalonia.Controls
                 }
             }
 
-            leftmost?.Focus(NavigationMethod.Pointer);
+            leftmost?.Focus(NavigationMethod.Unspecified);
         }
 
         private void OnDismissButtonClicked(object? sender, RoutedEventArgs e)

@@ -310,13 +310,13 @@ namespace Avalonia.Controls
             items._periodSelector.SelectedValue = hr >= 12 ? 1 : 0;
 
             SetGrid(items);
-            items._hourSelector.Focus(NavigationMethod.Pointer);
+            items._hourSelector.Focus(NavigationMethod.Unspecified);
         }
 
         internal void SetInitialFocus()
         {
             if (_templateItems is { } items)
-                items._hourSelector.Focus(NavigationMethod.Pointer);
+                items._hourSelector.Focus(NavigationMethod.Unspecified);
         }
 
         private void SetGrid(TemplateItems items)
