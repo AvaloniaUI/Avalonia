@@ -4,9 +4,13 @@
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
       <StaticResource x:Key="TitleBarBackgroundBrush" ResourceKey="SystemControlBackgroundAltHighBrush" />
+      <SolidColorBrush x:Key="CaptionButtonPointerOverBackground" Color="#ffe5e5e5" />
+      <StaticResource x:Key="CaptionButtonPressedBackground" ResourceKey="SubtleFillColorTertiary" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
       <StaticResource x:Key="TitleBarBackgroundBrush" ResourceKey="SystemControlBackgroundAltHighBrush" />
+      <StaticResource x:Key="CaptionButtonPointerOverBackground" ResourceKey="ButtonBackgroundPointerOver" />
+      <StaticResource x:Key="CaptionButtonPressedBackground" ResourceKey="ButtonBackgroundPressed" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 
@@ -29,6 +33,14 @@
                           Content="{TemplateBinding Content}"/>
       </ControlTemplate>
     </Setter>
+
+    <Style Selector="^:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource CaptionButtonPointerOverBackground}" />
+    </Style>
+
+    <Style Selector="^:pressed /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource CaptionButtonPressedBackground}" />
+    </Style>
 
     <Style Selector="^.closeButton:pointerover /template/ ContentPresenter#PART_ContentPresenter">
       <Setter Property="Background" Value="{DynamicResource CaptionButtonClosePointerOverBackground}" />
