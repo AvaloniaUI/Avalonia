@@ -939,8 +939,10 @@ namespace Avalonia.Media.TextFormatting
                     case ShapedTextRun:
                         {
                             var lineBreaker = new LineBreakEnumerator(currentRun.Text.Span);
+                            var maxPosition = wrappingMode == TextWrapping.Wrap
+                                ? measuredLength - currentLength : int.MaxValue;
 
-                            while (lineBreaker.MoveNext(out var lineBreak))
+                            while (lineBreaker.MoveNext(out var lineBreak, maxPosition))
                             {
                                 if (lineBreak.Required &&
                                     currentLength + lineBreak.PositionMeasure <= measuredLength)
@@ -1028,6 +1030,13 @@ namespace Avalonia.Media.TextFormatting
                                 {
                                     lastWrapPosition = currentLength + lineBreak.PositionWrap;
                                 }
+                            }
+
+                            if (!breakFound && wrappingMode == TextWrapping.Wrap &&
+                                currentLength + currentRunLength > measuredLength)
+                            {
+                                currentPosition = lastWrapPosition == 0 ? measuredLength : lastWrapPosition;
+                                breakFound = true;
                             }
 
                             break;

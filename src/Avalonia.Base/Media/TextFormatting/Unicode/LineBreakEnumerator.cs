@@ -21,6 +21,9 @@ namespace Avalonia.Media.TextFormatting.Unicode
         }
 
         public bool MoveNext([NotNullWhen(true)] out LineBreak lineBreak)
+            => MoveNext(out lineBreak, int.MaxValue);
+
+        internal bool MoveNext(out LineBreak lineBreak, int maxPosition)
         {
             lineBreak = default;
 
@@ -41,6 +44,14 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 _state.Read(_text);
 
                 result = ExecuteRules(_text, ref _state);
+
+                // Spaces and hard breaks can wrap beyond the measured position without adding width.
+                if (result == null && _state.Position > maxPosition &&
+                    _state.Current.LineBreakClass != LineBreakClass.Space &&
+                    !IsBreakClass(_state.Current.LineBreakClass))
+                {
+                    return false;
+                }
             }
 
             if (result == null)
