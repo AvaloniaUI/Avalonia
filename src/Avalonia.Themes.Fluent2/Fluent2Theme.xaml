@@ -18,7 +18,6 @@
              invariant dictionary so a translation for the current UI culture wins, and it
              returns false for untranslated cultures, falling back to invariant. -->
         <ResourceInclude Source="/Strings/InvariantResources.axaml" />
-        <strings:LocalizedStringsProvider />
 
         <!-- Resources and brushes will be merged into current dictionary for slightly better
              performance and possible optimizations (MergeResourceInclude must come last) -->
