@@ -100,6 +100,7 @@
 
   <x:Double x:Key="RadioButtonThemeBorderThickness">1</x:Double>
   <x:Double x:Key="RadioButtonMinHeight">32</x:Double>
+  <x:Double x:Key="RadioButtonEllipseSize">20</x:Double>
   <x:Double x:Key="RadioButtonMinWidth">0</x:Double>
   <x:Double x:Key="RadioButtonCheckGlyphSize">12</x:Double>
   <x:Double x:Key="RadioButtonCheckGlyphPointerOverSize">14</x:Double>
@@ -134,8 +135,8 @@
 
               <Ellipse
                 Name="OuterEllipse"
-                Width="20"
-                Height="20"
+                Width="{StaticResource RadioButtonEllipseSize}"
+                Height="{StaticResource RadioButtonEllipseSize}"
                 Fill="{DynamicResource RadioButtonOuterEllipseFill}"
                 Stroke="{DynamicResource RadioButtonOuterEllipseStroke}"
                 StrokeThickness="{DynamicResource RadioButtonThemeBorderThickness}"
@@ -143,8 +144,8 @@
 
               <Ellipse
                 Name="CheckOuterEllipse"
-                Width="20"
-                Height="20"
+                Width="{StaticResource RadioButtonEllipseSize}"
+                Height="{StaticResource RadioButtonEllipseSize}"
                 Fill="{DynamicResource RadioButtonOuterEllipseCheckedFill}"
                 Opacity="0"
                 Stroke="{DynamicResource RadioButtonOuterEllipseCheckedStroke}"

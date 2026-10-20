@@ -61,6 +61,7 @@
     <Setter Property="MinWidth" Value="{DynamicResource TextControlThemeMinWidth}" />
     <Setter Property="Padding" Value="{DynamicResource TextControlThemePadding}" />
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
+    <Setter Property="VerticalContentAlignment" Value="Center"/>
     <Setter Property="Template">
       <ControlTemplate>
         <DataValidationErrors>
@@ -80,7 +81,6 @@
             <TextBox Name="PART_TextBox"
                      Background="Transparent"
                      BorderBrush="Transparent"
-                     Margin="-1"
                      Padding="{TemplateBinding Padding}"
                      MinWidth="0"
                      Foreground="{TemplateBinding Foreground}"
