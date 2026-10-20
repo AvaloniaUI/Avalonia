@@ -23,7 +23,8 @@
   <ItemGroup>
     <MicroComIdl Include="$(AvaloniaNativeIdl)"
                  Link="avn.idl"
-                 CppHeaderPath="$(AvaloniaNativeHeader)" />
+                 CppHeaderPath="$(AvaloniaNativeHeader)"
+                 CppSmartPointerWrappers="true" />
   </ItemGroup>
 
   <!-- Build the underlying Xcode project whenever one of its sources changed -->
