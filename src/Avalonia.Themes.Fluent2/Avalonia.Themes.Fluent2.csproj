@@ -7,13 +7,6 @@
     <ProjectReference Include="..\Avalonia.Controls\Avalonia.Controls.csproj" />
     <ProjectReference Include="..\Avalonia.Dialogs\Avalonia.Dialogs.csproj" />
     <ProjectReference Include="..\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />
-    <AvaloniaResource Include="**/*.axaml" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Remove="Fluent2Theme.xaml" />
-  </ItemGroup>
-  <ItemGroup>
-    <AvaloniaResource Include="Fluent2Theme.xaml" />
   </ItemGroup>
   <Import Project="..\..\build\NullableEnable.props" />
   <Import Project="..\..\build\BuildTargets.targets" />
