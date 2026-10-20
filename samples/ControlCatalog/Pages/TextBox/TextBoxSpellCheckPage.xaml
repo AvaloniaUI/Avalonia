@@ -1,0 +1,136 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:ControlCatalog.Controls"
+             x:Class="ControlCatalog.Pages.TextBoxSpellCheckPage"
+             SpellCheck.IsEnabled="True">
+  <ScrollViewer Padding="24,20,24,28">
+    <StackPanel Spacing="16">
+
+      <controls:SampleSection Header="Turning it on"
+                              Description="SpellCheck.IsEnabled is off by default and inherited, so one setting on a window or page covers every TextBox in it. Right click or long press an underlined word for suggestions."
+                              StageMinHeight="130">
+        <StackPanel Spacing="8">
+          <TextBox Name="EnabledBox"
+                   Width="320"
+                   HorizontalAlignment="Left"
+                   TextWrapping="Wrap"
+                   Text="Ths sample has mispelled wrds." />
+          <TextBox Width="320"
+                   HorizontalAlignment="Left"
+                   TextWrapping="Wrap"
+                   SpellCheck.IsEnabled="False"
+                   Text="Ths sample has mispelled wrds." />
+        </StackPanel>
+        <controls:SampleSection.Options>
+          <StackPanel Spacing="8">
+            <CheckBox Content="SpellCheck.IsEnabled" IsChecked="{Binding #EnabledBox.(SpellCheck.IsEnabled)}" />
+            <TextBlock Classes="sample-caption"
+                       TextWrapping="Wrap"
+                       Text="The second box opts out with SpellCheck.IsEnabled=&quot;False&quot;." />
+          </StackPanel>
+        </controls:SampleSection.Options>
+        <controls:SampleSection.Code><x:String xml:space="preserve"><![CDATA[<Window SpellCheck.IsEnabled="True">
+  <TextBox />
+  <TextBox SpellCheck.IsEnabled="False" />
+</Window>]]></x:String></controls:SampleSection.Code>
+      </controls:SampleSection>
+
+      <controls:SampleSection Header="Languages"
+                              Description="SpellCheck.Languages picks the dictionaries. With several, a word is underlined only when every language rejects it. Without it, the system language is used."
+                              StageMinHeight="130">
+        <StackPanel Spacing="8">
+          <TextBox Name="GermanTextBox"
+                   Width="320"
+                   HorizontalAlignment="Left"
+                   TextWrapping="Wrap"
+                   SpellCheck.Languages="de-DE"
+                   Text="Dieser Satz enthält ein Fehlr und eine falsche Wort." />
+          <TextBox Width="320"
+                   HorizontalAlignment="Left"
+                   TextWrapping="Wrap"
+                   SpellCheck.Languages="en-US, es-ES"
+                   Text="This frase mixes both languages and has an eror." />
+        </StackPanel>
+        <controls:SampleSection.Code><x:String xml:space="preserve"><![CDATA[<TextBox SpellCheck.Languages="de-DE" />
+<TextBox SpellCheck.Languages="en-US, es-ES" />]]></x:String></controls:SampleSection.Code>
+      </controls:SampleSection>
+
+      <controls:SampleSection Header="Search and read only"
+                              Description="Search boxes are checked like any other text. A read-only box shows the underlines but offers no suggestions, because the text cannot change."
+                              StageMinHeight="130">
+        <StackPanel Spacing="8">
+          <TextBox Width="320"
+                   HorizontalAlignment="Left"
+                   TextInputOptions.ContentType="Search"
+                   Text="qwick searh reslts" />
+          <TextBox Width="320"
+                   HorizontalAlignment="Left"
+                   TextWrapping="Wrap"
+                   IsReadOnly="True"
+                   Text="Ths sample has mispelled wrds." />
+        </StackPanel>
+      </controls:SampleSection>
+
+      <controls:SampleSection Header="Never checked"
+                              Description="Sensitive and password input, PIN, number, URL and email content types, and a MaskedTextBox with a mask are never checked."
+                              StageMinHeight="130">
+        <StackPanel Spacing="8">
+          <TextBox Width="320"
+                   HorizontalAlignment="Left"
+                   TextInputOptions.IsSensitive="True"
+                   Text="Ths sample has mispelled wrds." />
+          <TextBox Width="320"
+                   HorizontalAlignment="Left"
+                   PasswordChar="*"
+                   Classes="revealPasswordButton"
+                   Text="mispelled" />
+        </StackPanel>
+      </controls:SampleSection>
+
+      <controls:SampleSection Header="Multiline and right to left"
+                              Description="Underlines follow the text while you type, wrap with the lines, and stay under the right words in mixed direction text."
+                              StageMinHeight="200">
+        <StackPanel Spacing="8">
+          <TextBox Width="380"
+                   HorizontalAlignment="Left"
+                   AcceptsReturn="True"
+                   TextWrapping="Wrap"
+                   MinLines="4"
+                   MaxLines="8"
+                   Text="Thiss paragraph contains severl spelling erors.&#xD;&#xD;Edit this text to verify that underlines update while typing." />
+          <TextBox Width="380"
+                   HorizontalAlignment="Left"
+                   TextWrapping="Wrap"
+                   FlowDirection="RightToLeft"
+                   Text="שלום עולם — Ths is mixed-direction text." />
+        </StackPanel>
+      </controls:SampleSection>
+
+      <controls:SampleSection Header="Custom provider"
+                              Description="SpellCheck.Provider replaces the platform spell checker for a box or a whole scope. This one only knows the word avlnia."
+                              CodeLanguage="CSharp"
+                              StageMinHeight="100">
+        <TextBox Name="CustomProviderTextBox"
+                 Width="380"
+                 HorizontalAlignment="Left"
+                 TextWrapping="Wrap"
+                 Text="The sample provider treats avlnia as a custom misspelling." />
+        <controls:SampleSection.Code><x:String xml:space="preserve"><![CDATA[SpellCheck.SetProvider(textBox, new MySpellCheckProvider());]]></x:String></controls:SampleSection.Code>
+      </controls:SampleSection>
+
+      <controls:SampleSection Header="Long text"
+                              Description="Only the visible lines are checked. Scroll the box and the new lines are checked as they appear."
+                              StageMinHeight="200">
+        <TextBox Name="LongSpellCheckTextBox"
+                 Width="480"
+                 HorizontalAlignment="Left"
+                 AcceptsReturn="True"
+                 TextWrapping="Wrap"
+                 MinLines="8"
+                 MaxLines="8"
+                 ScrollViewer.VerticalScrollBarVisibility="Auto" />
+      </controls:SampleSection>
+
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

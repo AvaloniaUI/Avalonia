@@ -364,6 +364,12 @@ namespace Avalonia.Win32
                 return AvaloniaLocator.Current.GetRequiredService<IClipboard>();
             }
 
+            if (featureType == typeof(ISpellCheckProvider))
+            {
+                var spellCheckProvider = Win32SpellCheckProvider.GetForCurrentThread();
+                return spellCheckProvider.IsAvailable ? spellCheckProvider : null;
+            }
+
             if (featureType == typeof(IInputPane))
             {
                 return _inputPane;
