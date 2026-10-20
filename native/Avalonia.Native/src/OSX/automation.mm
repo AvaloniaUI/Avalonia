@@ -214,7 +214,7 @@
 
 - (NSString *)accessibilityHelp
 {
-    return GetNSString(_peer->GetHelpText()); 
+    return GetNSString(_peer->GetHelpText());
 }
 
 - (NSString *)accessibilityPlaceholderValue
@@ -629,6 +629,10 @@
     auto name = _peer->GetName();
     if (name != nullptr)
     {
+        NSString* announcement = GetNSString(name);
+        if (announcement.length == 0)
+            return;
+
         NSAccessibilityPriorityLevel priority = NSAccessibilityPriorityLow;
         switch (_peer->GetLiveSetting())
         {
@@ -643,7 +647,7 @@
         }
 
         NSDictionary <NSString *, id> *userInfo = @{
-            NSAccessibilityAnnouncementKey: GetNSString(name),
+            NSAccessibilityAnnouncementKey: announcement,
             NSAccessibilityPriorityKey: @(priority)
         };
 
