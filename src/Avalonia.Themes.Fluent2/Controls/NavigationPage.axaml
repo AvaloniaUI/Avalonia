@@ -29,8 +29,8 @@
 
   <sys:Double x:Key="NavigationPageBackButtonSize">40</sys:Double>
   <sys:Double x:Key="NavigationPageBackIconSize">16</sys:Double>
-  <sys:Double x:Key="NavigationPageHeaderFontSize">28</sys:Double>
-  <Thickness x:Key="NavigationPageTopBarMargin">12,12,0,0</Thickness>
+  <sys:Double x:Key="NavigationPageHeaderFontSize">24</sys:Double>
+  <Thickness x:Key="NavigationPageTopBarMargin">8</Thickness>
   <Thickness x:Key="NavigationPageHeaderMargin">12,0,0,0</Thickness>
   <FontWeight x:Key="NavigationPageHeaderFontWeight">SemiBold</FontWeight>
   <Thickness x:Key="NavigationPageContentPresenterMargin">0</Thickness>
