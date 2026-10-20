@@ -28,5 +28,16 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.Equal("Label for TextBox", label.Text);
             Assert.Equal("Label for TextBox", labeledTextBox.GetName());
         }
+
+        [Fact]
+        public void Clearing_Live_Region_Text_Does_Not_Crash()
+        {
+            var button = Session.FindElementByAccessibilityId("ClearLiveRegion");
+
+            button.Click();
+
+            var textBlock = Session.FindElementByAccessibilityId("TextBlockWithName");
+            Assert.Equal("TextBlockWithName", textBlock.Text);
+        }
     }
 }
