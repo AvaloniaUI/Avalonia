@@ -427,7 +427,7 @@ namespace Avalonia.Media.TextFormatting
                 {
                     characterHit = currentLine.GetCharacterHitFromDistance(point.X);
 
-                    return GetHitTestResult(currentLine, characterHit, point);
+                    return GetHitTestResult(currentLine, characterHit, point, currentY);
                 }
 
                 currentY += currentLine.Height;
@@ -440,7 +440,7 @@ namespace Avalonia.Media.TextFormatting
 
             characterHit = currentLine.GetCharacterHitFromDistance(point.X);
 
-            return GetHitTestResult(currentLine, characterHit, point);
+            return GetHitTestResult(currentLine, characterHit, point, currentY - currentLine.Height);
         }
 
 
@@ -475,11 +475,14 @@ namespace Avalonia.Media.TextFormatting
             return _textLines.Length - 1;
         }
 
-        private TextHitTestResult GetHitTestResult(TextLine textLine, CharacterHit characterHit, Point point)
+        private TextHitTestResult GetHitTestResult(TextLine textLine, CharacterHit characterHit, Point point,
+            double lineTop)
         {
             var (x, y) = point;
 
-            var isInside = x >= 0 && x <= textLine.Width && y >= 0 && y <= textLine.Height;
+            var lineY = y - lineTop;
+
+            var isInside = x >= 0 && x <= textLine.Width && lineY >= 0 && lineY <= textLine.Height;
 
             var lastTrailingIndex = 0;
 
