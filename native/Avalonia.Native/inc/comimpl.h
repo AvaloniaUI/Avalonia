@@ -6,8 +6,11 @@
 #ifndef COMIMPL_H_INCLUDED
 #define COMIMPL_H_INCLUDED
 
+#include <atomic>
+#include <cstdint>
 #include <cstring>
 #include <memory>
+#include <mutex>
 #include <utility>
 #include <type_traits>
 #include <cstddef>
@@ -196,52 +199,74 @@ public:
 
 class ComObjectWeakRefToken
 {
+    std::mutex _lock;
+    // Null after the last strong reference is released
+    ComObject* _target;
 public:
-    bool Alive = true;
+    explicit ComObjectWeakRefToken(ComObject* target) : _target(target) {}
+    // Returns the target with a new strong reference, or null if the target is dead or in destruction
+    ComObject* TryAddRef();
+    // Called by the target after its last strong reference is released, before it is deleted
+    void Detach()
+    {
+        std::lock_guard<std::mutex> lock(_lock);
+        _target = nullptr;
+    }
 };
 
 
 class ComObject : public virtual IUnknown
 {
 private:
-    unsigned int _refCount;
+    friend class ComObjectWeakRefToken;
+    std::atomic<uint32_t> _refCount;
+    std::once_flag _weakRefsOnce;
     std::shared_ptr<ComObjectWeakRefToken> _weakRefs;
+
+    bool TryAddRefFromWeak()
+    {
+        // The count reaches zero before Release detaches the weak token, so the token lock
+        // can be won while another thread already destroys the object. Never increment from zero.
+        auto count = _refCount.load(std::memory_order_relaxed);
+        while (count != 0)
+        {
+            if (_refCount.compare_exchange_weak(count, count + 1, std::memory_order_relaxed))
+                return true;
+        }
+        return false;
+    }
 public:
-    
+
     virtual ULONG AddRef()
     {
-        _refCount++;
-        return _refCount;
+        return _refCount.fetch_add(1, std::memory_order_relaxed) + 1;
     }
-    
-    
+
+
     virtual ULONG Release()
     {
-        _refCount--;
-        ULONG rv = _refCount;
-        if(_refCount == 0)
+        ULONG rv = _refCount.fetch_sub(1, std::memory_order_acq_rel) - 1;
+        if(rv == 0)
+        {
+            // No strong references remain, so _weakRefs can not be created concurrently
+            if(_weakRefs)
+                _weakRefs->Detach();
             delete(this);
+        }
         return rv;
     }
-    
-    ComObject()
+
+    ComObject() : _refCount(1)
     {
-        _refCount = 1;
-        
     }
-    
+
     virtual ~ComObject()
     {
-        if(_weakRefs)
-            _weakRefs->Alive = false;
     }
-    
+
     std::shared_ptr<ComObjectWeakRefToken> __GetWeakRefToken()
     {
-        if(_weakRefs == nullptr)
-        {
-            _weakRefs = std::make_shared<ComObjectWeakRefToken>();
-        }
+        std::call_once(_weakRefsOnce, [this] { _weakRefs = std::make_shared<ComObjectWeakRefToken>(this); });
         return _weakRefs;
     }
 
@@ -261,10 +286,19 @@ public:
             if(rv != S_OK)
                 return rv;
         }
-        _refCount++;
+        AddRef();
         return S_OK;
     }
 };
+
+inline ComObject* ComObjectWeakRefToken::TryAddRef()
+{
+    // The target clears _target under _lock before it is deleted
+    std::lock_guard<std::mutex> lock(_lock);
+    if (_target == nullptr || !_target->TryAddRefFromWeak())
+        return nullptr;
+    return _target;
+}
 
 template<class TInterface>
 template<class TCast>
@@ -298,12 +332,10 @@ private:
 public:
     ComPtr<TClass> tryGet()
     {
-        if(_rawPtr == nullptr)
-            return nullptr;
-        if(!_token->Alive)
+        if(_rawPtr == nullptr || _token->TryAddRef() == nullptr)
             return nullptr;
         ComPtr<TClass> rv;
-        rv._microcom_attach(_rawPtr, false);
+        rv._microcom_attach(_rawPtr, true);
         return rv;
     }
     

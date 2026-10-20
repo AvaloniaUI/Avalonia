@@ -80,6 +80,10 @@ if (parent) {
 }
 ```
 
+#### Thread safety
+
+The `ComObject` reference counter is atomic. C# can release objects from any thread, for example from the GC finalizer or the render thread. `tryGet()` is safe from any thread: it never returns an object that is in destruction. A single `ComPtr` or `ComObjectWeakPtr` instance is not safe for concurrent modification, the same as `std::shared_ptr`.
+
 #### `ComStaticPtr<T>` — Process-Lifetime Static Reference
 
 Use for static/global COM singletons that must live for the entire process lifetime. Intentionally does **not** Release in its destructor to avoid crashes during app teardown.
