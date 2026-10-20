@@ -191,8 +191,9 @@ public:
 }
 @end
 
-static ComPtr<IAvnGCHandleDeallocatorCallback> _deallocator;
-static ComPtr<IAvnDispatcher> _dispatcher;
+// Not released at exit: .NET is already shut down by then
+static ComStaticPtr<IAvnGCHandleDeallocatorCallback> _deallocator;
+static ComStaticPtr<IAvnDispatcher> _dispatcher;
 class AvaloniaNative : public ComSingleObject<IAvaloniaNativeFactory, &IID_IAvaloniaNativeFactory>
 {
     
@@ -202,16 +203,16 @@ public:
     virtual ~AvaloniaNative() override
     {
         ReleaseAvnAppEvents();
-        _deallocator = nullptr;
-        _dispatcher = nullptr;
+        _deallocator.reset();
+        _dispatcher.reset();
     }
     
     virtual HRESULT Initialize(const ComPtr<IAvnGCHandleDeallocatorCallback>& deallocator,
             const ComPtr<IAvnApplicationEvents>& events,
             const ComPtr<IAvnDispatcher>& dispatcher) override
     {
-        _deallocator = deallocator;
-        _dispatcher = dispatcher;
+        _deallocator.set(deallocator);
+        _dispatcher.set(dispatcher);
         @autoreleasepool{
             [[ThreadingInitializer new] do];
         }
@@ -379,7 +380,7 @@ extern "C" IAvaloniaNativeFactory* CreateAvaloniaNative()
 
 extern void FreeAvnGCHandle(void* handle)
 {
-    if(_deallocator != nil)
+    if(_deallocator)
         _deallocator->FreeGCHandle(handle);
 }
 
