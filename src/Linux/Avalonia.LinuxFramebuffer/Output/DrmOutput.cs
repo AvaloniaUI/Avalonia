@@ -122,12 +122,6 @@ namespace Avalonia.LinuxFramebuffer.Output
         private IntPtr _currentBo;
         private IntPtr _gbmTargetSurface;
         private uint _crtcId;
-        private int _rotationFbo;
-        private int _rotationTexture;
-        private PixelSize _rotatedSize;
-        private int _rotationProgram;
-        private int _rotationVbo;
-        private int _rotationVao;
 
         void FbDestroyCallback(IntPtr bo, IntPtr userData)
         {
@@ -251,134 +245,12 @@ namespace Avalonia.LinuxFramebuffer.Output
             _mode = mode;
             _currentBo = bo;
             
-            // Initialize FBO for rotation if needed
-            var needsRotation = _outputOptions.Orientation != SurfaceOrientation.Rotation0;
-            if (needsRotation)
-            {
-                // For 90/270 rotation, swap width and height
-                _rotatedSize = (_outputOptions.Orientation == SurfaceOrientation.Rotation90 || 
-                               _outputOptions.Orientation == SurfaceOrientation.Rotation270)
-                    ? new PixelSize(modeInfo.Resolution.Height, modeInfo.Resolution.Width)
-                    : modeInfo.Resolution;
-                    
-                using (_deferredContext.MakeCurrent(_eglSurface))
-                {
-                    var gl = _deferredContext.GlInterface;
-                    _rotationFbo = gl.GenFramebuffer();
-                    _rotationTexture = gl.GenTexture();
-                    
-                    gl.BindTexture(GlConsts.GL_TEXTURE_2D, _rotationTexture);
-                    gl.TexImage2D(GlConsts.GL_TEXTURE_2D, 0, GlConsts.GL_RGBA, _rotatedSize.Width, _rotatedSize.Height, 0,
-                        GlConsts.GL_RGBA, GlConsts.GL_UNSIGNED_BYTE, IntPtr.Zero);
-                    gl.TexParameteri(GlConsts.GL_TEXTURE_2D, GlConsts.GL_TEXTURE_MIN_FILTER, GlConsts.GL_LINEAR);
-                    gl.TexParameteri(GlConsts.GL_TEXTURE_2D, GlConsts.GL_TEXTURE_MAG_FILTER, GlConsts.GL_LINEAR);
-                    
-                    gl.BindFramebuffer(GlConsts.GL_FRAMEBUFFER, _rotationFbo);
-                    gl.FramebufferTexture2D(GlConsts.GL_FRAMEBUFFER, GlConsts.GL_COLOR_ATTACHMENT0,
-                        GlConsts.GL_TEXTURE_2D, _rotationTexture, 0);
-                    gl.BindFramebuffer(GlConsts.GL_FRAMEBUFFER, 0);
-                    
-                    // Create shader program for textured quad
-                    const string vertexShader = @"
-                        attribute vec2 aPos;
-                        attribute vec2 aTexCoord;
-                        varying vec2 vTexCoord;
-                        void main() {
-                            gl_Position = vec4(aPos, 0.0, 1.0);
-                            vTexCoord = aTexCoord;
-                        }";
-                    
-                    const string fragmentShader = @"
-                        precision mediump float;
-                        varying vec2 vTexCoord;
-                        uniform sampler2D uTexture;
-                        void main() {
-                            gl_FragColor = texture2D(uTexture, vTexCoord);
-                        }";
-                    
-                    var vs = gl.CreateShader(GlConsts.GL_VERTEX_SHADER);
-                    gl.ShaderSourceString(vs, vertexShader);
-                    gl.CompileShader(vs);
-                    
-                    var fs = gl.CreateShader(GlConsts.GL_FRAGMENT_SHADER);
-                    gl.ShaderSourceString(fs, fragmentShader);
-                    gl.CompileShader(fs);
-                    
-                    _rotationProgram = gl.CreateProgram();
-                    gl.AttachShader(_rotationProgram, vs);
-                    gl.AttachShader(_rotationProgram, fs);
-                    gl.LinkProgram(_rotationProgram);
-                    gl.DeleteShader(vs);
-                    gl.DeleteShader(fs);
-                    
-                    // Create VBO with quad vertices - texture coords depend on rotation
-                    // Format: x, y, u, v
-                    float[] vertices = _outputOptions.Orientation switch
-                    {
-                        SurfaceOrientation.Rotation90 => new float[] {
-                            // 90° clockwise rotation
-                            -1.0f, -1.0f,        1.0f, 0.0f,  // Bottom-left -> Bottom-right of texture
-                             1.0f, -1.0f,        1.0f, 1.0f,  // Bottom-right -> Top-right of texture
-                             1.0f,  1.0f,        0.0f, 1.0f,  // Top-right -> Top-left of texture
-                            -1.0f,  1.0f,        0.0f, 0.0f   // Top-left -> Bottom-left of texture
-                        },
-                        SurfaceOrientation.Rotation180 => new float[] {
-                            // 180° rotation
-                            -1.0f, -1.0f,        1.0f, 1.0f,  // Bottom-left -> Top-right of texture
-                             1.0f, -1.0f,        0.0f, 1.0f,  // Bottom-right -> Top-left of texture
-                             1.0f,  1.0f,        0.0f, 0.0f,  // Top-right -> Bottom-left of texture
-                            -1.0f,  1.0f,        1.0f, 0.0f   // Top-left -> Bottom-right of texture
-                        },
-                        SurfaceOrientation.Rotation270 => new float[] {
-                            // 270° clockwise (90° counter-clockwise) rotation
-                            -1.0f, -1.0f,        0.0f, 1.0f,  // Bottom-left -> Top-left of texture
-                             1.0f, -1.0f,        0.0f, 0.0f,  // Bottom-right -> Bottom-left of texture
-                             1.0f,  1.0f,        1.0f, 0.0f,  // Top-right -> Bottom-right of texture
-                            -1.0f,  1.0f,        1.0f, 1.0f   // Top-left -> Top-right of texture
-                        },
-                        _ => new float[] {
-                            // No rotation (shouldn't reach here but fallback)
-                            -1.0f, -1.0f,        0.0f, 0.0f,
-                             1.0f, -1.0f,        1.0f, 0.0f,
-                             1.0f,  1.0f,        1.0f, 1.0f,
-                            -1.0f,  1.0f,        0.0f, 1.0f
-                        }
-                    };
-
-                    _rotationVbo = gl.GenBuffer();
-                    _rotationVao = gl.GenVertexArray();
-                    
-                    gl.BindVertexArray(_rotationVao);
-                    gl.BindBuffer(GlConsts.GL_ARRAY_BUFFER, _rotationVbo);
-                    
-                    fixed (float* ptr = vertices)
-                    {
-                        gl.BufferData(GlConsts.GL_ARRAY_BUFFER, new IntPtr(vertices.Length * sizeof(float)), 
-                            new IntPtr(ptr), GlConsts.GL_STATIC_DRAW);
-                    }
-                    
-                    var posAttrib = gl.GetAttribLocationString(_rotationProgram, "aPos");
-                    gl.EnableVertexAttribArray(posAttrib);
-                    gl.VertexAttribPointer(posAttrib, 2, GlConsts.GL_FLOAT, 0, 4 * sizeof(float), IntPtr.Zero);
-                    
-                    var texAttrib = gl.GetAttribLocationString(_rotationProgram, "aTexCoord");
-                    gl.EnableVertexAttribArray(texAttrib);
-                    gl.VertexAttribPointer(texAttrib, 2, GlConsts.GL_FLOAT, 0, 4 * sizeof(float), new IntPtr(2 * sizeof(float)));
-                    
-                    gl.BindVertexArray(0);
-                }
-            }
-            else
-            {
-                // No rotation needed
-                _rotatedSize = modeInfo.Resolution;
-            }
-
             if (_outputOptions.EnableInitialBufferSwapping)
             {
                 //Go through two cycles of buffer swapping (there are render artifacts otherwise)
+                using var renderTarget = CreateGlRenderTarget();
                 for (var c = 0; c < 2; c++)
-                    using (CreateGlRenderTarget().BeginDraw(new IRenderTarget.RenderTargetSceneInfo(PixelSize, 1, CompositionTransparencyLevel.None)))
+                    using (var session = renderTarget.BeginDraw(new IRenderTarget.RenderTargetSceneInfo(PixelSize, 1, CompositionTransparencyLevel.None)))
                     {
                         _deferredContext.GlInterface.ClearColor(initialBufferSwappingColorR, initialBufferSwappingColorG,
                             initialBufferSwappingColorB, initialBufferSwappingColorA);
@@ -388,8 +260,47 @@ namespace Avalonia.LinuxFramebuffer.Output
 
         }
 
-        public IGlPlatformSurfaceRenderTarget CreateGlRenderTarget() => new RenderTarget(this);
+        private void PageFlip()
+        {
+            var nextBo = gbm_surface_lock_front_buffer(_gbmTargetSurface);
+            if (nextBo == IntPtr.Zero)
+            {
+                // Not sure what else can be done
+                Console.WriteLine("gbm_surface_lock_front_buffer failed");
+            }
+            else
+            {
 
+                var fb = GetFbIdForBo(nextBo);
+                bool waitingForFlip = true;
+
+                drmModePageFlip(_card.Fd, _crtcId, fb, DrmModePageFlip.Event, null);
+
+                DrmEventPageFlipHandlerDelegate flipCb =
+                    (int fd, uint sequence, uint tv_sec, uint tv_usec, void* user_data) =>
+                    {
+                        waitingForFlip = false;
+                    };
+                var cbHandle = GCHandle.Alloc(flipCb);
+                var ctx = new DrmEventContext
+                {
+                    version = 4,
+                    page_flip_handler = Marshal.GetFunctionPointerForDelegate(flipCb)
+                };
+                while (waitingForFlip)
+                {
+                    var pfd = new PollFd {events = 1, fd = _card.Fd};
+                    poll(&pfd, new IntPtr(1), -1);
+                    drmHandleEvent(_card.Fd, &ctx);
+                }
+
+                cbHandle.Free();
+                gbm_surface_release_buffer(_gbmTargetSurface, _currentBo);
+                _currentBo = nextBo;
+            }
+        }
+
+        public IGlPlatformSurfaceRenderTarget CreateGlRenderTarget() => new RenderTarget(this);
 
         public IGlPlatformSurfaceRenderTarget CreateGlRenderTarget(IGlContext context)
         {
@@ -399,138 +310,40 @@ namespace Avalonia.LinuxFramebuffer.Output
             return CreateGlRenderTarget();
         }
 
-        class RenderTarget : IGlPlatformSurfaceRenderTarget
+        private sealed class RenderTarget : EglPlatformSurfaceRenderTargetBase
         {
             private readonly DrmOutput _parent;
+            private readonly EglSurface _surface;
+            private readonly Action _pageFlip;
 
-            public RenderTarget(DrmOutput parent)
+            public RenderTarget(DrmOutput parent) : base(parent._deferredContext)
             {
                 _parent = parent;
+                _surface = parent._eglSurface;
+                _pageFlip = parent.PageFlip;
             }
 
-            public PlatformRenderTargetState State => PlatformRenderTargetState.Ready;
-
-            public void Dispose()
+            protected override RenderTargetProperties Properties => base.Properties with
             {
-                // We are wrapping GBM buffer chain associated with CRTC, and don't free it on a whim
-            }
+                RequiredRotationForOrientation = _parent.Orientation
+            };
 
-            class RenderSession : IGlPlatformSurfaceRenderingSession
+            protected override bool SkipWaits => true;
+
+            public override IGlPlatformSurfaceRenderingSession BeginDrawCore(IRenderTarget.RenderTargetSceneInfo sceneInfo)
             {
-                private readonly DrmOutput _parent;
-                private readonly IDisposable _clearContext;
-
-                public RenderSession(DrmOutput parent, IDisposable clearContext)
+                var size = _parent._mode.Resolution;
+                var session = base.BeginDraw(_surface, size, _parent.Scaling, onFinish: _pageFlip);
+                try
                 {
-                    _parent = parent;
-                    _clearContext = clearContext;
+                    Context.GlInterface.Viewport(0, 0, size.Width, size.Height);
+                    return session;
                 }
-
-                public void Dispose()
+                catch
                 {
-                    var gl = _parent._deferredContext.GlInterface;
-                    
-                    if (_parent._outputOptions.Orientation != SurfaceOrientation.Rotation0)
-                    {
-                        // Rotation enabled - blit from FBO to screen
-                        // Unbind FBO to render to default framebuffer
-                        gl.BindFramebuffer(GlConsts.GL_FRAMEBUFFER, 0);
-                        gl.Viewport(0, 0, _parent._mode.Resolution.Width, _parent._mode.Resolution.Height);
-                        
-                        // Clear the screen
-                        gl.ClearColor(0, 0, 0, 1);
-                        gl.Clear(GlConsts.GL_COLOR_BUFFER_BIT);
-                        
-                        // Use the shader program
-                        gl.UseProgram(_parent._rotationProgram);
-                        
-                        // Bind the FBO texture
-                        gl.ActiveTexture(GlConsts.GL_TEXTURE0);
-                        gl.BindTexture(GlConsts.GL_TEXTURE_2D, _parent._rotationTexture);
-                        
-                        // Set texture uniform (texture unit 0)
-                        var texLoc = gl.GetUniformLocationString(_parent._rotationProgram, "uTexture");
-                        gl.Uniform1i(texLoc, 0);
-                        
-                        // Draw the rotated quad
-                        gl.BindVertexArray(_parent._rotationVao);
-                        gl.DrawArrays(GlConsts.GL_TRIANGLE_FAN, 0, 4);
-                        gl.BindVertexArray(0);
-                        
-                        gl.UseProgram(0);
-                    }
-                    
-                    gl.Flush();
-                    _parent._eglSurface.SwapBuffers();
-
-                    var nextBo = gbm_surface_lock_front_buffer(_parent._gbmTargetSurface);
-                    if (nextBo == IntPtr.Zero)
-                    {
-                        // Not sure what else can be done
-                        Console.WriteLine("gbm_surface_lock_front_buffer failed");
-                    }
-                    else
-                    {
-
-                        var fb = _parent.GetFbIdForBo(nextBo);
-                        bool waitingForFlip = true;
-
-                        drmModePageFlip(_parent._card.Fd, _parent._crtcId, fb, DrmModePageFlip.Event, null);
-
-                        DrmEventPageFlipHandlerDelegate flipCb =
-                            (int fd, uint sequence, uint tv_sec, uint tv_usec, void* user_data) =>
-                            {
-                                waitingForFlip = false;
-                            };
-                        var cbHandle = GCHandle.Alloc(flipCb);
-                        var ctx = new DrmEventContext
-                        {
-                            version = 4,
-                            page_flip_handler = Marshal.GetFunctionPointerForDelegate(flipCb)
-                        };
-                        while (waitingForFlip)
-                        {
-                            var pfd = new PollFd {events = 1, fd = _parent._card.Fd};
-                            poll(&pfd, new IntPtr(1), -1);
-                            drmHandleEvent(_parent._card.Fd, &ctx);
-                        }
-
-                        cbHandle.Free();
-                        gbm_surface_release_buffer(_parent._gbmTargetSurface, _parent._currentBo);
-                        _parent._currentBo = nextBo;
-                    }
-                    _clearContext.Dispose();
+                    session.Dispose();
+                    throw;
                 }
-
-
-                public IGlContext Context => _parent._deferredContext;
-
-                public PixelSize Size => _parent._rotatedSize;
-
-                public double Scaling => _parent.Scaling;
-
-                public bool IsYFlipped => false;
-            }
-
-            public IGlPlatformSurfaceRenderingSession BeginDraw(IRenderTarget.RenderTargetSceneInfo sceneInfo)
-            {
-                var clearContext = _parent._deferredContext.MakeCurrent(_parent._eglSurface);
-                var gl = _parent._deferredContext.GlInterface;
-                
-                if (_parent._outputOptions.Orientation != SurfaceOrientation.Rotation0)
-                {
-                    // Bind FBO for rendering when rotation is enabled
-                    gl.BindFramebuffer(GlConsts.GL_FRAMEBUFFER, _parent._rotationFbo);
-                    gl.Viewport(0, 0, _parent._rotatedSize.Width, _parent._rotatedSize.Height);
-                }
-                else
-                {
-                    // Render directly to screen when no rotation
-                    gl.BindFramebuffer(GlConsts.GL_FRAMEBUFFER, 0);
-                    gl.Viewport(0, 0, _parent._mode.Resolution.Width, _parent._mode.Resolution.Height);
-                }
-                
-                return new RenderSession(_parent, clearContext);
             }
         }
 

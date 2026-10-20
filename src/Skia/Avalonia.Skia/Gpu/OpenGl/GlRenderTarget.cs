@@ -22,6 +22,7 @@ namespace Avalonia.Skia
         public void Dispose() => _surface.Dispose();
 
         public PlatformRenderTargetState State => _surface.State;
+        public RenderTargetProperties Properties => _surface.Properties;
 
         class GlGpuSession : ISkiaGpuRenderSession
         {

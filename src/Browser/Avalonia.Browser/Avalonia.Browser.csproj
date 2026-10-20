@@ -33,6 +33,35 @@
     <PackageReference Include="HarfBuzzSharp.NativeAssets.WebAssembly" VersionOverride="14.2.1.200" />
   </ItemGroup>
 
+  <!--
+    inputLayout.g.ts is generated from BrowserInputLayout.cs before the web app build. The task assembly links the
+    layout types and runs in its own process (TaskHostFactory), so a rebuilt task is picked up without locking.
+  -->
+  <PropertyGroup>
+    <BrowserBuildTasksProject>$(MSBuildThisFileDirectory)../../tools/Avalonia.Browser.BuildTasks/Avalonia.Browser.BuildTasks.csproj</BrowserBuildTasksProject>
+    <BrowserBuildTasksAssembly>$(MSBuildThisFileDirectory)../../tools/Avalonia.Browser.BuildTasks/bin/$(Configuration)/netstandard2.0/Avalonia.Browser.BuildTasks.dll</BrowserBuildTasksAssembly>
+    <InputLayoutTypeScript>$(WebAppDir)/modules/avalonia/inputLayout.g.ts</InputLayoutTypeScript>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Restore and build ordering only. -->
+    <ProjectReference Include="$(BrowserBuildTasksProject)" ReferenceOutputAssembly="false" PrivateAssets="all" />
+  </ItemGroup>
+
+  <UsingTask TaskName="Avalonia.Browser.BuildTasks.GenerateInputLayoutTask" AssemblyFile="$(BrowserBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
+
+  <Target Name="GenerateInputLayout"
+          Inputs="BrowserInputLayout.cs;$(BrowserBuildTasksAssembly)"
+          Outputs="$(InputLayoutTypeScript)">
+    <GenerateInputLayoutTask OutputFile="$(InputLayoutTypeScript)" />
+  </Target>
+
+  <!-- Runs ahead of the project references, from the outer build: build the task assembly first. -->
+  <Target Name="BuildBrowserBuildTasks">
+    <MSBuild Projects="$(BrowserBuildTasksProject)" Targets="Build"
+             Properties="Configuration=$(Configuration)" RemoveProperties="TargetFramework;RuntimeIdentifier" />
+  </Target>
+
   <ItemGroup>
     <Content Include="build\Avalonia.Browser.props">
       <Pack>true</Pack>
@@ -41,6 +70,10 @@
     <Content Include="build\Avalonia.Browser.targets">
       <Pack>true</Pack>
       <PackagePath>build/;buildTransitive/</PackagePath>
+    </Content>
+    <Content Include="native\**\*.*">
+      <Pack>true</Pack>
+      <PackagePath>native/</PackagePath>
     </Content>
   </ItemGroup>
 
@@ -55,9 +88,10 @@
     <!-- ItemGroup defined to track BunRunBuild inputs with msbuild -->
     <AvaloniaWebAppSource Include="$(WebAppDir)/build.js;$(WebAppDir)/package.json;$(WebAppDir)/tsconfig.json" />
     <AvaloniaWebAppSource Include="$(WebAppDir)/modules/**/*.ts;$(WebAppDir)/types/**/*.ts" />
+    <AvaloniaWebAppSource Include="BrowserInputLayout.cs" />
   </ItemGroup>
 
-  <Target Name="BunRunBuild" DependsOnTargets="BunInstall"
+  <Target Name="BunRunBuild" DependsOnTargets="BunInstall;BuildBrowserBuildTasks;GenerateInputLayout"
           BeforeTargets="DispatchToInnerBuilds;BeforeBuild"
           Inputs="@(AvaloniaWebAppSource)"
           Outputs="$(WebAppOutputDir)/avalonia.js;$(WebAppOutputDir)/storage.js;$(WebAppOutputDir)/avalonia-sw.js">
