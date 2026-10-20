@@ -9,7 +9,7 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Media.TextFormatting
 {
-    public sealed class ShapedBuffer : IReadOnlyList<GlyphInfo>, IDisposable
+    public sealed partial class ShapedBuffer : IReadOnlyList<GlyphInfo>, IDisposable
     {
         /// <summary>
         /// Disposable wrapper around an <see cref="ArrayPool{T}"/>-rented array.
@@ -171,7 +171,8 @@ namespace Avalonia.Media.TextFormatting
             IRef<PooledArray<ushort>>? sourceGlyphIndicesRef,
             IRef<PooledArray<double>>? sourcePrefixRef,
             IRef<PooledArray<int>>? sourceStartsRef,
-            int clusterStartIdx, int clusterCount, int sourceCacheGeneration)
+            int clusterStartIdx, int clusterCount, int sourceCacheGeneration,
+            SourceLineBreakCache? sourceLineBreaks = null, int sourceLineBreakStart = 0)
         {
             Text = text;
             _glyphInfos = glyphInfos;
@@ -181,6 +182,8 @@ namespace Avalonia.Media.TextFormatting
             BidiLevel = bidiLevel;
             _glyphRef = sourceGlyphRef?.Clone();
             _glyphIndicesRef = sourceGlyphIndicesRef?.Clone();
+            _lineBreaks = sourceLineBreaks;
+            _lineBreakStart = sourceLineBreaks is null ? 0 : sourceLineBreakStart;
 
             if (sourcePrefixRef is not null)
             {
@@ -265,6 +268,8 @@ namespace Avalonia.Media.TextFormatting
             _clusterStartChars = null;
             _clusterStartIdx = 0;
             _clusterCount = 0;
+            _lineBreaks = null;
+            _lineBreakStart = 0;
         }
 
         /// <summary>
@@ -590,7 +595,8 @@ namespace Avalonia.Media.TextFormatting
 
             return new ShapedBuffer(
                 Text, _glyphInfos, _glyphIndices, GlyphTypeface, FontRenderingEmSize, paragraphEmbeddingLevel,
-                _glyphRef, _glyphIndicesRef, prefixRef, startsRef, startIdx, count, _cacheGeneration);
+                _glyphRef, _glyphIndicesRef, prefixRef, startsRef, startIdx, count, _cacheGeneration,
+                _lineBreaks, _lineBreakStart);
         }
 
         /// <summary>
@@ -615,7 +621,11 @@ namespace Avalonia.Media.TextFormatting
             indicesSpan.CopyTo(indices);
 
             return new ShapedBuffer(Text, new ArraySlice<GlyphInfo>(glyphs), new ArraySlice<ushort>(indices),
-                GlyphTypeface, FontRenderingEmSize, BidiLevel);
+                GlyphTypeface, FontRenderingEmSize, BidiLevel)
+            {
+                _lineBreaks = _lineBreaks,
+                _lineBreakStart = _lineBreakStart
+            };
         }
 
         int IReadOnlyCollection<GlyphInfo>.Count => _glyphInfos.Length;
@@ -718,7 +728,7 @@ namespace Avalonia.Media.TextFormatting
                 firstText, firstGlyphs, firstGlyphIndices,
                 GlyphTypeface, FontRenderingEmSize, BidiLevel,
                 _glyphRef, _glyphIndicesRef, _prefixRef, _startsRef,
-                _clusterStartIdx, leadingClusterCount, _cacheGeneration);
+                _clusterStartIdx, leadingClusterCount, _cacheGeneration, _lineBreaks, _lineBreakStart);
 
             if (secondText.Length == 0)
             {
@@ -729,7 +739,8 @@ namespace Avalonia.Media.TextFormatting
                 secondText, secondGlyphs, secondGlyphIndices,
                 GlyphTypeface, FontRenderingEmSize, BidiLevel,
                 _glyphRef, _glyphIndicesRef, _prefixRef, _startsRef,
-                _clusterStartIdx + leadingClusterCount, _clusterCount - leadingClusterCount, _cacheGeneration);
+                _clusterStartIdx + leadingClusterCount, _clusterCount - leadingClusterCount, _cacheGeneration,
+                _lineBreaks, _lineBreakStart + splitCharCount);
 
             return new SplitResult<ShapedBuffer>(leading, trailing);
         }
@@ -802,7 +813,7 @@ namespace Avalonia.Media.TextFormatting
                 firstText, firstGlyphs, firstGlyphIndices,
                 GlyphTypeface, FontRenderingEmSize, BidiLevel,
                 _glyphRef, _glyphIndicesRef, _prefixRef, _startsRef,
-                _clusterStartIdx, firstClusterCount, _cacheGeneration);
+                _clusterStartIdx, firstClusterCount, _cacheGeneration, _lineBreaks, _lineBreakStart);
 
             if (secondText.Length == 0 || secondGlyphs.Length == 0)
             {
@@ -813,7 +824,8 @@ namespace Avalonia.Media.TextFormatting
                 secondText, secondGlyphs, secondGlyphIndices,
                 GlyphTypeface, FontRenderingEmSize, BidiLevel,
                 _glyphRef, _glyphIndicesRef, _prefixRef, _startsRef,
-                _clusterStartIdx + firstClusterCount, _clusterCount - firstClusterCount, _cacheGeneration);
+                _clusterStartIdx + firstClusterCount, _clusterCount - firstClusterCount, _cacheGeneration,
+                _lineBreaks, _lineBreakStart + firstText.Length);
 
             return new SplitResult<ShapedBuffer>(first, second);
         }

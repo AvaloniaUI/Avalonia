@@ -936,9 +936,9 @@ namespace Avalonia.Media.TextFormatting
 
                 switch (currentRun)
                 {
-                    case ShapedTextRun:
+                    case ShapedTextRun shaped:
                         {
-                            var lineBreaker = new LineBreakEnumerator(currentRun.Text.Span);
+                            var lineBreaker = shaped.ShapedBuffer.GetCachedLineBreakEnumerator();
 
                             while (lineBreaker.MoveNext(out var lineBreak))
                             {
@@ -998,7 +998,8 @@ namespace Avalonia.Media.TextFormatting
                                                 currentRun = textRuns[index];
                                                 currentRunLength = currentRun.Length;
 
-                                                lineBreaker = new LineBreakEnumerator(currentRun.Text.Span);
+                                                lineBreaker = currentRun is ShapedTextRun nextShaped
+                                                    ? nextShaped.ShapedBuffer.GetCachedLineBreakEnumerator() : default;
                                             }
                                         }
                                         else
