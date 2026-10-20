@@ -1156,6 +1156,32 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         }
 
         [Fact]
+        public void HitTestPoint_On_Second_Line_Should_Report_IsInside()
+        {
+            using (Start())
+            {
+                var layout = new TextLayout("first\nsecond", Typeface.Default, 12, Brushes.Black);
+
+                Assert.Equal(2, layout.TextLines.Count);
+
+                var glyph = layout.HitTestTextPosition(7);
+
+                var hit = layout.HitTestPoint(new Point(glyph.X + 2, glyph.Y + glyph.Height / 2));
+
+                Assert.Equal(7, hit.CharacterHit.FirstCharacterIndex);
+                Assert.True(hit.IsInside);
+
+                hit = layout.HitTestPoint(new Point(glyph.X + 2, -1));
+
+                Assert.False(hit.IsInside);
+
+                hit = layout.HitTestPoint(new Point(glyph.X + 2, layout.Height + 1));
+
+                Assert.False(hit.IsInside);
+            }
+        }
+
+        [Fact]
         public void Should_Get_CharacterHit_From_Distance_RTL()
         {
             using (Start())
