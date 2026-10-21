@@ -36,6 +36,15 @@ namespace Avalonia.Skia
         public abstract SKPath? StrokePath { get; }
         public abstract SKPath? FillPath { get; }
 
+        [return: NotNullIfNotNull(nameof(path))]
+        protected static SKPath? CachePathBounds(SKPath? path)
+        {
+            // Skia caches bounds lazily, even for read-only calls like Contains.
+            // Initialize them before sharing the path with the render thread.
+            _ = path?.Bounds;
+            return path;
+        }
+
         /// <inheritdoc />
         public bool FillContains(Point point)
         {
@@ -208,16 +217,16 @@ namespace Avalonia.Skia
                     return;
                 }
 
+                // Keep the previous cache valid if creating the new stroke throws.
+                var path = strokePath is not null && pen is not null
+                    ? SKPathHelper.CreateStrokedPath(strokePath, pen)
+                    : null;
+                var oldPath = _path;
+                _path = path;
                 _renderBounds = null;
                 _cachedFor = strokePath;
                 _penHash = penHash;
-                _path?.Dispose();
-
-                if (strokePath is not null && pen is not null)
-                    _path = SKPathHelper.CreateStrokedPath(strokePath, pen);
-                else
-                    _path = null;
-
+                oldPath?.Dispose();
             }
 
             public void Dispose()

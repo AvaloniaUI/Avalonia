@@ -51,30 +51,17 @@ class CursorFactory : public ComSingleObject<IAvnCursorFactory, &IID_IAvnCursorF
 public:
     FORWARD_IUNKNOWN()
     
-    virtual HRESULT GetCursor (AvnStandardCursorType cursorType, IAvnCursor** retOut) override
+    virtual HRESULT GetCursor (AvnStandardCursorType cursorType, ComPtr<IAvnCursor>& retOut) override
     {
-        START_COM_CALL;
-        
-        @autoreleasepool
-        {
-            *retOut = s_cursorMap[cursorType];
-            
-            if(*retOut != nullptr)
-            {
-                (*retOut)->AddRef();
-            }
-                
-            return S_OK;
-        }
+        retOut = s_cursorMap[cursorType];
+        return S_OK;
     }
     
-    virtual HRESULT CreateCustomCursor (void* bitmapData, size_t length, AvnPixelSize hotPixel, IAvnCursor** retOut) override
+    virtual HRESULT CreateCustomCursor (void* bitmapData, size_t length, AvnPixelSize hotPixel, ComPtr<IAvnCursor>& retOut) override
     {
-        START_COM_CALL;
-        
         @autoreleasepool
         {
-            if(bitmapData == nullptr || retOut == nullptr)
+            if(bitmapData == nullptr)
             {
                 return E_POINTER;
             }
@@ -87,19 +74,14 @@ public:
             hotSpot.x = hotPixel.Width;
             hotSpot.y = hotPixel.Height;
             
-            *retOut = new Cursor([[NSCursor new] initWithImage: image hotSpot: hotSpot]);
-            
-            (*retOut)->AddRef();
+            retOut = comnew<Cursor>([[NSCursor new] initWithImage: image hotSpot: hotSpot]);
             
             return S_OK;
         }
     }
 };
 
-extern IAvnCursorFactory* CreateCursorFactory()
+extern ComPtr<IAvnCursorFactory> CreateCursorFactory()
 {
-    @autoreleasepool
-    {
-        return new CursorFactory();
-    }
+    return comnew<CursorFactory>();
 }
