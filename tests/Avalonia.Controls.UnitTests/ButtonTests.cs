@@ -619,6 +619,29 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Should_Not_Fire_Click_Event_On_Space_Key_Up_Without_A_Key_Down()
+        {
+            using (UnitTestApplication.Start(TestServices.FocusableWindow))
+            {
+                var raised = 0;
+                var target = new Button();
+                var other = new Button();
+
+                var window = new Window { Content = new StackPanel { Children = { target, other } } };
+                window.Show();
+
+                other.Click += (s, e) => ++raised;
+
+                target.Focus();
+                target.RaiseEvent(CreateKeyDownEvent(Key.Space));
+                Assert.True(other.Focus());
+                other.RaiseEvent(CreateKeyUpEvent(Key.Space));
+
+                Assert.Equal(0, raised);
+            }
+        }
+
+        [Fact]
         public void Button_Unpressed_When_Disabled()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
