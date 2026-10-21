@@ -127,6 +127,11 @@
         </Border>
       </ControlTemplate>
     </Setter>
+
+    <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="RecognizesAccessKey" Value="True" />
+    </Style>
+
     <!-- Pointer-over -->
     <Style Selector="^:pointerover">
 
