@@ -113,6 +113,21 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        [Theory]
+        [InlineData(TextWrapping.Wrap)]
+        [InlineData(TextWrapping.WrapWithOverflow)]
+        public void Trailing_Whitespace_Longer_Than_The_Lookahead_Hangs_On_The_Line(TextWrapping wrapping)
+        {
+            using (TextFormatterTests.Start())
+            {
+                var text = "abc" + new string(' ', 10_000) + "def";
+
+                var lengths = WrapAll(text, wrapping);
+
+                Assert.Equal(new[] { 10_003, 3 }, lengths);
+            }
+        }
+
         private static GenericTextParagraphProperties CreateParagraph(TextWrapping wrapping,
             out GenericTextRunProperties runProperties)
         {
