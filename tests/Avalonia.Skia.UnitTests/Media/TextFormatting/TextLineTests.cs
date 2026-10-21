@@ -1910,7 +1910,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal(textLine.WidthIncludingTrailingWhitespace, bounds.Last().Rectangle.Right);
 
-                // The paragraph end is reordered at level 0, so it closes the line as an empty
+                // The paragraph end takes the left-to-right paragraph level, so it closes the line as an empty
                 // left-to-right span after the trailing Hebrew word instead of joining it.
                 var endOfParagraphBounds = bounds.Last();
 

@@ -240,21 +240,30 @@ namespace Avalonia.Media.TextFormatting
 
             distance -= Start;
 
+            var firstIndex = 0;
             var lastIndex = _textRuns.Length - 1;
 
-            if (_textRuns[lastIndex] is TextEndOfLine)
+            // The end of line run has no width and is never hit. It sits at the visual end of the
+            // paragraph direction, so it is the first run of a right-to-left line.
+            var endOfLineIndex = GetEndOfLineRunIndex();
+
+            if (endOfLineIndex == lastIndex)
             {
                 lastIndex--;
             }
+            else if (endOfLineIndex == firstIndex)
+            {
+                firstIndex++;
+            }
 
-            if (lastIndex < 0)
+            if (lastIndex < firstIndex)
             {
                 return new CharacterHit(FirstTextSourceIndex);
             }
 
             if (distance <= 0)
             {
-                return GetRunCharacterHit(_textRuns[0], GetRunTextSourcePosition(0), 0);
+                return GetRunCharacterHit(_textRuns[firstIndex], GetRunTextSourcePosition(firstIndex), 0);
             }
 
             if (distance >= WidthIncludingTrailingWhitespace)
@@ -265,9 +274,9 @@ namespace Avalonia.Media.TextFormatting
             // process hit that happens within the line
             var characterHit = new CharacterHit();
             var currentDistance = 0.0;
-            var currentVisualIndex = 0;
+            var currentVisualIndex = firstIndex;
 
-            for (var i = 0; i <= lastIndex; i++)
+            for (var i = firstIndex; i <= lastIndex; i++)
             {
                 var currentRun = _textRuns[i];
                 currentVisualIndex = i;
@@ -1211,10 +1220,30 @@ namespace Avalonia.Media.TextFormatting
 
             _textLineMetrics = CreateLineMetrics();
 
-            if (_textLineBreak is null && _textRuns.Length > 1 && _textRuns[_textRuns.Length - 1] is TextEndOfLine textEndOfLine)
+            if (_textLineBreak is null && _textRuns.Length > 1 && GetEndOfLineRunIndex() is var endOfLineIndex and >= 0)
             {
-                _textLineBreak = new TextLineBreak(textEndOfLine);
+                _textLineBreak = new TextLineBreak((TextEndOfLine)_textRuns[endOfLineIndex]);
             }
+        }
+
+        /// <summary>
+        /// Gets the visual index of the <see cref="TextEndOfLine"/> run that ends the line.
+        /// </summary>
+        /// <remarks>
+        /// <see cref="_textRuns"/> is in visual order, so its last run is not the end of the line when the
+        /// paragraph flows right to left. The logical order in <see cref="_indexedTextRuns"/> is used instead.
+        /// </remarks>
+        /// <returns>The visual index of the end of line run, or -1 when the line does not end with one.</returns>
+        private int GetEndOfLineRunIndex()
+        {
+            if (_indexedTextRuns is null || _indexedTextRuns.Count == 0)
+            {
+                return -1;
+            }
+
+            var lastIndexedRun = _indexedTextRuns[_indexedTextRuns.Count - 1];
+
+            return lastIndexedRun.TextRun is TextEndOfLine ? lastIndexedRun.RunIndex : -1;
         }
 
         /// <summary>

@@ -112,9 +112,12 @@ namespace Avalonia.Media.TextFormatting
 
             var defaultLevel = (sbyte)(flowDirection == FlowDirection.LeftToRight ? 0 : 1);
 
+            // The Unicode Bidirectional Algorithm (rule L1) gives a paragraph separator the paragraph
+            // embedding level, which places it at the visual end of the paragraph's direction: the left
+            // edge of a right-to-left line.
             if (run is TextEndOfLine)
             {
-                return 0;
+                return defaultLevel;
             }
 
             if(previousLevel is not null)
