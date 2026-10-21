@@ -887,8 +887,16 @@ namespace Avalonia.Media.TextFormatting
             {
                 lookaheadLength = (int)limit;
 
+                // Whitespace after a break hangs on the line however long it is, and the line consumes it in
+                // one go. Cover it and the character that ends it so the break after it is a real one.
+                while (lookaheadLength < text.Length && char.IsWhiteSpace(text[lookaheadLength - 1]))
+                {
+                    lookaheadLength++;
+                }
+
                 // Keep surrogate pairs intact.
-                if (char.IsHighSurrogate(text[lookaheadLength - 1]) && char.IsLowSurrogate(text[lookaheadLength]))
+                if (lookaheadLength < text.Length &&
+                    char.IsHighSurrogate(text[lookaheadLength - 1]) && char.IsLowSurrogate(text[lookaheadLength]))
                 {
                     lookaheadLength++;
                 }
