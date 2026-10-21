@@ -54,7 +54,6 @@
   </ResourceDictionary.ThemeDictionaries>
 
   <Thickness x:Key="TabStripItemBorderThickness">1</Thickness>
-  <Thickness x:Key="TabStripSelectedInnerThickness">1</Thickness>
   <Thickness x:Key="TabStripItemIconVisualMargin">-2,0</Thickness>
   <Thickness x:Key="TabStripItemTextVisualMargin">0</Thickness>
   <Thickness x:Key="TabStripItemPadding">12,10,12,7</Thickness>
@@ -107,8 +106,8 @@
                        Grid.ColumnSpan="2"
                        Grid.Row="1"
                        Theme="{StaticResource TabStripItemPill}"
-                       RadiusX="0.5"
-                       RadiusY="1"
+                       RadiusX="1.5"
+                       RadiusY="1.5"
                        Margin="{DynamicResource TabStripItemSelectionVisualMargin}"
                        HorizontalAlignment="Center"
                        VerticalAlignment="Bottom"
@@ -117,8 +116,8 @@
               <Rectangle.Transitions>
                 <Transitions>
                   <DoubleTransition Property="Width"
-                                                 Duration="{DynamicResource ComboBoxItemScaleAnimationDuration}"
-                                                 Easing="0,0,0,1"/>
+                                    Duration="{DynamicResource ComboBoxItemScaleAnimationDuration}"
+                                    Easing="0,0,0,1"/>
                 </Transitions>
               </Rectangle.Transitions>
             </Rectangle>
@@ -191,8 +190,8 @@
       <Style Selector="^:disabled">
 
         <Style Selector="^ /template/ Border#PART_LayoutRoot">
-          <Setter Property="Background" Value="{DynamicResource TabItemHeaderBackgroundDisabled}" />
-          <Setter Property="TextElement.Foreground" Value="{DynamicResource TabItemHeaderForegroundDisabled}" />
+          <Setter Property="Background" Value="{DynamicResource TabStripItemBackgroundDisabled}" />
+          <Setter Property="TextElement.Foreground" Value="{DynamicResource TabStripItemForegroundDisabled}" />
         </Style>
       </Style>
     </Style>

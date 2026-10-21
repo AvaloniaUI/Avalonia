@@ -207,6 +207,7 @@
     <Setter Property="CornerRadius" Value="{DynamicResource TabbedPageTabItemHeaderCornerRadius}" />
     <Setter Property="HorizontalContentAlignment" Value="Center" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
     <Setter Property="IndicatorTemplate">
       <DataTemplate>
         <Border Background="{DynamicResource AccentFillColorDefaultBrush}"
@@ -215,7 +216,15 @@
                 Width="{DynamicResource TabbedPageTabItemSelectionIndicatorWidth}"
                 Height="{DynamicResource TabbedPageTabItemSelectionIndicatorHeight}"
                 HorizontalAlignment="Stretch"
-                VerticalAlignment="Stretch" />
+                VerticalAlignment="Stretch">
+            <Border.Transitions>
+              <Transitions>
+                <DoubleTransition Property="Width"
+                                  Duration="{DynamicResource ComboBoxItemScaleAnimationDuration}"
+                                  Easing="0,0,0,1"/>
+              </Transitions>
+            </Border.Transitions>
+          </Border>
       </DataTemplate>
     </Setter>
     <Setter Property="Template">
@@ -255,7 +264,7 @@
                             VerticalContentAlignment="Stretch"
                             Content="{TemplateBinding DataContext}"
                             ContentTemplate="{TemplateBinding IndicatorTemplate}"
-                            IsVisible="False" />
+                            Opacity="0" />
         </Panel>
       </ControlTemplate>
     </Setter>
@@ -296,7 +305,7 @@
       </Style>
 
       <Style Selector="^ /template/ ContentPresenter#PART_SelectedPipe">
-        <Setter Property="IsVisible" Value="True" />
+        <Setter Property="Opacity" Value="1" />
       </Style>
 
       <!-- Pointer-over -->
@@ -375,7 +384,7 @@
         </Style>
 
         <Style Selector="^ /template/ ContentPresenter#PART_SelectedPipe">
-          <Setter Property="IsVisible" Value="True" />
+          <Setter Property="Opacity" Value="1" />
         </Style>
 
         <!-- Pointer-over -->
@@ -404,7 +413,15 @@
                   CornerRadius="{DynamicResource TabbedPageTabItemHeaderIndicatorCornerRadius}"
                   Margin="{DynamicResource TabbedPageTabItemHeaderIndicatorMargin}"
                   Height="{DynamicResource TabbedPageTabItemSelectionIndicatorWidth}"
-                  Width="{DynamicResource TabbedPageTabItemSelectionIndicatorHeight}" />
+                  Width="{DynamicResource TabbedPageTabItemSelectionIndicatorHeight}" >
+            <Border.Transitions>
+              <Transitions>
+                <DoubleTransition Property="Width"
+                                  Duration="{DynamicResource ComboBoxItemScaleAnimationDuration}"
+                                  Easing="0,0,0,1"/>
+              </Transitions>
+            </Border.Transitions>
+          </Border>
         </DataTemplate>
       </Setter>
     </Style>
@@ -419,7 +436,15 @@
                   CornerRadius="{DynamicResource TabbedPageTabItemHeaderIndicatorCornerRadius}"
                   Margin="{DynamicResource TabbedPageTabItemHeaderIndicatorMargin}"
                   Height="{DynamicResource TabbedPageTabItemSelectionIndicatorWidth}"
-                  Width="{DynamicResource TabbedPageTabItemSelectionIndicatorHeight}" />
+                  Width="{DynamicResource TabbedPageTabItemSelectionIndicatorHeight}" >
+            <Border.Transitions>
+              <Transitions>
+                <DoubleTransition Property="Width"
+                                  Duration="{DynamicResource ComboBoxItemScaleAnimationDuration}"
+                                  Easing="0,0,0,1"/>
+              </Transitions>
+            </Border.Transitions>
+          </Border>
         </DataTemplate>
       </Setter>
     </Style>
