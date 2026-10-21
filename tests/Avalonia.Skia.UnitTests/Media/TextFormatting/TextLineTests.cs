@@ -1716,6 +1716,52 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        [Theory]
+        [InlineData("abc", FlowDirection.LeftToRight)]
+        [InlineData("abc", FlowDirection.RightToLeft)]
+        [InlineData("אבג", FlowDirection.LeftToRight)]
+        [InlineData("אבג", FlowDirection.RightToLeft)]
+        [InlineData("abc אבג", FlowDirection.LeftToRight)]
+        [InlineData("abc אבג", FlowDirection.RightToLeft)]
+        [InlineData("אבג abc", FlowDirection.LeftToRight)]
+        [InlineData("אבג abc", FlowDirection.RightToLeft)]
+        public void EndOfParagraph_Should_Be_Placed_At_The_Paragraph_End(string text, FlowDirection flowDirection)
+        {
+            using (Start())
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+                var formatter = new TextFormatterImpl();
+
+                var textLine = formatter.FormatLine(new SingleBufferTextSource(text, defaultProperties, true), 0,
+                    double.PositiveInfinity, new GenericTextParagraphProperties(flowDirection, TextAlignment.Left,
+                        true, true, defaultProperties, TextWrapping.NoWrap, 0, 0, 0));
+
+                Assert.NotNull(textLine);
+
+                var paragraphEnd = flowDirection == FlowDirection.LeftToRight ?
+                    textLine.Start + textLine.WidthIncludingTrailingWhitespace :
+                    textLine.Start;
+
+                Assert.IsType<TextEndOfParagraph>(textLine.TextLineBreak?.TextEndOfLine);
+
+                Assert.Equal(paragraphEnd, textLine.GetDistanceFromCharacterHit(new CharacterHit(text.Length)), 5);
+
+                var endOfParagraphBounds = Assert.Single(textLine.GetTextBounds(text.Length, 1)
+                    .SelectMany(x => x.TextRunBounds)
+                    .Where(x => x.TextRun is TextEndOfParagraph));
+
+                Assert.Equal(paragraphEnd, endOfParagraphBounds.Rectangle.Left, 5);
+                Assert.Equal(0, endOfParagraphBounds.Rectangle.Width);
+
+                foreach (var distance in new[] { -1, textLine.WidthIncludingTrailingWhitespace + 1 })
+                {
+                    var characterHit = textLine.GetCharacterHitFromDistance(distance);
+
+                    Assert.True(characterHit.FirstCharacterIndex + characterHit.TrailingLength <= text.Length);
+                }
+            }
+        }
+
         [Fact]
         public void Should_GetTextBounds_With_EndOfParagraph_RightToLeft()
         {
