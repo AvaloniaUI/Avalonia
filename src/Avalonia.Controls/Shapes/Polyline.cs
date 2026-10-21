@@ -43,7 +43,8 @@ namespace Avalonia.Controls.Shapes
         protected override Geometry CreateDefiningGeometry()
         {
             var isFilled = Fill != null;
-            return new PolylineGeometry(Points, isFilled, FillRule);
+            // Re-assign the live collection so the geometry observes changes to it (#20565).
+            return new PolylineGeometry(Points, isFilled, FillRule) { Points = Points };
         }
     }
 }

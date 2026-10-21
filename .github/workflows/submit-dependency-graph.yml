@@ -1,0 +1,55 @@
+name: Submit Dependency Graph
+
+# Submits the resolved NuGet dependency graph to GitHub so Dependabot alerts see exact versions.
+
+on:
+  push:
+    branches:
+      - 'main'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: submit-dependency-graph-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  DOTNET_NOLOGO: 1
+
+jobs:
+
+  submit:
+    name: Submit Dependency Graph
+    if: github.repository == 'AvaloniaUI/Avalonia'
+    runs-on: windows-2025
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          submodules: recursive
+
+      - name: Install .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+
+      - name: Install Workloads
+        run: dotnet workload install android ios tvos maccatalyst macos wasm-tools
+
+      # The binary logs let the MSBuildBinaryLog detector read project properties.
+      - name: Restore
+        run: |
+          dotnet restore Avalonia.slnx -bl:restore.binlog
+          dotnet restore nukebuild/_build.csproj -bl:restore-nukebuild.binlog
+
+      - name: Submit Dependency Graph
+        uses: advanced-security/component-detection-dependency-submission-action@v0.2
+        with:
+          detectorsFilter: MSBuildBinaryLog

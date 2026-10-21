@@ -674,7 +674,7 @@ namespace Avalonia.Media.TextFormatting
         {
             if (textLength == 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(textLength), textLength, $"{nameof(textLength)} ('0') must be a non-zero value. ");
+                return [];
             }
 
             if (_indexedTextRuns is null || _indexedTextRuns.Count == 0)
