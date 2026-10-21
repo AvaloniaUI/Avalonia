@@ -44,15 +44,16 @@ namespace Avalonia.Platform
         /// An opaque immutable object provided by the platform's <c>ITopLevelImpl.PlatformSpecificSceneInfo</c>,
         /// or null when the platform doesn't provide one.
         /// </param>
-        /// <param name="BackgroundColor">
-        /// The top level's background when it is a single opaque color, for a platform to fill an area
-        /// the scene does not cover yet (a resized window before its frame arrives); transparent
-        /// (the default) when there is none.
-        /// </param>
         public record struct RenderTargetSceneInfo(PixelSize Size, double Scaling, Size LogicalSize,
-            CompositionTransparencyLevel TransparencyLevel, object? PlatformSpecificSceneInfo = null,
-            Media.Color BackgroundColor = default)
+            CompositionTransparencyLevel TransparencyLevel, object? PlatformSpecificSceneInfo = null)
         {
+            /// <summary>
+            /// The top level's background when it is a single opaque color, for a platform to fill an area
+            /// the scene does not cover yet (a resized window before its frame arrives); transparent
+            /// (the default) when there is none.
+            /// </summary>
+            public Media.Color BackgroundColor { get; init; }
+
             public RenderTargetSceneInfo(PixelSize size, double scaling, CompositionTransparencyLevel transparencyLevel) : this(size, scaling, size.ToSize(scaling), transparencyLevel)
             {
             }
