@@ -46,7 +46,6 @@ public partial class AvaloniaView
 
     void ITextInputMethodImpl.Reset()
     {
-        if (IsDrivingText)
-            BecomeFirstResponder();
+        // No-op
     }
 }

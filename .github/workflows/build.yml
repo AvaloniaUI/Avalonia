@@ -42,7 +42,6 @@ jobs:
         name: Install .NET
         uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: 8.0.x
           global-json-file: global.json
 
       - name: Install Workloads

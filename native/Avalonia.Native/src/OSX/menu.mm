@@ -38,7 +38,7 @@
     ComObjectWeakPtr<AvnAppMenuItem> _item;
 }
 
-- (id) initWithAvnAppMenuItem: (AvnAppMenuItem*)menuItem
+- (id) initWithAvnAppMenuItem: (const ComPtr<AvnAppMenuItem>&)menuItem
 {
     if(self != nil)
     {
@@ -87,7 +87,7 @@ AvnAppMenuItem::AvnAppMenuItem(bool isSeparator)
     }
     else
     {
-        _native = [[AvnMenuItem alloc] initWithAvnAppMenuItem: this];
+        _native = [[AvnMenuItem alloc] initWithAvnAppMenuItem: comself(this)];
     }
     
     _callback = nullptr;
@@ -98,17 +98,14 @@ NSMenuItem* AvnAppMenuItem::GetNative()
     return _native;
 }
 
-HRESULT AvnAppMenuItem::SetSubMenu (IAvnMenu* menu)
+HRESULT AvnAppMenuItem::SetSubMenu (const ComPtr<IAvnMenu>& menu)
 {
-    START_COM_CALL;
-
     @autoreleasepool
     {
-        if(menu != nullptr)
+        auto avnMenu = menu.dynamicCast<AvnAppMenu>();
+        if(avnMenu != nullptr)
         {
-            auto nsMenu = dynamic_cast<AvnAppMenu*>(menu)->GetNative();
-
-            [_native setSubmenu: nsMenu];
+            [_native setSubmenu: avnMenu->GetNative()];
 
             // Parity with -[NSMenu setSubmenu:forItem:]: without submenuAction: a click is dispatched to
             // didSelectItem: and dismisses the menu instead of opening the submenu.
@@ -130,8 +127,6 @@ HRESULT AvnAppMenuItem::SetSubMenu (IAvnMenu* menu)
 
 HRESULT AvnAppMenuItem::SetTitle (char* utf8String)
 {
-    START_COM_CALL;
-    
     @autoreleasepool
     {
         if (utf8String != nullptr)
@@ -145,8 +140,6 @@ HRESULT AvnAppMenuItem::SetTitle (char* utf8String)
 
 HRESULT AvnAppMenuItem::SetToolTip (char* utf8String)
 {
-    START_COM_CALL;
-
     @autoreleasepool
     {
         if (utf8String != nullptr)
@@ -160,8 +153,6 @@ HRESULT AvnAppMenuItem::SetToolTip (char* utf8String)
 
 HRESULT AvnAppMenuItem::SetGesture (AvnKey key, AvnInputModifiers modifiers)
 {
-    START_COM_CALL;
-    
     @autoreleasepool
     {
         if(key != AvnKeyNone)
@@ -198,10 +189,8 @@ HRESULT AvnAppMenuItem::SetGesture (AvnKey key, AvnInputModifiers modifiers)
     }
 }
 
-HRESULT AvnAppMenuItem::SetAction (IAvnPredicateCallback* predicate, IAvnActionCallback* callback)
+HRESULT AvnAppMenuItem::SetAction (const ComPtr<IAvnPredicateCallback>& predicate, const ComPtr<IAvnActionCallback>& callback)
 {
-    START_COM_CALL;
-    
     @autoreleasepool
     {
         _predicate = predicate;
@@ -212,8 +201,6 @@ HRESULT AvnAppMenuItem::SetAction (IAvnPredicateCallback* predicate, IAvnActionC
 
 HRESULT AvnAppMenuItem::SetIsChecked (bool isChecked)
 {
-    START_COM_CALL;
-    
     @autoreleasepool
     {
         [_native setState:(isChecked && _isCheckable ? NSOnState : NSOffState)];
@@ -223,8 +210,6 @@ HRESULT AvnAppMenuItem::SetIsChecked (bool isChecked)
 
 HRESULT AvnAppMenuItem::SetIsVisible (bool isVisible)
 {
-    START_COM_CALL;
-    
     @autoreleasepool
     {
         [_native setHidden:!isVisible];
@@ -234,8 +219,6 @@ HRESULT AvnAppMenuItem::SetIsVisible (bool isVisible)
 
 HRESULT AvnAppMenuItem::SetToggleType(AvnMenuItemToggleType toggleType)
 {
-    START_COM_CALL;
-    
     @autoreleasepool
     {
         switch(toggleType)
@@ -265,8 +248,6 @@ HRESULT AvnAppMenuItem::SetToggleType(AvnMenuItemToggleType toggleType)
 
 HRESULT AvnAppMenuItem::SetIcon(void *data, size_t length)
 {
-    START_COM_CALL;
-    
     @autoreleasepool
     {
         if(data != nullptr)
@@ -313,16 +294,11 @@ void AvnAppMenuItem::RaiseOnClicked()
     }
 }
 
-AvnAppMenu::AvnAppMenu(IAvnMenuEvents* events)
+AvnAppMenu::AvnAppMenu(const ComPtr<IAvnMenuEvents>& events)
 {
     _baseEvents = events;
-    _delegate = [[AvnMenuDelegate alloc] initWithParent: this];
+    _delegate = [[AvnMenuDelegate alloc] initWithParent: comself(this)];
     _native = [[AvnMenu alloc] initWithDelegate: _delegate];
-}
-
-AvnAppMenu::~AvnAppMenu()
-{
-    [_delegate parentDestroyed];
 }
 
 
@@ -356,10 +332,8 @@ void AvnAppMenu::RaiseClosed()
 }
 
 
-HRESULT AvnAppMenu::InsertItem(int index, IAvnMenuItem *item)
+HRESULT AvnAppMenu::InsertItem(int index, const ComPtr<IAvnMenuItem>& item)
 {
-    START_COM_CALL;
-    
     @autoreleasepool
     {
         if([_native hasGlobalMenuItem])
@@ -367,7 +341,7 @@ HRESULT AvnAppMenu::InsertItem(int index, IAvnMenuItem *item)
             index++;
         }
         
-        auto avnMenuItem = dynamic_cast<AvnAppMenuItem*>(item);
+        auto avnMenuItem = item.dynamicCast<AvnAppMenuItem>();
         
         if(avnMenuItem != nullptr)
         {
@@ -378,13 +352,11 @@ HRESULT AvnAppMenu::InsertItem(int index, IAvnMenuItem *item)
     }
 }
 
-HRESULT AvnAppMenu::RemoveItem (IAvnMenuItem* item)
+HRESULT AvnAppMenu::RemoveItem (const ComPtr<IAvnMenuItem>& item)
 {
-    START_COM_CALL;
-    
     @autoreleasepool
     {
-        auto avnMenuItem = dynamic_cast<AvnAppMenuItem*>(item);
+        auto avnMenuItem = item.dynamicCast<AvnAppMenuItem>();
         
         if(avnMenuItem != nullptr)
         {
@@ -397,8 +369,6 @@ HRESULT AvnAppMenu::RemoveItem (IAvnMenuItem* item)
 
 HRESULT AvnAppMenu::SetTitle (char* utf8String)
 {
-    START_COM_CALL;
-    
     @autoreleasepool
     {
         if (utf8String != nullptr)
@@ -412,8 +382,6 @@ HRESULT AvnAppMenu::SetTitle (char* utf8String)
 
 HRESULT AvnAppMenu::Clear()
 {
-    START_COM_CALL;
-    
     @autoreleasepool
     {
         [_native removeAllItems];
@@ -423,18 +391,13 @@ HRESULT AvnAppMenu::Clear()
 
 @implementation AvnMenuDelegate
 {
-    AvnAppMenu* _parent;
+    ComObjectWeakPtr<AvnAppMenu> _parent;
 }
-- (id) initWithParent:(AvnAppMenu *)parent
+- (id) initWithParent:(const ComPtr<AvnAppMenu>&)parent
 {
     self = [super init];
     _parent = parent;
     return self;
-}
-
-- (void) parentDestroyed
-{
-    _parent = nullptr;
 }
 
 - (BOOL)menu:(NSMenu *)menu updateItem:(NSMenuItem *)item atIndex:(NSInteger)index shouldCancel:(BOOL)shouldCancel
@@ -451,56 +414,47 @@ HRESULT AvnAppMenu::Clear()
 
 - (void)menuNeedsUpdate:(NSMenu *)menu
 {
-    if(_parent)
-        _parent->RaiseNeedsUpdate();
+    if(auto parent = _parent.tryGet())
+        parent->RaiseNeedsUpdate();
 }
 
 - (void)menuWillOpen:(NSMenu *)menu
 {
-    if(_parent)
-        _parent->RaiseOpening();
+    if(auto parent = _parent.tryGet())
+        parent->RaiseOpening();
 }
 
 - (void)menuDidClose:(NSMenu *)menu
 {
-    if(_parent)
-        _parent->RaiseClosed();
+    if(auto parent = _parent.tryGet())
+        parent->RaiseClosed();
 }
 
 @end
 
-extern IAvnMenu* CreateAppMenu(IAvnMenuEvents* cb)
+extern ComPtr<IAvnMenu> CreateAppMenu(const ComPtr<IAvnMenuEvents>& cb)
 {
-    @autoreleasepool
-    {
-        return new AvnAppMenu(cb);
-    }
+    return comnew<AvnAppMenu>(cb);
 }
 
-extern IAvnMenuItem* CreateAppMenuItem()
+extern ComPtr<IAvnMenuItem> CreateAppMenuItem()
 {
-    @autoreleasepool
-    {
-        return new AvnAppMenuItem(false);
-    }
+    return comnew<AvnAppMenuItem>(false);
 }
 
-extern IAvnMenuItem* CreateAppMenuItemSeparator()
+extern ComPtr<IAvnMenuItem> CreateAppMenuItemSeparator()
 {
-    @autoreleasepool
-    {
-        return new AvnAppMenuItem(true);
-    }
+    return comnew<AvnAppMenuItem>(true);
 }
 
 static ComStaticPtr<AvnAppMenu> s_appMenu;
 static NSMenuItem* s_appMenuItem = nullptr;
 
-extern void SetAppMenu(IAvnMenu *menu)
+extern void SetAppMenu(const ComPtr<IAvnMenu>& menu)
 {
-    s_appMenu.set(dynamic_cast<AvnAppMenu*>(menu));
+    s_appMenu.set(menu.dynamicCast<AvnAppMenu>());
     
-    if(s_appMenu != nullptr)
+    if(s_appMenu)
     {
         auto currentMenu = [s_appMenuItem menu];
         
@@ -531,15 +485,15 @@ extern void SetAppMenu(IAvnMenu *menu)
     }
 }
 
-extern void SetServicesMenu (IAvnMenu* menu)
+extern void SetServicesMenu(const ComPtr<IAvnMenu>& menu)
 {
-    auto nativeMenu = dynamic_cast<AvnAppMenu*>(menu);
-    [NSApplication sharedApplication].servicesMenu = nativeMenu->GetNative();
+    auto nativeMenu = menu.dynamicCast<AvnAppMenu>();
+    [NSApplication sharedApplication].servicesMenu = nativeMenu ? nativeMenu->GetNative() : nil;
 }
 
-extern AvnAppMenu* GetAppMenu ()
+extern ComPtr<AvnAppMenu> GetAppMenu()
 {
-    return s_appMenu.getRaw();
+    return s_appMenu;
 }
 
 extern NSMenuItem* GetAppMenuItem ()

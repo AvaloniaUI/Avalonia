@@ -111,7 +111,7 @@ public static class BrowserAppBuilder
                 {
                     tcs.TrySetException(ex);
                 }
-            });
+            }) { Name = "Avalonia UI Thread" };
 #pragma warning disable CA1416
             thread.Start();
 #pragma warning restore CA1416
@@ -155,6 +155,9 @@ public static class BrowserAppBuilder
 
         if (BrowserWindowingPlatform.IsThreadingEnabled)
         {
+            // Created on the main thread so its JS side can signal the dispatcher thread directly.
+            BrowserWindowingPlatform.WakeupEvent ??= new BrowserAtomicsWakeupEvent();
+            MultiThreadedDispatcherHelper.SetWakeupEvent(BrowserWindowingPlatform.WakeupEvent.Pointer);
             await RenderWorker.InitializeAsync();
         }
 
