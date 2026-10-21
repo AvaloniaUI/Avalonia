@@ -46,6 +46,7 @@
     </StackPanel>
 
     <TableView ItemsSource="{Binding Countries}"
+               Margin="10"
                CanUserResizeColumns="{Binding #CanUserResizeColumns.IsChecked}">
       <TableView.Columns>
         <TableViewColumn Header="Name"

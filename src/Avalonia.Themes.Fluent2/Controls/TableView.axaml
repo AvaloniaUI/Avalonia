@@ -15,90 +15,98 @@
 
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
-      <StaticResource x:Key="TableViewForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
-      <StaticResource x:Key="TableViewBackground" ResourceKey="ControlFillColorDefault" />
-      <StaticResource x:Key="TableViewBorderBrush" ResourceKey="SystemControlForegroundBaseHighBrush" />
-      <StaticResource x:Key="TableViewBorderThickness" ResourceKey="ListBoxThemeBorderThickness" />
-      <StaticResource x:Key="TableViewHeaderBackground" ResourceKey="ControlFillColorSecondary" />
+      <StaticResource x:Key="TabularSurfaceRowBackground" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TabularSurfaceRowBackgroundPointerOver" ResourceKey="SubtleFillColorSecondary" />
+      <StaticResource x:Key="TabularSurfaceRowBackgroundPressed" ResourceKey="SubtleFillColorTertiary" />
+      <StaticResource x:Key="TabularSurfaceRowBackgroundSelected" ResourceKey="SubtleFillColorSecondary" />
+      <StaticResource x:Key="TabularSurfaceRowBackgroundSelectedPointerOver" ResourceKey="SubtleFillColorTertiary" />
+      <StaticResource x:Key="TabularSurfaceRowBackgroundSelectedPressed" ResourceKey="SubtleFillColorSecondary" />
+      <StaticResource x:Key="TabularSurfaceRowBackgroundDisabled" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TabularSurfaceSelectionIndicator" ResourceKey="SystemAccentColor" />
+
+      <SolidColorBrush x:Key="TabularSurfaceSelectionIndicatorDisabled" Color="#5C000000" />
+
+      <StaticResource x:Key="TabularSurfaceRowForeground" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TabularSurfaceRowForegroundSelected" ResourceKey="TextFillColorPrimary" />
+
+      <StaticResource x:Key="TabularSurfaceRowForegroundSelectedPointerOver" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TabularSurfaceRowForegroundSelectedPressed" ResourceKey="TextFillColorPrimary" />
+
+      <StaticResource x:Key="TabularSurfaceRowForegroundPointerOver" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TabularSurfaceRowForegroundPressed" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TabularSurfaceRowForegroundDisabled" ResourceKey="TextFillColorDisabled" />
+      
+      <StaticResource x:Key="TabularSurfaceHeaderBackground" ResourceKey="SubtleFillColorSecondary" />
+      <StaticResource x:Key="TabularSurfaceHeaderForeground" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="TabularSurfaceHeaderSeparator" ResourceKey="ControlStrokeColorDefault" />
+      <StaticResource x:Key="TabularSurfaceHeaderBackgroundPointerOver" ResourceKey="SubtleFillColorSecondary" />
+      <StaticResource x:Key="TabularSurfaceHeaderBackgroundPressed" ResourceKey="SubtleFillColorTertiary" />
+      <StaticResource x:Key="TabularSurfaceHeaderForegroundPointerOver" ResourceKey="TextFillColorPrimary" />
+
+      <StaticResource x:Key="TabularSurfaceHeaderForegroundPressed" ResourceKey="TextFillColorPrimary" />
+
+      <StaticResource x:Key="TabularSurfaceGroupHeaderBackground" ResourceKey="LayerFillColorDefault" />
+      <StaticResource x:Key="TabularSurfaceGroupHeaderForeground" ResourceKey="TextFillColorPrimary" />
+
+      <StaticResource x:Key="TabularSurfaceGroupHeaderBorder" ResourceKey="Transparent" />
+      <SolidColorBrush x:Key="TabularSurfaceGridLine" Color="#29000000" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
-      <StaticResource x:Key="TableViewForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
-      <StaticResource x:Key="TableViewBackground" ResourceKey="ControlFillColorDefault" />
-      <StaticResource x:Key="TableViewBorderBrush" ResourceKey="SystemControlForegroundBaseHighBrush" />
-      <StaticResource x:Key="TableViewBorderThickness" ResourceKey="ListBoxThemeBorderThickness" />
-      <StaticResource x:Key="TableViewHeaderBackground" ResourceKey="ControlFillColorSecondary" />
+      <StaticResource x:Key="TabularSurfaceRowBackground" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TabularSurfaceRowBackgroundPointerOver" ResourceKey="SubtleFillColorSecondary" />
+      <StaticResource x:Key="TabularSurfaceRowBackgroundPressed" ResourceKey="SubtleFillColorTertiary" />
+      <StaticResource x:Key="TabularSurfaceRowBackgroundSelected" ResourceKey="SubtleFillColorSecondary" />
+      <StaticResource x:Key="TabularSurfaceRowBackgroundSelectedPointerOver" ResourceKey="SubtleFillColorTertiary" />
+      <StaticResource x:Key="TabularSurfaceRowBackgroundSelectedPressed" ResourceKey="SubtleFillColorSecondary" />
+      <StaticResource x:Key="TabularSurfaceRowBackgroundDisabled" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TabularSurfaceSelectionIndicatorFill" ResourceKey="SystemAccentColor" />
+
+      <SolidColorBrush x:Key="TabularSurfaceSelectionIndicatorFillDisabled" Color="#5DFFFFFF" />
+
+      <StaticResource x:Key="TabularSurfaceRowForeground" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TabularSurfaceRowForegroundSelected" ResourceKey="TextFillColorPrimary" />
+
+      <StaticResource x:Key="TabularSurfaceRowForegroundSelectedPointerOver" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TabularSurfaceRowForegroundSelectedPressed" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TabularSurfaceRowForegroundPointerOver" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TabularSurfaceRowForegroundPressed" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TabularSurfaceRowForegroundDisabled" ResourceKey="TextFillColorDisabled" />
+
+      <StaticResource x:Key="TabularSurfaceHeaderBackground" ResourceKey="SubtleFillColorSecondary" />
+      <StaticResource x:Key="TabularSurfaceHeaderForeground" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="TabularSurfaceHeaderSeparator" ResourceKey="ControlStrokeColorDefault" />
+      <StaticResource x:Key="TabularSurfaceHeaderBackgroundPointerOver" ResourceKey="SubtleFillColorSecondary" />
+      <StaticResource x:Key="TabularSurfaceHeaderBackgroundPressed" ResourceKey="SubtleFillColorTertiary" />
+      <StaticResource x:Key="TabularSurfaceHeaderForegroundPointerOver" ResourceKey="TextFillColorPrimary" />
+
+      <StaticResource x:Key="TabularSurfaceHeaderForegroundPressed" ResourceKey="TextFillColorPrimary" />
+
+      <StaticResource x:Key="TabularSurfaceGroupHeaderBackground" ResourceKey="LayerFillColorDefault" />
+      <StaticResource x:Key="TabularSurfaceGroupHeaderForeground" ResourceKey="TextFillColorPrimary" />
+
+      <StaticResource x:Key="TabularSurfaceGroupHeaderBorder" ResourceKey="Transparent" />
+      <SolidColorBrush x:Key="TabularSurfaceGridLine" Color="#29FFFFFF" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 
-  <!-- ScrollViewer in TableView -->
-  <ControlTheme x:Key="TableViewScrollViewerTheme" TargetType="ScrollViewer">
-    <Setter Property="Background" Value="Transparent" />
-    <Setter Property="Template">
-      <ControlTemplate>
-        <Grid ColumnDefinitions="*,Auto"
-              RowDefinitions="*,Auto">
-            <DockPanel Name="ContentPanel">
-              <Border Background="{DynamicResource TableViewHeaderBackground}"
-                      Padding="{DynamicResource TableViewRowPadding}"
-                      DockPanel.Dock="Top">
-                <TableViewColumnHeadersPresenter />
-              </Border>
-              <ScrollContentPresenter Name="PART_ContentPresenter"
-                                      Background="{TemplateBinding Background}"
-                                      HorizontalSnapPointsType="{TemplateBinding HorizontalSnapPointsType}"
-                                      VerticalSnapPointsType="{TemplateBinding VerticalSnapPointsType}"
-                                      HorizontalSnapPointsAlignment="{TemplateBinding HorizontalSnapPointsAlignment}"
-                                      VerticalSnapPointsAlignment="{TemplateBinding VerticalSnapPointsAlignment}"
-                                      Padding="{TemplateBinding Padding}"
-                                      ScrollViewer.IsScrollInertiaEnabled="{TemplateBinding IsScrollInertiaEnabled}">
-                <ScrollContentPresenter.GestureRecognizers>
-                  <ScrollGestureRecognizer CanHorizontallyScroll="{Binding CanHorizontallyScroll, ElementName=PART_ContentPresenter}"
-                                           CanVerticallyScroll="{Binding CanVerticallyScroll, ElementName=PART_ContentPresenter}"
-                                           IsScrollInertiaEnabled="{Binding (ScrollViewer.IsScrollInertiaEnabled), ElementName=PART_ContentPresenter}" />
-                </ScrollContentPresenter.GestureRecognizers>
-              </ScrollContentPresenter>
-            </DockPanel>
-          <ScrollBar Name="PART_HorizontalScrollBar"
-                     Orientation="Horizontal"
-                     Grid.Column="0"
-                     Grid.Row="1" />
-          <ScrollBar Name="PART_VerticalScrollBar"
-                     Orientation="Vertical"
-                     Grid.Column="1"
-                     Grid.Row="0" />
-          <Panel x:Name="PART_ScrollBarsSeparator"
-                 Grid.Row="1"
-                 Grid.Column="1"
-                 Background="{DynamicResource ScrollViewerScrollBarsSeparatorBackground}"
-                 Opacity="0">
-            <Panel.Transitions>
-              <Transitions>
-                <DoubleTransition Property="Opacity" Duration="0:0:0.1" />
-              </Transitions>
-            </Panel.Transitions>
-          </Panel>
-        </Grid>
-      </ControlTemplate>
-    </Setter>
-
-    <Style Selector="^[IsExpanded=true] /template/ Panel#PART_ScrollBarsSeparator">
-      <Setter Property="Opacity" Value="1" />
-    </Style>
-
-    <Style Selector="^[AllowAutoHide=True] /template/ DockPanel#ContentPanel">
-      <Setter Property="Grid.ColumnSpan" Value="2" />
-      <Setter Property="Grid.RowSpan" Value="2" />
-    </Style>
-
-  </ControlTheme>
+  <x:Double x:Key="TableViewRowMinHeight">40</x:Double>
+  <x:Double x:Key="TableViewHeaderFontSize">14</x:Double>
+  <FontWeight x:Key="TableViewHeaderFontWeight">SemiBold</FontWeight>
+  <x:Double x:Key="TableViewCellFontSize">14</x:Double>
+  <x:Double x:Key="TableViewResizeGripperWidth">8</x:Double>
+  <Thickness x:Key="TableViewHeaderCellPadding">8,4,8,4</Thickness>
+  <Thickness x:Key="TableViewCellPadding">8,4,8,4</Thickness>
+  <Thickness x:Key="TableViewHeaderRowBorderThickness">0,0,0,1</Thickness>
 
   <!-- TableView theme -->
   <ControlTheme x:Key="{x:Type TableView}" TargetType="TableView" BasedOn="{StaticResource DefaultTableViewTheme}"/>
   <ControlTheme x:Key="DefaultTableViewTheme" TargetType="TableView">
-    <Setter Property="Foreground" Value="{DynamicResource TableViewForeground}" />
-    <Setter Property="Background" Value="{DynamicResource TableViewBackground}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource TableViewBorderBrush}" />
-    <Setter Property="BorderThickness" Value="{DynamicResource TableViewBorderThickness}" />
+    <Setter Property="IsTabStop" Value="False" />
+    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
+    <Setter Property="Background" Value="{DynamicResource TabularSurfaceRowBackground}" />
+    <Setter Property="Foreground" Value="{DynamicResource TabularSurfaceRowForeground}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource TabularSurfaceGridLine}" />
+    <Setter Property="BorderThickness" Value="1" />
     <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
     <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
     <Setter Property="ScrollViewer.IsScrollChainingEnabled" Value="True" />
@@ -106,26 +114,44 @@
     <Setter Property="TextBlock.TextTrimming" Value="{x:Static TextTrimming.CharacterEllipsis}" />
     <Setter Property="Template">
       <ControlTemplate>
-        <Border ClipToBounds="{TemplateBinding ClipToBounds}"
-                Background="{TemplateBinding Background}"
+        <Border Background="{TemplateBinding Background}"
                 BorderBrush="{TemplateBinding BorderBrush}"
                 BorderThickness="{TemplateBinding BorderThickness}"
                 CornerRadius="{TemplateBinding CornerRadius}">
-          <ScrollViewer Name="PART_ScrollViewer"
-                        Theme="{StaticResource TableViewScrollViewerTheme}"
-                        VerticalSnapPointsType="{TemplateBinding (ScrollViewer.VerticalSnapPointsType)}"
-                        HorizontalSnapPointsType="{TemplateBinding (ScrollViewer.HorizontalSnapPointsType)}"
-                        HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
-                        VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}"
-                        IsScrollChainingEnabled="{TemplateBinding (ScrollViewer.IsScrollChainingEnabled)}"
-                        IsScrollInertiaEnabled="{TemplateBinding (ScrollViewer.IsScrollInertiaEnabled)}"
-                        IsDeferredScrollingEnabled="{TemplateBinding (ScrollViewer.IsDeferredScrollingEnabled)}"
-                        AllowAutoHide="{TemplateBinding (ScrollViewer.AllowAutoHide)}"
-                        BringIntoViewOnFocusChange="{TemplateBinding (ScrollViewer.BringIntoViewOnFocusChange)}">
-            <ItemsPresenter Name="PART_ItemsPresenter"
-                            ItemsPanel="{TemplateBinding ItemsPanel}"
-                            Margin="{TemplateBinding Padding}" />
-          </ScrollViewer>
+          <Grid RowDefinitions="Auto,*">
+            <Border x:Name="PART_HeaderRow"
+                    Grid.Row="0"
+                    BorderThickness="{StaticResource TableViewHeaderRowBorderThickness}"
+                    Background="{DynamicResource TabularSurfaceHeaderBackground}"
+                    BorderBrush="{DynamicResource TabularSurfaceGridLine}">
+              <Grid>
+                <ScrollViewer x:Name="PART_HeaderScroller"
+                              HorizontalScrollBarVisibility="Disabled"
+                              VerticalScrollBarVisibility="Disabled">
+                  <TableViewColumnHeadersPresenter
+                    MinHeight="{StaticResource TableViewRowMinHeight}"
+                    HorizontalAlignment="Left" />
+                </ScrollViewer>
+              </Grid>
+            </Border>
+            <ScrollViewer Name="PART_ScrollViewer"
+                          Grid.Row="1"
+                          VerticalSnapPointsType="{TemplateBinding (ScrollViewer.VerticalSnapPointsType)}"
+                          HorizontalSnapPointsType="{TemplateBinding (ScrollViewer.HorizontalSnapPointsType)}"
+                          HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
+                          VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}"
+                          IsScrollChainingEnabled="{TemplateBinding (ScrollViewer.IsScrollChainingEnabled)}"
+                          IsScrollInertiaEnabled="{TemplateBinding (ScrollViewer.IsScrollInertiaEnabled)}"
+                          IsDeferredScrollingEnabled="{TemplateBinding (ScrollViewer.IsDeferredScrollingEnabled)}"
+                          AllowAutoHide="{TemplateBinding (ScrollViewer.AllowAutoHide)}"
+                          BringIntoViewOnFocusChange="{TemplateBinding (ScrollViewer.BringIntoViewOnFocusChange)}">
+              <Grid Background="Transparent">
+                <ItemsPresenter Name="PART_ItemsPresenter"
+                                ItemsPanel="{TemplateBinding ItemsPanel}"
+                                Margin="{TemplateBinding Padding}" />
+              </Grid>
+            </ScrollViewer>
+          </Grid>
         </Border>
       </ControlTemplate>
     </Setter>

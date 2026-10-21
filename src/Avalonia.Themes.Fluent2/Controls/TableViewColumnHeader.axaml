@@ -10,30 +10,22 @@
 
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
-      <StaticResource x:Key="TableViewColumnHeaderSeparatorBackground" ResourceKey="SystemBaseLowColor" />
+      <StaticResource x:Key="TableViewColumnHeaderSeparatorFill" ResourceKey="SystemBaseLowColor" />
+      <StaticResource x:Key="TableViewColumnHeaderSeparatorPointerOverFill" ResourceKey="AccentFillColorDefaultBrush" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
-      <StaticResource x:Key="TableViewColumnHeaderSeparatorBackground" ResourceKey="SystemBaseLowColor" />
+      <StaticResource x:Key="TableViewColumnHeaderSeparatorFill" ResourceKey="SystemBaseLowColor" />
+      <StaticResource x:Key="TableViewColumnHeaderSeparatorPointerOverFill" ResourceKey="AccentFillColorDefaultBrush" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 
 
-  <x:Double x:Key="TableViewColumnResizerWidth">12</x:Double>
-  <Thickness x:Key="TableViewColumnResizerMargin">0,-9,-6,-12</Thickness>
-
-  <ControlTemplate x:Key="TableViewColumnHeaderResizerTemplate" TargetType="Thumb">
-    <Border Background="Transparent">
-      <Rectangle Width="1"
-                 Fill="{DynamicResource TableViewColumnHeaderSeparatorBackground}"
-                 HorizontalAlignment="Center" />
-    </Border>
-  </ControlTemplate>
-
   <ControlTheme x:Key="{x:Type TableViewColumnHeader}" TargetType="TableViewColumnHeader" BasedOn="{StaticResource DefaultTableViewColumnHeaderTheme}"/>
 
   <ControlTheme x:Key="DefaultTableViewColumnHeaderTheme" TargetType="TableViewColumnHeader">
-    <Setter Property="FontWeight" Value="SemiBold" />
-    <Setter Property="Padding" Value="{DynamicResource TableViewCellPadding}" />
+    <Setter Property="FontWeight" Value="{DynamicResource TableViewHeaderFontWeight}" />
+    <Setter Property="FontSize" Value="{DynamicResource TableViewHeaderFontSize}"/>
+    <Setter Property="Padding" Value="{DynamicResource TableViewHeaderCellPadding}" />
     <Setter Property="HorizontalContentAlignment" Value="Left" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
     <Setter Property="ClipToBounds" Value="False" />
@@ -51,11 +43,10 @@
                             VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                             HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" />
           <Thumb Name="PART_Resizer"
-                 Template="{StaticResource TableViewColumnHeaderResizerTemplate}"
-                 Width="{DynamicResource TableViewColumnResizerWidth}"
+                 Theme="{StaticResource TableViewColumnHeaderResizerTemplate}"
+                 Width="{DynamicResource TableViewResizeGripperWidth}"
                  HorizontalAlignment="Right"
                  Cursor="SizeWestEast"
-                 Margin="{DynamicResource TableViewColumnResizerMargin}"
                  IsEnabled="{Binding RelativeSource={RelativeSource TemplatedParent},
                  Path=Column?.CanUserEffectivelyResize, FallbackValue=False}">
           </Thumb>
@@ -64,4 +55,24 @@
     </Setter>
   </ControlTheme>
 
+  <ControlTheme x:Key="TableViewColumnHeaderResizerTemplate" TargetType="Thumb">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Background="Transparent">
+          <Rectangle Width="1"
+                     Name="ResizerRectangle"
+                     Fill="{DynamicResource TableViewColumnHeaderSeparatorFill}"
+                     HorizontalAlignment="Center" />
+          <Border.Styles>
+          </Border.Styles>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^:pointerover /template/ Rectangle#ResizerRectangle">
+      <Setter Property="Fill" Value="{DynamicResource TableViewColumnHeaderSeparatorPointerOverFill}" />
+    </Style>
+    <Style Selector="^:pressed /template/ Rectangle#ResizerRectangle">
+      <Setter Property="Fill" Value="{DynamicResource TableViewColumnHeaderSeparatorPointerOverFill}" />
+    </Style>
+  </ControlTheme>
 </ResourceDictionary>
