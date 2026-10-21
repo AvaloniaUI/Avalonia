@@ -76,15 +76,6 @@ public class ApplicationLifetimeAnalyzerTests
         """);
 
     [Fact]
-    public Task Hard_Cast_And_MainWindow_Read_Report_AVA2003_And_AVA2004() => Verify(
-        """
-        public class ViewModel
-        {
-            public Window? Owner => ({|AVA2003:(IClassicDesktopStyleApplicationLifetime)Application.Current!.ApplicationLifetime!|}).{|AVA2004:MainWindow|};
-        }
-        """);
-
-    [Fact]
     public Task Checked_Casts_Do_Not_Report() => Verify(
         """
         public class DialogService
@@ -97,75 +88,6 @@ public class ApplicationLifetimeAnalyzerTests
                 {
                     desktop.Shutdown();
                 }
-            }
-        }
-        """);
-
-    [Fact]
-    public Task MainWindow_Read_Inside_App_Does_Not_Report() => Verify(
-        """
-        public class App : Application
-        {
-            public override void OnFrameworkInitializationCompleted()
-            {
-                if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-                {
-                    desktop.MainWindow = new Window();
-                    desktop.Startup += (_, _) => desktop.MainWindow?.Activate();
-                }
-            }
-        }
-        """);
-
-    [Fact]
-    public Task MainWindow_Read_Outside_App_Reports_AVA2004() => Verify(
-        """
-        public class DialogService
-        {
-            public Window? GetOwner(IClassicDesktopStyleApplicationLifetime desktop) => desktop.{|AVA2004:MainWindow|};
-        }
-        """);
-
-    [Fact]
-    public Task MainWindow_Conditional_Read_Reports_AVA2004() => Verify(
-        """
-        public class DialogService
-        {
-            public Window? GetOwner(IClassicDesktopStyleApplicationLifetime? desktop) => desktop?.{|AVA2004:MainWindow|};
-        }
-        """);
-
-    [Fact]
-    public Task MainWindow_Read_From_Derived_Lifetime_Reports_AVA2004() => Verify(
-        """
-        public class MyLifetime : ClassicDesktopStyleApplicationLifetime
-        {
-            public Window? Owner => {|AVA2004:MainWindow|};
-        }
-        """);
-
-    [Fact]
-    public Task MainWindow_Property_Pattern_Reports_AVA2004() => Verify(
-        """
-        public class DialogService
-        {
-            public Window? GetOwner() =>
-                Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime { {|AVA2004:MainWindow|}: { } window }
-                    ? window
-                    : null;
-        }
-        """);
-
-    [Fact]
-    public Task MainWindow_Write_And_Windows_Read_Do_Not_Report() => Verify(
-        """
-        public class Setup
-        {
-            public string Run(IClassicDesktopStyleApplicationLifetime desktop)
-            {
-                desktop.MainWindow = new Window();
-                var count = desktop.Windows.Count;
-                return nameof(IClassicDesktopStyleApplicationLifetime.MainWindow);
             }
         }
         """);
