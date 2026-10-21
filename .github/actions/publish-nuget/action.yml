@@ -25,7 +25,7 @@ runs:
     - name: Install .NET
       uses: actions/setup-dotnet@v6
       with:
-        dotnet-version: 10.0.x
+        global-json-file: global.json
 
     # A token is only needed when downloading from another run.
     - name: Download Windows NuGet Packages
