@@ -797,6 +797,76 @@ namespace Avalonia.Controls.UnitTests
                 }
             }
 
+            [Theory]
+            [InlineData(1480, 900, 1280, 900)]
+            [InlineData(1000, 1200, 1000, 1024)]
+            [InlineData(1480, 1200, 1280, 1024)]
+            public void Content_Should_Fit_When_Platform_Constrains_Initial_Size(
+                double width,
+                double height,
+                double expectedWidth,
+                double expectedHeight)
+            {
+                using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+                var child = new Border();
+                var target = new Window
+                {
+                    Width = width,
+                    Height = height,
+                    Content = new Grid
+                    {
+                        ColumnDefinitions = new ColumnDefinitions("*"),
+                        RowDefinitions = new RowDefinitions("*"),
+                        Children = { child, new AvailableSizeControl() }
+                    }
+                };
+
+                Show(target);
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+                var expected = new Size(expectedWidth, expectedHeight);
+                Assert.Equal(expected, target.ClientSize);
+                Assert.Equal(new Rect(expected), child.Bounds);
+            }
+
+            [Theory]
+            [InlineData(1480, 900, 1280, 900)]
+            [InlineData(1000, 1200, 1000, 1024)]
+            [InlineData(1480, 1200, 1280, 1024)]
+            public void Content_Should_Fit_When_Platform_Constrains_Size_Set_After_Show(
+                double width,
+                double height,
+                double expectedWidth,
+                double expectedHeight)
+            {
+                using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+                var child = new Border();
+                var target = new Window
+                {
+                    Width = 800,
+                    Height = 600,
+                    Content = new Grid
+                    {
+                        ColumnDefinitions = new ColumnDefinitions("*"),
+                        RowDefinitions = new RowDefinitions("*"),
+                        Children = { child, new AvailableSizeControl() }
+                    },
+                };
+
+                Show(target);
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+                target.Width = width;
+                target.Height = height;
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+                var expected = new Size(expectedWidth, expectedHeight);
+                Assert.Equal(expected, target.ClientSize);
+                Assert.Equal(new Rect(expected), child.Bounds);
+            }
+
             [Fact]
             public void Child_Should_Be_Measured_With_ClientSize_If_SizeToContent_Is_Manual_And_No_Width_Height_Specified()
             {
@@ -1469,6 +1539,11 @@ namespace Avalonia.Controls.UnitTests
                 MeasureSizes.Add(availableSize);
                 return base.MeasureOverride(availableSize);
             }
+        }
+
+        private class AvailableSizeControl : Control
+        {
+            protected override Size MeasureOverride(Size availableSize) => availableSize;
         }
 
         [Fact]

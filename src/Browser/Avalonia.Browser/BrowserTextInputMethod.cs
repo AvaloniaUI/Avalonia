@@ -139,7 +139,7 @@ internal class BrowserTextInputMethod(
         _client.SetPreeditText(data);
     }
 
-    public void OnCompositionEnd(string? data)
+    public void OnCompositionEnd(ulong timestamp, string? data)
     {
         if (_client == null)
             return;
@@ -150,7 +150,7 @@ internal class BrowserTextInputMethod(
         
         if (data != null)
         {
-            _inputHandler.RawTextEvent(data);
+            _inputHandler.RawTextEvent(timestamp, data);
         }
     }
 }

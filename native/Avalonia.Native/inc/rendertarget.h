@@ -12,14 +12,14 @@
 @end
 
 @interface IOSurfaceRenderTarget : NSObject<IRenderTarget>
--(IOSurfaceRenderTarget*) initWithOpenGlContext: (IAvnGlContext*) context;
--(IAvnGlSurfaceRenderTarget*) createSurfaceRenderTarget;
--(IAvnSoftwareRenderTarget*) createSoftwareRenderTarget;
+-(IOSurfaceRenderTarget*) initWithOpenGlContext: (const ComPtr<IAvnGlContext>&) context;
+-(ComPtr<IAvnGlSurfaceRenderTarget>) createSurfaceRenderTarget;
+-(ComPtr<IAvnSoftwareRenderTarget>) createSoftwareRenderTarget;
 -(HRESULT) setSwFrame: (AvnFramebuffer*) fb;
 -(void)consumeSurfaces;
 @end
 
 @interface MetalRenderTarget : NSObject<IRenderTarget>
--(MetalRenderTarget*) initWithDevice: (IAvnMetalDevice*) device;
--(void) getRenderTarget: (IAvnMetalRenderTarget**) ppv;
+-(MetalRenderTarget*) initWithDevice: (const ComPtr<IAvnMetalDevice>&) device;
+-(ComPtr<IAvnMetalRenderTarget>) createRenderTarget;
 @end
