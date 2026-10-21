@@ -4,6 +4,8 @@ public static class DiagnosticIds
 {
     public const string OnPropertyChangedOverride = "AVA2001";
     public const string Bitmap = "AVA2002";
+    public const string ApplicationLifetimeCast = "AVA2003";
+    public const string MainWindowAccess = "AVA2004";
 
     // Avalonia property diagnostics.
     public const string AvaloniaPropertyAssociatedProperty = "AVP0001";
