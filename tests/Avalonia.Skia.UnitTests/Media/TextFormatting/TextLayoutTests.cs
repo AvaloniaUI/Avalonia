@@ -1445,6 +1445,37 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        [Theory]
+        [InlineData("abcd efgh ijkl", FlowDirection.LeftToRight)]
+        [InlineData("abcd efgh ijkl", FlowDirection.RightToLeft)]
+        [InlineData("אבגד הוזח טיכל", FlowDirection.LeftToRight)]
+        [InlineData("אבגד הוזח טיכל", FlowDirection.RightToLeft)]
+        public void EndOfParagraph_Should_Not_Add_A_Line_To_Wrapped_Text(string text, FlowDirection flowDirection)
+        {
+            using (Start())
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+
+                var unwrapped = new TextLayout(new SingleBufferTextSource(text, defaultProperties),
+                    new GenericTextParagraphProperties(flowDirection, TextAlignment.Left, true, true,
+                        defaultProperties, TextWrapping.NoWrap, 0, 0, 0));
+
+                var paragraphProperties = new GenericTextParagraphProperties(flowDirection, TextAlignment.Left, true,
+                    true, defaultProperties, TextWrapping.Wrap, 0, 0, 0);
+                var maxWidth = unwrapped.Width * 0.6;
+
+                var withEnd = new TextLayout(new SingleBufferTextSource(text, defaultProperties, true),
+                    paragraphProperties, maxWidth: maxWidth);
+                var withoutEnd = new TextLayout(new SingleBufferTextSource(text, defaultProperties),
+                    paragraphProperties, maxWidth: maxWidth);
+
+                Assert.True(withoutEnd.TextLines.Count > 1);
+                Assert.Equal(withoutEnd.TextLines.Count, withEnd.TextLines.Count);
+                Assert.Equal(withoutEnd.Height, withEnd.Height);
+                Assert.IsType<TextEndOfParagraph>(withEnd.TextLines[^1].TextLineBreak?.TextEndOfLine);
+            }
+        }
+
         [Fact]
         public void Should_Measure_TextLayoutSymbolWithAndWidthIncludingTrailingWhitespaceAndMinTextWidth()
         {

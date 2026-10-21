@@ -157,15 +157,16 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal(14, textLine.Length);
 
-                var first = textLine.TextRuns[0] as ShapedTextRun;
+                // The paragraph end takes the paragraph level, so it is visually first in a right-to-left line.
+                var first = textLine.TextRuns[0] as TextEndOfParagraph;
 
-                var last = textLine.TextRuns[4] as TextEndOfParagraph;
+                var second = textLine.TextRuns[1] as ShapedTextRun;
 
                 Assert.NotNull(first);
 
-                Assert.NotNull(last);
+                Assert.NotNull(second);
 
-                Assert.Equal("Hello".AsMemory(), first.Text);
+                Assert.Equal("Hello".AsMemory(), second.Text);
             }
         }
 
