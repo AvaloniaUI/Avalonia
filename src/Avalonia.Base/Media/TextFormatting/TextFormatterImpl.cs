@@ -870,39 +870,16 @@ namespace Avalonia.Media.TextFormatting
         private const int MaxBreakLookahead = 4096;
 
         /// <summary>
-        /// Creates an enumerator over the part of the run that can influence where the current line breaks.
+        /// Creates an enumerator that stops searching for break opportunities beyond the reach of the current line.
         /// Enumerating the whole run would scan all remaining text for every line of a long unbroken run.
         /// </summary>
         /// <param name="text">The text of the run.</param>
         /// <param name="measuredLength">The number of characters of the run that fit the line.</param>
-        /// <param name="lookaheadLength">The number of characters the enumerator covers.</param>
-        private static LineBreakEnumerator CreateLineBreakEnumerator(
-            ReadOnlySpan<char> text, int measuredLength, out int lookaheadLength)
+        private static LineBreakEnumerator CreateLineBreakEnumerator(ReadOnlySpan<char> text, int measuredLength)
         {
-            lookaheadLength = text.Length;
-
             var limit = (long)Math.Max(measuredLength, 0) + MaxBreakLookahead;
 
-            if (limit < text.Length)
-            {
-                lookaheadLength = (int)limit;
-
-                // Whitespace after a break hangs on the line however long it is, and the line consumes it in
-                // one go. Cover it and the character that ends it so the break after it is a real one.
-                while (lookaheadLength < text.Length && char.IsWhiteSpace(text[lookaheadLength - 1]))
-                {
-                    lookaheadLength++;
-                }
-
-                // Keep surrogate pairs intact.
-                if (lookaheadLength < text.Length &&
-                    char.IsHighSurrogate(text[lookaheadLength - 1]) && char.IsLowSurrogate(text[lookaheadLength]))
-                {
-                    lookaheadLength++;
-                }
-            }
-
-            return new LineBreakEnumerator(text.Slice(0, lookaheadLength));
+            return new LineBreakEnumerator(text, limit < text.Length ? (int)limit : int.MaxValue);
         }
 
         /// <summary>
@@ -982,7 +959,7 @@ namespace Avalonia.Media.TextFormatting
                     case ShapedTextRun:
                         {
                             var lineBreaker = CreateLineBreakEnumerator(
-                                currentRun.Text.Span, measuredLength - currentLength, out var lookaheadLength);
+                                currentRun.Text.Span, measuredLength - currentLength);
 
                             while (lineBreaker.MoveNext(out var lineBreak))
                             {
@@ -994,12 +971,6 @@ namespace Avalonia.Media.TextFormatting
 
                                     currentPosition = currentLength + lineBreak.PositionWrap;
 
-                                    break;
-                                }
-
-                                if (lineBreak.PositionWrap == lookaheadLength && lookaheadLength < currentRunLength)
-                                {
-                                    //The enumerator reports the end of the lookahead as a break, but it is not an opportunity.
                                     break;
                                 }
 
@@ -1080,7 +1051,7 @@ namespace Avalonia.Media.TextFormatting
                                 }
                             }
 
-                            if (!breakFound && lookaheadLength < currentRunLength)
+                            if (!breakFound && lineBreaker.LimitReached)
                             {
                                 //No opportunity within reach of the line: use the last one or break at the fitting length.
                                 currentPosition = lastWrapPosition == 0 ? measuredLength : lastWrapPosition;
