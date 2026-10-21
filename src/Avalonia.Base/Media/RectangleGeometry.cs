@@ -115,13 +115,9 @@ namespace Avalonia.Media
             }
             else
             {
-                var geometry = factory.CreateStreamGeometry();
-                using (var ctx = new StreamGeometryContext(geometry.Open()))
-                {
-                    GeometryBuilder.DrawRoundedCornersRectangle(ctx, Rect, radiusX, radiusY);
-                }
-
-                return geometry;
+                using var builder = factory.CreateStreamGeometryBuilder();
+                GeometryBuilder.DrawRoundedCornersRectangle(builder, Rect, radiusX, radiusY);
+                return builder.ToGeometry();
             }
         }
     }

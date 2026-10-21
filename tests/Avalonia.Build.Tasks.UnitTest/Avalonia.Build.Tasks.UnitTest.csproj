@@ -9,7 +9,6 @@
     <Configuration Condition="'$(Configuration)'==''">Debug</Configuration>
   </PropertyGroup>
 
-  <Import Project="..\..\build\HarfBuzzSharp.props" />
   <Import Project="..\..\build\XUnit.props" />
   <Import Project="..\..\build\SharedVersion.props" />
   <Import Project="..\..\build\NullableEnable.props" />

@@ -1630,6 +1630,35 @@ namespace Avalonia.Controls.UnitTests.Primitives
             }
         }
 
+        [Fact]
+        public void InheritsTransform_Should_Apply_Placement_Target_Scale_To_Each_Axis_Separately()
+        {
+            using (CreateServices())
+            {
+                var placementTarget = new Border
+                {
+                    Width = 100,
+                    Height = 20,
+                    RenderTransform = new ScaleTransform(1, 2),
+                };
+                var target = new Popup
+                {
+                    PlacementTarget = placementTarget,
+                    InheritsTransform = true,
+                    Height = 50,
+                };
+                var window = PreparedWindow(new Panel { Children = { placementTarget, target } });
+
+                window.LayoutManager.ExecuteInitialLayoutPass();
+                target.Open();
+
+                var transform = Assert.IsType<ScaleTransform>(target.Host!.Transform);
+                Assert.Equal(1, transform.ScaleX);
+                Assert.Equal(2, transform.ScaleY);
+                Assert.Equal(100, target.Host.Height);
+            }
+        }
+
         private IDisposable CreateServices()
         {
             return UnitTestApplication.Start(TestServices.StyledWindow.With(
