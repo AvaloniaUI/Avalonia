@@ -389,18 +389,6 @@ namespace Avalonia.Media.TextFormatting
 
             var currentPosition = FirstTextSourceIndex;
 
-            static FlowDirection GetDirection(TextRun textRun, FlowDirection currentDirection)
-            {
-                if (textRun is ShapedTextRun shapedTextRun)
-                {
-                    return shapedTextRun.ShapedBuffer.IsLeftToRight ?
-                        FlowDirection.LeftToRight :
-                        FlowDirection.RightToLeft;
-                }
-
-                return currentDirection;
-            }
-
             IndexedTextRun FindIndexedRun(out int index)
             {
                 index = 0;
@@ -475,7 +463,7 @@ namespace Avalonia.Media.TextFormatting
             var directionalWidth = 0.0;
             var firstRunIndex = currentIndexedRun.RunIndex;
 
-            var currentDirection = GetDirection(currentTextRun, _resolvedFlowDirection);
+            var currentDirection = GetRunDirection(currentIndexedRun);
 
             var currentX = Start + GetPreceedingDistance(currentIndexedRun.RunIndex);
 
@@ -577,16 +565,17 @@ namespace Avalonia.Media.TextFormatting
             return GetPreviousCharacterHit(characterHit, true);
         }
 
-        private static FlowDirection GetRunDirection(TextRun? textRun, FlowDirection currentDirection)
+        /// <summary>
+        /// Gets the direction of a run from the bidi level it was reordered with.
+        /// </summary>
+        /// <remarks>
+        /// Runs without glyphs must report the direction they were placed with. The visual walk over a
+        /// directional span assumes visual order matches logical order for that direction, so a run that
+        /// borrows its neighbour's direction gets consumed out of order and shifts every index after it.
+        /// </remarks>
+        private static FlowDirection GetRunDirection(IndexedTextRun indexedTextRun)
         {
-            if (textRun is ShapedTextRun shapedTextRun)
-            {
-                return shapedTextRun.ShapedBuffer.IsLeftToRight ?
-                    FlowDirection.LeftToRight :
-                    FlowDirection.RightToLeft;
-            }
-
-            return currentDirection;
+            return (indexedTextRun.BidiLevel & 1) == 0 ? FlowDirection.LeftToRight : FlowDirection.RightToLeft;
         }
 
         /// <summary>
@@ -652,7 +641,7 @@ namespace Avalonia.Media.TextFormatting
                     break;
                 }
 
-                var nextDirection = GetRunDirection(nextRun, flowDirection);
+                var nextDirection = GetRunDirection(nextIndexedRun);
 
                 if (nextDirection != flowDirection)
                 {
@@ -689,7 +678,7 @@ namespace Avalonia.Media.TextFormatting
             if (firstTextSourceIndex + textLength < FirstTextSourceIndex)
             {
                 var indexedTextRun = _indexedTextRuns[0];
-                var currentDirection = GetRunDirection(indexedTextRun.TextRun, _resolvedFlowDirection);
+                var currentDirection = GetRunDirection(indexedTextRun);
 
                 return [new TextBounds(new Rect(0, 0, 0, Height), currentDirection, [])];
             }
@@ -698,7 +687,7 @@ namespace Avalonia.Media.TextFormatting
             if (firstTextSourceIndex >= FirstTextSourceIndex + Length)
             {
                 var indexedTextRun = _indexedTextRuns[_indexedTextRuns.Count - 1];
-                var currentDirection = GetRunDirection(indexedTextRun.TextRun, _resolvedFlowDirection);
+                var currentDirection = GetRunDirection(indexedTextRun);
 
                 return [new TextBounds(new Rect(WidthIncludingTrailingWhitespace, 0, 0, Height), currentDirection, [])];
             }
@@ -723,7 +712,7 @@ namespace Avalonia.Media.TextFormatting
                     break;
                 }
 
-                var currentDirection = GetRunDirection(currentTextRun, _resolvedFlowDirection);
+                var currentDirection = GetRunDirection(currentIndexedRun);
 
                 if (currentIndexedRun.TextSourceCharacterIndex + currentTextRun.Length <= firstTextSourceIndex)
                 {

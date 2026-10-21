@@ -64,7 +64,8 @@ namespace Avalonia.Media.TextFormatting
                         TextRun = currentRun,
                         TextSourceCharacterIndex = firstTextSourceIndex,
                         RunIndex = i,
-                        NextRunIndex = i + 1
+                        NextRunIndex = i + 1,
+                        BidiLevel = _runs[i].Level
                     };
 
                     firstTextSourceIndex += currentRun.Length;

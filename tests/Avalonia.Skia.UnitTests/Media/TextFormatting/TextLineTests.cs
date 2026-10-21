@@ -1860,9 +1860,17 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 bounds = textLine.GetTextBounds(0, 25);
 
-                Assert.Equal(4, bounds.Count);
+                Assert.Equal(5, bounds.Count);
 
                 Assert.Equal(textLine.WidthIncludingTrailingWhitespace, bounds.Last().Rectangle.Right);
+
+                // The paragraph end is reordered at level 0, so it closes the line as an empty
+                // left-to-right span after the trailing Hebrew word instead of joining it.
+                var endOfParagraphBounds = bounds.Last();
+
+                Assert.Equal(FlowDirection.LeftToRight, endOfParagraphBounds.FlowDirection);
+                Assert.Equal(0, endOfParagraphBounds.Rectangle.Width);
+                Assert.IsType<TextEndOfParagraph>(Assert.Single(endOfParagraphBounds.TextRunBounds).TextRun);
             }
         }
 
