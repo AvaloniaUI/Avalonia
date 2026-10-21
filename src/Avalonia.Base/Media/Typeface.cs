@@ -159,13 +159,21 @@ namespace Avalonia.Media
             StringBuilder? normalizedFamilyNameBuilder = null;
             var totalCharsRemoved = 0;
 
-            var tokenizer = new SpanStringTokenizer(normalizedFamilyName, ' ');
+            // Split the name into words manually instead of using SpanStringTokenizer: real-world fonts can have
+            // repeated or trailing whitespace in their family names (e.g. "Autoproject  GOST Type A"),
+            // which the tokenizer rejects with a FormatException.
+            var index = 0;
+            var isFirstToken = true;
 
-            // Skip initial family name.
-            tokenizer.ReadSpan();
-
-            while (tokenizer.TryReadSpan(out var token))
+            while (TryReadWord(normalizedFamilyName, ref index, out var tokenIndex, out var token))
             {
+                // Skip initial family name.
+                if (isFirstToken)
+                {
+                    isFirstToken = false;
+                    continue;
+                }
+
                 // Don't try to match numbers.
                 if (new SpanStringTokenizer(token).TryReadInt32(out _))
                 {
@@ -194,7 +202,7 @@ namespace Avalonia.Media
                 {
                     // Carve out matched word from the normalized name.
                     normalizedFamilyNameBuilder ??= new StringBuilder(normalizedFamilyName);
-                    normalizedFamilyNameBuilder.Remove(tokenizer.CurrentTokenIndex - totalCharsRemoved, token.Length);
+                    normalizedFamilyNameBuilder.Remove(tokenIndex - totalCharsRemoved, token.Length);
                     totalCharsRemoved += token.Length;
                 }
             }
@@ -204,6 +212,28 @@ namespace Avalonia.Media
 
             //Preserve old font source
             return new Typeface(FontFamily, style, weight, stretch);
+        }
+
+        /// <summary>
+        /// Reads the next whitespace-separated word, skipping any amount of whitespace before it.
+        /// </summary>
+        private static bool TryReadWord(string text, ref int index, out int wordIndex, out ReadOnlySpan<char> word)
+        {
+            while (index < text.Length && char.IsWhiteSpace(text[index]))
+            {
+                index++;
+            }
+
+            wordIndex = index;
+
+            while (index < text.Length && !char.IsWhiteSpace(text[index]))
+            {
+                index++;
+            }
+
+            word = text.AsSpan(wordIndex, index - wordIndex);
+
+            return word.Length > 0;
         }
     }
 }
