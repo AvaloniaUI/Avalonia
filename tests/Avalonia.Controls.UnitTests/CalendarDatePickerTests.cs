@@ -439,7 +439,7 @@ namespace Avalonia.Controls.UnitTests
             window.LayoutManager.ExecuteInitialLayoutPass();
 
             picker.IsDropDownOpen = true;
-            Dispatcher.UIThread.RunJobs();
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
 
             Assert.True(GetCalendar(picker).IsFocused);
         }
@@ -456,7 +456,7 @@ namespace Avalonia.Controls.UnitTests
             window.LayoutManager.ExecuteInitialLayoutPass();
 
             picker.IsDropDownOpen = true;
-            Dispatcher.UIThread.RunJobs();
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
 
             var calendar = GetCalendar(picker);
 
