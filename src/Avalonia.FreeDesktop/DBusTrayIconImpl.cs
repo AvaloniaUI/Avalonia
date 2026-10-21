@@ -394,7 +394,7 @@ namespace Avalonia.FreeDesktop
         string IStatusNotifierItemProperties.AttentionIconName => "";
         (int, int, byte[])[] IStatusNotifierItemProperties.AttentionIconPixmap => [];
         string IStatusNotifierItemProperties.AttentionMovieName => "";
-        (string, (int, int, byte[])[], string, string) IStatusNotifierItemProperties.ToolTip => ("", [], "", "");
+        (string, (int, int, byte[])[], string, string) IStatusNotifierItemProperties.ToolTip => ("", [], _title, "");
 
         ValueTask IStatusNotifierItemHandler.HandleGetPropertyAsync(IStatusNotifierItemHandler.GetPropertyContext context)
             => context.Handle(this);
