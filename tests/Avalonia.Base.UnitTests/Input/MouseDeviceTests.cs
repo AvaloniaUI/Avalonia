@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Input;
@@ -57,6 +58,42 @@ namespace Avalonia.Base.UnitTests.Input
             Assert.Equal(MouseButton.None, button);
         }
 
+        [Fact]
+        public void ClickCount_Should_Restart_When_The_Pressed_Button_Changes()
+        {
+            using var scope = AvaloniaLocator.EnterScope();
+
+            var settings = new Mock<IPlatformSettings>();
+            settings.Setup(x => x.GetDoubleTapTime(It.IsAny<PointerType>())).Returns(TimeSpan.FromMilliseconds(500));
+            settings.Setup(x => x.GetDoubleTapSize(It.IsAny<PointerType>())).Returns(new Size(16, 16));
+            AvaloniaLocator.CurrentMutable.BindToSelf(this).Bind<IPlatformSettings>().ToConstant(settings.Object);
+
+            using var app = UnitTestApplication.Start(new TestServices(inputManager: new InputManager()));
+
+            var renderer = new Mock<IHitTester>();
+            var device = new MouseDevice();
+            var impl = CreateTopLevelImplMock();
+
+            var control = new Control();
+            var root = CreateInputRoot(impl.Object, control, renderer.Object);
+            SetHit(renderer, control);
+
+            var clickCounts = new List<int>();
+            root.PointerPressed += (_, e) => clickCounts.Add(e.ClickCount);
+
+            Press(impl, device, root, RawPointerEventType.RightButtonDown, RawPointerEventType.RightButtonUp);
+            Press(impl, device, root, RawPointerEventType.LeftButtonDown, RawPointerEventType.LeftButtonUp);
+            Press(impl, device, root, RawPointerEventType.LeftButtonDown, RawPointerEventType.LeftButtonUp);
+
+            Assert.Equal(new[] { 1, 1, 2 }, clickCounts);
+        }
+
+        private static void Press(Mock<IWindowImpl> impl, MouseDevice device, TopLevel root,
+            RawPointerEventType down, RawPointerEventType up)
+        {
+            impl.Object.Input!(CreateRawPointerArgs(device, root, down));
+            impl.Object.Input!(CreateRawPointerArgs(device, root, up));
+        }
         [Fact]
         public void Capture_Is_Transferred_To_Parent_When_Control_Removed()
         {
