@@ -29,7 +29,7 @@ namespace Avalonia.Input
         private static GestureState? s_gestureState = null;
         private static readonly WeakReference<object?> s_lastPress = new WeakReference<object?>(null);
         private static Point s_lastPressPoint;
-        private static PointerUpdateKind s_lastPressUpdateKind;
+        private static Point s_lastPressRootPoint;
         private static CancellationTokenSource? s_holdCancellationToken;
         static Gestures()
         {
@@ -74,7 +74,7 @@ namespace Avalonia.Input
                     s_gestureState = new GestureState(GestureStateType.Pending, e.Pointer);
                     s_lastPress.SetTarget(source);
                     s_lastPressPoint = e.GetPosition((Visual)source);
-                    s_lastPressUpdateKind = e.GetCurrentPoint(visual).Properties.PointerUpdateKind;
+                    s_lastPressRootPoint = e.GetPosition(null);
                     s_holdCancellationToken = new CancellationTokenSource();
                     var token = s_holdCancellationToken.Token;
                     var settings = visual.GetPlatformSettings();
@@ -92,8 +92,7 @@ namespace Avalonia.Input
                         }, settings.HoldWaitDuration);
                     }
                 }
-                else if (e.ClickCount % 2 == 0 && e.GetCurrentPoint(visual).Properties.IsLeftButtonPressed
-                    && s_lastPressUpdateKind == PointerUpdateKind.LeftButtonPressed)
+                else if (e.ClickCount % 2 == 0 && e.GetCurrentPoint(visual).Properties.IsLeftButtonPressed)
                 {
                     if (s_lastPress.TryGetTarget(out var target) &&
                         target == source &&
@@ -122,10 +121,10 @@ namespace Avalonia.Input
                     var point = e.GetCurrentPoint((Visual)target);
                     var settings = i.GetPlatformSettings();
                     var tapSize = settings?.GetTapSize(point.Pointer.Type) ?? new Size(4, 4);
-                    var tapRect = new Rect(s_lastPressPoint, new Size())
+                    var tapRect = new Rect(s_lastPressRootPoint, new Size())
                         .Inflate(new Thickness(tapSize.Width, tapSize.Height));
 
-                    if (tapRect.ContainsExclusive(point.Position))
+                    if (tapRect.ContainsExclusive(e.GetPosition(null)))
                     {
                         if (s_gestureState?.Type == GestureStateType.Holding)
                         {
@@ -163,12 +162,11 @@ namespace Avalonia.Input
                 {
                     if (e.Pointer == s_gestureState?.Pointer && source is Interactive i)
                     {
-                        var point = e.GetCurrentPoint((Visual)target);
                         var holdSize = new Size(4, 4);
-                        var holdRect = new Rect(s_lastPressPoint, new Size())
+                        var holdRect = new Rect(s_lastPressRootPoint, new Size())
                             .Inflate(new Thickness(holdSize.Width, holdSize.Height));
 
-                        if (holdRect.ContainsExclusive(point.Position))
+                        if (holdRect.ContainsExclusive(e.GetPosition(null)))
                         {
                             return;
                         }
