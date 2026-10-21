@@ -44,7 +44,7 @@ namespace Avalonia.Android
             PointerIcon = PointerIconCompat.GetSystemIcon(global::Android.App.Application.Context, GetPointerIconType(cursorType));
         }
 
-        public int GetPointerIconType(StandardCursorType cursorType) => cursorType switch
+        private int GetPointerIconType(StandardCursorType cursorType) => cursorType switch
         {
             StandardCursorType.Arrow => PointerIconCompat.TypeArrow,
             StandardCursorType.Cross => PointerIconCompat.TypeCrosshair,

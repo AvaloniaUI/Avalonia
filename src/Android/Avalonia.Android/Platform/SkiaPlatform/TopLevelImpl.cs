@@ -122,7 +122,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         {
             cursor ??= CursorImpl.DefaultCursor;
 
-            if(cursor is CursorImpl androidCursor)
+            if (cursor is CursorImpl androidCursor)
             {
                 ViewCompat.SetPointerIcon(_view, androidCursor.PointerIcon);
             }
