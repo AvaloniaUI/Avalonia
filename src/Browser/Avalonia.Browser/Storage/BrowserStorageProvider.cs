@@ -304,11 +304,8 @@ internal class JSStorageFile : JSStorageItem, IStorageBookmarkFile
     {
         try
         {
-            using var properties = await StorageHelper.GetProperties(FileHandle);
             var streamWriter = await StorageHelper.OpenWrite(FileHandle);
-            var size = (long?)properties?.GetPropertyAsDouble("Size") ?? 0;
-
-            return new WriteableStream(streamWriter, size);
+            return new WriteableStream(streamWriter);
         }
         catch (JSException ex) when (ex.Message == BrowserStorageProvider.NoPermissionsMessage)
         {

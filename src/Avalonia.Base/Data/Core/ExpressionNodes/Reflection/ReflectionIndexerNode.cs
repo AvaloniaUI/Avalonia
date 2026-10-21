@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -82,6 +83,8 @@ internal sealed class ReflectionIndexerNode : CollectionNodeBase, ISettableNode
     {
         if (sender is null || e.PropertyName is null)
             return false;
+        if (sender is not INotifyCollectionChanged && CommonPropertyNames.IsIndexerChange(e.PropertyName))
+            return true;
         var typeInfo = sender.GetType().GetTypeInfo();
         return typeInfo.GetDeclaredProperty(e.PropertyName)?.GetIndexParameters().Any() ?? false;
     }
