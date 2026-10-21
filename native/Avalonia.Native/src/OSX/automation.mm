@@ -333,6 +333,12 @@
     return [self rectToScreen:bounds];
 }
 
+- (NSPoint)accessibilityActivationPoint
+{
+    auto frame = [self accessibilityFrame];
+    return NSMakePoint(NSMidX(frame), NSMidY(frame));
+}
+
 - (id)accessibilityParent
 {
     auto parentPeer = _peer->GetParent();
