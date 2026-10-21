@@ -17,6 +17,7 @@ namespace Avalonia.Android.Platform
         private TaskCompletionSource<DragDropEffects>? _currentDragTcs;
         private bool _isInActiveDragDrop;
         private bool _initialEventSent;
+        private Point _lastposition;
         private IDragDropDevice? _dragDropDevice;
 
         public AndroidDragDrop(TopLevelImpl topLevel)
@@ -38,7 +39,6 @@ namespace Avalonia.Android.Platform
 
         public bool OnDrag(View? v, DragEvent? e)
         {
-            Point _lastposition = default;
             RawDragEvent? dragEvent = null;
             if (e is { } ev)
             {
@@ -92,7 +92,7 @@ namespace Avalonia.Android.Platform
 
                             dragEvent = new RawDragEvent(
                                 _dragDropDevice,
-                                _initialEventSent ? RawDragEventType.DragEnter : RawDragEventType.DragOver,
+                                _initialEventSent ? RawDragEventType.DragOver : RawDragEventType.DragEnter,
                                 _topLevel.InputRoot,
                                 _lastposition,
                                 new ClipDescriptionToDataTransferWrapper(ev.ClipDescription!),
