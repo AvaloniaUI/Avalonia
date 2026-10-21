@@ -35,8 +35,9 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="System.Reactive" />
     <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="SkiaSharp" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux" />
   </ItemGroup>
 
   <Import Project="..\..\build\XUnit.props" />
-  <Import Project="..\..\build\SkiaSharp.props" />
 </Project>
