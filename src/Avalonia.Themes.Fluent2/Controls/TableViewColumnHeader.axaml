@@ -62,9 +62,7 @@
           <Rectangle Width="1"
                      Name="ResizerRectangle"
                      Fill="{DynamicResource TableViewColumnHeaderSeparatorFill}"
-                     HorizontalAlignment="Center" />
-          <Border.Styles>
-          </Border.Styles>
+                     HorizontalAlignment="Right" />
         </Border>
       </ControlTemplate>
     </Setter>
