@@ -79,6 +79,7 @@ namespace Avalonia.Win32
         private readonly IPlatformRenderSurface? _glSurface;
         private readonly bool _wmPointerEnabled;
         private Action? _pendingDrag;
+        private bool _dragRequestedFromPointer;
 
         private readonly Win32NativeControlHost _nativeControlHost;
         private readonly IStorageProvider _storageProvider;
@@ -772,6 +773,8 @@ namespace Avalonia.Win32
                 throw new InvalidOperationException("BeginMoveDrag Failed");
             }
 
+            _dragRequestedFromPointer = e.Pointer.Type != PointerType.Mouse;
+
             Dispatcher.UIThread.Post(() =>
             {
                 if (e.Pointer.Type != PointerType.Mouse && GetKeyState(VirtualKeyStates.VK_LBUTTON) >= 0)
@@ -806,6 +809,7 @@ namespace Avalonia.Win32
 
                 if (e.Pointer.Type != PointerType.Mouse && GetKeyState(VirtualKeyStates.VK_LBUTTON) >= 0)
                 {
+                    _dragRequestedFromPointer = true;
                     _pendingDrag = () => StartResizeDrag(edge);
                 }
                 else

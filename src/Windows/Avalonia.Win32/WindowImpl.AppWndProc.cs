@@ -995,7 +995,13 @@ namespace Avalonia.Win32
                     s_intermediatePointsPooledList.Dispose();
                 }
 
-                if (e.Handled)
+                // A drag waiting on the emulated mouse button needs the default handling that produces it.
+                var awaitingDragMessage = _dragRequestedFromPointer
+                    && message is WindowsMessage.WM_POINTERDOWN or WindowsMessage.WM_NCPOINTERDOWN;
+
+                _dragRequestedFromPointer = false;
+
+                if (e.Handled && !awaitingDragMessage)
                 {
                     return IntPtr.Zero;
                 }
