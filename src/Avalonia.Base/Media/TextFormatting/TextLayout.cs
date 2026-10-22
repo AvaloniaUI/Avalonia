@@ -292,7 +292,9 @@ namespace Avalonia.Media.TextFormatting
         /// </summary>
         /// <param name="context">The drawing context.</param>
         /// <param name="origin">The origin.</param>
-        public void Draw(DrawingContext context, Point origin)
+        public void Draw(DrawingContext context, Point origin) => Draw(context, origin, null);
+
+        public void Draw(DrawingContext context, Point origin, TextRunRenderOverrideProperties? overrideProperties)
         {
             if (_textLines.Length == 0)
             {
@@ -303,7 +305,7 @@ namespace Avalonia.Media.TextFormatting
 
             foreach (var textLine in _textLines)
             {
-                textLine.Draw(context, new Point(currentX, currentY));
+                textLine.Draw(context, new Point(currentX, currentY), overrideProperties);
 
                 currentY += textLine.Height;
             }
