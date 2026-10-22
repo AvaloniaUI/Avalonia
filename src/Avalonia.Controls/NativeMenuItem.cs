@@ -220,6 +220,11 @@ namespace Avalonia.Controls
                     WeakEvents.CommandCanExecuteChanged.Subscribe(newCommand, _canExecuteChangedSubscriber);
                 CanExecuteChanged();
             }
+            else if (change.Property == CommandParameterProperty && Command is not null)
+            {
+                // The parameter can be assigned after the command, which makes the first query stale.
+                CanExecuteChanged();
+            }
         }
 
         internal override void BuildDebugDisplay(StringBuilder builder, bool includeContent)

@@ -30,6 +30,10 @@ namespace Avalonia.Base.UnitTests.Media
         [InlineData("FontAwesome 6 Free Regular", "FontAwesome 6 Free", FontStyle.Normal, FontWeight.Normal)]
         [InlineData("FontAwesome 6 Free Solid", "FontAwesome 6 Free", FontStyle.Normal, FontWeight.Solid)]
         [InlineData("FontAwesome 6 Brands", "FontAwesome 6 Brands", FontStyle.Normal, FontWeight.Normal)]
+        [InlineData("Autoproject  GOST Type A", "Autoproject  GOST Type A", FontStyle.Normal, FontWeight.Normal)]
+        [InlineData("Hello  World  Italic", "Hello  World", FontStyle.Italic, FontWeight.Normal)]
+        [InlineData("Hello World Bold ", "Hello World", FontStyle.Normal, FontWeight.Bold)]
+        [InlineData("Hello World ", "Hello World", FontStyle.Normal, FontWeight.Normal)]
         [Theory]
         public void Should_Get_Implicit_Typeface(string input, string familyName, FontStyle style, FontWeight weight)
         {

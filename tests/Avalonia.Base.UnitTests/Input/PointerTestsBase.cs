@@ -81,9 +81,10 @@ public abstract class PointerTestsBase : ScopedTestBase
         IPointerDevice pointerDevice,
         TopLevel root,
         RawPointerEventType type,
-        Point? position = default)
+        Point? position = default,
+        ulong timestamp = 0)
     {
-        return new RawPointerEventArgs(pointerDevice, 0, root.PresentationSource, type, position ?? default, default);
+        return new RawPointerEventArgs(pointerDevice, timestamp, root.PresentationSource, type, position ?? default, default);
     }
 
     protected static RawPointerEventArgs CreateRawPointerMovedArgs(
