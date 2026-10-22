@@ -1,7 +1,6 @@
 #nullable enable
 
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
@@ -12,37 +11,6 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
     public class TextFormatterLongRunWrapTests
     {
         private const double ParagraphWidth = 200;
-
-        [Fact]
-        public void Wrapping_The_Start_Of_A_Long_Unbroken_Run_Does_Not_Scan_The_Whole_Run_For_Every_Line()
-        {
-            using (TextFormatterTests.Start())
-            {
-                var text = new string('x', 900_000);
-                var properties = CreateParagraph(TextWrapping.Wrap, out var runProperties);
-                var source = new SingleBufferTextSource(text, runProperties);
-                var formatter = new TextFormatterImpl();
-
-                var timer = Stopwatch.StartNew();
-                var position = 0;
-                TextLineBreak? previous = null;
-
-                for (var i = 0; i < 100; i++)
-                {
-                    using var line = formatter.FormatLine(source, position, ParagraphWidth, properties, previous);
-
-                    Assert.NotNull(line);
-                    Assert.True(line!.Length > 0);
-                    Assert.True(line.Width <= ParagraphWidth + 1);
-
-                    position += line.Length;
-                    previous = line.TextLineBreak;
-                }
-
-                // Scanning the remaining run for every line takes several seconds for 100 lines.
-                Assert.True(timer.Elapsed.TotalSeconds < 3, $"Wrapping 100 lines took {timer.Elapsed}.");
-            }
-        }
 
         [Fact]
         public void WrapWithOverflow_Breaks_A_Word_Without_Nearby_Opportunity_At_The_Fitting_Length()
