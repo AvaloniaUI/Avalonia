@@ -222,7 +222,8 @@
                                   Grid.ColumnSpan="1"
                                   Margin="{StaticResource TextBoxInnerLeftButtonMargin}"
                                   VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                                  Content="{TemplateBinding InnerLeftContent}"/>
+                                  Content="{TemplateBinding InnerLeftContent}"
+                                  IsVisible="{TemplateBinding InnerLeftContent, Converter={x:Static ObjectConverters.IsNotNull}}"/>
                 <DockPanel x:Name="PART_InnerDockPanel"
                            Grid.Column="1"
                            Grid.ColumnSpan="1"
@@ -286,7 +287,8 @@
                                   Grid.ColumnSpan="1"
                                   VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                                   Margin="{StaticResource TextBoxInnerRightButtonMargin}"
-                                  Content="{TemplateBinding InnerRightContent}"/>
+                                  Content="{TemplateBinding InnerRightContent}"
+                                  IsVisible="{TemplateBinding InnerRightContent, Converter={x:Static ObjectConverters.IsNotNull}}"/>
               </Grid>
             </Border>
           </Panel>
