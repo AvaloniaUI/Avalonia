@@ -38,7 +38,7 @@ namespace Avalonia.FreeDesktop
         public Action? OnClicked { get; set; }
         public Func<IWindowIconImpl?, uint[]>? IconConverterDelegate { get; set; }
 
-        public DBusTrayIconImpl()
+        public DBusTrayIconImpl(Action<string>? provideActivationToken = null)
         {
             using var restoreContext = AvaloniaSynchronizationContext.Ensure(DispatcherPriority.Input);
             _connection = DBusHelper.TryCreateNewConnection();
@@ -57,7 +57,7 @@ namespace Avalonia.FreeDesktop
 
             MenuExporter = DBusMenuExporter.TryCreateDetachedNativeMenu(dbusMenuPath, _connection);
 
-            _statusNotifierItemDbusObj = new StatusNotifierItemDbusObj(_connection, dbusMenuPath);
+            _statusNotifierItemDbusObj = new StatusNotifierItemDbusObj(_connection, dbusMenuPath, provideActivationToken);
             _statusNotifierItemDbusObj.ActivationDelegate += () => OnClicked?.Invoke();
 
             WatchAsync();
@@ -370,11 +370,14 @@ namespace Avalonia.FreeDesktop
         private string _title = "";
         private ObjectPath _menu;
         private (int, int, byte[])[] _iconPixmap = [];
+        private readonly Action<string>? _provideActivationToken;
 
-        public StatusNotifierItemDbusObj(DBusConnection connection, ObjectPath dbusMenuPath)
+        public StatusNotifierItemDbusObj(DBusConnection connection, ObjectPath dbusMenuPath,
+            Action<string>? provideActivationToken = null)
             : base(connection, "/StatusNotifierItem", handlesChildPaths: false)
         {
             _menu = dbusMenuPath;
+            _provideActivationToken = provideActivationToken;
         }
 
         public event Action? ActivationDelegate;
@@ -404,9 +407,25 @@ namespace Avalonia.FreeDesktop
 
         ValueTask IStatusNotifierItemHandler.ContextMenuAsync(int x, int y) => new();
 
+        ValueTask IStatusNotifierItemHandler.ProvideXdgActivationTokenAsync(string token)
+        {
+            // The backend must enqueue delivery before the next activation callback.
+            _provideActivationToken?.Invoke(token);
+            return default;
+        }
+
         ValueTask IStatusNotifierItemHandler.ActivateAsync(int x, int y)
         {
-            ActivationDelegate?.Invoke();
+            try
+            {
+                ActivationDelegate?.Invoke();
+            }
+            catch (Exception e)
+            {
+                Logger.TryGet(LogEventLevel.Warning, LogArea.FreeDesktopPlatform)
+                    ?.Log(this, "Tray activation callback failed: {Exception}", e);
+                throw;
+            }
             return new ValueTask();
         }
 

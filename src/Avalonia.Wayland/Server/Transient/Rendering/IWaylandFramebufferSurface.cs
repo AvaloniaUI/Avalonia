@@ -34,6 +34,9 @@ interface IWaylandFramebufferSurface
     /// </summary>
     void OnBeforeNewBufferAttached(IRenderTarget.RenderTargetSceneInfo sceneInfo);
 
+    /// <summary>Called after committing a buffer to the captured surface.</summary>
+    void OnBufferCommitted(WlSurface surface) { }
+
     /// <summary>
     /// When <c>true</c>, <see cref="WaylandFramebuffer"/> forces a <c>wl_display</c> roundtrip after
     /// creating each <c>wl_buffer</c>. libwayland-client only allows a bounded number of file

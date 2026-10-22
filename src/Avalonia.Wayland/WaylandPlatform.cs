@@ -39,7 +39,7 @@ class WaylandPlatform
 
         WaylandWorker worker;
         SnapshotScreensImpl screens;
-        TaskCompletionSource<ExceptionDispatchInfo?> initTcs;
+        TaskCompletionSource<(ExceptionDispatchInfo? Error, object? Connection)> initTcs;
         try
         {
             // NOTE: This technically mutates the global state since it touches Dispatcher,
@@ -51,7 +51,7 @@ class WaylandPlatform
             screens = new SnapshotScreensImpl();
             var screensProxy = new WaylandOutputsSinkProxy(screens, WaylandMarshallers.UIThread);
 
-            initTcs = new TaskCompletionSource<ExceptionDispatchInfo?>(TaskCreationOptions.RunContinuationsAsynchronously);
+            initTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
             worker.Start(options, connection, screensProxy, initTcs);
         }
         catch (Exception e)
@@ -60,8 +60,10 @@ class WaylandPlatform
             return ExceptionDispatchInfo.Capture(e);
         }
 
-        if (initTcs.Task.GetAwaiter().GetResult() is { } initError)
+        var (initError, activationConnection) = initTcs.Task.GetAwaiter().GetResult();
+        if (initError != null)
             return initError;
+        worker.Activation.Initialize(activationConnection!);
 
         IDispatcherImpl dispatcherImpl = options.UseGLibMainLoop
             ? new WaylandGlibDispatcher(options.ExternalGLibMainLoopExceptionLogger)
