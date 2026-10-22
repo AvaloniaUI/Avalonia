@@ -61,7 +61,7 @@ we are sure that all the cases are covered (this will likely require some refact
 - Wayland interactions run on a dedicated thread (the wayland worker thread).
 - UI thread objects must NEVER directly access fields of wayland-thread objects (aside from initial creation / passing to constructors).
 - Wayland thread objects must NEVER directly read fields of UI-thread objects. No volatile fields, no locks, no "safe" shared state.
-- All cross-thread communication from UI to wayland goes through code-generated proxies that internally route calls through `WaylandWorker.PostOob()` / `PostWithCommit()` messages (dnd/clipboard is currently an exception to this rule that we'll probably refactor later)
+- UI-to-worker communication uses code-generated proxies routing through `WaylandWorker.PostOob()` / `PostWithCommit()`. DnD, clipboard and activation also use direct OOB messages. Activation callbacks in the surface handle only enqueue work; they do not inspect worker state.
 - ~~Input (mouse/touch/keyboard) events from wayland to UI flow through `AutomaticRawEventGrouperDispatchQueue` (enqueued on wayland thread, drained by UI thread dispatcher).~~ (this was the plan, but we need an input root to issue events from non-UI tread, so for now we simply make calls with default priority and let the auto-grouper to dispatch them, will think what to do about it later).
 - Server objects (in `Server/`) should not have their internal state modified from UI thread code. The UI thread may only call `Post` and pass values into server object constructors.
 
@@ -98,3 +98,42 @@ we are sure that all the cases are covered (this will likely require some refact
 - Do NOT attempt to re-declare wayland protocol enums even if generated method accepts int/uint. This is due to XML protocol specs not actually providing machine-readable information about a particular enum being expected by the request/event. The enums themselves are still generated.
 - ALWAYS specify the version range of the protocol that's supported by Avalonia. NWayland supporting a particular protocol version binding-wise does NOT mean that we are ready to support it. Even if protocol says "stable" it does't mean that there aren't new requirements or invariants for the protocol clients to support.
 - Proxy version is available from Version property on all proxies. If some request is only available from version X, NWayland generates Is<Name>Available property (e. g. `public bool IsSetReactiveAvailable => Version >= 3;`) that can be used instead of `Version` checks.
+
+## Tray activation
+
+Hosts can supply an `xdg-activation-v1` token through the StatusNotifierItem
+`ProvideXdgActivationToken` method. The Wayland worker saves the latest delivery
+for the next eligible activating `Show()` or explicit `Activate()`. All tray icons
+share this slot. Empty delivery clears it; passive `ShowActivated=false` display
+and invalid targets leave it untouched. Dispatcher posts and suspending awaits
+are supported, but intervening window activations may consume the token first.
+There is no local expiry timer; the compositor decides whether to grant focus.
+
+Selection consumes the token once. An unmapped target keeps one pending token
+until a buffer is committed; a later activation with a new token replaces it.
+Hide/Close enqueue cancellation before surface teardown. Cancellation takes effect
+when the worker processes it and cannot retract requests already sent. Connection
+identities are captured before enqueueing, so retained OOB work cannot replay on a
+new connection. Protocol removal clears managed requests; same-connection protocol
+rebinding does not track the provenance of deliveries still in the queue.
+
+The protocol is optional. X11 keeps its existing behavior. Startup environment
+variables and second-instance IPC token forwarding are outside this feature.
+Avalonia's `WaylandProtocol` logger redacts activation tokens.
+
+For desktop checks, run the existing sample with `--tray-activation` (add
+`--wayland` for native Wayland, `--software` for SHM, or `--dmabuf` to request
+the DMA-BUF swapchain instead of the default EGL/WSI path):
+
+```sh
+dotnet run --project samples/IntegrationTestApp -c Release -- --wayland --tray-activation
+```
+
+This opt-in mode preserves the checkbox actions and adds an **Activation** tray
+submenu for Click, Command, combined handlers, post/await, passive display,
+explicit activation, Hide and Close. Closing the target allows it to be recreated;
+the main window retains its normal lifetime behavior. Observe the target's actual
+focus and `xdg_activation_v1.activate` requests, including for mapped, obscured
+windows with no new frame. Repeat without `--wayland` for an X11 comparison.
+The Wayland unit tests control production activation messages and connection,
+cancellation and buffer-commit ordering without a desktop or a protocol proxy.
