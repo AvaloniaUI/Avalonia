@@ -120,6 +120,9 @@ namespace Avalonia.LinuxFramebuffer.Output
         private EglSurface _eglSurface;
         private EglContext _deferredContext;
         private IntPtr _currentBo;
+        private IntPtr _pendingBo;
+        private bool _waitingForFlip;
+        private DrmEventPageFlipHandlerDelegate? _flipCallback;
         private IntPtr _gbmTargetSurface;
         private uint _crtcId;
 
@@ -272,32 +275,51 @@ namespace Avalonia.LinuxFramebuffer.Output
             {
 
                 var fb = GetFbIdForBo(nextBo);
-                bool waitingForFlip = true;
 
-                drmModePageFlip(_card.Fd, _crtcId, fb, DrmModePageFlip.Event, null);
+                // Only wait for the previously queued flip, so the next frame can be rendered
+                // while this one waits for vblank.
+                WaitForPendingFlip();
 
-                DrmEventPageFlipHandlerDelegate flipCb =
-                    (int fd, uint sequence, uint tv_sec, uint tv_usec, void* user_data) =>
-                    {
-                        waitingForFlip = false;
-                    };
-                var cbHandle = GCHandle.Alloc(flipCb);
-                var ctx = new DrmEventContext
+                if (drmModePageFlip(_card.Fd, _crtcId, fb, DrmModePageFlip.Event, null) == 0)
                 {
-                    version = 4,
-                    page_flip_handler = Marshal.GetFunctionPointerForDelegate(flipCb)
-                };
-                while (waitingForFlip)
-                {
-                    var pfd = new PollFd {events = 1, fd = _card.Fd};
-                    poll(&pfd, new IntPtr(1), -1);
-                    drmHandleEvent(_card.Fd, &ctx);
+                    _pendingBo = nextBo;
+
+                    // No buffer left to render the next frame into, wait for the flip right away
+                    if (gbm_surface_has_free_buffers(_gbmTargetSurface) == 0)
+                        WaitForPendingFlip();
                 }
-
-                cbHandle.Free();
-                gbm_surface_release_buffer(_gbmTargetSurface, _currentBo);
-                _currentBo = nextBo;
+                else
+                {
+                    gbm_surface_release_buffer(_gbmTargetSurface, nextBo);
+                }
             }
+        }
+
+        private void WaitForPendingFlip()
+        {
+            if (_pendingBo == IntPtr.Zero)
+                return;
+
+            _flipCallback ??= (int fd, uint sequence, uint tv_sec, uint tv_usec, void* user_data) =>
+            {
+                _waitingForFlip = false;
+            };
+            var ctx = new DrmEventContext
+            {
+                version = 4,
+                page_flip_handler = Marshal.GetFunctionPointerForDelegate(_flipCallback)
+            };
+            _waitingForFlip = true;
+            while (_waitingForFlip)
+            {
+                var pfd = new PollFd {events = 1, fd = _card.Fd};
+                poll(&pfd, new IntPtr(1), -1);
+                drmHandleEvent(_card.Fd, &ctx);
+            }
+
+            gbm_surface_release_buffer(_gbmTargetSurface, _currentBo);
+            _currentBo = _pendingBo;
+            _pendingBo = IntPtr.Zero;
         }
 
         public IGlPlatformSurfaceRenderTarget CreateGlRenderTarget() => new RenderTarget(this);
