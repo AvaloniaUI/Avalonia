@@ -284,6 +284,55 @@ namespace Avalonia.Base.UnitTests.Input
             }
         }
 
+        [Theory]
+        [InlineData(Key.LeftShift, KeyModifiers.Shift)]
+        [InlineData(Key.LeftCtrl, KeyModifiers.Control)]
+        [InlineData(Key.LWin, KeyModifiers.Meta)]
+        public void Should_Not_Open_MainMenu_On_Alt_KeyUp_When_Alt_Is_Pressed_With_Another_Modifier(Key modifierKey,
+            KeyModifiers modifier)
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var target = new AccessKeyHandler();
+                var menu = new FakeMenu();
+                var root = new TestRoot(menu);
+
+                target.SetOwner(root);
+                target.MainMenu = menu;
+
+                KeyDown(root, modifierKey, modifiers: modifier);
+                KeyDown(root, Key.LeftAlt, modifiers: modifier | KeyModifiers.Alt);
+                KeyUp(root, Key.LeftAlt, modifiers: modifier);
+                KeyUp(root, modifierKey);
+
+                Assert.Equal(0, menu.TimesOpenCalled);
+            }
+        }
+
+        [Fact]
+        public void Should_Open_MainMenu_On_Alt_KeyUp_After_Alt_Was_Pressed_With_Another_Modifier()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var target = new AccessKeyHandler();
+                var menu = new FakeMenu();
+                var root = new TestRoot(menu);
+
+                target.SetOwner(root);
+                target.MainMenu = menu;
+
+                KeyDown(root, Key.LeftShift, modifiers: KeyModifiers.Shift);
+                KeyDown(root, Key.LeftAlt, modifiers: KeyModifiers.Shift | KeyModifiers.Alt);
+                KeyUp(root, Key.LeftAlt, modifiers: KeyModifiers.Shift);
+                KeyUp(root, Key.LeftShift);
+
+                KeyDown(root, Key.LeftAlt, modifiers: KeyModifiers.Alt);
+                KeyUp(root, Key.LeftAlt);
+
+                Assert.Equal(1, menu.TimesOpenCalled);
+            }
+        }
+
         [Fact]
         public void Should_Raise_AccessKey_When_Nothing_Is_Focused()
         {
