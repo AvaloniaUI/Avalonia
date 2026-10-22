@@ -57,6 +57,45 @@ namespace Avalonia.Base.UnitTests.Input
             Assert.Equal(MouseButton.None, button);
         }
 
+        [Theory]
+        [InlineData(100UL, 2)]
+        [InlineData(2000UL, 1)]
+        public void ClickCount_Should_Only_Increase_Within_Double_Tap_Time(ulong delayBetweenClicks, int expectedClickCount)
+        {
+            using var scope = AvaloniaLocator.EnterScope();
+
+            var settingsMock = new Mock<IPlatformSettings>();
+            settingsMock.Setup(x => x.GetDoubleTapSize(It.IsAny<PointerType>())).Returns(new Size(4, 4));
+            settingsMock.Setup(x => x.GetDoubleTapTime(It.IsAny<PointerType>())).Returns(TimeSpan.FromMilliseconds(500));
+
+            AvaloniaLocator.CurrentMutable.BindToSelf(this)
+                .Bind<IPlatformSettings>().ToConstant(settingsMock.Object);
+
+            using var app = UnitTestApplication.Start(new TestServices(inputManager: new InputManager()));
+
+            var renderer = new Mock<IHitTester>();
+            var device = new MouseDevice();
+            var impl = CreateTopLevelImplMock();
+
+            var control = new Control();
+            var root = CreateInputRoot(impl.Object, control, renderer.Object);
+
+            var clickCount = 0;
+
+            root.PointerPressed += (_, e) => clickCount = e.ClickCount;
+
+            SetHit(renderer, control);
+
+            impl.Object.Input!(CreateRawPointerArgs(device, root, RawPointerEventType.LeftButtonDown, timestamp: 1000));
+            impl.Object.Input!(CreateRawPointerArgs(device, root, RawPointerEventType.LeftButtonUp, timestamp: 1010));
+
+            Assert.Equal(1, clickCount);
+
+            impl.Object.Input!(CreateRawPointerArgs(device, root, RawPointerEventType.LeftButtonDown, timestamp: 1000 + delayBetweenClicks));
+
+            Assert.Equal(expectedClickCount, clickCount);
+        }
+
         [Fact]
         public void Capture_Is_Transferred_To_Parent_When_Control_Removed()
         {
