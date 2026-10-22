@@ -136,6 +136,7 @@
   <x:Double x:Key="TabbedPageTabItemSelectionIndicatorHeight">3</x:Double>
   <x:Double x:Key="TabbedPageTabItemSelectionIndicatorWidth">16</x:Double>
   <x:Double x:Key="TabbedPageTabItemSelectionIndicatorRadius">2</x:Double>
+  <FontWeight x:Key="TabbedPageHeaderThemeFontWeight">SemiLight</FontWeight>
 
   <!-- TabbedPage TabControl theme -->
   <ControlTheme x:Key="TabbedPageTabControlTheme" TargetType="TabControl">
@@ -198,7 +199,7 @@
   <!-- TabbedPage TabItem theme -->
   <ControlTheme x:Key="TabbedPageTabItemTheme" TargetType="TabItem">
     <Setter Property="FontSize" Value="{DynamicResource TabbedPageTabItemHeaderFontSize}" />
-    <Setter Property="FontWeight" Value="{DynamicResource TabItemHeaderThemeFontWeight}" />
+    <Setter Property="FontWeight" Value="{DynamicResource TabbedPageHeaderThemeFontWeight}" />
     <Setter Property="Background" Value="{DynamicResource TabbedPageTabItemBackground}" />
     <Setter Property="Foreground" Value="{DynamicResource TabbedPageTabItemForeground}" />
     <Setter Property="Padding" Value="{DynamicResource TabbedPageTabItemHeaderPadding}" />

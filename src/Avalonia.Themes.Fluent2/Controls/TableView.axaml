@@ -22,9 +22,9 @@
       <StaticResource x:Key="TabularSurfaceRowBackgroundSelectedPointerOver" ResourceKey="SubtleFillColorTertiary" />
       <StaticResource x:Key="TabularSurfaceRowBackgroundSelectedPressed" ResourceKey="SubtleFillColorSecondary" />
       <StaticResource x:Key="TabularSurfaceRowBackgroundDisabled" ResourceKey="SubtleFillColorTransparent" />
-      <StaticResource x:Key="TabularSurfaceSelectionIndicator" ResourceKey="SystemAccentColor" />
+      <StaticResource x:Key="TabularSurfaceSelectionIndicatorFill" ResourceKey="SystemAccentColor" />
 
-      <SolidColorBrush x:Key="TabularSurfaceSelectionIndicatorDisabled" Color="#5C000000" />
+      <SolidColorBrush x:Key="TabularSurfaceSelectionIndicatorFillDisabled" Color="#5C000000" />
 
       <StaticResource x:Key="TabularSurfaceRowForeground" ResourceKey="TextFillColorPrimary" />
       <StaticResource x:Key="TabularSurfaceRowForegroundSelected" ResourceKey="TextFillColorPrimary" />
@@ -48,7 +48,7 @@
       <StaticResource x:Key="TabularSurfaceGroupHeaderBackground" ResourceKey="LayerFillColorDefault" />
       <StaticResource x:Key="TabularSurfaceGroupHeaderForeground" ResourceKey="TextFillColorPrimary" />
 
-      <StaticResource x:Key="TabularSurfaceGroupHeaderBorder" ResourceKey="Transparent" />
+      <SolidColorBrush  x:Key="TabularSurfaceGroupHeaderBorder" Color="Transparent" />
       <SolidColorBrush x:Key="TabularSurfaceGridLine" Color="#29000000" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
@@ -83,8 +83,8 @@
 
       <StaticResource x:Key="TabularSurfaceGroupHeaderBackground" ResourceKey="LayerFillColorDefault" />
       <StaticResource x:Key="TabularSurfaceGroupHeaderForeground" ResourceKey="TextFillColorPrimary" />
-
-      <StaticResource x:Key="TabularSurfaceGroupHeaderBorder" ResourceKey="Transparent" />
+      
+      <SolidColorBrush  x:Key="TabularSurfaceGroupHeaderBorder" Color="Transparent" />
       <SolidColorBrush x:Key="TabularSurfaceGridLine" Color="#29FFFFFF" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
