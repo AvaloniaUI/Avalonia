@@ -159,6 +159,7 @@
                 Fill="{DynamicResource RadioButtonCheckGlyphFill}"
                 Opacity="0"
                 Stroke="{DynamicResource RadioButtonCheckGlyphStroke}"
+                StrokeThickness="{DynamicResource RadioButtonThemeBorderThickness}"
                 UseLayoutRounding="False">
                 <Ellipse.Transitions>
                   <Transitions>
