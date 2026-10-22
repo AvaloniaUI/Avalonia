@@ -130,6 +130,25 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Losing_Pointer_Capture_Should_Clear_Pressed_PseudoClass()
+        {
+            var target = new ComboBox
+            {
+                ItemsSource = new[] { "Foo", "Bar" },
+            };
+
+            _helper.Down(target);
+            Assert.True(target.Classes.Contains(ComboBox.pcPressed));
+
+            // For example a context menu opening takes the pointer, so the release never reaches the ComboBox.
+            var pointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);
+            target.RaiseEvent(new PointerCaptureLostEventArgs(target, pointer));
+
+            Assert.False(target.Classes.Contains(ComboBox.pcPressed));
+            Assert.False(target.IsDropDownOpen);
+        }
+
+        [Fact]
         public void Clicking_On_Control_PseudoClass()
         {
             var target = new ComboBox

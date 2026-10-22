@@ -95,14 +95,8 @@ namespace Avalonia.iOS
                 .Bind<IPlatformSettings>().ToSingleton<PlatformSettings>()
                 .Bind<IPlatformIconLoader>().ToConstant(new PlatformIconLoaderStub())
                 .Bind<IScreenImpl>().ToSingleton<iOSScreens>()
-                .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
-                .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new Dictionary<Key, string>()
-                    {
-                        { Key.Back , "⌫" }, { Key.Down , "↓" }, { Key.End , "↘" }, { Key.Escape , "⎋" },
-                        { Key.Home , "↖" }, { Key.Left , "←" }, { Key.Return , "↩" }, { Key.PageDown , "⇟" },
-                        { Key.PageUp , "⇞" }, { Key.Right , "→" }, { Key.Space , "␣" }, { Key.Tab , "⇥" },
-                        { Key.Up , "↑" }
-                    }, ctrl: "⌃", meta: "⌘", shift: "⇧", alt: "⌥"))
+                .Bind<PlatformHotkeyConfiguration>().ToConstant(PlatformHotkeyConfiguration.Apple)
+                .Bind<KeyGestureFormatInfo>().ToConstant(KeyGestureFormatInfo.Apple)
                 .Bind<IRenderLoop>().ToConstant(RenderLoop.FromTimer(Timer))
                 .Bind<IKeyboardDevice>().ToConstant(keyboard);
 

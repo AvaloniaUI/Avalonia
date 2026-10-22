@@ -14,4 +14,9 @@ public partial class AutomationPage : UserControl
     {
         textLiveRegion.Text += " Lorem ipsum.";
     }
+
+    private void OnButtonClearLiveRegion(object? sender, RoutedEventArgs? e)
+    {
+        textLiveRegion.Text = string.Empty;
+    }
 }
