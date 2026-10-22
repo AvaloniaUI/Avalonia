@@ -62,6 +62,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 context));
             _screens = new AndroidScreens(context);
             _feedback = new AndroidPlatformFeedback(avaloniaView);
+            DragDrop = new AndroidDragDrop(this);
 
             if (context is Activity mainActivity)
             {
@@ -97,6 +98,8 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         public Action<double>? ScalingChanged { get; set; }
 
         public View? View => _view;
+
+        public AndroidDragDrop DragDrop { get; }
 
         internal InvalidationAwareSurfaceView? InternalView => _view;
 
@@ -138,6 +141,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             _systemNavigationManager.Dispose();
             _view?.Dispose();
             _view = null;
+            (DragDrop as IDisposable)?.Dispose();
         }
 
         protected void OnResized(Size size)
