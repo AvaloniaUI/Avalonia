@@ -77,7 +77,6 @@
 
   <Thickness x:Key="TextBoxTopHeaderMargin">0,0,0,4</Thickness>
   <Thickness x:Key="TextBoxInnerRightButtonMargin">0,4,4,4</Thickness>
-  <Thickness x:Key="TextBoxInnerLeftButtonMargin">4,4,0,4</Thickness>
   <x:Double x:Key="TextBoxIconSize">10</x:Double>
   <x:Double x:Key="TextBoxMenuItemIconSize">20</x:Double>
   <x:Double x:Key="TextBoxButtonWidth">30</x:Double>
@@ -129,6 +128,7 @@
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="Padding" Value="{DynamicResource ButtonPadding}" />
     <Setter Property="Width" Value="{DynamicResource TextBoxButtonWidth}" />
+    <Setter Property="Margin" Value="{StaticResource TextBoxInnerRightButtonMargin}" />
     <Setter Property="TextElement.Foreground" Value="{DynamicResource TextControlButtonForeground}"/>
     <Setter Property="Template">
       <Setter.Value>
@@ -220,10 +220,8 @@
               <Grid ColumnDefinitions="Auto,*,Auto" >
                 <ContentPresenter Grid.Column="0"
                                   Grid.ColumnSpan="1"
-                                  Margin="{StaticResource TextBoxInnerLeftButtonMargin}"
                                   VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                                  Content="{TemplateBinding InnerLeftContent}"
-                                  IsVisible="{TemplateBinding InnerLeftContent, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                  Content="{TemplateBinding InnerLeftContent}"/>
                 <DockPanel x:Name="PART_InnerDockPanel"
                            Grid.Column="1"
                            Grid.ColumnSpan="1"
@@ -286,9 +284,7 @@
                 <ContentPresenter Grid.Column="2"
                                   Grid.ColumnSpan="1"
                                   VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                                  Margin="{StaticResource TextBoxInnerRightButtonMargin}"
-                                  Content="{TemplateBinding InnerRightContent}"
-                                  IsVisible="{TemplateBinding InnerRightContent, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                  Content="{TemplateBinding InnerRightContent}"/>
               </Grid>
             </Border>
           </Panel>
