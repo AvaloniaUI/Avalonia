@@ -568,7 +568,7 @@ namespace Avalonia.Media.TextFormatting
 
             var first = true;
 
-            if (MathUtilities.IsZero(MaxWidth) || MathUtilities.IsZero(MaxHeight))
+            if (MathUtilities.IsZero(MaxHeight))
             {
                 var textLine = TextFormatterImpl.CreateEmptyTextLine(0, double.PositiveInfinity, _paragraphProperties);
 
@@ -576,6 +576,11 @@ namespace Avalonia.Media.TextFormatting
 
                 return new TextLine[] { textLine };
             }
+
+            // When MaxWidth is zero or negative, format as unconstrained (infinite width) so all
+            // text runs fit on a single line. Passing zero into the formatter would cause
+            // TextWrapping to advance one grapheme per line, creating O(N) TextLineImpl instances.
+            var formattingWidth = MaxWidth > 0 ? MaxWidth : double.PositiveInfinity;
 
             var textLines = objectPool.TextLines.Rent();
 
@@ -589,7 +594,7 @@ namespace Avalonia.Media.TextFormatting
 
                 while (true)
                 {
-                    var textLine = textFormatter.FormatLine(_textSource, _textSourceLength, MaxWidth,
+                    var textLine = textFormatter.FormatLine(_textSource, _textSourceLength, formattingWidth,
                         _paragraphProperties, previousLine?.TextLineBreak, _textRunCache) as TextLineImpl;
 
                     if (textLine is null)
