@@ -248,7 +248,7 @@ namespace Avalonia.Win32.Automation
                 {
                     InvokeSync(() => action(i));
                 }
-                catch (AggregateException e) when (e.InnerException is ElementNotEnabledException)
+                catch (ElementNotEnabledException e)
                 {
                     throw new COMException(e.Message, UiaCoreProviderApi.UIA_E_ELEMENTNOTENABLED);
                 }
@@ -267,7 +267,7 @@ namespace Avalonia.Win32.Automation
                 {
                     return InvokeSync(() => func(i));
                 }
-                catch (AggregateException e) when (e.InnerException is ElementNotEnabledException)
+                catch (ElementNotEnabledException e)
                 {
                     throw new COMException(e.Message, UiaCoreProviderApi.UIA_E_ELEMENTNOTENABLED);
                 }

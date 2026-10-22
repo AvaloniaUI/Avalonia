@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Threading;
 using Avalonia.Win32.Automation;
 using Xunit;
@@ -84,6 +85,20 @@ public class AutomationNodeTests
 
         var exception = await Assert.ThrowsAsync<COMException>(
             () => Task.Run(() => ((UIA.IInvokeProvider)node).Invoke(), TestContext.Current.CancellationToken));
+
+        Assert.Equal(UIA.UiaCoreProviderApi.UIA_E_ELEMENTNOTENABLED, exception.HResult);
+    }
+
+    [Fact]
+    public async Task Toggle_Throws_ElementNotEnabled_For_Disabled_ToggleButton()
+    {
+        var node = await Dispatcher.UIThread.InvokeAsync(
+            () => new AutomationNode(new ToggleButtonAutomationPeer(new ToggleButton { IsEnabled = false })),
+            DispatcherPriority.Normal,
+            TestContext.Current.CancellationToken);
+
+        var exception = await Assert.ThrowsAsync<COMException>(
+            () => Task.Run(() => ((UIA.IToggleProvider)node).Toggle(), TestContext.Current.CancellationToken));
 
         Assert.Equal(UIA.UiaCoreProviderApi.UIA_E_ELEMENTNOTENABLED, exception.HResult);
     }
