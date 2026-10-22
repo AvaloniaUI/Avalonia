@@ -379,38 +379,44 @@
               <!-- ContentPage applies the safe area padding to this presenter. Its content has no templated
                    parent, so it binds through $parent. -->
               <ContentPresenter Name="PART_ContentPresenter" HorizontalContentAlignment="Stretch">
-                <ItemsControl ItemsSource="{Binding $parent[controls:SampleGalleryPage].Groups}">
-                  <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                      <StackPanel Spacing="20" />
-                    </ItemsPanelTemplate>
-                  </ItemsControl.ItemsPanel>
-                  <ItemsControl.ItemTemplate>
-                    <DataTemplate x:DataType="controls:SampleInfoGroup">
-                      <controls:SampleGroup Header="{Binding Header}" ItemsSource="{Binding Samples}">
-                        <controls:SampleGroup.ItemsPanel>
-                          <ItemsPanelTemplate>
-                            <controls:CardGrid MinItemWidth="220" />
-                          </ItemsPanelTemplate>
-                        </controls:SampleGroup.ItemsPanel>
-                        <controls:SampleGroup.ItemTemplate>
-                          <DataTemplate x:DataType="controls:SampleInfo">
-                            <Button Theme="{DynamicResource SampleCardTheme}"
-                                    Command="{Binding $parent[controls:SampleGalleryPage].OpenSampleCommand}"
-                                    CommandParameter="{Binding}"
-                                    AutomationProperties.Name="{Binding Title}"
-                                    AutomationProperties.HelpText="{Binding Description}">
-                              <StackPanel Spacing="4">
-                                <TextBlock Classes="sample-card-title" Text="{Binding Title}" />
-                                <TextBlock Classes="sample-card-description" Text="{Binding Description}" />
-                              </StackPanel>
-                            </Button>
-                          </DataTemplate>
-                        </controls:SampleGroup.ItemTemplate>
-                      </controls:SampleGroup>
-                    </DataTemplate>
-                  </ItemsControl.ItemTemplate>
-                </ItemsControl>
+                <StackPanel Spacing="20">
+                  <ContentControl Content="{Binding $parent[controls:SampleGalleryPage].OverviewContent}"
+                                  IsVisible="{Binding $parent[controls:SampleGalleryPage].OverviewContent, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                  HorizontalContentAlignment="Stretch"
+                                  VerticalContentAlignment="Stretch" />
+                  <ItemsControl ItemsSource="{Binding $parent[controls:SampleGalleryPage].Groups}">
+                    <ItemsControl.ItemsPanel>
+                      <ItemsPanelTemplate>
+                        <StackPanel Spacing="20" />
+                      </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate x:DataType="controls:SampleInfoGroup">
+                        <controls:SampleGroup Header="{Binding Header}" ItemsSource="{Binding Samples}">
+                          <controls:SampleGroup.ItemsPanel>
+                            <ItemsPanelTemplate>
+                              <controls:CardGrid MinItemWidth="220" />
+                            </ItemsPanelTemplate>
+                          </controls:SampleGroup.ItemsPanel>
+                          <controls:SampleGroup.ItemTemplate>
+                            <DataTemplate x:DataType="controls:SampleInfo">
+                              <Button Theme="{DynamicResource SampleCardTheme}"
+                                      Command="{Binding $parent[controls:SampleGalleryPage].OpenSampleCommand}"
+                                      CommandParameter="{Binding}"
+                                      AutomationProperties.Name="{Binding Title}"
+                                      AutomationProperties.HelpText="{Binding Description}">
+                                <StackPanel Spacing="4">
+                                  <TextBlock Classes="sample-card-title" Text="{Binding Title}" />
+                                  <TextBlock Classes="sample-card-description" Text="{Binding Description}" />
+                                </StackPanel>
+                              </Button>
+                            </DataTemplate>
+                          </controls:SampleGroup.ItemTemplate>
+                        </controls:SampleGroup>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </StackPanel>
               </ContentPresenter>
             </StackPanel>
           </ScrollViewer>

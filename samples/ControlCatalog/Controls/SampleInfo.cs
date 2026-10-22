@@ -6,7 +6,8 @@ namespace ControlCatalog.Controls
 {
     /// <summary>
     /// One entry in a <see cref="SampleGalleryPage"/> registry: a card on the gallery home page that opens the
-    /// control created by <see cref="Factory"/>. Construction is deferred until the card is clicked.
+    /// control created by <see cref="Factory"/>. Construction is deferred until the card is clicked. The first
+    /// Overview entry is not a card: the gallery shows it live.
     /// </summary>
     public sealed class SampleInfo(string group, string title, string description, Func<Control> factory)
     {
