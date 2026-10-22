@@ -68,6 +68,7 @@
     </WrapPanel>
 
     <TableView ItemsSource="{Binding Countries}"
+               Margin="10"
                CanUserResizeColumns="{Binding #CanUserResizeColumns.IsChecked}"
                Classes.responsive="{Binding #HideColumnsWhenNarrow.IsChecked}">
       <TableView.Columns>
