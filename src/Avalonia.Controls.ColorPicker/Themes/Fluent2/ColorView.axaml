@@ -229,7 +229,7 @@
                        Width="{DynamicResource TabItemHeaderPillWidth}"
                        RadiusX="1.5"
                        RadiusY="1.5"
-                       Margin="0,0,0,2"
+                       Margin="0,0,0,4"
                        HorizontalAlignment="Center"
                        VerticalAlignment="Bottom"
                        IsHitTestVisible="False"
