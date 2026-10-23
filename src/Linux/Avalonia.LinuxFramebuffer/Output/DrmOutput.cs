@@ -121,8 +121,9 @@ namespace Avalonia.LinuxFramebuffer.Output
         private EglContext _deferredContext;
         private IntPtr _currentBo;
         private IntPtr _pendingBo;
-        private bool _waitingForFlip;
-        private DrmEventPageFlipHandlerDelegate? _flipCallback;
+        private volatile bool _flipPending;
+        private GCHandle _flipUserData;
+        private static readonly DrmEventPageFlipHandlerDelegate s_flipCallback = OnPageFlipComplete;
         private IntPtr _gbmTargetSurface;
         private uint _crtcId;
 
@@ -179,6 +180,7 @@ namespace Avalonia.LinuxFramebuffer.Output
         {
             FbDestroyDelegate = FbDestroyCallback;
             _card = card;
+            _flipUserData = GCHandle.Alloc(this, GCHandleType.Weak);
             uint GetCrtc()
             {
                 if (resources.Encoders.TryGetValue(connector.EncoderId, out var encoder))
@@ -280,7 +282,10 @@ namespace Avalonia.LinuxFramebuffer.Output
                 // while this one waits for vblank.
                 WaitForPendingFlip();
 
-                if (drmModePageFlip(_card.Fd, _crtcId, fb, DrmModePageFlip.Event, null) == 0)
+                // Outputs can share the card's fd, so tag the flip to get its completion back to this output
+                _flipPending = true;
+                if (drmModePageFlip(_card.Fd, _crtcId, fb, DrmModePageFlip.Event,
+                        (void*)GCHandle.ToIntPtr(_flipUserData)) == 0)
                 {
                     _pendingBo = nextBo;
 
@@ -290,6 +295,7 @@ namespace Avalonia.LinuxFramebuffer.Output
                 }
                 else
                 {
+                    _flipPending = false;
                     gbm_surface_release_buffer(_gbmTargetSurface, nextBo);
                 }
             }
@@ -300,17 +306,12 @@ namespace Avalonia.LinuxFramebuffer.Output
             if (_pendingBo == IntPtr.Zero)
                 return;
 
-            _flipCallback ??= (int fd, uint sequence, uint tv_sec, uint tv_usec, void* user_data) =>
-            {
-                _waitingForFlip = false;
-            };
             var ctx = new DrmEventContext
             {
                 version = 4,
-                page_flip_handler = Marshal.GetFunctionPointerForDelegate(_flipCallback)
+                page_flip_handler = Marshal.GetFunctionPointerForDelegate(s_flipCallback)
             };
-            _waitingForFlip = true;
-            while (_waitingForFlip)
+            while (_flipPending)
             {
                 var pfd = new PollFd {events = 1, fd = _card.Fd};
                 poll(&pfd, new IntPtr(1), -1);
@@ -320,6 +321,12 @@ namespace Avalonia.LinuxFramebuffer.Output
             gbm_surface_release_buffer(_gbmTargetSurface, _currentBo);
             _currentBo = _pendingBo;
             _pendingBo = IntPtr.Zero;
+        }
+
+        private static void OnPageFlipComplete(int fd, uint sequence, uint tv_sec, uint tv_usec, void* user_data)
+        {
+            if (user_data != null && GCHandle.FromIntPtr(new IntPtr(user_data)).Target is DrmOutput output)
+                output._flipPending = false;
         }
 
         public IGlPlatformSurfaceRenderTarget CreateGlRenderTarget() => new RenderTarget(this);
