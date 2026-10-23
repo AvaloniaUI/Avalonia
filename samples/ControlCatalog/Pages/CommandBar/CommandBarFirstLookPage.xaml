@@ -19,25 +19,25 @@
                    Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
         <TextBlock Text="Primary Commands" FontWeight="SemiBold" />
         <TextBlock Text="Buttons displayed directly in the bar: New, Save, Bold, Italic, Share."
-                   FontSize="12" Opacity="0.7" TextWrapping="Wrap" />
+                   Opacity="0.7" TextWrapping="Wrap" />
 
         <Separator />
 
         <TextBlock Text="Secondary Commands" FontWeight="SemiBold" />
         <TextBlock Text="Buttons in the overflow menu (three-dot icon): Export, Print, Delete."
-                   FontSize="12" Opacity="0.7" TextWrapping="Wrap" />
+                   Opacity="0.7" TextWrapping="Wrap" />
 
         <Separator />
 
         <TextBlock Text="Content Area" FontWeight="SemiBold" />
         <TextBlock Text="Custom content (e.g. 'Document Editor' text) displayed on the left side of the bar."
-                   FontSize="12" Opacity="0.7" TextWrapping="Wrap" />
+                   Opacity="0.7" TextWrapping="Wrap" />
 
         <Separator />
 
         <TextBlock Text="Separators" FontWeight="SemiBold" />
         <TextBlock Text="CommandBarSeparator creates visual dividers between command groups."
-                   FontSize="12" Opacity="0.7" TextWrapping="Wrap" />
+                   Opacity="0.7" TextWrapping="Wrap" />
       </StackPanel>
     </ScrollViewer>
 
@@ -86,7 +86,6 @@
 
         <TextBlock x:Name="StatusText"
                    Text="Ready"
-                   FontSize="13"
                    Opacity="0.7" />
       </StackPanel>
     </ScrollViewer>

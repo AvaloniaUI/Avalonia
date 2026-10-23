@@ -6,7 +6,7 @@ namespace Avalonia.Styling.Activators
     {
         private readonly (StyleQueryComparisonOperator @operator, double value) _argument;
 
-        public WidthActivator(Visual visual, (StyleQueryComparisonOperator @operator, double value) argument, string? containerName = null) : base(visual, containerName)
+        public WidthActivator(StyledElement target, (StyleQueryComparisonOperator @operator, double value) argument, string? containerName = null) : base(target, containerName)
         {
             _argument = argument;
         }
@@ -23,7 +23,7 @@ namespace Avalonia.Styling.Activators
     {
         private readonly (StyleQueryComparisonOperator @operator, double value) _argument;
 
-        public HeightActivator(Visual visual, (StyleQueryComparisonOperator @operator, double value) argument, string? containerName = null) : base(visual, containerName)
+        public HeightActivator(StyledElement target, (StyleQueryComparisonOperator @operator, double value) argument, string? containerName = null) : base(target, containerName)
         {
             _argument = argument;
         }

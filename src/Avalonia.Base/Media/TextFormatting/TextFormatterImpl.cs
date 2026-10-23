@@ -863,6 +863,26 @@ namespace Avalonia.Media.TextFormatting
         }
 
         /// <summary>
+        /// The number of characters past the fitting length that are searched for a break opportunity.
+        /// A word that overflows the line by more than this has no opportunity in reach and is broken
+        /// at the fitting length instead, just like a word that does not fit with <see cref="TextWrapping.Wrap"/>.
+        /// </summary>
+        private const int MaxBreakLookahead = 4096;
+
+        /// <summary>
+        /// Creates an enumerator that stops searching for break opportunities beyond the reach of the current line.
+        /// Enumerating the whole run would scan all remaining text for every line of a long unbroken run.
+        /// </summary>
+        /// <param name="text">The text of the run.</param>
+        /// <param name="measuredLength">The number of characters of the run that fit the line.</param>
+        private static LineBreakEnumerator CreateLineBreakEnumerator(ReadOnlySpan<char> text, int measuredLength)
+        {
+            var limit = (long)Math.Max(measuredLength, 0) + MaxBreakLookahead;
+
+            return new LineBreakEnumerator(text, limit < text.Length ? (int)limit : int.MaxValue);
+        }
+
+        /// <summary>
         /// Performs text wrapping returns a list of text lines.
         /// </summary>
         /// <param name="textRuns"></param>
@@ -938,7 +958,8 @@ namespace Avalonia.Media.TextFormatting
                 {
                     case ShapedTextRun:
                         {
-                            var lineBreaker = new LineBreakEnumerator(currentRun.Text.Span);
+                            var lineBreaker = CreateLineBreakEnumerator(
+                                currentRun.Text.Span, measuredLength - currentLength);
 
                             while (lineBreaker.MoveNext(out var lineBreak))
                             {
@@ -1028,6 +1049,14 @@ namespace Avalonia.Media.TextFormatting
                                 {
                                     lastWrapPosition = currentLength + lineBreak.PositionWrap;
                                 }
+                            }
+
+                            if (!breakFound && lineBreaker.LimitReached)
+                            {
+                                //No opportunity within reach of the line: use the last one or break at the fitting length.
+                                currentPosition = lastWrapPosition == 0 ? measuredLength : lastWrapPosition;
+
+                                breakFound = true;
                             }
 
                             break;
