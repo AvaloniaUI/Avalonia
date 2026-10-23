@@ -93,26 +93,26 @@
           BorderBrush="{TemplateBinding BorderBrush}"
           BorderThickness="{TemplateBinding BorderThickness}"
           CornerRadius="{TemplateBinding CornerRadius}">
-          <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="Auto,Auto">
+          <Grid RowDefinitions="Auto,Auto">
             <ContentPresenter
-              Grid.ColumnSpan="2"
+              Grid.Row="0"
               Margin="{TemplateBinding Padding}"
               Name="PART_ContentPresenter"
               HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
               VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
               Content="{TemplateBinding Content}"
               ContentTemplate="{TemplateBinding ContentTemplate}" />
-            <Rectangle x:Name="PART_SelectedPipe"
-                       Grid.ColumnSpan="2"
-                       Grid.Row="1"
-                       Theme="{StaticResource TabStripItemPill}"
-                       RadiusX="1.5"
-                       RadiusY="1.5"
-                       Margin="{DynamicResource TabStripItemSelectionVisualMargin}"
-                       HorizontalAlignment="Center"
-                       VerticalAlignment="Bottom"
-                       IsHitTestVisible="False"
-                       Opacity="0">
+            <Rectangle
+              x:Name="PART_SelectedPipe"
+              Grid.Row="1"
+              Theme="{StaticResource TabStripItemPill}"
+              RadiusX="1.5"
+              RadiusY="1.5"
+              Margin="{DynamicResource TabStripItemSelectionVisualMargin}"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Bottom"
+              IsHitTestVisible="False"
+              Opacity="0">
               <Rectangle.Transitions>
                 <Transitions>
                   <DoubleTransition Property="Width"
