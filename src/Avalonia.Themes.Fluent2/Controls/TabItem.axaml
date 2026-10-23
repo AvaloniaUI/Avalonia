@@ -54,15 +54,15 @@
 
   <Thickness x:Key="TabItemHeaderBorderThickness">1</Thickness>
   <Thickness x:Key="TabItemHeaderIconVisualMargin">-2,0</Thickness>
-  <Thickness x:Key="TabItemHeaderTextVisualMargin">0</Thickness>
+  <Thickness x:Key="TabItemHeaderContentMargin">0</Thickness>
   <Thickness x:Key="TabItemHeaderPadding">12,10,12,7</Thickness>
   <Thickness x:Key="TabItemHeaderSelectionVisualMargin">0</Thickness>
   <Thickness x:Key="TabItemHeaderFocusVisualMargin">-2</Thickness>
   <x:Double x:Key="TabItemHeaderPillHeight">3</x:Double>
   <x:Double x:Key="TabItemHeaderPillWidth">4</x:Double>
   <x:Double x:Key="TabItemHeaderPillScaledWidth">16</x:Double>
-  <x:Double x:Key="TabItemHeaderIconScale">0.8</x:Double>
   <x:Double x:Key="TabItemHeaderSpacing">8</x:Double>
+  <x:TimeSpan x:Key="TabItemScaleAnimationDuration">00:00:00.167</x:TimeSpan>
 
   <ControlTheme x:Key="TabItemHeaderPill" TargetType="Rectangle" BasedOn="{StaticResource ComboBoxItemPill}">
     <Setter Property="Fill" Value="{DynamicResource TabItemHeaderPillFill}"/>
@@ -93,17 +93,30 @@
           BorderThickness="{TemplateBinding BorderThickness}"
           CornerRadius="{TemplateBinding CornerRadius}">
           <Grid RowDefinitions="Auto,Auto">
-            <ContentPresenter
+            <FlexPanel
+              Direction="Row"
+              Wrap="NoWrap"
               Grid.Row="0"
               Margin="{TemplateBinding Padding}"
-              Name="PART_ContentPresenter"
+              ColumnSpacing="{DynamicResource TabItemHeaderSpacing}"
               HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-              Content="{TemplateBinding Header}"
-              FontSize="{TemplateBinding FontSize}"
-              FontFamily="{TemplateBinding FontFamily}"
-              FontWeight="{TemplateBinding FontWeight}"
-              ContentTemplate="{TemplateBinding HeaderTemplate}" />
+              VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
+              <ContentPresenter x:Name="PART_IconVisual"
+                                Content="{TemplateBinding Icon}"
+                                ContentTemplate="{TemplateBinding IconTemplate}"
+                                Margin="{DynamicResource TabItemHeaderIconVisualMargin}"
+                                Foreground="{TemplateBinding Foreground}"
+                                RenderTransformOrigin="0.5,0.5"/>
+              <ContentPresenter
+                Flex.Grow="1"
+                Name="PART_ContentPresenter"
+                Margin="{StaticResource TabItemHeaderContentMargin}"
+                Content="{TemplateBinding Header}"
+                FontSize="{TemplateBinding FontSize}"
+                FontFamily="{TemplateBinding FontFamily}"
+                FontWeight="{TemplateBinding FontWeight}"
+                ContentTemplate="{TemplateBinding HeaderTemplate}" />
+            </FlexPanel>
             <Rectangle
               x:Name="PART_SelectedPipe"
               Grid.Row="1"
@@ -118,7 +131,7 @@
               <Rectangle.Transitions>
                 <Transitions>
                   <DoubleTransition Property="Width"
-                                    Duration="{DynamicResource ComboBoxItemScaleAnimationDuration}"
+                                    Duration="{DynamicResource TabItemScaleAnimationDuration}"
                                     Easing="0,0,0,1"/>
                 </Transitions>
               </Rectangle.Transitions>
@@ -130,6 +143,14 @@
 
     <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
       <Setter Property="RecognizesAccessKey" Value="True" />
+    </Style>
+
+    <Style Selector="^ /template/ ContentPresenter#PART_IconVisual:empty">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+
+    <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter:empty">
+      <Setter Property="IsVisible" Value="False" />
     </Style>
 
     <!-- Pointer-over -->
