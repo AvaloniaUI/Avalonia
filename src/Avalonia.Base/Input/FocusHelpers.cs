@@ -22,7 +22,8 @@ namespace Avalonia.Input
 
         public static bool CanHaveFocusableChildren(AvaloniaObject? parent)
         {
-            if (parent == null)
+            if (parent == null || parent is IInputElement input &&
+                (!input.IsEffectivelyEnabled || !IsVisible(input)))
                 return false;
 
             var children = GetInputElementChildren(parent);
@@ -31,7 +32,7 @@ namespace Avalonia.Input
 
             foreach (var child in children)
             {
-                if (IsVisible(child))
+                if (child.IsEffectivelyEnabled && IsVisible(child))
                 {
                     if (child.Focusable)
                     {
@@ -83,7 +84,7 @@ namespace Avalonia.Input
 
         internal static bool IsFocusable(IInputElement? element)
         {
-            return element?.Focusable ?? false;
+            return element is { Focusable: true, IsEffectivelyEnabled: true } && IsVisible(element);
         }
 
         internal static bool CanHaveChildren(IInputElement? element)
