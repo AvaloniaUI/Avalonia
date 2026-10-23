@@ -87,6 +87,15 @@
                 </Grid.Resources>
 
                 <!-- Backgrounds -->
+                <!--
+                  Note: The ContentBackgroundBorder changes the CornerRadius binding from ColorView.
+                  In ColorView just bind to the control's CornerRadius directly; however, here the control's CornerRadius
+                  needs to instead apply to the DropDownButton. The CornerRadius we must actually use is the same
+                  as the Flyout hosting the picker.
+
+                  This is a point of deviation from the base ColorView ControlTheme (where otherwise they are the same).
+                  If ever the ControlThemes are re-unified in the future this will have to be adjusted again.
+                -->
                 <Border x:Name="TabBackgroundBorder"
                         Grid.Row="0"
                         Grid.RowSpan="2"
@@ -102,7 +111,7 @@
                         Margin="0,48,0,0"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch"
-                        CornerRadius="{TemplateBinding CornerRadius, Converter={StaticResource BottomCornerRadiusFilterConverter}}"
+                        CornerRadius="{Binding $parent[FlyoutPresenter].CornerRadius, Converter={StaticResource BottomCornerRadiusFilterConverter}}"
                         Background="{DynamicResource ColorViewContentBackgroundBrush}"
                         BorderBrush="{DynamicResource ColorViewContentBorderBrush}"
                         BorderThickness="0,1,0,0" />
