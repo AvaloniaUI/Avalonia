@@ -9,15 +9,15 @@
 
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
-      <SolidColorBrush x:Key="ColorViewContentBackgroundBrush" Color="Transparent" />
+      <SolidColorBrush x:Key="ColorViewContentBackground" Color="Transparent" />
       <SolidColorBrush x:Key="ColorViewContentBorderBrush" Color="Transparent" />
-      <SolidColorBrush x:Key="ColorViewTabBackgroundBrush" Color="{StaticResource LayerFillColorAlt}" />
+      <SolidColorBrush x:Key="ColorViewTabBackground" Color="{StaticResource LayerFillColorAlt}" />
       <SolidColorBrush x:Key="ColorViewTabBorderBrush" Color="Transparent" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
-      <SolidColorBrush x:Key="ColorViewContentBackgroundBrush" Color="Transparent" />
+      <SolidColorBrush x:Key="ColorViewContentBackground" Color="Transparent" />
       <SolidColorBrush x:Key="ColorViewContentBorderBrush" Color="Transparent" />
-      <SolidColorBrush x:Key="ColorViewTabBackgroundBrush" Color="{StaticResource LayerFillColorAlt}" />
+      <SolidColorBrush x:Key="ColorViewTabBackground" Color="{StaticResource LayerFillColorAlt}" />
       <SolidColorBrush x:Key="ColorViewTabBorderBrush" Color="Transparent" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
@@ -322,7 +322,7 @@
                   Height="48"
                   HorizontalAlignment="Stretch"
                   VerticalAlignment="Top"
-                  Background="{DynamicResource ColorViewTabBackgroundBrush}"
+                  Background="{DynamicResource ColorViewTabBackground}"
                   BorderBrush="{DynamicResource ColorViewTabBorderBrush}"
                   CornerRadius="{DynamicResource ColorViewTabBackgroundCornerRadius}" />
           <Border x:Name="ContentBackgroundBorder"
@@ -332,7 +332,7 @@
                   HorizontalAlignment="Stretch"
                   VerticalAlignment="Stretch"
                   CornerRadius="{TemplateBinding CornerRadius, Converter={StaticResource BottomCornerRadiusFilterConverter}}"
-                  Background="{DynamicResource ColorViewContentBackgroundBrush}"
+                  Background="{DynamicResource ColorViewContentBackground}"
                   BorderBrush="{DynamicResource ColorViewContentBorderBrush}"
                   BorderThickness="0,1,0,0" />
 
