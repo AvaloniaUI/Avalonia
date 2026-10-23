@@ -1,0 +1,64 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:converters="using:Avalonia.Controls.Converters">
+
+  <Styles.Resources>
+    <ResourceDictionary>
+
+      <!-- Shared Resources -->
+      <VisualBrush x:Key="ColorControlCheckeredBackgroundBrush"
+                   TileMode="Tile"
+                   Stretch="Uniform"
+                   DestinationRect="0,0,8,8">
+        <VisualBrush.Visual>
+          <Image Width="8" Height="8">
+            <Image.Source>
+              <DrawingImage>
+                <DrawingImage.Drawing>
+                    <DrawingGroup>
+                      <GeometryDrawing Geometry="M0,0 L2,0 2,2, 0,2Z"
+                                       Brush="Transparent" />
+                      <GeometryDrawing Geometry="M0,1 L2,1 2,2, 1,2 1,0 0,0Z"
+                                       Brush="#19808080" />
+                    </DrawingGroup>
+                </DrawingImage.Drawing>
+              </DrawingImage>
+            </Image.Source>
+          </Image>
+        </VisualBrush.Visual>
+      </VisualBrush>
+
+      <!-- TODO: Enable the commented-out resources below once Avalonia supports extending light/dark resource dictionaries -->
+      <SolidColorBrush x:Key="ColorControlLightSelectorBrush" Color="#FFFFFFFF" />
+      <SolidColorBrush x:Key="ColorControlDarkSelectorBrush" Color="#E4000000" />
+      <!--<DynamicResource x:Key="ColorControlDefaultSelectorBrush" ResourceKey="SystemControlForegroundBaseHighBrush" />-->
+      <SolidColorBrush x:Key="ColorViewContentBackgroundBrush" Color="Transparent" />
+      <SolidColorBrush x:Key="ColorViewContentBorderBrush" Color="Transparent" />
+      <!--<DynamicResource x:Key="ColorViewTabBackgroundBrush" ResourceKey="SystemControlBackgroundBaseLowBrush" />-->
+      <SolidColorBrush x:Key="ColorViewTabBorderBrush" Color="Transparent" />
+
+      <!-- Shared Converters -->
+      <converters:EnumToBoolConverter x:Key="EnumToBoolConverter" />
+      <converters:ToBrushConverter x:Key="ToBrushConverter" />
+      <converters:CornerRadiusFilterConverter x:Key="LeftCornerRadiusFilterConverter" Filter="TopLeft, BottomLeft"/>
+      <converters:CornerRadiusFilterConverter x:Key="RightCornerRadiusFilterConverter" Filter="TopRight, BottomRight"/>
+      <converters:CornerRadiusFilterConverter x:Key="TopCornerRadiusFilterConverter" Filter="TopLeft, TopRight"/>
+      <converters:CornerRadiusFilterConverter x:Key="BottomCornerRadiusFilterConverter" Filter="BottomLeft, BottomRight"/>
+      <converters:CornerRadiusToDoubleConverter x:Key="TopLeftCornerRadiusConverter" Corner="TopLeft" />
+      <converters:CornerRadiusToDoubleConverter x:Key="BottomRightCornerRadiusConverter" Corner="BottomRight" />
+
+      <ResourceDictionary.MergedDictionaries>
+
+        <!-- Primitives -->
+        <MergeResourceInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Fluent/ColorPreviewer.xaml" />
+        <MergeResourceInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Fluent/ColorSlider.xaml" />
+        <MergeResourceInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Fluent/ColorSpectrum.xaml" />
+
+        <!-- Controls -->
+        <MergeResourceInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Fluent/ColorPicker.xaml" />
+        <MergeResourceInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Fluent/ColorView.xaml" />
+
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </Styles.Resources>
+</Styles>
