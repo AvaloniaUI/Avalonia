@@ -14,6 +14,9 @@
     <Button Name="ShowNewWindowDecorations"
             Content="Show new Window with decorations"
             Click="ShowNewWindowDecorations_Click"/>
+    <Button Name="ShowTrafficLightHostWindow"
+            Content="Show traffic light host Window"
+            Click="ShowTrafficLightHostWindow_Click"/>
     <TextBox Name="WindowDecorationProperties" AcceptsReturn="True" />
   </StackPanel>
 </UserControl>

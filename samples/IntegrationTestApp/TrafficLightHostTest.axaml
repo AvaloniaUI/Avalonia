@@ -1,0 +1,31 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="IntegrationTestApp.TrafficLightHostTest"
+        Name="TrafficLightHostWindow"
+        Title="Traffic Light Host Test"
+        Width="500" Height="300"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaTitleBarHeightHint="60">
+  <DockPanel>
+    <Panel DockPanel.Dock="Top" Height="60">
+      <Border Name="TrafficLightHost"
+              HorizontalAlignment="Left"
+              VerticalAlignment="Top"
+              Margin="40,10"
+              Background="LightBlue"
+              MacOSProperties.IsTrafficLightHost="True"
+              IsVisible="{Binding #TrafficLightHostIsVisible.IsChecked}" />
+    </Panel>
+    <StackPanel Spacing="4">
+      <CheckBox Name="TrafficLightHostIsVisible" Content="Show host" />
+      <TextBox Name="TrafficLightHostMargin" PlaceholderText="Margin" />
+      <TextBox Name="TrafficLightHostSize" PlaceholderText="Size, empty to fit the buttons" />
+      <Button Name="ApplyTrafficLightHost"
+              Content="Apply host layout"
+              Click="ApplyTrafficLightHost_Click" />
+      <Button Name="AddToTrafficLightHostWindowWidth"
+              Content="Add to window width"
+              Click="AddToTrafficLightHostWindowWidth_Click" />
+    </StackPanel>
+  </DockPanel>
+</Window>
