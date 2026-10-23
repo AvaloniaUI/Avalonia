@@ -10,6 +10,45 @@ namespace Avalonia.Base.UnitTests.Input
 {
     public class InputElement_Focus
     {
+        [Theory]
+        [InlineData(false, false, false)]
+        [InlineData(true, false, false)]
+        [InlineData(false, false, true)]
+        [InlineData(true, false, true)]
+        [InlineData(false, true, false)]
+        [InlineData(true, true, false)]
+        [InlineData(false, true, true)]
+        [InlineData(true, true, true)]
+        public void Sequential_Focus_Should_Skip_Unavailable_Candidates(bool previous, bool hidden, bool unavailableParent)
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var first = new Button { Content = "First" };
+                var unavailable = new Button { Content = "Unavailable" };
+                Control middle = unavailableParent
+                    ? new StackPanel { Children = { unavailable } }
+                    : unavailable;
+                if (hidden)
+                    middle.IsVisible = false;
+                else
+                    middle.IsEnabled = false;
+                var last = new Button { Content = "Last" };
+                var root = new TestRoot
+                {
+                    Child = new StackPanel { Children = { first, middle, last } }
+                };
+                var current = previous ? last : first;
+                var expected = previous ? first : last;
+                var direction = previous ? NavigationDirection.Previous : NavigationDirection.Next;
+                Assert.True(current.Focus());
+
+                Assert.Same(expected, root.FocusManager.FindNextElement(direction,
+                    new FindNextElementOptions { FocusedElement = current }));
+                Assert.True(root.FocusManager.TryMoveFocus(direction));
+                Assert.Same(expected, root.FocusManager.GetFocusedElement());
+            }
+        }
+
         [Fact]
         public void Focus_Should_Set_FocusManager_Current()
         {
