@@ -100,6 +100,26 @@ internal class DispatcherPriorityQueue
         return null;
     }
     
+    /// <summary>
+    /// Returns the first operation of the highest priority between <paramref name="minimum"/>
+    /// and <paramref name="maximum"/>, ignoring operations of higher priority.
+    /// </summary>
+    public DispatcherOperation? Peek(DispatcherPriority minimum, DispatcherPriority maximum)
+    {
+        for (var i = _priorityChains.Count - 1; i >= 0; --i)
+        {
+            var priority = _priorityChains.Keys[i];
+
+            if (priority < minimum)
+                break;
+
+            if (priority <= maximum)
+                return _priorityChains.Values[i].Head;
+        }
+
+        return null;
+    }
+
     public void RemoveItem(DispatcherOperation item)
     {
         Debug.Assert(item != null, "PriorityQueue.RemoveItem: invalid item.");

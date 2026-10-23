@@ -434,7 +434,7 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
 
         void IAvnTopLevelEvents.Paint()
         {
-            Dispatcher.UIThread.RunJobs(DispatcherPriority.UiThreadRender);
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.UiThreadRender, DispatcherPriority.AsyncRenderTargetResize);
             var s = _parent.ClientSize;
             _parent.Paint?.Invoke(new Rect(0, 0, s.Width, s.Height));
         }
@@ -474,7 +474,7 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
 
         void IAvnTopLevelEvents.RunRenderPriorityJobs()
         {
-            Dispatcher.UIThread.RunJobs(DispatcherPriority.UiThreadRender);
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.UiThreadRender, DispatcherPriority.AsyncRenderTargetResize);
         }
 
         void IAvnTopLevelEvents.LostFocus()

@@ -72,6 +72,33 @@ public partial class Dispatcher
         }
     }
 
+    /// <summary>
+    /// Runs the operations whose priority is between <paramref name="minimum"/> and
+    /// <paramref name="maximum"/>, leaving any of higher priority queued.
+    /// </summary>
+    /// <remarks>
+    /// Platforms call this from a paint callback to bring layout and rendering up to date before
+    /// the frame is drawn. Operations of higher priority are left for the main loop: they may
+    /// start a nested loop, such as a modal dialog or a window drag, which would otherwise run
+    /// inside the platform's paint and stop it from painting until the loop ends.
+    /// </remarks>
+    internal void RunJobs(DispatcherPriority minimum, DispatcherPriority maximum)
+    {
+        if (DisabledProcessingCount > 0)
+            throw new InvalidOperationException(
+                "Cannot perform this operation while dispatcher processing is suspended.");
+
+        while (true)
+        {
+            DispatcherOperation? job;
+            lock (InstanceLock)
+                job = _queue.Peek(minimum, maximum);
+            if (job == null)
+                return;
+            ExecuteJob(job);
+        }
+    }
+
     private sealed class DummyShuttingDownUnitTestDispatcherImpl : IDispatcherImpl
     {
         public bool CurrentThreadIsLoopThread => true;
