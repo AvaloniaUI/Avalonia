@@ -1,11 +1,11 @@
-<ResourceDictionary xmlns="https://github.com/avaloniaui"
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:controls="using:Avalonia.Controls"
                     xmlns:primitives="using:Avalonia.Controls.Primitives"
                     x:ClassModifier="internal">
 
   <PlacementMode x:Key="ColorPickerFlyoutPlacement">Top</PlacementMode>
-  
+
   <ControlTheme x:Key="{x:Type ColorPicker}"
                 TargetType="ColorPicker">
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
@@ -19,6 +19,7 @@
     <Setter Property="VerticalContentAlignment" Value="Stretch"/>
     <Setter Property="Content">
       <Template>
+        <!-- Preview color -->
         <Panel>
           <Border Background="{StaticResource ColorControlCheckeredBackgroundBrush}"
                   CornerRadius="{TemplateBinding CornerRadius, Converter={StaticResource LeftCornerRadiusFilterConverter}}"
@@ -66,19 +67,34 @@
               <Grid RowDefinitions="Auto,Auto">
 
                 <Grid.Resources>
+                  <ResourceDictionary>
+                    <ResourceDictionary.ThemeDictionaries>
+                      <ResourceDictionary x:Key="Default">
+                        <SolidColorBrush x:Key="ColorViewContentBackgroundBrush" Color="{StaticResource LayerFillColorAlt}" />
+                        <SolidColorBrush x:Key="ColorViewContentBorderBrush" Color="{StaticResource DividerStrokeColorDefault}" />
+                        <SolidColorBrush x:Key="ColorViewTabBackgroundBrush" Color="Transparent" />
+                        <SolidColorBrush x:Key="ColorViewTabBorderBrush" Color="Transparent" />
+                      </ResourceDictionary>
+                      <ResourceDictionary x:Key="Dark">
+                        <SolidColorBrush x:Key="ColorViewContentBackgroundBrush" Color="{StaticResource LayerFillColorAlt}" />
+                        <SolidColorBrush x:Key="ColorViewContentBorderBrush" Color="{StaticResource DividerStrokeColorDefault}" />
+                        <SolidColorBrush x:Key="ColorViewTabBackgroundBrush" Color="Transparent" />
+                        <SolidColorBrush x:Key="ColorViewTabBorderBrush" Color="Transparent" />
+                      </ResourceDictionary>
+                    </ResourceDictionary.ThemeDictionaries>
+                  </ResourceDictionary>
                   <!-- This radius must follow OverlayCornerRadius -->
-                  <CornerRadius x:Key="ColorViewTabBackgroundCornerRadius">5,5,0,0</CornerRadius>
+                  <CornerRadius x:Key="ColorViewTabBackgroundCornerRadius">8,8,0,0</CornerRadius>
                 </Grid.Resources>
 
                 <!-- Backgrounds -->
-                <!-- TODO: Background="{DynamicResource ColorViewTabBackgroundBrush}" -->
                 <Border x:Name="TabBackgroundBorder"
                         Grid.Row="0"
                         Grid.RowSpan="2"
                         Height="48"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Top"
-                        Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
+                        Background="{DynamicResource ColorViewTabBackgroundBrush}"
                         BorderBrush="{DynamicResource ColorViewTabBorderBrush}"
                         CornerRadius="{DynamicResource ColorViewTabBackgroundCornerRadius}" />
                 <Border x:Name="ContentBackgroundBorder"
@@ -535,6 +551,7 @@
       <Setter Property="IsPerceptive" Value="False" />
     </Style>
     -->
+
   </ControlTheme>
 
 </ResourceDictionary>

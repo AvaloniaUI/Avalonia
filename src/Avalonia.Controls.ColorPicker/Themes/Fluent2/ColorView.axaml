@@ -77,7 +77,7 @@
     13C8.32843 13 9 13.6716 9 14.5C9 15.3284 8.32843 16 7.5 16Z
   </PathGeometry>
   <!-- This radius should follow ControlCornerRadius -->
-  <CornerRadius x:Key="ColorViewTabBackgroundCornerRadius">3</CornerRadius>
+  <CornerRadius x:Key="ColorViewTabBackgroundCornerRadius">4</CornerRadius>
 
   <ControlTheme x:Key="ColorViewPaletteListBoxTheme"
                 TargetType="ListBox">
@@ -100,7 +100,7 @@
                         AllowAutoHide="{TemplateBinding (ScrollViewer.AllowAutoHide)}">
             <ItemsPresenter Name="PART_ItemsPresenter"
                             ItemsPanel="{TemplateBinding ItemsPanel}"
-                            Margin="{TemplateBinding Padding}"/>
+                            Margin="{TemplateBinding Padding}" />
           </ScrollViewer>
         </Border>
       </ControlTemplate>
@@ -185,14 +185,11 @@
                           Content="{TemplateBinding Content}"
                           ContentTemplate="{TemplateBinding ContentTemplate}"
                           Padding="{TemplateBinding Padding}"
+                          RecognizesAccessKey="True"
                           HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                           VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
       </ControlTemplate>
     </Setter>
-
-    <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
-      <Setter Property="RecognizesAccessKey" Value="True" />
-    </Style>
 
     <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
       <Setter Property="Background" Value="{DynamicResource ToggleButtonBackgroundPointerOver}" />
@@ -232,8 +229,8 @@
                 TargetType="TabItem">
     <Setter Property="FontSize" Value="{DynamicResource TabItemHeaderFontSize}" />
     <Setter Property="FontWeight" Value="{DynamicResource TabItemHeaderThemeFontWeight}" />
-    <Setter Property="Background" Value="{DynamicResource TabItemHeaderBackgroundUnselected}" />
-    <Setter Property="Foreground" Value="{DynamicResource TabItemHeaderForegroundUnselected}" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Foreground" Value="{DynamicResource TextFillColorTertiaryBrush}" />
     <Setter Property="Padding" Value="6,0,6,0" />
     <Setter Property="Margin" Value="0" />
     <Setter Property="MinHeight" Value="{DynamicResource ColorViewTabStripHeight}" />
@@ -260,7 +257,7 @@
                     Margin="0,0,0,2"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Bottom"
-                    Background="{DynamicResource TabItemHeaderSelectedPipeFill}"
+                    Background="{DynamicResource AccentFillColorDefaultBrush}"
                     CornerRadius="{DynamicResource ControlCornerRadius}"
                     IsVisible="False"/>
           </Panel>
@@ -269,32 +266,24 @@
     </Setter>
 
     <Style Selector="^:selected">
-      <Setter Property="Background" Value="{DynamicResource TabItemHeaderBackgroundSelected}" />
-      <Setter Property="Foreground" Value="{DynamicResource TabItemHeaderForegroundSelected}" />
-    </Style>
-    <Style Selector="^:selected /template/ Border#PART_SelectedPipe">
-      <Setter Property="IsVisible" Value="True" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+
+      <Style Selector="^ /template/ Border#PART_SelectedPipe">
+        <Setter Property="IsVisible" Value="True" />
+      </Style>
     </Style>
 
     <Style Selector="^:pointerover /template/ Border#PART_LayoutRoot">
-      <Setter Property="Background" Value="{DynamicResource TabItemHeaderBackgroundUnselectedPointerOver}" />
-      <Setter Property="TextElement.Foreground" Value="{DynamicResource TabItemHeaderForegroundUnselectedPointerOver}" />
-    </Style>
-
-    <Style Selector="^:selected:pointerover /template/ Border#PART_LayoutRoot">
-      <Setter Property="Background" Value="{DynamicResource TabItemHeaderBackgroundSelectedPointerOver}" />
-      <Setter Property="TextElement.Foreground" Value="{DynamicResource TabItemHeaderForegroundSelectedPointerOver}" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
     </Style>
 
     <Style Selector="^:pressed /template/ Border#PART_LayoutRoot">
-      <Setter Property="Background" Value="{DynamicResource TabItemHeaderBackgroundUnselectedPressed}" />
-      <Setter Property="TextElement.Foreground" Value="{DynamicResource TabItemHeaderForegroundUnselectedPressed}" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
     </Style>
 
-    <Style Selector="^:selected:pressed /template/ Border#PART_LayoutRoot">
-      <Setter Property="Background" Value="{DynamicResource TabItemHeaderBackgroundSelectedPressed}" />
-      <Setter Property="TextElement.Foreground" Value="{DynamicResource TabItemHeaderForegroundSelectedPressed}" />
-    </Style>
   </ControlTheme>
 
   <ControlTheme x:Key="{x:Type ColorView}"
@@ -310,14 +299,13 @@
         <Grid RowDefinitions="Auto,Auto">
 
           <!-- Backgrounds -->
-          <!-- TODO: Background="{DynamicResource ColorViewTabBackgroundBrush}" -->
           <Border x:Name="TabBackgroundBorder"
                   Grid.Row="0"
                   Grid.RowSpan="2"
                   Height="48"
                   HorizontalAlignment="Stretch"
                   VerticalAlignment="Top"
-                  Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
+                  Background="{DynamicResource ColorViewTabBackgroundBrush}"
                   BorderBrush="{DynamicResource ColorViewTabBorderBrush}"
                   CornerRadius="{DynamicResource ColorViewTabBackgroundCornerRadius}" />
           <Border x:Name="ContentBackgroundBorder"
