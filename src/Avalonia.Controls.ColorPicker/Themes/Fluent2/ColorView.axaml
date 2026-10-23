@@ -11,13 +11,13 @@
     <ResourceDictionary x:Key="Default">
       <SolidColorBrush x:Key="ColorViewContentBackgroundBrush" Color="Transparent" />
       <SolidColorBrush x:Key="ColorViewContentBorderBrush" Color="Transparent" />
-      <StaticResource x:Key="ColorViewTabBackgroundBrush" ResourceKey="SystemControlBackgroundBaseLowBrush" />
+      <SolidColorBrush x:Key="ColorViewTabBackgroundBrush" Color="{StaticResource LayerFillColorAlt}" />
       <SolidColorBrush x:Key="ColorViewTabBorderBrush" Color="Transparent" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
       <SolidColorBrush x:Key="ColorViewContentBackgroundBrush" Color="Transparent" />
       <SolidColorBrush x:Key="ColorViewContentBorderBrush" Color="Transparent" />
-      <StaticResource x:Key="ColorViewTabBackgroundBrush" ResourceKey="SystemControlBackgroundBaseLowBrush" />
+      <SolidColorBrush x:Key="ColorViewTabBackgroundBrush" Color="{StaticResource LayerFillColorAlt}" />
       <SolidColorBrush x:Key="ColorViewTabBorderBrush" Color="Transparent" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
