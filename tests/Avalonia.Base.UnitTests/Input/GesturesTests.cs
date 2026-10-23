@@ -261,6 +261,43 @@ namespace Avalonia.Base.UnitTests.Input
             Assert.Equal(new[] { "bp", "dp", "br", "dr", "bt", "dt", "bp", "dp", "bdt", "ddt" }, result);
         }
 
+        [Theory]
+        [InlineData(PointerType.Touch, 56)]
+        [InlineData(PointerType.Touch, 50)]
+        [InlineData(PointerType.Pen, 56)]
+        [InlineData(PointerType.Pen, 50)]
+        public void Tapped_Should_Not_Be_Raised_After_DoubleTapped_When_Pointer_Moves_Slightly(
+            PointerType pointerType,
+            double secondPressX)
+        {
+            using var scope = AvaloniaLocator.EnterScope();
+            var iSettingsMock = new Mock<IPlatformSettings>();
+            iSettingsMock.Setup(x => x.HoldWaitDuration).Returns(TimeSpan.FromMilliseconds(300));
+            iSettingsMock.Setup(x => x.GetTapSize(It.IsAny<PointerType>())).Returns(new Size(10, 10));
+            AvaloniaLocator.CurrentMutable.BindToSelf(this)
+                .Bind<IPlatformSettings>().ToConstant(iSettingsMock.Object);
+
+            using var app = UnitTestApplication.Start();
+
+            Border border = new Border();
+            var root = new TestRoot
+            {
+                Child = border
+            };
+            var result = new List<string>();
+            var pointer = new MouseTestHelper(pointerType);
+
+            root.AddHandler(InputElement.TappedEvent, (_, _) => result.Add("t"));
+            root.AddHandler(InputElement.DoubleTappedEvent, (_, _) => result.Add("dt"));
+
+            pointer.Click(border, position: new Point(50, 50));
+            pointer.Down(border, position: new Point(secondPressX, 50), clickCount: 2);
+            pointer.Move(border, new Point(56, 50));
+            pointer.Up(border, position: new Point(56, 50));
+
+            Assert.Equal(new[] { "t", "dt" }, result);
+        }
+
         [Fact]
         public void Tapped_Should_Not_Be_Raised_On_DoubleTapped_Release()
         {
