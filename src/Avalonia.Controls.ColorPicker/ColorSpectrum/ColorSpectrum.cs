@@ -6,12 +6,11 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Avalonia.Collections.Pooled;
 using Avalonia.Automation.Peers;
+using Avalonia.Collections.Pooled;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Shapes;
 using Avalonia.Input;
-using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
@@ -1005,12 +1004,13 @@ namespace Avalonia.Controls.Primitives
         {
             var inputTarget = _inputTarget;
 
+            // Make the ColorSpectrum focusable regardless of the current theme so the color display name ToolTip can be shown
+            Focusable = true;
             Focus();
 
             _isPointerPressed = true;
             _shouldShowLargeSelection =
-                // TODO: After Pen PR is merged: https://github.com/AvaloniaUI/Avalonia/pull/7412
-                // args.Pointer.Type == PointerType.Pen ||
+                args.Pointer.Type == PointerType.Pen ||
                 args.Pointer.Type == PointerType.Touch;
 
             args.Pointer.Capture(inputTarget);
