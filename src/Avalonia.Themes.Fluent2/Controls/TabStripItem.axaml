@@ -94,12 +94,11 @@
           BorderThickness="{TemplateBinding BorderThickness}"
           CornerRadius="{TemplateBinding CornerRadius}">
           <Grid RowDefinitions="Auto,Auto">
-            <FlexPanel
-              Direction="Row"
-              Wrap="NoWrap"
+            <DockPanel
+              VerticalSpacing="{StaticResource TabStripItemSpacing}"
+              HorizontalSpacing="{StaticResource TabStripItemSpacing}"
               Grid.Row="0"
               Margin="{TemplateBinding Padding}"
-              ColumnSpacing="{DynamicResource TabStripItemSpacing}"
               HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
               VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
               <ContentPresenter x:Name="PART_IconVisual"
@@ -110,14 +109,13 @@
                                 RenderTransformOrigin="0.5,0.5"/>
               <ContentPresenter
                 Name="PART_ContentPresenter"
-                Flex.Grow="1"
                 Margin="{StaticResource TabStripItemContentMargin}"
                 Content="{TemplateBinding Content}"
                 FontSize="{TemplateBinding FontSize}"
                 FontFamily="{TemplateBinding FontFamily}"
                 FontWeight="{TemplateBinding FontWeight}"
                 ContentTemplate="{TemplateBinding ContentTemplate}" />
-            </FlexPanel>
+            </DockPanel>
             <Rectangle
               x:Name="PART_SelectedPipe"
               Grid.Row="1"

@@ -37,10 +37,9 @@
           CornerRadius="{TemplateBinding CornerRadius}"
           Padding="{TemplateBinding Padding}">
           <Panel>
-            <FlexPanel
-              Direction="Row"
-              Wrap="NoWrap"
-              ColumnSpacing="{DynamicResource TabItemHeaderSpacing}"
+            <DockPanel
+              VerticalSpacing="{StaticResource TabItemHeaderSpacing}"
+              HorizontalSpacing="{StaticResource TabItemHeaderSpacing}"
               HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
               VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
               <ContentPresenter x:Name="PART_IconVisual"
@@ -50,14 +49,13 @@
                                 Foreground="{TemplateBinding Foreground}"
                                 RenderTransformOrigin="0.5,0.5"/>
               <ContentPresenter
-                Flex.Grow="1"
                 Name="PART_ContentPresenter"
                 HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                 Content="{TemplateBinding Header}"
                 ContentTemplate="{TemplateBinding HeaderTemplate}"
                 />
-            </FlexPanel>
+            </DockPanel>
             <Border Name="PART_SelectedPipe"
                     Background="{DynamicResource TabItemHeaderSelectedPipeFill}"
                     CornerRadius="{DynamicResource ControlCornerRadius}"
