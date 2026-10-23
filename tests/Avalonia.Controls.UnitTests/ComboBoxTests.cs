@@ -318,11 +318,71 @@ namespace Avalonia.Controls.UnitTests
                         }.RegisterInNameScope(scope),
                         new TextBox
                         {
-                            Name = "PART_EditableTextBox"
+                            Name = "PART_EditableTextBox",
+                            [!Visual.IsVisibleProperty] = parent[!ComboBox.IsEditableProperty],
                         }.RegisterInNameScope(scope)
                     }
                 };
             });
+        }
+
+        [Theory]
+        [InlineData(-1, KeyModifiers.None)]
+        [InlineData(-1, KeyModifiers.Shift)]
+        [InlineData(1, KeyModifiers.None)]
+        [InlineData(1, KeyModifiers.Shift)]
+        [InlineData(1, KeyModifiers.None, true)]
+        [InlineData(1, KeyModifiers.Shift, true)]
+        public void Tab_With_DropDown_Open_Closes_It_And_Moves_Focus_Past_The_ComboBox(
+            int selectedIndex, KeyModifiers modifiers, bool isEditable = false)
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow.With(
+                keyboardDevice: () => new KeyboardDevice(),
+                keyboardNavigation: () => new KeyboardNavigationHandler()));
+
+            var target = new ComboBox
+            {
+                Template = GetTemplate(),
+                IsEditable = isEditable,
+                Items =
+                {
+                    new ComboBoxItem { Content = "Item 0" },
+                    new ComboBoxItem { Content = "Item 1" },
+                    new ComboBoxItem { Content = "Item 2" },
+                }
+            };
+            var before = new Button();
+            var after = new Button();
+
+            var window = new Window { Content = new StackPanel { Children = { before, target, after } } };
+            window.Show();
+            window.LayoutManager.ExecuteInitialLayoutPass();
+            target.ApplyTemplate();
+            target.Presenter!.ApplyTemplate();
+
+            target.SelectedIndex = selectedIndex;
+            target.Focus();
+            target.IsDropDownOpen = true;
+            window.LayoutManager.ExecuteLayoutPass();
+
+            // An editable ComboBox always keeps the focus in its text box. Otherwise, with a selection
+            // the selected item has the focus, without one the ComboBox keeps it.
+            var focused = (InputElement)KeyboardDevice.Instance!.FocusedElement!;
+            Assert.Same(
+                isEditable ? target.GetTemplateDescendants().OfType<TextBox>().Single() :
+                selectedIndex == -1 ? target : target.Items[selectedIndex],
+                focused);
+
+            focused.RaiseEvent(new KeyEventArgs
+            {
+                RoutedEvent = InputElement.KeyDownEvent,
+                Key = Key.Tab,
+                KeyModifiers = modifiers,
+            });
+
+            Assert.False(target.IsDropDownOpen);
+            Assert.True(modifiers == KeyModifiers.Shift ? before.IsFocused : after.IsFocused);
+            Assert.Equal(selectedIndex, target.SelectedIndex);
         }
 
         [Fact]
@@ -349,8 +409,7 @@ namespace Avalonia.Controls.UnitTests
             target.ApplyTemplate();
             target.Presenter!.ApplyTemplate();
 
-            var scrollViewer = target.GetVisualDescendants().OfType<ScrollViewer>().First();
-            Assert.True(scrollViewer != null);
+            var scrollViewer = (ScrollViewer)target.GetTemplateDescendants().OfType<Popup>().Single().Child!;
 
             target.SelectedItem = selectedItem;
             target.Focus();
