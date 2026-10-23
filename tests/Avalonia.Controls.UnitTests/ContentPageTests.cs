@@ -1,9 +1,12 @@
 using System;
+using System.Linq;
+using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.UnitTests;
+using Avalonia.VisualTree;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests;
@@ -277,6 +280,103 @@ public class ContentPageTests
             var page = new ContentPage { TopCommandBar = top, BottomCommandBar = bottom };
             Assert.Same(top, page.TopCommandBar);
             Assert.Same(bottom, page.BottomCommandBar);
+        }
+    }
+
+    public class SafeAreaPaddingTests : ScopedTestBase
+    {
+        private static readonly Thickness Insets = new Thickness(1, 44, 2, 34);
+
+        // Mirrors the DockPanel structure of the ContentPage theme.
+        private static IControlTemplate MinimalTemplate() =>
+            new FuncControlTemplate<ContentPage>((_, scope) =>
+            {
+                var top = new ContentPresenter { Name = "PART_TopCommandBar", IsVisible = false }.RegisterInNameScope(scope);
+                DockPanel.SetDock(top, Dock.Top);
+
+                var bottom = new ContentPresenter { Name = "PART_BottomCommandBar", IsVisible = false }.RegisterInNameScope(scope);
+                DockPanel.SetDock(bottom, Dock.Bottom);
+
+                var content = new ContentPresenter { Name = "PART_ContentPresenter" }.RegisterInNameScope(scope);
+
+                return new DockPanel { Children = { top, bottom, content } };
+            });
+
+        private static (ContentPage page, ContentPresenter content, ContentPresenter top, ContentPresenter bottom) Create()
+        {
+            var page = new ContentPage { Template = MinimalTemplate() };
+            var root = new TestRoot { Child = page };
+            page.ApplyTemplate();
+
+            var presenters = page.GetVisualDescendants().OfType<ContentPresenter>();
+            var content = presenters.First(x => x.Name == "PART_ContentPresenter");
+            var top = presenters.First(x => x.Name == "PART_TopCommandBar");
+            var bottom = presenters.First(x => x.Name == "PART_BottomCommandBar");
+
+            return (page, content, top, bottom);
+        }
+
+        [Theory]
+        [InlineData(false, false)]
+        [InlineData(true, false)]
+        [InlineData(false, true)]
+        [InlineData(true, true)]
+        public void Insets_AreAbsorbedByTheCommandBarOccupyingTheEdge(bool hasTop, bool hasBottom)
+        {
+            var (page, content, top, bottom) = Create();
+
+            page.TopCommandBar = hasTop ? new Border() : null;
+            page.BottomCommandBar = hasBottom ? new Border() : null;
+            page.SafeAreaPadding = Insets;
+
+            var expectedTop = hasTop ? new Thickness(1, 44, 2, 0) : default(Thickness);
+            var expectedBottom = hasBottom ? new Thickness(1, 0, 2, 34) : default(Thickness);
+            var expectedContent = new Thickness(1, hasTop ? 0 : 44, 2, hasBottom ? 0 : 34);
+
+            Assert.Equal(expectedTop, top.Padding);
+            Assert.Equal(expectedBottom, bottom.Padding);
+            Assert.Equal(expectedContent, content.Padding);
+        }
+
+        [Fact]
+        public void AddingOrRemovingACommandBar_RedistributesInsets()
+        {
+            var (page, content, top, _) = Create();
+            page.SafeAreaPadding = Insets;
+
+            page.TopCommandBar = new Border();
+            Assert.Equal(new Thickness(1, 44, 2, 0), top.Padding);
+            Assert.Equal(new Thickness(1, 0, 2, 34), content.Padding);
+
+            page.TopCommandBar = null;
+            Assert.Equal(default, top.Padding);
+            Assert.Equal(Insets, content.Padding);
+        }
+
+        [Fact]
+        public void AutomaticallyApplySafeAreaPadding_False_KeepsPagePadding()
+        {
+            var (page, content, top, _) = Create();
+            page.TopCommandBar = new Border();
+            page.Padding = new Thickness(5);
+            page.SafeAreaPadding = Insets;
+
+            page.AutomaticallyApplySafeAreaPadding = false;
+
+            Assert.Equal(default, top.Padding);
+            Assert.Equal(new Thickness(5), content.Padding);
+        }
+
+        [Fact]
+        public void PagePadding_LargerThanInset_IsPreserved()
+        {
+            var (page, content, _, _) = Create();
+            page.TopCommandBar = new Border();
+            page.Padding = new Thickness(0, 60, 0, 10);
+            page.SafeAreaPadding = Insets;
+
+            // The top inset is taken by the command bar, the page padding still wins on the other edges.
+            Assert.Equal(new Thickness(1, 60, 2, 34), content.Padding);
         }
     }
 
