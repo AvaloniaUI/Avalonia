@@ -435,7 +435,7 @@
                            ToolTip.Tip="{Binding Converter={StaticResource ColorToDisplayNameConverter}}"
                            HorizontalAlignment="Stretch"
                            VerticalAlignment="Stretch">
-                      <Border Background="{StaticResource ColorControlCheckeredBackgroundBrush}" />
+                      <Border Background="{StaticResource ColorControlCheckeredBackground}" />
                       <Border HorizontalAlignment="Stretch"
                               VerticalAlignment="Stretch">
                         <Border.Background>

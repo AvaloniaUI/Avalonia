@@ -29,7 +29,7 @@
                       Grid.ColumnSpan="2"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch"
-                      Background="{StaticResource ColorControlCheckeredBackgroundBrush}" />
+                      Background="{StaticResource ColorControlCheckeredBackground}" />
               <Border x:Name="PART_AccentDecrement2Border"
                       Grid.Column="0"
                       CornerRadius="{TemplateBinding CornerRadius, Converter={StaticResource LeftCornerRadiusFilterConverter}}"
@@ -50,7 +50,7 @@
                       Grid.ColumnSpan="2"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch"
-                      Background="{StaticResource ColorControlCheckeredBackgroundBrush}" />
+                      Background="{StaticResource ColorControlCheckeredBackground}" />
               <Border x:Name="PART_AccentIncrement1Border"
                       Grid.Column="0"
                       Tag="1"
@@ -68,7 +68,7 @@
                     BoxShadow="0 0 10 2 #BF000000"
                     CornerRadius="{TemplateBinding CornerRadius}">
               <Panel>
-                <Border Background="{StaticResource ColorControlCheckeredBackgroundBrush}"
+                <Border Background="{StaticResource ColorControlCheckeredBackground}"
                         CornerRadius="{TemplateBinding CornerRadius}" />
                 <Border CornerRadius="{TemplateBinding CornerRadius}"
                         Background="{TemplateBinding HsvColor, Converter={StaticResource ToBrushConverter}}"
@@ -83,7 +83,7 @@
                   HorizontalAlignment="Stretch"
                   VerticalAlignment="Stretch">
             <Panel>
-              <Border Background="{StaticResource ColorControlCheckeredBackgroundBrush}"
+              <Border Background="{StaticResource ColorControlCheckeredBackground}"
                       CornerRadius="{TemplateBinding CornerRadius}" />
               <Border CornerRadius="{TemplateBinding CornerRadius}"
                       Background="{TemplateBinding HsvColor, Converter={StaticResource ToBrushConverter}}"
