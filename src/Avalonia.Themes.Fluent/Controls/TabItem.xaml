@@ -77,12 +77,6 @@
       <Setter Property="IsVisible" Value="False" />
     </Style>
 
-    <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter:empty, ^ /template/ ContentPresenter#PART_IconVisual:empty">
-      <Style Selector="^ /template/ Grid#ContentGrid">
-        <Setter Property="ColumnSpacing" Value="0" />
-      </Style>
-    </Style>
-
     <!--  Selected state  -->
     <!--  We don't use selector to PART_LayoutRoot, so developer can override selected item background with TabStripItem.Background  -->
     <Style Selector="^:selected">
