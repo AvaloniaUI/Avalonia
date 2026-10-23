@@ -269,6 +269,13 @@ namespace Avalonia.Controls
                 PlatformImpl?.SetFrameThemeVariant((PlatformThemeVariant?)variant);
             });
 
+            // The background travels with each frame, as the transparency level does, so a platform
+            // that fills an area the frame does not cover yet uses the color of that frame.
+            CreatePlatformImplBinding(BackgroundProperty, background =>
+            {
+                _source.Renderer.CompositionTarget.BackgroundColor = SolidBackground(background);
+            });
+
             ClientSize = impl.ClientSize;
 
             var stylingParent = ((IStyleHost)this).StylingParent;
@@ -431,6 +438,14 @@ namespace Avalonia.Controls
         /// could not be retrieved.
         /// </returns>
         public IPlatformHandle? TryGetPlatformHandle() => PlatformImpl?.Handle;
+
+        private static Color SolidBackground(IBrush? brush)
+        {
+            if (brush is not ISolidColorBrush solid)
+                return default;
+            var color = solid.Color;
+            return color.A == 255 && solid.Opacity >= 1 ? color : default;
+        }
 
         private protected void CreatePlatformImplBinding<TValue>(StyledProperty<TValue> property, Action<TValue> onValue)
         {
