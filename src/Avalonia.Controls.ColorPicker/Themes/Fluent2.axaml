@@ -19,7 +19,7 @@
       </ResourceDictionary.ThemeDictionaries>
 
       <!-- Shared Resources -->
-      <VisualBrush x:Key="ColorControlCheckeredBackgroundBrush"
+      <VisualBrush x:Key="ColorControlCheckeredBackground"
                    TileMode="Tile"
                    Stretch="Uniform"
                    DestinationRect="0,0,8,8">

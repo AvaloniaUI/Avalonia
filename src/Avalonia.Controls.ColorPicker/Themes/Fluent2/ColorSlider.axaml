@@ -43,7 +43,7 @@
               <Border HorizontalAlignment="Stretch"
                       VerticalAlignment="Center"
                       Height="{Binding ElementName=PART_Track, Path=Bounds.Height}"
-                      Background="{StaticResource ColorControlCheckeredBackgroundBrush}"
+                      Background="{StaticResource ColorControlCheckeredBackground}"
                       CornerRadius="{DynamicResource ColorSliderTrackCornerRadius}" />
               <Border HorizontalAlignment="Stretch"
                       VerticalAlignment="Center"
@@ -116,7 +116,7 @@
               <Border HorizontalAlignment="Center"
                       VerticalAlignment="Stretch"
                       Width="{Binding ElementName=PART_Track, Path=Bounds.Width}"
-                      Background="{StaticResource ColorControlCheckeredBackgroundBrush}"
+                      Background="{StaticResource ColorControlCheckeredBackground}"
                       CornerRadius="{DynamicResource ColorSliderTrackCornerRadius}" />
               <Border HorizontalAlignment="Center"
                       VerticalAlignment="Stretch"

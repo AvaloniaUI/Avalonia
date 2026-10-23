@@ -21,7 +21,7 @@
       <Template>
         <!-- Preview color -->
         <Panel>
-          <Border Background="{StaticResource ColorControlCheckeredBackgroundBrush}"
+          <Border Background="{StaticResource ColorControlCheckeredBackground}"
                   CornerRadius="{TemplateBinding CornerRadius, Converter={StaticResource LeftCornerRadiusFilterConverter}}"
                   HorizontalAlignment="Stretch"
                   VerticalAlignment="Stretch"
@@ -207,7 +207,7 @@
                                  ToolTip.Tip="{Binding Converter={StaticResource ColorToDisplayNameConverter}}"
                                  HorizontalAlignment="Stretch"
                                  VerticalAlignment="Stretch">
-                            <Border Background="{StaticResource ColorControlCheckeredBackgroundBrush}" />
+                            <Border Background="{StaticResource ColorControlCheckeredBackground}" />
                             <Border HorizontalAlignment="Stretch"
                                     VerticalAlignment="Stretch">
                               <Border.Background>
