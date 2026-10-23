@@ -21,5 +21,7 @@
         /// <param name="drawingContext">The drawing context.</param>
         /// <param name="origin">The origin.</param>
         public abstract void Draw(DrawingContext drawingContext, Point origin);
+
+        public virtual void Draw(DrawingContext drawingContext, Point origin, TextRunRenderOverrideProperties? overrideProperties) => Draw(drawingContext, origin);
     }
 }

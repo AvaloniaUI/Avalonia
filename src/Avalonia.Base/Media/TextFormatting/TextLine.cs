@@ -154,6 +154,8 @@ namespace Avalonia.Media.TextFormatting
         /// <param name="lineOrigin"></param>
         public abstract void Draw(DrawingContext drawingContext, Point lineOrigin);
 
+        public virtual void Draw(DrawingContext drawingContext, Point lineOrigin, TextRunRenderOverrideProperties? overrideProperties) => Draw(drawingContext, lineOrigin);
+
         /// <summary>
         /// Create a collapsed line based on collapsed text properties.
         /// </summary>

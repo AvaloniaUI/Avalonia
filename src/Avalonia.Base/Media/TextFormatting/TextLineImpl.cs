@@ -99,8 +99,9 @@ namespace Avalonia.Media.TextFormatting
         /// </summary>
         internal Rect InkBounds => _inkBounds;
 
-        /// <inheritdoc/>
-        public override void Draw(DrawingContext drawingContext, Point lineOrigin)
+        public override void Draw(DrawingContext drawingContext, Point lineOrigin) => Draw(drawingContext, lineOrigin, null);
+
+        public override void Draw(DrawingContext drawingContext, Point lineOrigin, TextRunRenderOverrideProperties? overrideProperties)
         {
             var (currentX, currentY) = lineOrigin + new Point(Start, 0);
 
@@ -112,7 +113,7 @@ namespace Avalonia.Media.TextFormatting
                         {
                             var offsetY = GetBaselineOffset(this, drawableTextRun);
 
-                            drawableTextRun.Draw(drawingContext, new Point(currentX, currentY + offsetY));
+                            drawableTextRun.Draw(drawingContext, new Point(currentX, currentY + offsetY), overrideProperties);
 
                             currentX += drawableTextRun.Size.Width;
 
