@@ -677,6 +677,12 @@ namespace Avalonia.Controls
 
                     case TextMutationKind.ExternalReplacement:
                     default:
+                        // A delayed TwoWay binding echoes the edited text back outside SetTextCore.
+                        if (string.Equals(Text, value, StringComparison.Ordinal))
+                        {
+                            break;
+                        }
+
                         ClearUndoRedo();
                         _needsUndoRedoSnapshotAfterTextChange = true;
                         break;
