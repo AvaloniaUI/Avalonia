@@ -1,7 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Metadata;
+using Avalonia.Controls.Primitives;
 
 namespace ControlCatalog.Controls
 {
@@ -20,11 +20,12 @@ namespace ControlCatalog.Controls
     /// a description, the live example as content, and an optional options panel that sits beside the example
     /// on wide layouts and below it on narrow ones.
     /// </summary>
-    [PseudoClasses(pcHasOptions, pcHasCode, pcNarrow, pcStageFlush, pcStageNone, pcFixedStage)]
+    [PseudoClasses(pcHasOptions, pcHasCode, pcNarrow, pcStageFlush, pcStageNone, pcFixedStage, pcHasCodes)]
     public class SampleSection : HeaderedContentControl
     {
         private const string pcHasOptions = ":has-options";
         private const string pcHasCode = ":has-code";
+        private const string pcHasCodes = ":has-codes";
         private const string pcNarrow = ":narrow";
         private const string pcStageFlush = ":stage-flush";
         private const string pcStageNone = ":stage-none";
@@ -43,6 +44,9 @@ namespace ControlCatalog.Controls
 
         public static readonly StyledProperty<string?> CodeProperty =
             AvaloniaProperty.Register<SampleSection, string?>(nameof(Code));
+
+        public static readonly StyledProperty<Codes?> CodesProperty =
+            AvaloniaProperty.Register<SampleSection, Codes?>(nameof(Codes));
 
         public static readonly StyledProperty<CodeLanguage> CodeLanguageProperty =
             AvaloniaProperty.Register<SampleSection, CodeLanguage>(nameof(CodeLanguage));
@@ -122,6 +126,12 @@ namespace ControlCatalog.Controls
             set => SetValue(StageHeightProperty, value);
         }
 
+        public Codes? Codes
+        {
+            get => GetValue(CodesProperty);
+            set => SetValue(CodesProperty, value);
+        }
+
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
@@ -143,6 +153,10 @@ namespace ControlCatalog.Controls
             else if (change.Property == StageHeightProperty)
             {
                 PseudoClasses.Set(pcFixedStage, !double.IsNaN(change.GetNewValue<double>()));
+            }
+            else if(change.Property == CodesProperty)
+            {
+                PseudoClasses.Set(pcHasCodes, change.GetNewValue<Codes>() is { Count: > 0 });
             }
         }
 
