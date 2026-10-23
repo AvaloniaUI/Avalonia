@@ -1009,8 +1009,7 @@ namespace Avalonia.Controls.Primitives
 
             _isPointerPressed = true;
             _shouldShowLargeSelection =
-                // TODO: After Pen PR is merged: https://github.com/AvaloniaUI/Avalonia/pull/7412
-                // args.Pointer.Type == PointerType.Pen ||
+                args.Pointer.Type == PointerType.Pen ||
                 args.Pointer.Type == PointerType.Touch;
 
             args.Pointer.Capture(inputTarget);
