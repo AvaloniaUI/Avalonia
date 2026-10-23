@@ -1,4 +1,14 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
-        x:Class="Sandbox.MainWindow">
+        x:Class="Sandbox.MainWindow"
+        Width="600" Height="300">
+  <StackPanel Margin="16" Spacing="8">
+    <TextBlock>Updated every 50ms:</TextBlock>
+    <TextBlock Name="counter" FontSize="48" />
+    <Button Click="ShowWindowThenNestedLoop">Show window, then post a nested loop</Button>
+    <TextBlock TextWrapping="Wrap">
+      Click the button with the mouse. The new window should appear straight away, while the
+      nested loop runs for 3 seconds. On macOS it doesn't appear until the loop ends.
+    </TextBlock>
+  </StackPanel>
 </Window>
