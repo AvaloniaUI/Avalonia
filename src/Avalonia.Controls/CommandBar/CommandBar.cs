@@ -138,6 +138,7 @@ namespace Avalonia.Controls
         private readonly ObservableCollection<ICommandBarElement> _visiblePrimaryCommands = new();
         private readonly ObservableCollection<ICommandBarElement> _overflowItems = new();
         private readonly CommandBarSeparator _overflowPrimarySecondarySeparator = new();
+        private readonly CompositeDisposable _primaryCommandVisibilitySubscriptions = new();
         private readonly CompositeDisposable _secondaryCommandVisibilitySubscriptions = new();
         private bool _isDynamicUpdateInProgress;
         private bool _isOpeningOverflowPopup;
@@ -156,7 +157,8 @@ namespace Avalonia.Controls
             var secondaryCommands = new ObservableCollection<ICommandBarElement>();
             SetCurrentValue(SecondaryCommandsProperty, (IList<ICommandBarElement>)secondaryCommands);
 
-            RebuildSecondaryCommandVisibilitySubscriptions();
+            RebuildCommandVisibilitySubscriptions(PrimaryCommands, _primaryCommandVisibilitySubscriptions);
+            RebuildCommandVisibilitySubscriptions(SecondaryCommands, _secondaryCommandVisibilitySubscriptions);
             SizeChanged += CommandBar_SizeChanged;
         }
 
@@ -395,11 +397,14 @@ namespace Avalonia.Controls
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
-            RebuildSecondaryCommandVisibilitySubscriptions();
+            RebuildCommandVisibilitySubscriptions(PrimaryCommands, _primaryCommandVisibilitySubscriptions);
+            RebuildCommandVisibilitySubscriptions(SecondaryCommands, _secondaryCommandVisibilitySubscriptions);
+            RequestDynamicOverflowUpdate();
         }
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
+            _primaryCommandVisibilitySubscriptions.Clear();
             _secondaryCommandVisibilitySubscriptions.Clear();
             base.OnDetachedFromVisualTree(e);
         }
@@ -462,6 +467,7 @@ namespace Avalonia.Controls
                     oldPrimary.CollectionChanged -= OnPrimaryCommandsChanged;
                 if (change.NewValue is INotifyCollectionChanged newPrimary)
                     newPrimary.CollectionChanged += OnPrimaryCommandsChanged;
+                RebuildCommandVisibilitySubscriptions(PrimaryCommands, _primaryCommandVisibilitySubscriptions);
                 ApplyLabelPositionToChildren();
                 RequestDynamicOverflowUpdate();
             }
@@ -471,7 +477,7 @@ namespace Avalonia.Controls
                     oldSecondary.CollectionChanged -= OnSecondaryCommandsChanged;
                 if (change.NewValue is INotifyCollectionChanged newSecondary)
                     newSecondary.CollectionChanged += OnSecondaryCommandsChanged;
-                RebuildSecondaryCommandVisibilitySubscriptions();
+                RebuildCommandVisibilitySubscriptions(SecondaryCommands, _secondaryCommandVisibilitySubscriptions);
                 RequestDynamicOverflowUpdate();
             }
         }
@@ -611,50 +617,45 @@ namespace Avalonia.Controls
                         ApplyLabelPositionToElement(element);
                 }
             }
+            RebuildCommandVisibilitySubscriptions(PrimaryCommands, _primaryCommandVisibilitySubscriptions);
             RequestDynamicOverflowUpdate();
         }
 
         private void OnSecondaryCommandsChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
-            RebuildSecondaryCommandVisibilitySubscriptions();
+            RebuildCommandVisibilitySubscriptions(SecondaryCommands, _secondaryCommandVisibilitySubscriptions);
             RequestDynamicOverflowUpdate();
         }
 
         private void RequestDynamicOverflowUpdate()
         {
-            if (_isOpeningOverflowPopup)
-            {
-                _hasDeferredDynamicOverflowUpdate = true;
-                return;
-            }
-
-            UpdateDynamicOverflow();
+            _hasDeferredDynamicOverflowUpdate = true;
+            ApplyDeferredDynamicOverflowUpdate();
         }
 
         private void ApplyDeferredDynamicOverflowUpdate()
         {
-            if (!_hasDeferredDynamicOverflowUpdate)
+            if (_isOpeningOverflowPopup || _isDynamicUpdateInProgress)
                 return;
 
-            _hasDeferredDynamicOverflowUpdate = false;
-            UpdateDynamicOverflow();
+            while (_hasDeferredDynamicOverflowUpdate)
+            {
+                _hasDeferredDynamicOverflowUpdate = false;
+                UpdateDynamicOverflow();
+            }
         }
 
         private void UpdateDynamicOverflow()
         {
             if (PrimaryCommands == null || SecondaryCommands == null)
                 return;
-            if (_isDynamicUpdateInProgress)
-                return;
             _isDynamicUpdateInProgress = true;
 
             try
             {
-                _visiblePrimaryCommands.Clear();
-                _overflowItems.Clear();
-                SetOverflowMode(_overflowPrimarySecondarySeparator, false);
-
+                var visiblePrimaryCommands = new List<ICommandBarElement>(PrimaryCommands.Count);
                 var overflowedPrimaryCommands = new List<ICommandBarElement>();
+                var overflowItems = new List<ICommandBarElement>(PrimaryCommands.Count + SecondaryCommands.Count + 1);
 
                 var availableWidth = double.IsFinite(_constraintWidth) ? _constraintWidth : Bounds.Width;
 
@@ -663,7 +664,7 @@ namespace Avalonia.Controls
                     foreach (var item in PrimaryCommands)
                     {
                         SetOverflowMode(item, false);
-                        _visiblePrimaryCommands.Add(item);
+                        visiblePrimaryCommands.Add(item);
                     }
                 }
                 else
@@ -675,7 +676,7 @@ namespace Avalonia.Controls
                         foreach (var item in PrimaryCommands)
                         {
                             SetOverflowMode(item, false);
-                            _visiblePrimaryCommands.Add(item);
+                            visiblePrimaryCommands.Add(item);
                         }
                     }
                     else
@@ -689,7 +690,7 @@ namespace Avalonia.Controls
 
                         int primaryNonSepCount = 0;
                         foreach (var item in PrimaryCommands)
-                            if (item is not CommandBarSeparator)
+                            if (item is not CommandBarSeparator && IsCommandVisible(item))
                                 primaryNonSepCount++;
 
                         const double overflowButtonWidth = 48;
@@ -714,7 +715,10 @@ namespace Avalonia.Controls
                         // Lower DynamicOverflowOrder = higher priority (stays visible longer).
                         var prioritized = new List<(int Index, int Order)>(PrimaryCommands.Count);
                         for (var i = 0; i < PrimaryCommands.Count; i++)
-                            prioritized.Add((i, GetDynamicOverflowOrder(PrimaryCommands[i])));
+                        {
+                            if (IsCommandVisible(PrimaryCommands[i]))
+                                prioritized.Add((i, GetDynamicOverflowOrder(PrimaryCommands[i])));
+                        }
 
                         prioritized.Sort((a, b) => a.Order != b.Order
                             ? a.Order.CompareTo(b.Order)
@@ -741,10 +745,10 @@ namespace Avalonia.Controls
 
                         for (var i = 0; i < PrimaryCommands.Count; i++)
                         {
-                            if (visibleIndices.Contains(i))
+                            if (!IsCommandVisible(PrimaryCommands[i]) || visibleIndices.Contains(i))
                             {
                                 SetOverflowMode(PrimaryCommands[i], false);
-                                _visiblePrimaryCommands.Add(PrimaryCommands[i]);
+                                visiblePrimaryCommands.Add(PrimaryCommands[i]);
                             }
                             else if (PrimaryCommands[i] is CommandBarSeparator)
                             {
@@ -759,8 +763,9 @@ namespace Avalonia.Controls
                     }
                 }
 
-                AddOverflowItems(overflowedPrimaryCommands);
-                HasSecondaryCommands = _overflowItems.Count > 0;
+                BuildOverflowItems(overflowedPrimaryCommands, overflowItems);
+                ApplyCommandCollections(visiblePrimaryCommands, overflowItems);
+                HasSecondaryCommands = overflowItems.Count > 0;
                 UpdateOverflowButtonVisibility();
             }
             finally
@@ -824,34 +829,75 @@ namespace Avalonia.Controls
             };
         }
 
-        private void AddOverflowItems(IReadOnlyList<ICommandBarElement> overflowedPrimaryCommands)
+        private void BuildOverflowItems(IReadOnlyList<ICommandBarElement> overflowedPrimaryCommands, ICollection<ICommandBarElement> overflowItems)
         {
             for (var i = 0; i < overflowedPrimaryCommands.Count; i++)
-                _overflowItems.Add(overflowedPrimaryCommands[i]);
+                overflowItems.Add(overflowedPrimaryCommands[i]);
 
             if (overflowedPrimaryCommands.Count > 0 && HasVisibleElements(SecondaryCommands))
             {
                 SetOverflowMode(_overflowPrimarySecondarySeparator, true);
-                _overflowItems.Add(_overflowPrimarySecondarySeparator);
+                overflowItems.Add(_overflowPrimarySecondarySeparator);
             }
+            else
+                SetOverflowMode(_overflowPrimarySecondarySeparator, false);
 
             foreach (var item in SecondaryCommands)
             {
                 SetOverflowMode(item, true);
-                _overflowItems.Add(item);
+                overflowItems.Add(item);
             }
         }
 
-        private void RebuildSecondaryCommandVisibilitySubscriptions()
+        private void ApplyCommandCollections(IReadOnlyList<ICommandBarElement> visiblePrimaryCommands, IReadOnlyList<ICommandBarElement> overflowItems)
         {
-            _secondaryCommandVisibilitySubscriptions.Clear();
-
-            if (SecondaryCommands is null)
+            var updateVisiblePrimaryCommands = !SequencesMatch(_visiblePrimaryCommands, visiblePrimaryCommands);
+            var updateOverflowItems = !SequencesMatch(_overflowItems, overflowItems);
+            if (!updateVisiblePrimaryCommands && !updateOverflowItems)
                 return;
 
-            for (var i = 0; i < SecondaryCommands.Count; i++)
+            if (updateVisiblePrimaryCommands)
+                _visiblePrimaryCommands.Clear();
+            if (updateOverflowItems)
+                _overflowItems.Clear();
+
+            if (updateVisiblePrimaryCommands)
             {
-                if (SecondaryCommands[i] is Avalonia.Visual visual)
+                for (var i = 0; i < visiblePrimaryCommands.Count; i++)
+                    _visiblePrimaryCommands.Add(visiblePrimaryCommands[i]);
+            }
+
+            if (updateOverflowItems)
+            {
+                for (var i = 0; i < overflowItems.Count; i++)
+                    _overflowItems.Add(overflowItems[i]);
+            }
+        }
+
+        private static bool SequencesMatch(IReadOnlyList<ICommandBarElement> first, IReadOnlyList<ICommandBarElement> second)
+        {
+            if (first.Count != second.Count)
+                return false;
+
+            for (var i = 0; i < first.Count; i++)
+            {
+                if (!ReferenceEquals(first[i], second[i]))
+                    return false;
+            }
+
+            return true;
+        }
+
+        private void RebuildCommandVisibilitySubscriptions(IList<ICommandBarElement>? commands, CompositeDisposable subscriptions)
+        {
+            subscriptions.Clear();
+
+            if (commands is null)
+                return;
+
+            for (var i = 0; i < commands.Count; i++)
+            {
+                if (commands[i] is Avalonia.Visual visual)
                 {
                     bool isInitialValue = true;
                     visual.GetObservable(Avalonia.Visual.IsVisibleProperty)
@@ -865,10 +911,12 @@ namespace Avalonia.Controls
 
                             RequestDynamicOverflowUpdate();
                         })
-                        .DisposeWith(_secondaryCommandVisibilitySubscriptions);
+                        .DisposeWith(subscriptions);
                 }
             }
         }
+
+        private static bool IsCommandVisible(ICommandBarElement command) => command is not Avalonia.Visual visual || visual.IsVisible;
 
         private static bool HasVisibleElements(IList<ICommandBarElement> commands)
         {
