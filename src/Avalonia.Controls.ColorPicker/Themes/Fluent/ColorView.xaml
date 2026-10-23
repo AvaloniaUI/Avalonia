@@ -7,6 +7,21 @@
                     xmlns:globalization="using:System.Globalization"
                     x:ClassModifier="internal">
 
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Default">
+      <SolidColorBrush x:Key="ColorViewContentBackgroundBrush" Color="Transparent" />
+      <SolidColorBrush x:Key="ColorViewContentBorderBrush" Color="Transparent" />
+      <StaticResource x:Key="ColorViewTabBackgroundBrush" ResourceKey="SystemControlBackgroundBaseLowBrush" />
+      <SolidColorBrush x:Key="ColorViewTabBorderBrush" Color="Transparent" />
+    </ResourceDictionary>
+    <ResourceDictionary x:Key="Dark">
+      <SolidColorBrush x:Key="ColorViewContentBackgroundBrush" Color="Transparent" />
+      <SolidColorBrush x:Key="ColorViewContentBorderBrush" Color="Transparent" />
+      <StaticResource x:Key="ColorViewTabBackgroundBrush" ResourceKey="SystemControlBackgroundBaseLowBrush" />
+      <SolidColorBrush x:Key="ColorViewTabBorderBrush" Color="Transparent" />
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
+
   <pc:ContrastBrushConverter x:Key="ContrastBrushConverter" />
   <converters:ColorToDisplayNameConverter x:Key="ColorToDisplayNameConverter" />
   <converters:DoNothingForNullConverter x:Key="DoNothingForNullConverter" />
@@ -252,14 +267,13 @@
         <Grid RowDefinitions="Auto,Auto">
 
           <!-- Backgrounds -->
-          <!-- TODO: Background="{DynamicResource ColorViewTabBackgroundBrush}" -->
           <Border x:Name="TabBackgroundBorder"
                   Grid.Row="0"
                   Grid.RowSpan="2"
                   Height="48"
                   HorizontalAlignment="Stretch"
                   VerticalAlignment="Top"
-                  Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
+                  Background="{DynamicResource ColorViewTabBackgroundBrush}"
                   BorderBrush="{DynamicResource ColorViewTabBorderBrush}"
                   CornerRadius="{DynamicResource ColorViewTabBackgroundCornerRadius}" />
           <Border x:Name="ContentBackgroundBorder"
