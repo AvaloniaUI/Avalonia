@@ -1005,6 +1005,8 @@ namespace Avalonia.Controls.Primitives
         {
             var inputTarget = _inputTarget;
 
+            // Make the ColorSpectrum focusable regardless of the current theme so the color display name ToolTip can be shown
+            Focusable = true;
             Focus();
 
             _isPointerPressed = true;
