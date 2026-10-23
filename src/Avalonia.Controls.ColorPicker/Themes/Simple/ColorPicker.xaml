@@ -232,6 +232,7 @@
                         <!-- Content RGB/HSV names are hard-coded and considered universal -->
                         <!-- RadioButtons are styled to look like a 'SegmentedControl' or 'ButtonGroup' -->
                         <Grid ColumnDefinitions="1*,1*"
+                              Height="{Binding ElementName=PART_HexTextBox, Path=Bounds.Height}"
                               IsVisible="{TemplateBinding IsColorModelVisible}">
                           <RadioButton x:Name="RgbRadioButton"
                                        Theme="{StaticResource ColorViewColorModelRadioButtonTheme}"
@@ -239,7 +240,10 @@
                                        Content="RGB"
                                        CornerRadius="0,0,0,0"
                                        BorderThickness="1,1,0,1"
-                                       Height="{Binding ElementName=PART_HexTextBox, Path=Bounds.Height}"
+                                       HorizontalAlignment="Stretch"
+                                       HorizontalContentAlignment="Center"
+                                       VerticalAlignment="Stretch"
+                                       VerticalContentAlignment="Center"
                                        IsChecked="{TemplateBinding ColorModel, Converter={StaticResource EnumToBoolConverter}, ConverterParameter={x:Static controls:ColorModel.Rgba}, Mode=TwoWay}" />
                           <RadioButton x:Name="HsvRadioButton"
                                        Theme="{StaticResource ColorViewColorModelRadioButtonTheme}"
@@ -247,7 +251,10 @@
                                        Content="HSV"
                                        CornerRadius="0,0,0,0"
                                        BorderThickness="0,1,1,1"
-                                       Height="{Binding ElementName=PART_HexTextBox, Path=Bounds.Height}"
+                                       HorizontalAlignment="Stretch"
+                                       HorizontalContentAlignment="Center"
+                                       VerticalAlignment="Stretch"
+                                       VerticalContentAlignment="Center"
                                        IsChecked="{TemplateBinding ColorModel, Converter={StaticResource EnumToBoolConverter}, ConverterParameter={x:Static controls:ColorModel.Hsva}, Mode=TwoWay}" />
                         </Grid>
                         <Grid x:Name="HexInputGrid"
