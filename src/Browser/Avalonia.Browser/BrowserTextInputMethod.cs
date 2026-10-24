@@ -117,7 +117,8 @@ internal class BrowserTextInputMethod(
             }
             if (data is not null)
             {
-                _client.Selection = new TextSelection(start, end);
+                if (start >= 0 && end >= 0)
+                    _client.Selection = new TextSelection(start, end);
                 _inputHandler.RawTextEvent(timestamp, data);
             }
             return;

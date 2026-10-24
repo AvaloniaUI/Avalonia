@@ -58,6 +58,7 @@ type ReadableDataValue = {
 };
 
 export class InputHelper {
+    private static readonly synchronizedSelections = new WeakMap<HTMLTextAreaElement, { start: number, end: number }>();
     static clipboardState: ClipboardState = ClipboardState.None;
     static resolveClipboard?: (value: ClipboardResult) => void;
     static rejectClipboard?: (reason?: any) => void;
@@ -391,6 +392,12 @@ export class InputHelper {
                 const target = args.target as HTMLTextAreaElement;
                 start = target.selectionStart;
                 end = target.selectionEnd;
+                const synchronized = InputHelper.synchronizedSelections.get(target);
+                // SurroundingText can contain only the current paragraph. Keep the
+                // managed selection when the DOM still has its clamped projection.
+                if (synchronized?.start === start && synchronized.end === end) {
+                    start = end = -1;
+                }
                 args.preventDefault();
             }
             JsExports.InputHelper.OnBeforeInput(topLevelId, args.inputType, start, end,
@@ -570,6 +577,9 @@ export class InputHelper {
         if (inputElement.value !== text) inputElement.value = text;
         if (inputElement.selectionStart !== start || inputElement.selectionEnd !== end)
             inputElement.setSelectionRange(start, end);
+        InputHelper.synchronizedSelections.set(inputElement, {
+            start: inputElement.selectionStart, end: inputElement.selectionEnd
+        });
         inputElement.style.width = "20px";
         inputElement.style.width = `${inputElement.scrollWidth}px`;
     }
