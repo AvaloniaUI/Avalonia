@@ -18,7 +18,8 @@ namespace IntegrationTestApp
         {
             TrayIconCommand = MiniCommand.Create<string>(name =>
             {
-                _mainWindow!.Get<CheckBox>(name).IsChecked = true;
+                _mainWindow!.GetLogicalDescendants().OfType<CheckBox>()
+                    .First(x => x.Name == name).IsChecked = true;
             });
             DockMenuCommand = MiniCommand.Create<string>(name =>
             {
@@ -40,6 +41,12 @@ namespace IntegrationTestApp
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
                 desktop.MainWindow = _mainWindow = new MainWindow();
+                if (Program.TrayActivation)
+                {
+                    var model = (ViewModels.MainWindowViewModel)_mainWindow.DataContext!;
+                    model.SelectedPage = model.Pages.First(p => p.Name == "DesktopPage");
+                    TrayActivationDemo.Attach(this);
+                }
             }
 
             base.OnFrameworkInitializationCompleted();

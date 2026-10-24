@@ -53,6 +53,8 @@ class WaylandWorkerClient
     /// </summary>
     public void PostOob(Action cb) => _worker.PostOob(cb);
 
+    public void ProvideActivationToken(string token) => _worker.Activation.Deliver(token);
+
     /// <summary>
     /// Posts a callback to the wayland thread batched with the current compositor commit.
     /// </summary>
@@ -89,10 +91,13 @@ class WaylandWorkerClient
     {
         var topLevel = new WXdgTopLevel(_worker, sink);
         var proxy = new WXdgTopLevelProxy(topLevel, Marshaller);
+        var activationTarget = topLevel.ActivationTarget;
         return new WaylandSurfaceCreateResult<WXdgTopLevelProxy>(
             Proxy: proxy,
             GetRenderSurfaces: () => topLevel.RenderSurfaces,
-            BasicInitCompleted: topLevel.BasicInitCompleted);
+            BasicInitCompleted: topLevel.BasicInitCompleted,
+            Activate: () => _worker.Activation.Activate(activationTarget),
+            CancelActivation: () => _worker.Activation.Cancel(activationTarget));
     }
 
     /// <summary>

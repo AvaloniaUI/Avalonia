@@ -343,11 +343,20 @@ namespace Avalonia.FreeDesktop
 
             private void HandleEvent(int id, string eventId)
             {
-                if (eventId == "clicked")
+                try
                 {
-                    var item = GetMenu(id).item;
-                    if (item is NativeMenuItem { IsEnabled: true } and INativeMenuItemExporterEventsImplBridge bridge)
-                        bridge.RaiseClicked();
+                    if (eventId == "clicked")
+                    {
+                        var item = GetMenu(id).item;
+                        if (item is NativeMenuItem { IsEnabled: true } and INativeMenuItemExporterEventsImplBridge bridge)
+                            bridge.RaiseClicked();
+                    }
+                }
+                catch (Exception e) when (!_appMenu)
+                {
+                    Logger.TryGet(LogEventLevel.Warning, LogArea.FreeDesktopPlatform)
+                        ?.Log(this, "Tray menu click callback failed for item {ItemId}: {Exception}", id, e);
+                    throw;
                 }
             }
         }

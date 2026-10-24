@@ -34,6 +34,7 @@ partial class WaylandWorker
 
     public Compositor Compositor { get; }
     public WaylandWorkerClient Client { get; }
+    public WaylandActivation Activation { get; }
     private HashSet<IPersistentWaylandObject> _persistentObjects = new();
     private HashSet<IPersistentWaylandObject> _connectedObjects = new();
 
@@ -42,6 +43,9 @@ partial class WaylandWorker
     {
         InputDispatchQueue = inputDispatchQueue;
         Compositor = new Compositor(_renderLoop, PlatformGraphics);
+        Activation = new WaylandActivation(PostOob,
+            cb => WaylandMarshallers.UIThread(cb, Threading.DispatcherPriority.Normal),
+            () => _globals?.XdgActivation != null);
         Client = new WaylandWorkerClient(this);
         InitRenderTimer();
     }
@@ -114,7 +118,7 @@ partial class WaylandWorker
     }
 
     void Run(WaylandPlatformOptions options, WaylandConnection connection,
-        TaskCompletionSource<ExceptionDispatchInfo?>? initTcs)
+        TaskCompletionSource<(ExceptionDispatchInfo? Error, object? Connection)>? initTcs)
     {
         var reconnectsDisabled = options.EnableReconnects == false || options.DisplayFd.HasValue;
         while (true)
@@ -127,12 +131,13 @@ partial class WaylandWorker
             {
                 // Globals init failed on the initial connection: report to the waiting caller
                 // and exit without entering the reconnect loop
-                initTcs.TrySetResult(ExceptionDispatchInfo.Capture(e));
+                initTcs.TrySetResult((ExceptionDispatchInfo.Capture(e), null));
                 connection.Dispose();
                 _wakeupFd.Dispose();
                 return;
             }
             initTcs = null;
+            Activation.OnDisconnected();
             foreach (var obj in _persistentObjects.ToList())
                 obj.OnDisconnected();
             Compositor.Server.ResetAllGpuResources();
@@ -175,14 +180,15 @@ partial class WaylandWorker
     }
     
     void RunConnection(WaylandConnection connection, WaylandPlatformOptions options,
-        TaskCompletionSource<ExceptionDispatchInfo?>? initTcs = null)
+        TaskCompletionSource<(ExceptionDispatchInfo? Error, object? Connection)>? initTcs = null)
     {
         _thread = Thread.CurrentThread;
         _connection = connection;
         _globals = new WaylandGlobals(_connection, this, options, _outputsSink);
         // Globals are fully constructed (required globals bound, sanity checks passed),
         // the display is deemed usable
-        initTcs?.TrySetResult(null);
+        Activation.OnConnected(connection, notifyUI: initTcs == null);
+        initTcs?.TrySetResult((null, connection));
 
         foreach (var obj in _persistentObjects)
             ConnectPersistentObject(obj);
@@ -235,7 +241,8 @@ partial class WaylandWorker
                 return;
             var argStrings = new string[args.Length];
             for (var i = 0; i < args.Length; i++)
-                argStrings[i] = PrintArg(method, args[i], i);
+                argStrings[i] = sender is NWayland.Protocols.XdgActivationV1.XdgActivationV1
+                    && method.Name == "activate" && i == 0 ? "<redacted>" : PrintArg(method, args[i], i);
             logger.Log(null, "{Message}",
                 $"{GetProxyString(sender)}-{(isEvent ? '<' : '>')}{(isDestructor ? " (D)" : "")}-{method.Name}({string.Join(", ", argStrings)})");
         }
@@ -271,12 +278,12 @@ partial class WaylandWorker
 
     /// <summary>
     /// Starts the worker on a probed connection. When <paramref name="initTcs"/> is provided, it completes
-    /// with <c>null</c> once the initial <see cref="WaylandGlobals"/> construction succeeds, or with the
+    /// with the connection identity once initial globals construction succeeds, or with the
     /// captured failure, in which case the worker thread exits without reconnecting.
     /// </summary>
     public void Start(WaylandPlatformOptions options, WaylandConnection probedConnection,
         WaylandOutputsSinkProxy? outputsSink = null,
-        TaskCompletionSource<ExceptionDispatchInfo?>? initTcs = null)
+        TaskCompletionSource<(ExceptionDispatchInfo? Error, object? Connection)>? initTcs = null)
     {
         _outputsSink = outputsSink;
         StartCore(options, probedConnection, null, initTcs);
@@ -290,7 +297,7 @@ partial class WaylandWorker
     }
 
     void StartCore(WaylandPlatformOptions options, WaylandConnection? probedConnection, WlDisplay? foreignDisplay,
-        TaskCompletionSource<ExceptionDispatchInfo?>? initTcs)
+        TaskCompletionSource<(ExceptionDispatchInfo? Error, object? Connection)>? initTcs)
     {
         new Thread(() =>
         {
