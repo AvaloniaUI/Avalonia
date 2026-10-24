@@ -672,12 +672,12 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Handles a paint notification from <see cref="ITopLevelImpl.Resized"/>.
+        /// Handles a paint notification from <see cref="ITopLevelImpl.Paint"/>.
         /// </summary>
-        /// <param name="rect">The dirty area.</param>
-        private void HandlePaint(Rect rect)
+        /// <param name="options">The paint options, <c>null</c> for defaults.</param>
+        private void HandlePaint(PaintOptions? options)
         {
-            Renderer.Paint(rect);
+            Renderer.Paint(true, options?.FlushLayout ?? false);
         }
 
         private protected void StartRendering() => MediaContext.Instance.AddTopLevel(this, LayoutManager, Renderer);

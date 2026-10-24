@@ -249,7 +249,7 @@ namespace Avalonia.iOS
             public double RenderScaling => _view.ContentScaleFactor;
             public IPlatformRenderSurface[] Surfaces { get; set; } = [];
             public Action<RawInputEventArgs>? Input { get; set; }
-            public Action<Rect>? Paint { get; set; }
+            public Action<PaintOptions?>? Paint { get; set; }
             public Action<Size, WindowResizeReason>? Resized { get; set; }
             public Action<double>? ScalingChanged { get; set; }
             public Action<WindowTransparencyLevel>? TransparencyLevelChanged { get; set; }

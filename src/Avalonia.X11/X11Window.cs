@@ -526,7 +526,7 @@ namespace Avalonia.X11
 
         public IPlatformRenderSurface[] Surfaces { get; }
         public Action<RawInputEventArgs>? Input { get; set; }
-        public Action<Rect>? Paint { get; set; }
+        public Action<PaintOptions?>? Paint { get; set; }
         public Action<Size, WindowResizeReason>? Resized { get; set; }
         //TODO
         public Action<double>? ScalingChanged { get; set; }
@@ -1111,7 +1111,7 @@ namespace Avalonia.X11
 
         private void DoPaint()
         {
-            Paint?.Invoke(new Rect());
+            Paint?.Invoke(null);
             if (_xSyncCounter != IntPtr.Zero && _xSyncState == XSyncState.WaitPaint)
             {
                 _xSyncState = XSyncState.None;
