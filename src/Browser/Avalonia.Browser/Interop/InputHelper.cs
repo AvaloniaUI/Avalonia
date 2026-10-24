@@ -36,8 +36,8 @@ internal static partial class InputHelper
     }
 
     [JSExport]
-    public static Task OnBeforeInput(int topLevelId, string inputType, int start, int end) =>
-        RedirectInputAsync(topLevelId, t => t.InputHandler.TextInputMethod.OnBeforeInput(inputType, start, end));
+    public static Task OnBeforeInput(int topLevelId, string inputType, int start, int end, string? data, double timeStamp) =>
+        RedirectInputAsync(topLevelId, t => t.InputHandler.TextInputMethod.OnBeforeInput(inputType, start, end, data, (ulong)timeStamp));
 
     [JSExport]
     public static Task OnCompositionStart(int topLevelId) =>

@@ -71,11 +71,11 @@ export class AvaloniaDOM {
         nativeHost.style.position = "absolute";
 
         // IME
-        const inputElement = document.createElement("input");
+        const inputElement = document.createElement("textarea");
         inputElement.id = `inputElement${containerId}`;
         inputElement.classList.add("avalonia-input-element");
         inputElement.autocapitalize = "none";
-        inputElement.type = "text";
+        inputElement.wrap = "off";
         inputElement.spellcheck = false;
         inputElement.style.padding = "0";
         inputElement.style.margin = "0";
