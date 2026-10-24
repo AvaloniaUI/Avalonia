@@ -10,6 +10,19 @@
     </Border>
   </Design.PreviewWith>
 
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Default">
+      <SolidColorBrush x:Key="DropDownButtonForegroundSecondary" Color="{StaticResource TextFillColorSecondary}" />
+      <SolidColorBrush x:Key="DropDownButtonForegroundSecondaryPointerOver" Color="{StaticResource TextFillColorTertiary}" />
+      <SolidColorBrush x:Key="DropDownButtonForegroundSecondaryPressed" Color="{StaticResource TextFillColorTertiary}" />
+    </ResourceDictionary>
+    <ResourceDictionary x:Key="Dark">
+      <SolidColorBrush x:Key="DropDownButtonForegroundSecondary" Color="{StaticResource TextFillColorSecondary}" />
+      <SolidColorBrush x:Key="DropDownButtonForegroundSecondaryPointerOver" Color="{StaticResource TextFillColorTertiary}" />
+      <SolidColorBrush x:Key="DropDownButtonForegroundSecondaryPressed" Color="{StaticResource TextFillColorTertiary}" />
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
+
   <x:Double x:Key="DropDownButtonMinHeight">32</x:Double>
 
   <!--
@@ -74,7 +87,7 @@
                         Data="{StaticResource DropDownPathData}"
                         HorizontalAlignment="Right"
                         VerticalAlignment="Center"
-                        Foreground="{DynamicResource TextFillColorSecondary}"/>
+                        Foreground="{DynamicResource DropDownButtonForegroundSecondary}"/>
             </Grid>
           </Border>
         </ControlTemplate>
@@ -94,7 +107,7 @@
       <Setter Property="Foreground" Value="{DynamicResource ButtonForegroundPointerOver}" />
     </Style>
     <Style Selector="^:pointerover /template/ PathIcon#DropDownGlyph">
-      <Setter Property="Foreground" Value="{DynamicResource TextFillColorTertiary}" />
+      <Setter Property="Foreground" Value="{DynamicResource DropDownButtonForegroundSecondaryPointerOver}" />
     </Style>
 
     <!--  Pressed State  -->
@@ -106,7 +119,7 @@
       <Setter Property="Foreground" Value="{DynamicResource ButtonForegroundPressed}" />
     </Style>
     <Style Selector="^:pressed /template/ PathIcon#DropDownGlyph">
-      <Setter Property="Foreground" Value="{DynamicResource TextFillColorTertiary}" />
+      <Setter Property="Foreground" Value="{DynamicResource DropDownButtonForegroundSecondaryPressed}" />
     </Style>
 
     <!--  Disabled State  -->
