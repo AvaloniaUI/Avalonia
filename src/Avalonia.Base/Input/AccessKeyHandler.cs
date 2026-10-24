@@ -186,7 +186,13 @@ namespace Avalonia.Input
             {
                 _altIsDown = true;
 
-                if (MainMenu is not { IsOpen: true })
+                if ((e.KeyModifiers & ~KeyModifiers.Alt) != KeyModifiers.None)
+                {
+                    // Alt pressed while another modifier is held is part of a chord, such as Shift+Alt which
+                    // switches the keyboard layout on Windows, so its release should not open the main menu.
+                    _ignoreAltUp = true;
+                }
+                else if (MainMenu is not { IsOpen: true })
                 {
                     var focusManager = FocusManager.GetFocusManager(e.Source as IInputElement);
 
