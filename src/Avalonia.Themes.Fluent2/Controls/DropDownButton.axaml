@@ -69,6 +69,10 @@
                 <ColumnDefinition Width="Auto" />
               </Grid.ColumnDefinitions>
 
+              <!--
+                Padding was intentionally moved from the RootBorder here to the ContentPresenter.
+                This matches the ComboBox and SplitButton behavior.
+              -->
               <ContentPresenter x:Name="PART_ContentPresenter"
                                 Grid.Column="0"
                                 Content="{TemplateBinding Content}"
