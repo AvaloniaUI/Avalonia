@@ -25,7 +25,7 @@ function setup() {
  const send=(inputType,data,isComposing=false,cancelable=true)=>{
   const e=new Event('beforeinput',{cancelable});Object.assign(e,{inputType,data,isComposing,getTargetRanges:()=>[]});target.dispatchEvent(e);return e;
  };
- return {calls,dispose,send};
+ return {calls,dispose,send,target};
 }
 test('committed text carries data and selection to managed input once',()=>{
  const s=setup();const e=s.send('insertText',' ');
@@ -48,4 +48,27 @@ test('line breaks forward a newline and noncancelable edits do not insert twice'
  assert.equal(e.defaultPrevented,true);assert.equal(s.calls[0][4],'\n');
  const native=s.send('insertText','x',false,false);
  assert.equal(native.defaultPrevented,false);assert.equal(s.calls[1][4],null);s.dispose();
+});
+
+function synchronize(s, text, start, end) {
+ s.target.value = ''; s.target.style = {}; s.target.scrollWidth = 20;
+ s.target.setSelectionRange = (a,b) => {
+  s.target.selectionEnd = Math.min(b, s.target.value.length);
+  s.target.selectionStart = Math.min(a, s.target.selectionEnd);
+ };
+ InputHelper.setSurroundingText(s.target,text,start,end);
+}
+for (const [name,start,end] of [['forward',0,5],['backward',5,0],['previous paragraph',0,1]]) {
+ test(`unchanged ${name} DOM projection preserves managed selection`,()=>{
+  const s=setup(); synchronize(s,'A\n',start,end);
+  s.send('insertText','Z');
+  assert.equal(s.calls[0][2],-1); assert.equal(s.calls[0][3],-1);
+  s.dispose();
+ });
+}
+test('a changed DOM selection is forwarded instead of the synchronized projection',()=>{
+ const s=setup(); synchronize(s,'ABC',0,3);
+ s.target.selectionStart=1;s.target.selectionEnd=2;
+ s.send('insertText','Z');
+ assert.equal(s.calls[0][2],1); assert.equal(s.calls[0][3],2); s.dispose();
 });
