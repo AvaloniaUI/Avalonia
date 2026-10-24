@@ -27,6 +27,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(IsRunningAppium2)' == 'true'">
+    <PackageReference Include="Appium.WebDriver" />
   </ItemGroup>
 
   <ItemGroup>
