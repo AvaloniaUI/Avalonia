@@ -11,8 +11,13 @@
   </Design.PreviewWith>
 
   <x:Double x:Key="DropDownButtonMinHeight">32</x:Double>
+
+  <!--
+    Icon size and margin should be adjusted together to target 32px width (same as SplitButton, ComboBox, etc.)
+    while taking into account the ButtonPadding.
+  -->
   <x:Double x:Key="DropDownIconSize">8</x:Double>
-  <Thickness x:Key="DropDownIconMargin">10,0,2,0</Thickness>
+  <Thickness x:Key="DropDownIconMargin">0,0,13,0</Thickness>
 
   <StreamGeometry x:Key="DropDownPathData">M4.293 8.293a1 1 0 0 1 1.414 0L12 14.586l6.293-6.293a1 1 0 1 1 1.414 1.414l-7 7a1 1 0 0 1-1.414 0l-7-7a1 1 0 0 1 0-1.414Z</StreamGeometry>
 
@@ -39,8 +44,7 @@
                   BackgroundSizing="{TemplateBinding BackgroundSizing}"
                   BorderBrush="{TemplateBinding BorderBrush}"
                   BorderThickness="{TemplateBinding BorderThickness}"
-                  CornerRadius="{TemplateBinding CornerRadius}"
-                  Padding="{TemplateBinding Padding}">
+                  CornerRadius="{TemplateBinding CornerRadius}">
             <Border.Transitions>
               <Transitions>
                 <BrushTransition Property="Background" Duration="{DynamicResource ControlFasterAnimationDuration}" />
@@ -56,6 +60,7 @@
                                 Grid.Column="0"
                                 Content="{TemplateBinding Content}"
                                 ContentTemplate="{TemplateBinding ContentTemplate}"
+                                Padding="{TemplateBinding Padding}"
                                 HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                                 VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
 
