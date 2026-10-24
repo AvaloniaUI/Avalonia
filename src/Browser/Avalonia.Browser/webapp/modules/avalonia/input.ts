@@ -58,7 +58,7 @@ type ReadableDataValue = {
 };
 
 export class InputHelper {
-    private static readonly synchronizedSelections = new WeakMap<HTMLTextAreaElement, { start: number, end: number }>();
+    private static readonly synchronizedSelections = new WeakMap<HTMLInputElement | HTMLTextAreaElement, { start: number, end: number }>();
     static clipboardState: ClipboardState = ClipboardState.None;
     static resolveClipboard?: (value: ClipboardResult) => void;
     static rejectClipboard?: (reason?: any) => void;
@@ -312,7 +312,7 @@ export class InputHelper {
             : new Uint8Array(await blob.arrayBuffer());
     }
 
-    public static subscribeInputEvents(element: HTMLTextAreaElement, topLevelId: number) {
+    public static subscribeInputEvents(element: HTMLElement, topLevelId: number) {
         const keySub = this.subscribeKeyEvents(element, topLevelId);
         const pointerSub = this.subscribePointerEvents(element, topLevelId);
         const textSub = this.subscribeTextEvents(element, topLevelId);
@@ -328,7 +328,7 @@ export class InputHelper {
         };
     }
 
-    public static subscribeKeyEvents(element: HTMLTextAreaElement, topLevelId: number) {
+    public static subscribeKeyEvents(element: HTMLElement, topLevelId: number) {
         // Key events go through the input queue and are flushed synchronously, so Avalonia's handled
         // state is known before the browser applies the default action. Only handled keys suppress it;
         // when the state isn't known (multithreaded runtime) the default is always suppressed.
@@ -361,7 +361,7 @@ export class InputHelper {
     }
 
     public static subscribeTextEvents(
-        element: HTMLTextAreaElement,
+        element: HTMLElement,
         topLevelId: number) {
         // Text events bypass the input queue; flushing first keeps them ordered after queued input.
         const compositionStartHandler = (args: CompositionEvent) => {
@@ -387,11 +387,12 @@ export class InputHelper {
             }
 
             const committed = args.cancelable && !args.isComposing &&
-                (args.inputType === "insertText" || args.inputType === "insertLineBreak");
+                (args.inputType === "insertText" ||
+                    (args.inputType === "insertLineBreak" && (args.target as HTMLElement).tagName === "TEXTAREA"));
             if (committed) {
-                const target = args.target as HTMLTextAreaElement;
-                start = target.selectionStart;
-                end = target.selectionEnd;
+                const target = args.target as HTMLInputElement | HTMLTextAreaElement;
+                start = target.selectionStart ?? 0;
+                end = target.selectionEnd ?? 0;
                 const synchronized = InputHelper.synchronizedSelections.get(target);
                 // SurroundingText can contain only the current paragraph. Keep the
                 // managed selection when the DOM still has its clamped projection.
@@ -427,7 +428,7 @@ export class InputHelper {
     }
 
     public static subscribePointerEvents(
-        element: HTMLTextAreaElement,
+        element: HTMLElement,
         topLevelId: number
     ) {
         // Pointer and wheel events are encoded into the input queue and consumed by C# in one batch
@@ -477,7 +478,7 @@ export class InputHelper {
     }
 
     public static subscribeDropEvents(
-        element: HTMLTextAreaElement,
+        element: HTMLElement,
         topLevelId: number
     ) {
         const handler = (args: DragEvent) => {
@@ -511,7 +512,7 @@ export class InputHelper {
     }
 
     public static subscribeKeyboardGeometryChange(
-        element: HTMLTextAreaElement,
+        element: HTMLElement,
         topLevelId: number) {
         if ("virtualKeyboard" in navigator) {
             // (navigator as any).virtualKeyboard.overlaysContent = true;
@@ -535,7 +536,24 @@ export class InputHelper {
         return () => { };
     }
 
-    public static clearInput(inputElement: HTMLTextAreaElement) {
+    public static setMultiline(inputElement: HTMLInputElement | HTMLTextAreaElement, multiline: boolean): HTMLInputElement | HTMLTextAreaElement {
+        if (inputElement.tagName === (multiline ? "TEXTAREA" : "INPUT")) return inputElement;
+
+        // A textarea with canceled line breaks can corrupt Gboard's next composition.
+        // Use the browser's native single-line editor for single-line clients.
+        const replacement = inputElement.ownerDocument.createElement(multiline ? "textarea" : "input");
+        for (const attribute of Array.from(inputElement.attributes))
+            replacement.setAttribute(attribute.name, attribute.value);
+        replacement.removeAttribute(multiline ? "type" : "wrap");
+        replacement.setAttribute(multiline ? "wrap" : "type", multiline ? "off" : "text");
+        replacement.onpaste = inputElement.onpaste;
+        replacement.oncopy = inputElement.oncopy;
+        replacement.oncut = inputElement.oncut;
+        inputElement.replaceWith(replacement);
+        return replacement;
+    }
+
+    public static clearInput(inputElement: HTMLInputElement | HTMLTextAreaElement) {
         inputElement.value = "";
     }
 
@@ -543,7 +561,7 @@ export class InputHelper {
         inputElement.focus();
     }
 
-    public static setCursor(inputElement: HTMLTextAreaElement, kind: string) {
+    public static setCursor(inputElement: HTMLInputElement | HTMLTextAreaElement, kind: string) {
         if (kind === "default") {
             inputElement.style.removeProperty("cursor");
         } else {
@@ -551,7 +569,7 @@ export class InputHelper {
         }
     }
 
-    public static setBounds(inputElement: HTMLTextAreaElement, x: number, y: number, caretWidth: number, caretHeight: number, caret: number) {
+    public static setBounds(inputElement: HTMLInputElement | HTMLTextAreaElement, x: number, y: number, caretWidth: number, caretHeight: number, caret: number) {
         inputElement.style.left = (x).toFixed(0) + "px";
         inputElement.style.top = (y).toFixed(0) + "px";
 
@@ -561,15 +579,15 @@ export class InputHelper {
         inputElement.style.top = (y - top).toFixed(0) + "px";
     }
 
-    public static hide(inputElement: HTMLTextAreaElement) {
+    public static hide(inputElement: HTMLInputElement | HTMLTextAreaElement) {
         inputElement.style.display = "none";
     }
 
-    public static show(inputElement: HTMLTextAreaElement) {
+    public static show(inputElement: HTMLInputElement | HTMLTextAreaElement) {
         inputElement.style.display = "block";
     }
 
-    public static setSurroundingText(inputElement: HTMLTextAreaElement, text: string, start: number, end: number) {
+    public static setSurroundingText(inputElement: HTMLInputElement | HTMLTextAreaElement, text: string, start: number, end: number) {
         if (!inputElement) {
             return;
         }
@@ -578,17 +596,17 @@ export class InputHelper {
         if (inputElement.selectionStart !== start || inputElement.selectionEnd !== end)
             inputElement.setSelectionRange(start, end);
         InputHelper.synchronizedSelections.set(inputElement, {
-            start: inputElement.selectionStart, end: inputElement.selectionEnd
+            start: inputElement.selectionStart ?? 0, end: inputElement.selectionEnd ?? 0
         });
         inputElement.style.width = "20px";
         inputElement.style.width = `${inputElement.scrollWidth}px`;
     }
 
-    public static setPointerCapture(containerElement: HTMLTextAreaElement, pointerId: number): void {
+    public static setPointerCapture(containerElement: HTMLInputElement | HTMLTextAreaElement, pointerId: number): void {
         containerElement.setPointerCapture(pointerId);
     }
 
-    public static releasePointerCapture(containerElement: HTMLTextAreaElement, pointerId: number): void {
+    public static releasePointerCapture(containerElement: HTMLInputElement | HTMLTextAreaElement, pointerId: number): void {
         if (containerElement.hasPointerCapture(pointerId)) {
             containerElement.releasePointerCapture(pointerId);
         }

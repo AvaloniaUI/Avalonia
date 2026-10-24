@@ -60,6 +60,9 @@ internal static partial class InputHelper
         RedirectInputAsync(topLevelId, t => t.InputHandler.InputPane
             .OnGeometryChange(x, y, width, height));
 
+    [JSImport("InputHelper.setMultiline", AvaloniaModule.MainModuleName)]
+    public static partial JSObject SetMultiline(JSObject htmlElement, bool multiline);
+
     [JSImport("InputHelper.clearInput", AvaloniaModule.MainModuleName)]
     public static partial void ClearInputElement(JSObject htmlElement);
 

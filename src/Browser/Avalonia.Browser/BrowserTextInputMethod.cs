@@ -11,7 +11,7 @@ internal class BrowserTextInputMethod(
     JSObject inputElement)
     : ITextInputMethodImpl
 {
-    private readonly JSObject _inputElement = inputElement ?? throw new ArgumentNullException(nameof(inputElement));
+    private JSObject _inputElement = inputElement ?? throw new ArgumentNullException(nameof(inputElement));
     private readonly JSObject _containerElement = containerElement ?? throw new ArgumentNullException(nameof(containerElement));
     private readonly BrowserInputHandler _inputHandler = inputHandler ?? throw new ArgumentNullException(nameof(inputHandler));
     private TextInputMethodClient? _client;
@@ -95,7 +95,13 @@ internal class BrowserTextInputMethod(
 
     public void SetOptions(TextInputOptions options)
     {
-        _multiline = options.Multiline;
+        if (_multiline != options.Multiline)
+        {
+            var previous = _inputElement;
+            _inputElement = InputHelper.SetMultiline(previous, options.Multiline);
+            previous.Dispose();
+            _multiline = options.Multiline;
+        }
     }
 
     public void Reset()
