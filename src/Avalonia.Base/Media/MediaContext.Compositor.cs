@@ -119,24 +119,29 @@ partial class MediaContext
     /// </summary>
     /// <param name="target">The composition target to render.</param>
     /// <param name="catchExceptions">Catch exceptions thrown by the compositor during the render.</param>
-    /// <param name="flushLayout">
-    /// Pulse animations and run the pending layout before the commit, with dispatcher processing disabled.
+    /// <param name="flushRenderPass">
+    /// Run the pending render pass (animations and layout) before the commit instead of waiting for the dispatcher,
+    /// with dispatcher processing disabled.
     /// It's opt-in, since running that on every paint made the resize slower on some platforms (e. g. browser).
     /// </param>
-    public void ImmediateRenderRequested(CompositionTarget target, bool catchExceptions, bool flushLayout)
+    public void ImmediateRenderRequested(CompositionTarget target, bool catchExceptions, bool flushRenderPass)
     {
-        if (!flushLayout || IsInsideRenderOrLayout())
+        if (!flushRenderPass || _nextRenderOp == null || IsInsideRenderOrLayout())
         {
             SyncCommit(target.Compositor, true, catchExceptions);
             return;
         }
+
+        // The pass runs right here, so the queued one is no longer needed
+        _nextRenderOp.Abort();
+        _nextRenderOp = null;
 
         using (_dispatcher.DisableProcessing())
         {
             _isRendering = true;
             try
             {
-                PulseAndFireInvokeOnRenderCallbacks(true);
+                PulseAndFireInvokeOnRenderCallbacks(!_animationsAreWaitingForComposition);
             }
             finally
             {
@@ -146,8 +151,9 @@ partial class MediaContext
             SyncCommit(target.Compositor, true, catchExceptions);
         }
 
-        // Animations still need the regular render loop after this frame
-        if (_clock.HasSubscriptions)
+        // CompositionBatchFinished schedules the next pass for animations and other compositors
+        _animationsAreWaitingForComposition = _pendingCompositionBatches.Count > 0;
+        if (!_animationsAreWaitingForComposition && (_requestedCommits.Count > 0 || _clock.HasSubscriptions))
             ScheduleRender(false);
     }
 

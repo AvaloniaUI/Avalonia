@@ -136,7 +136,7 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
     public double RenderScaling => _savedScaling;
     public IPlatformRenderSurface[] Surfaces => _surfaces ?? [];
     public Action<RawInputEventArgs>? Input { get; set; }
-    public Action<PaintOptions?>? Paint { get; set; }
+    public Action<ITopLevelImpl.PaintOptions?>? Paint { get; set; }
     public Action<Size, WindowResizeReason>? Resized { get; set; }
     public Action<double>? ScalingChanged { get; set; }
     public Action<WindowTransparencyLevel>? TransparencyLevelChanged { get; set; }
@@ -435,7 +435,7 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
         void IAvnTopLevelEvents.Paint()
         {
             // Called from updateLayer, so dispatcher jobs must not run here
-            _parent.Paint?.Invoke(new PaintOptions { FlushLayout = true });
+            _parent.Paint?.Invoke(new ITopLevelImpl.PaintOptions { FlushRenderPass = true });
         }
 
         void IAvnTopLevelEvents.Resized(AvnSize* size, AvnPlatformResizeReason reason)

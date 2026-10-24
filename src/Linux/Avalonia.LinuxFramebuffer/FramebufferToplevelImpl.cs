@@ -63,7 +63,7 @@ using Avalonia.Rendering.Composition;
         public double RenderScaling => _outputBackend.Scaling;
         public IPlatformRenderSurface[] Surfaces { get; }
         public Action<RawInputEventArgs>? Input { get; set; }
-        public Action<PaintOptions?>? Paint { get; set; }
+        public Action<ITopLevelImpl.PaintOptions?>? Paint { get; set; }
         public Action<Size, WindowResizeReason>? Resized { get; set; }
         public Action<double>? ScalingChanged { get; set; }
 

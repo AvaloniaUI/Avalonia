@@ -274,15 +274,15 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
     /// Synchronously renders the target.
     /// </summary>
     /// <param name="catchExceptions">Catch exceptions thrown by the compositor during the render.</param>
-    /// <param name="flushLayout">Pulse animations and run the pending layout before the render.</param>
-    internal void Paint(bool catchExceptions, bool flushLayout)
+    /// <param name="flushRenderPass">Run the pending render pass (animations and layout) before the render.</param>
+    internal void Paint(bool catchExceptions, bool flushRenderPass)
     {
         if (_isDisposed)
             return;
 
         QueueUpdate();
         CompositionTarget.RequestRedraw();
-        MediaContext.Instance.ImmediateRenderRequested(CompositionTarget, catchExceptions, flushLayout);
+        MediaContext.Instance.ImmediateRenderRequested(CompositionTarget, catchExceptions, flushRenderPass);
     }
 
     /// <inheritdoc />

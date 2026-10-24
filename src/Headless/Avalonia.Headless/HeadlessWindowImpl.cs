@@ -75,7 +75,7 @@ namespace Avalonia.Headless
         public double DesktopScaling => _options.UseLogicalDesktopCoordinates ? 1 : RenderScaling;
         public IPlatformRenderSurface[] Surfaces { get; }
         public Action<RawInputEventArgs>? Input { get; set; }
-        public Action<PaintOptions?>? Paint { get; set; }
+        public Action<ITopLevelImpl.PaintOptions?>? Paint { get; set; }
         public Action<Size, WindowResizeReason>? Resized { get; set; }
         public Action<double>? ScalingChanged { get; set; }
 

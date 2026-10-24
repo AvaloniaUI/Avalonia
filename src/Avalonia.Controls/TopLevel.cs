@@ -675,9 +675,9 @@ namespace Avalonia.Controls
         /// Handles a paint notification from <see cref="ITopLevelImpl.Paint"/>.
         /// </summary>
         /// <param name="options">The paint options, <c>null</c> for defaults.</param>
-        private void HandlePaint(PaintOptions? options)
+        private void HandlePaint(ITopLevelImpl.PaintOptions? options)
         {
-            Renderer.Paint(true, options?.FlushLayout ?? false);
+            Renderer.Paint(true, options?.FlushRenderPass ?? false);
         }
 
         private protected void StartRendering() => MediaContext.Instance.AddTopLevel(this, LayoutManager, Renderer);

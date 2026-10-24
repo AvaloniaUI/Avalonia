@@ -32,7 +32,7 @@ namespace Avalonia.DesignerSupport.Remote
         public double DesktopScaling => 1.0;
         public IPlatformRenderSurface[] Surfaces => [];
         public Action<RawInputEventArgs>? Input { get; set; }
-        public Action<PaintOptions?>? Paint { get; set; }
+        public Action<ITopLevelImpl.PaintOptions?>? Paint { get; set; }
         public Action<Size, WindowResizeReason>? Resized { get; set; }
         public Action<double>? ScalingChanged { get; set; }
         public Func<WindowCloseReason, bool>? Closing { get; set; }
