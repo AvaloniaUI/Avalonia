@@ -2185,20 +2185,61 @@ namespace Avalonia.Controls.UnitTests
             Assert.True(target.Measured == 1, "should be measured only once even though we are at the start of the list");
             Assert.True(target.Arranged == 1, "should be arranged only once even though we are at the start of the list");
 
-            // the last 5 additional items will be reused when scrolling up, but the remaining 10 visible + 5 additional not touched at all
-            var expectedMeasuredItems = items.Take(20).ToList();
+            // only the 5 items coming into the extended viewport are measured, the realized items are reused
+            var expectedMeasuredItems = items.Take(5).ToList();
             foreach (var itm in expectedMeasuredItems)
             {
                 Assert.True(itm.Measured == 1, $"{itm.Caption} should be measured but was {itm.Measured} times");
                 Assert.True(itm.Arranged == 1, $"{itm.Caption} should be arranged but was {itm.Arranged} times");
             }
 
-            // now that we scrolled up to index 19, items 18,17,16,15 and 14 should be the "additional" ones
-            var untouchedItems = items.Skip(20).ToList();
+            var untouchedItems = items.Skip(5).ToList();
             foreach (var itm in untouchedItems)
             {
                 Assert.True(itm.Measured == 0, $"{itm.Caption} should not be measured but was {itm.Measured} times");
                 Assert.True(itm.Arranged == 0, $"{itm.Caption} should not be measured but was {itm.Arranged} times");
+            }
+        }
+
+        [Theory]
+        [InlineData(Orientation.Vertical)]
+        [InlineData(Orientation.Horizontal)]
+        public void Scrolling_To_Start_After_Jump_Places_Elements_At_Their_Measured_Positions(Orientation orientation)
+        {
+            using var app = App();
+
+            var vertical = orientation == Orientation.Vertical;
+            var sizes = Enumerable.Range(0, 200).Select(x => x < 100 ? 10d : 20d).ToList();
+            IEnumerable<object> items = vertical
+                ? sizes.Select((size, i) => (object)new ItemWithHeight(i, size)).ToList()
+                : sizes.Select((size, i) => (object)new ItemWithWidth(i, size)).ToList();
+            var (target, scroll, _) = CreateTarget(
+                items: items,
+                itemTemplate: vertical ? CanvasWithHeightTemplate : CanvasWithWidthTemplate,
+                orientation: orientation,
+                bufferFactor: 0.5);
+
+            // The elements realized at the start are smaller than the rest, so after a jump the realized
+            // positions are based on an estimated element size which is too small.
+            scroll.Offset = vertical ? new Vector(0, 1500) : new Vector(1500, 0);
+            Layout(target);
+
+            while ((vertical ? scroll.Offset.Y : scroll.Offset.X) > 0)
+            {
+                var offset = Math.Max(0, (vertical ? scroll.Offset.Y : scroll.Offset.X) - 25);
+                scroll.Offset = vertical ? new Vector(0, offset) : new Vector(offset, 0);
+                Layout(target);
+            }
+
+            Assert.Equal(0, target.FirstRealizedIndex);
+
+            var expected = 0d;
+            for (var i = 0; i <= target.LastRealizedIndex; i++)
+            {
+                var container = target.ContainerFromIndex(i);
+                Assert.NotNull(container);
+                Assert.Equal(expected, vertical ? container.Bounds.Top : container.Bounds.Left);
+                expected += sizes[i];
             }
         }
 
@@ -2419,16 +2460,15 @@ namespace Avalonia.Controls.UnitTests
             Assert.True(target.Measured == 1, "should be measured only once even though we are at the start of the list");
             Assert.True(target.Arranged == 1, "should be arranged only once even though we are at the start of the list");
 
-            // the last 5 additional items will be reused when scrolling up, but the remaining 10 visible + 5 additional not touched at all
-            var expectedMeasuredItems = items.Take(20).ToList();
+            // only the 5 items coming into the extended viewport are measured, the realized items are reused
+            var expectedMeasuredItems = items.Take(5).ToList();
             foreach (var itm in expectedMeasuredItems)
             {
                 Assert.True(itm.Measured == 1, $"{itm.Caption} should be measured but was {itm.Measured} times");
                 Assert.True(itm.Arranged == 1, $"{itm.Caption} should be arranged but was {itm.Arranged} times");
             }
 
-            // now that we scrolled up to index 19, items 18,17,16,15 and 14 should be the "additional" ones
-            var untouchedItems = items.Skip(20).ToList();
+            var untouchedItems = items.Skip(5).ToList();
             foreach (var itm in untouchedItems)
             {
                 Assert.True(itm.Measured == 0, $"{itm.Caption} should not be measured but was {itm.Measured} times");

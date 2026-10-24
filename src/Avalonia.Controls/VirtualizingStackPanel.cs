@@ -215,8 +215,10 @@ namespace Avalonia.Controls
                 // - Vertical layouts: U = vertical, V = horizontal
                 var viewport = CalculateMeasureViewport(orientation, items);
 
-                // If the viewport is disjunct then we can recycle everything.
-                if (viewport.viewportIsDisjunct)
+                // If the viewport is disjunct then we can recycle everything, unless the anchor was forced
+                // to the start of the list: realizing from item 0 reuses the elements still in range.
+                if (viewport.viewportIsDisjunct &&
+                    !(viewport.anchorIndex == 0 && MathUtilities.IsZero(viewport.anchorU)))
                     _realizedElements.RecycleAllElements(_recycleElement);
 
                 // Do the measure, creating/recycling elements as necessary to fill the viewport. Don't
