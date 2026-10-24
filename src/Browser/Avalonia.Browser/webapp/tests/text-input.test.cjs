@@ -20,7 +20,7 @@ const { InputHelper, JsExports } = loaded.exports;
 function setup() {
  const calls=[];
  JsExports.resolvedExports={Avalonia:{Browser:{Interop:{InputHelper:{OnBeforeInput(...args){calls.push(args);return Promise.resolve();}}}}}};
- const target=new EventTarget();target.selectionStart=2;target.selectionEnd=4;
+ const target=new EventTarget();target.tagName='TEXTAREA';target.selectionStart=2;target.selectionEnd=4;
  const dispose=InputHelper.subscribeTextEvents(target,7);
  const send=(inputType,data,isComposing=false,cancelable=true)=>{
   const e=new Event('beforeinput',{cancelable});Object.assign(e,{inputType,data,isComposing,getTargetRanges:()=>[]});target.dispatchEvent(e);return e;
@@ -71,4 +71,28 @@ test('a changed DOM selection is forwarded instead of the synchronized projectio
  s.target.selectionStart=1;s.target.selectionEnd=2;
  s.send('insertText','Z');
  assert.equal(s.calls[0][2],1); assert.equal(s.calls[0][3],2); s.dispose();
+});
+
+function editor(tag) {
+ const node={tagName:tag,attributes:[{name:'id',value:'ime'}],value:'A',selectionStart:1,selectionEnd:1,
+  onpaste:()=>false,oncopy:()=>false,oncut:()=>false,
+  setAttribute(name,value){this[name]=value},removeAttribute(name){delete this[name]},
+  setSelectionRange(start,end){this.selectionStart=start;this.selectionEnd=end},
+  replaceWith(replacement){this.replacement=replacement}};
+ node.ownerDocument={createElement:tag=>editor(tag.toUpperCase())};return node;
+}
+test('single-line clients retain the native input element',()=>{
+ const input=editor('INPUT');assert.equal(InputHelper.setMultiline(input,false),input);
+});
+test('switching multiline mode replaces the editor and retains host attributes and clipboard policy',()=>{
+ const input=editor('INPUT');const textarea=InputHelper.setMultiline(input,true);
+ assert.equal(textarea.tagName,'TEXTAREA');assert.equal(input.replacement,textarea);
+ assert.equal(textarea.id,'ime');assert.equal(textarea.onpaste,input.onpaste);
+ const restored=InputHelper.setMultiline(textarea,false);
+ assert.equal(restored.tagName,'INPUT');assert.equal(textarea.replacement,restored);
+});
+
+test('native single-line Enter keeps browser IME completion',()=>{
+ const s=setup();s.target.tagName='INPUT';const e=s.send('insertLineBreak',null);
+ assert.equal(e.defaultPrevented,false);assert.equal(s.calls[0][4],null);s.dispose();
 });
