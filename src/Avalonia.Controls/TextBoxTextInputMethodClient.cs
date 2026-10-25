@@ -54,7 +54,7 @@ namespace Avalonia.Controls
                     return default;
                 }
 
-                return _presenter.GetCursorRectangle().TransformToAABB(transform.Value);
+                return _presenter.CursorRectangle.TransformToAABB(transform.Value);
             }
         }
 
