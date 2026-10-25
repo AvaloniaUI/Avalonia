@@ -96,3 +96,16 @@ test('native single-line Enter keeps browser IME completion',()=>{
  const s=setup();s.target.tagName='INPUT';const e=s.send('insertLineBreak',null);
  assert.equal(e.defaultPrevented,false);assert.equal(s.calls[0][4],null);s.dispose();
 });
+
+
+test('retiring an editor keeps its kind and host clipboard handlers',()=>{
+ for(const tag of ['INPUT','TEXTAREA']) {
+  const old=editor(tag);const next=InputHelper.replaceInputElement(old);
+  assert.notEqual(next,old);assert.equal(next.tagName,tag);
+  assert.equal(old.replacement,next);assert.equal(next.id,old.id ?? 'ime');
+  assert.equal(next.onpaste,old.onpaste);
+ }
+});
+test('blur helper invokes the native editor blur once',()=>{
+ let calls=0;InputHelper.blurElement({blur(){calls++}});assert.equal(calls,1);
+});
