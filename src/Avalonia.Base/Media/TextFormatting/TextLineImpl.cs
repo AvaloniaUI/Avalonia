@@ -38,6 +38,22 @@ namespace Avalonia.Media.TextFormatting
             _resolvedFlowDirection = resolvedFlowDirection;
         }
 
+        public TextLineImpl(TextLineImpl baseLine, TextRun[] overrideRuns)
+        {
+            FirstTextSourceIndex = baseLine.FirstTextSourceIndex;
+            Length = baseLine.Length;
+            _textLineBreak = baseLine._textLineBreak;
+            _textLineMetrics = baseLine._textLineMetrics;
+            HasCollapsed = baseLine.HasCollapsed;
+
+            _paragraphWidth = baseLine._paragraphWidth;
+            _paragraphProperties = baseLine._paragraphProperties;
+
+            _resolvedFlowDirection = baseLine._resolvedFlowDirection;
+            
+            _textRuns = overrideRuns;
+        }
+
         /// <inheritdoc/>
         public override IReadOnlyList<TextRun> TextRuns => _textRuns;
 

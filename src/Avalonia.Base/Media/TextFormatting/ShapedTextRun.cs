@@ -31,6 +31,16 @@ namespace Avalonia.Media.TextFormatting
             TextMetrics = new TextMetrics(properties.CachedGlyphTypeface, properties.FontRenderingEmSize);
         }
 
+        internal ShapedTextRun(ShapedTextRun baseRun, TextRunRenderOverrideProperties overrideProperties)
+        {
+            ShapedBuffer = baseRun.ShapedBuffer;
+            Properties = baseRun.Properties;
+            TextMetrics = baseRun.TextMetrics;
+            OverrideProperties = overrideProperties;
+        }
+
+        internal TextRunRenderOverrideProperties? OverrideProperties { get; set; }
+
         public sbyte BidiLevel => ShapedBuffer.BidiLevel;
 
         public ShapedBuffer ShapedBuffer { get; }
@@ -78,26 +88,29 @@ namespace Avalonia.Media.TextFormatting
                     return;
                 }
 
-                if (Properties.ForegroundBrush == null)
+                var foregroundBrush = OverrideProperties?.ForegroundBrush ?? Properties.ForegroundBrush;
+                if (foregroundBrush == null)
                 {
                     return;
                 }
 
-                if (Properties.BackgroundBrush != null)
+                var backgroundBrush = OverrideProperties?.BackgroundBrush ?? Properties.BackgroundBrush;
+                if (backgroundBrush != null)
                 {
-                    drawingContext.DrawRectangle(Properties.BackgroundBrush, null, GlyphRun.Bounds);
+                    drawingContext.DrawRectangle(backgroundBrush, null, GlyphRun.Bounds);
                 }
 
-                drawingContext.DrawGlyphRun(Properties.ForegroundBrush, GlyphRun);
+                drawingContext.DrawGlyphRun(foregroundBrush, GlyphRun);
 
-                if (Properties.TextDecorations == null)
+                var textDecorations = OverrideProperties?.TextDecorations ?? Properties.TextDecorations;
+                if (textDecorations == null)
                 {
                     return;
                 }
 
-                foreach (var textDecoration in Properties.TextDecorations)
+                foreach (var textDecoration in textDecorations)
                 {
-                    textDecoration.Draw(drawingContext, GlyphRun, TextMetrics, Properties.ForegroundBrush);
+                    textDecoration.Draw(drawingContext, GlyphRun, TextMetrics, foregroundBrush);
                 }
             }
         }
