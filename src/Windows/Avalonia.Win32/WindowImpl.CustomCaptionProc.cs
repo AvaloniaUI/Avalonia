@@ -245,6 +245,14 @@ namespace Avalonia.Win32
                         // — signal to redirect NC input to client input.
                         WindowDecorationsElementRole.DecorationsElement => HitTestValues.HTCLIENT,
                         WindowDecorationsElementRole.User => HitTestValues.HTCLIENT,
+                        // Fullscreen has no caption or frame (see HitTestNCA): don't start a system move or size loop,
+                        // which would take the window out of its fullscreen bounds while it still reports FullScreen.
+                        WindowDecorationsElementRole.TitleBar
+                            or WindowDecorationsElementRole.ResizeN or WindowDecorationsElementRole.ResizeS
+                            or WindowDecorationsElementRole.ResizeE or WindowDecorationsElementRole.ResizeW
+                            or WindowDecorationsElementRole.ResizeNE or WindowDecorationsElementRole.ResizeNW
+                            or WindowDecorationsElementRole.ResizeSE or WindowDecorationsElementRole.ResizeSW
+                            when _isFullScreenActive => HitTestValues.HTCLIENT,
                         WindowDecorationsElementRole.TitleBar => HitTestValues.HTCAPTION,
                         WindowDecorationsElementRole.ResizeN => HitTestValues.HTTOP,
                         WindowDecorationsElementRole.ResizeS => HitTestValues.HTBOTTOM,
