@@ -66,6 +66,12 @@ internal static partial class InputHelper
     [JSImport("InputHelper.clearInput", AvaloniaModule.MainModuleName)]
     public static partial void ClearInputElement(JSObject htmlElement);
 
+    [JSImport("InputHelper.replaceInputElement", AvaloniaModule.MainModuleName)]
+    public static partial JSObject ReplaceInputElement(JSObject htmlElement);
+
+    [JSImport("InputHelper.blurElement", AvaloniaModule.MainModuleName)]
+    public static partial void BlurElement(JSObject htmlElement);
+
     [JSImport("InputHelper.focusElement", AvaloniaModule.MainModuleName)]
     public static partial void FocusElement(JSObject htmlElement);
 

@@ -2,6 +2,7 @@ using System;
 using System.Runtime.InteropServices.JavaScript;
 using Avalonia.Browser.Interop;
 using Avalonia.Input.TextInput;
+using Avalonia.Input;
 
 namespace Avalonia.Browser;
 
@@ -16,6 +17,9 @@ internal class BrowserTextInputMethod(
     private readonly BrowserInputHandler _inputHandler = inputHandler ?? throw new ArgumentNullException(nameof(inputHandler));
     private TextInputMethodClient? _client;
     private bool _multiline;
+    private TextInputMethodClient? _compositionClient;
+    private IInputElement? _compositionTarget;
+    private string? _compositionText;
 
     public bool IsComposing { get; private set; }
 
@@ -155,30 +159,68 @@ internal class BrowserTextInputMethod(
         if (_client == null)
             return;
 
+        if (_compositionTarget is InputElement previous)
+            previous.PropertyChanged -= CompositionTargetPropertyChanged;
+        _compositionClient = _client;
+        _compositionTarget = BrowserWindowingPlatform.Keyboard.FocusedElement;
+        _compositionText = null;
+        if (_compositionTarget is InputElement target)
+            target.PropertyChanged += CompositionTargetPropertyChanged;
         _client.SetPreeditText(null);
         IsComposing = true;
     }
 
     public void OnCompositionUpdate(string? data)
     {
-        if (_client == null)
-            return;
+        _compositionText = data;
+        _compositionClient?.SetPreeditText(data);
+    }
 
-        _client.SetPreeditText(data);
+    private void CompositionTargetPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs args)
+    {
+        if (args.Property == InputElement.IsFocusedProperty && sender is InputElement { IsFocused: false } && IsComposing)
+        {
+            // Finish native composition before TextBox clears its selection on blur.
+            // Some IMEs deliver compositionend synchronously from blur; the fallback
+            // covers clients whose native editor does not produce an end event.
+            InputHelper.BlurElement(_inputElement);
+            if (IsComposing)
+            {
+                // Retire the old native editor before another client can compose.
+                // A delayed end from it must not end the new client's composition.
+                var previous = _inputElement;
+                _inputElement = InputHelper.ReplaceInputElement(previous);
+                previous.Dispose();
+                OnCompositionEnd(0, _compositionText);
+            }
+        }
     }
 
     public void OnCompositionEnd(ulong timestamp, string? data)
     {
-        if (_client == null)
-            return;
-
+        // The keyboard focus may have changed before the native DOM blur ends
+        // composition. Commit to its original target, never the newly focused field.
+        var client = _compositionClient;
+        var target = _compositionTarget;
+        if (target is InputElement input)
+            input.PropertyChanged -= CompositionTargetPropertyChanged;
+        _compositionClient = null;
+        _compositionTarget = null;
+        _compositionText = null;
         IsComposing = false;
+        client?.SetPreeditText(null);
 
-        _client.SetPreeditText(null);
-        
-        if (data != null)
+        if (data != null && target is Visual { IsAttachedToVisualTree: true } && target.IsEffectivelyEnabled)
         {
-            _inputHandler.RawTextEvent(timestamp, data);
+            if (ReferenceEquals(target, BrowserWindowingPlatform.Keyboard.FocusedElement))
+                _inputHandler.RawTextEvent(timestamp, data);
+            else
+                target.RaiseEvent(new TextInputEventArgs
+                {
+                    Text = data,
+                    Source = target,
+                    RoutedEvent = InputElement.TextInputEvent
+                });
         }
     }
 }

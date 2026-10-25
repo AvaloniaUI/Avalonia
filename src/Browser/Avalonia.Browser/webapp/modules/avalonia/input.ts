@@ -536,8 +536,8 @@ export class InputHelper {
         return () => { };
     }
 
-    public static setMultiline(inputElement: HTMLInputElement | HTMLTextAreaElement, multiline: boolean): HTMLInputElement | HTMLTextAreaElement {
-        if (inputElement.tagName === (multiline ? "TEXTAREA" : "INPUT")) return inputElement;
+    public static setMultiline(inputElement: HTMLInputElement | HTMLTextAreaElement, multiline: boolean, replace: boolean = false): HTMLInputElement | HTMLTextAreaElement {
+        if (!replace && inputElement.tagName === (multiline ? "TEXTAREA" : "INPUT")) return inputElement;
 
         // A textarea with canceled line breaks can corrupt Gboard's next composition.
         // Use the browser's native single-line editor for single-line clients.
@@ -553,8 +553,16 @@ export class InputHelper {
         return replacement;
     }
 
+    public static replaceInputElement(inputElement: HTMLInputElement | HTMLTextAreaElement): HTMLInputElement | HTMLTextAreaElement {
+        return InputHelper.setMultiline(inputElement, inputElement.tagName === "TEXTAREA", true);
+    }
+
     public static clearInput(inputElement: HTMLInputElement | HTMLTextAreaElement) {
         inputElement.value = "";
+    }
+
+    public static blurElement(inputElement: HTMLElement) {
+        inputElement.blur();
     }
 
     public static focusElement(inputElement: HTMLElement) {
