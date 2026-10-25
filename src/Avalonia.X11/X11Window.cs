@@ -33,7 +33,7 @@ using Avalonia.X11.XShm;
 
 namespace Avalonia.X11
 {
-    internal unsafe partial class X11Window : IWindowImpl, IPopupImpl, IXI2Client,
+    internal unsafe partial class X11Window : IWindowImpl, IPopupWithKindImpl, IXI2Client,
         IX11OptionsToplevelImplFeature, IXdndWindow
     {
         private readonly AvaloniaX11Platform _platform;
@@ -232,6 +232,13 @@ namespace Avalonia.X11
                 XSetWMProtocols(_x11.Display, _handle, protocols, protocols.Length);
                 SetNetWmWindowType(X11NetWmWindowType.Normal);
                 
+                SetWmClass(_handle, _platform.Options.WmClass);
+            }
+            else if (_popup)
+            {
+                // Window managers ignore override-redirect windows, but XWayland compositors (e.g. Hyprland) focus
+                // them when they are mapped unless they have a popup window type.
+                SetNetWmWindowType(_x11.Atoms._NET_WM_WINDOW_TYPE_POPUP_MENU);
                 SetWmClass(_handle, _platform.Options.WmClass);
             }
 
@@ -1835,9 +1842,20 @@ namespace Avalonia.X11
                 _ => _x11.Atoms._NET_WM_WINDOW_TYPE_NORMAL
             };
 
+            SetNetWmWindowType(atom);
+        }
+
+        private void SetNetWmWindowType(IntPtr atom)
+        {
             XChangeProperty(_x11.Display, _handle, _x11.Atoms._NET_WM_WINDOW_TYPE, _x11.Atoms.ATOM,
                 32, PropertyMode.Replace, new[] { atom }, 1);
+        }
 
+        public void SetPopupKind(PopupKind kind)
+        {
+            SetNetWmWindowType(kind == PopupKind.ToolTip
+                ? _x11.Atoms._NET_WM_WINDOW_TYPE_TOOLTIP
+                : _x11.Atoms._NET_WM_WINDOW_TYPE_POPUP_MENU);
         }
 
         public void TakeFocus()
