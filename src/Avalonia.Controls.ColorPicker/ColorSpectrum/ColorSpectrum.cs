@@ -98,6 +98,16 @@ namespace Avalonia.Controls.Primitives
         private HsvColor _oldHsvColor = HsvColor.FromAhsv(0.0f, 0.0f, 1.0f, 1.0f);
 
         /// <summary>
+        /// Initializes static members of the <see cref="ColorSpectrum"/> class.
+        /// </summary>
+        static ColorSpectrum()
+        {
+            // Make the ColorSpectrum focusable regardless of the current theme
+            // This ensures the color display name ToolTip can be shown
+            FocusableProperty.OverrideDefaultValue<ColorSpectrum>(true);
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="ColorSpectrum"/> class.
         /// </summary>
         public ColorSpectrum() : base()
@@ -1004,8 +1014,6 @@ namespace Avalonia.Controls.Primitives
         {
             var inputTarget = _inputTarget;
 
-            // Make the ColorSpectrum focusable regardless of the current theme so the color display name ToolTip can be shown
-            Focusable = true;
             Focus();
 
             _isPointerPressed = true;
