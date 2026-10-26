@@ -608,7 +608,12 @@ namespace Avalonia
         {
             base.OnPropertyChanged(change);
 
-            if (change.Property == ThemeProperty)
+            if (change.Property == TemplatedParentProperty && _stylesApplied)
+            {
+                InvalidateStyles(recurse: false);
+                ApplyStyling();
+            }
+            else if (change.Property == ThemeProperty)
             {
                 OnControlThemeChanged();
             }
