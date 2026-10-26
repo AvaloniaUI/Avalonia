@@ -31,7 +31,7 @@ namespace Avalonia.Media.TextFormatting
             TextMetrics = new TextMetrics(properties.CachedGlyphTypeface, properties.FontRenderingEmSize);
         }
 
-        internal ShapedTextRun(ShapedTextRun baseRun, TextRunRenderOverrideProperties overrideProperties)
+        internal ShapedTextRun(ShapedTextRun baseRun, TextRenderOverrideProperties overrideProperties)
         {
             ShapedBuffer = baseRun.ShapedBuffer;
             Properties = baseRun.Properties;
@@ -39,7 +39,7 @@ namespace Avalonia.Media.TextFormatting
             OverrideProperties = overrideProperties;
         }
 
-        internal TextRunRenderOverrideProperties? OverrideProperties { get; set; }
+        internal TextRenderOverrideProperties? OverrideProperties { get; set; }
 
         public sbyte BidiLevel => ShapedBuffer.BidiLevel;
 
@@ -88,13 +88,13 @@ namespace Avalonia.Media.TextFormatting
                     return;
                 }
 
-                var foregroundBrush = OverrideProperties?.ForegroundBrush ?? Properties.ForegroundBrush;
+                var foregroundBrush = OverrideProperties?.RunRenderProperties?.Foreground ?? Properties.ForegroundBrush;
                 if (foregroundBrush == null)
                 {
                     return;
                 }
 
-                var backgroundBrush = OverrideProperties?.BackgroundBrush ?? Properties.BackgroundBrush;
+                var backgroundBrush = OverrideProperties?.RunRenderProperties?.Background ?? Properties.BackgroundBrush;
                 if (backgroundBrush != null)
                 {
                     drawingContext.DrawRectangle(backgroundBrush, null, GlyphRun.Bounds);
@@ -102,7 +102,7 @@ namespace Avalonia.Media.TextFormatting
 
                 drawingContext.DrawGlyphRun(foregroundBrush, GlyphRun);
 
-                var textDecorations = OverrideProperties?.TextDecorations ?? Properties.TextDecorations;
+                var textDecorations = OverrideProperties?.RunRenderProperties?.TextDecorations ?? Properties.TextDecorations;
                 if (textDecorations == null)
                 {
                     return;

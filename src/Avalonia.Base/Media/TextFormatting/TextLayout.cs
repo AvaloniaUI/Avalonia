@@ -161,7 +161,7 @@ namespace Avalonia.Media.TextFormatting
         /// <summary>
         /// Creates a new <see cref="TextLayout"/> which draws another layout with altered rendering properties.
         /// </summary>
-        public TextLayout(TextLayout baseLayout, IEnumerable<ValueSpan<TextRunRenderOverrideProperties>> renderOverrides)
+        public TextLayout(TextLayout baseLayout, IEnumerable<ValueSpan<TextRenderOverrideProperties>> renderOverrides)
         {
             _textSource = baseLayout._textSource;
             _paragraphProperties = baseLayout._paragraphProperties;
@@ -799,7 +799,7 @@ namespace Avalonia.Media.TextFormatting
             return (TextLineImpl)line.Collapse(collapsingProperties);
         }
 
-        private static TextLineImpl[] ApplyRenderOverrides(TextLayout baseLayout, IEnumerable<ValueSpan<TextRunRenderOverrideProperties>> overrides)
+        private static TextLineImpl[] ApplyRenderOverrides(TextLayout baseLayout, IEnumerable<ValueSpan<TextRenderOverrideProperties>> overrides)
         {
             var overridenLines = new List<TextLineImpl>(baseLayout._textLines);
             foreach (var overrideSpan in overrides)

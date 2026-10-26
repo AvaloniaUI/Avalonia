@@ -50,7 +50,7 @@ namespace Avalonia.Media.TextFormatting
             _paragraphProperties = baseLine._paragraphProperties;
 
             _resolvedFlowDirection = baseLine._resolvedFlowDirection;
-            
+
             _textRuns = overrideRuns;
         }
 
@@ -120,6 +120,8 @@ namespace Avalonia.Media.TextFormatting
         {
             var (currentX, currentY) = lineOrigin + new Point(Start, 0);
 
+            DrawLine(drawingContext, currentX, currentY);
+
             foreach (var textRun in _textRuns)
             {
                 switch (textRun)
@@ -134,6 +136,47 @@ namespace Avalonia.Media.TextFormatting
 
                             break;
                         }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Renders the line behind each <see cref="ShapedTextRun"/> which requests it.
+        /// </summary>
+        /// <remarks>
+        /// Multiple consecutive runs with the same <see cref="LineRenderProperties"/> are merged together.
+        /// </remarks>
+        private void DrawLine(DrawingContext drawingContext, double x, double y)
+        {
+            (Rect rect, LineRenderProperties properties)? mergedRuns = null;
+
+            for (int i = 0; i < _textRuns.Length; i++)
+            {
+                if (_textRuns[i] is DrawableTextRun run)
+                {
+                    if (run is ShapedTextRun { OverrideProperties.LineRenderProperties: { } lineRenderProps } &&
+                        (mergedRuns == null || mergedRuns.Value.properties == lineRenderProps))
+                    {
+                        var runRect = new Rect(x, y, run.Size.Width, Height);
+                        mergedRuns = mergedRuns is { } current ? (current with { rect = current.rect.Union(runRect) }) : (runRect, lineRenderProps);
+                    }
+                    else
+                    {
+                        DrawMergedRuns();
+                    }
+
+                    x += run.Size.Width;
+                }
+            }
+
+            DrawMergedRuns();
+
+            void DrawMergedRuns()
+            {
+                if (mergedRuns is { properties: { } props, rect: { } rect })
+                {
+                    drawingContext.DrawRectangle(props.Background, props.Stroke, new RoundedRect(rect.Inflate(props.Padding), props.CornerRadius));
+                    mergedRuns = null;
                 }
             }
         }
