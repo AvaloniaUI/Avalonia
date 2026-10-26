@@ -161,7 +161,7 @@ namespace Avalonia.Animation
             }
             else
             {
-                if (s.StartsWith('-'))
+                if (s.StartsWith("-", StringComparison.Ordinal))
                     throw new InvalidCastException("IterationCount can't be a negative number.");
 
                 var value = ulong.Parse(s, CultureInfo.InvariantCulture);
