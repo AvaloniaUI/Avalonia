@@ -14,7 +14,7 @@ namespace Avalonia.Automation.Peers
         public new TextBox Owner => (TextBox)base.Owner;
         public bool IsReadOnly => Owner.IsReadOnly;
         public string? Value => Owner.Text;
-        public void SetValue(string? value) => Owner.Text = value;
+        public void SetValue(string? value) => Owner.SetCurrentValue(TextBox.TextProperty, value);
 
         protected override AutomationControlType GetAutomationControlTypeCore()
         {

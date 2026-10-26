@@ -8,7 +8,7 @@ public class TreeViewItemAutomationPeer : ItemsControlAutomationPeer
         : base(owner)
     {
     }
-   
+
     protected override AutomationControlType GetAutomationControlTypeCore()
     {
         return AutomationControlType.TreeItem;

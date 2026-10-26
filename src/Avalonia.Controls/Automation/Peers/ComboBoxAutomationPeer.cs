@@ -20,8 +20,8 @@ namespace Avalonia.Automation.Peers
 
         public ExpandCollapseState ExpandCollapseState => ToState(Owner.IsDropDownOpen);
         public bool ShowsMenu => true;
-        public void Collapse() => Owner.IsDropDownOpen = false;
-        public void Expand() => Owner.IsDropDownOpen = true;
+        public void Collapse() => Owner.SetCurrentValue(ComboBox.IsDropDownOpenProperty, false);
+        public void Expand() => Owner.SetCurrentValue(ComboBox.IsDropDownOpenProperty, true);
         bool IValueProvider.IsReadOnly => true;
 
         string? IValueProvider.Value
@@ -32,9 +32,9 @@ namespace Avalonia.Automation.Peers
                 return selection.Count == 1 ? selection[0].GetName() : null;
             }
         }
-        
+
         void IValueProvider.SetValue(string? value) => throw new NotSupportedException();
-        
+
         protected override AutomationControlType GetAutomationControlTypeCore()
         {
             return AutomationControlType.ComboBox;
