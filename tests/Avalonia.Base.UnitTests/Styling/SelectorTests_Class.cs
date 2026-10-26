@@ -27,6 +27,15 @@ namespace Avalonia.Base.UnitTests.Styling
         }
 
         [Fact]
+        public void Class_Selector_With_Soft_Hyphen_Before_Colon_Should_Have_Correct_String_Representation()
+        {
+            // Culture-sensitive comparisons ignore the soft hyphen, so they see this class as starting with ':'.
+            var target = default(Selector).Class("\u00AD:foo");
+
+            Assert.Equal(".\u00AD:foo", target.ToString());
+        }
+
+        [Fact]
         public async Task Class_Matches_Control_With_Class()
         {
             var control = new Control1
