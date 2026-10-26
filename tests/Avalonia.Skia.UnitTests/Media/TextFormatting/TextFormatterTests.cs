@@ -157,15 +157,16 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal(14, textLine.Length);
 
-                var first = textLine.TextRuns[0] as ShapedTextRun;
+                // The paragraph end takes the paragraph level, so it is visually first in a right-to-left line.
+                var first = textLine.TextRuns[0] as TextEndOfParagraph;
 
-                var last = textLine.TextRuns[4] as TextEndOfParagraph;
+                var second = textLine.TextRuns[1] as ShapedTextRun;
 
                 Assert.NotNull(first);
 
-                Assert.NotNull(last);
+                Assert.NotNull(second);
 
-                Assert.Equal("Hello".AsMemory(), first.Text);
+                Assert.Equal("Hello".AsMemory(), second.Text);
             }
         }
 
@@ -247,6 +248,36 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 Assert.Equal(1, first.BidiLevel);
 
                 Assert.Equal(0, second.BidiLevel);
+            }
+        }
+
+        [Theory]
+        [InlineData("\u202Eabc\u202C", 1)] // RLO ... PDF
+        [InlineData("\u202Babc\u202C", 2)] // RLE ... PDF
+        [InlineData("\u2067abc\u2069", 2)] // RLI ... PDI
+        public void Should_Resolve_Explicit_Formatting_After_Another_Paragraph(string text, int expectedLevel)
+        {
+            using (Start())
+            {
+                var defaultProperties =
+                    new GenericTextRunProperties(Typeface.Default, 12, foregroundBrush: Brushes.Black);
+
+                var paragraphProperties = new GenericTextParagraphProperties(defaultProperties);
+
+                var formatter = new TextFormatterImpl();
+
+                formatter.FormatLine(new SingleBufferTextSource("abc", defaultProperties), 0,
+                    double.PositiveInfinity, paragraphProperties);
+
+                var textLine = formatter.FormatLine(new SingleBufferTextSource(text, defaultProperties), 0,
+                    double.PositiveInfinity, paragraphProperties);
+
+                Assert.NotNull(textLine);
+
+                var textRun = textLine.TextRuns.OfType<ShapedTextRun>()
+                    .Single(x => x.Text.Span.IndexOf('a') >= 0);
+
+                Assert.Equal(expectedLevel, textRun.BidiLevel);
             }
         }
 

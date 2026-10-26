@@ -142,6 +142,46 @@ namespace Avalonia.Skia.UnitTests
         }
 
         [Fact]
+        public void Geometry_Hit_Test_Border_With_Background_And_Null_Border()
+        {
+            using (AvaloniaLocator.EnterScope())
+            {
+                SkiaPlatform.Initialize();
+
+                Border? border = null;
+
+                using var services = new CompositorTestServices(new Size(400, 400),
+                    AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>())
+                {
+                    TopLevel =
+                    {
+                        Content = border = new Border
+                        {
+                            Width = 200,
+                            Height = 200,
+                            Background = Brushes.Red,
+                            BorderBrush = null,
+                            BorderThickness = new Thickness(0),
+                            HorizontalAlignment = HorizontalAlignment.Center,
+                            VerticalAlignment = VerticalAlignment.Center
+                        }
+                    }
+                };
+
+                // Geometry fully inside the border -> FullyContains
+                services.AssertHitTest(new RectangleGeometry(new Rect(100, 100, 50, 50)), null,
+                    new GeometryHitTestResult(border, IntersectionResult.FullyContains));
+
+                // Geometry overlapping the border stroke -> Intersects
+                services.AssertHitTest(new RectangleGeometry(new Rect(195, 95, 10, 10)), null,
+                    new GeometryHitTestResult(border, IntersectionResult.Intersects));
+
+                // Geometry outside -> no hit
+                services.AssertHitTest(new RectangleGeometry(new Rect(310, 310, 10, 10)), null);
+            }
+        }
+
+        [Fact]
         public void Geometry_Hit_Test_Border_Null_Background_With_BorderBrush()
         {
             using (AvaloniaLocator.EnterScope())
@@ -209,7 +249,6 @@ namespace Avalonia.Skia.UnitTests
                 services.AssertHitTest(new RectangleGeometry(new Rect(195, 100, 10, 10)), null);
             }
         }
-
 
         [Fact]
         public void Geometry_Hit_Test_Line_Intersects_RectangleGeometry()

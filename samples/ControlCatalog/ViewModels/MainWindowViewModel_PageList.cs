@@ -109,7 +109,7 @@ partial class MainWindowViewModel
             s.Add<DragAndDropPage>("Drag+Drop", Icons.DragDrop, "Drag data within and between applications");
             s.Add<FocusPage>("Focus", Icons.Target, "Track and control keyboard focus");
             s.Add<GesturePage>("Gestures", Icons.Gesture, "Tap, scroll and pinch gesture recognition");
-            s.Add<PointersPage>("Pointers", Icons.Cursor, "Raw pointer input and capture");
+            s.Add<PointersPage>("Pointers", Icons.Cursor, "Raw pointer input");
         }),
         Section("Window & Platform", Icons.DesktopMobile, s =>
         {

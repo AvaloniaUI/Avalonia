@@ -44,7 +44,7 @@ extern NSString* GetAvnCustomDataType()
 }
 
 - (AvnDndSource*) initWithOperation: (NSDragOperation)operation
-                        andCallback: (IAvnDndResultCallback*) cb
+                        andCallback: (const ComPtr<IAvnDndResultCallback>&) cb
                     andSourceHandle: (void*) handle
 {
     self = [super init];
@@ -78,7 +78,7 @@ extern NSString* GetAvnCustomDataType()
 
 @end
 
-extern NSObject<NSDraggingSource>* CreateDraggingSource(NSDragOperation op, IAvnDndResultCallback* cb, void* handle)
+extern NSObject<NSDraggingSource>* CreateDraggingSource(NSDragOperation op, const ComPtr<IAvnDndResultCallback>& cb, void* handle)
 {
     return [[AvnDndSource alloc] initWithOperation:op andCallback:cb andSourceHandle:handle];
 };

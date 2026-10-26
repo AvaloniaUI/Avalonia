@@ -80,13 +80,13 @@ The `x:Name` generator can be configured via MsBuild properties that you can put
     The default field modifier that should be used when there is no `x:FieldModifier` directive specified.
 
 - `AvaloniaNameGeneratorFilterByPath`  
-    Posssible format: `glob_pattern`, `glob_pattern;glob_pattern`  
+    Possible format: `glob_pattern`, `glob_pattern;glob_pattern`  
     Default value: `*`  
     The generator will process only XAML files with paths matching the specified glob pattern(s).  
     Example: `*/Views/*View.xaml`, `*View.axaml;*Control.axaml`
 
 - `AvaloniaNameGeneratorFilterByNamespace`  
-    Posssible format: `glob_pattern`, `glob_pattern;glob_pattern`  
+    Possible format: `glob_pattern`, `glob_pattern;glob_pattern`  
     Default value: `*`  
     The generator will process only XAML files with base classes' namespaces matching the specified glob pattern(s).  
     Example: `MyApp.Presentation.*`, `MyApp.Presentation.Views;MyApp.Presentation.Controls`

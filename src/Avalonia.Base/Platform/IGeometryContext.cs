@@ -19,9 +19,10 @@ namespace Avalonia.Platform
         /// </param>
         /// <param name="isLargeArc">
         ///   Specifies whether the arc should follow the longer path around an ellipse rather than the shorter one.
-        ///   <c>true</c> to draw the arc greater than 180 degrees; otherwise, <c>false</c>.</param>
+        ///   <c>true</c> to draw the arc greater than 180 degrees; otherwise, <c>false</c>.
+        /// </param>
         /// <param name="sweepDirection">
-        /// A value that indicates whether the arc is drawn in the Clockwise or Counterclockwise direction.
+        ///   A value that indicates whether the arc is drawn in the Clockwise or Counterclockwise direction.
         /// </param>
         /// <param name="isStroked">Whether the segment is stroked.</param>
         void ArcTo(Point point, Size size, double rotationAngle, bool isLargeArc, SweepDirection sweepDirection, bool isStroked = true);

@@ -1,4 +1,5 @@
 import { InputHelper } from "./avalonia/input";
+import { InputQueue } from "./avalonia/inputQueue";
 import { AvaloniaDOM } from "./avalonia/dom";
 import { Caniuse } from "./avalonia/caniuse";
 import { StreamHelper } from "./avalonia/stream";
@@ -7,12 +8,22 @@ import { NavigationHelper } from "./avalonia/navigationHelper";
 import { GeneralHelpers } from "./avalonia/generalHelpers";
 import { TimerHelper } from "./avalonia/timer";
 import { SingleThreadedDispatcherHelper } from "./avalonia/singleThreadedDispatcher";
+import { MultiThreadedDispatcherHelper } from "./avalonia/multiThreadedDispatcher";
 import { CanvasSurface } from "./avalonia/rendering/canvasSurface";
 import { WebRenderTargetRegistry } from "./avalonia/rendering/webRenderTargetRegistry";
 import { WebRenderTarget } from "./avalonia/rendering/webRenderTarget";
 import { SoftwareRenderTarget } from "./avalonia/rendering/softwareRenderTarget";
 import { WebGlRenderTarget } from "./avalonia/rendering/webGlRenderTarget";
 import { ScreenHelper } from "./avalonia/screens";
+
+function getModuleUrl(): string {
+    return import.meta.url;
+}
+
+function resolveModuleUrl(name: string): string {
+    const meta = import.meta as ImportMeta & { resolve?(specifier: string): string };
+    return meta.resolve ? meta.resolve(name) : new URL(name, import.meta.url).href;
+}
 
 async function registerServiceWorker(path: string, scope: string | undefined) {
     if ("serviceWorker" in navigator) {
@@ -23,6 +34,7 @@ async function registerServiceWorker(path: string, scope: string | undefined) {
 export {
     Caniuse,
     InputHelper,
+    InputQueue,
     AvaloniaDOM,
     StreamHelper,
     NativeControlHost,
@@ -31,10 +43,13 @@ export {
     ScreenHelper,
     TimerHelper,
     SingleThreadedDispatcherHelper,
+    MultiThreadedDispatcherHelper,
     WebRenderTarget,
     CanvasSurface,
     WebRenderTargetRegistry,
     SoftwareRenderTarget,
     WebGlRenderTarget,
-    registerServiceWorker
+    registerServiceWorker,
+    getModuleUrl,
+    resolveModuleUrl
 };
