@@ -35,11 +35,10 @@ namespace Avalonia.Media.Fonts.Tables.Variation
 
         private const ushort SupportedMajorVersion = 1;
 
-        // Per the spec, every segment map must include the three identity-mapped boundary
-        // entries (-1, 0, +1). We don't require this in parsing — corrupt fonts that omit
-        // them still get a reasonable result because Remap clamps + extrapolates — but it
-        // matters for understanding what "zero entries" means: it means the entire table
-        // was empty for this axis, not just the identity points.
+        // An empty map means the axis is not modified: either the font declared no entries for
+        // it, or its entries were invalid. Per the spec a non-empty map must contain -1 -> -1,
+        // 0 -> 0 and +1 -> +1, and a map missing any of them leaves the axis unmodified, so
+        // every non-empty map stored here spans the whole [-1, 1] domain.
         private readonly ImmutableArray<ImmutableArray<SegmentMapEntry>> _segmentMaps;
 
         private AvarTable(ImmutableArray<ImmutableArray<SegmentMapEntry>> segmentMaps)
@@ -179,6 +178,9 @@ namespace Avalonia.Media.Fonts.Tables.Variation
                     var entries = ImmutableArray.CreateBuilder<SegmentMapEntry>(positionMapCount);
                     var monotonic = true;
                     var previousFrom = float.NegativeInfinity;
+                    var mapsMinusOne = false;
+                    var mapsZero = false;
+                    var mapsPlusOne = false;
 
                     for (var j = 0; j < positionMapCount; j++)
                     {
@@ -194,13 +196,22 @@ namespace Avalonia.Media.Fonts.Tables.Variation
                             monotonic = false;
                         }
 
+                        if (from == to)
+                        {
+                            mapsMinusOne |= from == -1f;
+                            mapsZero |= from == 0f;
+                            mapsPlusOne |= from == 1f;
+                        }
+
                         previousFrom = from;
                         entries.Add(new SegmentMapEntry(from, to));
                     }
 
-                    // A non-monotonic axis degrades to identity (empty map). Keep the entries
-                    // consumed above either way so the reader stays aligned for the next axis.
-                    mapsBuilder.Add(monotonic ? entries.MoveToImmutable() : ImmutableArray<SegmentMapEntry>.Empty);
+                    // A non-monotonic axis, or one missing a required identity entry, degrades to
+                    // identity (empty map). Keep the entries consumed above either way so the
+                    // reader stays aligned for the next axis.
+                    var valid = monotonic && mapsMinusOne && mapsZero && mapsPlusOne;
+                    mapsBuilder.Add(valid ? entries.MoveToImmutable() : ImmutableArray<SegmentMapEntry>.Empty);
                 }
             }
             catch
