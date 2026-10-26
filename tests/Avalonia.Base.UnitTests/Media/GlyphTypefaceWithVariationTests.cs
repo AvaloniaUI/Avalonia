@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using Avalonia.Base.UnitTests.Media.Fonts.Tables;
 using Avalonia.Media;
 using Avalonia.Media.Fonts;
@@ -25,6 +27,15 @@ namespace Avalonia.Base.UnitTests.Media
             var assetLoader = new StandardAssetLoader();
             using var stream = assetLoader.Open(new Uri(assetUri));
             return new GlyphTypeface(new CustomPlatformTypeface(stream));
+        }
+
+        // The platform typeface keeps its font data readable after Dispose, so a disposed
+        // GlyphTypeface can only fail through its own disposed-state check.
+        private static GlyphTypeface LoadTypefaceWithRetainedFontData(string assetUri)
+        {
+            var assetLoader = new StandardAssetLoader();
+            using var stream = assetLoader.Open(new Uri(assetUri));
+            return new GlyphTypeface(new RetainedPlatformTypeface(new CustomPlatformTypeface(stream)));
         }
 
         private static NormalizedVariationPosition WghtPosition(GlyphTypeface gt, double weight)
@@ -343,6 +354,97 @@ namespace Avalonia.Base.UnitTests.Media
 
                 Assert.True(variedShaper.IsDisposed);
                 Assert.False(sourceShaper.IsDisposed);
+            }
+        }
+
+        [Fact]
+        public void Disposing_A_Variation_Clone_Should_Keep_It_Usable_From_The_Source_Cache()
+        {
+            var shaper = new TrackingTextShaperImpl(varies: true);
+
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(textShaperImpl: shaper)))
+            {
+                var gt = LoadTypeface(InterVariableAsset);
+                var position = WghtPosition(gt, 700);
+
+                var varied = gt.WithVariation(position);
+                var variedShaper = (TrackingShaperTypeface)varied.TextShaperTypeface;
+
+                varied.Dispose();
+
+                Assert.Same(varied, gt.WithVariation(position));
+                Assert.False(variedShaper.IsDisposed);
+            }
+        }
+
+        [Fact]
+        public void Disposing_The_Source_Should_Dispose_Its_Variation_Clones()
+        {
+            var shaper = new TrackingTextShaperImpl(varies: true);
+
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(textShaperImpl: shaper)))
+            {
+                var gt = LoadTypeface(InterVariableAsset);
+                var sourceShaper = (TrackingShaperTypeface)gt.TextShaperTypeface;
+
+                var varied = gt.WithVariation(WghtPosition(gt, 700));
+                var variedShaper = (TrackingShaperTypeface)varied.TextShaperTypeface;
+
+                gt.Dispose();
+
+                Assert.True(variedShaper.IsDisposed);
+                Assert.True(sourceShaper.IsDisposed);
+            }
+        }
+
+        [Fact]
+        public void WithVariations_On_A_Disposed_Source_Should_Throw()
+        {
+            var gt = LoadTypefaceWithRetainedFontData(InterVariableAsset);
+            var settings = new FontVariationSettings(new[] { new FontVariation(s_wghtTag, 700) });
+
+            gt.Dispose();
+
+            Assert.Throws<ObjectDisposedException>(() => gt.WithVariations(settings));
+        }
+
+        [Fact]
+        public void WithVariations_On_A_Clone_Of_A_Disposed_Source_Should_Throw()
+        {
+            var gt = LoadTypefaceWithRetainedFontData(InterVariableAsset);
+            var varied = gt.WithVariations(new FontVariationSettings(new[] { new FontVariation(s_wghtTag, 700) }));
+            var settings = new FontVariationSettings(new[] { new FontVariation(s_wghtTag, 300) });
+
+            gt.Dispose();
+
+            Assert.Throws<ObjectDisposedException>(() => varied.WithVariations(settings));
+        }
+
+        private sealed class RetainedPlatformTypeface : IPlatformTypeface
+        {
+            private readonly IPlatformTypeface _inner;
+
+            public RetainedPlatformTypeface(IPlatformTypeface inner)
+            {
+                _inner = inner;
+            }
+
+            public string FamilyName => _inner.FamilyName;
+
+            public FontWeight Weight => _inner.Weight;
+
+            public FontStyle Style => _inner.Style;
+
+            public FontStretch Stretch => _inner.Stretch;
+
+            public FontSimulations FontSimulations => _inner.FontSimulations;
+
+            public bool TryGetStream([NotNullWhen(true)] out Stream? stream) => _inner.TryGetStream(out stream);
+
+            public bool TryGetTable(OpenTypeTag tag, out ReadOnlyMemory<byte> table) => _inner.TryGetTable(tag, out table);
+
+            public void Dispose()
+            {
             }
         }
 
