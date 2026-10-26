@@ -2,6 +2,7 @@ using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
+using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -297,10 +298,98 @@ public class XImmutableDirectiveTests : XamlTestBase
             """), "not supported");
 
         AssertThrows(() => AvaloniaRuntimeXamlLoader.Load("""
+            <Styles xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    x:Immutable="True" />
+            """), "not supported");
+    }
+
+    [Fact]
+    public void ResourceDictionary_Scope_Makes_Supported_Values_Immutable()
+    {
+        var resources = (ResourceDictionary)AvaloniaRuntimeXamlLoader.Load("""
             <ResourceDictionary xmlns="https://github.com/avaloniaui"
                                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                                x:Immutable="True" />
-            """), "not supported");
+                                x:Immutable="True">
+                <Color x:Key="Accent">Red</Color>
+                <SolidColorBrush x:Key="Literal" Color="Red" />
+                <SolidColorBrush x:Key="Static" Color="{StaticResource Accent}" />
+                <SolidColorBrush x:Key="Text">Red</SolidColorBrush>
+                <LinearGradientBrush x:Key="Gradient">
+                    <GradientStop Offset="0" Color="Red" />
+                </LinearGradientBrush>
+                <Pen x:Key="Pen" Brush="Red" Thickness="2" />
+            </ResourceDictionary>
+            """);
+
+        Assert.IsType<ImmutableSolidColorBrush>(resources.Single(r => "Literal".Equals(r.Key)).Value);
+        Assert.IsType<ImmutableSolidColorBrush>(resources.Single(r => "Text".Equals(r.Key)).Value);
+        Assert.IsType<ImmutableSolidColorBrush>(resources["Static"]);
+        Assert.IsType<ImmutableLinearGradientBrush>(resources["Gradient"]);
+        Assert.IsType<ImmutablePen>(resources["Pen"]);
+        Assert.Equal(Colors.Red, resources["Accent"]);
+    }
+
+    [Fact]
+    public void ResourceDictionary_Scope_Skips_Unsupported_Values()
+    {
+        var resources = (ResourceDictionary)AvaloniaRuntimeXamlLoader.Load("""
+            <ResourceDictionary xmlns="https://github.com/avaloniaui"
+                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                                x:Immutable="True">
+                <SolidColorBrush x:Key="Dynamic" Color="{DynamicResource Accent}" />
+                <LinearGradientBrush x:Key="DynamicGradient">
+                    <GradientStop Offset="0" Color="{DynamicResource Accent}" />
+                </LinearGradientBrush>
+                <SolidColorBrush x:Key="OptOut" x:Immutable="False" Color="Red" />
+                <ColumnDefinitions x:Key="Unsupported">*,Auto</ColumnDefinitions>
+                <ControlTheme x:Key="Theme" TargetType="Border">
+                    <Setter Property="Background">
+                        <SolidColorBrush Color="Red" />
+                    </Setter>
+                </ControlTheme>
+            </ResourceDictionary>
+            """);
+
+        Assert.IsType<SolidColorBrush>(resources["Dynamic"]);
+        Assert.IsType<LinearGradientBrush>(resources["DynamicGradient"]);
+        Assert.IsType<SolidColorBrush>(resources["OptOut"]);
+        Assert.IsType<ColumnDefinitions>(resources["Unsupported"]);
+
+        // Scope applies only to resource dictionary values, not to their nested objects.
+        var theme = Assert.IsType<ControlTheme>(resources["Theme"]);
+        Assert.IsType<SolidColorBrush>(Assert.IsType<Setter>(Assert.Single(theme.Setters)).Value);
+    }
+
+    [Fact]
+    public void ResourceDictionary_Scope_Applies_To_Theme_And_Merged_Dictionaries()
+    {
+        var resources = (ResourceDictionary)AvaloniaRuntimeXamlLoader.Load("""
+            <ResourceDictionary xmlns="https://github.com/avaloniaui"
+                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                                x:Immutable="True">
+                <ResourceDictionary.ThemeDictionaries>
+                    <ResourceDictionary x:Key="Light">
+                        <SolidColorBrush x:Key="Themed" Color="White" />
+                    </ResourceDictionary>
+                    <ResourceDictionary x:Key="Dark" x:Immutable="False">
+                        <SolidColorBrush x:Key="Themed" Color="Black" />
+                    </ResourceDictionary>
+                </ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary.MergedDictionaries>
+                    <ResourceDictionary>
+                        <SolidColorBrush x:Key="Merged" Color="Red" />
+                    </ResourceDictionary>
+                </ResourceDictionary.MergedDictionaries>
+            </ResourceDictionary>
+            """);
+
+        Assert.True(resources.TryGetResource("Themed", ThemeVariant.Light, out var light));
+        Assert.IsType<ImmutableSolidColorBrush>(light);
+        Assert.True(resources.TryGetResource("Themed", ThemeVariant.Dark, out var dark));
+        Assert.IsType<SolidColorBrush>(dark);
+        Assert.True(resources.TryGetResource("Merged", null, out var merged));
+        Assert.IsType<ImmutableSolidColorBrush>(merged);
     }
 
     [Fact]
