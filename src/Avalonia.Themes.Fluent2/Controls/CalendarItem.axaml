@@ -1,0 +1,220 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="using:System"
+                    x:ClassModifier="internal">
+  <Design.PreviewWith>
+    <Border Padding="20">
+      <Calendar DisplayDate="2000-01-01"
+                IsWeekNumberVisible="True">
+        <Calendar.BlackoutDates>
+          <CalendarDateRange>
+            <x:Arguments>
+              <sys:DateTime>2000-01-01</sys:DateTime>
+              <sys:DateTime>2000-01-05</sys:DateTime>
+            </x:Arguments>
+          </CalendarDateRange>
+        </Calendar.BlackoutDates>
+      </Calendar>
+    </Border>
+  </Design.PreviewWith>
+
+  <x:Double x:Key="CalendarWeekNumberFontSize">12</x:Double>
+
+  <ControlTheme x:Key="FluentCalendarButton" TargetType="Button">
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="VerticalAlignment" Value="Stretch" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="Background" Value="{DynamicResource CalendarNavigationButtonBackground}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <!-- HCA was changed here to ensure nav arrows display correctly -->
+        <ContentPresenter Name="PART_ContentPresenter" Background="{TemplateBinding Background}"
+                          BackgroundSizing="InnerBorderEdge"
+                          BorderBrush="{DynamicResource CalendarNavigationButtonBorderBrush}"
+                          BorderThickness="{TemplateBinding BorderThickness}"
+                          CornerRadius="{TemplateBinding CornerRadius}"
+                          Content="{TemplateBinding Content}"
+                          Padding="{TemplateBinding Padding}"
+                          HorizontalContentAlignment="Stretch"
+                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}">
+          <ContentPresenter.Transitions>
+            <Transitions>
+              <BrushTransition Property="Background" Duration="{DynamicResource ControlFasterAnimationDuration}" />
+            </Transitions>
+          </ContentPresenter.Transitions>
+        </ContentPresenter>
+      </ControlTemplate>
+    </Setter>
+
+    <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondary}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource CalendarNavigationButtonBorderBrushPointerOver}" />
+      <Setter Property="Foreground" Value="{DynamicResource CalendarNavigationButtonForegroundPointerOver}" />
+    </Style>
+    <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource SubtleFillColorTertiary}" />
+      <Setter Property="Foreground" Value="{DynamicResource CalendarNavigationButtonForegroundPressed}" />
+    </Style>
+    <Style Selector="^:disabled /template/ ContentPresenter">
+      <Setter Property="Foreground" Value="{DynamicResource CalendarWeekDayForegroundDisabled}" />
+    </Style>
+  </ControlTheme>
+
+  <ControlTheme x:Key="{x:Type CalendarItem}" TargetType="CalendarItem" BasedOn="{StaticResource DefaultCalendarItemTheme}"/>
+
+  <ControlTheme x:Key="DefaultCalendarItemTheme" TargetType="CalendarItem">
+    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
+    <Setter Property="DayTitleTemplate">
+      <Template x:DataType="x:String">
+        <TextBlock Text="{Binding}"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   FontSize="{DynamicResource CalendarDayButtonFontSize}" />
+      </Template>
+    </Setter>
+
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border BorderThickness="{TemplateBinding BorderThickness}"
+                Background="{TemplateBinding Background}"
+                BackgroundSizing="InnerBorderEdge"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                CornerRadius="{TemplateBinding CornerRadius}">
+          <!-- To keep calendar from resizing when switching DisplayMode
+          In WinUI Min-Width from TemplateSettings
+          basically...MinWidth of DayItem = 40, 40 * 7 = 280 + margins/padding = ~294
+          Viewport height is set from # of rows displayed (2-8) in Month mode, = ~290 for 6 weeks (+ day names)
+          -->
+          <Grid VerticalAlignment="Stretch"
+                HorizontalAlignment="Stretch"
+                RowDefinitions="Auto,Auto,*"
+                MinWidth="294"
+                Grid.IsSharedSizeScope="True">
+            <Grid ColumnDefinitions="*,Auto,Auto">
+              <Button Name="PART_HeaderButton"
+                      Theme="{StaticResource FluentCalendarButton}"
+                      Foreground="{TemplateBinding Foreground}"
+                      FontSize="{StaticResource CalendarHeaderNavigationButtonFontSize}"
+                      FontWeight="{StaticResource CalendarHeaderNavigationFontWeight}"
+                      Margin="{StaticResource CalendarHeaderNavigationButtonMargin}"
+                      Padding="{StaticResource CalendarHeaderNavigationButtonPadding}"
+                      HorizontalContentAlignment="Left" />
+              <Button Name="PART_PreviousButton"
+                      Grid.Column="1"
+                      Theme="{StaticResource FluentCalendarButton}"
+                      Foreground="{TemplateBinding Foreground}"
+                      Padding="{StaticResource CalendarNavigationButtonPadding}"
+                      Margin="{StaticResource CalendarNavigationPreviousButtonMargin}"
+                      HorizontalContentAlignment="Left">
+                <PathIcon Foreground="{DynamicResource TextFillColorSecondary}"
+                          Data="{StaticResource CaretUpIcon}"
+                          Width="{StaticResource CalendarNavigationButtonIconSize}"
+                          Height="{StaticResource CalendarNavigationButtonIconSize}"
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Center" />
+              </Button>
+              <Button Name="PART_NextButton"
+                      Grid.Column="2"
+                      Theme="{StaticResource FluentCalendarButton}"
+                      Foreground="{TemplateBinding Foreground}"
+                      Padding="{StaticResource CalendarNavigationButtonPadding}"
+                      Margin="{StaticResource CalendarNavigationNextButtonMargin}"
+                      HorizontalContentAlignment="Left">
+                <PathIcon Foreground="{DynamicResource TextFillColorSecondary}"
+                          Data="{StaticResource CaretDownIcon}"
+                          Width="{StaticResource CalendarNavigationButtonIconSize}"
+                          Height="{StaticResource CalendarNavigationButtonIconSize}"
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Center" />
+              </Button>
+            </Grid>
+            <Border Grid.Row="1" Height="1" Background="{TemplateBinding BorderBrush}" />
+            <Grid Name="PART_ElementWeekNumberLabels"
+                  Grid.Row="2"
+                  Margin="2,2,2,0"
+                  MinWidth="38"
+                  IsVisible="False">
+              <Grid.RowDefinitions>
+                <RowDefinition Height="38" />
+                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMonthViewWeekRow" />
+                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMonthViewWeekRow" />
+                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMonthViewWeekRow" />
+                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMonthViewWeekRow" />
+                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMonthViewWeekRow" />
+                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMonthViewWeekRow" />
+              </Grid.RowDefinitions>
+              <!-- Header for the Weeks. -->
+              <ContentControl Name="WeekNumberHeader"
+                              Grid.Row="0"
+                              Content="{DynamicResource StringCalendarWeekNumberHeader}"
+                              FontSize="{DynamicResource CalendarWeekNumberFontSize}"
+                              VerticalContentAlignment="Center"
+                              HorizontalContentAlignment="Center" />
+            </Grid>
+            <Grid Name="PART_MonthView"
+                  Grid.Row="2"
+                  IsVisible="False"
+                  MinHeight="290">
+              <Grid.RowDefinitions>
+                <!--This should always be the week day names??-->
+                <RowDefinition Height="38" />
+                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMonthViewWeekRow" />
+                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMonthViewWeekRow" />
+                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMonthViewWeekRow" />
+                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMonthViewWeekRow" />
+                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMonthViewWeekRow" />
+                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMonthViewWeekRow" />
+              </Grid.RowDefinitions>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+              </Grid.ColumnDefinitions>
+            </Grid>
+            <Grid Name="PART_YearView"
+                  Background="Transparent"
+                  MinHeight="290"
+                  Grid.Row="2"
+                  IsVisible="False">
+              <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="*" />
+              </Grid.RowDefinitions>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+              </Grid.ColumnDefinitions>
+            </Grid>
+          </Grid>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^ /template/ Button:pointerover > Path">
+      <Setter Property="Stroke" Value="{DynamicResource CalendarNavigationButtonForegroundPointerOver}" />
+    </Style>
+    <Style Selector="^ /template/ Button:pressed > Path">
+      <Setter Property="Stroke" Value="{DynamicResource CalendarNavigationButtonForegroundPressed}" />
+    </Style>
+    <Style Selector="^ /template/ Button:disabled > Path">
+      <Setter Property="Stroke" Value="{DynamicResource CalendarWeekDayForegroundDisabled}" />
+    </Style>
+    <Style Selector="^:hasweeknumbers">
+      <Setter Property="MinWidth" Value="332" />
+      <Style Selector="^ /template/ Grid#PART_ElementWeekNumberLabels">
+        <Style Selector="^ ContentControl">
+          <Setter Property="FontSize" Value="{DynamicResource CalendarWeekNumberFontSize}" />
+          <Setter Property="HorizontalContentAlignment" Value="Center" />
+          <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+      </Style>
+    </Style>
+  </ControlTheme>
+</ResourceDictionary>

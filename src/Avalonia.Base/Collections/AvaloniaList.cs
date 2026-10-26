@@ -620,7 +620,7 @@ namespace Avalonia.Collections
         /// <inheritdoc/>
         bool IList.Contains(object? value)
         {
-            return Contains((T)value!);
+            return ((IList)_inner).Contains(value);
         }
 
         /// <inheritdoc/>
@@ -632,7 +632,7 @@ namespace Avalonia.Collections
         /// <inheritdoc/>
         int IList.IndexOf(object? value)
         {
-            return IndexOf((T)value!);
+            return ((IList)_inner).IndexOf(value);
         }
 
         /// <inheritdoc/>

@@ -13,16 +13,14 @@ TopLevelImpl::~TopLevelImpl() {
     View = nullptr;
 }
 
-TopLevelImpl::TopLevelImpl(IAvnTopLevelEvents *events) {
+TopLevelImpl::TopLevelImpl(const ComPtr<IAvnTopLevelEvents>& events) {
     TopLevelEvents = events;
     
-    View = [[AvnView alloc] initWithParent:this];
-    InputMethod = new AvnTextInputMethod(View);
+    View = [[AvnView alloc] initWithParent:comself(this)];
+    InputMethod = comnew<AvnTextInputMethod>(View);
 }
 
 HRESULT TopLevelImpl::GetScaling(double *ret) {
-    START_COM_CALL;
-
     @autoreleasepool {
         if (ret == nullptr)
             return E_POINTER;
@@ -39,8 +37,6 @@ HRESULT TopLevelImpl::GetScaling(double *ret) {
 }
 
 HRESULT TopLevelImpl::GetClientSize(AvnSize *ret) {
-    START_COM_CALL;
-
     @autoreleasepool {
         if (ret == nullptr)
             return E_POINTER;
@@ -54,17 +50,13 @@ HRESULT TopLevelImpl::GetClientSize(AvnSize *ret) {
     }
 }
 
-HRESULT TopLevelImpl::GetInputMethod(IAvnTextInputMethod **retOut) {
-    START_COM_CALL;
-
-    *retOut = InputMethod;
+HRESULT TopLevelImpl::GetInputMethod(ComPtr<IAvnTextInputMethod>& retOut) {
+    retOut = InputMethod;
 
     return S_OK;
 }
 
 HRESULT TopLevelImpl::ObtainNSViewHandle(void **ret) {
-    START_COM_CALL;
-
     if (ret == nullptr) {
         return E_POINTER;
     }
@@ -75,8 +67,6 @@ HRESULT TopLevelImpl::ObtainNSViewHandle(void **ret) {
 }
 
 HRESULT TopLevelImpl::ObtainNSViewHandleRetained(void **ret) {
-    START_COM_CALL;
-
     if (ret == nullptr) {
         return E_POINTER;
     }
@@ -86,11 +76,11 @@ HRESULT TopLevelImpl::ObtainNSViewHandleRetained(void **ret) {
     return S_OK;
 }
 
-HRESULT TopLevelImpl::SetCursor(IAvnCursor *cursor) {
-    START_COM_CALL;
-
+HRESULT TopLevelImpl::SetCursor(const ComPtr<IAvnCursor>& cursor) {
     @autoreleasepool {
-        Cursor *avnCursor = dynamic_cast<Cursor *>(cursor);
+        auto avnCursor = cursor.dynamicCast<Cursor>();
+        if (!avnCursor)
+            return E_INVALIDARG;
         this->cursor = avnCursor->GetNative();
         UpdateCursor();
 
@@ -110,9 +100,7 @@ void TopLevelImpl::UpdateCursor() {
     }
 }
 
-HRESULT TopLevelImpl::CreateSoftwareRenderTarget(IAvnSoftwareRenderTarget **ppv) {
-    START_COM_CALL;
-
+HRESULT TopLevelImpl::CreateSoftwareRenderTarget(ComPtr<IAvnSoftwareRenderTarget>& ppv) {
     if(![NSThread isMainThread])
         return COR_E_INVALIDOPERATION;
 
@@ -120,14 +108,12 @@ HRESULT TopLevelImpl::CreateSoftwareRenderTarget(IAvnSoftwareRenderTarget **ppv)
         return E_FAIL;
 
     auto target = [[IOSurfaceRenderTarget alloc] initWithOpenGlContext: nil];
-    *ppv = [target createSoftwareRenderTarget];
+    ppv = [target createSoftwareRenderTarget];
     [View setRenderTarget: target];
     return S_OK;
 }
 
-HRESULT TopLevelImpl::CreateGlRenderTarget(IAvnGlContext* glContext, IAvnGlSurfaceRenderTarget **ppv) {
-    START_COM_CALL;
-
+HRESULT TopLevelImpl::CreateGlRenderTarget(const ComPtr<IAvnGlContext>& glContext, ComPtr<IAvnGlSurfaceRenderTarget>& ppv) {
     if(![NSThread isMainThread])
         return COR_E_INVALIDOPERATION;
 
@@ -135,14 +121,12 @@ HRESULT TopLevelImpl::CreateGlRenderTarget(IAvnGlContext* glContext, IAvnGlSurfa
         return E_FAIL;
 
     auto target = [[IOSurfaceRenderTarget alloc] initWithOpenGlContext: glContext];
-    *ppv = [target createSurfaceRenderTarget];
+    ppv = [target createSurfaceRenderTarget];
     [View setRenderTarget: target];
     return S_OK;
 }
 
-HRESULT TopLevelImpl::CreateMetalRenderTarget(IAvnMetalDevice* device, IAvnMetalRenderTarget **ppv) {
-    START_COM_CALL;
-
+HRESULT TopLevelImpl::CreateMetalRenderTarget(const ComPtr<IAvnMetalDevice>& device, ComPtr<IAvnMetalRenderTarget>& ppv) {
     if(![NSThread isMainThread])
         return COR_E_INVALIDOPERATION;
 
@@ -150,17 +134,17 @@ HRESULT TopLevelImpl::CreateMetalRenderTarget(IAvnMetalDevice* device, IAvnMetal
         return E_FAIL;
 
     auto target = [[MetalRenderTarget alloc] initWithDevice: device];
+    if (target == nil)
+        return E_INVALIDARG;
     [View setRenderTarget: target];
-    [target getRenderTarget: ppv];
+    ppv = [target createRenderTarget];
     return S_OK;
 }
 
-HRESULT TopLevelImpl::CreateNativeControlHost(IAvnNativeControlHost **retOut) {
-    START_COM_CALL;
-
+HRESULT TopLevelImpl::CreateNativeControlHost(ComPtr<IAvnNativeControlHost>& retOut) {
     if (View == NULL)
         return E_FAIL;
-    *retOut = ::CreateNativeControlHost(View);
+    retOut = ::CreateNativeControlHost(View);
     return S_OK;
 }
 
@@ -169,8 +153,6 @@ AvnView *TopLevelImpl::GetNSView() {
 }
 
 HRESULT TopLevelImpl::Invalidate() {
-    START_COM_CALL;
-
     @autoreleasepool {
         [View setNeedsDisplayInRect:[View frame]];
 
@@ -179,8 +161,6 @@ HRESULT TopLevelImpl::Invalidate() {
 }
 
 HRESULT TopLevelImpl::PointToClient(AvnPoint point, AvnPoint *ret) {
-    START_COM_CALL;
-
     @autoreleasepool {
         if (ret == nullptr) {
             return E_POINTER;
@@ -217,8 +197,6 @@ HRESULT TopLevelImpl::PointToClient(AvnPoint point, AvnPoint *ret) {
 }
 
 HRESULT TopLevelImpl::PointToScreen(AvnPoint point, AvnPoint *ret) {
-    START_COM_CALL;
-
     @autoreleasepool {
         if (ret == nullptr) {
             return E_POINTER;
@@ -255,14 +233,10 @@ HRESULT TopLevelImpl::PointToScreen(AvnPoint point, AvnPoint *ret) {
 }
 
 HRESULT TopLevelImpl::SetTransparencyMode(AvnWindowTransparencyMode mode) {
-    START_COM_CALL;
-
     return S_OK;
 }
 
 HRESULT TopLevelImpl::GetCurrentDisplayId (CGDirectDisplayID* ret) {
-    START_COM_CALL;
-
     auto window = [View window];
     *ret = [window.screen av_displayId];
 
@@ -276,12 +250,10 @@ void TopLevelImpl::UpdateAppearance() {
 HRESULT TopLevelImpl::BeginDragAndDropOperation(
     AvnDragDropEffects effects,
     AvnPoint point,
-    IAvnClipboardDataSource* source,
-    IAvnDndResultCallback* callback,
+    const ComPtr<IAvnClipboardDataSource>& source,
+    const ComPtr<IAvnDndResultCallback>& callback,
     void* sourceHandle)
 {
-    START_COM_CALL;
-
     if (View == NULL)
         return E_FAIL;
 
@@ -312,7 +284,7 @@ HRESULT TopLevelImpl::BeginDragAndDropOperation(
     for (auto i = 0; i < itemCount; ++i)
     {
         ComPtr<IAvnClipboardDataItem> item;
-        if(S_OK != source->GetItem(i, item.getPPV()))
+        if(S_OK != source->GetItem(i, item))
             continue;
         auto writeableItem = [[WriteableClipboardItem alloc] initWithItem:item source:source];
         auto draggingItem = [[NSDraggingItem alloc] initWithPasteboardWriter:writeableItem];
@@ -339,11 +311,7 @@ void TopLevelImpl::SetClientSize(NSSize size){
     [View setFrameSize:size];
 }
 
-extern IAvnTopLevel* CreateAvnTopLevel(IAvnTopLevelEvents* events)
+extern ComPtr<IAvnTopLevel> CreateAvnTopLevel(const ComPtr<IAvnTopLevelEvents>& events)
 {
-    @autoreleasepool
-    {
-        IAvnTopLevel* ptr = (IAvnTopLevel*)new TopLevelImpl(events);
-        return ptr;
-    }
+    return comnew<TopLevelImpl>(events);
 }
