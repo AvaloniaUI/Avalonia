@@ -155,13 +155,13 @@ namespace Avalonia.Animation
         {
             s = s.ToUpperInvariant().Trim();
 
-            if (s.EndsWith("INFINITE"))
+            if (s.EndsWith("INFINITE", StringComparison.Ordinal))
             {
                 return Infinite;
             }
             else
             {
-                if (s.StartsWith("-"))
+                if (s.StartsWith('-'))
                     throw new InvalidCastException("IterationCount can't be a negative number.");
 
                 var value = ulong.Parse(s, CultureInfo.InvariantCulture);
