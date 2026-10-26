@@ -1378,6 +1378,15 @@ namespace Avalonia.Media
         /// that resolve to the same position (for example two values clamped to the same
         /// axis maximum) share one clone.
         /// </returns>
+        /// <remarks>
+        /// A clone is owned by the default-instance typeface it was created from, whichever
+        /// typeface <see cref="WithVariations"/> was called on. Disposing that typeface
+        /// disposes every clone, and calling <see cref="Dispose()"/> on a clone has no effect.
+        /// Keep the default-instance typeface alive for as long as any clone is in use.
+        /// </remarks>
+        /// <exception cref="ObjectDisposedException">
+        /// The default-instance typeface this typeface belongs to has been disposed.
+        /// </exception>
         public GlyphTypeface WithVariations(FontVariationSettings? settings, int? instanceIndex = null)
             => WithVariation(CreateNormalizedPosition(settings, instanceIndex));
 
@@ -1426,6 +1435,14 @@ namespace Avalonia.Media
         /// </remarks>
         internal GlyphTypeface WithVariation(NormalizedVariationPosition variation)
         {
+            // A disposed source has emptied its cache, so a clone created now would sit on
+            // released resources and never be disposed. Clones are disposed with their
+            // source, so this check covers them too.
+            if (_isDisposed)
+            {
+                throw new ObjectDisposedException(nameof(GlyphTypeface));
+            }
+
             // Static font — no axes to vary on; silently ignore non-default requests.
             if (_fvarTable is null)
             {
@@ -1474,6 +1491,13 @@ namespace Avalonia.Media
 
         public void Dispose()
         {
+            // A variation clone stays in its source's cache and is handed out again for the
+            // same position, so only the source may dispose it.
+            if (_sourceTypeface is not null)
+            {
+                return;
+            }
+
             Dispose(true);
             GC.SuppressFinalize(this);
         }
@@ -1637,7 +1661,7 @@ namespace Avalonia.Media
             {
                 foreach (var entry in cache)
                 {
-                    entry.Value.Dispose();
+                    entry.Value.Dispose(true);
                 }
                 cache.Clear();
             }

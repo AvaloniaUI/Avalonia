@@ -337,27 +337,6 @@ namespace Avalonia.Base.UnitTests.Media
         }
 
         [Fact]
-        public void Disposing_A_Variation_Clone_Should_Dispose_Its_Own_Shaper_Typeface()
-        {
-            var shaper = new TrackingTextShaperImpl(varies: true);
-
-            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(textShaperImpl: shaper)))
-            {
-                var gt = LoadTypeface(InterVariableAsset);
-                var sourceShaper = (TrackingShaperTypeface)gt.TextShaperTypeface;
-
-                var varied = gt.WithVariation(WghtPosition(gt, 700));
-                var variedShaper = (TrackingShaperTypeface)varied.TextShaperTypeface;
-                Assert.NotSame(sourceShaper, variedShaper);
-
-                varied.Dispose();
-
-                Assert.True(variedShaper.IsDisposed);
-                Assert.False(sourceShaper.IsDisposed);
-            }
-        }
-
-        [Fact]
         public void Disposing_A_Variation_Clone_Should_Keep_It_Usable_From_The_Source_Cache()
         {
             var shaper = new TrackingTextShaperImpl(varies: true);
