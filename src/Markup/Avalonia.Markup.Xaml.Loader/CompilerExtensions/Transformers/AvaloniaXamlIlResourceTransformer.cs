@@ -78,29 +78,43 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             bool TryGetSharedValue(IXamlAstValueNode valueNode, out bool value)
             {
                 value = default;
+                if (valueNode is AvaloniaXamlIlToImmutableNode toImmutableNode)
+                    valueNode = toImmutableNode.Value;
+                if (valueNode is AvaloniaXamlIlImmutableObjectNode { Manipulation: XamlManipulationGroupNode immutableDirectives }
+                    && immutableDirectives.Children.Find(d => d is XamlAstXmlDirective { Namespace: XamlNamespaces.Xaml2006, Name: "Shared" })
+                        is XamlAstXmlDirective immutableSharedDirective)
+                {
+                    immutableDirectives.Children.Remove(immutableSharedDirective);
+                    return TryParseSharedDirective(immutableSharedDirective, out value);
+                }
                 if (valueNode is XamlAstConstructableObjectNode co)
                 {
                     // Try find x:Share directive
                     if (co.Children.Find(d => d is XamlAstXmlDirective { Namespace: XamlNamespaces.Xaml2006, Name: "Shared" }) is XamlAstXmlDirective sharedDirective)
                     {
-                        if (sharedDirective.Values.Count == 1 && sharedDirective.Values[0] is XamlAstTextNode text)
-                        {
-                            if (bool.TryParse(text.Text, out var parseValue))
-                            {
-                                // If the parser succeeds, remove the x:Share directive
-                                co.Children.Remove(sharedDirective);
-                                return true;
-                            }
-                            else
-                            {
-                                context.ReportTransformError("Invalid argument type for x:Shared directive.", node);
-                            }
-                        }
-                        else
-                        {
-                            context.ReportTransformError("Invalid number of arguments for x:Shared directive.", node);
-                        }
+                        // If the parser succeeds, remove the x:Share directive
+                        co.Children.Remove(sharedDirective);
+                        return TryParseSharedDirective(sharedDirective, out value);
                     }
+                }
+                return false;
+            }
+
+            bool TryParseSharedDirective(XamlAstXmlDirective sharedDirective, out bool value)
+            {
+                value = default;
+                if (sharedDirective.Values.Count == 1 && sharedDirective.Values[0] is XamlAstTextNode text)
+                {
+                    if (bool.TryParse(text.Text, out value))
+                    {
+                        return true;
+                    }
+
+                    context.ReportTransformError("Invalid argument type for x:Shared directive.", node);
+                }
+                else
+                {
+                    context.ReportTransformError("Invalid number of arguments for x:Shared directive.", node);
                 }
                 return false;
             }
@@ -108,6 +122,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
         private static bool ShouldBeDeferred(IXamlAstValueNode node)
         {
+            // Immutable objects with compile-time known values are cheaper to create than to defer.
+            if (node is AvaloniaXamlIlImmutableObjectNode { CanSkipDeferral: true })
+            {
+                return false;
+            }
+
             var clrType = node.Type.GetClrType();
 
             // XAML compiler is currently strict about value types, allowing them to be created only through converters.
