@@ -26,6 +26,7 @@ using System.Threading.Tasks;
 using Avalonia.Diagnostics;
 using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -245,6 +246,8 @@ namespace Avalonia.Controls
 
             CreatePlatformImplBinding(TransparencyLevelHintProperty, hint => PlatformImpl.SetTransparencyLevelHint(hint ?? Array.Empty<WindowTransparencyLevel>()));
 
+            PlatformSettings?.TextScalingChanged += OnPlatformTextScalingChanged;
+
             _keyboardNavigationHandler?.SetOwner(this);
             _accessKeyHandler?.SetOwner(this);
 
@@ -334,6 +337,20 @@ namespace Avalonia.Controls
                 }
             });
         }
+
+        private void OnPlatformTextScalingChanged(object? sender, EventArgs e)
+        {
+            foreach (var visual in this.GetVisualDescendants())
+            {
+                if (visual is not ITextScaleable scaleable || !TextScaling.GetIsEnabled(visual) || TextScaling.GetCustomTextScaler(visual) != null)
+                {
+                    continue;
+                }
+
+                scaleable.OnTextScalingChanged();
+            }
+        }
+
         /// <summary>
         /// Fired when the window is opened.
         /// </summary>
@@ -720,6 +737,7 @@ namespace Avalonia.Controls
             }
 
             _backGestureSubscription?.Dispose();
+            PlatformSettings?.TextScalingChanged -= OnPlatformTextScalingChanged;
 
             var logicalArgs = new LogicalTreeAttachmentEventArgs(this, this, null);
             ((ILogical)this).NotifyDetachedFromLogicalTree(logicalArgs);
