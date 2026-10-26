@@ -15,7 +15,6 @@ namespace Avalonia.Benchmarks.Themes
     {
         private readonly IDisposable _app;
         private readonly object[] _themeResourceKeys;
-        private readonly Fluent2Theme _reusableTheme;
 
         public Fluent2ThemeBenchmark()
         {
@@ -29,34 +28,13 @@ namespace Avalonia.Benchmarks.Themes
                 .SelectMany(d => d.Keys)
                 .Distinct()
                 .ToArray();
-
-            _reusableTheme = new Fluent2Theme();
-            ResolveThemeResources(_reusableTheme);
-        }
-
-        [Benchmark]
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        public Fluent2Theme CreateTheme()
-        {
-            return new Fluent2Theme();
         }
 
         [Benchmark]
         [MethodImpl(MethodImplOptions.NoInlining)]
         public int CreateThemeAndResolveThemeResources()
         {
-            return ResolveThemeResources(new Fluent2Theme());
-        }
-
-        [Benchmark]
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        public int LookupResolvedThemeResources()
-        {
-            return ResolveThemeResources(_reusableTheme);
-        }
-
-        private int ResolveThemeResources(Fluent2Theme theme)
-        {
+            var theme = new Fluent2Theme();
             var count = 0;
             foreach (var key in _themeResourceKeys)
             {
