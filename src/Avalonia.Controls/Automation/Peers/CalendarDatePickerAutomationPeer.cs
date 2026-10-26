@@ -29,14 +29,14 @@ namespace Avalonia.Automation.Peers
         public void Invoke()
         {
             EnsureEnabled();
-            Owner.IsDropDownOpen = true;
+            Owner.SetCurrentValue(CalendarDatePicker.IsDropDownOpenProperty, true);
         }
 
-        public void Expand() => Owner.IsDropDownOpen = true;
+        public void Expand() => Owner.SetCurrentValue(CalendarDatePicker.IsDropDownOpenProperty, true);
 
-        public void Collapse() => Owner.IsDropDownOpen = false;
+        public void Collapse() => Owner.SetCurrentValue(CalendarDatePicker.IsDropDownOpenProperty, false);
 
-        public void SetValue(string? value) => Owner.Text = value;
+        public void SetValue(string? value) => Owner.SetCurrentValue(CalendarDatePicker.TextProperty, value);
 
         protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.Button;
 
