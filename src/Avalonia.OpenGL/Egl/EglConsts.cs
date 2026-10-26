@@ -59,7 +59,7 @@ namespace Avalonia.OpenGL.Egl
 //        public const int  EGL_TRANSPARENT_RGB = 0x3052;
 //        public const int  EGL_TRANSPARENT_TYPE = 0x3034;
         public const int  EGL_TRUE = 1;
-//        public const int  EGL_VENDOR = 0x3053;
+        public const int  EGL_VENDOR = 0x3053;
 //        public const int  EGL_VERSION = 0x3054;
         public const int  EGL_WIDTH = 0x3057;
         public const int  EGL_WINDOW_BIT = 0x0004;

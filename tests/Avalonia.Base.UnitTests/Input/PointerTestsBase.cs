@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using System;
+using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
@@ -17,12 +18,14 @@ public abstract class PointerTestsBase : ScopedTestBase
     protected class TestPointer : Pointer
     {
         internal int PlatformCaptureCalled = 0;
+        internal List<IInputElement?> PlatformCaptures { get; } = new();
 
         internal TestPointer(int id, PointerType type, bool isPrimary) : base(id, type, isPrimary) { }
 
         protected override void PlatformCapture(IInputElement? element)
         {
             PlatformCaptureCalled++;
+            PlatformCaptures.Add(element);
         }
     }
 
@@ -78,9 +81,10 @@ public abstract class PointerTestsBase : ScopedTestBase
         IPointerDevice pointerDevice,
         TopLevel root,
         RawPointerEventType type,
-        Point? position = default)
+        Point? position = default,
+        ulong timestamp = 0)
     {
-        return new RawPointerEventArgs(pointerDevice, 0, root.PresentationSource, type, position ?? default, default);
+        return new RawPointerEventArgs(pointerDevice, timestamp, root.PresentationSource, type, position ?? default, default);
     }
 
     protected static RawPointerEventArgs CreateRawPointerMovedArgs(

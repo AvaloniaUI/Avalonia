@@ -1,10 +1,16 @@
 using System;
+using System.Linq;
 using System.Reflection;
 
 namespace Avalonia.Markup.Xaml;
 
 public class RuntimeXamlLoaderConfiguration
 {
+    /// <summary>
+    /// When enabled, the XAML compiler embeds SourceInfo metadata (file path, line, and column) into generated code.
+    /// </summary>
+    private bool? _createSourceInfo = null;
+
     /// <summary>
     /// Default assembly for clr-namespace:.
     /// </summary>
@@ -24,9 +30,24 @@ public class RuntimeXamlLoaderConfiguration
 
     /// <summary>
     /// When enabled, the XAML compiler embeds SourceInfo metadata (file path, line, and column) into generated code.
-    /// Default is 'false'.
+    /// When not explicitly set, the 'AvaloniaXamlCreateSourceInfo' from the LocalAssembly will be used to determine the value.
     /// </summary>
-    public bool CreateSourceInfo { get; set; } = false;
+    public bool CreateSourceInfo 
+    { 
+        get {
+            if(_createSourceInfo == null)
+            {
+                if(LocalAssembly is {} asm)
+                {
+                    var createSourceInfo = asm.GetCustomAttributes<AssemblyMetadataAttribute>()
+                        .FirstOrDefault(a => a.Key == "AvaloniaXamlCreateSourceInfo")?.Value;
+                    return bool.TryParse(createSourceInfo, out var parsedCreateSourceInfo) && parsedCreateSourceInfo;
+                }
+            }   
+            return _createSourceInfo ?? false;
+        }
+        set => _createSourceInfo = value; 
+    }
 
     /// <summary>
     /// XAML diagnostics handler.

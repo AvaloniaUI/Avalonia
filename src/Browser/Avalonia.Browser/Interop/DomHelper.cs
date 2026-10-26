@@ -31,6 +31,9 @@ internal static partial class DomHelper
     [JSImport("AvaloniaDOM.getDarkMode", AvaloniaModule.MainModuleName)]
     public static partial int[] GetDarkMode(JSObject globalThis);
 
+    [JSImport("AvaloniaDOM.getNavigatorLanguage", AvaloniaModule.MainModuleName)]
+    public static partial string? GetNavigatorLanguage(JSObject globalThis);
+
     [JSImport("AvaloniaDOM.addClass", AvaloniaModule.MainModuleName)]
     public static partial void AddCssClass(JSObject element, string className);
 
@@ -40,20 +43,31 @@ internal static partial class DomHelper
     [JSExport]
     public static Task DarkModeChanged(bool isDarkMode, bool isHighContrast)
     {
-        (AvaloniaLocator.Current.GetService<IPlatformSettings>() as BrowserPlatformSettings)?.OnValuesChanged(isDarkMode, isHighContrast);
+        using var _ = JsCallbackHelper.EnsureDispatcherContext();
+        (AvaloniaLocator.Current.GetService<IPlatformSettings>() as BrowserPlatformSettings)?.OnColorValuesChanged(isDarkMode, isHighContrast);
         return Task.CompletedTask;
     }
 
     [JSExport]
     public static Task DocumentVisibilityChanged(string visibilityState)
     {
+        using var _ = JsCallbackHelper.EnsureDispatcherContext();
         (AvaloniaLocator.Current.GetService<IActivatableLifetime>() as BrowserActivatableLifetime)?.OnVisibilityStateChanged(visibilityState);
+        return Task.CompletedTask;
+    }
+
+    [JSExport]
+    public static Task LanguageChanged(string language)
+    {
+        using var _ = JsCallbackHelper.EnsureDispatcherContext();
+        (AvaloniaLocator.Current.GetService<IPlatformSettings>() as BrowserPlatformSettings)?.OnPreferredLanguageChanged(language);
         return Task.CompletedTask;
     }
 
     [JSExport]
     public static Task ScreensChanged()
     {
+        using var _ = JsCallbackHelper.EnsureDispatcherContext();
         (AvaloniaLocator.Current.GetService<IScreenImpl>() as BrowserScreens)?.OnChanged();
         return Task.CompletedTask;
     }

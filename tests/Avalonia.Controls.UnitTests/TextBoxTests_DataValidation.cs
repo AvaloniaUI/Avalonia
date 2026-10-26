@@ -149,6 +149,46 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void CompiledBinding_To_DataValidation_Property_Reports_Data_Validation_Errors()
+        {
+            // This binding is shape-eligible for the typed binding expression (a directly
+            // assignable single-property DataContext binding), which does not support data
+            // validation. Because TextBox.Text enables data validation it must fall back to the
+            // untyped BindingExpression and still surface validation errors.
+            var path = new CompiledBindingPathBuilder()
+                .Property(
+                    new ClrPropertyInfo<IndeiStringTest, string?>(
+                        nameof(IndeiStringTest.Value),
+                        o => o.Value,
+                        (o, v) => o.Value = v),
+                    PropertyInfoAccessorFactory.CreateInpcPropertyAccessor,
+                    acceptsNull: true)
+                .Build();
+
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    DataContext = new IndeiStringTest(),
+                    [!TextBox.TextProperty] = new CompiledBindingExtension
+                    {
+                        Path = path,
+                        Mode = BindingMode.TwoWay,
+                    },
+                    Template = CreateTemplate(),
+                };
+
+                target.ApplyTemplate();
+
+                Assert.False(DataValidationErrors.GetHasErrors(target));
+                target.Text = "bad";
+                Assert.True(DataValidationErrors.GetHasErrors(target));
+                target.Text = "good";
+                Assert.False(DataValidationErrors.GetHasErrors(target));
+            }
+        }
+
         private static TestServices Services => TestServices.MockThreadingInterface.With(
             standardCursorFactory: Mock.Of<ICursorFactory>(),
             textShaperImpl: new HarfBuzzTextShaper(),
@@ -216,6 +256,37 @@ namespace Avalonia.Controls.UnitTests
             }
 
             public bool HasErrors => _lessThan10 >= 10;
+
+            public event EventHandler<DataErrorsChangedEventArgs>? ErrorsChanged;
+
+            public IEnumerable GetErrors(string? propertyName)
+            {
+                if (propertyName is not null && _errors.TryGetValue(propertyName, out var result))
+                    return result;
+                return Array.Empty<string?>();
+            }
+        }
+
+        private class IndeiStringTest : INotifyDataErrorInfo
+        {
+            private readonly Dictionary<string, IList<string>> _errors = new();
+            private string? _value;
+
+            public string? Value
+            {
+                get => _value;
+                set
+                {
+                    _value = value;
+                    if (value == "bad")
+                        _errors[nameof(Value)] = new[] { "Invalid" };
+                    else
+                        _errors.Remove(nameof(Value));
+                    ErrorsChanged?.Invoke(this, new DataErrorsChangedEventArgs(nameof(Value)));
+                }
+            }
+
+            public bool HasErrors => _errors.Count > 0;
 
             public event EventHandler<DataErrorsChangedEventArgs>? ErrorsChanged;
 

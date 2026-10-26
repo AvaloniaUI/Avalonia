@@ -7,6 +7,7 @@
     <AvaloniaNameGeneratorFilterByNamespace Condition="'$(AvaloniaNameGeneratorFilterByNamespace)' == ''">*</AvaloniaNameGeneratorFilterByNamespace>
     <AvaloniaNameGeneratorViewFileNamingStrategy Condition="'$(AvaloniaNameGeneratorViewFileNamingStrategy)' == ''">NamespaceAndClassName</AvaloniaNameGeneratorViewFileNamingStrategy>
     <AvaloniaNameGeneratorAttachDevTools Condition="'$(AvaloniaNameGeneratorAttachDevTools)' == ''">true</AvaloniaNameGeneratorAttachDevTools>
+    <AvaloniaPropertyGeneratorIsEnabled Condition="'$(AvaloniaPropertyGeneratorIsEnabled)' == ''">true</AvaloniaPropertyGeneratorIsEnabled>
   </PropertyGroup>
   <ItemGroup>
     <!-- Mark AvaloniaXaml/AvaloniaResource metadata visible for the Roslyn-compiler -->
@@ -19,6 +20,7 @@
     <CompilerVisibleProperty Include="AvaloniaNameGeneratorFilterByNamespace" />
     <CompilerVisibleProperty Include="AvaloniaNameGeneratorViewFileNamingStrategy" />
     <CompilerVisibleProperty Include="AvaloniaNameGeneratorAttachDevTools"/>
+    <CompilerVisibleProperty Include="AvaloniaPropertyGeneratorIsEnabled" />
     <!-- Mark additional Avalonia properties that might be useful for the Roslyn-compiler -->
     <CompilerVisibleProperty Include="AvaloniaUseCompiledBindingsByDefault" />
     <CompilerVisibleProperty Include="AvaloniaMainPackageVersion" />

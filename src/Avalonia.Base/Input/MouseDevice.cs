@@ -18,9 +18,12 @@ namespace Avalonia.Input
         private static MouseDevice? _primary;
         internal static MouseDevice Primary => _primary ??= new MouseDevice();
 
+        internal static void ResetPrimaryForUnitTests() => _primary = null;
+
         private int _clickCount;
         private Rect _lastClickRect;
         private ulong _lastClickTime;
+        private MouseButton _lastClickButton;
 
         private readonly Pointer _pointer;
         private bool _disposed;
@@ -144,6 +147,7 @@ namespace Avalonia.Input
             if (source != null)
             {
                 _pointer.Capture(source, CaptureSource.Implicit);
+                var button = properties.PointerUpdateKind.GetMouseButton();
 
                 var settings = (source as Interactive)?.GetPlatformSettings();
                 if (settings is not null)
@@ -151,18 +155,20 @@ namespace Avalonia.Input
                     var doubleClickTime = settings.GetDoubleTapTime(PointerType.Mouse).TotalMilliseconds;
                     var doubleClickSize = settings.GetDoubleTapSize(PointerType.Mouse);
 
-                    if (!_lastClickRect.Contains(p) || timestamp - _lastClickTime > doubleClickTime)
+                    if (!_lastClickRect.Contains(p) || timestamp - _lastClickTime > doubleClickTime
+                        || button != _lastClickButton)
                     {
                         _clickCount = 0;
                     }
 
                     ++_clickCount;
+                    _lastClickButton = button;
                     _lastClickTime = timestamp;
                     _lastClickRect = new Rect(p, new Size())
                         .Inflate(new Thickness(doubleClickSize.Width / 2, doubleClickSize.Height / 2));
                 }
 
-                _lastMouseDownButton = properties.PointerUpdateKind.GetMouseButton();
+                _lastMouseDownButton = button;
                 var e = new PointerPressedEventArgs(source, _pointer, root.RootElement, p, timestamp, properties, inputModifiers, _clickCount, platformInputEventCookie);
                 source.RaiseEvent(e);
                 return e.Handled;
@@ -218,9 +224,7 @@ namespace Avalonia.Input
                 }
                 finally
                 {
-                    _pointer.Capture(null, CaptureSource.Implicit);
-                    _pointer.CaptureGestureRecognizer(null);
-                    _pointer.IsGestureRecognitionSkipped = false;
+                    _pointer.CaptureLost(CaptureSource.Implicit);
                     _lastMouseDownButton = default;
                 }
                 return e.Handled;

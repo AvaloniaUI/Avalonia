@@ -34,6 +34,12 @@ namespace Avalonia.Media
             AvaloniaProperty.Register<Brush, RelativePoint>(nameof(TransformOrigin));
 
         /// <summary>
+        /// Defines the <see cref="RelativeTransform"/> property.
+        /// </summary>
+        public static readonly StyledProperty<ITransform?> RelativeTransformProperty =
+            AvaloniaProperty.Register<Brush, ITransform?>(nameof(RelativeTransform));
+
+        /// <summary>
         /// Gets or sets the opacity of the brush.
         /// </summary>
         public double Opacity
@@ -58,6 +64,13 @@ namespace Avalonia.Media
         {
             get => GetValue(TransformOriginProperty);
             set => SetValue(TransformOriginProperty, value);
+        }
+
+        /// <inheritdoc cref="IBrush.RelativeTransform"/>
+        public ITransform? RelativeTransform
+        {
+            get => GetValue(RelativeTransformProperty);
+            set => SetValue(RelativeTransformProperty, value);
         }
 
         /// <summary>
@@ -90,7 +103,7 @@ namespace Avalonia.Media
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
-            if (change.Property == TransformProperty) 
+            if (change.Property == TransformProperty || change.Property == RelativeTransformProperty)
                 _resource.ProcessPropertyChangeNotification(change);
 
             RegisterForSerialization();
@@ -117,8 +130,10 @@ namespace Avalonia.Media
 
         private protected virtual void OnReferencedFromCompositor(Compositor c)
         {
-            if (Transform is ICompositionRenderResource<ITransform> resource)
-                resource.AddRefOnCompositor(c);
+            if (Transform is ICompositionRenderResource<ITransform> transform)
+                transform.AddRefOnCompositor(c);
+            if (RelativeTransform is ICompositionRenderResource<ITransform> relativeTransform)
+                relativeTransform.AddRefOnCompositor(c);
         }
 
         void ICompositionRenderResource.ReleaseOnCompositor(Compositor c)
@@ -129,15 +144,18 @@ namespace Avalonia.Media
 
         protected virtual void OnUnreferencedFromCompositor(Compositor c)
         {
-            if (Transform is ICompositionRenderResource<ITransform> resource)
-                resource.ReleaseOnCompositor(c);
+            if (Transform is ICompositionRenderResource<ITransform> transform)
+                transform.ReleaseOnCompositor(c);
+            if (RelativeTransform is ICompositionRenderResource<ITransform> relativeTransform)
+                relativeTransform.ReleaseOnCompositor(c);
         }
 
         SimpleServerObject? ICompositorSerializable.TryGetServer(Compositor c) => _resource.TryGetForCompositor(c);
 
         private protected virtual void SerializeChanges(Compositor c, BatchStreamWriter writer)
         {
-            ServerCompositionSimpleBrush.SerializeAllChanges(writer, Opacity, TransformOrigin, Transform.GetServer(c));
+            ServerCompositionSimpleBrush.SerializeAllChanges(writer, Opacity, TransformOrigin, Transform.GetServer(c),
+                RelativeTransform.GetServer(c));
         }
 
         void ICompositorSerializable.SerializeChanges(Compositor c, BatchStreamWriter writer) => SerializeChanges(c, writer);

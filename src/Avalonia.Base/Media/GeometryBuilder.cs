@@ -11,6 +11,7 @@
 // Ignore Spelling: keypoints
 
 using System;
+using Avalonia.Platform;
 using Avalonia.Utilities;
 
 namespace Avalonia.Media
@@ -20,7 +21,6 @@ namespace Avalonia.Media
     /// </summary>
     internal class GeometryBuilder
     {
-        private const double PiOver2 = 1.57079633; // 90 deg to rad
         private const double Epsilon = 0.00000153; // Same as LayoutHelper.LayoutEpsilon
 
         /// <summary>
@@ -126,7 +126,7 @@ namespace Avalonia.Media
         /// <param name="radiusX">The radius on the X-axis used to round the corners of the rectangle.</param>
         /// <param name="radiusY">The radius on the Y-axis used to round the corners of the rectangle.</param>
         public static void DrawRoundedCornersRectangle(
-            StreamGeometryContext context,
+            IGeometryContext context,
             Rect rect,
             double radiusX,
             double radiusY)
@@ -157,7 +157,7 @@ namespace Avalonia.Media
             context.ArcTo(
                 new Point(rect.Right, rect.Top + radiusY),
                 arcSize,
-                rotationAngle: PiOver2,
+                rotationAngle: 0.0,
                 isLargeArc: false,
                 SweepDirection.Clockwise);
 
@@ -166,7 +166,7 @@ namespace Avalonia.Media
             context.ArcTo(
                 new Point(rect.Right - radiusX, rect.Bottom),
                 arcSize,
-                rotationAngle: PiOver2,
+                rotationAngle: 0.0,
                 isLargeArc: false,
                 SweepDirection.Clockwise);
 
@@ -175,7 +175,7 @@ namespace Avalonia.Media
             context.ArcTo(
                 new Point(rect.Left, rect.Bottom - radiusY),
                 arcSize,
-                rotationAngle: PiOver2,
+                rotationAngle: 0.0,
                 isLargeArc: false,
                 SweepDirection.Clockwise);
 
@@ -184,7 +184,7 @@ namespace Avalonia.Media
             context.ArcTo(
                 new Point(rect.Left + radiusX, rect.Top),
                 arcSize,
-                rotationAngle: PiOver2,
+                rotationAngle: 0.0,
                 isLargeArc: false,
                 SweepDirection.Clockwise);
 

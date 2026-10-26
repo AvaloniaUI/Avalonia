@@ -237,8 +237,15 @@ namespace Avalonia.Win32
                     break;
 
                 case WindowsMessage.WM_SYSCOMMAND:
-                    // Disable system handling of Alt/F10 menu keys.
-                    if ((SysCommands)wParam == SysCommands.SC_KEYMENU && HighWord(ToInt32(lParam)) <= 0)
+                    // Disable system handling of Alt/F10 menu keys, but let Alt+Space open the system menu.
+                    if (GetSysCommand(wParam) == SysCommands.SC_KEYMENU && HighWord(ToInt32(lParam)) <= 0 && ToInt32(lParam) != ' ')
+                        return IntPtr.Zero;
+                    break;
+
+                case WindowsMessage.WM_SYSCHAR:
+                    // DefWindowProc turns WM_SYSCHAR into SC_KEYMENU (e.g. Alt+Space opens the system menu),
+                    // so skip it when the preceding WM_SYSKEYDOWN was handled.
+                    if (_ignoreWmChar)
                         return IntPtr.Zero;
                     break;
 
@@ -582,9 +589,7 @@ namespace Avalonia.Win32
                         e = args;
                         break;
                     }
-                case WindowsMessage.WM_POINTERDEVICEOUTOFRANGE:
                 case WindowsMessage.WM_POINTERLEAVE:
-                case WindowsMessage.WM_POINTERCAPTURECHANGED:
                     {
                         if (!_wmPointerEnabled)
                         {
@@ -592,6 +597,17 @@ namespace Avalonia.Win32
                         }
                         GetDevicePointerInfo(wParam, out var device, out var info, out var point, out var modifiers, ref timestamp);
                         var eventType = device is TouchDevice ? RawPointerEventType.TouchCancel : RawPointerEventType.LeaveWindow;
+                        e = CreatePointerArgs(device, timestamp, eventType, point, modifiers, info.pointerId);
+                        break;
+                    }
+                case WindowsMessage.WM_POINTERCAPTURECHANGED:
+                    {
+                        if (!_wmPointerEnabled)
+                        {
+                            break;
+                        }
+                        GetDevicePointerInfo(wParam, out var device, out var info, out var point, out var modifiers, ref timestamp);
+                        var eventType = device is TouchDevice ? RawPointerEventType.TouchCancel : RawPointerEventType.CancelCapture;
                         e = CreatePointerArgs(device, timestamp, eventType, point, modifiers, info.pointerId);
                         break;
                     }
@@ -610,22 +626,6 @@ namespace Avalonia.Win32
                         {
                             RawPointerId = info.pointerId
                         };
-                        break;
-                    }
-                case WindowsMessage.WM_POINTERDEVICEINRANGE:
-                    {
-                        if (!_wmPointerEnabled)
-                        {
-                            break;
-                        }
-
-                        // Do not generate events, but release mouse capture on any other device input.
-                        GetDevicePointerInfo(wParam, out var device, out _, out _, out _, ref timestamp);
-                        if (device != _mouseDevice)
-                        {
-                            _mouseDevice.Capture(null);
-                            return IntPtr.Zero;
-                        }
                         break;
                     }
                 case WindowsMessage.WM_POINTERACTIVATE:
@@ -872,15 +872,6 @@ namespace Avalonia.Win32
                         break;
                     }
 
-                case WindowsMessage.WM_DISPLAYCHANGE:
-                    {
-                        Screen?.OnChanged();
-
-                        Win32Platform.UpdateTimerFps();
-
-                        return IntPtr.Zero;
-                    }
-
                 case WindowsMessage.WM_KILLFOCUS:
                     if (Imm32InputMethod.Current.IsComposing)
                     {
@@ -979,7 +970,7 @@ namespace Avalonia.Win32
             {
                 Input(e);
 
-                if (message == WindowsMessage.WM_KEYDOWN)
+                if (message is WindowsMessage.WM_KEYDOWN or WindowsMessage.WM_SYSKEYDOWN)
                 {
                     if (e is RawKeyEventArgs args && args.Key == Key.ImeProcessed)
                     {
@@ -987,10 +978,10 @@ namespace Avalonia.Win32
                     }
                     else
                     {
-                        // Handling a WM_KEYDOWN message should cause the subsequent WM_CHAR message to
-                        // be ignored. This should be safe to do as WM_CHAR should only be produced in
-                        // response to the call to TranslateMessage/DispatchMessage after a WM_KEYDOWN
-                        // is handled.
+                        // Handling a WM_KEYDOWN/WM_SYSKEYDOWN message should cause the subsequent
+                        // WM_CHAR/WM_SYSCHAR message to be ignored. This should be safe to do as these
+                        // should only be produced in response to the call to TranslateMessage/DispatchMessage
+                        // after a WM_KEYDOWN/WM_SYSKEYDOWN is handled.
                         _ignoreWmChar = e.Handled;
                     }
                 }
@@ -1317,7 +1308,7 @@ namespace Avalonia.Win32
             var isTouch = info.pointerType == PointerInputType.PT_TOUCH;
             if (info.pointerFlags.HasFlag(PointerFlags.POINTER_FLAG_CANCELED))
             {
-                return isTouch ? RawPointerEventType.TouchCancel : RawPointerEventType.LeaveWindow;
+                return isTouch ? RawPointerEventType.TouchCancel : RawPointerEventType.CancelCapture;
             }
 
             var eventType = ToEventType(info.ButtonChangeType, isTouch);
@@ -1366,7 +1357,7 @@ namespace Avalonia.Win32
 
             Imm32InputMethod.Current.SetLanguageAndWindow(this, Hwnd, hkl);
         }
-        
+
         // GetPointerDeviceRects is part of the WM_POINTER API (Windows 8+) but is not implemented
         // by Wine/Proton. Probe once and fall back to the integer pixel location when missing,
         // otherwise the P/Invoke throws EntryPointNotFoundException for every pointer message.
@@ -1410,6 +1401,8 @@ namespace Avalonia.Win32
         }
 
         private static int HighWord(int param) => param >> 16;
+
+        private static SysCommands GetSysCommand(IntPtr wParam) => (SysCommands)(ToInt32(wParam) & 0xfff0);
 
         private Point DipFromLParam(IntPtr lParam)
         {

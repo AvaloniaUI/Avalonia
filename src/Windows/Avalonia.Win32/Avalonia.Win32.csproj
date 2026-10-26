@@ -35,6 +35,7 @@
   <ItemGroup>
     <InternalsVisibleTo Include="Avalonia.Win32.Interoperability, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.WinUI, PublicKey=$(AvaloniaPublicKey)" />
+    <InternalsVisibleTo Include="Avalonia.IntegrationTests.Win32, PublicKey=$(AvaloniaPublicKey)" />
   </ItemGroup>
   <ItemGroup>
     <!-- By default, any projects supports Windows, Linux, MacOS platforms. -->

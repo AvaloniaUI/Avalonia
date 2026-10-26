@@ -49,7 +49,7 @@ internal abstract partial class WindowBaseImpl : IWindowBaseImpl
     }
 
     public Compositor Compositor { get; }
-    public double DesktopScaling => RenderScaling;
+    public double DesktopScaling => 1;
     public IPlatformHandle? Handle => null;
 
     public Size ClientSize
@@ -64,10 +64,28 @@ internal abstract partial class WindowBaseImpl : IWindowBaseImpl
 
     public abstract IPlatformRenderSurface[] Surfaces { get; }
 
-    // Not supported by Wayland.
-    public PixelPoint Position => default;
-    public Point PointToClient(PixelPoint point) => new(point.X, point.Y);
-    public PixelPoint PointToScreen(Point point) => new((int)point.X, (int)point.Y);
+    // Wayland doesn't expose toplevel positions, so the "screen" space is the
+    // toplevel's buffer-relative logical space (DesktopScaling is 1). Popups
+    // report their offset within that space.
+    public virtual PixelPoint Position => default;
+    public Point PointToClient(PixelPoint point) => new(point.X - Position.X, point.Y - Position.Y);
+    public PixelPoint PointToScreen(Point point) => new((int)point.X + Position.X, (int)point.Y + Position.Y);
+
+    /// <summary>
+    /// Top-left of the window geometry within the buffer, in logical pixels, as the UI
+    /// currently intends it. The worker may not have committed it yet; popup positions
+    /// derived from it converge once it is.
+    /// </summary>
+    internal virtual PixelPoint WindowGeometryOrigin => default;
+
+    /// <summary>
+    /// Raised when <see cref="Position"/> or <see cref="WindowGeometryOrigin"/> changed.
+    /// Child popups re-derive their own position from it, since the compositor doesn't
+    /// send them a configure when only the parent moved.
+    /// </summary>
+    internal event Action? ChildPositionsInvalidated;
+
+    protected void InvalidateChildPositions() => ChildPositionsInvalidated?.Invoke();
     public void Activate() { }
     public void SetTopmost(bool value) { }
 
@@ -78,12 +96,8 @@ internal abstract partial class WindowBaseImpl : IWindowBaseImpl
     public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = default;
     public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevels) { }
 
-    public async void SetFrameThemeVariant(PlatformThemeVariant? themeVariant)
+    public void SetFrameThemeVariant(PlatformThemeVariant? themeVariant)
     {
-        if (themeVariant == null && AvaloniaLocator.Current.GetService<IPlatformSettings>() is DBusPlatformSettings platformSettings)
-        {
-            platformSettings.OnRequestDefaultThemeVariant();
-        }
     }
 
     public Action? Closed { get; set; }

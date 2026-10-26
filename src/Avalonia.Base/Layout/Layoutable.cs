@@ -543,6 +543,8 @@ namespace Avalonia.Layout
         /// </remarks>
         protected virtual Size MeasureCore(Size availableSize)
         {
+            ApplyStyling();
+
             if (IsVisible)
             {
                 var margin = Margin;
@@ -555,7 +557,6 @@ namespace Avalonia.Layout
                     margin = LayoutHelper.RoundLayoutThickness(margin, scale);
                 }
 
-                ApplyStyling();
                 ApplyTemplate();
 
                 var minMax = new MinMax(this);

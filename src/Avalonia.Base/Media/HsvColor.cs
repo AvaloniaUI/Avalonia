@@ -17,7 +17,7 @@ namespace Avalonia.Media
 #if !BUILDTASK
     public
 #endif
-    readonly struct HsvColor : IEquatable<HsvColor>
+    readonly struct HsvColor : IEquatable<HsvColor>, IFormattable
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="HsvColor"/> struct.
@@ -205,6 +205,99 @@ namespace Avalonia.Media
         public HslColor ToHsl()
         {
             return HsvColor.ToHsl(H, S, V, A);
+        }
+
+        /// <summary>
+        /// Returns a formatted string representation of the HSV color.
+        /// </summary>
+        /// <param name="format">
+        /// The format specifier. All color types support all specifiers via auto-conversion.
+        /// Uppercase includes alpha, lowercase excludes it. <c>%</c> suffix = percent mode.
+        /// <list type="bullet">
+        /// <item><c>null</c> or <c>""</c> — Default (full-precision <c>hsva(h, s, v, a)</c>)</item>
+        /// <item><c>"X"</c> — XAML hex: <c>#AARRGGBB</c></item>
+        /// <item><c>"x"</c> — Hex: <c>#RRGGBB</c></item>
+        /// <item><c>"H"</c> — HTML hex: <c>#RRGGBBAA</c></item>
+        /// <item><c>"R"/"r"/"R%"/"r%"</c> — CSS rgb/rgba (auto-converts to RGB)</item>
+        /// <item><c>"L"/"l"/"L%"/"l%"</c> — CSS hsl/hsla (auto-converts to HSL)</item>
+        /// <item><c>"V"</c> — CSS hsva: <c>hsva(h, s%, v%, a)</c></item>
+        /// <item><c>"v"</c> — CSS hsv: <c>hsv(h, s%, v%)</c></item>
+        /// <item><c>"V%"</c> — All percent: <c>hsva(h%, s%, v%, a%)</c></item>
+        /// <item><c>"v%"</c> — All percent: <c>hsv(h%, s%, v%)</c></item>
+        /// </list>
+        /// <para><c>"C"</c> and <c>"A"</c> are reserved for future complex format strings.</para>
+        /// </param>
+        /// <param name="formatProvider">Ignored. Color formatting is culture-invariant.</param>
+        /// <returns>The formatted string representation.</returns>
+        /// <exception cref="FormatException">Thrown when <paramref name="format"/> is not recognized.</exception>
+        public string ToString(string? format, IFormatProvider? formatProvider)
+        {
+            if (string.IsNullOrEmpty(format))
+            {
+                return ToString();
+            }
+
+            return format switch
+            {
+                "X" or "x" or "H" or "R" or "r" or "R%" or "r%" => ToRgb().ToString(format, formatProvider),
+
+                "L" or "l" or "L%" or "l%" => ToHsl().ToString(format, formatProvider),
+
+                "V" => FormatHsvCss(),
+                "v" => FormatHsvCss(includeAlpha: false),
+                "V%" => FormatHsvPercentCss(),
+                "v%" => FormatHsvPercentCss(includeAlpha: false),
+
+                _ => throw new FormatException($"Format string '{format}' is not supported.")
+            };
+        }
+
+        /// <summary>
+        /// Formats the color as a CSS hsv() or hsva() string using degrees, percent saturation/value,
+        /// and fractional alpha.
+        /// </summary>
+        private string FormatHsvCss(bool includeAlpha = true)
+        {
+            int hDeg = (int)Math.Round(H);
+            int sPct = (int)Math.Round(S * 100.0);
+            int vPct = (int)Math.Round(V * 100.0);
+
+            if (includeAlpha)
+            {
+                return string.Format(
+                    CultureInfo.InvariantCulture,
+                    "hsva({0}, {1}%, {2}%, {3:F2})",
+                    hDeg,
+                    sPct,
+                    vPct,
+                    A);
+            }
+
+            return string.Format(CultureInfo.InvariantCulture, "hsv({0}, {1}%, {2}%)", hDeg, sPct, vPct);
+        }
+
+        /// <summary>
+        /// Formats the color as a CSS hsv() or hsva() string with all components as percentages.
+        /// </summary>
+        private string FormatHsvPercentCss(bool includeAlpha = true)
+        {
+            int hPct = (int)Math.Round(H / 360.0 * 100.0);
+            int sPct = (int)Math.Round(S * 100.0);
+            int vPct = (int)Math.Round(V * 100.0);
+
+            if (includeAlpha)
+            {
+                int aPct = (int)Math.Round(A * 100.0);
+                return string.Format(
+                    CultureInfo.InvariantCulture,
+                    "hsva({0}%, {1}%, {2}%, {3}%)",
+                    hPct,
+                    sPct,
+                    vPct,
+                    aPct);
+            }
+
+            return string.Format(CultureInfo.InvariantCulture, "hsv({0}%, {1}%, {2}%)", hPct, sPct, vPct);
         }
 
         /// <inheritdoc/>

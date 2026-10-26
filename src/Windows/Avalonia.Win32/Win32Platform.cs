@@ -174,6 +174,12 @@ namespace Avalonia.Win32
                 }
             }
 
+            if (msg == (uint)WindowsMessage.WM_DISPLAYCHANGE)
+            {
+                Screen?.OnChanged();
+                UpdateTimerFps();
+            }
+
             if (msg == (uint)WindowsMessage.WM_SETTINGCHANGE)
             {
                 if (PlatformSettings is Win32PlatformSettings win32PlatformSettings)
@@ -183,6 +189,10 @@ namespace Avalonia.Win32
                         || changedSetting == "WindowsThemeElement") // high contrast mode
                     {
                         win32PlatformSettings.OnColorValuesChanged();
+                    }
+                    else if (changedSetting == "intl") // language/locale change
+                    {
+                        win32PlatformSettings.OnLanguageChanged();
                     }
                 }
 

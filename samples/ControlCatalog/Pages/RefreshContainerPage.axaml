@@ -27,6 +27,7 @@
             </generic:List>
           </ComboBox.ItemsSource>
         </ComboBox>
+        <Button Content="Refresh" Name="RefreshButton"/>
       </StackPanel>
     </StackPanel>
     <RefreshContainer Name="Refresh"

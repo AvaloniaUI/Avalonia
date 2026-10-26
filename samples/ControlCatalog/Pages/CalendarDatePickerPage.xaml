@@ -49,6 +49,9 @@
 
         <TextBlock Text="Validation Example"/>
         <CalendarDatePicker SelectedDate="{CompiledBinding ValidatedDateExample, Mode=TwoWay}"/>
+        
+        <TextBlock Text="WeekNumbers example"/>
+        <CalendarDatePicker IsWeekNumberVisible="True" />
       </StackPanel>
 
     </StackPanel>

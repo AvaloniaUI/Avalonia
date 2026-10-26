@@ -612,13 +612,6 @@ namespace Avalonia
             {
                 OnControlThemeChanged();
             }
-            else if (change.Property == ThemeVariant.RequestedThemeVariantProperty)
-            {
-                if (change.GetNewValue<ThemeVariant>() is {} themeVariant && themeVariant != ThemeVariant.Default)
-                    SetValue(ThemeVariant.ActualThemeVariantProperty, themeVariant);
-                else
-                    ClearValue(ThemeVariant.ActualThemeVariantProperty);
-            }
             else if (change.Property == ThemeVariant.ActualThemeVariantProperty)
             {
                 ActualThemeVariantChanged?.Invoke(this, EventArgs.Empty);

@@ -53,15 +53,24 @@ namespace Avalonia.Controls.Documents
             set => SetValue(ChildProperty, value);
         }
 
-        internal override void BuildTextRun(IList<TextRun> textRuns, Size blockSize)
+        internal override void BuildTextRun(IList<TextRun> textRuns)
         {
-            if (_measuredWidth != blockSize.Width || !Child.IsMeasureValid)
+            textRuns.Add(new EmbeddedControlRun(Child, CreateTextRunProperties()));
+        }
+
+        internal override bool MeasureEmbeddedControls(Size blockSize)
+        {
+            if (_measuredWidth == blockSize.Width && Child.IsMeasureValid)
             {
-                Child.Measure(new Size(blockSize.Width, double.PositiveInfinity));
-                _measuredWidth = blockSize.Width;
+                return false;
             }
 
-            textRuns.Add(new EmbeddedControlRun(Child, CreateTextRunProperties()));
+            var previousSize = Child.DesiredSize;
+
+            Child.Measure(new Size(blockSize.Width, double.PositiveInfinity));
+            _measuredWidth = blockSize.Width;
+
+            return Child.DesiredSize != previousSize;
         }
 
         internal override void AppendText(StringBuilder stringBuilder)

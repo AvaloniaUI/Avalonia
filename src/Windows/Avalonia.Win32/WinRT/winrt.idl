@@ -261,6 +261,15 @@ interface IPropertyValue : IInspectable
     HRESULT GetRectArray([out] UINT32* __valueSize, [out] [size_is(, *__valueSize)] void** value);
 }
 
+[uuid(fca5679c-bfd4-5187-8b2d-de225049b346)]
+interface IVectorViewHSTRING : IInspectable
+{
+    HRESULT GetAt([in] UINT32 index, [out, retval] HSTRING *value);
+    [propget] HRESULT Size([out, retval] UINT32 *value);
+    // HRESULT IndexOf([in, optional] T element, [out] UINT32 *index, [out, retval] BOOLEAN *value);
+    // HRESULT GetMany([in] UINT32 start_index, [in] UINT32 items_size, [out] T *items, [out, retval] UINT32 *value);
+}
+
 enum AsyncStatus {
   Started = 0,
   Completed, 
@@ -870,6 +879,15 @@ interface IAccessibilitySettings : IInspectable
 {
     [propget] HRESULT HighContrast([out] [retval] boolean* value);
     [propget] HRESULT HighContrastScheme([out] [retval] HSTRING* value);
+}
+
+[uuid(01BF4326-ED37-4E96-B0E9-C1340D1EA158)]
+interface IGlobalizationPreferencesStatics : IInspectable
+{
+    [propget] HRESULT Calendars([out, retval] IVectorViewHSTRING** value);
+    [propget] HRESULT Clocks([out, retval] IVectorViewHSTRING** value);
+    [propget] HRESULT Currencies([out, retval] IVectorViewHSTRING** value);
+    [propget] HRESULT Languages([out, retval] IVectorViewHSTRING** value);
 }
 
 [uuid(997439FE-F681-4A11-B416-C13A47E8BA36)]

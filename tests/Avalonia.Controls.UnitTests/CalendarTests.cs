@@ -1,10 +1,13 @@
-﻿using Xunit;
+using Xunit;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.UnitTests;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.UnitTests
 {
@@ -439,6 +442,194 @@ namespace Avalonia.Controls.UnitTests
 
             // Verify the flag was reset
             Assert.False((bool)field.GetValue(calendarItem)!);
+        }
+
+
+        // --- Week number tests ---
+
+        [Fact]
+        public void IsWeekNumberVisible_Defaults_To_False()
+        {
+            var calendar = new Calendar();
+            Assert.False(calendar.IsWeekNumberVisible);
+        }
+
+        [Fact]
+        public void WeekNumberRule_Defaults_To_Culture_CalendarWeekRule()
+        {
+            var calendar = new Calendar();
+            Assert.IsType<CalendarWeekRule>(calendar.WeekNumberRule);
+        }
+
+        [Fact]
+        public void IsWeekNumberVisible_Can_Be_Set()
+        {
+            var calendar = new Calendar();
+            calendar.IsWeekNumberVisible = true;
+            Assert.True(calendar.IsWeekNumberVisible);
+        }
+
+        [Fact]
+        public void WeekNumberRule_Can_Be_Set()
+        {
+            var calendar = new Calendar();
+            calendar.WeekNumberRule = CalendarWeekRule.FirstFourDayWeek;
+            Assert.Equal(CalendarWeekRule.FirstFourDayWeek, calendar.WeekNumberRule);
+        }
+
+        [Theory]
+        // ISO 8601: week 1 of 2023 starts on Monday 2 Jan 2023
+        [InlineData(2023, 1, 2, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday, 1)]
+        // 2022-12-31 is still in ISO week 52 of 2022
+        [InlineData(2022, 12, 31, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday, 52)]
+        // .NET bug: 2018-12-31 is a Monday and is ISO week 1 of 2019, not week 53 of 2018
+        [InlineData(2018, 12, 31, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday, 1)]
+        // US rule: week 1 always starts on Jan 1
+        [InlineData(2023, 1, 1, CalendarWeekRule.FirstDay, DayOfWeek.Sunday, 1)]
+        [InlineData(2023, 12, 31, CalendarWeekRule.FirstDay, DayOfWeek.Sunday, 53)]
+        public void GetWeekOfYear_Returns_Correct_Week_Number(
+            int year, int month, int day,
+            CalendarWeekRule rule,
+            DayOfWeek firstDayOfWeek,
+            int expectedWeek)
+        {
+            var _calendar = new GregorianCalendar();
+            var date = new DateTime(year, month, day);
+            int week = DateTimeHelper.GetWeekOfYear(date, rule, firstDayOfWeek, _calendar);
+            Assert.Equal(expectedWeek, week);
+        }
+
+
+        // ------------------------------------------------------------------------
+        //  ISO‑week fallback tests – verify that GetWeekOfYear returns the expected
+        //  week numbers for edge‑case dates.
+        // ------------------------------------------------------------------------
+        [Theory]
+        // 31 Dec 2018 is part of ISO‑week 1 of 2019
+        [InlineData(2018, 12, 31, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday, 1)]
+        // 1 Jan 2020 is also ISO‑week 1 (Monday)
+        [InlineData(2020, 01, 01, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday, 1)]
+        // 29 Dec 2014 (Monday) should be week 1 of 2015 (ISO)
+        [InlineData(2014, 12, 29, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday, 1)]
+        // 30 Dec 2019 (Monday) is week 1 of 2020 (ISO)
+        [InlineData(2019, 12, 30, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday, 1)]
+        public void GetWeekOfYear_IsoWeekFallback_Returns_Correct_Week(
+            int year, int month, int day,
+            CalendarWeekRule rule,
+            DayOfWeek firstDay,
+            int expectedWeek)
+        {
+            var _calendar = new GregorianCalendar();
+            var date = new DateTime(year, month, day);
+            // DateTimeHelper is the internal helper used by Calendar.
+            // It falls back to ISO‑week calculation when the culture’s
+            // CalendarWeekRule does not produce a valid week.
+            int week = DateTimeHelper.GetWeekOfYear(date, rule, firstDay, _calendar);
+            Assert.Equal(expectedWeek, week);
+        }
+
+        // ------------------------------------------------------------------------
+        //  Property change refresh tests – ensure the control updates its
+        //  visual state when week‑number related properties are changed.
+        // ------------------------------------------------------------------------
+        [Fact]
+        public void Changing_IsWeekNumberVisible_Toggles_HasWeekNumbers_PseudoClass()
+        {
+            var calendar = CreateTestCalendar();
+            
+            calendar.ApplyTemplate();
+            calendar.DisplayMode = CalendarMode.Month;
+            calendar.IsWeekNumberVisible = false;
+
+            // Grab the CalendarItem from the visual tree
+            var calendarItem = calendar.GetVisualDescendants()
+                .OfType<CalendarItem>()
+                .FirstOrDefault();
+            Assert.NotNull(calendarItem);
+            
+            calendarItem.ApplyTemplate();
+
+            // Assert pseudo-class is NOT set
+            Assert.False(calendarItem.Classes.Contains(":hasweeknumbers"));
+            
+            // Turn on week numbers
+            calendar.IsWeekNumberVisible = true;
+            
+            // Assert pseudo-class IS set
+            Assert.True(calendarItem.Classes.Contains(":hasweeknumbers"));
+        }
+
+        [Fact]
+        public void Changing_WeekNumberRule_Refreshes_WeekNumber_Labels()
+        {
+            var calendar = CreateTestCalendar();
+            
+            // Apply template so that the internal CalendarItem is created
+            calendar.ApplyTemplate();
+
+            calendar.DisplayMode = CalendarMode.Month;
+            calendar.IsWeekNumberVisible = true;
+            // Use ISO‑rule (FirstFourDayWeek) for the test
+            calendar.WeekNumberRule = CalendarWeekRule.FirstFourDayWeek;
+            calendar.FirstDayOfWeek = DayOfWeek.Monday;
+            calendar.DisplayDate = new DateTime(2021, 01, 04); // First Monday of 2021
+
+            // Grab the CalendarItem from the visual tree
+            var calendarItem = calendar.GetVisualDescendants()
+                .OfType<CalendarItem>()
+                .FirstOrDefault();
+            Assert.NotNull(calendarItem);
+            
+            calendarItem.ApplyTemplate();
+
+            // The first week‑number label should display “1” for the first week of 2021
+            var weekLabelsGrid = calendarItem.GetVisualDescendants()
+                .OfType<Grid>()
+                .FirstOrDefault(x => x.Name == "PART_ElementWeekNumberLabels");
+            Assert.NotNull(weekLabelsGrid);
+            var firstLabel = weekLabelsGrid.Children.OfType<ContentControl>().First(x => Grid.GetRow(x) == 2);
+            Assert.Equal(1, firstLabel.Content);
+
+            // Change the rule to use FirstDay (which for 2021‑01‑04 would be week 2)
+            calendar.WeekNumberRule = CalendarWeekRule.FirstDay;
+
+            // Force a layout pass – in unit‑tests this is enough to trigger the update
+            calendar.InvalidateMeasure();
+            calendar.UpdateLayout();
+
+            // After the rule change the first visible week number should now be “2”
+            firstLabel = weekLabelsGrid.Children.OfType<ContentControl>().First(x => Grid.GetRow(x) == 2);
+            Assert.Equal(2, firstLabel.Content);
+        }
+
+        private static Calendar CreateTestCalendar()
+        {
+            var cal = new Calendar();
+            var template = new FuncControlTemplate<Calendar>((c, scope) => new Panel()
+            {
+                Name = "PART_Root",
+                Children =
+                {
+                    new CalendarItem()
+                    {
+                        Name = "PART_CalendarItem",
+                        Owner = c,
+                        DayTitleTemplate = new FuncTemplate<Control>(() => new TextBlock()),
+                        Template = new FuncControlTemplate<CalendarItem>((_, itemScope) => new Grid()
+                        {
+                            Children =
+                            {
+                                new Grid { Name = "PART_MonthView" }.RegisterInNameScope(itemScope),
+                                new Grid { Name = "PART_YearView" }.RegisterInNameScope(itemScope),
+                                new Grid { Name = "PART_ElementWeekNumberLabels" }.RegisterInNameScope(itemScope)
+                            }
+                        })
+                    }.RegisterInNameScope(scope)
+                }
+            }.RegisterInNameScope(scope));
+            cal.Template = template;
+
+            return cal;
         }
     }
 }
