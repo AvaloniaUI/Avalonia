@@ -38,6 +38,7 @@
           Padding="{TemplateBinding Padding}">
           <Panel>
             <DockPanel
+              Name="DockPanelHost"
               VerticalSpacing="{StaticResource TabItemHeaderSpacing}"
               HorizontalSpacing="{StaticResource TabItemHeaderSpacing}"
               HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"

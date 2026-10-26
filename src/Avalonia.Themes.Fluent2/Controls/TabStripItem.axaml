@@ -95,6 +95,7 @@
           CornerRadius="{TemplateBinding CornerRadius}">
           <Grid RowDefinitions="Auto,Auto">
             <DockPanel
+              Name="DockPanelHost"
               VerticalSpacing="{StaticResource TabStripItemSpacing}"
               HorizontalSpacing="{StaticResource TabStripItemSpacing}"
               Grid.Row="0"
