@@ -101,10 +101,9 @@ namespace Avalonia.Skia.RenderTests
         [Fact]
         public async Task Should_Render_InterVariable_Composite_At_wght_900()
         {
-            // gvar applies to each component of a composite glyph independently.
-            // 'Á' = base 'A' + acute accent; at wght=900 both components are visibly
-            // thicker. Composite-level offset deformation is deferred (the accent's
-            // position relative to the base stays at the designer's default).
+            // 'Á' = base 'A' + acute accent. At wght=900 each component's own gvar entry
+            // thickens it, and the composite's entry moves the accent's offset (+47 units
+            // in x), so the accent sits where FreeType places it at this weight.
             var gt = LoadGlyphTypeface(InterVariableAsset);
             var black = gt.WithVariation(WghtPosition(gt, 900));
 

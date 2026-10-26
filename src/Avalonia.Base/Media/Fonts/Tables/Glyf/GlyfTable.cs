@@ -503,8 +503,9 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
         /// Creates a transformation matrix for a composite glyph component based on its flags and transformation parameters.
         /// </summary>
         /// <param name="component">The glyph component containing transformation information.</param>
+        /// <param name="offsetDelta">The variation delta for the component's x/y offset.</param>
         /// <returns>A transformation matrix that should be applied to the component glyph.</returns>
-        private static Matrix CreateComponentTransform(GlyphComponent component)
+        private static Matrix CreateComponentTransform(GlyphComponent component, Vector offsetDelta)
         {
             var flags = component.Flags;
 
@@ -512,8 +513,8 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
 
             if ((flags & CompositeFlags.ArgsAreXYValues) != 0)
             {
-                tx = component.Arg1;
-                ty = component.Arg2;
+                tx = component.Arg1 + offsetDelta.X;
+                ty = component.Arg2 + offsetDelta.Y;
             }
 
             double m11, m12, m21, m22;
@@ -581,7 +582,7 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
             }
             else
             {
-                return BuildCompositeGlyphGeometry(descriptor.CompositeGlyph, context, transform, decycler, gvarTable, activeCoords);
+                return BuildCompositeGlyphGeometry(descriptor.CompositeGlyph, glyphIndex, context, transform, decycler, gvarTable, activeCoords);
             }
         }
 
@@ -589,14 +590,19 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
         /// Builds the geometry for a composite glyph by recursively processing its components.
         /// </summary>
         /// <param name="compositeGlyph">The composite glyph containing component references and transformations.</param>
+        /// <param name="glyphIndex">The composite glyph's index in the font. Used to look up its gvar entry.</param>
         /// <param name="context">The geometry context that receives the constructed glyph geometry.</param>
         /// <param name="transform">The transformation matrix to apply to all component glyphs.</param>
         /// <param name="decycler">A <see cref="GlyphDecycler"/> instance used to prevent infinite recursion when building composite glyphs.</param>
-        /// <param name="gvarTable">Optional gvar table. Passed through to each child glyph for independent deformation.</param>
+        /// <param name="gvarTable">
+        /// Optional gvar table. The composite's own entry moves the component offsets, and each
+        /// component glyph applies its own entry to its outline.
+        /// </param>
         /// <param name="activeCoords">Normalized variation coordinates in fvar axis order.</param>
         /// <returns>true if at least one component was successfully processed; otherwise, false.</returns>
         private bool BuildCompositeGlyphGeometry(
             CompositeGlyph compositeGlyph,
+            int glyphIndex,
             IGeometryContext context,
             Matrix transform,
             GlyphDecycler decycler,
@@ -619,23 +625,21 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
                 // materialising path instead. The flag is computed once while parsing.
                 if (compositeGlyph.UsesPointMatching)
                 {
-                    return BuildPointMatchedComposite(components, context, transform, decycler);
+                    return BuildPointMatchedComposite(components, glyphIndex, context, transform, decycler, gvarTable, activeCoords);
                 }
+
+                using var offsetDeltas = ComponentOffsetDeltas.Compute(glyphIndex, components, gvarTable, activeCoords);
 
                 var hasGeometry = false;
 
-                foreach (var component in components)
+                for (var i = 0; i < components.Length; i++)
                 {
-                    var componentTransform = CreateComponentTransform(component);
+                    var component = components[i];
+                    var componentTransform = CreateComponentTransform(component, offsetDeltas[i]);
                     var combinedTransform = componentTransform * transform;
 
                     var wrappedContext = new TransformingGeometryContext(context, combinedTransform);
 
-                    // Variation context propagates: each child glyph applies its own gvar
-                    // entry independently. Composite-level gvar (which would deform the
-                    // component offsets) is not yet applied — accented characters get
-                    // correctly-thickened components but at the designer's default
-                    // placement, which is a follow-up.
                     if (TryBuildGlyphGeometryInternal(component.GlyphIndex, wrappedContext, Matrix.Identity, decycler, gvarTable, activeCoords))
                     {
                         hasGeometry = true;
@@ -648,6 +652,96 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
             {
                 // Return rented buffer to pool
                 compositeGlyph.Dispose();
+            }
+        }
+
+        /// <summary>
+        /// The variation deltas a composite glyph's own gvar entry applies to its component offsets.
+        /// </summary>
+        /// <remarks>
+        /// In a composite's gvar entry each component is one point whose coordinates are its x/y
+        /// offset, followed by the four phantom points. Each component point forms a contour of its
+        /// own, so a component the entry does not reference keeps a zero delta instead of inheriting
+        /// one through interpolation. Point-matched components have no offset to move and always
+        /// report a zero delta; they follow the varied points they are matched onto.
+        /// </remarks>
+        private readonly ref struct ComponentOffsetDeltas
+        {
+            private readonly float[]? _x;
+            private readonly float[]? _y;
+
+            private ComponentOffsetDeltas(float[] x, float[] y)
+            {
+                _x = x;
+                _y = y;
+            }
+
+            public Vector this[int componentIndex]
+                => _x is null ? default : new Vector(_x[componentIndex], _y![componentIndex]);
+
+            public static ComponentOffsetDeltas Compute(
+                int glyphIndex,
+                ReadOnlySpan<GlyphComponent> components,
+                GvarTable? gvarTable,
+                ReadOnlySpan<float> activeCoords)
+            {
+                if (gvarTable is null || activeCoords.IsEmpty)
+                {
+                    return default;
+                }
+
+                var count = components.Length;
+                var endPoints = ArrayPool<ushort>.Shared.Rent(count);
+                var originalX = ArrayPool<short>.Shared.Rent(count);
+                var originalY = ArrayPool<short>.Shared.Rent(count);
+                var deltaX = ArrayPool<float>.Shared.Rent(count);
+                var deltaY = ArrayPool<float>.Shared.Rent(count);
+
+                try
+                {
+                    for (var i = 0; i < count; i++)
+                    {
+                        var component = components[i];
+                        var isOffset = (component.Flags & CompositeFlags.ArgsAreXYValues) != 0;
+
+                        endPoints[i] = (ushort)i;
+                        originalX[i] = isOffset ? component.Arg1 : (short)0;
+                        originalY[i] = isOffset ? component.Arg2 : (short)0;
+                        deltaX[i] = 0;
+                        deltaY[i] = 0;
+                    }
+
+                    GlyphVariationReader.TryApplyDeltas(
+                        gvarTable, glyphIndex, activeCoords,
+                        endPoints.AsSpan(0, count), originalX.AsSpan(0, count), originalY.AsSpan(0, count),
+                        deltaX.AsSpan(0, count), deltaY.AsSpan(0, count));
+
+                    for (var i = 0; i < count; i++)
+                    {
+                        if ((components[i].Flags & CompositeFlags.ArgsAreXYValues) == 0)
+                        {
+                            deltaX[i] = 0;
+                            deltaY[i] = 0;
+                        }
+                    }
+
+                    return new ComponentOffsetDeltas(deltaX, deltaY);
+                }
+                finally
+                {
+                    ArrayPool<ushort>.Shared.Return(endPoints);
+                    ArrayPool<short>.Shared.Return(originalX);
+                    ArrayPool<short>.Shared.Return(originalY);
+                }
+            }
+
+            public void Dispose()
+            {
+                if (_x is not null)
+                {
+                    ArrayPool<float>.Shared.Return(_x);
+                    ArrayPool<float>.Shared.Return(_y!);
+                }
             }
         }
 
@@ -666,21 +760,28 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
         /// </remarks>
         private bool BuildPointMatchedComposite(
             ReadOnlySpan<GlyphComponent> components,
+            int glyphIndex,
             IGeometryContext context,
             Matrix transform,
-            GlyphDecycler decycler)
+            GlyphDecycler decycler,
+            GvarTable? gvarTable,
+            ReadOnlySpan<float> activeCoords)
         {
             var outline = new ResolvedOutline(64);
+            using var offsetDeltas = ComponentOffsetDeltas.Compute(glyphIndex, components, gvarTable, activeCoords);
 
             try
             {
-                foreach (var component in components)
+                for (var componentIndex = 0; componentIndex < components.Length; componentIndex++)
                 {
+                    var component = components[componentIndex];
                     var componentStart = outline.PointCount;
 
-                    // Resolve the component's points into composite space with its 2x2 scale
-                    // applied (but not the placement offset, which is computed next).
-                    if (!TryResolveSimpleGlyphPoints(component.GlyphIndex, CreateComponentScale(component), decycler, outline))
+                    // Resolve the component's varied points into composite space with its 2x2
+                    // scale applied (but not the placement offset, which is computed next), so a
+                    // later component is matched onto the points as they are at this instance.
+                    if (!TryResolveSimpleGlyphPoints(
+                            component.GlyphIndex, CreateComponentScale(component), decycler, outline, gvarTable, activeCoords))
                     {
                         return false;
                     }
@@ -689,8 +790,9 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
 
                     if ((component.Flags & CompositeFlags.ArgsAreXYValues) != 0)
                     {
-                        // Signed x/y offset (the unscaled-offset default).
-                        offset = new Vector(component.Arg1, component.Arg2);
+                        // Signed x/y offset (the unscaled-offset default), moved by the
+                        // composite's own variation deltas.
+                        offset = new Vector(component.Arg1, component.Arg2) + offsetDeltas[componentIndex];
                     }
                     else
                     {
@@ -738,7 +840,13 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
         /// that is itself composite (nested point matching is not supported yet); an empty glyph
         /// contributes no points and returns <see langword="true"/>.
         /// </summary>
-        private bool TryResolveSimpleGlyphPoints(int glyphIndex, Matrix transform, GlyphDecycler decycler, ResolvedOutline outline)
+        private bool TryResolveSimpleGlyphPoints(
+            int glyphIndex,
+            Matrix transform,
+            GlyphDecycler decycler,
+            ResolvedOutline outline,
+            GvarTable? gvarTable,
+            ReadOnlySpan<float> activeCoords)
         {
             using var guard = decycler.Enter(glyphIndex);
 
@@ -755,6 +863,8 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
             }
 
             var simpleGlyph = descriptor.SimpleGlyph;
+            float[]? deltaXRented = null;
+            float[]? deltaYRented = null;
 
             try
             {
@@ -762,6 +872,20 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
                 var flags = simpleGlyph.Flags;
                 var xCoords = simpleGlyph.XCoordinates;
                 var yCoords = simpleGlyph.YCoordinates;
+                var pointCount = xCoords.Length;
+
+                if (gvarTable is not null && !activeCoords.IsEmpty)
+                {
+                    deltaXRented = ArrayPool<float>.Shared.Rent(pointCount);
+                    deltaYRented = ArrayPool<float>.Shared.Rent(pointCount);
+                    deltaXRented.AsSpan(0, pointCount).Clear();
+                    deltaYRented.AsSpan(0, pointCount).Clear();
+
+                    GlyphVariationReader.TryApplyDeltas(
+                        gvarTable, glyphIndex, activeCoords,
+                        ends, xCoords, yCoords,
+                        deltaXRented.AsSpan(0, pointCount), deltaYRented.AsSpan(0, pointCount));
+                }
 
                 var start = 0;
 
@@ -771,7 +895,9 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
 
                     for (var i = start; i <= end; i++)
                     {
-                        var point = transform.Transform(new Point(xCoords[i], yCoords[i]));
+                        var x = xCoords[i] + (deltaXRented?[i] ?? 0f);
+                        var y = yCoords[i] + (deltaYRented?[i] ?? 0f);
+                        var point = transform.Transform(new Point(x, y));
                         outline.AddPoint(point, (flags[i] & GlyphFlag.OnCurvePoint) != 0);
                     }
 
@@ -783,6 +909,14 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
             }
             finally
             {
+                if (deltaXRented != null)
+                {
+                    ArrayPool<float>.Shared.Return(deltaXRented);
+                }
+                if (deltaYRented != null)
+                {
+                    ArrayPool<float>.Shared.Return(deltaYRented);
+                }
                 simpleGlyph.Dispose();
             }
         }
