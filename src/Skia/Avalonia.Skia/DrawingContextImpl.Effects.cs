@@ -30,7 +30,7 @@ partial class DrawingContextImpl
         _intermediateLayerDepth--;
     }
 
-    SKImageFilter? CreateEffect(IEffect effect)
+    SKImageFilter? CreateEffect(IEffect effect, bool applyCurrentOpacity = true)
     {
         if (effect is IBlurEffect blur)
         {
@@ -44,7 +44,7 @@ partial class DrawingContextImpl
         {
             var sigma = drop.BlurRadius > 0 ? SkBlurRadiusToSigma(drop.BlurRadius) : 0;
             var alpha = drop.Color.A * drop.Opacity;
-            if (!_useOpacitySaveLayer)
+            if (applyCurrentOpacity && !_useOpacitySaveLayer)
                 alpha *= _currentOpacity;
             var color = new SKColor(drop.Color.R, drop.Color.G, drop.Color.B, (byte)Math.Max(0, Math.Min(255, alpha)));
 
@@ -68,23 +68,21 @@ partial class DrawingContextImpl
         return CreateRenderTarget(size, true, false);
     }
 
-    public void PushBackdropLayer(Rect bounds, IEffect effect)
+    public void DrawVolatileBackdropEffect(Rect bounds, IEffect effect)
     {
         CheckLease();
         // SaveLayerRec.Backdrop initialises the new layer with the current canvas contents (through any nested
-        // save-layers) filtered by `filter`. A null filter (identity, e.g. R=0 blur) yields an empty layer,
-        // which composites back as a no-op backdrop. SaveLayer consumes the filter synchronously, so the
-        // `using` may dispose it once the call returns (mirrors PushEffect's paint-filter lifetime).
+        // save-layers) filtered by `filter`; restoring right away composites it back. A null filter (identity,
+        // e.g. R=0 blur) yields an empty layer, i.e. a no-op.
+        // SaveLayer bounds are only a size hint: without the explicit clip, filter output that extends past
+        // them (e.g. a drop-shadow offset) is drawn outside, unlike CSS backdrop-filter, which clips the
+        // filtered backdrop to the element's border box. The layer is restored before the visual's content is
+        // drawn so that this clip doesn't affect children that overflow the bounds.
         using var filter = CreateEffect(effect);
+        var savedCount = Canvas.Save();
+        Canvas.ClipRect(bounds.ToSKRect());
         Canvas.SaveLayer(new SKCanvasSaveLayerRec { Bounds = bounds.ToSKRect(), Backdrop = filter });
-        _intermediateLayerDepth++;
-    }
-
-    public void PopBackdropLayer()
-    {
-        CheckLease();
-        RestoreCanvas();
-        _intermediateLayerDepth--;
+        Canvas.RestoreToCount(savedCount);
     }
 
     public void DrawRetainedBackdropEffect(IDrawingContextBackdropCacheImpl cache, IReadOnlyList<PixelRect> dirtyRects,
@@ -136,20 +134,27 @@ partial class DrawingContextImpl
         if (!(Transform * Matrix.CreateTranslation(-layerOrigin.X, -layerOrigin.Y)).TryInvert(out var localMatrix))
             return;
 
-        using var filter = CreateEffect(effect); // null filter -> identity blit
+        // The paint below already applies the current opacity.
+        using var filter = CreateEffect(effect, applyCurrentOpacity: false); // null filter -> identity blit
         using var shader = SKShader.CreateImage(
             image, SKShaderTileMode.Clamp, SKShaderTileMode.Clamp, localMatrix.ToSKMatrix());
 
         var paint = SKPaintCache.Shared.Get();
+        var savedCount = Canvas.Save();
         try
         {
+            // The filter output (e.g. a drop-shadow offset) may extend past destRect; keep it inside, matching
+            // the bounds of the volatile save-layer.
+            var skDestRect = destRect.ToSKRect();
+            Canvas.ClipRect(skDestRect);
             paint.Shader = shader;
             paint.ImageFilter = filter;
             paint.Color = new SKColor(255, 255, 255, (byte)(255 * _currentOpacity));
-            Canvas.DrawRect(destRect.ToSKRect(), paint);
+            Canvas.DrawRect(skDestRect, paint);
         }
         finally
         {
+            Canvas.RestoreToCount(savedCount);
             SKPaintCache.Shared.ReturnReset(paint);
         }
     }

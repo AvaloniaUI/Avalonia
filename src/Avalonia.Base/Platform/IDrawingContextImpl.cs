@@ -245,17 +245,10 @@ namespace Avalonia.Platform
         IDrawingContextBackdropCacheImpl CreateBackdropCache(PixelSize size);
 
         /// <summary>
-        /// Volatile backdrop: opens an intermediate layer over <paramref name="bounds"/> initialised with the
-        /// current canvas contents (through any nested layers) filtered by <paramref name="effect"/>. The
-        /// visual's own content and children draw on top; <see cref="PopBackdropLayer"/> composites it back.
-        /// Must be the outermost push for the visual and be paired with a matching <see cref="PopBackdropLayer"/>.
+        /// Volatile backdrop: draws the current canvas contents (through any nested layers) filtered by
+        /// <paramref name="effect"/> back onto the canvas, clipped to <paramref name="bounds"/>.
         /// </summary>
-        void PushBackdropLayer(Rect bounds, IEffect effect);
-
-        /// <summary>
-        /// Composites and pops the layer opened by <see cref="PushBackdropLayer"/>.
-        /// </summary>
-        void PopBackdropLayer();
+        void DrawVolatileBackdropEffect(Rect bounds, IEffect effect);
 
         /// <summary>
         /// Retained backdrop: refreshes <paramref name="cache"/> from the live target over

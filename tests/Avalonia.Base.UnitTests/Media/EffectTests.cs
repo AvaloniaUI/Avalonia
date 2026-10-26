@@ -73,11 +73,11 @@ public class BackdropEffectCacheModeTests
 {
     [Fact]
     public void Parse_Parses_Retained()
-        => Assert.IsType<RetainedBackdropEffectCacheMode>(BackdropEffectCacheMode.Parse("Retained"));
+        => Assert.IsType<RetainedBackdropEffectCache>(BackdropEffectCacheMode.Parse("Retained"));
 
     [Fact]
     public void Parse_Parses_Volatile()
-        => Assert.IsType<VolatileBackdropEffectCacheMode>(BackdropEffectCacheMode.Parse("Volatile"));
+        => Assert.IsType<VolatileBackdropEffectCache>(BackdropEffectCacheMode.Parse("Volatile"));
 
     [Fact]
     public void Parse_Default_Returns_Null()

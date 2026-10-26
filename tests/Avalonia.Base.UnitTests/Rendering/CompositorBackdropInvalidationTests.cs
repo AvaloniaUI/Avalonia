@@ -17,11 +17,11 @@ public class CompositorBackdropInvalidationTests : CompositorTestsBase
     private static CompositionBitmapCache MakeCache(Compositor compositor) =>
         new(compositor, new ServerCompositionBitmapCache(compositor.Server));
 
-    private static CompositionRetainedBackdropEffectCacheMode MakeRetainedBackdrop(Compositor compositor) =>
-        new(compositor, new ServerCompositionRetainedBackdropEffectCacheMode(compositor.Server));
+    private static CompositionRetainedBackdropEffectCache MakeRetainedBackdrop(Compositor compositor) =>
+        new(compositor, new ServerCompositionRetainedBackdropEffectCache(compositor.Server));
 
-    private static CompositionVolatileBackdropEffectCacheMode MakeVolatileBackdrop(Compositor compositor) =>
-        new(compositor, new ServerCompositionVolatileBackdropEffectCacheMode(compositor.Server));
+    private static CompositionVolatileBackdropEffectCache MakeVolatileBackdrop(Compositor compositor) =>
+        new(compositor, new ServerCompositionVolatileBackdropEffectCache(compositor.Server));
 
     // 0 => Default (null), 1 => retained, 2 => volatile
     private static CompositionBackdropEffectCacheMode? MakeBackdropCache(Compositor compositor, int selector) => selector switch
@@ -221,7 +221,7 @@ public class CompositorBackdropInvalidationTests : CompositorTestsBase
     }
 
     [Fact]
-    public void DropShadow_Backdrop_Registers_Nothing()
+    public void DropShadow_Backdrop_Registers()
     {
         using var s = new CompositorTestServices();
         var c = s.Compositor;
@@ -230,14 +230,13 @@ public class CompositorBackdropInvalidationTests : CompositorTestsBase
         leaf.Size = new Vector(50, 50);
         root.Children.Add(leaf);
         ElementComposition.SetElementChildVisual(s.TopLevel, root);
-        leaf.BackdropEffect = new ImmutableDropShadowEffect(0, 0, 10, Colors.Black, 1);
+        leaf.BackdropEffect = new ImmutableDropShadowEffect(4, 4, 10, Colors.Black, 1);
         s.RunJobs();
         s.RunJobs();
 
-        // A drop-shadow is not a meaningful backdrop: no registration, no counter contribution, no draw.
-        Assert.Null(leaf.Server.BackdropState);
-        Assert.DoesNotContain(leaf.Server, s.Renderer.CompositionTarget.Server.BackdropVisuals);
-        Assert.Equal(0, root.Server._backdropsInSubTree);
+        Assert.NotNull(leaf.Server.BackdropState);
+        Assert.Contains(leaf.Server, s.Renderer.CompositionTarget.Server.BackdropVisuals);
+        Assert.Equal(1, root.Server._backdropsInSubTree);
     }
 
     [Fact]
@@ -278,7 +277,7 @@ public class CompositorBackdropInvalidationTests : CompositorTestsBase
         s.RunJobs();
 
         var record = backdrop.Server.BackdropState!;
-        Assert.Equal(BackdropEffectBounds.Layout, backdrop.BackdropEffectBounds);
+        Assert.Equal(BackdropEffectBoundsSource.Layout, backdrop.BackdropEffectBoundsSource);
         Assert.Equal(new LtrbPixelRect(0, 0, 40, 50), record.Aabb!.Value);
 
         // A descendant-only bounds change does not resize or fully re-ingest a layout-bounds backdrop.
@@ -298,7 +297,7 @@ public class CompositorBackdropInvalidationTests : CompositorTestsBase
         var backdrop = Panel(c);
         backdrop.Size = new Vector(40, 50);
         backdrop.BackdropEffect = Blur(5);
-        backdrop.BackdropEffectBounds = BackdropEffectBounds.Subtree;
+        backdrop.BackdropEffectBoundsSource = BackdropEffectBoundsSource.Subtree;
 
         var child = c.CreateSolidColorVisual();
         child.Size = new Vector(100, 120);
@@ -331,7 +330,7 @@ public class CompositorBackdropInvalidationTests : CompositorTestsBase
         Assert.Equal(new LtrbPixelRect(0, 0, 40, 50), record.Aabb!.Value);
         record.RetainedInputDirtyArea = null;
 
-        backdrop.BackdropEffectBounds = BackdropEffectBounds.Subtree;
+        backdrop.BackdropEffectBoundsSource = BackdropEffectBoundsSource.Subtree;
         s.RunJobs();
 
         Assert.Equal(new LtrbPixelRect(60, 70, 80, 100), record.Aabb!.Value);
@@ -494,7 +493,7 @@ public class CompositorBackdropInvalidationTests : CompositorTestsBase
     {
         var v = Panel(c);
         v.BackdropEffect = Blur(5);
-        v.BackdropEffectBounds = BackdropEffectBounds.Subtree;
+        v.BackdropEffectBoundsSource = BackdropEffectBoundsSource.Subtree;
         return v;
     }
 

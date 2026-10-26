@@ -57,7 +57,6 @@ internal class CompositorPools
     }
 
     public StackPool<ServerCompositionVisual.TreeWalkerFrame> TreeWalkerFrameStackPool { get; } = new();
-    public StackPool<ServerCompositionVisual> VisualStackPool { get; } = new();
     public StackPool<Matrix> MatrixStackPool { get; } = new();
     public StackPool<LtrbRect> LtrbRectStackPool { get; } = new();
     public StackPool<double> DoubleStackPool { get; } = new();

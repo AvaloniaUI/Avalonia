@@ -30,17 +30,16 @@ namespace Avalonia.Skia.UnitTests
 
             Assert.False(ctx.SupportsBackdrop);
 
-            // Driving the backdrop layer primitives on a surface-less context must not throw (PDF / picture path).
+            // Driving the volatile backdrop primitive on a surface-less context must not throw (PDF / picture path).
             var ex = Record.Exception(() =>
             {
-                ctx.PushBackdropLayer(new Rect(0, 0, 16, 16), new ImmutableBlurEffect(4));
-                ctx.PopBackdropLayer();
+                ctx.DrawVolatileBackdropEffect(new Rect(0, 0, 16, 16), new ImmutableBlurEffect(4));
             });
             Assert.Null(ex);
         }
 
         [Fact]
-        public void PushBackdropLayer_With_Null_Filter_Preserves_Pattern()
+        public void DrawVolatileBackdropEffect_With_Null_Filter_Preserves_Pattern()
         {
             const int w = 32, h = 16;
             using var bitmap = CreateBitmap(w, h);
@@ -50,8 +49,7 @@ namespace Avalonia.Skia.UnitTests
             DrawSplit(surface, w, h); // red left, blue right
 
             // A zero-radius blur yields a null filter => an empty backdrop layer that composites back as a no-op.
-            ctx.PushBackdropLayer(new Rect(0, 0, w, h), new ImmutableBlurEffect(0));
-            ctx.PopBackdropLayer();
+            ctx.DrawVolatileBackdropEffect(new Rect(0, 0, w, h), new ImmutableBlurEffect(0));
             surface.Canvas.Flush();
 
             AssertColor(bitmap.GetPixel(w / 4, h / 2), 255, 0, 0);     // still red
@@ -59,7 +57,7 @@ namespace Avalonia.Skia.UnitTests
         }
 
         [Fact]
-        public void PushBackdropLayer_Blur_Blends_Across_Edge_And_Content_Draws_On_Top()
+        public void DrawVolatileBackdropEffect_Blur_Blends_Across_Edge_And_Content_Draws_On_Top()
         {
             const int w = 80, h = 16;
             using var bitmap = CreateBitmap(w, h);
@@ -68,11 +66,10 @@ namespace Avalonia.Skia.UnitTests
 
             DrawSplit(surface, w, h);
 
-            // Open a blur backdrop over the split, draw opaque content into the layer, then composite it back.
-            ctx.PushBackdropLayer(new Rect(0, 0, w, h), new ImmutableBlurEffect(8));
+            // Blur the backdrop over the split, then draw opaque content on top.
+            ctx.DrawVolatileBackdropEffect(new Rect(0, 0, w, h), new ImmutableBlurEffect(8));
             using (var green = new SKPaint { Color = SKColors.Green })
                 surface.Canvas.DrawRect(new SKRect(2, 2, 8, 8), green);
-            ctx.PopBackdropLayer();
             surface.Canvas.Flush();
 
             // The content sits on top of the blurred backdrop.
@@ -91,7 +88,7 @@ namespace Avalonia.Skia.UnitTests
         }
 
         [Fact]
-        public void PushBackdropLayer_Honors_Transform()
+        public void DrawVolatileBackdropEffect_Honors_Transform()
         {
             const int w = 32, h = 16;
             using var bitmap = CreateBitmap(w, h);
@@ -106,8 +103,7 @@ namespace Avalonia.Skia.UnitTests
             Assert.True(ctx.Transform.TryInvert(out var inverse));
             var destRect = new Rect(0, 0, w, h).TransformToAABB(inverse); // maps to the whole device surface
 
-            ctx.PushBackdropLayer(destRect, new ImmutableBlurEffect(8));
-            ctx.PopBackdropLayer();
+            ctx.DrawVolatileBackdropEffect(destRect, new ImmutableBlurEffect(8));
             surface.Canvas.Flush();
 
             // The blur landed on the right device region: mixed at the seam, dominant in each half.
@@ -198,6 +194,53 @@ namespace Avalonia.Skia.UnitTests
         }
 
         [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void DropShadow_Backdrop_Shadows_Translucent_Backdrop_Within_Bounds(bool retained)
+        {
+            const int size = 40;
+            using var bitmap = CreateBitmap(size, size);
+            using var surface = CreateSurface(bitmap);
+            using var ctx = CreateContext(surface);
+
+            // A red square on a transparent target; the backdrop covers (5,5)-(25,25), the shadow is offset by 8.
+            surface.Canvas.Clear(SKColors.Transparent);
+            using (var p = new SKPaint { Color = SKColors.Red })
+                surface.Canvas.DrawRect(new SKRect(10, 10, 20, 20), p);
+            surface.Canvas.Flush();
+
+            DrawBackdrop(ctx, retained, new ImmutableDropShadowEffect(8, 8, 0, Colors.Black, 1),
+                new PixelRect(5, 5, 20, 20));
+
+            AssertColor(bitmap.GetPixel(15, 15), 255, 0, 0); // the square stays on top of its shadow
+            var shadow = bitmap.GetPixel(23, 23);
+            Assert.True(shadow.Alpha == 255 && shadow.Red < 10, $"shadow={shadow}");
+            Assert.Equal(0, bitmap.GetPixel(27, 27).Alpha); // the shadow is clipped to the backdrop bounds
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void DropShadow_Backdrop_Is_Invisible_Over_Opaque_Backdrop(bool retained)
+        {
+            const int size = 40;
+            using var bitmap = CreateBitmap(size, size);
+            using var surface = CreateSurface(bitmap);
+            using var ctx = CreateContext(surface);
+
+            surface.Canvas.Clear(SKColors.White);
+            surface.Canvas.Flush();
+
+            DrawBackdrop(ctx, retained, new ImmutableDropShadowEffect(8, 8, 2, Colors.Black, 1),
+                new PixelRect(5, 5, 20, 20));
+
+            // Opaque backdrop pixels cover their own shadow, and the bounds' edges cast none outside.
+            for (var y = 0; y < size; y++)
+            for (var x = 0; x < size; x++)
+                AssertColor(bitmap.GetPixel(x, y), 255, 255, 255);
+        }
+
+        [Theory]
         [InlineData(10.0, 11.0)] // Ceiling(10)+1
         [InlineData(5.5, 7.0)]   // Ceiling(5.5)+1
         [InlineData(0.0, 0.0)]   // radius <= 0 -> 0
@@ -207,14 +250,23 @@ namespace Avalonia.Skia.UnitTests
         }
 
         [Fact]
-        public void IsSupportedBackdropEffect_Excludes_DropShadow_And_Null()
+        public void GetBackdropSamplingRadius_Of_Null_Is_Zero()
         {
-            // A drop-shadow is not a meaningful backdrop and null is no effect: both are unsupported.
-            Assert.False(new ImmutableDropShadowEffect(0, 0, 10, Colors.Black, 1).IsSupportedBackdropEffect());
-            Assert.False(((IEffect?)null).IsSupportedBackdropEffect());
-            Assert.True(new ImmutableBlurEffect(5).IsSupportedBackdropEffect());
-            // A null effect samples nothing.
             Assert.Equal(0d, ((IEffect?)null).GetBackdropSamplingRadius());
+        }
+
+        private static void DrawBackdrop(DrawingContextImpl ctx, bool retained, IEffect effect, PixelRect bounds)
+        {
+            var destRect = bounds.ToRect(1);
+            if (retained)
+            {
+                using var cache = ctx.CreateBackdropCache(bounds.Size);
+                ctx.DrawRetainedBackdropEffect(cache, new[] { bounds }, effect, destRect);
+            }
+            else
+                ctx.DrawVolatileBackdropEffect(destRect, effect);
+
+            ctx.Canvas.Flush();
         }
 
         private static SKBitmap CreateBitmap(int w, int h) =>

@@ -19,7 +19,7 @@ partial class ServerCompositionVisual
           | CompositionVisualChangedFields.RenderOptions
           | CompositionVisualChangedFields.Effect
           | CompositionVisualChangedFields.BackdropEffect
-          | CompositionVisualChangedFields.BackdropEffectBounds;
+          | CompositionVisualChangedFields.BackdropEffectBoundsSource;
 
     private const CompositionVisualChangedFields OwnBoundsUpdateFieldsMask =
         CompositionVisualChangedFields.Clip

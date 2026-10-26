@@ -10,7 +10,6 @@ using Avalonia.Rendering.Composition.Server;
 using Avalonia.Skia.Helpers;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
-using SixLabors.ImageSharp.PixelFormats;
 using SkiaSharp;
 using Xunit;
 
@@ -33,8 +32,17 @@ public class BackdropCompositionTests : TestBase
     private static CompositionBitmapCache MakeCache(Compositor c) =>
         new(c, new ServerCompositionBitmapCache(c.Server));
 
-    private static CompositionVolatileBackdropEffectCacheMode MakeVolatileBackdrop(Compositor c) =>
-        new(c, new ServerCompositionVolatileBackdropEffectCacheMode(c.Server));
+    private static CompositionVolatileBackdropEffectCache MakeVolatileBackdrop(Compositor c) =>
+        new(c, new ServerCompositionVolatileBackdropEffectCache(c.Server));
+
+    private static CompositionRetainedBackdropEffectCache MakeRetainedBackdrop(Compositor c) =>
+        new(c, new ServerCompositionRetainedBackdropEffectCache(c.Server));
+
+    private static CompositionBackdropEffectCacheMode MakeBackdropCache(Compositor c, bool retained) =>
+        retained ? MakeRetainedBackdrop(c) : MakeVolatileBackdrop(c);
+
+    private static ImmutableDropShadowEffect DropShadow(double offset, double blur) =>
+        new(offset, offset, blur, Colors.Black, 1);
 
     private sealed class FuncFramebufferSurface : IFramebufferPlatformSurface
     {
@@ -123,13 +131,17 @@ public class BackdropCompositionTests : TestBase
     // reference, so a real mismatch blows well past it.
     private const double AllowedError = 0.022;
 
-    private static SixLabors.ImageSharp.Image<Rgba32> ToImage(SKBitmap bmp) =>
-        SixLabors.ImageSharp.Image.LoadPixelData<Rgba32>(bmp.Bytes, bmp.Width, bmp.Height);
+    private static SKBitmap ToUnpremulRgba(SKBitmap bmp)
+    {
+        var converted = new SKBitmap(new SKImageInfo(bmp.Width, bmp.Height, SKColorType.Rgba8888, SKAlphaType.Unpremul));
+        bmp.PeekPixels().ReadPixels(converted.Info, converted.GetPixels(), converted.RowBytes);
+        return converted;
+    }
 
     private static void AssertSimilar(SKBitmap actual, SKBitmap reference)
     {
-        using var a = ToImage(actual);
-        using var b = ToImage(reference);
+        using var a = ToUnpremulRgba(actual);
+        using var b = ToUnpremulRgba(reference);
         var error = TestRenderHelper.CompareImages(a, b);
         Assert.True(error <= AllowedError, $"Frame differs from full-redraw reference: error {error} > {AllowedError}");
     }
@@ -468,7 +480,7 @@ public class BackdropCompositionTests : TestBase
         var container = h.Compositor.CreateContainerVisual();
         container.ClipToBounds = false;
         container.BackdropEffect = Blur(8);
-        container.BackdropEffectBounds = BackdropEffectBounds.Subtree;
+        container.BackdropEffectBoundsSource = BackdropEffectBoundsSource.Subtree;
         container.Offset = new Vector3D(40, 40, 0);
         container.Children.Add(h.Rect(Colors.Transparent, 0, 0, 120, 120));
         h.Root.Children.Add(container);
@@ -476,7 +488,7 @@ public class BackdropCompositionTests : TestBase
         // A sibling container with the same backdrop but no children: null subtree bounds => no AABB, no draw.
         var empty = h.Compositor.CreateContainerVisual();
         empty.BackdropEffect = Blur(8);
-        empty.BackdropEffectBounds = BackdropEffectBounds.Subtree;
+        empty.BackdropEffectBoundsSource = BackdropEffectBoundsSource.Subtree;
         h.Root.Children.Add(empty);
 
         h.Frame();
@@ -579,6 +591,118 @@ public class BackdropCompositionTests : TestBase
         AssertSimilar(h.Fb, reference.Fb);
     }
 
+    // A transparent backdrop "card" over a red square on a transparent target; the shadow is offset by 20.
+    private static CompositionSolidColorVisual BuildDropShadowScene(Harness h, bool retained, double squareY)
+    {
+        var square = h.Rect(Colors.Red, 70, squareY, 30, 30);
+        var backdrop = h.Rect(Colors.Transparent, 30, 30, 80, 80);
+        backdrop.ClipToBounds = false; // like a control: only the backdrop's own clip may contain the shadow
+        backdrop.BackdropEffect = DropShadow(20, 0);
+        backdrop.BackdropEffectCache = MakeBackdropCache(h.Compositor, retained);
+        h.Root.Children.Add(square);
+        h.Root.Children.Add(backdrop);
+        return square;
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void DropShadow_Backdrop_Shadows_Translucent_Backdrop_Clipped_To_Bounds(bool retained)
+    {
+        // Matches CSS backdrop-filter: drop-shadow(): the shadow shows only where the backdrop is transparent
+        // and is clipped to the backdrop's bounds (30..110).
+        using var h = new Harness(200, 200);
+        BuildDropShadowScene(h, retained, squareY: 70);
+        h.Frame();
+        h.Frame();
+
+        var square = h.Px(80, 80);
+        Assert.True(square.Red > 250 && square.Green < 5, $"square={square}");
+        var shadow = h.Px(105, 105); // square shadow spans 90..120
+        Assert.True(shadow.Alpha == 255 && shadow.Red < 5, $"shadow={shadow}");
+        Assert.False(IsPainted(h.Px(115, 115)), "shadow drawn outside the backdrop bounds");
+        Assert.False(IsPainted(h.Px(60, 60)), "shadow drawn where the backdrop has nothing to shadow");
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void DropShadow_Backdrop_Over_Opaque_Content_Equals_No_Backdrop(bool retained)
+    {
+        // Opaque backdrop pixels cover their own shadow, and the bounds' edges must not cast one outside.
+        void Build(Harness h, bool withBackdrop)
+        {
+            h.Root.Children.Add(h.Rect(Colors.White, 0, 0, 200, 200));
+            h.Root.Children.Add(h.Rect(Colors.Blue, 0, 60, 200, 30));
+            var backdrop = h.Rect(Colors.Transparent, 40, 40, 120, 120);
+            backdrop.ClipToBounds = false;
+            if (withBackdrop)
+            {
+                backdrop.BackdropEffect = DropShadow(10, 4);
+                backdrop.BackdropEffectCache = MakeBackdropCache(h.Compositor, retained);
+            }
+
+            h.Root.Children.Add(backdrop);
+        }
+
+        using var reference = new Harness(200, 200);
+        Build(reference, false);
+        reference.Frame();
+        reference.Frame();
+
+        using var h = new Harness(200, 200);
+        Build(h, true);
+        h.Frame();
+        h.Frame();
+
+        AssertSimilar(h.Fb, reference.Fb);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void DropShadow_Backdrop_Behind_Change_Equals_Full_Redraw(bool retained)
+    {
+        // The shadow samples its input at an offset, so the backdrop's dirty-rect expansion must cover it.
+        using var reference = new Harness(200, 200);
+        BuildDropShadowScene(reference, retained, squareY: 40);
+        reference.Retained(false);
+        reference.Frame();
+        reference.Frame();
+
+        using var h = new Harness(200, 200);
+        var square = BuildDropShadowScene(h, retained, squareY: 70);
+        h.Retained(false);
+        h.Frame();
+        h.Frame();
+
+        h.Retained(true);
+        square.Offset = new Vector3D(70, 40, 0);
+        h.Frame();
+
+        AssertSimilar(h.Fb, reference.Fb);
+    }
+
+    [Fact]
+    public void Volatile_DropShadow_Backdrop_Does_Not_Clip_Overflowing_Children()
+    {
+        // The backdrop is clipped to the layout bounds (30..80); a child overflowing them must still render.
+        using var h = new Harness(200, 200);
+        var host = h.Compositor.CreateContainerVisual();
+        host.Offset = new Vector3D(30, 30, 0);
+        host.Size = new Vector(50, 50);
+        host.ClipToBounds = false;
+        host.BackdropEffect = DropShadow(10, 0);
+        host.BackdropEffectCache = MakeVolatileBackdrop(h.Compositor);
+        host.Children.Add(h.Rect(Colors.Green, 60, 60, 30, 30));
+        h.Root.Children.Add(host);
+        h.Frame();
+        h.Frame();
+
+        var child = h.Px(105, 105);
+        Assert.True(child.Green > 100 && child.Alpha == 255, $"child={child}");
+    }
+
     [Fact]
     public void Public_BackdropEffect_On_A_Control_Renders()
     {
@@ -610,7 +734,7 @@ public class BackdropCompositionTests : TestBase
                 Color = Colors.Black
             }),
             BackdropEffect = new BlurEffect { Radius = 10 },
-            BackdropEffectCache = new RetainedBackdropEffectCacheMode()
+            BackdropEffectCache = new RetainedBackdropEffectCache()
         };
         var content = new Panel
         {

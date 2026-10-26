@@ -19,9 +19,6 @@ partial class ServerCompositionVisual
         private double _opacity;
         private bool _fullSkip;
         private bool _usedCache;
-        // Visuals with an open volatile backdrop save-layer, innermost on top. A layer is pushed as the
-        // outermost op in PreSubgraph and popped in the matching PostSubgraph (children draw in between).
-        private Stack<ServerCompositionVisual>? _backdropLayerStack;
         public int RenderedVisuals;
         public int VisitedVisuals;
         private ServerVisualRenderContext _publicContext;
@@ -181,9 +178,8 @@ partial class ServerCompositionVisual
         private static LtrbPixelRect ToSurfacePixels(LtrbRect hostRect, DirtyRectSpaceMapping mapping) =>
             LtrbPixelRect.FromRectUnscaled(mapping.IsIdentity ? hostRect : mapping.HostToTracker(hostRect));
 
-        // Draws the backdrop for `visual` (which has a BackdropEffect) at the current draw site. Volatile opens
-        // a native backdrop-filter save-layer here (popped in PostSubgraph); retained refreshes and draws its
-        // persistent cache under the visual's own content and children.
+        // Draws the backdrop for `visual` (which has a BackdropEffect) at the current draw site, under the visual's
+        // own content and children. Volatile filters the live canvas; retained refreshes and draws its persistent cache.
         private void DrawBackdrop(ServerCompositionVisual visual)
         {
             var record = visual.BackdropState;
@@ -237,11 +233,9 @@ partial class ServerCompositionVisual
             }
             else
             {
-                // Volatile: a native backdrop-filter save-layer captures the current canvas (through any nested
-                // intermediate layers) and filters it — correct even under an ancestor Effect/OpacityMask. Push
-                // it as the outermost op for the visual; PostSubgraph pops it after content and children.
-                backdropCanvas.PushBackdropLayer(destRect, visual.BackdropEffect!);
-                (_backdropLayerStack ??= _pools.VisualStackPool.Rent()).Push(visual);
+                // Volatile: a native backdrop filter captures the current canvas (through any nested intermediate
+                // layers) and filters it, so it's correct even under an ancestor Effect/OpacityMask.
+                backdropCanvas.DrawVolatileBackdropEffect(destRect, visual.BackdropEffect!);
             }
         }
 
@@ -276,15 +270,6 @@ partial class ServerCompositionVisual
             // later sibling and causes its effect/mask/options pushes to be left unpopped.
             _usedCache = false;
 
-            // Pop the volatile backdrop layer opened in PreSubgraph. It wraps this visual's content, children,
-            // effect, mask and cache, so it pops here — after those, before the visual's own clips/transform.
-            // Runs regardless of _usedCache (the push happens before the cache draw).
-            if (_backdropLayerStack is { Count: > 0 } backdropLayers && ReferenceEquals(backdropLayers.Peek(), visual))
-            {
-                backdropLayers.Pop();
-                ((IDrawingContextImplWithBackdropSupport)_canvas).PopBackdropLayer();
-            }
-
             // If we are rendering to bitmap cache, PreSubgraph skipped those for the root visual
             if (!bitmapCacheRoot)
             {
@@ -318,8 +303,6 @@ partial class ServerCompositionVisual
         {
             _walkContext.Dispose();
             _pools.DoubleStackPool.Return(ref _opacityStack);
-            if (_backdropLayerStack != null)
-                _pools.VisualStackPool.Return(ref _backdropLayerStack);
             AdornerHelper_Dispose();
         }
     }

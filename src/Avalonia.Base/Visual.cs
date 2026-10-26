@@ -89,10 +89,10 @@ namespace Avalonia
             AvaloniaProperty.Register<Visual, IEffect?>(nameof(BackdropEffect));
 
         /// <summary>
-        /// Defines the <see cref="BackdropEffectBounds"/> property.
+        /// Defines the <see cref="BackdropEffectBoundsSource"/> property.
         /// </summary>
-        public static readonly StyledProperty<BackdropEffectBounds> BackdropEffectBoundsProperty =
-            AvaloniaProperty.Register<Visual, BackdropEffectBounds>(nameof(BackdropEffectBounds));
+        public static readonly StyledProperty<BackdropEffectBoundsSource> BackdropEffectBoundsSourceProperty =
+            AvaloniaProperty.Register<Visual, BackdropEffectBoundsSource>(nameof(BackdropEffectBoundsSource));
 
         /// <summary>
         /// Defines the <see cref="BackdropEffectCache"/> property.
@@ -165,7 +165,7 @@ namespace Avalonia
                 OpacityMaskProperty,
                 EffectProperty,
                 BackdropEffectProperty,
-                BackdropEffectBoundsProperty,
+                BackdropEffectBoundsSourceProperty,
                 BackdropEffectCacheProperty,
                 HasMirrorTransformProperty);
             RenderTransformProperty.Changed.Subscribe(RenderTransformChanged);
@@ -315,10 +315,10 @@ namespace Avalonia
         /// <summary>
         /// Gets or sets the bounds used when applying the backdrop effect.
         /// </summary>
-        public BackdropEffectBounds BackdropEffectBounds
+        public BackdropEffectBoundsSource BackdropEffectBoundsSource
         {
-            get => GetValue(BackdropEffectBoundsProperty);
-            set => SetValue(BackdropEffectBoundsProperty, value);
+            get => GetValue(BackdropEffectBoundsSourceProperty);
+            set => SetValue(BackdropEffectBoundsSourceProperty, value);
         }
 
         /// <summary>

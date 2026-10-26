@@ -15,11 +15,11 @@ namespace Avalonia.Base.UnitTests
     public class VisualTests
     {
         [Fact]
-        public void BackdropEffectBounds_Defaults_To_Layout()
+        public void BackdropEffectBoundsSource_Defaults_To_Layout()
         {
             var target = new Visual();
 
-            Assert.Equal(BackdropEffectBounds.Layout, target.BackdropEffectBounds);
+            Assert.Equal(BackdropEffectBoundsSource.Layout, target.BackdropEffectBoundsSource);
         }
 
         [Fact]

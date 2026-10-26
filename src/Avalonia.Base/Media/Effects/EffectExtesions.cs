@@ -41,13 +41,6 @@ public static class EffectExtensions
     }
 
     /// <summary>
-    /// Whether <paramref name="effect"/> can act as a backdrop: any effect except a drop-shadow (which is not
-    /// a meaningful backdrop). A null effect is not a backdrop.
-    /// </summary>
-    internal static bool IsSupportedBackdropEffect(this IEffect? effect) =>
-        effect is { } and not IDropShadowEffect;
-
-    /// <summary>
     /// Converts a effect to an immutable effect.
     /// </summary>
     /// <param name="effect">The effect.</param>

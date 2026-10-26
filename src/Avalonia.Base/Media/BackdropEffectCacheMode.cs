@@ -21,8 +21,8 @@ public abstract class BackdropEffectCacheMode
     public static BackdropEffectCacheMode? Parse(string s) => s switch
     {
         "Default" => null,
-        "Retained" => new RetainedBackdropEffectCacheMode(),
-        "Volatile" => new VolatileBackdropEffectCacheMode(),
+        "Retained" => new RetainedBackdropEffectCache(),
+        "Volatile" => new VolatileBackdropEffectCache(),
         _ => throw new ArgumentException("Unknown BackdropEffectCacheMode: " + s)
     };
 
@@ -33,16 +33,16 @@ public abstract class BackdropEffectCacheMode
 /// <summary>
 /// A backdrop effect cache mode that retains the sampled backdrop in a texture.
 /// </summary>
-public sealed class RetainedBackdropEffectCacheMode : BackdropEffectCacheMode
+public sealed class RetainedBackdropEffectCache : BackdropEffectCacheMode
 {
-    private CompositionRetainedBackdropEffectCacheMode? _current;
+    private CompositionRetainedBackdropEffectCache? _current;
 
     // We currently only allow visual to be attached to one compositor at a time, so keep it simple for now
     internal override CompositionBackdropEffectCacheMode GetForCompositor(Compositor c)
     {
         if (_current?.Compositor != c)
-            _current = new CompositionRetainedBackdropEffectCacheMode(c,
-                new ServerCompositionRetainedBackdropEffectCacheMode(c.Server));
+            _current = new CompositionRetainedBackdropEffectCache(c,
+                new ServerCompositionRetainedBackdropEffectCache(c.Server));
 
         return _current;
     }
@@ -51,16 +51,16 @@ public sealed class RetainedBackdropEffectCacheMode : BackdropEffectCacheMode
 /// <summary>
 /// A backdrop effect cache mode that resamples the backdrop from the live target every frame.
 /// </summary>
-public sealed class VolatileBackdropEffectCacheMode : BackdropEffectCacheMode
+public sealed class VolatileBackdropEffectCache : BackdropEffectCacheMode
 {
-    private CompositionVolatileBackdropEffectCacheMode? _current;
+    private CompositionVolatileBackdropEffectCache? _current;
 
     // We currently only allow visual to be attached to one compositor at a time, so keep it simple for now
     internal override CompositionBackdropEffectCacheMode GetForCompositor(Compositor c)
     {
         if (_current?.Compositor != c)
-            _current = new CompositionVolatileBackdropEffectCacheMode(c,
-                new ServerCompositionVolatileBackdropEffectCacheMode(c.Server));
+            _current = new CompositionVolatileBackdropEffectCache(c,
+                new ServerCompositionVolatileBackdropEffectCache(c.Server));
 
         return _current;
     }

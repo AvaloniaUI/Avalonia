@@ -6,7 +6,7 @@ using Avalonia.Platform;
 namespace Avalonia.Rendering.Composition.Server;
 
 /// <summary>
-/// Per-backdrop state for a <see cref="ServerCompositionVisual"/> with a supported backdrop effect,
+/// Per-backdrop state for a <see cref="ServerCompositionVisual"/> with a backdrop effect,
 /// recomputed once per frame before the update walk. Holds the pixel-aligned AABB in host space, the layer
 /// host it belongs to, the composed visual-&gt;host transform used to build the AABB and the retained/volatile
 /// classification.
@@ -128,7 +128,7 @@ partial class ServerCompositionVisual
 
     partial void OnBackdropEffectChanged()
     {
-        var has = BackdropEffect.IsSupportedBackdropEffect();
+        var has = BackdropEffect != null;
         if (has != _ownBackdropCounted)
         {
             PropagateBackdropCountDelta(Parent, has ? 1 : -1);
@@ -141,7 +141,7 @@ partial class ServerCompositionVisual
     private LtrbPixelRect? ComputeBackdropAabb(Matrix parentToHostTransform)
     {
         LtrbRect? hostRect;
-        if (BackdropEffectBounds == BackdropEffectBounds.Layout)
+        if (BackdropEffectBoundsSource == BackdropEffectBoundsSource.Layout)
         {
             if (!Visible || Size.X <= 0 || Size.Y <= 0)
                 return null;
@@ -177,7 +177,7 @@ partial class ServerCompositionVisual
     // Idempotent, order-independent (Root-before-Effect and Effect-before-Root both converge).
     internal void UpdateBackdropRegistration()
     {
-        var shouldRegister = BackdropEffect.IsSupportedBackdropEffect() && Root != null;
+        var shouldRegister = BackdropEffect != null && Root != null;
         if (shouldRegister)
         {
             if (BackdropState == null)
@@ -217,8 +217,8 @@ partial class ServerCompositionVisual
         var radius = BackdropEffect.GetBackdropSamplingRadius();
         record.IsRetained = BackdropEffectCache switch
         {
-            ServerCompositionRetainedBackdropEffectCacheMode => true,
-            ServerCompositionVolatileBackdropEffectCacheMode => false,
+            ServerCompositionRetainedBackdropEffectCache => true,
+            ServerCompositionVolatileBackdropEffectCache => false,
             _ => radius > 0
         };
 
