@@ -9,7 +9,8 @@ namespace Avalonia.Automation.Peers
         {
             Owner.PropertyChanged += (a, e) =>
             {
-                if (e.Property == TextBlock.TextProperty)
+                // The text is only the name when no explicit name is set.
+                if (e.Property == TextBlock.TextProperty && string.IsNullOrWhiteSpace(base.GetNameCore()))
                 {
                     RaisePropertyChangedEvent(
                         AutomationElementIdentifiers.NameProperty,
@@ -26,7 +27,11 @@ namespace Avalonia.Automation.Peers
             return AutomationControlType.Text;
         }
 
-        protected override string? GetNameCore() => Owner.Inlines?.Text ?? Owner.Text;
+        protected override string? GetNameCore()
+        {
+            var result = base.GetNameCore();
+            return string.IsNullOrWhiteSpace(result) ? Owner.Inlines?.Text ?? Owner.Text : result;
+        }
 
         protected override bool IsControlElementCore()
         {
