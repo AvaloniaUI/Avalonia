@@ -610,8 +610,17 @@ namespace Avalonia
 
             if (change.Property == TemplatedParentProperty && _stylesApplied)
             {
-                InvalidateStyles(recurse: false);
-                ApplyStyling();
+                var values = GetValueStore();
+                values.BeginStyling();
+                try
+                {
+                    InvalidateStyles(recurse: false);
+                    ApplyStyling();
+                }
+                finally
+                {
+                    values.EndStyling();
+                }
             }
             else if (change.Property == ThemeProperty)
             {
