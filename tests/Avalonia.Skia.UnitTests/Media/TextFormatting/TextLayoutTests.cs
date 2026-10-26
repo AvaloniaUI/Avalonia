@@ -666,6 +666,86 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        private static double GetLineHeight()
+        {
+            using var layout = new TextLayout("0", Typeface.Default, 12, Brushes.Black);
+
+            return layout.Height;
+        }
+
+        private const string HardBreakText = "0123456789\r\n0123456789\r\n0123456789\r\n0123456789";
+
+        private const string WrappedText = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
+
+        [Fact]
+        public void Should_Add_Ellipsis_When_MaxLines_Cuts_At_Hard_Break()
+        {
+            using (Start())
+            {
+                var layout = new TextLayout(
+                    HardBreakText,
+                    Typeface.Default,
+                    12,
+                    Brushes.Black,
+                    textTrimming: TextTrimming.CharacterEllipsis,
+                    maxWidth: 180,
+                    maxLines: 2);
+
+                Assert.Equal(2, layout.TextLines.Count);
+                Assert.True(layout.TextLines[1].HasCollapsed);
+
+                layout.Dispose();
+            }
+        }
+
+        [Fact]
+        public void Should_Not_Add_Ellipsis_When_MaxHeight_Cuts_At_Hard_Break()
+        {
+            using (Start())
+            {
+                var lineHeight = GetLineHeight();
+
+                var layout = new TextLayout(
+                    HardBreakText,
+                    Typeface.Default,
+                    12,
+                    Brushes.Black,
+                    textTrimming: TextTrimming.CharacterEllipsis,
+                    maxWidth: 180,
+                    maxHeight: lineHeight * 2.2);
+
+                Assert.Equal(2, layout.TextLines.Count);
+                Assert.All(layout.TextLines, line => Assert.False(line.HasCollapsed));
+
+                layout.Dispose();
+            }
+        }
+
+        [Fact]
+        public void Should_Add_Ellipsis_When_MaxHeight_Cuts_Wrapped_Line()
+        {
+            using (Start())
+            {
+                var lineHeight = GetLineHeight();
+
+                var layout = new TextLayout(
+                    WrappedText,
+                    Typeface.Default,
+                    12,
+                    Brushes.Black,
+                    textWrapping: TextWrapping.Wrap,
+                    textTrimming: TextTrimming.CharacterEllipsis,
+                    maxWidth: 180,
+                    maxHeight: lineHeight * 2.2);
+
+                Assert.Equal(2, layout.TextLines.Count);
+                Assert.False(layout.TextLines[0].HasCollapsed);
+                Assert.True(layout.TextLines[1].HasCollapsed);
+
+                layout.Dispose();
+            }
+        }
+
         [Fact]
         public void Should_Produce_Fixed_Height_Lines()
         {
@@ -801,6 +881,111 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal(expected.Left, start);
                 Assert.Equal(expected.Right, end);
+            }
+        }
+
+        [Fact]
+        public void Should_HitTestTextRange_Split_LeftToRight_Runs_In_RightToLeft()
+        {
+            const string text = "אבגד abc";
+
+            using (Start())
+            {
+                var foreground = new SolidColorBrush(Colors.Red).ToImmutable();
+
+                var spans = new[]
+                {
+                    new ValueSpan<TextRunProperties>(6, 2,
+                        new GenericTextRunProperties(Typeface.Default, 12, foregroundBrush: foreground))
+                };
+
+                var layout = new TextLayout(
+                    text,
+                    Typeface.Default,
+                    12.0f,
+                    Brushes.Black.ToImmutable(),
+                    flowDirection: FlowDirection.RightToLeft,
+                    textStyleOverrides: spans);
+
+                var abc = layout.HitTestTextRange(5, 3).Single();
+                var a = layout.HitTestTextRange(5, 1).Single();
+                var c = layout.HitTestTextRange(7, 1).Single();
+
+                Assert.Equal(abc.Left, a.Left, 5);
+                Assert.Equal(abc.Right, c.Right, 5);
+            }
+        }
+
+        // Hebrew and Latin letters only: a space in its own run falls back to a different font, which changes
+        // the line width independent of run order.
+        public static IEnumerable<object[]> SplitRunTexts()
+        {
+            var texts = new[]
+            {
+                "אבגדabc",
+                "abcאבגד",
+                "אבגדabcdefאבגד",
+                "abcאבגדdefghi",
+                "אבגדabc123def",
+                "abcאבגדdefאבגghijkl",
+                "אבגדabcאבגdefghiאבגjklmno",
+                "אבabcגדdefהוghiזח",
+            };
+
+            foreach (var text in texts)
+            {
+                foreach (var flowDirection in new[] { FlowDirection.LeftToRight, FlowDirection.RightToLeft })
+                {
+                    foreach (var step in new[] { 1, 2, 3, 4 })
+                    {
+                        yield return [text, flowDirection, step];
+                    }
+                }
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(SplitRunTexts))]
+        public void Should_Not_Change_Geometry_When_Style_Spans_Split_Runs(string text, FlowDirection flowDirection, int step)
+        {
+            using (Start())
+            {
+                var foreground = new SolidColorBrush(Colors.Red).ToImmutable();
+                var spans = new List<ValueSpan<TextRunProperties>>();
+
+                // Every other chunk gets a different foreground, which splits the shaped runs without changing metrics.
+                for (var i = step; i < text.Length; i += 2 * step)
+                {
+                    spans.Add(new ValueSpan<TextRunProperties>(i, Math.Min(step, text.Length - i),
+                        new GenericTextRunProperties(Typeface.Default, 12, foregroundBrush: foreground)));
+                }
+
+                var plain = new TextLayout(text, Typeface.Default, 12.0f, Brushes.Black.ToImmutable(),
+                    flowDirection: flowDirection);
+
+                var split = new TextLayout(text, Typeface.Default, 12.0f, Brushes.Black.ToImmutable(),
+                    flowDirection: flowDirection, textStyleOverrides: spans.ToArray());
+
+                Assert.Equal(plain.Width, split.Width, 5);
+
+                for (var i = 0; i < text.Length; i++)
+                {
+                    var expected = plain.HitTestTextRange(i, 1).Single();
+                    var actual = split.HitTestTextRange(i, 1).Single();
+
+                    Assert.Equal(expected.Left, actual.Left, 5);
+                    Assert.Equal(expected.Right, actual.Right, 5);
+                }
+
+                for (var x = 0.5; x < plain.Width; x += 2.5)
+                {
+                    var expected = plain.HitTestPoint(new Point(x, 5));
+                    var actual = split.HitTestPoint(new Point(x, 5));
+
+                    Assert.Equal(expected.TextPosition, actual.TextPosition);
+                    Assert.Equal(expected.IsInside, actual.IsInside);
+                    Assert.Equal(expected.IsTrailing, actual.IsTrailing);
+                }
             }
         }
 
@@ -966,6 +1151,153 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     Assert.Equal(currentX, distance, 2);
 
                     currentX += advance;
+                }
+            }
+        }
+
+        [InlineData("First line\nSecond line\nThird line", TextWrapping.NoWrap)]
+        [InlineData("First line Second line Third line", TextWrapping.Wrap)]
+        [Theory]
+        public void HitTestPoint_Should_Report_IsInside_For_Point_Inside_Any_Line(string text, TextWrapping wrapping)
+        {
+            using (Start())
+            {
+                var layout = new TextLayout(
+                    text,
+                    Typeface.Default,
+                    12,
+                    Brushes.Black,
+                    textWrapping: wrapping,
+                    maxWidth: 80);
+
+                Assert.Equal(3, layout.TextLines.Count);
+
+                var top = 0.0;
+
+                foreach (var textLine in layout.TextLines)
+                {
+                    var hit = layout.HitTestPoint(new Point(5, top + textLine.Height / 2));
+
+                    Assert.Equal(textLine.FirstTextSourceIndex, hit.CharacterHit.FirstCharacterIndex);
+                    Assert.True(hit.IsInside);
+
+                    top += textLine.Height;
+                }
+            }
+        }
+
+        [InlineData(TextAlignment.Center, FlowDirection.LeftToRight)]
+        [InlineData(TextAlignment.Right, FlowDirection.LeftToRight)]
+        [InlineData(TextAlignment.Center, FlowDirection.RightToLeft)]
+        [InlineData(TextAlignment.Right, FlowDirection.RightToLeft)]
+        [Theory]
+        public void HitTestPoint_Should_Report_IsInside_For_Point_Inside_Aligned_Line(TextAlignment alignment, FlowDirection flowDirection)
+        {
+            using (Start())
+            {
+                const string text = "Hello";
+
+                var layout = new TextLayout(
+                    text,
+                    Typeface.Default,
+                    12,
+                    Brushes.Black,
+                    textAlignment: alignment,
+                    flowDirection: flowDirection,
+                    maxWidth: 200);
+
+                var textLine = Assert.Single(layout.TextLines);
+
+                Assert.True(textLine.Start > 0);
+
+                var hit = layout.HitTestPoint(new Point(textLine.Start + textLine.Width - 1, textLine.Height / 2));
+
+                Assert.Equal(text.Length - 1, hit.CharacterHit.FirstCharacterIndex);
+                Assert.True(hit.IsInside);
+            }
+        }
+
+        [InlineData(TextAlignment.Center, FlowDirection.LeftToRight)]
+        [InlineData(TextAlignment.Right, FlowDirection.LeftToRight)]
+        [InlineData(TextAlignment.Center, FlowDirection.RightToLeft)]
+        [InlineData(TextAlignment.Right, FlowDirection.RightToLeft)]
+        [Theory]
+        public void HitTestPoint_Should_Not_Report_IsInside_For_Point_Outside_Aligned_Line(TextAlignment alignment, FlowDirection flowDirection)
+        {
+            using (Start())
+            {
+                var layout = new TextLayout(
+                    "Hello",
+                    Typeface.Default,
+                    12,
+                    Brushes.Black,
+                    textAlignment: alignment,
+                    flowDirection: flowDirection,
+                    maxWidth: 200);
+
+                var textLine = Assert.Single(layout.TextLines);
+
+                Assert.True(textLine.Start > 0);
+
+                var middle = textLine.Height / 2;
+
+                Assert.False(layout.HitTestPoint(new Point(textLine.Start - 1, middle)).IsInside);
+                Assert.False(layout.HitTestPoint(new Point(textLine.Start + textLine.Width + 1, middle)).IsInside);
+                Assert.False(layout.HitTestPoint(new Point(textLine.Start + 1, -1)).IsInside);
+                Assert.False(layout.HitTestPoint(new Point(textLine.Start + 1, textLine.Height + 1)).IsInside);
+            }
+        }
+
+        [InlineData(TextAlignment.Center, FlowDirection.LeftToRight)]
+        [InlineData(TextAlignment.Right, FlowDirection.LeftToRight)]
+        [InlineData(TextAlignment.Center, FlowDirection.RightToLeft)]
+        [InlineData(TextAlignment.Right, FlowDirection.RightToLeft)]
+        [Theory]
+        public void HitTestPoint_Should_Match_Left_Aligned_Layout_When_Translated_By_Line_Start(TextAlignment alignment, FlowDirection flowDirection)
+        {
+            using (Start())
+            {
+                const string text = "Hello\nWorld";
+
+                TextLayout CreateLayout(TextAlignment textAlignment) => new TextLayout(
+                    text,
+                    Typeface.Default,
+                    12,
+                    Brushes.Black,
+                    textAlignment: textAlignment,
+                    flowDirection: flowDirection,
+                    maxWidth: 200);
+
+                var reference = CreateLayout(TextAlignment.Left);
+                var aligned = CreateLayout(alignment);
+
+                Assert.Equal(2, aligned.TextLines.Count);
+
+                var top = 0.0;
+
+                for (var i = 0; i < aligned.TextLines.Count; i++)
+                {
+                    var referenceLine = reference.TextLines[i];
+                    var alignedLine = aligned.TextLines[i];
+
+                    Assert.True(alignedLine.Start > 0);
+                    Assert.Equal(0, referenceLine.Start);
+
+                    var y = top + alignedLine.Height / 2;
+
+                    // Before the line, inside it, and past its end, including the newline.
+                    foreach (var dx in new[] { -5, 1, alignedLine.Width / 2, alignedLine.Width - 1, alignedLine.Width + 3 })
+                    {
+                        var expected = reference.HitTestPoint(new Point(dx, y));
+                        var actual = aligned.HitTestPoint(new Point(alignedLine.Start + dx, y));
+
+                        Assert.Equal(expected.CharacterHit, actual.CharacterHit);
+                        Assert.Equal(expected.TextPosition, actual.TextPosition);
+                        Assert.Equal(expected.IsInside, actual.IsInside);
+                        Assert.Equal(expected.IsTrailing, actual.IsTrailing);
+                    }
+
+                    top += alignedLine.Height;
                 }
             }
         }
@@ -1257,6 +1589,37 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 var lastRun = lastLine.TextRuns.Last();
 
                 Assert.IsAssignableFrom<TextEndOfLine>(lastRun);
+            }
+        }
+
+        [Theory]
+        [InlineData("abcd efgh ijkl", FlowDirection.LeftToRight)]
+        [InlineData("abcd efgh ijkl", FlowDirection.RightToLeft)]
+        [InlineData("אבגד הוזח טיכל", FlowDirection.LeftToRight)]
+        [InlineData("אבגד הוזח טיכל", FlowDirection.RightToLeft)]
+        public void EndOfParagraph_Should_Not_Add_A_Line_To_Wrapped_Text(string text, FlowDirection flowDirection)
+        {
+            using (Start())
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+
+                var unwrapped = new TextLayout(new SingleBufferTextSource(text, defaultProperties),
+                    new GenericTextParagraphProperties(flowDirection, TextAlignment.Left, true, true,
+                        defaultProperties, TextWrapping.NoWrap, 0, 0, 0));
+
+                var paragraphProperties = new GenericTextParagraphProperties(flowDirection, TextAlignment.Left, true,
+                    true, defaultProperties, TextWrapping.Wrap, 0, 0, 0);
+                var maxWidth = unwrapped.Width * 0.6;
+
+                var withEnd = new TextLayout(new SingleBufferTextSource(text, defaultProperties, true),
+                    paragraphProperties, maxWidth: maxWidth);
+                var withoutEnd = new TextLayout(new SingleBufferTextSource(text, defaultProperties),
+                    paragraphProperties, maxWidth: maxWidth);
+
+                Assert.True(withoutEnd.TextLines.Count > 1);
+                Assert.Equal(withoutEnd.TextLines.Count, withEnd.TextLines.Count);
+                Assert.Equal(withoutEnd.Height, withEnd.Height);
+                Assert.IsType<TextEndOfParagraph>(withEnd.TextLines[^1].TextLineBreak?.TextEndOfLine);
             }
         }
 

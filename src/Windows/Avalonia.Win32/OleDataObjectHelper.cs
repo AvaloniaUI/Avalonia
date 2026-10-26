@@ -332,7 +332,7 @@ internal static class OleDataObjectHelper
         return files;
     }
 
-    private static byte[] ReadBytesFromHGlobal(IntPtr hGlobal)
+    internal static byte[] ReadBytesFromHGlobal(IntPtr hGlobal)
     {
         var source = GlobalLock(hGlobal);
         try

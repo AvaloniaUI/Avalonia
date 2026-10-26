@@ -139,8 +139,10 @@ public class TableView : ListBox
                 $"The column {column.DebugDisplay} is already attached to a {nameof(TableView)}.");
         }
 
-        column.TableView = this;
+        // Resolve styles and bindings before enabling refresh notifications. The headers
+        // and cells are rebuilt after attachment to apply the column's current values.
         ((ISetLogicalParent)column).SetParent(this);
+        column.TableView = this;
     }
 
     private void DetachColumn(TableViewColumn column)

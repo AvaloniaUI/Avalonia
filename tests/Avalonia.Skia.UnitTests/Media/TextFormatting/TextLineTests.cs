@@ -888,24 +888,67 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
-        [Fact]
-        public void Should_Throw_ArgumentOutOfRangeException_For_Zero_TextLength()
+        [Theory]
+        [InlineData("abc", 0, 0)]
+        [InlineData("abc", 0, 1)]
+        [InlineData("abc", 0, 3)]
+        [InlineData("a\r\nb\r\n", 0, 2)]
+        [InlineData("a\r\nb\r\n", 0, 3)]
+        [InlineData("a\r\nb\r\n", 3, 3)]
+        [InlineData("a\r\nb\r\n", 3, 6)]
+        [InlineData("\r\n", 0, 0)]
+        public void Should_GetTextBounds_For_Zero_TextLength(string text, int lineStart, int rangeStart)
         {
             using (Start())
             {
-                var typeface = Typeface.Default;
-
-                var defaultProperties = new GenericTextRunProperties(typeface);
-                var textSource = new CustomTextBufferTextSource(new TextCharacters("1234", defaultProperties));
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+                var textSource = new SingleBufferTextSource(text, defaultProperties);
                 var formatter = new TextFormatterImpl();
 
-                var textLine =
-                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                using var textLine =
+                    formatter.FormatLine(textSource, lineStart, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(defaultProperties));
+
+                Assert.NotNull(textLine);
+                Assert.Equal(lineStart, textLine.FirstTextSourceIndex);
+
+                Assert.Empty(textLine.GetTextBounds(rangeStart, 0));
+            }
+        }
+
+        [Theory]
+        [InlineData("abc", 0, 0, 3)]
+        [InlineData("abc", 0, 1, 1)]
+        [InlineData("a\r\nb\r\n", 3, 3, 1)]
+        public void Should_GetTextBounds_For_Non_Empty_TextLength(
+            string text, int lineStart, int rangeStart, int rangeLength)
+        {
+            using (Start())
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+                var textSource = new SingleBufferTextSource(text, defaultProperties);
+                var formatter = new TextFormatterImpl();
+
+                using var textLine =
+                    formatter.FormatLine(textSource, lineStart, double.PositiveInfinity,
                         new GenericTextParagraphProperties(defaultProperties));
 
                 Assert.NotNull(textLine);
 
-                Assert.Throws<ArgumentOutOfRangeException>(() => textLine.GetTextBounds(0, 0));
+                var bounds = Assert.Single(textLine.GetTextBounds(rangeStart, rangeLength));
+                var start = textLine.GetDistanceFromCharacterHit(new CharacterHit(rangeStart));
+                var end = textLine.GetDistanceFromCharacterHit(new CharacterHit(rangeStart + rangeLength));
+
+                Assert.Equal(start, bounds.Rectangle.Left, 3);
+                Assert.Equal(end - start, bounds.Rectangle.Width, 3);
+                Assert.Equal(0, bounds.Rectangle.Top);
+                Assert.Equal(textLine.Height, bounds.Rectangle.Height);
+                Assert.Equal(FlowDirection.LeftToRight, bounds.FlowDirection);
+
+                var runBounds = Assert.Single(bounds.TextRunBounds);
+
+                Assert.Equal(rangeStart, runBounds.TextSourceCharacterIndex);
+                Assert.Equal(rangeLength, runBounds.Length);
             }
         }
 
@@ -1610,6 +1653,115 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        [Theory]
+        [InlineData("abc אבג", FlowDirection.LeftToRight)]
+        [InlineData("abc אבג", FlowDirection.RightToLeft)]
+        [InlineData("אבג", FlowDirection.LeftToRight)]
+        [InlineData("אבג", FlowDirection.RightToLeft)]
+        [InlineData("אבג abc", FlowDirection.LeftToRight)]
+        [InlineData("אבג abc", FlowDirection.RightToLeft)]
+        [InlineData("abc", FlowDirection.LeftToRight)]
+        [InlineData("abc", FlowDirection.RightToLeft)]
+        public void EndOfParagraph_Should_Not_Change_Hit_Testing(string text, FlowDirection flowDirection)
+        {
+            using (Start())
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+                var paragraphProperties = new GenericTextParagraphProperties(flowDirection, TextAlignment.Left,
+                    true, true, defaultProperties, TextWrapping.NoWrap, 0, 0, 0);
+                var formatter = new TextFormatterImpl();
+
+                var withEnd = formatter.FormatLine(new SingleBufferTextSource(text, defaultProperties, true), 0,
+                    double.PositiveInfinity, paragraphProperties);
+                var withoutEnd = formatter.FormatLine(new SingleBufferTextSource(text, defaultProperties), 0,
+                    double.PositiveInfinity, paragraphProperties);
+
+                Assert.NotNull(withEnd);
+                Assert.NotNull(withoutEnd);
+
+                for (var start = 0; start < text.Length; start++)
+                {
+                    for (var length = 1; length <= text.Length - start; length++)
+                    {
+                        var expected = withoutEnd.GetTextBounds(start, length);
+                        var actual = withEnd.GetTextBounds(start, length);
+
+                        Assert.Equal(expected.Count, actual.Count);
+
+                        for (var i = 0; i < expected.Count; i++)
+                        {
+                            Assert.Equal(expected[i].Rectangle.Left, actual[i].Rectangle.Left, 5);
+                            Assert.Equal(expected[i].Rectangle.Right, actual[i].Rectangle.Right, 5);
+                            Assert.Equal(expected[i].FlowDirection, actual[i].FlowDirection);
+                            Assert.Equal(
+                                expected[i].TextRunBounds.Select(x => (x.TextSourceCharacterIndex, x.Length)),
+                                actual[i].TextRunBounds.Select(x => (x.TextSourceCharacterIndex, x.Length)));
+                        }
+                    }
+
+                    foreach (var characterHit in new[] { new CharacterHit(start), new CharacterHit(start, 1) })
+                    {
+                        Assert.Equal(withoutEnd.GetDistanceFromCharacterHit(characterHit),
+                            withEnd.GetDistanceFromCharacterHit(characterHit), 5);
+                    }
+                }
+
+                // The paragraph end covers one more character but adds no width.
+                var allBounds = withEnd.GetTextBounds(0, text.Length + 1);
+
+                Assert.Equal(text.Length + 1, allBounds.Sum(x => x.TextRunBounds.Sum(r => r.Length)));
+                Assert.Equal(withEnd.Start, allBounds.Min(x => x.Rectangle.Left), 5);
+                Assert.Equal(withEnd.Start + withEnd.WidthIncludingTrailingWhitespace,
+                    allBounds.Max(x => x.Rectangle.Right), 5);
+            }
+        }
+
+        [Theory]
+        [InlineData("abc", FlowDirection.LeftToRight)]
+        [InlineData("abc", FlowDirection.RightToLeft)]
+        [InlineData("אבג", FlowDirection.LeftToRight)]
+        [InlineData("אבג", FlowDirection.RightToLeft)]
+        [InlineData("abc אבג", FlowDirection.LeftToRight)]
+        [InlineData("abc אבג", FlowDirection.RightToLeft)]
+        [InlineData("אבג abc", FlowDirection.LeftToRight)]
+        [InlineData("אבג abc", FlowDirection.RightToLeft)]
+        public void EndOfParagraph_Should_Be_Placed_At_The_Paragraph_End(string text, FlowDirection flowDirection)
+        {
+            using (Start())
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+                var formatter = new TextFormatterImpl();
+
+                var textLine = formatter.FormatLine(new SingleBufferTextSource(text, defaultProperties, true), 0,
+                    double.PositiveInfinity, new GenericTextParagraphProperties(flowDirection, TextAlignment.Left,
+                        true, true, defaultProperties, TextWrapping.NoWrap, 0, 0, 0));
+
+                Assert.NotNull(textLine);
+
+                var paragraphEnd = flowDirection == FlowDirection.LeftToRight ?
+                    textLine.Start + textLine.WidthIncludingTrailingWhitespace :
+                    textLine.Start;
+
+                Assert.IsType<TextEndOfParagraph>(textLine.TextLineBreak?.TextEndOfLine);
+
+                Assert.Equal(paragraphEnd, textLine.GetDistanceFromCharacterHit(new CharacterHit(text.Length)), 5);
+
+                var endOfParagraphBounds = Assert.Single(textLine.GetTextBounds(text.Length, 1)
+                    .SelectMany(x => x.TextRunBounds)
+                    .Where(x => x.TextRun is TextEndOfParagraph));
+
+                Assert.Equal(paragraphEnd, endOfParagraphBounds.Rectangle.Left, 5);
+                Assert.Equal(0, endOfParagraphBounds.Rectangle.Width);
+
+                foreach (var distance in new[] { -1, textLine.WidthIncludingTrailingWhitespace + 1 })
+                {
+                    var characterHit = textLine.GetCharacterHitFromDistance(distance);
+
+                    Assert.True(characterHit.FirstCharacterIndex + characterHit.TrailingLength <= text.Length);
+                }
+            }
+        }
+
         [Fact]
         public void Should_GetTextBounds_With_EndOfParagraph_RightToLeft()
         {
@@ -1754,9 +1906,17 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 bounds = textLine.GetTextBounds(0, 25);
 
-                Assert.Equal(4, bounds.Count);
+                Assert.Equal(5, bounds.Count);
 
                 Assert.Equal(textLine.WidthIncludingTrailingWhitespace, bounds.Last().Rectangle.Right);
+
+                // The paragraph end takes the left-to-right paragraph level, so it closes the line as an empty
+                // left-to-right span after the trailing Hebrew word instead of joining it.
+                var endOfParagraphBounds = bounds.Last();
+
+                Assert.Equal(FlowDirection.LeftToRight, endOfParagraphBounds.FlowDirection);
+                Assert.Equal(0, endOfParagraphBounds.Rectangle.Width);
+                Assert.IsType<TextEndOfParagraph>(Assert.Single(endOfParagraphBounds.TextRunBounds).TextRun);
             }
         }
 

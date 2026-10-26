@@ -11,13 +11,6 @@ namespace Avalonia.Win32;
 
 internal sealed unsafe class WinScreen(IntPtr hMonitor) : PlatformScreen(new PlatformHandle(hMonitor, "HMonitor"))
 {
-    private static readonly Lazy<bool> s_hasGetDpiForMonitor = new(() =>
-    {
-        var shcore = LoadLibrary("shcore.dll");
-        var method = GetProcAddress(shcore, nameof(GetDpiForMonitor));
-        return method != IntPtr.Zero;
-    });
-
     internal int Frequency { get; private set; }
 
     public void Refresh()
@@ -105,7 +98,7 @@ internal sealed unsafe class WinScreen(IntPtr hMonitor) : PlatformScreen(new Pla
     {
         double dpi;
 
-        if (s_hasGetDpiForMonitor.Value)
+        if (GetDpiForMonitorAvailable)
         {
             GetDpiForMonitor(hMonitor, MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI, out var x, out _);
             dpi = x;

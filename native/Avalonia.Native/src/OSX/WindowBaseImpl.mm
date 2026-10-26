@@ -18,6 +18,7 @@
 #include "WindowImpl.h"
 #include "AvnTextInputMethod.h"
 #include "AvnView.h"
+#include <algorithm>
 
 @class AutoFitContentView;
 
@@ -44,7 +45,7 @@ WindowBaseImpl::~WindowBaseImpl() {
     Window = nullptr;
 }
 
-WindowBaseImpl::WindowBaseImpl(IAvnWindowBaseEvents *events, bool usePanel) : TopLevelImpl(events) {
+WindowBaseImpl::WindowBaseImpl(const ComPtr<IAvnWindowBaseEvents>& events, bool usePanel) : TopLevelImpl(events) {
     _children = std::list<ComObjectWeakPtr<WindowBaseImpl>>();
     _shown = false;
     _inResize = false;
@@ -56,11 +57,11 @@ WindowBaseImpl::WindowBaseImpl(IAvnWindowBaseEvents *events, bool usePanel) : To
     lastMaxSize = NSSize { CGFLOAT_MAX, CGFLOAT_MAX};
     lastMinSize = NSSize { 0, 0 };
     lastMenu = nullptr;
-    
+
     CreateNSWindow(usePanel);
-    
+
     StandardContainer = [[AutoFitContentView new] initWithContent:View];
-    
+
     [Window setContentView:StandardContainer];
     [Window setBackingType:NSBackingStoreBuffered];
     [Window setContentMinSize:lastMinSize];
@@ -73,8 +74,6 @@ NSWindow *WindowBaseImpl::GetNSWindow() {
 }
 
 HRESULT WindowBaseImpl::ObtainNSWindowHandleRetained(void **ret) {
-    START_COM_CALL;
-
     if (ret == nullptr) {
         return E_POINTER;
     }
@@ -85,11 +84,9 @@ HRESULT WindowBaseImpl::ObtainNSWindowHandleRetained(void **ret) {
 }
 
 HRESULT WindowBaseImpl::Show(bool activate, bool isDialog) {
-    START_COM_CALL;
-
     @autoreleasepool {
         [Window setContentSize:lastSize];
-        
+
         if(hasPosition)
         {
             SetPosition(lastPositionSet);
@@ -110,7 +107,7 @@ HRESULT WindowBaseImpl::Show(bool activate, bool isDialog) {
         [Window setCollectionBehavior:collectionBehavior & ~NSWindowCollectionBehaviorFullScreenPrimary];
 
         UpdateAppearance();
-        
+
         [Window invalidateShadow];
 
         if (ShouldTakeFocusOnShow() && activate) {
@@ -124,13 +121,13 @@ HRESULT WindowBaseImpl::Show(bool activate, bool isDialog) {
 
         _shown = true;
         [Window setCollectionBehavior:collectionBehavior];
-        
+
         // Ensure that we call needsDisplay = YES so that AvnView.updateLayer is called after the
         // window is shown: if the client is pumping messages during the window creation/show
         // process, it's possible that updateLayer gets called after the window is created but
         // before it's is shown.
         [View.layer setNeedsDisplay];
-        
+
         return S_OK;
     }
 }
@@ -145,8 +142,6 @@ bool WindowBaseImpl::ShouldTakeFocusOnShow() {
 }
 
 HRESULT WindowBaseImpl::ObtainNSWindowHandle(void **ret) {
-    START_COM_CALL;
-
     if (ret == nullptr) {
         return E_POINTER;
     }
@@ -157,11 +152,9 @@ HRESULT WindowBaseImpl::ObtainNSWindowHandle(void **ret) {
 }
 
 HRESULT WindowBaseImpl::Hide() {
-    START_COM_CALL;
-
     @autoreleasepool {
         if (Window != nullptr) {
-            
+
             // If window is hidden without ending attached sheet first, it will stuck in "order out" state,
             // and block any new sheets from being attached.
             // Additionaly, we don't know if user would define any custom panels, so we only end/close file dialog sheets.
@@ -190,8 +183,6 @@ HRESULT WindowBaseImpl::Hide() {
 }
 
 HRESULT WindowBaseImpl::Activate() {
-    START_COM_CALL;
-
     @autoreleasepool {
         if (Window != nullptr) {
             [Window makeKeyAndOrderFront:nil];
@@ -203,18 +194,43 @@ HRESULT WindowBaseImpl::Activate() {
 }
 
 HRESULT WindowBaseImpl::SetTopMost(bool value) {
-    START_COM_CALL;
-
     @autoreleasepool {
-        [Window setLevel:value ? NSFloatingWindowLevel : NSNormalWindowLevel];
+        _isTopmost = value;
+
+        UpdateWindowLevel();
 
         return S_OK;
     }
 }
 
-HRESULT WindowBaseImpl::Close() {
-    START_COM_CALL;
+NSWindowLevel WindowBaseImpl::GetBaseWindowLevel() {
+    return _isTopmost ? NSFloatingWindowLevel : NSNormalWindowLevel;
+}
 
+void WindowBaseImpl::UpdateWindowLevel() {
+    if (Window == nullptr)
+        return;
+
+    auto level = GetBaseWindowLevel();
+
+    // An owned window must be able to come to the front of its owner.
+    // TODO: It shouldn't be necessary if we used `addChildWindow` API.
+    auto parent = Parent.tryGet();
+
+    if (parent != nullptr && parent->Window != nullptr)
+        level = std::max(level, [parent->Window level]);
+
+    [Window setLevel:level];
+
+    for (auto iterator = _children.begin(); iterator != _children.end(); iterator++) {
+        auto child = (*iterator).tryGet();
+
+        if (child != nullptr)
+            child->UpdateWindowLevel();
+    }
+}
+
+HRESULT WindowBaseImpl::Close() {
     @autoreleasepool {
         if (Window != nullptr) {
             auto window = Window;
@@ -232,8 +248,6 @@ HRESULT WindowBaseImpl::Close() {
 }
 
 HRESULT WindowBaseImpl::GetFrameSize(AvnSize *ret) {
-    START_COM_CALL;
-
     @autoreleasepool {
         if (ret == nullptr)
             return E_POINTER;
@@ -249,8 +263,6 @@ HRESULT WindowBaseImpl::GetFrameSize(AvnSize *ret) {
 }
 
 HRESULT WindowBaseImpl::SetMinMaxSize(AvnSize minSize, AvnSize maxSize) {
-    START_COM_CALL;
-
     @autoreleasepool {
         lastMinSize = ToNSSize(minSize);
         lastMaxSize = ToNSSize(maxSize);
@@ -271,7 +283,6 @@ HRESULT WindowBaseImpl::Resize(double x, double y, AvnPlatformResizeReason reaso
 
     _inResize = true;
 
-    START_COM_CALL;
     auto resizeBlock = ResizeScope(View, reason);
 
     @autoreleasepool {
@@ -323,12 +334,10 @@ HRESULT WindowBaseImpl::Resize(double x, double y, AvnPlatformResizeReason reaso
     }
 }
 
-HRESULT WindowBaseImpl::SetMainMenu(IAvnMenu *menu) {
-    START_COM_CALL;
+HRESULT WindowBaseImpl::SetMainMenu(const ComPtr<IAvnMenu>& menu) {
+    auto nativeMenu = menu.dynamicCast<AvnAppMenu>();
 
-    auto nativeMenu = dynamic_cast<AvnAppMenu *>(menu);
-
-    lastMenu = nativeMenu->GetNative();
+    lastMenu = nativeMenu ? nativeMenu->GetNative() : nil;
 
     if(Window != nullptr) {
         [GetWindowProtocol() applyMenu:lastMenu];
@@ -342,8 +351,6 @@ HRESULT WindowBaseImpl::SetMainMenu(IAvnMenu *menu) {
 }
 
 HRESULT WindowBaseImpl::BeginMoveDrag() {
-    START_COM_CALL;
-
     @autoreleasepool {
         auto lastEvent = [View lastMouseDownEvent];
 
@@ -373,14 +380,10 @@ HRESULT WindowBaseImpl::BeginMoveDrag() {
 }
 
 HRESULT WindowBaseImpl::BeginResizeDrag(__attribute__((unused)) AvnWindowEdge edge) {
-    START_COM_CALL;
-
     return S_OK;
 }
 
 HRESULT WindowBaseImpl::GetPosition(AvnPoint *ret) {
-    START_COM_CALL;
-
     @autoreleasepool {
         if (ret == nullptr) {
             return E_POINTER;
@@ -403,8 +406,6 @@ HRESULT WindowBaseImpl::GetPosition(AvnPoint *ret) {
 }
 
 HRESULT WindowBaseImpl::SetPosition(AvnPoint point) {
-    START_COM_CALL;
-
     @autoreleasepool {
         lastPositionSet = point;
         hasPosition = true;
@@ -418,8 +419,6 @@ HRESULT WindowBaseImpl::SetPosition(AvnPoint point) {
 }
 
 HRESULT WindowBaseImpl::SetTransparencyMode(AvnWindowTransparencyMode mode) {
-    START_COM_CALL;
-
     [Window setBackgroundColor: (mode != Transparent ? [NSColor windowBackgroundColor] : [NSColor clearColor])];
     [StandardContainer ShowBlur: mode == Blur];
 
@@ -427,8 +426,6 @@ HRESULT WindowBaseImpl::SetTransparencyMode(AvnWindowTransparencyMode mode) {
 }
 
 HRESULT WindowBaseImpl::SetFrameThemeVariant(AvnPlatformThemeVariant variant) {
-    START_COM_CALL;
-
     NSAppearanceName appearanceName;
     if (@available(macOS 10.14, *))
     {
@@ -476,10 +473,10 @@ void WindowBaseImpl::CreateNSWindow(bool usePanel) {
     NSRect contentRect = NSRect { origin.x, origin.y, lastSize };
 
     if (usePanel) {
-        Window = [[AvnPanel alloc] initWithParent:this contentRect:contentRect styleMask:NSWindowStyleMaskBorderless];
+        Window = [[AvnPanel alloc] initWithParent:comself(this) contentRect:contentRect styleMask:NSWindowStyleMaskBorderless];
         [Window setHidesOnDeactivate:false];
     } else {
-        Window = [[AvnWindow alloc] initWithParent:this contentRect:contentRect styleMask:NSWindowStyleMaskBorderless];
+        Window = [[AvnWindow alloc] initWithParent:comself(this) contentRect:contentRect styleMask:NSWindowStyleMaskBorderless];
     }
 }
 
@@ -497,22 +494,20 @@ void WindowBaseImpl::BringToFront()
     // do nothing.
 }
 
-HRESULT WindowBaseImpl::SetParent(IAvnWindowBase *parent) {
-    START_COM_CALL;
-
+HRESULT WindowBaseImpl::SetParent(const ComPtr<IAvnWindowBase>& parent) {
     @autoreleasepool {
-        
+
         auto oldParent = Parent.tryGet();
-        
+
         if(oldParent != nullptr)
         {
-            oldParent->_children.remove(this);
+            oldParent->_children.remove(comself(this));
         }
 
-        auto cparent = dynamic_cast<WindowImpl *>(parent);
-        
+        auto cparent = parent.dynamicCast<WindowImpl>();
+
         Parent = cparent;
-       
+
         if(cparent != nullptr && Window != nullptr){
             // If one tries to show a child window with a minimized parent window, then the parent window will be
             // restored but macOS isn't kind enough to *tell* us that, so the window will be left in a non-interactive
@@ -521,11 +516,13 @@ HRESULT WindowBaseImpl::SetParent(IAvnWindowBase *parent) {
                 cparent->SetWindowState(Normal);
 
             [Window setCollectionBehavior:NSWindowCollectionBehaviorFullScreenAuxiliary];
-                
-            cparent->_children.push_back(this);
-                
+
+            cparent->_children.push_back(comself(this));
+
             UpdateAppearance();
         }
+
+        UpdateWindowLevel();
 
         return S_OK;
     }
