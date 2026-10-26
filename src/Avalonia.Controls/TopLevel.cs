@@ -223,7 +223,7 @@ namespace Avalonia.Controls
 
             _source.Renderer.CompositionTarget.TransparencyLevel =
                 ToCompositionTransparencyLevel(_actualTransparencyLevel);
-            _source.Renderer.CompositionTarget.TopLevelSpecificSceneInfo = impl.TopLevelSpecificSceneInfo;
+            _source.Renderer.CompositionTarget.PlatformSpecificSceneInfo = impl.PlatformSpecificSceneInfo;
 
 
             _accessKeyHandler = TryGetService<IAccessKeyHandler>(dependencyResolver);
@@ -241,7 +241,7 @@ namespace Avalonia.Controls
             impl.Resized = HandleResized;
             impl.ScalingChanged += HandleScalingChanged;
             impl.TransparencyLevelChanged = HandleTransparencyLevelChanged;
-            impl.TopLevelSpecificSceneInfoChanged = HandleTopLevelSpecificSceneInfoChanged;
+            impl.PlatformSpecificSceneInfoChanged = HandlePlatformSpecificSceneInfoChanged;
 
             CreatePlatformImplBinding(TransparencyLevelHintProperty, hint => PlatformImpl.SetTransparencyLevelHint(hint ?? Array.Empty<WindowTransparencyLevel>()));
 
@@ -543,7 +543,18 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the platform's clipboard implementation
         /// </summary>
-        public IClipboard? Clipboard => PlatformImpl?.TryGetFeature<IClipboard>();
+        public IClipboard? Clipboard => TryGetClipboard(ClipboardType.Default);
+
+        /// <summary>
+        /// Gets the platform's clipboard of the specified type, or null if the platform doesn't provide it.
+        /// </summary>
+        public IClipboard? TryGetClipboard(ClipboardType type)
+        {
+            if (PlatformImpl?.TryGetFeature<IPlatformClipboardManagerImpl>() is { } clipboardManager)
+                return clipboardManager.TryGetClipboard(type);
+
+            return type == ClipboardType.Default ? PlatformImpl?.TryGetFeature<IClipboard>() : null;
+        }
 
         /// <summary>
         /// Gets focus manager of the root.
@@ -773,9 +784,9 @@ namespace Avalonia.Controls
                 ToCompositionTransparencyLevel(transparencyLevel);
         }
 
-        private void HandleTopLevelSpecificSceneInfoChanged(object? sceneInfo)
+        private void HandlePlatformSpecificSceneInfoChanged(object? sceneInfo)
         {
-            Renderer.CompositionTarget.TopLevelSpecificSceneInfo = sceneInfo;
+            Renderer.CompositionTarget.PlatformSpecificSceneInfo = sceneInfo;
         }
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)

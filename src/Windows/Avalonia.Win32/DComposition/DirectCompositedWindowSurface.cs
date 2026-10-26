@@ -32,7 +32,7 @@ internal class DirectCompositedWindowSurface : IDirect3D11TexturePlatformSurface
     {
         _window ??= new DirectCompositedWindow(_info, _shared);
 
-        if (AvaloniaLocator.Current.GetService<Win32PlatformOptions>()?.UseCompositionSwapchain ?? false)
+        if (AvaloniaLocator.Current.GetService<Win32PlatformOptions>()?.UseCompositionSwapChain ?? false)
             return new CompositionSwapchainRenderTarget(context, d3dDevice, _window);
 
         return new DirectCompositedWindowRenderTarget(context, d3dDevice, _shared, _window);

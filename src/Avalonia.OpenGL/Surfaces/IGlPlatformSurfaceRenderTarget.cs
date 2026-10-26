@@ -8,6 +8,8 @@ namespace Avalonia.OpenGL.Surfaces
     [PrivateApi]
     public interface IGlPlatformSurfaceRenderTarget : IDisposable, IPlatformRenderSurfaceRenderTarget
     {
+        RenderTargetProperties Properties => default;
+
         IGlPlatformSurfaceRenderingSession BeginDraw(IRenderTarget.RenderTargetSceneInfo sceneInfo);
     }
 }

@@ -143,7 +143,7 @@ public class Win32PlatformOptions
     /// WinUI composition path, looser visual synchronization during interactive resize.
     /// The default value is null, which lets the framework decide (currently: disabled).
     /// </summary>
-    public bool? UseCompositionSwapchain { get; set; }
+    public bool? UseCompositionSwapChain { get; set; }
 
     /// <summary>
     /// When <see cref="CompositionMode"/> is set to <see cref="Win32CompositionMode.WinUIComposition"/>, create rounded corner blur brushes

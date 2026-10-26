@@ -16,6 +16,8 @@ using Avalonia.VisualTree;
 using Avalonia.Layout;
 using Moq;
 using Xunit;
+using System.Collections.Generic;
+using Avalonia.Interactivity;
 
 namespace Avalonia.Controls.UnitTests
 {
@@ -255,6 +257,42 @@ namespace Avalonia.Controls.UnitTests
         public void Selector_ScrollDown_Should_Work(string selectorName)
             => TestSelectorScrolling(selectorName, panel => panel.ScrollDown());
 
+        [Theory]
+        [InlineData(false, 120d, 40d)]
+        [InlineData(true, 12000d, 6040d)]
+        public void Selector_ItemHeight_Change_Should_Update_Layout_State(
+            bool shouldLoop,
+            double expectedExtentHeight,
+            double expectedOffsetY)
+        {
+            using var app = UnitTestApplication.Start(Services);
+
+            var panel = new DateTimePickerPanel
+            {
+                MinimumValue = 1,
+                MaximumValue = 3,
+                ShouldLoop = shouldLoop,
+                ItemHeight = 20,
+            };
+
+            panel.Measure(new Size(100, 100));
+            panel.Arrange(new Rect(0, 0, 100, 100));
+            panel.SelectedValue = 2;
+
+            panel.ItemHeight = 40;
+
+            Assert.Equal(expectedExtentHeight, panel.Extent.Height);
+            Assert.Equal(expectedOffsetY, panel.Offset.Y);
+            Assert.All(panel.Children, child => Assert.Equal(40, child.Height));
+
+            panel.Measure(new Size(100, 100));
+            panel.Arrange(new Rect(0, 0, 100, 100));
+
+            var selectedItem = Assert.Single(panel.Children.OfType<ListBoxItem>().Where(item => item.IsSelected));
+            Assert.Equal(2, selectedItem.Tag);
+            Assert.Equal(50, selectedItem.Bounds.Center.Y);
+        }
+
         private static void TestSelectorScrolling(string selectorName, Action<DateTimePickerPanel> scroll)
         {
             using var app = UnitTestApplication.Start(Services);
@@ -458,5 +496,107 @@ namespace Avalonia.Controls.UnitTests
                 return contentPanel;
             });
         }
+
+        [Fact]
+        public void Opening_The_Popup_Should_Focus_A_Selector()
+        {
+            using var app = UnitTestApplication.Start(TestServices.FocusableWindow);
+
+            var picker = new DatePicker();
+            var window = new Window { Content = picker };
+            window.Show();
+            window.LayoutManager.ExecuteInitialLayoutPass();
+
+            Open(picker);
+
+            Assert.Contains(VisibleSelectors(picker), selector => selector.IsFocused);
+        }
+
+        [Fact]
+        public void Tab_Should_Follow_The_Columns_On_Screen()
+        {
+            using var app = UnitTestApplication.Start(TestServices.FocusableWindow);
+
+            var picker = new DatePicker();
+            var window = new Window { Content = picker };
+            window.Show();
+            window.LayoutManager.ExecuteInitialLayoutPass();
+
+            Open(picker);
+
+            var selectors = VisibleSelectors(picker);
+            var leftToRight = LeftToRight(picker, selectors);
+            var visited = new List<DateTimePickerPanel> { Focused(selectors) };
+
+            for (var i = 1; i < leftToRight.Length; i++)
+            {
+                Tab(selectors, KeyModifiers.None);
+                visited.Add(Focused(selectors));
+            }
+
+            Assert.Equal(leftToRight, visited);
+        }
+
+        [Fact]
+        public void Shift_Tab_Should_Go_Back_Through_The_Columns()
+        {
+            using var app = UnitTestApplication.Start(TestServices.FocusableWindow);
+
+            var picker = new DatePicker();
+            var window = new Window { Content = picker };
+            window.Show();
+            window.LayoutManager.ExecuteInitialLayoutPass();
+
+            Open(picker);
+
+            var selectors = VisibleSelectors(picker);
+            var first = Focused(selectors);
+
+            Tab(selectors, KeyModifiers.None);
+            Assert.NotSame(first, Focused(selectors));
+
+            Tab(selectors, KeyModifiers.Shift);
+            Assert.Same(first, Focused(selectors));
+        }
+
+        private static void Open(Control picker)
+        {
+            var button = picker.GetVisualDescendants().OfType<Button>().First(b => b.Name == "PART_FlyoutButton");
+            button.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            Dispatcher.UIThread.RunJobs();
+        }
+
+        private static DateTimePickerPanel[] VisibleSelectors(Control picker)
+        {
+            var popup = picker.GetVisualDescendants().OfType<Popup>().First();
+
+            return popup.Child is { } content
+                ? content.GetSelfAndVisualDescendants().OfType<DateTimePickerPanel>()
+                    .Where(selector => selector.IsEffectivelyVisible).ToArray()
+                : [];
+        }
+
+        private static DateTimePickerPanel[] LeftToRight(Control picker, DateTimePickerPanel[] selectors)
+        {
+            var content = (Visual)picker.GetVisualDescendants().OfType<Popup>().First().Child!;
+
+            return selectors.OrderBy(selector => selector.TranslatePoint(new Point(), content)?.X ?? 0).ToArray();
+        }
+
+        private static DateTimePickerPanel Focused(DateTimePickerPanel[] selectors)
+            => selectors.First(selector => selector.IsFocused);
+
+        private static void Tab(DateTimePickerPanel[] selectors, KeyModifiers modifiers)
+        {
+            Focused(selectors).RaiseEvent(new KeyEventArgs
+            {
+                RoutedEvent = InputElement.KeyDownEvent,
+                Key = Key.Tab,
+                KeyModifiers = modifiers
+            });
+
+            Dispatcher.UIThread.RunJobs();
+        }
+
     }
 }

@@ -31,7 +31,7 @@ namespace Avalonia.Win32.WinRT.Composition
             var options = AvaloniaLocator.Current.GetService<Win32PlatformOptions>();
             _window ??= new WinUiCompositedWindow(_info, _shared, options?.WinUICompositionBackdropCornerRadius);
 
-            if (options?.UseCompositionSwapchain ?? false)
+            if (options?.UseCompositionSwapChain ?? false)
                 return new CompositionSwapchainRenderTarget(context, d3dDevice, _window);
 
             return new WinUiCompositedWindowRenderTarget(context, _window, d3dDevice, _shared.Compositor);
@@ -166,7 +166,7 @@ namespace Avalonia.Win32.WinRT.Composition
                 var scale = sceneInfo.Scaling;
                 _window.ResizeIfNeeded(size);
                 _window.ApplyEffects(sceneInfo.TransparencyLevel,
-                    (sceneInfo.TopLevelSpecificSceneInfo as Win32TopLevelSceneInfo)?.ThemeVariant ??
+                    (sceneInfo.PlatformSpecificSceneInfo as Win32TopLevelSceneInfo)?.ThemeVariant ??
                     PlatformThemeVariant.Light);
                 _window.SetSurface(_surface);
                 

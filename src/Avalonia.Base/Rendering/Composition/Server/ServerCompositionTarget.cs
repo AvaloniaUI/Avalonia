@@ -28,6 +28,7 @@ namespace Avalonia.Rendering.Composition.Server
         private IRenderTarget? _renderTarget;
         private PixelSize _layerSize;
         private IDrawingContextLayerImpl? _layer;
+        private Matrix _outputTransform = Matrix.Identity;
         private bool _updateRequested;
         private bool _redrawRequested;
         private bool _fullRedrawRequested;
@@ -195,10 +196,23 @@ namespace Avalonia.Rendering.Composition.Server
                 return;
             }
 
-            var needLayer = _overlays.RequireLayer // Check if we don't need overlays
-                            // Check if render target can be rendered to directly and preserves the previous frame
-                            || !(_renderTarget.Properties.RetainsPreviousFrameContents
-                                 && _renderTarget.Properties.IsSuitableForDirectRendering);
+            var targetProperties = _renderTarget.Properties;
+            // Exact quarter turns keep pixel edges aligned.
+            var outputTransform = targetProperties.RequiredRotationForOrientation switch
+            {
+                SurfaceOrientation.Rotation90 => new Matrix(0, 1, -1, 0, PixelSize.Height, 0),
+                SurfaceOrientation.Rotation180 => new Matrix(-1, 0, 0, -1, PixelSize.Width, PixelSize.Height),
+                SurfaceOrientation.Rotation270 => new Matrix(0, -1, 1, 0, 0, PixelSize.Width),
+                _ => Matrix.Identity
+            };
+            if (_outputTransform != outputTransform)
+            {
+                _outputTransform = outputTransform;
+                _fullRedrawRequested = true;
+            }
+            var needLayer = !outputTransform.IsIdentity || _overlays.RequireLayer
+                            || !(targetProperties.IsSuitableForDirectRendering
+                                 && targetProperties.RetainsPreviousFrameContents);
 
             IDrawingContextImpl renderTargetContext;
             RenderTargetDrawingContextProperties properties;
@@ -206,7 +220,7 @@ namespace Avalonia.Rendering.Composition.Server
             {
                 renderTargetContext =
                     _renderTarget.CreateDrawingContext(
-                        new(PixelSize, Scaling, Size, TransparencyLevel, TopLevelSpecificSceneInfo),
+                        new(PixelSize, Scaling, Size, TransparencyLevel, PlatformSpecificSceneInfo),
                         out properties);
             }
             catch (RenderTargetNotReadyException)
@@ -259,16 +273,15 @@ namespace Avalonia.Rendering.Composition.Server
                         using (var context = _layer.CreateDrawingContext())
                             RenderRootToContextWithClip(context, Root);
 
-                        renderTargetContext.Clear(Colors.Transparent);
                         renderTargetContext.Transform = Matrix.Identity;
-                        if (_layer.CanBlit)
+                        var rect = new PixelRect(PixelSize).ToRect(1);
+                        renderTargetContext.Clear(Colors.Transparent);
+                        renderTargetContext.Transform = outputTransform;
+                        if (_layer.CanBlit && outputTransform.IsIdentity)
                             _layer.Blit(renderTargetContext);
                         else
-                        {
-                            var rect = new PixelRect(default, PixelSize).ToRect(1);
                             renderTargetContext.DrawBitmap(_layer, 1, rect, rect);
-                        }
-                        _overlays.Draw(renderTargetContext, true);
+                        _overlays.Draw(renderTargetContext, true, outputTransform);
                     }
                     else
                     {

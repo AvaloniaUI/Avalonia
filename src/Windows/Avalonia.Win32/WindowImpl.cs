@@ -217,9 +217,9 @@ namespace Avalonia.Win32
 
         public Action<WindowTransparencyLevel>? TransparencyLevelChanged { get; set; }
 
-        public object? TopLevelSpecificSceneInfo => _sceneInfo;
+        public object? PlatformSpecificSceneInfo => _sceneInfo;
 
-        public Action<object?>? TopLevelSpecificSceneInfoChanged { get; set; }
+        public Action<object?>? PlatformSpecificSceneInfoChanged { get; set; }
 
         public Thickness BorderThickness
         {
@@ -529,7 +529,7 @@ namespace Avalonia.Win32
                     0,
                     SetWindowPosFlags.SWP_NOSIZE | SetWindowPosFlags.SWP_NOACTIVATE | SetWindowPosFlags.SWP_NOZORDER);
 
-                if (ShCoreAvailable && Win32Platform.WindowsVersion >= PlatformConstants.Windows8_1)
+                if (GetDpiForMonitorAvailable)
                 {
                     var monitor = MonitorFromWindow(Handle.Handle, MONITOR.MONITOR_DEFAULTTONEAREST);
 
@@ -766,21 +766,19 @@ namespace Avalonia.Win32
         {
             e.Pointer.Capture(null);
 
+            if (!e.Pointer.IsPrimary)
+            {
+                throw new InvalidOperationException("BeginMoveDrag Failed");
+            }
+
             Dispatcher.UIThread.Post(() =>
             {
-                if (e.Pointer.IsPrimary)
-                {
-                    // SendMessage's return value is dependent on the message send.  WM_SYSCOMMAND
-                    // and WM_LBUTTONUP return value just signify whether the WndProc handled the
-                    // message or not, so they are not interesting
+                // SendMessage's return value is dependent on the message send.  WM_SYSCOMMAND
+                // and WM_LBUTTONUP return value just signify whether the WndProc handled the
+                // message or not, so they are not interesting
 
-                    SendMessage(_hwnd, (int)WindowsMessage.WM_SYSCOMMAND, (IntPtr)SC_MOUSEMOVE, IntPtr.Zero);
-                    SendMessage(_hwnd, (int)WindowsMessage.WM_LBUTTONUP, IntPtr.Zero, IntPtr.Zero);
-                }
-                else
-                {
-                    throw new InvalidOperationException("BeginMoveDrag Failed");
-                }
+                SendMessage(_hwnd, (int)WindowsMessage.WM_SYSCOMMAND, (IntPtr)SC_MOUSEMOVE, IntPtr.Zero);
+                SendMessage(_hwnd, (int)WindowsMessage.WM_LBUTTONUP, IntPtr.Zero, IntPtr.Zero);
             }, DispatcherPriority.Send);
         }
 
@@ -945,7 +943,7 @@ namespace Avalonia.Win32
             if (_sceneInfo.ThemeVariant != _currentThemeVariant)
             {
                 _sceneInfo = new Win32TopLevelSceneInfo(_currentThemeVariant);
-                TopLevelSpecificSceneInfoChanged?.Invoke(_sceneInfo);
+                PlatformSpecificSceneInfoChanged?.Invoke(_sceneInfo);
             }
             if (Win32Platform.WindowsVersion.Build >= 22000)
             {
@@ -1021,7 +1019,7 @@ namespace Avalonia.Win32
 
             RegisterTouchWindow(_hwnd, 0);
 
-            if (ShCoreAvailable && Win32Platform.WindowsVersion >= PlatformConstants.Windows8_1)
+            if (GetDpiForMonitorAvailable)
             {
                 var monitor = MonitorFromWindow(
                     _hwnd,

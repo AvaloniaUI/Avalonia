@@ -21,8 +21,13 @@ internal sealed class ReflectionTypeCastNode : ExpressionNode
 
     protected override void OnSourceChanged(object? source, Exception? dataValidationError)
     {
-        if (!ValidateNonNullSource(source))
+        // Casting null produces null, as in C#. Any error belongs to the member access which
+        // follows, where a null-conditional operator gets the chance to short-circuit it.
+        if (source is null)
+        {
+            SetValue(null);
             return;
+        }
 
         if (_targetType.IsInstanceOfType(source))
             SetValue(source);

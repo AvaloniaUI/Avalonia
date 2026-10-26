@@ -32,7 +32,6 @@ partial class WaylandWorker
     private Thread? _thread;
     public IRawEventGrouperDispatchQueue InputDispatchQueue { get; }
 
-
     public Compositor Compositor { get; }
     public WaylandWorkerClient Client { get; }
     private HashSet<IPersistentWaylandObject> _persistentObjects = new();

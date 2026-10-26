@@ -174,7 +174,7 @@ internal unsafe class CompositionSwapchainRenderTarget : IDirect3D11TextureRende
 
                 _host.ResizeIfNeeded(size);
                 _host.ApplyEffects(sceneInfo.TransparencyLevel,
-                    (sceneInfo.TopLevelSpecificSceneInfo as Win32TopLevelSceneInfo)?.ThemeVariant ??
+                    (sceneInfo.PlatformSpecificSceneInfo as Win32TopLevelSceneInfo)?.ThemeVariant ??
                     PlatformThemeVariant.Light);
 
                 var iid = IID_ID3D11Texture2D;
