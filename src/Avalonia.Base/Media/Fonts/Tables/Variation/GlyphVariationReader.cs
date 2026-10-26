@@ -41,6 +41,13 @@ namespace Avalonia.Media.Fonts.Tables.Variation
         private const byte DeltasAreWordsFlag = 0x40;
         private const byte DeltaRunCountMask = 0x3F;
 
+        // Packed point number header bits: a point count with the high bit set continues into a
+        // second byte, and each run's control byte says whether its point number deltas are words.
+        private const byte PointCountIsWordFlag = 0x80;
+        private const byte PointCountHighByteMask = 0x7F;
+        private const byte PointsAreWordsFlag = 0x80;
+        private const byte PointRunCountMask = 0x7F;
+
 
         /// <summary>
         /// Applies all tuple variations for the specified glyph to the provided delta
@@ -555,14 +562,14 @@ namespace Avalonia.Media.Fonts.Tables.Variation
             }
 
             int countValue;
-            if ((first & 0x80) != 0)
+            if ((first & PointCountIsWordFlag) != 0)
             {
                 if (pos >= end)
                 {
                     return false;
                 }
 
-                countValue = ((first & 0x7F) << 8) | data[pos++];
+                countValue = ((first & PointCountHighByteMask) << 8) | data[pos++];
             }
             else
             {
@@ -582,8 +589,8 @@ namespace Avalonia.Media.Fonts.Tables.Variation
                 }
 
                 var control = data[pos++];
-                var runIsWords = (control & 0x80) != 0;
-                var runCount = (control & 0x7F) + 1;
+                var runIsWords = (control & PointsAreWordsFlag) != 0;
+                var runCount = (control & PointRunCountMask) + 1;
 
                 for (var i = 0; i < runCount && written < countValue; i++)
                 {
