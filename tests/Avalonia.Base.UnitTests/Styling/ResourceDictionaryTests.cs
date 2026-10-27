@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using Avalonia.Controls;
+using Avalonia.Styling;
 using Moq;
 using Xunit;
 using Avalonia.UnitTests;
@@ -248,5 +250,79 @@ namespace Avalonia.Base.UnitTests.Styling
             Assert.Null(((ResourceDictionary)target.MergedDictionaries[0]).Owner);
         }
 
+        [Fact]
+        public void MakeReadOnly_Prevents_Changes()
+        {
+            var target = new ResourceDictionary { { "foo", "bar" } };
+            target.MergedDictionaries.Add(new ResourceDictionary());
+            target.ThemeDictionaries.Add(ThemeVariant.Dark, new ResourceDictionary());
+
+            Assert.False(target.IsReadOnly);
+            target.MakeReadOnly();
+            Assert.True(target.IsReadOnly);
+            Assert.True(((ICollection<KeyValuePair<object, object?>>)target).IsReadOnly);
+
+            Assert.Throws<NotSupportedException>(() => target["foo"] = "baz");
+            Assert.Throws<NotSupportedException>(() => target.Add("baz", "qux"));
+            Assert.Throws<NotSupportedException>(() => target.AddDeferred("baz", _ => "qux"));
+            Assert.Throws<NotSupportedException>(() => target.SetItems([new("baz", "qux")]));
+            Assert.Throws<NotSupportedException>(() => target.Remove("foo"));
+            Assert.Throws<NotSupportedException>(() => ((ICollection<KeyValuePair<object, object?>>)target).Remove(new("foo", "bar")));
+            Assert.Throws<NotSupportedException>(() => target.Clear());
+            Assert.Throws<NotSupportedException>(() => target.MergedDictionaries.Add(new ResourceDictionary()));
+            Assert.Throws<NotSupportedException>(() => target.MergedDictionaries.RemoveAt(0));
+            Assert.Throws<NotSupportedException>(() => target.ThemeDictionaries.Add(ThemeVariant.Light, new ResourceDictionary()));
+            Assert.Throws<NotSupportedException>(() => target.ThemeDictionaries.Remove(ThemeVariant.Dark));
+
+            Assert.Equal("bar", target["foo"]);
+            Assert.Single(target.MergedDictionaries);
+            Assert.Single(target.ThemeDictionaries);
+        }
+
+        [Fact]
+        public void MakeReadOnly_Without_Merged_And_Theme_Dictionaries_Returns_Empty_Collections()
+        {
+            var target = new ResourceDictionary();
+            target.MakeReadOnly();
+
+            Assert.Empty(target.MergedDictionaries);
+            Assert.Empty(target.ThemeDictionaries);
+            Assert.Throws<NotSupportedException>(() => target.MergedDictionaries.Add(new ResourceDictionary()));
+            Assert.Throws<NotSupportedException>(() => target.ThemeDictionaries.Add(ThemeVariant.Light, new ResourceDictionary()));
+        }
+
+        [Fact]
+        public void ReadOnly_Dictionary_Resolves_Resources()
+        {
+            var calls = 0;
+            var target = new ResourceDictionary
+            {
+                MergedDictionaries = { new ResourceDictionary { { "merged", "merged" } } },
+                ThemeDictionaries = { [ThemeVariant.Dark] = new ResourceDictionary { { "themed", "dark" } } }
+            };
+            target.AddDeferred("deferred", _ => ++calls);
+            target.MakeReadOnly();
+
+            Assert.Equal(1, target["deferred"]);
+            Assert.Equal(1, target["deferred"]);
+            Assert.Equal(1, calls);
+            Assert.True(target.TryGetResource("merged", null, out var merged));
+            Assert.Equal("merged", merged);
+            Assert.True(target.TryGetResource("themed", ThemeVariant.Dark, out var themed));
+            Assert.Equal("dark", themed);
+        }
+
+        [Fact]
+        public void MakeReadOnly_Does_Not_Affect_Nested_Dictionaries()
+        {
+            var merged = new ResourceDictionary();
+            var target = new ResourceDictionary { MergedDictionaries = { merged } };
+            target.MakeReadOnly();
+
+            Assert.False(merged.IsReadOnly);
+            merged.Add("foo", "bar");
+            Assert.True(target.TryGetResource("foo", null, out var value));
+            Assert.Equal("bar", value);
+        }
     }
 }
