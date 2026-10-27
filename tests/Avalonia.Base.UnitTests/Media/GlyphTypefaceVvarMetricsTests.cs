@@ -1,9 +1,11 @@
 using System;
+using System.Buffers.Binary;
 using System.Collections.Generic;
 using Avalonia.Base.UnitTests.Media.Fonts.Tables;
 using Avalonia.Media;
 using Avalonia.Media.Fonts;
 using Avalonia.Platform;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Base.UnitTests.Media
@@ -111,6 +113,56 @@ namespace Avalonia.Base.UnitTests.Media
                 Assert.Equal(metrics.AdvanceHeight, single);
                 Assert.Equal(single, batch[i]);
             }
+        }
+
+        [Fact]
+        public void TryGetVerticalGlyphAdvances_Applies_Vvar_Region_Scalers()
+        {
+            // AdobeBlank2VF's only VVAR delta row (glyph 1: +1000) uses the region that peaks
+            // on HGHT alone, whose scaler equals the HGHT coordinate, so it cannot tell region
+            // scalers from axis coordinates. Point the row at the region that peaks on both
+            // axes instead: at wdth = 500, HGHT = 1000 (normalized 0.5, 1) its scaler is 0.5,
+            // so glyph 1's advance height is 0 + 0.5 * 1000 = 500.
+            var font = SyntheticFont.FromAsset(AdobeBlankAsset);
+            Assert.True(LoadTypeface(AdobeBlankAsset).PlatformTypeface.TryGetTable(
+                OpenTypeTag.Parse("VVAR"), out var vvarData));
+
+            var vvar = vvarData.ToArray();
+            SetFirstRegionIndexOfFirstVarData(vvar, regionIndex: 2);
+
+            var gt = font.Replace("VVAR", vvar).TryCreateGlyphTypeface();
+            Assert.NotNull(gt);
+
+            var varied = gt!.WithVariations(new FontVariationSettings(new[]
+            {
+                new FontVariation(OpenTypeTag.Parse("wdth"), 500),
+                new FontVariation(OpenTypeTag.Parse("HGHT"), 1000)
+            }));
+
+            var glyphs = new ushort[] { 0, 1 };
+            var batch = new ushort[glyphs.Length];
+            Assert.True(varied.TryGetVerticalGlyphAdvances(glyphs, batch));
+
+            Assert.True(varied.TryGetVerticalGlyphAdvance(1, out var single));
+            Assert.Equal(500, single);
+            Assert.Equal(500, batch[1]);
+        }
+
+        /// <summary>
+        /// Rewrites the first region index of the first ItemVariationData subtable in a VVAR
+        /// table's item variation store.
+        /// </summary>
+        private static void SetFirstRegionIndexOfFirstVarData(byte[] vvar, ushort regionIndex)
+        {
+            var store = (int)BinaryPrimitives.ReadUInt32BigEndian(vvar.AsSpan(4));
+
+            // ItemVariationStore: format(2), regionListOffset(4), itemVariationDataCount(2),
+            // itemVariationDataOffsets(4 each).
+            var varData = store + (int)BinaryPrimitives.ReadUInt32BigEndian(vvar.AsSpan(store + 8));
+
+            // ItemVariationData: itemCount(2), wordDeltaCount(2), regionIndexCount(2),
+            // regionIndexes(2 each).
+            BinaryPrimitives.WriteUInt16BigEndian(vvar.AsSpan(varData + 6), regionIndex);
         }
 
         [Fact]
