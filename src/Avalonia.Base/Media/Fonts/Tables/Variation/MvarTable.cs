@@ -53,7 +53,7 @@ namespace Avalonia.Media.Fonts.Tables.Variation
 
         private const ushort SupportedMajorVersion = 1;
         private const int HeaderSize = 12;
-        private const int ValueRecordSize = 8;
+        private const int MinValueRecordSize = 8;
 
         private readonly ItemVariationStore _store;
         // Tag → (outer, inner) lookup map. Built at parse time; constant for the table's
@@ -105,14 +105,15 @@ namespace Avalonia.Media.Fonts.Tables.Variation
             var valueRecordCount = BinaryPrimitives.ReadUInt16BigEndian(span.Slice(8));
             var ivsOffset = BinaryPrimitives.ReadUInt16BigEndian(span.Slice(10));
 
-            // Per spec v1.0 valueRecordSize is always 8. Reject other sizes rather than
-            // attempt to parse a record layout we don't recognize.
-            if (valueRecordSize != ValueRecordSize)
+            // A version 1.x record starts with the 8 bytes this reader uses. Later minor
+            // versions may append fields, so records are stepped through by
+            // valueRecordSize; anything smaller cannot hold a record.
+            if (valueRecordSize < MinValueRecordSize)
             {
                 return false;
             }
 
-            if (HeaderSize + valueRecordCount * ValueRecordSize > span.Length)
+            if (HeaderSize + valueRecordCount * valueRecordSize > span.Length)
             {
                 return false;
             }
@@ -130,7 +131,7 @@ namespace Avalonia.Media.Fonts.Tables.Variation
             var records = new Dictionary<OpenTypeTag, (ushort outer, ushort inner)>(valueRecordCount);
             for (var i = 0; i < valueRecordCount; i++)
             {
-                var recordPos = HeaderSize + i * ValueRecordSize;
+                var recordPos = HeaderSize + i * valueRecordSize;
                 var tag = new OpenTypeTag(BinaryPrimitives.ReadUInt32BigEndian(span.Slice(recordPos, 4)));
                 var outer = BinaryPrimitives.ReadUInt16BigEndian(span.Slice(recordPos + 4, 2));
                 var inner = BinaryPrimitives.ReadUInt16BigEndian(span.Slice(recordPos + 6, 2));
