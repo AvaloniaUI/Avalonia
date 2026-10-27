@@ -1331,14 +1331,7 @@ namespace Avalonia.Media
             // vmtx + VVAR fuse in the same fashion HVAR fuses with hmtx.
             if (_hasVerticalMetrics && _vmTable != null)
             {
-                if (_vvarTable is not null && _vvarRegionScalers is not null)
-                {
-                    hasVertical = _vmTable.TryGetMetrics(glyphIndices, vMetrics, _vvarTable, _vvarRegionScalers);
-                }
-                else
-                {
-                    hasVertical = _vmTable.TryGetMetrics(glyphIndices, vMetrics);
-                }
+                hasVertical = _vmTable.TryGetMetrics(glyphIndices, vMetrics, _vvarTable, _vvarRegionScalers);
             }
 
             if (!hasHorizontal && !hasVertical)
