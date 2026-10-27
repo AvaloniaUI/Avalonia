@@ -2,10 +2,11 @@ using System;
 using Avalonia.Animation;
 using Avalonia.Controls;
 using Xunit;
+using Avalonia.UnitTests;
 
 namespace Avalonia.Base.UnitTests.Animation
 {
-    public class TransitionsTests
+    public class TransitionsTests : ScopedTestBase
     {
         [Fact]
         public void Check_Transitions_Interpolation_Negative_Bounds_Clamp()

@@ -12,7 +12,7 @@ namespace Avalonia.Base.UnitTests.Media;
 /// <see cref="IBrush.RelativeTransform"/> survives the snapshot every mutable brush takes of itself
 /// when it is handed to a consumer that needs an immutable brush.
 /// </summary>
-public class RelativeTransformBrushTests
+public class RelativeTransformBrushTests : ScopedTestBase
 {
     private static readonly Matrix s_matrix = Matrix.CreateRotation(0.5) * Matrix.CreateTranslation(0.25, 0.5);
 
