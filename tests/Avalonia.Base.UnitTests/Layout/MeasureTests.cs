@@ -3,7 +3,7 @@ using Xunit;
 
 namespace Avalonia.Base.UnitTests.Layout
 {
-    public class MeasureTests
+    public class MeasureTests : ScopedTestBase
     {
         [Fact]
         public void Margin_Should_Be_Included_In_DesiredSize()
