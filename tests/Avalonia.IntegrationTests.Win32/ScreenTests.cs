@@ -47,6 +47,15 @@ public class ScreenTests
     }
 
     [Fact]
+    public void Screens_Have_DisplayName()
+    {
+        var screens = Win32Platform.Instance.Screen.AllScreens;
+
+        Assert.NotEmpty(screens);
+        Assert.All(screens, screen => Assert.NotNull(screen.DisplayName));
+    }
+
+    [Fact]
     public async Task Display_Changes_Update_Render_Timer_Without_A_Window()
     {
         using var scope = AvaloniaLocator.EnterScope();
