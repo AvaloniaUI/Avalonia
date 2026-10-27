@@ -161,6 +161,7 @@ namespace Avalonia.Controls
 
         private TextLayout? _textLayout;
         private TextRunCache? _textRunCache;
+        private double _measuredTextWidth;
         protected Size _constraint = new(double.NaN, double.NaN);
         protected IReadOnlyList<TextRun>? _textRuns;
         private InlineCollection? _inlines;
@@ -851,6 +852,8 @@ namespace Avalonia.Controls
             //This implicitly recreated the TextLayout with a new constraint if we previously reset it.
             var textLayout = TextLayout;
 
+            _measuredTextWidth = textLayout.WidthIncludingTrailingWhitespace;
+
             // The textWidth used here is matching that TextPresenter uses to measure the text.
             return new Size(textLayout.WidthIncludingTrailingWhitespace, textLayout.Height).Inflate(padding);
         }
@@ -867,6 +870,13 @@ namespace Avalonia.Controls
             }
 
             var availableSize = finalSize.Deflate(padding);
+
+            // Layout rounding drops the digits past the 8th decimal before rounding up, which can
+            // leave us a hair narrower than the measured text and wrap away its last word (#22493).
+            if (availableSize.Width < _measuredTextWidth && MathUtilities.AreClose(availableSize.Width, _measuredTextWidth, 1e-6))
+            {
+                availableSize = availableSize.WithWidth(_measuredTextWidth);
+            }
 
             // Dispose the TextLayout but preserve the TextRunCache so shaped runs are reused.
             DisposeTextLayout();
