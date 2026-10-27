@@ -1179,20 +1179,13 @@ namespace Avalonia.Media
             bool hasHorizontal = false;
             bool hasVertical = false;
 
-            // hmtx + HVAR are fused inside HorizontalMetricsTable.TryGetMetrics — when
-            // variation is active we hand the cached scalers + HVAR table through so
+            // hmtx + HVAR are fused inside HorizontalMetricsTable.TryGetMetrics, so
             // hMetrics[i] is written exactly once per glyph rather than
-            // hmtx-writes-then-HVAR-overwrites.
+            // hmtx-writes-then-HVAR-overwrites. Without HVAR or scalers (static fonts and
+            // default-instance typefaces) it reads plain hmtx.
             if (_hasHorizontalMetrics && _hmTable != null)
             {
-                if (_hvarTable is not null && _hvarRegionScalers is not null)
-                {
-                    hasHorizontal = _hmTable.TryGetMetrics(glyphIndices, hMetrics, _hvarTable, _hvarRegionScalers);
-                }
-                else
-                {
-                    hasHorizontal = _hmTable.TryGetMetrics(glyphIndices, hMetrics);
-                }
+                hasHorizontal = _hmTable.TryGetMetrics(glyphIndices, hMetrics, _hvarTable, _hvarRegionScalers);
             }
 
             // Batch retrieve vertical metrics. Vertical advances are not variation-aware
