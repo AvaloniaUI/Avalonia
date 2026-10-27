@@ -1,8 +1,11 @@
 using System;
+using System.Buffers.Binary;
 using Avalonia.Base.UnitTests.Media.Fonts.Tables;
 using Avalonia.Media;
+using Avalonia.Media.Fonts;
 using Avalonia.Media.Fonts.Tables.Variation;
 using Avalonia.Platform;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
@@ -101,6 +104,83 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
 
             Assert.True(mvar!.TryGetMetricDelta(MvarTags.UnderlineSize, defaultCoords, out var delta));
             Assert.Equal(0f, delta);
+        }
+
+        [Fact]
+        public void TryLoad_Reads_Records_Larger_Than_The_Version_1_0_Layout()
+        {
+            // A later minor version may append fields to each value record; readers step
+            // through the records by valueRecordSize and keep reading the first 8 bytes.
+            // Re-encode Inter Variable's MVAR with 10-byte records and compare.
+            var original = LoadTypeface(InterVariableAsset);
+            Assert.True(MvarTable.TryLoad(original, 2, out var expected));
+
+            var font = SyntheticFont.FromAsset(SyntheticFont.Assets.InterVariable);
+            Assert.True(original.PlatformTypeface.TryGetTable(OpenTypeTag.Parse("MVAR"), out var mvarData));
+            var widened = WidenValueRecords(mvarData.Span, extraBytes: 2);
+
+            var typeface = font.Replace("MVAR", widened).TryCreateGlyphTypeface();
+            Assert.NotNull(typeface);
+
+            Assert.True(MvarTable.TryLoad(typeface!, 2, out var mvar));
+            Assert.Equal(expected!.RecordCount, mvar!.RecordCount);
+
+            Span<float> bold = stackalloc float[2] { 0f, 1f };
+
+            foreach (var tag in new[] { MvarTags.UnderlineSize, MvarTags.StrikeoutSize })
+            {
+                Assert.True(expected.TryGetMetricDelta(tag, bold, out var expectedDelta));
+                Assert.True(mvar.TryGetMetricDelta(tag, bold, out var actualDelta));
+                Assert.Equal(expectedDelta, actualDelta);
+            }
+        }
+
+        [Fact]
+        public void TryLoad_Rejects_Records_Smaller_Than_8_Bytes()
+        {
+            var original = LoadTypeface(InterVariableAsset);
+            Assert.True(original.PlatformTypeface.TryGetTable(OpenTypeTag.Parse("MVAR"), out var mvarData));
+
+            var shrunk = mvarData.ToArray();
+            BinaryPrimitives.WriteUInt16BigEndian(shrunk.AsSpan(6), 6);
+
+            var typeface = SyntheticFont.FromAsset(SyntheticFont.Assets.InterVariable)
+                .Replace("MVAR", shrunk)
+                .TryCreateGlyphTypeface();
+
+            Assert.NotNull(typeface);
+            Assert.False(MvarTable.TryLoad(typeface!, 2, out _));
+        }
+
+        /// <summary>
+        /// Rewrites a version 1.0 MVAR table so every value record carries
+        /// <paramref name="extraBytes"/> trailing zero bytes, moving the item variation store
+        /// behind the larger record array.
+        /// </summary>
+        private static byte[] WidenValueRecords(ReadOnlySpan<byte> mvar, int extraBytes)
+        {
+            const int headerSize = 12;
+
+            var recordSize = BinaryPrimitives.ReadUInt16BigEndian(mvar.Slice(6));
+            var recordCount = BinaryPrimitives.ReadUInt16BigEndian(mvar.Slice(8));
+            var storeOffset = BinaryPrimitives.ReadUInt16BigEndian(mvar.Slice(10));
+            var newRecordSize = recordSize + extraBytes;
+            var newStoreOffset = storeOffset + recordCount * extraBytes;
+
+            var result = new byte[mvar.Length + recordCount * extraBytes];
+            mvar.Slice(0, headerSize).CopyTo(result);
+            BinaryPrimitives.WriteUInt16BigEndian(result.AsSpan(6), (ushort)newRecordSize);
+            BinaryPrimitives.WriteUInt16BigEndian(result.AsSpan(10), (ushort)newStoreOffset);
+
+            for (var i = 0; i < recordCount; i++)
+            {
+                mvar.Slice(headerSize + i * recordSize, recordSize)
+                    .CopyTo(result.AsSpan(headerSize + i * newRecordSize));
+            }
+
+            mvar.Slice(storeOffset).CopyTo(result.AsSpan(newStoreOffset));
+
+            return result;
         }
     }
 }
