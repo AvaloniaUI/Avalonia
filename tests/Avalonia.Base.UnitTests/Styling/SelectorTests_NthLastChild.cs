@@ -2,10 +2,11 @@ using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Styling;
 using Xunit;
+using Avalonia.UnitTests;
 
 namespace Avalonia.Base.UnitTests.Styling
 {
-    public class SelectorTests_NthLastChild
+    public class SelectorTests_NthLastChild : ScopedTestBase
     {
         [Theory]
         [InlineData(2, 0, ":nth-last-child(2n)")]

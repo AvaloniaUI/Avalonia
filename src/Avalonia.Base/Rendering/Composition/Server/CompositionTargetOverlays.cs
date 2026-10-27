@@ -91,7 +91,7 @@ internal class CompositionTargetOverlays
 
     private bool CaptureTiming => (DebugOverlays & RendererDebugOverlays.RenderTimeGraph) != 0;
 
-    public void Draw(IDrawingContextImpl targetContext, bool hasLayer)
+    public void Draw(IDrawingContextImpl targetContext, bool hasLayer, Matrix? outputTransform = null)
     {
         if (DebugOverlays != RendererDebugOverlays.None)
         {
@@ -103,10 +103,12 @@ internal class CompositionTargetOverlays
 
             
 
+            targetContext.Transform = outputTransform ?? Matrix.Identity;
             if (DebugOverlays.HasFlag(RendererDebugOverlays.DirtyRects))
                 _target.DirtyRects.Visualize(targetContext);
 
-            targetContext.Transform = Matrix.CreateScale(_target.Scaling, _target.Scaling);
+            targetContext.Transform = Matrix.CreateScale(_target.Scaling, _target.Scaling)
+                                      * (outputTransform ?? Matrix.Identity);
             
             using (var immediate = new ImmediateDrawingContext(targetContext, false))
                 DrawOverlays(immediate, hasLayer, _target.Size);

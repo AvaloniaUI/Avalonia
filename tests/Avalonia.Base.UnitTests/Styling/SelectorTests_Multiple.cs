@@ -6,10 +6,11 @@ using Avalonia.Controls.Templates;
 using Avalonia.Styling;
 using Avalonia.VisualTree;
 using Xunit;
+using Avalonia.UnitTests;
 
 namespace Avalonia.Base.UnitTests.Styling
 {
-    public class SelectorTests_Multiple
+    public class SelectorTests_Multiple : ScopedTestBase
     {
         [Fact]
         public void Named_Template_Child_Of_Control_With_Two_Classes()

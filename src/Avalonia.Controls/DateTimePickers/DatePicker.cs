@@ -426,6 +426,9 @@ namespace Avalonia.Controls
 
             // The extra 5 px I think is related to default popup placement behavior
             _popup.VerticalOffset = deltaY + 5;
+
+            // Focus only lands once the popup is open, so the selectors take the arrow keys.
+            _presenter.SetInitialFocus();
         }
 
         protected virtual void OnSelectedDateChanged(object? sender, DatePickerSelectedValueChangedEventArgs e)

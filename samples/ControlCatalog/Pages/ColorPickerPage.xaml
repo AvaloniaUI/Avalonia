@@ -2,8 +2,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:controls="using:Avalonia.Controls"
+             xmlns:controls="using:ControlCatalog.Controls"
              xmlns:converters="clr-namespace:Avalonia.Markup.Xaml.Converters;assembly=Avalonia.Markup.Xaml"
+             xmlns:pages="using:ControlCatalog.Pages"
              mc:Ignorable="d"
              d:DesignWidth="800"
              d:DesignHeight="450"
@@ -14,116 +15,276 @@
     <converters:ColorToBrushConverter x:Key="ToBrushConverter"/>
   </ContentPage.Resources>
 
-  <Grid x:Name="LayoutRoot"
-        ColumnDefinitions="Auto,10,Auto"
-        RowDefinitions="Auto,Auto">
-    <ColorView Grid.Column="0"
-               Grid.Row="0"
-               ColorSpectrumShape="Ring" />
-    <StackPanel Grid.Column="0" Grid.Row="1">
-      <ColorPicker Grid.Column="0"
-                   Grid.Row="1"
-                   HsvColor="hsv(120, 1, 1)"
-                   Margin="0,50,0,0">
-        <ColorPicker.Palette>
-          <controls:FlatHalfColorPalette />
-        </ColorPicker.Palette>
-      </ColorPicker>
-      <ColorPicker HsvColor="hsv(120, 1, 1)"
-                   Width="150"
-                   Margin="0,50,0,0">
-      </ColorPicker>
-      <ColorPicker Width="150"
-                   VerticalContentAlignment="Center"
-                   HsvColor="hsv(120, 1, 1)"
-                   Margin="0,50,0,0">
-        <ColorPicker.Content>
-          <TextBlock Text="{Binding $parent[ColorPicker].Color}" 
-                     Foreground="{Binding $parent[ColorPicker].Color, Converter={StaticResource ToBrushConverter}}"></TextBlock>
-        </ColorPicker.Content>
-      </ColorPicker>
-    </StackPanel>
+  <ScrollViewer Padding="24,20,24,28">
+    <StackPanel Spacing="16">
 
-    <Grid Grid.Column="2"
-          Grid.Row="0"
-          RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
-      <Grid.Resources>
+      <!-- ColorView -->
+      <controls:SampleSection Header="ColorView"
+                              Description="Presents a color for editing using a spectrum, palette and component sliders."
+                              Code="&lt;ColorView Color=&quot;{Binding Color}&quot; /&gt;">
+        <ColorView Grid.Column="0"
+                   Grid.Row="0"
+                   ColorModel="{Binding #ColorModelComboBox.SelectedItem, Mode=TwoWay}"
+                   ColorSpectrumComponents="{Binding #ColorSpectrumComponentsComboBox.SelectedItem, Mode=TwoWay}"
+                   ColorSpectrumShape="{Binding #ColorSpectrumShapeComboBox.SelectedItem, Mode=TwoWay}"
+                   IsAccentColorsVisible="{Binding #IsAccentColorsVisibleCheckBox.IsChecked, Mode=TwoWay}"
+                   IsAlphaEnabled="{Binding #IsAlphaEnabledCheckBox.IsChecked, Mode=TwoWay}"
+                   IsAlphaVisible="{Binding #IsAlphaVisibleCheckBox.IsChecked, Mode=TwoWay}"
+                   IsColorModelVisible="{Binding #IsColorModelVisibleCheckBox.IsChecked, Mode=TwoWay}"
+                   IsColorPreviewVisible="{Binding #IsColorPreviewVisibleCheckBox.IsChecked, Mode=TwoWay}"
+                   IsComponentTextInputVisible="{Binding #IsComponentTextInputVisibleCheckBox.IsChecked, Mode=TwoWay}"
+                   IsHexInputVisible="{Binding #IsHexInputVisibleCheckBox.IsChecked, Mode=TwoWay}" />
 
-        <x:Double x:Key="ColorSliderSize">24</x:Double>
-        <x:Double x:Key="ColorSliderTrackSize">18</x:Double>
-        <CornerRadius x:Key="ColorSliderCornerRadius">12</CornerRadius>
-        <CornerRadius x:Key="ColorSliderTrackCornerRadius">9</CornerRadius>
+            <controls:SampleSection.Options>
+              <StackPanel Spacing="8">
 
-        <!-- Due to 'SystemControlForegroundBaseHighBrush' usage this only works in Fluent theme. -->
-        <!-- Otherwise it would be necessary to make custom light/dark resources. -->
-        <ControlTheme x:Key="ColorSliderThumbTheme"
-                      TargetType="Thumb">
-          <Setter Property="Background" Value="Transparent" />
-          <Setter Property="BorderBrush" Value="{DynamicResource SystemControlForegroundBaseHighBrush}" />
-          <Setter Property="BorderThickness" Value="5" />
-          <Setter Property="CornerRadius" Value="{DynamicResource ColorSliderCornerRadius}" />
-          <Setter Property="Template">
-            <Setter.Value>
-              <ControlTemplate>
-                <Grid>
-                  <Border Background="{TemplateBinding Background}"
-                          BorderBrush="{TemplateBinding BorderBrush}"
-                          BorderThickness="{TemplateBinding BorderThickness}"
-                          CornerRadius="{TemplateBinding CornerRadius}" />
-                  <Ellipse Height="{TemplateBinding Height}"
-                           Width="{TemplateBinding Width}"
-                           Fill="Transparent"
-                           Stroke="{TemplateBinding Foreground}"
-                           StrokeThickness="1" />
-                </Grid>
-              </ControlTemplate>
-            </Setter.Value>
-          </Setter>
-        </ControlTheme>
+                <TextBlock Text="ColorModel"
+                           Classes="sample-caption" />
+                <ComboBox x:Name="ColorModelComboBox"
+                          SelectedItem="{x:Static ColorModel.Rgba}"
+                          HorizontalAlignment="Stretch">
+                  <x:Static Member="ColorModel.Rgba" />
+                  <x:Static Member="ColorModel.Hsva" />
+                </ComboBox>
 
-      </Grid.Resources>
-      <ColorSpectrum x:Name="ColorSpectrum1"
+                <TextBlock Text="ColorSpectrumComponents"
+                           Classes="sample-caption" />
+                <ComboBox x:Name="ColorSpectrumComponentsComboBox"
+                          SelectedItem="{x:Static ColorSpectrumComponents.HueSaturation}"
+                          HorizontalAlignment="Stretch">
+                  <x:Static Member="ColorSpectrumComponents.HueValue" />
+                  <x:Static Member="ColorSpectrumComponents.ValueHue" />
+                  <x:Static Member="ColorSpectrumComponents.HueSaturation" />
+                  <x:Static Member="ColorSpectrumComponents.SaturationHue" />
+                  <x:Static Member="ColorSpectrumComponents.SaturationValue" />
+                  <x:Static Member="ColorSpectrumComponents.ValueSaturation" />
+                </ComboBox>
+
+                <TextBlock Text="ColorSpectrumShape"
+                           Classes="sample-caption" />
+                <ComboBox x:Name="ColorSpectrumShapeComboBox"
+                          SelectedItem="{x:Static ColorSpectrumShape.Ring}"
+                          HorizontalAlignment="Stretch">
+                  <x:Static Member="ColorSpectrumShape.Box" />
+                  <x:Static Member="ColorSpectrumShape.Ring" />
+                </ComboBox>
+
+                <CheckBox x:Name="IsAccentColorsVisibleCheckBox"
+                          IsThreeState="False"
+                          IsChecked="True"
+                          Content="IsAccentColorsVisible" />
+                <CheckBox x:Name="IsAlphaEnabledCheckBox"
+                          IsThreeState="False"
+                          IsChecked="True"
+                          Content="IsAlphaEnabled" />
+                <CheckBox x:Name="IsAlphaVisibleCheckBox"
+                          IsThreeState="False"
+                          IsChecked="True"
+                          Content="IsAlphaVisible" />
+                <CheckBox x:Name="IsColorModelVisibleCheckBox"
+                          IsThreeState="False"
+                          IsChecked="True"
+                          Content="IsColorModelVisible" />
+                <CheckBox x:Name="IsColorPreviewVisibleCheckBox"
+                          IsThreeState="False"
+                          IsChecked="True"
+                          Content="IsColorPreviewVisible" />
+                <CheckBox x:Name="IsComponentTextInputVisibleCheckBox"
+                          TextElement.FontSize="13"
+                          IsThreeState="False"
+                          IsChecked="True"
+                          Content="IsComponentTextInputVisible" />
+                <CheckBox x:Name="IsHexInputVisibleCheckBox"
+                          IsThreeState="False"
+                          IsChecked="True"
+                          Content="IsHexInputVisible" />
+
+              </StackPanel>
+            </controls:SampleSection.Options>
+      </controls:SampleSection>
+
+      <!-- ColorPicker -->
+      <controls:SampleSection Header="ColorPicker"
+                              Description="Presents a color for editing using a spectrum, palette and component sliders within a drop down. Editing is available when the drop down flyout is opened; otherwise, only the preview content area is shown.">
+        <Grid ColumnDefinitions="Auto,10,Auto"
+              RowDefinitions="Auto,10,Auto,10,Auto">
+
+          <ColorPicker Grid.Column="0"
+                       Grid.Row="0"
+                       HorizontalAlignment="Left"
+                       HsvColor="hsv(120, 1, 1)">
+            <ColorPicker.Palette>
+              <FlatHalfColorPalette />
+            </ColorPicker.Palette>
+          </ColorPicker>
+          <TextBlock Text="Default ColorPicker"
+                     Classes="sample-caption"
+                     Grid.Column="2"
                      Grid.Row="0"
-                     Color="Red"
-                     CornerRadius="10"
-                     Height="256"
-                     Width="256" />
-      <!-- HSV Sliders -->
-      <ColorSlider Grid.Row="1"
-                   Margin="0,10,0,0"
-                   ColorComponent="Component1"
-                   ColorModel="Hsva"
-                   HsvColor="{Binding HsvColor, ElementName=ColorSpectrum1}" />
-      <ColorSlider Grid.Row="2"
-                   ColorComponent="Component2"
-                   ColorModel="Hsva"
-                   HsvColor="{Binding HsvColor, ElementName=ColorSpectrum1}" />
-      <ColorSlider Grid.Row="3"
-                   ColorComponent="Component3"
-                   ColorModel="Hsva"
-                   HsvColor="{Binding HsvColor, ElementName=ColorSpectrum1}" />
-      <ColorSlider Grid.Row="4"
-                   ColorComponent="Alpha"
-                   ColorModel="Hsva"
-                   HsvColor="{Binding HsvColor, ElementName=ColorSpectrum1}" />
-      <!-- RGB Sliders -->
-      <!--<ColorSlider Grid.Row="5"
-                   Margin="0,10,0,0"
-                   ColorComponent="Component1"
-                   ColorModel="Rgba"
-                   HsvColor="{Binding HsvColor, ElementName=ColorSpectrum1}" />
-      <ColorSlider Grid.Row="6"
-                   ColorComponent="Component2"
-                   ColorModel="Rgba"
-                   HsvColor="{Binding HsvColor, ElementName=ColorSpectrum1}" />
-      <ColorSlider Grid.Row="7"
-                   ColorComponent="Component3"
-                   ColorModel="Rgba"
-                   HsvColor="{Binding HsvColor, ElementName=ColorSpectrum1}" />-->
-      <ColorPreviewer Grid.Row="8"
-                      IsAccentColorsVisible="False"
-                      HsvColor="{Binding HsvColor, ElementName=ColorSpectrum1}"
-                      Margin="0,2,0,0" />
-    </Grid>
-  </Grid>
+                     VerticalAlignment="Center" />
+
+          <ColorPicker Grid.Column="0"
+                       Grid.Row="2"
+                       HsvColor="hsv(120, 1, 1)"
+                       Width="150" />
+          <TextBlock Text="ColorPicker with a custom width"
+                     Classes="sample-caption"
+                     Grid.Column="2"
+                     Grid.Row="2"
+                     VerticalAlignment="Center" />
+
+          <ColorPicker Grid.Column="0"
+                       Grid.Row="4"
+                       Width="150"
+                       VerticalContentAlignment="Center"
+                       HsvColor="hsv(120, 1, 1)">
+            <ColorPicker.Content>
+              <TextBlock Text="{Binding $parent[ColorPicker].Color}"
+                         FontWeight="SemiBold"
+                         Foreground="{Binding $parent[ColorPicker].Color, Converter={StaticResource ToBrushConverter}}"
+                         Margin="3,0,0,0" />
+            </ColorPicker.Content>
+          </ColorPicker>
+          <TextBlock Text="ColorPicker with custom color preview content"
+                     Classes="sample-caption"
+                     Grid.Column="2"
+                     Grid.Row="4"
+                     VerticalAlignment="Center" />
+
+        </Grid>
+      </controls:SampleSection>
+
+      <!-- Primitives -->
+      <controls:SampleSection Header="Primitives"
+                              Description="Color picker primitives such as ColorSpectrum, ColorSlider and ColorPreviewer allow creating a custom color picker design.">
+        <Grid ColumnDefinitions="Auto,20,Auto,20,Auto"
+              RowDefinitions="Auto,Auto,10,Auto,Auto">
+
+          <Grid.Resources>
+
+            <x:Double x:Key="ColorSliderSize">24</x:Double>
+            <x:Double x:Key="ColorSliderTrackSize">18</x:Double>
+            <CornerRadius x:Key="ColorSliderCornerRadius">12</CornerRadius>
+            <CornerRadius x:Key="ColorSliderTrackCornerRadius">9</CornerRadius>
+
+            <!-- Due to 'SystemControlForegroundBaseHighBrush' usage this only works in Fluent theme. -->
+            <!-- Otherwise it would be necessary to make custom light/dark resources. -->
+            <ControlTheme x:Key="ColorSliderThumbTheme"
+                          TargetType="Thumb">
+              <Setter Property="Background" Value="Transparent" />
+              <Setter Property="BorderBrush" Value="{DynamicResource SystemControlForegroundBaseHighBrush}" />
+              <Setter Property="BorderThickness" Value="5" />
+              <Setter Property="CornerRadius" Value="{DynamicResource ColorSliderCornerRadius}" />
+              <Setter Property="Template">
+                <Setter.Value>
+                  <ControlTemplate>
+                    <Grid>
+                      <Border Background="{TemplateBinding Background}"
+                              BorderBrush="{TemplateBinding BorderBrush}"
+                              BorderThickness="{TemplateBinding BorderThickness}"
+                              CornerRadius="{TemplateBinding CornerRadius}" />
+                      <Ellipse Height="{TemplateBinding Height}"
+                               Width="{TemplateBinding Width}"
+                               Fill="Transparent"
+                               Stroke="{TemplateBinding Foreground}"
+                               StrokeThickness="1" />
+                    </Grid>
+                  </ControlTemplate>
+                </Setter.Value>
+              </Setter>
+            </ControlTheme>
+
+          </Grid.Resources>
+
+          <Grid.Styles>
+            <Style />
+          </Grid.Styles>
+
+          <!-- Spectrum -->
+          <TextBlock Text="ColorSpectrum"
+                     Classes="sample-caption"
+                     Grid.Column="0"
+                     Grid.Row="0"
+                     Margin="0,0,0,5" />
+          <ColorSpectrum x:Name="ColorSpectrum1"
+                         Grid.Column="0"
+                         Grid.Row="1"
+                         Color="Red"
+                         CornerRadius="10"
+                         Height="256"
+                         Width="256" />
+
+          <!-- HSV Sliders -->
+          <TextBlock Text="ColorSlider (HSVA)"
+                     Classes="sample-caption"
+                     Grid.Column="2"
+                     Grid.Row="0"
+                     Margin="0,0,0,5" />
+          <Grid ColumnDefinitions="Auto,Auto,Auto,Auto"
+                Grid.Column="2"
+                Grid.Row="1">
+            <ColorSlider Grid.Column="0"
+                         Orientation="Vertical"
+                         ColorComponent="Component1"
+                         ColorModel="Hsva"
+                         HsvColor="{Binding HsvColor, ElementName=ColorSpectrum1}" />
+            <ColorSlider Grid.Column="1"
+                         Orientation="Vertical"
+                         ColorComponent="Component2"
+                         ColorModel="Hsva"
+                         HsvColor="{Binding HsvColor, ElementName=ColorSpectrum1}" />
+            <ColorSlider Grid.Column="2"
+                         Orientation="Vertical"
+                         ColorComponent="Component3"
+                         ColorModel="Hsva"
+                         HsvColor="{Binding HsvColor, ElementName=ColorSpectrum1}" />
+            <ColorSlider Grid.Column="3"
+                         Orientation="Vertical"
+                         ColorComponent="Alpha"
+                         ColorModel="Hsva"
+                         HsvColor="{Binding HsvColor, ElementName=ColorSpectrum1}" />
+          </Grid>
+
+          <!-- RGB Sliders -->
+          <TextBlock Text="ColorSlider (RGB)"
+                     Classes="sample-caption"
+                     Grid.Column="4"
+                     Grid.Row="0"
+                     Margin="0,0,0,5" />
+          <Grid ColumnDefinitions="Auto,Auto,Auto"
+                Grid.Column="4"
+                Grid.Row="1">
+            <ColorSlider Grid.Column="0"
+                         Orientation="Vertical"
+                         ColorComponent="Component1"
+                         ColorModel="Rgba"
+                         HsvColor="{Binding HsvColor, ElementName=ColorSpectrum1}" />
+            <ColorSlider Grid.Column="1"
+                         Orientation="Vertical"
+                         ColorComponent="Component2"
+                         ColorModel="Rgba"
+                         HsvColor="{Binding HsvColor, ElementName=ColorSpectrum1}" />
+            <ColorSlider Grid.Column="2"
+                         Orientation="Vertical"
+                         ColorComponent="Component3"
+                         ColorModel="Rgba"
+                         HsvColor="{Binding HsvColor, ElementName=ColorSpectrum1}" />
+          </Grid>
+
+          <!-- ColorPreviewer -->
+          <TextBlock Text="ColorPreviewer"
+                     Classes="sample-caption"
+                     Grid.Column="0"
+                     Grid.Row="3"
+                     Margin="0,0,0,5" />
+          <ColorPreviewer Grid.Column="0"
+                          Grid.Row="4"
+                          IsAccentColorsVisible="False"
+                          HsvColor="{Binding HsvColor, ElementName=ColorSpectrum1}" />
+        </Grid>
+      </controls:SampleSection>
+
+    </StackPanel>
+  </ScrollViewer>
+
 </ContentPage>

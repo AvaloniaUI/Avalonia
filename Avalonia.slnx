@@ -44,14 +44,12 @@
     <File Path="build/CoreLibraries.props" />
     <File Path="build/DevAnalyzers.props" />
     <File Path="build/EmbedXaml.props" />
-    <File Path="build/HarfBuzzSharp.props" />
     <File Path="build/MicroCOM.props" />
     <File Path="build/NetAnalyzers.props" />
     <File Path="build/NullableEnable.props" />
     <File Path="build/ReferenceCoreLibraries.props" />
     <File Path="build/SampleApp.props" />
     <File Path="build/SharedVersion.props" />
-    <File Path="build/SkiaSharp.props" />
     <File Path="build/SourceGenerators.props" />
     <File Path="build/SourceLink.props" />
     <File Path="build/TargetFrameworks.props" />
@@ -171,6 +169,7 @@
   </Folder>
   <Folder Name="/Themes/">
     <Project Path="src/Avalonia.Themes.Fluent/Avalonia.Themes.Fluent.csproj" />
+    <Project Path="src/Avalonia.Themes.Fluent2/Avalonia.Themes.Fluent2.csproj" />
     <Project Path="src/Avalonia.Themes.Simple/Avalonia.Themes.Simple.csproj" />
   </Folder>
   <Folder Name="/Tools/">
@@ -183,6 +182,7 @@
     <Project Path="src/tools/Avalonia.Analyzers.VisualBasic/Avalonia.Analyzers.VisualBasic.csproj">
       <BuildType Project="Release" />
     </Project>
+    <Project Path="src/tools/Avalonia.Browser.BuildTasks/Avalonia.Browser.BuildTasks.csproj" />
     <Project Path="src/tools/Avalonia.DBus.Generators/Avalonia.DBus.Generators.csproj" />
     <Project Path="src/tools/Avalonia.Designer.HostApp/Avalonia.Designer.HostApp.csproj" />
     <Project Path="src/tools/Avalonia.Generators/Avalonia.Generators.csproj" />
