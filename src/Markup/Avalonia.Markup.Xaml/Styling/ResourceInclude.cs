@@ -13,7 +13,7 @@ namespace Avalonia.Markup.Xaml.Styling
     /// When used in runtime, this type might be unsafe with trimming and AOT.
     /// </remarks>
     [RequiresUnreferencedCode(TrimmingMessages.StyleResourceIncludeRequiresUnreferenceCodeMessage)]
-    public class ResourceInclude : IResourceProvider, IThemeVariantProvider
+    public class ResourceInclude : IResourceProvider, IThemeVariantProvider, IResourceInclude
     {
         private readonly IServiceProvider? _serviceProvider;
         private readonly Uri? _baseUri;

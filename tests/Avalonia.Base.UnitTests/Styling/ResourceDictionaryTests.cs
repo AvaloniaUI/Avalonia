@@ -313,16 +313,54 @@ namespace Avalonia.Base.UnitTests.Styling
         }
 
         [Fact]
-        public void MakeReadOnly_Does_Not_Affect_Nested_Dictionaries()
+        public void MakeReadOnly_Affects_Theme_Dictionaries()
         {
-            var merged = new ResourceDictionary();
-            var target = new ResourceDictionary { MergedDictionaries = { merged } };
+            var dark = new ResourceDictionary();
+            var target = new ResourceDictionary { ThemeDictionaries = { [ThemeVariant.Dark] = dark } };
             target.MakeReadOnly();
 
-            Assert.False(merged.IsReadOnly);
-            merged.Add("foo", "bar");
-            Assert.True(target.TryGetResource("foo", null, out var value));
-            Assert.Equal("bar", value);
+            Assert.True(dark.IsReadOnly);
+            Assert.Throws<NotSupportedException>(() => dark.Add("foo", "bar"));
+        }
+
+        [Fact]
+        public void MakeReadOnly_Affects_Merged_Dictionaries()
+        {
+            var nested = new ResourceDictionary();
+            var merged = new ResourceDictionary { MergedDictionaries = { nested } };
+            var included = new ResourceDictionary();
+            var target = new ResourceDictionary
+            {
+                MergedDictionaries = { merged, new TestResourceInclude(included) }
+            };
+            target.MakeReadOnly();
+
+            Assert.True(merged.IsReadOnly);
+            Assert.True(nested.IsReadOnly);
+            Assert.True(included.IsReadOnly);
+        }
+
+        [Fact]
+        public void MakeReadOnly_Skips_Other_Resource_Providers()
+        {
+            var provider = new Mock<IResourceProvider>();
+            var target = new ResourceDictionary { MergedDictionaries = { provider.Object } };
+
+            target.MakeReadOnly();
+
+            Assert.True(target.IsReadOnly);
+        }
+
+        private class TestResourceInclude(IResourceDictionary loaded) : IResourceInclude
+        {
+            public IResourceDictionary Loaded { get; } = loaded;
+            public IResourceHost? Owner => Loaded.Owner;
+            public bool HasResources => Loaded.HasResources;
+            public event EventHandler? OwnerChanged { add { } remove { } }
+            public void AddOwner(IResourceHost owner) => Loaded.AddOwner(owner);
+            public void RemoveOwner(IResourceHost owner) => Loaded.RemoveOwner(owner);
+            public bool TryGetResource(object key, ThemeVariant? theme, out object? value) =>
+                Loaded.TryGetResource(key, theme, out value);
         }
     }
 }
