@@ -362,10 +362,45 @@ namespace Avalonia.Controls
         /// Makes the dictionary read-only. This can't be undone.
         /// </summary>
         /// <remarks>
-        /// Applies only to this dictionary. Nested merged and theme dictionaries are not affected.
+        /// Merged and theme dictionaries are made read-only as well, including dictionaries loaded by ResourceInclude.
+        /// Other resource providers in <see cref="MergedDictionaries"/> and <see cref="ThemeDictionaries"/> are not affected.
         /// Deferred resources are still resolved and cached on first access.
         /// </remarks>
-        public void MakeReadOnly() => _isReadOnly = true;
+        public void MakeReadOnly()
+        {
+            if (_isReadOnly)
+            {
+                return;
+            }
+
+            _isReadOnly = true;
+
+            if (_mergedDictionaries is not null)
+            {
+                foreach (var mergedDictionary in _mergedDictionaries)
+                {
+                    MakeReadOnly(mergedDictionary);
+                }
+            }
+
+            if (_themeDictionary is not null)
+            {
+                foreach (var themeDictionary in _themeDictionary.Values)
+                {
+                    MakeReadOnly(themeDictionary);
+                }
+            }
+
+            static void MakeReadOnly(IResourceProvider provider)
+            {
+                if (provider is IResourceInclude include)
+                {
+                    provider = include.Loaded;
+                }
+
+                (provider as ResourceDictionary)?.MakeReadOnly();
+            }
+        }
 
         private void ThrowIfReadOnly()
         {
