@@ -1168,17 +1168,10 @@ namespace Avalonia.Media
                 return false;
             }
 
-            // Fast path: no variation. Dispatch to the plain vmtx batch reader, which never
-            // touches VVAR.
-            if (_vvarTable is null || _activeCoords is null)
-            {
-                return _vmTable.TryGetAdvances(glyphIndices, advances);
-            }
-
-            // Variation path: hand the cached active coords + VVAR table to the fused
-            // single-pass loop inside VerticalMetricsTable.TryGetAdvances (mirrors the
-            // horizontal path above).
-            return _vmTable.TryGetAdvances(glyphIndices, advances, _vvarTable, _activeCoords);
+            // VVAR is applied in the same pass as the vmtx read, with the region scalers
+            // cached on the clone. Without VVAR or scalers (static fonts and
+            // default-instance typefaces) it reads plain vmtx.
+            return _vmTable.TryGetAdvances(glyphIndices, advances, _vvarTable, _vvarRegionScalers);
         }
 
         /// <summary>
