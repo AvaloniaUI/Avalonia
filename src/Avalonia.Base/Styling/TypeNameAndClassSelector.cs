@@ -170,7 +170,7 @@ namespace Avalonia.Styling
             {
                 foreach (var c in _classes)
                 {
-                    if (!c.StartsWith(":"))
+                    if (!c.StartsWith(':'))
                     {
                         builder.Append('.');
                     }
