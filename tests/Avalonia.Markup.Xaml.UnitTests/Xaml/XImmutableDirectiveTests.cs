@@ -393,6 +393,92 @@ public class XImmutableDirectiveTests : XamlTestBase
     }
 
     [Fact]
+    public void Non_Brush_Types_With_ToImmutable_Are_Not_Allowed()
+    {
+        AssertThrows(() => AvaloniaRuntimeXamlLoader.Load("""
+            <ResourceDictionary xmlns="https://github.com/avaloniaui"
+                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                <GradientStops x:Key="Stops" x:Immutable="True">
+                    <GradientStop Offset="0" Color="Red" />
+                </GradientStops>
+            </ResourceDictionary>
+            """), "Only brushes and pens");
+
+        AssertThrows(() => AvaloniaRuntimeXamlLoader.Load("""
+            <ResourceDictionary xmlns="https://github.com/avaloniaui"
+                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                <ExperimentalAcrylicMaterial x:Key="Material" x:Immutable="True" TintColor="Red" />
+            </ResourceDictionary>
+            """), "Only brushes and pens");
+    }
+
+    [Fact]
+    public void ResourceDictionary_Scope_Skips_Non_Brush_Types_With_ToImmutable()
+    {
+        var resources = (ResourceDictionary)AvaloniaRuntimeXamlLoader.Load("""
+            <ResourceDictionary xmlns="https://github.com/avaloniaui"
+                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                                x:Immutable="True">
+                <GradientStops x:Key="Stops">
+                    <GradientStop Offset="0" Color="Red" />
+                </GradientStops>
+                <ExperimentalAcrylicMaterial x:Key="Material" TintColor="Red" />
+                <RotateTransform x:Key="Transform" Angle="45" />
+            </ResourceDictionary>
+            """);
+
+        Assert.IsType<GradientStops>(resources["Stops"]);
+        Assert.IsType<ExperimentalAcrylicMaterial>(resources["Material"]);
+        Assert.IsType<RotateTransform>(resources["Transform"]);
+    }
+
+    [Fact]
+    public void False_On_Unsupported_Type_Is_Ignored()
+    {
+        var resources = (ResourceDictionary)AvaloniaRuntimeXamlLoader.Load("""
+            <ResourceDictionary xmlns="https://github.com/avaloniaui"
+                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                                x:Immutable="True">
+                <x:Double x:Key="Double" x:Immutable="False">1</x:Double>
+                <Thickness x:Key="Thickness" x:Immutable="False">1</Thickness>
+                <Button x:Key="Button" x:Immutable="False" />
+            </ResourceDictionary>
+            """);
+
+        Assert.Equal(1.0, resources["Double"]);
+        Assert.Equal(new Thickness(1), resources["Thickness"]);
+        Assert.IsType<Button>(resources["Button"]);
+    }
+
+    [Fact]
+    public void Literal_SolidColorBrush_Ignores_Other_Directives()
+    {
+        var resources = (ResourceDictionary)AvaloniaRuntimeXamlLoader.Load("""
+            <ResourceDictionary xmlns="https://github.com/avaloniaui"
+                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                <SolidColorBrush x:Key="Brush" x:Immutable="True" x:DataType="x:String" Color="Red" />
+            </ResourceDictionary>
+            """);
+
+        var brush = Assert.IsType<ImmutableSolidColorBrush>(resources.Single(r => "Brush".Equals(r.Key)).Value);
+        Assert.Equal(Colors.Red, brush.Color);
+    }
+
+    [Fact]
+    public void Literal_SolidColorBrush_With_XShared_True_Is_Created_Without_Deferral()
+    {
+        var resources = (ResourceDictionary)AvaloniaRuntimeXamlLoader.Load("""
+            <ResourceDictionary xmlns="https://github.com/avaloniaui"
+                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                <SolidColorBrush x:Key="Brush" x:Immutable="True" x:Shared="True" Color="Red" />
+            </ResourceDictionary>
+            """);
+
+        Assert.IsType<ImmutableSolidColorBrush>(resources.Single(r => "Brush".Equals(r.Key)).Value);
+        Assert.Same(resources["Brush"], resources["Brush"]);
+    }
+
+    [Fact]
     public void Non_Literal_Value_Is_Not_Allowed()
     {
         AssertThrows(() => AvaloniaRuntimeXamlLoader.Load("""

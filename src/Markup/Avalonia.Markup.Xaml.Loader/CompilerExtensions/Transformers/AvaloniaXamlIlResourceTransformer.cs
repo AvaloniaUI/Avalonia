@@ -81,20 +81,22 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 if (valueNode is AvaloniaXamlIlToImmutableNode toImmutableNode)
                     valueNode = toImmutableNode.Value;
                 if (valueNode is AvaloniaXamlIlImmutableObjectNode { Manipulation: XamlManipulationGroupNode immutableDirectives }
-                    && immutableDirectives.Children.Find(d => d is XamlAstXmlDirective { Namespace: XamlNamespaces.Xaml2006, Name: "Shared" })
-                        is XamlAstXmlDirective immutableSharedDirective)
+                    && XamlDirectiveHelpers.FindXamlDirective(immutableDirectives.Children, "Shared") is { } immutableSharedDirective)
                 {
+                    // Immutable objects respect the x:Shared value.
                     immutableDirectives.Children.Remove(immutableSharedDirective);
                     return TryParseSharedDirective(immutableSharedDirective, out value);
                 }
                 if (valueNode is XamlAstConstructableObjectNode co)
                 {
                     // Try find x:Share directive
-                    if (co.Children.Find(d => d is XamlAstXmlDirective { Namespace: XamlNamespaces.Xaml2006, Name: "Shared" }) is XamlAstXmlDirective sharedDirective)
+                    if (XamlDirectiveHelpers.FindXamlDirective(co.Children, "Shared") is { } sharedDirective
+                        && TryParseSharedDirective(sharedDirective, out _))
                     {
                         // If the parser succeeds, remove the x:Share directive
+                        // Value is left as false, so any x:Shared value is handled as not shared, as before.
                         co.Children.Remove(sharedDirective);
-                        return TryParseSharedDirective(sharedDirective, out value);
+                        return true;
                     }
                 }
                 return false;
@@ -102,20 +104,14 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
             bool TryParseSharedDirective(XamlAstXmlDirective sharedDirective, out bool value)
             {
-                value = default;
-                if (sharedDirective.Values.Count == 1 && sharedDirective.Values[0] is XamlAstTextNode text)
+                if (XamlDirectiveHelpers.TryParseBooleanDirective(sharedDirective, out value))
                 {
-                    if (bool.TryParse(text.Text, out value))
-                    {
-                        return true;
-                    }
+                    return true;
+                }
 
-                    context.ReportTransformError("Invalid argument type for x:Shared directive.", node);
-                }
-                else
-                {
-                    context.ReportTransformError("Invalid number of arguments for x:Shared directive.", node);
-                }
+                context.ReportTransformError(sharedDirective.Values.Count == 1 && sharedDirective.Values[0] is XamlAstTextNode
+                    ? "Invalid argument type for x:Shared directive."
+                    : "Invalid number of arguments for x:Shared directive.", node);
                 return false;
             }
         }

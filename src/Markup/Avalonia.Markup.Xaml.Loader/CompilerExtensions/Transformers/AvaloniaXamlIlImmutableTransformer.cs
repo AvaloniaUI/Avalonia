@@ -11,7 +11,7 @@ using XamlX.TypeSystem;
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 {
     /// <summary>
-    /// Handles x:Immutable directive on objects, which have an immutable counterpart.
+    /// Handles x:Immutable directive on brushes and pens.
     /// SolidColorBrush is directly constructed as an immutable brush.
     /// Other types are created as usual mutable objects and converted with their ToImmutable method.
     /// On a ResourceDictionary, x:Immutable applies to all of its values, including nested theme and merged dictionaries.
@@ -22,8 +22,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlAstNode Transform(AstTransformationContext context, IXamlAstNode node)
         {
             if (node is not XamlAstObjectNode obj
-                || obj.Children.Find(d => d is XamlAstXmlDirective { Namespace: XamlNamespaces.Xaml2006, Name: "Immutable" })
-                    is not XamlAstXmlDirective directive)
+                || XamlDirectiveHelpers.FindXamlDirective(obj.Children, "Immutable") is not { } directive)
             {
                 return node;
             }
@@ -31,38 +30,35 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             obj.Children.Remove(directive);
             var isScoped = directive is ScopedImmutableDirective;
 
-            if (!(directive.Values.Count == 1
-                  && directive.Values[0] is XamlAstTextNode text
-                  && bool.TryParse(text.Text, out var isImmutable)))
+            if (!XamlDirectiveHelpers.TryParseBooleanDirective(directive, out var isImmutable))
             {
                 return context.ReportTransformError("The value of x:Immutable must be a literal boolean value.", directive, node);
-            }
-
-            var types = context.GetAvaloniaTypes();
-            var type = obj.Type.GetClrType();
-            var toImmutable = FindToImmutableMethod(type);
-            var isSolidColorBrush = type.Equals(types.SolidColorBrush);
-
-            if (types.ResourceDictionary.IsAssignableFrom(type))
-            {
-                if (isImmutable)
-                {
-                    AddScopedDirectives(obj);
-                }
-
-                return node;
-            }
-
-            if (!isSolidColorBrush && toImmutable is null)
-            {
-                return isScoped
-                    ? node
-                    : context.ReportTransformError($"x:Immutable is not supported on type {type.GetFqn()}.", directive, node);
             }
 
             if (!isImmutable)
             {
                 return node;
+            }
+
+            var types = context.GetAvaloniaTypes();
+            var type = obj.Type.GetClrType();
+
+            if (types.ResourceDictionary.IsAssignableFrom(type))
+            {
+                AddScopedDirectives(obj);
+                return node;
+            }
+
+            // Only brushes and pens are supported for now.
+            // Other types with ToImmutable method, such as GradientStops, return a different type, which can't be assigned to the same properties.
+            var toImmutable = FindToImmutableMethod(type);
+            if (toImmutable is null || !(types.IBrush.IsAssignableFrom(type) || types.Pen.IsAssignableFrom(type)))
+            {
+                return isScoped
+                    ? node
+                    : context.ReportTransformError(
+                        $"x:Immutable is not supported on type {type.GetFqn()}. Only brushes and pens can be immutable.",
+                        directive, node);
             }
 
             var visitor = new MarkupExtensionFinder(types.BindingBase);
@@ -74,22 +70,24 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                     binding, node);
             }
 
-            if (isSolidColorBrush && TryCreateSolidColorBrush(context, types, obj) is { } created)
+            if (type.Equals(types.SolidColorBrush) && TryCreateSolidColorBrush(context, types, obj) is { } created)
             {
-                var directives = obj.Children.OfType<XamlAstXmlDirective>().ToList();
+                var sharedDirective = XamlDirectiveHelpers.FindXamlDirective(obj.Children, "Shared");
 
                 // Immutable objects with compile-time known values are cheaper to create than to defer.
                 // Markup extensions, such as StaticResource, are still resolved lazily.
-                // Respect x:Shared="False", which requires deferral.
+                // Respect x:Shared="False", which requires deferral. Invalid values are reported by the resource transformer.
                 var canSkipDeferral = !visitor.HasMarkupExtensions
-                    && !directives.Any(d => d is { Namespace: XamlNamespaces.Xaml2006, Name: "Shared" });
-                return new AvaloniaXamlIlImmutableObjectNode(created, directives, canSkipDeferral);
-            }
+                    && (sharedDirective is null
+                        || (XamlDirectiveHelpers.TryParseBooleanDirective(sharedDirective, out var isShared) && isShared));
 
-            if (toImmutable is null)
-            {
-                return isScoped ? node : context.ReportTransformError(
-                    $"Unable to create immutable {type.GetFqn()} from the specified properties.", directive, node);
+                // Only x:Key and x:Shared are used by the parent resource dictionary, and x:Shared only when deferred.
+                // Other directives are not applicable to a directly constructed immutable object, and are dropped.
+                var directives = obj.Children.OfType<XamlAstXmlDirective>()
+                    .Where(d => d.Namespace == XamlNamespaces.Xaml2006
+                                && (d.Name == "Key" || (d.Name == "Shared" && !canSkipDeferral)))
+                    .ToList();
+                return new AvaloniaXamlIlImmutableObjectNode(created, directives, canSkipDeferral);
             }
 
             // Text content is converted to a value by the type converter, which might return an immutable object already.
@@ -126,7 +124,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             static void AddScopedDirective(XamlAstObjectNode value)
             {
                 // Explicit x:Immutable on the value has priority.
-                if (!value.Children.Any(d => d is XamlAstXmlDirective { Namespace: XamlNamespaces.Xaml2006, Name: "Immutable" }))
+                if (XamlDirectiveHelpers.FindXamlDirective(value.Children, "Immutable") is null)
                 {
                     value.Children.Add(new ScopedImmutableDirective(value));
                 }

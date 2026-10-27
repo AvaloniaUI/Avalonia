@@ -114,6 +114,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlConstructor ImmutableSolidColorBrushConstructorColor { get; }
         public IXamlConstructor ImmutableSolidColorBrushConstructor { get; }
         public IXamlType SolidColorBrush { get; }
+        public IXamlType Pen { get; }
         public IXamlType TypeUtilities { get; }
         public IXamlType TextDecorationCollection { get; }
         public IXamlType TextDecorations { get; }
@@ -326,6 +327,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             ImmutableSolidColorBrushConstructor = ImmutableSolidColorBrush.GetConstructor(
                 new List<IXamlType> { Color, XamlIlTypes.Double, immutableTransform, immutableTransform });
             SolidColorBrush = typeSystem.GetType("Avalonia.Media.SolidColorBrush");
+            Pen = typeSystem.GetType("Avalonia.Media.Pen");
             TypeUtilities = typeSystem.GetType("Avalonia.Utilities.TypeUtilities");
             TextDecorationCollection = typeSystem.GetType("Avalonia.Media.TextDecorationCollection");
             TextDecorations = typeSystem.GetType("Avalonia.Media.TextDecorations");

@@ -51,4 +51,20 @@ public class XSharedDirectiveTests : XamlTestBase
             Assert.Equal(notSharedResource1.ToString(), notSharedResource2.ToString());
         }
     }
+
+    [Fact]
+    public void Explicit_x_Shared_True_Keeps_Existing_Behavior()
+    {
+        // Any explicit x:Shared value on a deferred resource has always created a new instance per lookup.
+        var resources = (ResourceDictionary)AvaloniaRuntimeXamlLoader.Load("""
+            <ResourceDictionary xmlns="https://github.com/avaloniaui"
+                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                <ColumnDefinitions x:Key="Resource" x:Shared="True">
+                    <ColumnDefinition Width="Auto" />
+                </ColumnDefinitions>
+            </ResourceDictionary>
+            """);
+
+        Assert.NotSame(resources["Resource"], resources["Resource"]);
+    }
 }
