@@ -610,6 +610,7 @@ namespace Avalonia
 
             if (change.Property == TemplatedParentProperty && _stylesApplied)
             {
+                OnTemplatedParentControlThemeChanged();
                 InvalidateStyles(recurse: false);
                 ApplyStyling();
             }
