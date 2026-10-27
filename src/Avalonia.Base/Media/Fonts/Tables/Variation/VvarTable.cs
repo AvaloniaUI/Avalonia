@@ -6,8 +6,8 @@ namespace Avalonia.Media.Fonts.Tables.Variation
 {
     /// <summary>
     /// Parses the OpenType 'VVAR' (Vertical Metrics Variations) table. Provides
-    /// per-glyph vertical-advance and top-side-bearing deltas at a given active
-    /// variation point.
+    /// per-glyph vertical-advance, side-bearing and vertical-origin deltas at a given
+    /// active variation point.
     /// </summary>
     /// <remarks>
     /// <para>
@@ -19,10 +19,9 @@ namespace Avalonia.Media.Fonts.Tables.Variation
     /// </para>
     /// <para>
     /// Structure differs from HVAR by one extra field: a fifth offset to a vertical-
-    /// origin mapping (the per-glyph offset of the typographic vertical origin from
-    /// the top of the design grid). That field is parsed here for header validation
-    /// but not yet exposed — the matching <c>VORG</c> base table isn't read by
-    /// Avalonia, so a delta against it has no consumer.
+    /// origin mapping, which varies the <c>VORG</c> table's per-glyph vertical origin.
+    /// Its deltas are exposed alongside the others; Avalonia does not read <c>VORG</c>
+    /// yet, so nothing consumes them today.
     /// </para>
     /// <para>
     /// Reference: <see href="https://learn.microsoft.com/en-us/typography/opentype/spec/vvar"/>.
@@ -39,17 +38,20 @@ namespace Avalonia.Media.Fonts.Tables.Variation
         private readonly DeltaSetIndexMap? _advanceMap;
         private readonly DeltaSetIndexMap? _tsbMap;
         private readonly DeltaSetIndexMap? _bsbMap;
+        private readonly DeltaSetIndexMap? _vorgMap;
 
         private VvarTable(
             ItemVariationStore store,
             DeltaSetIndexMap? advanceMap,
             DeltaSetIndexMap? tsbMap,
-            DeltaSetIndexMap? bsbMap)
+            DeltaSetIndexMap? bsbMap,
+            DeltaSetIndexMap? vorgMap)
         {
             _store = store;
             _advanceMap = advanceMap;
             _tsbMap = tsbMap;
             _bsbMap = bsbMap;
+            _vorgMap = vorgMap;
         }
 
         public ItemVariationStore Store => _store;
@@ -84,8 +86,7 @@ namespace Avalonia.Media.Fonts.Tables.Variation
             var advanceMapOffset = BinaryPrimitives.ReadUInt32BigEndian(span.Slice(8));
             var tsbMapOffset = BinaryPrimitives.ReadUInt32BigEndian(span.Slice(12));
             var bsbMapOffset = BinaryPrimitives.ReadUInt32BigEndian(span.Slice(16));
-            // vorgMappingOffset = data.Slice(20) — parsed and validated for header
-            // soundness but not stored; we have no consumer for vertical-origin deltas.
+            var vorgMapOffset = BinaryPrimitives.ReadUInt32BigEndian(span.Slice(20));
 
             if (ivsOffset <= 0 || ivsOffset >= data.Length)
             {
@@ -97,14 +98,16 @@ namespace Avalonia.Media.Fonts.Tables.Variation
                 return false;
             }
 
-            // The three glyph-keyed index maps are optional — offset 0 means "use direct
-            // mapping (glyph ID == inner index, outer = 0)". The offsets are attacker-controlled,
-            // so validate them unsigned against the table length before slicing (as the IVS
-            // offset is checked above): a hostile offset degrades to "no VVAR" rather than
-            // throwing out of the typeface constructor.
+            // The four glyph-keyed index maps are optional. A missing advance map means
+            // direct mapping (glyph ID == inner index, outer = 0); a missing side-bearing or
+            // vertical-origin map means that quantity does not vary. The offsets are
+            // attacker-controlled, so validate them unsigned against the table length before
+            // slicing (as the IVS offset is checked above): a hostile offset degrades to
+            // "no VVAR" rather than throwing out of the typeface constructor.
             DeltaSetIndexMap? advanceMap = null;
             DeltaSetIndexMap? tsbMap = null;
             DeltaSetIndexMap? bsbMap = null;
+            DeltaSetIndexMap? vorgMap = null;
 
             if (advanceMapOffset != 0)
             {
@@ -133,7 +136,16 @@ namespace Avalonia.Media.Fonts.Tables.Variation
                 }
             }
 
-            vvarTable = new VvarTable(store, advanceMap, tsbMap, bsbMap);
+            if (vorgMapOffset != 0)
+            {
+                if (vorgMapOffset >= (uint)data.Length ||
+                    !DeltaSetIndexMap.TryLoad(data.Slice((int)vorgMapOffset), out vorgMap))
+                {
+                    return false;
+                }
+            }
+
+            vvarTable = new VvarTable(store, advanceMap, tsbMap, bsbMap, vorgMap);
             return true;
         }
 
@@ -160,6 +172,37 @@ namespace Avalonia.Media.Fonts.Tables.Variation
             }
 
             return TryGetDelta(_tsbMap, glyphIndex, activeCoords, out delta);
+        }
+
+        /// <summary>
+        /// Computes the bottom-side-bearing delta for <paramref name="glyphIndex"/>.
+        /// Returns <c>true</c> with <c>delta = 0</c> when the font carries no BSB mapping.
+        /// </summary>
+        public bool TryGetBottomSideBearingDelta(int glyphIndex, ReadOnlySpan<float> activeCoords, out float delta)
+        {
+            if (_bsbMap is null)
+            {
+                delta = 0f;
+                return true;
+            }
+
+            return TryGetDelta(_bsbMap, glyphIndex, activeCoords, out delta);
+        }
+
+        /// <summary>
+        /// Computes the delta for the glyph's vertical origin (the <c>VORG</c> table's
+        /// <c>vertOriginY</c>). Returns <c>true</c> with <c>delta = 0</c> when the font
+        /// carries no vertical-origin mapping.
+        /// </summary>
+        public bool TryGetVerticalOriginDelta(int glyphIndex, ReadOnlySpan<float> activeCoords, out float delta)
+        {
+            if (_vorgMap is null)
+            {
+                delta = 0f;
+                return true;
+            }
+
+            return TryGetDelta(_vorgMap, glyphIndex, activeCoords, out delta);
         }
 
         private bool TryGetDelta(DeltaSetIndexMap? map, int glyphIndex, ReadOnlySpan<float> activeCoords, out float delta)
@@ -199,6 +242,28 @@ namespace Avalonia.Media.Fonts.Tables.Variation
             }
 
             return TryGetDeltaWithScalers(_tsbMap, glyphIndex, regionScalers, out delta);
+        }
+
+        public bool TryGetBottomSideBearingDeltaWithScalers(int glyphIndex, ReadOnlySpan<float> regionScalers, out float delta)
+        {
+            if (_bsbMap is null)
+            {
+                delta = 0f;
+                return true;
+            }
+
+            return TryGetDeltaWithScalers(_bsbMap, glyphIndex, regionScalers, out delta);
+        }
+
+        public bool TryGetVerticalOriginDeltaWithScalers(int glyphIndex, ReadOnlySpan<float> regionScalers, out float delta)
+        {
+            if (_vorgMap is null)
+            {
+                delta = 0f;
+                return true;
+            }
+
+            return TryGetDeltaWithScalers(_vorgMap, glyphIndex, regionScalers, out delta);
         }
 
         private bool TryGetDeltaWithScalers(DeltaSetIndexMap? map, int glyphIndex, ReadOnlySpan<float> regionScalers, out float delta)

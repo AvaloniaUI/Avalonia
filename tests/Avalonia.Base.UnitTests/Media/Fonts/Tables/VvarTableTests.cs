@@ -112,5 +112,48 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
             Assert.False(float.IsNaN(delta));
             Assert.False(float.IsInfinity(delta));
         }
+
+        [Fact]
+        public void TryGetBottomSideBearingDelta_Returns_Zero_When_BSB_Mapping_Absent()
+        {
+            // AdobeBlank2VF ships no BSB mapping, so there is no bottom-side-bearing
+            // variation: the helper reports success with a zero delta, like the TSB one.
+            var typeface = LoadTypeface(AdobeBlankAsset);
+            Assert.True(VvarTable.TryLoad(typeface, 2, out var vvar));
+
+            Span<float> coords = stackalloc float[2] { 0f, 1f };
+            Span<float> scalers = stackalloc float[vvar!.Store.RegionCount];
+            vvar.Store.ComputeRegionScalers(coords, scalers);
+
+            Assert.True(vvar.TryGetBottomSideBearingDelta(1, coords, out var delta));
+            Assert.Equal(0f, delta);
+
+            Assert.True(vvar.TryGetBottomSideBearingDeltaWithScalers(1, scalers, out delta));
+            Assert.Equal(0f, delta);
+        }
+
+        [Fact]
+        public void TryGetVerticalOriginDelta_Reads_Through_The_VOrg_Mapping()
+        {
+            // Per fontTools, AdobeBlank2VF's VOrg mapping sends both glyphs to delta-set
+            // row 0, whose deltas are all zero, while row 1 carries glyph 1's +1000
+            // advance-height delta at HGHT = 1. A reader that ignored the mapping and fell
+            // back to direct glyph-to-row indexing would report 1000 for glyph 1.
+            var typeface = LoadTypeface(AdobeBlankAsset);
+            Assert.True(VvarTable.TryLoad(typeface, 2, out var vvar));
+
+            Span<float> coords = stackalloc float[2] { 0f, 1f };
+            Span<float> scalers = stackalloc float[vvar!.Store.RegionCount];
+            vvar.Store.ComputeRegionScalers(coords, scalers);
+
+            Assert.True(vvar.TryGetAdvanceHeightDelta(1, coords, out var advanceDelta));
+            Assert.Equal(1000f, advanceDelta);
+
+            Assert.True(vvar.TryGetVerticalOriginDelta(1, coords, out var originDelta));
+            Assert.Equal(0f, originDelta);
+
+            Assert.True(vvar.TryGetVerticalOriginDeltaWithScalers(1, scalers, out originDelta));
+            Assert.Equal(0f, originDelta);
+        }
     }
 }
