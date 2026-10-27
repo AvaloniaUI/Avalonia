@@ -110,6 +110,7 @@ partial class MainWindowViewModel
             s.Add<FocusPage>("Focus", Icons.Target, "Track and control keyboard focus");
             s.Add<GesturePage>("Gestures", Icons.Gesture, "Tap, scroll and pinch gesture recognition");
             s.Add<PointersPage>("Pointers", Icons.Cursor, "Raw pointer input");
+            s.Add<Pages.Terminal.TerminalPage>("Terminal", Icons.Terminal, "Minimal ANSI terminal on a pseudo terminal");
         }),
         Section("Window & Platform", Icons.DesktopMobile, s =>
         {

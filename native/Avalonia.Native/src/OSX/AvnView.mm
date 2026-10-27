@@ -7,6 +7,7 @@
 #import <Carbon/Carbon.h> /* For the TIS functions used to classify the keyboard input source. */
 #include "AvnView.h"
 #include "automation.h"
+#include "AvnString.h"
 #import "WindowInterfaces.h"
 #import "WindowImpl.h"
 
@@ -594,7 +595,14 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
     auto timestamp = static_cast<uint64_t>([event timestamp] * 1000);
     auto modifiers = [self getModifiers:[event modifierFlags]];
 
-    parent->TopLevelEvents->RawKeyEvent(type, timestamp, modifiers, key, physicalKey, keySymbolUtf8);
+    AvnKeyEventInfo info = {};
+    info.HasNativeKeyCode = true;
+    info.NativeKeyCode = [event keyCode];
+    info.NativeModifiers = [event modifierFlags];
+
+    // Also called from flagsChanged:, where reading the event's characters throws
+    parent->TopLevelEvents->RawKeyEvent(type, timestamp, modifiers, key, physicalKey, keySymbolUtf8,
+                                        nullptr, nullptr, info);
 }
 
 - (void)setModifiers:(NSEventModifierFlags)modifierFlags
@@ -795,7 +803,24 @@ static bool KeyboardInputSourceComposes(NSString* sourceId)
     // A KeyDown is always raised before the input context sees the event, otherwise the
     // input context silently consumes printable keys (space, letters, digits) and user code
     // never gets a chance to react to them.
-    auto handled = parent->TopLevelEvents->RawKeyEvent(KeyDown, timestamp, modifiers, key, physicalKey, keySymbolUtf8);
+    auto characters = [event characters];
+    ComPtr<IAvnString> keyText;
+    if ([characters length] != 0)
+        keyText = CreateAvnString(characters);
+    // Option counts as Alt here, so a terminal can use it as a Meta key
+    auto symbolIgnoringModifiers = KeySymbolFromScanCode(scanCode, [event modifierFlags] & ~NSEventModifierFlagOption, true);
+    ComPtr<IAvnString> keyTextIgnoringModifiers;
+    if (symbolIgnoringModifiers != nullptr)
+        keyTextIgnoringModifiers = CreateAvnString(symbolIgnoringModifiers);
+
+    AvnKeyEventInfo info = {};
+    info.HasConsumedModifiers = ConsumedModifiersFromScanCode(scanCode, [event modifierFlags], &info.ConsumedModifiers);
+    info.HasNativeKeyCode = true;
+    info.NativeKeyCode = scanCode;
+    info.NativeModifiers = [event modifierFlags];
+
+    auto handled = parent->TopLevelEvents->RawKeyEvent(KeyDown, timestamp, modifiers, key, physicalKey, keySymbolUtf8,
+                                                       keyText, keyTextIgnoringModifiers, info);
 
     if(handled)
     {
@@ -920,8 +945,12 @@ static bool KeyboardInputSourceComposes(NSString* sourceId)
     {
         parent->InputMethod->Client->SelectInSurroundingText((int)finalReplacementRange.location, (int)(finalReplacementRange.location + finalReplacementRange.length));
         uint64_t timestamp = static_cast<uint64_t>([NSDate timeIntervalSinceReferenceDate] * 1000);
-        parent->TopLevelEvents->RawKeyEvent(KeyDown, timestamp, AvnInputModifiersNone, AvnKeyBack, AvnPhysicalKeyNone, "\b");
-        parent->TopLevelEvents->RawKeyEvent(KeyUp, timestamp, AvnInputModifiersNone, AvnKeyBack, AvnPhysicalKeyNone, "\b");
+        // Synthesized events: no native data
+        AvnKeyEventInfo info = {};
+        parent->TopLevelEvents->RawKeyEvent(KeyDown, timestamp, AvnInputModifiersNone, AvnKeyBack, AvnPhysicalKeyNone, "\b",
+                                            nullptr, nullptr, info);
+        parent->TopLevelEvents->RawKeyEvent(KeyUp, timestamp, AvnInputModifiersNone, AvnKeyBack, AvnPhysicalKeyNone, "\b",
+                                            nullptr, nullptr, info);
     }
 
     auto markedLocation = [self selectedRange].location;

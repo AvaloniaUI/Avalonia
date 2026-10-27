@@ -314,7 +314,11 @@ namespace Avalonia.Controls
                             Key = rawKeyEventArgs.Key,
                             PhysicalKey = rawKeyEventArgs.PhysicalKey,
                             KeyDeviceType = rawKeyEventArgs.KeyDeviceType,
-                            KeySymbol = rawKeyEventArgs.KeySymbol
+                            KeySymbol = rawKeyEventArgs.KeySymbol,
+                            KeyText = rawKeyEventArgs.KeyText,
+                            KeyTextIgnoringModifiers = rawKeyEventArgs.KeyTextIgnoringModifiers,
+                            ConsumedModifiers = (KeyModifiers?)rawKeyEventArgs.ConsumedModifiers,
+                            NativeKeyInfo = rawKeyEventArgs.NativeKeyInfo
                         };
 
                         backRequested = keymap.Any(key => key.Matches(keyEvent));

@@ -1017,6 +1017,10 @@ namespace Avalonia.Input
         /// <summary>
         /// The key is used with another key to create a single combined character.
         /// </summary>
+        /// <remarks>
+        /// Reported for the key down that completes a dead key sequence. The matching key up reports the real key.
+        /// Use <c>KeyEventArgs.PhysicalKey</c> to identify the key.
+        /// </remarks>
         DeadCharProcessed = 172,
         
         

@@ -255,6 +255,10 @@ namespace Avalonia.Input
                             PhysicalKey = keyInput.PhysicalKey,
                             KeySymbol = keyInput.KeySymbol,
                             KeyDeviceType = keyInput.KeyDeviceType,
+                            KeyText = keyInput.KeyText,
+                            KeyTextIgnoringModifiers = keyInput.KeyTextIgnoringModifiers,
+                            ConsumedModifiers = keyInput.ConsumedModifiers?.ToKeyModifiers(),
+                            NativeKeyInfo = keyInput.NativeKeyInfo,
                             Source = element
                         };
                         

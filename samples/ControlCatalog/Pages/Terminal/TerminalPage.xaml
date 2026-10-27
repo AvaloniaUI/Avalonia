@@ -1,0 +1,22 @@
+<ContentPage xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:terminal="using:ControlCatalog.Pages.Terminal"
+             x:Class="ControlCatalog.Pages.Terminal.TerminalPage"
+             Header="Terminal">
+  <Grid RowDefinitions="Auto,*,Auto" Margin="8" RowSpacing="8">
+    <StackPanel Spacing="4">
+      <TextBlock TextWrapping="Wrap">
+        A minimal TERM=ansi-mini terminal on a pseudo terminal. It shows how KeyText, KeyTextIgnoringModifiers and the
+        native key values turn key presses into the bytes that a terminal sends. Paste with Ctrl+Shift+V (Cmd+V on
+        macOS). Ctrl+Shift+C (Cmd+C) copies the screen.
+      </TextBlock>
+      <StackPanel Orientation="Horizontal" Spacing="16">
+        <TextBlock x:Name="Status" Opacity="0.7" VerticalAlignment="Center" />
+        <CheckBox x:Name="OptionAsMeta" Content="Option as Meta" IsVisible="False" />
+      </StackPanel>
+    </StackPanel>
+    <terminal:TerminalView x:Name="Terminal" Grid.Row="1" />
+    <SelectableTextBlock x:Name="Inspector" Grid.Row="2" FontFamily="Cascadia Mono, Consolas, Menlo, DejaVu Sans Mono, monospace"
+                         FontSize="12" TextWrapping="Wrap" />
+  </Grid>
+</ContentPage>

@@ -197,7 +197,10 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
         AvnInputModifiers modifiers,
         AvnKey key,
         AvnPhysicalKey physicalKey,
-        string keySymbol)
+        string keySymbol,
+        IAvnString? keyText,
+        IAvnString? keyTextIgnoringModifiers,
+        AvnKeyEventInfo info)
     {
         if (_inputRoot is null)
             return false;
@@ -217,7 +220,22 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
             (Key)key,
             (RawInputModifiers)modifiers,
             (PhysicalKey)physicalKey,
-            keySymbol);
+            keySymbol)
+        {
+            KeyText = keyText?.String,
+            KeyTextIgnoringModifiers = keyTextIgnoringModifiers?.String,
+            ConsumedModifiers = info.HasConsumedModifiers.FromComBool() ?
+                (RawInputModifiers)info.ConsumedModifiers :
+                null,
+            NativeKeyInfo = info.HasNativeKeyCode.FromComBool() ?
+                new NativeKeyInfo
+                {
+                    Format = NativeKeyInfoFormat.MacOS,
+                    ScanCode = (uint)info.NativeKeyCode,
+                    Modifiers = info.NativeModifiers
+                } :
+                null
+        };
 
         Input?.Invoke(args);
 
@@ -456,9 +474,11 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
             _parent.RawMouseEvent(type, pointerDeviceType, timeStamp, modifiers, point, delta, pressure, xTilt, yTilt);
         }
 
-        int IAvnTopLevelEvents.RawKeyEvent(AvnRawKeyEventType type, ulong timeStamp, AvnInputModifiers modifiers, AvnKey key, AvnPhysicalKey physicalKey, string keySymbol)
+        int IAvnTopLevelEvents.RawKeyEvent(AvnRawKeyEventType type, ulong timeStamp, AvnInputModifiers modifiers, AvnKey key, AvnPhysicalKey physicalKey, string keySymbol,
+            IAvnString? keyText, IAvnString? keyTextIgnoringModifiers, AvnKeyEventInfo info)
         {
-            return _parent.RawKeyEvent(type, timeStamp, modifiers, key, physicalKey, keySymbol).AsComBool();
+            return _parent.RawKeyEvent(type, timeStamp, modifiers, key, physicalKey, keySymbol,
+                keyText, keyTextIgnoringModifiers, info).AsComBool();
         }
 
         int IAvnTopLevelEvents.RawTextInputEvent(ulong timeStamp, string text)

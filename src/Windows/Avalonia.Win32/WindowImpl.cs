@@ -106,6 +106,7 @@ namespace Avalonia.Win32
         private bool _hiddenWindowIsParent;
         private uint _langid;
         internal bool _ignoreWmChar;
+        private bool _deadCharPending;
         private WindowTransparencyLevel _transparencyLevel;
         private readonly WindowTransparencyLevel _defaultTransparencyLevel;
         private WindowCornerPreference _cornerPreference;

@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Input;
+using Avalonia.Input.Raw;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 using static Avalonia.Win32.Interop.UnmanagedMethods.VirtualKeyStates;
 
@@ -495,7 +497,7 @@ namespace Avalonia.Win32.Input
 
         /// <summary>
         /// Gets a key symbol from a Windows virtual-key using MapVirtualKey.
-        /// Unlike <see cref="GetKeySymbol"/>, this does not call ToUnicodeEx and is safe to use
+        /// Unlike <see cref="GetKeySymbol(int, int)"/>, this does not call ToUnicodeEx and is safe to use
         /// during WM_SYSKEYDOWN/UP where ToUnicodeEx would corrupt keyboard state.
         /// </summary>
         /// <param name="virtualKey">The Windows virtual-key.</param>
@@ -517,34 +519,130 @@ namespace Avalonia.Win32.Input
         /// <param name="virtualKey">The Windows virtual-key.</param>
         /// <param name="keyData">The key data (in the same format as lParam for WM_KEYDOWN).</param>
         /// <returns>A key symbol, or null if none matched.</returns>
-        public static unsafe string? GetKeySymbol(int virtualKey, int keyData)
+        public static string? GetKeySymbol(int virtualKey, int keyData)
+            => GetKeySymbol(virtualKey, keyData, out _);
+
+        /// <summary>
+        /// Gets a key symbol from a Windows virtual-key and key data.
+        /// </summary>
+        /// <param name="virtualKey">The Windows virtual-key.</param>
+        /// <param name="keyData">The key data (in the same format as lParam for WM_KEYDOWN).</param>
+        /// <param name="text">The unfiltered text of the key, or null for none or for a dead key.</param>
+        /// <returns>A key symbol, or null if none matched.</returns>
+        internal static string? GetKeySymbol(int virtualKey, int keyData, out string? text)
+        {
+            var length = TranslateKey(virtualKey, keyData, out var buffer);
+            text = length > 0 ? buffer : null;
+
+            return length switch
+            {
+                < 0 => buffer, // dead key
+                0 => null,
+                1 when !KeySymbolHelper.IsAllowedAsciiKeySymbol(buffer![0]) => null,
+                2 when buffer![0] == buffer[1] => buffer.Substring(0, 1), // dead key second press repeats symbol
+                _ => buffer
+            };
+        }
+
+        /// <summary>
+        /// Applies the <see cref="GetKeySymbol(int, int)"/> filter to text produced by the layout.
+        /// </summary>
+        internal static string? FilterKeySymbol(string? text) => text switch
+        {
+            null or "" => null,
+            { Length: 1 } when !KeySymbolHelper.IsAllowedAsciiKeySymbol(text[0]) => null,
+            { Length: 2 } when text[0] == text[1] => text.Substring(0, 1),
+            _ => text
+        };
+
+        /// <summary>
+        /// Gets the text of a key with Shift and Caps Lock applied and Ctrl and Alt ignored, from the layout table.
+        /// Unlike ToUnicodeEx, this doesn't touch the keyboard state or combine with a pending dead key.
+        /// </summary>
+        internal static string? GetTextIgnoringControlAndAlt(int virtualKey)
+            => KeyboardLayoutTable.Current?.GetTextIgnoringControlAndAlt(virtualKey,
+                GetKeyState((int)VK_SHIFT) < 0, (GetKeyState((int)VK_CAPITAL) & 1) != 0);
+
+        private static unsafe int TranslateKey(int virtualKey, int keyData, out string? text)
         {
             const int bufferSize = 4;
             const uint doNotChangeKeyboardState = 1U << 2;
 
-            fixed (byte* keyStates = stackalloc byte[256])
-            fixed (char* buffer = stackalloc char[bufferSize])
-            {
-                GetKeyboardState(keyStates);
+            var keyStates = stackalloc byte[256];
+            var buffer = stackalloc char[bufferSize];
 
-                var length = ToUnicodeEx(
-                    (uint)virtualKey,
-                    GetScanCode(keyData),
-                    keyStates,
-                    buffer,
-                    bufferSize,
-                    doNotChangeKeyboardState,
-                    GetKeyboardLayout(0));
+            GetKeyboardState(keyStates);
 
-                return length switch
-                {
-                    < 0 => new string(buffer, 0, -length), // dead key
-                    0 => null,
-                    1 when !KeySymbolHelper.IsAllowedAsciiKeySymbol(buffer[0]) => null,
-                    2 when buffer[0] == buffer[1] => new string(buffer, 0, 1), // dead key second press repeats symbol
-                    _ => new string(buffer, 0, length)
-                };
-            }
+            var length = ToUnicodeEx(
+                (uint)virtualKey,
+                GetScanCode(keyData),
+                keyStates,
+                buffer,
+                bufferSize,
+                doNotChangeKeyboardState,
+                GetKeyboardLayout(0));
+
+            text = length == 0 ? null : new string(buffer, 0, Math.Abs(length));
+            return length;
+        }
+
+        internal static NativeKeyInfo GetNativeKeyInfo(int virtualKey, int keyData) => new()
+        {
+            Format = NativeKeyInfoFormat.Win32,
+            ScanCode = GetNativeScanCode(keyData),
+            VirtualKey = (uint)virtualKey,
+            Modifiers = GetNativeModifiers(keyData)
+        };
+
+        /// <summary>
+        /// Gets the pressed modifiers that select the level of the key in the current layout, or null if the layout
+        /// could not be read.
+        /// </summary>
+        internal static RawInputModifiers? GetConsumedModifiers(int virtualKey, RawInputModifiers pressed)
+            => KeyboardLayoutTable.Current?.GetConsumedModifiers(virtualKey, pressed,
+                (GetKeyState((int)VK_CAPITAL) & 1) != 0);
+
+        /// <summary>
+        /// Gets the scan code of a key, with 0xE000 added for extended keys.
+        /// </summary>
+        internal static uint GetNativeScanCode(int keyData)
+            => GetScanCode(keyData) | (IsExtended(keyData) ? 0xE000u : 0);
+
+        /// <summary>
+        /// Gets the modifier state in the layout of the console <c>dwControlKeyState</c> field.
+        /// </summary>
+        private static ulong GetNativeModifiers(int keyData)
+        {
+            const ulong rightAltPressed = 0x1;
+            const ulong leftAltPressed = 0x2;
+            const ulong rightCtrlPressed = 0x4;
+            const ulong leftCtrlPressed = 0x8;
+            const ulong shiftPressed = 0x10;
+            const ulong numLockOn = 0x20;
+            const ulong scrollLockOn = 0x40;
+            const ulong capsLockOn = 0x80;
+            const ulong enhancedKey = 0x100;
+
+            ulong result = 0;
+            if (GetKeyState((int)VK_RMENU) < 0)
+                result |= rightAltPressed;
+            if (GetKeyState((int)VK_LMENU) < 0)
+                result |= leftAltPressed;
+            if (GetKeyState((int)VK_RCONTROL) < 0)
+                result |= rightCtrlPressed;
+            if (GetKeyState((int)VK_LCONTROL) < 0)
+                result |= leftCtrlPressed;
+            if (GetKeyState((int)VK_SHIFT) < 0)
+                result |= shiftPressed;
+            if ((GetKeyState((int)VK_NUMLOCK) & 1) != 0)
+                result |= numLockOn;
+            if ((GetKeyState((int)VK_SCROLL) & 1) != 0)
+                result |= scrollLockOn;
+            if ((GetKeyState((int)VK_CAPITAL) & 1) != 0)
+                result |= capsLockOn;
+            if (IsExtended(keyData))
+                result |= enhancedKey;
+            return result;
         }
     }
 }
