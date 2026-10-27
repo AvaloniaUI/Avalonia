@@ -1002,15 +1002,8 @@ namespace Avalonia.Media
                 return false;
             }
 
-            // Fast path: no variation. Dispatch to the plain hmtx batch reader, which
-            // never touches HVAR.
-            if (_hvarTable is null || _hvarRegionScalers is null)
-            {
-                return _hmTable.TryGetAdvances(glyphIndices, advances);
-            }
-
-            // Variation path: hand the cached region scalers + HVAR table to the fused
-            // single-pass loop inside HorizontalMetricsTable.TryGetAdvances.
+            // HVAR is applied in the same pass as the hmtx read. Without HVAR or scalers
+            // (static fonts and default-instance typefaces) it reads plain hmtx.
             return _hmTable.TryGetAdvances(glyphIndices, advances, _hvarTable, _hvarRegionScalers);
         }
 
