@@ -120,6 +120,10 @@ namespace Avalonia.Controls
             {
                 _calendar.SelectionMode = CalendarSelectionMode.SingleDate;
 
+                // The calendar handles the arrow keys itself, so the drop-down gives it the focus without putting it in the tab order.
+                _calendar.Focusable = true;
+                _calendar.IsTabStop = false;
+
                 _calendar.DayButtonMouseUp += Calendar_DayButtonMouseUp;
                 _calendar.DisplayDateChanged += Calendar_DisplayDateChanged;
                 _calendar.SelectedDatesChanged += Calendar_SelectedDatesChanged;
@@ -701,8 +705,6 @@ namespace Avalonia.Controls
         {
             if (_calendar != null)
             {
-                _calendar.Focus();
-
                 // Open the PopUp
                 _onOpenSelectedDate = SelectedDate;
                 _popUp!.IsOpen = true;
@@ -710,6 +712,7 @@ namespace Avalonia.Controls
 
                 UpdatePseudoClasses();
                 _calendar.ResetStates();
+                _calendar.Focus();
                 OnCalendarOpened(new RoutedEventArgs());
             }
         }

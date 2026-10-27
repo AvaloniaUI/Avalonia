@@ -13,7 +13,7 @@ using Xunit;
 
 namespace Avalonia.Base.UnitTests.Input
 {
-    public class GesturesTests
+    public class GesturesTests : ScopedTestBase
     {
         private readonly MouseTestHelper _mouse = new MouseTestHelper();
 
@@ -120,6 +120,57 @@ namespace Avalonia.Base.UnitTests.Input
         }
 
         [Fact]
+        public void Tapped_Should_Be_Raised_After_Hold_Duration_When_Hold_With_Mouse_Is_Disabled()
+        {
+            using var scope = AvaloniaLocator.EnterScope();
+            var iSettingsMock = new Mock<IPlatformSettings>();
+            iSettingsMock.Setup(x => x.HoldWaitDuration).Returns(TimeSpan.FromMilliseconds(300));
+            iSettingsMock.Setup(x => x.GetTapSize(It.IsAny<PointerType>())).Returns(new Size(16, 16));
+            AvaloniaLocator.CurrentMutable.BindToSelf(this)
+                .Bind<IPlatformSettings>().ToConstant(iSettingsMock.Object);
+
+            using var app = UnitTestApplication.Start();
+
+            var border = new Border();
+            var root = new TestRoot
+            {
+                Child = border
+            };
+            var result = new List<string>();
+
+            AddHandlers(root, border, result, false);
+
+            _mouse.Down(border);
+
+            // The pointer is held longer than the hold duration before being released.
+            var timer = Assert.Single(Dispatcher.SnapshotTimersForUnitTests());
+            timer.ForceFire();
+
+            _mouse.Up(border);
+
+            Assert.Equal(["bp", "dp", "br", "dr", "bt", "dt"], result);
+        }
+
+        [Fact]
+        public void Tapped_Should_Not_Be_Raised_For_Drag()
+        {
+            var border = new Border();
+            var root = new TestRoot
+            {
+                Child = border
+            };
+            var raised = false;
+
+            root.AddHandler(InputElement.TappedEvent, (_, _) => raised = true);
+
+            _mouse.Down(border, position: new Point(10, 10));
+            _mouse.Move(border, new Point(60, 60));
+            _mouse.Up(border, position: new Point(60, 60));
+
+            Assert.False(raised);
+        }
+
+        [Fact]
         public void RightTapped_Should_Be_Raised_For_Right_Button()
         {
             Border border = new Border();
@@ -134,6 +185,44 @@ namespace Avalonia.Base.UnitTests.Input
             _mouse.Click(border, MouseButton.Right);
 
             Assert.True(raised);
+        }
+
+        [Fact]
+        public void RightTapped_Should_Be_Raised_When_Pointer_Moves_Within_Tap_Size()
+        {
+            var border = new Border();
+            var root = new TestRoot
+            {
+                Child = border
+            };
+            var raised = false;
+
+            root.AddHandler(InputElement.RightTappedEvent, (_, _) => raised = true);
+
+            _mouse.Down(border, MouseButton.Right, new Point(50, 50));
+            _mouse.Move(border, new Point(52, 52));
+            _mouse.Up(border, MouseButton.Right, new Point(52, 52));
+
+            Assert.True(raised);
+        }
+
+        [Fact]
+        public void RightTapped_Should_Not_Be_Raised_For_Drag()
+        {
+            var border = new Border();
+            var root = new TestRoot
+            {
+                Child = border
+            };
+            var raised = false;
+
+            root.AddHandler(InputElement.RightTappedEvent, (_, _) => raised = true);
+
+            _mouse.Down(border, MouseButton.Right, new Point(50, 50));
+            _mouse.Move(border, new Point(100, 100));
+            _mouse.Up(border, MouseButton.Right, new Point(100, 100));
+
+            Assert.False(raised);
         }
 
         [Fact]
@@ -170,6 +259,70 @@ namespace Avalonia.Base.UnitTests.Input
             _mouse.Down(border, clickCount: 2);
 
             Assert.Equal(new[] { "bp", "dp", "br", "dr", "bt", "dt", "bp", "dp", "bdt", "ddt" }, result);
+        }
+
+        [Fact]
+        public void Tapped_Should_Not_Be_Raised_On_DoubleTapped_Release()
+        {
+            var border = new Border();
+            var root = new TestRoot
+            {
+                Child = border
+            };
+            var result = new List<string>();
+
+            AddHandlers(root, border, result, false);
+
+            _mouse.DoubleClick(border);
+            _mouse.Up(border);
+
+            Assert.Equal(["bp", "dp", "br", "dr", "bt", "dt", "bp", "dp", "bdt", "ddt", "br", "dr"], result);
+        }
+
+        [Fact]
+        public void DoubleTapped_Should_Be_Raised_After_Control_Changes()
+        {
+            var border1 = new Border();
+            var border2 = new Border { IsVisible = false };
+            var root = new TestRoot
+            {
+                Child = new Panel { Children = { border1, border2 } }
+            };
+            var result = new List<string>();
+
+            border1.AddHandler(InputElement.DoubleTappedEvent, (_, _) =>
+            {
+                result.Add("dt1");
+                border1.IsVisible = false;
+                border2.IsVisible = true;
+            });
+            border2.AddHandler(InputElement.DoubleTappedEvent, (_, _) => result.Add("dt2"));
+
+            _mouse.DoubleClick(border1);
+            _mouse.Up(border1);
+            _mouse.Down(border2, clickCount: 3);
+            _mouse.Up(border2);
+            _mouse.Down(border2, clickCount: 4);
+
+            Assert.Equal(["dt1", "dt2"], result);
+        }
+
+        [Fact]
+        public void DoubleTapped_Should_Not_Be_Raised_When_Click_Count_Is_Reset()
+        {
+            var border = new Border();
+            var root = new TestRoot
+            {
+                Child = border
+            };
+            var result = new List<string>();
+
+            AddHandlers(root, border, result, false);
+
+            _mouse.Click(border);
+            _mouse.Click(border);
+
+            Assert.Equal(["bp", "dp", "br", "dr", "bt", "dt", "bp", "dp", "br", "dr", "bt", "dt"], result);
         }
 
         [Fact]

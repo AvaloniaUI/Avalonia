@@ -8,10 +8,11 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Avalonia.Data;
 using Xunit;
+using Avalonia.UnitTests;
 
 namespace Avalonia.Base.UnitTests
 {
-    public class AvaloniaObjectTests_OnPropertyChanged
+    public class AvaloniaObjectTests_OnPropertyChanged : ScopedTestBase
     {
         [Fact]
         public void OnPropertyChangedCore_Is_Called_On_Property_Change()
