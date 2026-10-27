@@ -34,7 +34,7 @@ public class TreeViewItemAutomationPeer : ItemsControlAutomationPeer,
         if (Owner is TreeViewItem item)
         {
             item.TreeViewOwner?.SelectedItems.Clear();
-            item.IsSelected = true;
+            item.SetCurrentValue(TreeViewItem.IsSelectedProperty, true);
         }
     }
 
@@ -43,7 +43,7 @@ public class TreeViewItemAutomationPeer : ItemsControlAutomationPeer,
         EnsureEnabled();
 
         if (Owner is TreeViewItem item)
-            item.IsSelected = true;
+            item.SetCurrentValue(TreeViewItem.IsSelectedProperty, true);
     }
 
     void ISelectionItemProvider.RemoveFromSelection()
@@ -51,7 +51,7 @@ public class TreeViewItemAutomationPeer : ItemsControlAutomationPeer,
         EnsureEnabled();
 
         if (Owner is TreeViewItem item)
-            item.IsSelected = false;
+            item.SetCurrentValue(TreeViewItem.IsSelectedProperty, false);
     }
 
     protected override AutomationControlType GetAutomationControlTypeCore()
