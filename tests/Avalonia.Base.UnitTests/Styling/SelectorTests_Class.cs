@@ -5,10 +5,11 @@ using Avalonia.Controls;
 using Avalonia.Styling;
 using Moq;
 using Xunit;
+using Avalonia.UnitTests;
 
 namespace Avalonia.Base.UnitTests.Styling
 {
-    public class SelectorTests_Class
+    public class SelectorTests_Class : ScopedTestBase
     {
         [Fact]
         public void Class_Selector_Should_Have_Correct_String_Representation()
