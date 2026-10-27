@@ -1225,6 +1225,38 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        [Fact]
+        public void Runs_Shaped_Together_Should_Dispose_The_Buffer_They_Were_Split_From()
+        {
+            using (Start())
+            {
+                var shaper = new RecordingTextShaper(AvaloniaLocator.Current.GetRequiredService<ITextShaperImpl>());
+
+                AvaloniaLocator.CurrentMutable.Bind<TextShaper>().ToConstant(new TextShaper(shaper));
+
+                // Neighbouring slices of one text, same typeface and size, different brushes: shaped
+                // as one buffer, then split between the runs.
+                var text = "abcdef".AsMemory();
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default, foregroundBrush: Brushes.Red);
+                var textSource = new ListTextSource(
+                    new TextCharacters(text.Slice(0, 2), defaultProperties),
+                    new TextCharacters(text.Slice(2, 2), new GenericTextRunProperties(Typeface.Default, foregroundBrush: Brushes.Green)),
+                    new TextCharacters(text.Slice(4, 2), new GenericTextRunProperties(Typeface.Default, foregroundBrush: Brushes.Blue)));
+
+                var textLine = new TextFormatterImpl().FormatLine(textSource, 0, double.PositiveInfinity,
+                    new GenericTextParagraphProperties(defaultProperties));
+
+                Assert.NotNull(textLine);
+
+                var shapedBuffer = Assert.Single(shaper.ShapedBuffers);
+
+                Assert.Equal(new[] { 2, 2, 2 }, textLine.TextRuns.Select(x => ((ShapedTextRun)x).ShapedBuffer.Length));
+
+                // A disposed buffer has given its glyphs back.
+                Assert.Equal(0, shapedBuffer.Length);
+            }
+        }
+
         private class CustomDrawableRun : DrawableTextRun
         {
             public CustomDrawableRun(Size size, double baseLine)
@@ -1392,6 +1424,29 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 Length = length;
             }
             public override int Length { get; }
+        }
+
+        private class RecordingTextShaper : ITextShaperImpl
+        {
+            private readonly ITextShaperImpl _inner;
+
+            public RecordingTextShaper(ITextShaperImpl inner)
+            {
+                _inner = inner;
+            }
+
+            public List<ShapedBuffer> ShapedBuffers { get; } = new();
+
+            public ShapedBuffer ShapeText(ReadOnlyMemory<char> text, TextShaperOptions options)
+            {
+                var shapedBuffer = _inner.ShapeText(text, options);
+
+                ShapedBuffers.Add(shapedBuffer);
+
+                return shapedBuffer;
+            }
+
+            public ITextShaperTypeface CreateTypeface(GlyphTypeface glyphTypeface) => _inner.CreateTypeface(glyphTypeface);
         }
 
         public static IDisposable Start()
