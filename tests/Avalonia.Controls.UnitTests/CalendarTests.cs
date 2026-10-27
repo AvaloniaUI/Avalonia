@@ -1,10 +1,13 @@
 ﻿using Xunit;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.UnitTests;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.UnitTests
 {
@@ -439,6 +442,91 @@ namespace Avalonia.Controls.UnitTests
 
             // Verify the flag was reset
             Assert.False((bool)field.GetValue(calendarItem)!);
+        }
+
+        [Fact]
+        public void Wheel_Notch_Up_Should_Show_Previous_Month()
+        {
+            var calendar = new Calendar { DisplayDate = new DateTime(2026, 7, 15) };
+
+            RaiseWheel(calendar, new Vector(0, 1));
+
+            Assert.Equal(new DateTime(2026, 6, 1), calendar.DisplayDate);
+        }
+
+        [Fact]
+        public void Fractional_Wheel_Deltas_Below_A_Notch_Should_Not_Change_DisplayDate()
+        {
+            var calendar = new Calendar { DisplayDate = new DateTime(2026, 7, 15) };
+
+            // Forty deltas from a short touchpad gesture add up to less than one notch.
+            for (var i = 0; i < 40; i++)
+            {
+                RaiseWheel(calendar, new Vector(0, -0.02));
+            }
+
+            Assert.Equal(new DateTime(2026, 7, 15), calendar.DisplayDate);
+        }
+
+        [Fact]
+        public void Fractional_Wheel_Deltas_Adding_Up_To_A_Notch_Should_Show_Next_Month()
+        {
+            var calendar = new Calendar { DisplayDate = new DateTime(2026, 7, 15) };
+
+            for (var i = 0; i < 4; i++)
+            {
+                RaiseWheel(calendar, new Vector(0, -0.25));
+            }
+
+            Assert.Equal(new DateTime(2026, 8, 1), calendar.DisplayDate);
+        }
+
+        [Fact]
+        public void Horizontal_Wheel_Should_Not_Change_DisplayDate()
+        {
+            var calendar = new Calendar { DisplayDate = new DateTime(2026, 7, 15) };
+
+            RaiseWheel(calendar, new Vector(1, 0));
+
+            Assert.Equal(new DateTime(2026, 7, 15), calendar.DisplayDate);
+        }
+
+        private static void RaiseWheel(Calendar calendar, Vector delta)
+        {
+            var pointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);
+            calendar.RaiseEvent(new PointerWheelEventArgs(calendar, pointer, calendar, default, 0,
+                new PointerPointProperties(RawInputModifiers.None, PointerUpdateKind.Other),
+                KeyModifiers.None, delta));
+        }
+
+        private static Calendar CreateTestCalendar()
+        {
+            var cal = new Calendar();
+            var template = new FuncControlTemplate<Calendar>((c, scope) => new Panel()
+            {
+                Name = "PART_Root",
+                Children =
+                {
+                    new CalendarItem()
+                    {
+                        Name = "PART_CalendarItem",
+                        Owner = c,
+                        DayTitleTemplate = new FuncTemplate<Control>(() => new TextBlock()),
+                        Template = new FuncControlTemplate<CalendarItem>((_, itemScope) => new Grid()
+                        {
+                            Children =
+                            {
+                                new Grid { Name = "PART_MonthView" }.RegisterInNameScope(itemScope),
+                                new Grid { Name = "PART_YearView" }.RegisterInNameScope(itemScope),
+                                new Grid { Name = "PART_ElementWeekNumberLabels" }.RegisterInNameScope(itemScope)
+                            }
+                        })
+                    }.RegisterInNameScope(scope)
+                }
+            }.RegisterInNameScope(scope));
+            cal.Template = template;
+
+            return cal;
         }
     }
 }
