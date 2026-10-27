@@ -33,7 +33,11 @@ public class Fluent2Theme : Styles, IResourceNode
 
         Palettes = Resources.MergedDictionaries.OfType<ColorPaletteResourcesCollection>().FirstOrDefault()
             ?? throw new InvalidOperationException("Fluent2Theme was initialized with missing ColorPaletteResourcesCollection.");
-        
+
+        // Theme resources are not supposed to be changed. Palettes and density style are customized separately.
+        ((ResourceDictionary)Resources).MakeReadOnly();
+        _compactStyles.MakeReadOnly();
+
         object GetAndRemove(string key)
         {
             var val = Resources[key]
