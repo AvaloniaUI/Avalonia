@@ -234,16 +234,6 @@ namespace ControlCatalog.ViewModels
 
         public MiniCommand HomeCommand { get; }
 
-        /// <summary>
-        ///    A required DateTime which should demonstrate validation for the DateTimePicker
-        /// </summary>
-        [Required]
-        public DateTime? ValidatedDateExample
-        {
-            get;
-            set => RaiseAndSetIfChanged(ref field, value);
-        }
-
         public Win32Properties.WindowCornerPreference[] Win32WindowCornerPreferences { get; } =
             Enum.GetValues<Win32Properties.WindowCornerPreference>();
 

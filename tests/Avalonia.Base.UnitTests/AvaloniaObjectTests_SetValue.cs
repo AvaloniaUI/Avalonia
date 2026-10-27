@@ -1,10 +1,11 @@
 using System;
 using Avalonia.Data;
 using Xunit;
+using Avalonia.UnitTests;
 
 namespace Avalonia.Base.UnitTests
 {
-    public class AvaloniaObjectTests_SetValue
+    public class AvaloniaObjectTests_SetValue : ScopedTestBase
     {
         [Fact]
         public void ClearValue_Clears_Value()

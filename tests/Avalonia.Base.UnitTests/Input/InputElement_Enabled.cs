@@ -1,9 +1,10 @@
 using Avalonia.Controls;
 using Xunit;
+using Avalonia.UnitTests;
 
 namespace Avalonia.Base.UnitTests.Input
 {
-    public class InputElement_Enabled
+    public class InputElement_Enabled : ScopedTestBase
     {
         [Fact]
         public void IsEffectivelyEnabled_Follows_IsEnabled()
