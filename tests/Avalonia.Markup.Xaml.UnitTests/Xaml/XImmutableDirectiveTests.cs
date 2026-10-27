@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Media;
@@ -476,6 +477,182 @@ public class XImmutableDirectiveTests : XamlTestBase
 
         Assert.IsType<ImmutableSolidColorBrush>(resources.Single(r => "Brush".Equals(r.Key)).Value);
         Assert.Same(resources["Brush"], resources["Brush"]);
+    }
+
+    [Fact]
+    public void ResourceDictionary_Is_ReadOnly()
+    {
+        var resources = (ResourceDictionary)AvaloniaRuntimeXamlLoader.Load("""
+            <ResourceDictionary xmlns="https://github.com/avaloniaui"
+                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                                x:Immutable="True">
+                <Color x:Key="Accent">Red</Color>
+                <SolidColorBrush x:Key="Brush" Color="Red" />
+                <ResourceDictionary.ThemeDictionaries>
+                    <ResourceDictionary x:Key="Light">
+                        <SolidColorBrush x:Key="Themed" Color="White" />
+                    </ResourceDictionary>
+                    <ResourceDictionary x:Key="Dark" x:Immutable="False">
+                        <SolidColorBrush x:Key="Themed" Color="Black" />
+                    </ResourceDictionary>
+                </ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary.MergedDictionaries>
+                    <ResourceDictionary>
+                        <SolidColorBrush x:Key="Merged" Color="Red" />
+                    </ResourceDictionary>
+                </ResourceDictionary.MergedDictionaries>
+                <!-- Content after property elements is populated before the dictionary is made read-only. -->
+                <SolidColorBrush x:Key="Last" Color="Blue" />
+            </ResourceDictionary>
+            """);
+
+        Assert.True(resources.IsReadOnly);
+        Assert.Equal(3, resources.Count);
+        Assert.Equal(Colors.Red, resources["Accent"]);
+        Assert.IsType<ImmutableSolidColorBrush>(resources["Last"]);
+        Assert.Throws<NotSupportedException>(() => resources.Add("New", Colors.Blue));
+        Assert.Throws<NotSupportedException>(() => resources.MergedDictionaries.Clear());
+
+        Assert.True(((ResourceDictionary)resources.ThemeDictionaries[ThemeVariant.Light]).IsReadOnly);
+        Assert.False(((ResourceDictionary)resources.ThemeDictionaries[ThemeVariant.Dark]).IsReadOnly);
+        Assert.True(((ResourceDictionary)Assert.Single(resources.MergedDictionaries)).IsReadOnly);
+        Assert.True(resources.TryGetResource("Themed", ThemeVariant.Dark, out var dark));
+        Assert.IsType<SolidColorBrush>(dark);
+        Assert.True(resources.TryGetResource("Merged", null, out var merged));
+        Assert.IsType<ImmutableSolidColorBrush>(merged);
+    }
+
+    [Fact]
+    public void ResourceDictionary_Is_Writable_Without_XImmutable()
+    {
+        var resources = (ResourceDictionary)AvaloniaRuntimeXamlLoader.Load("""
+            <ResourceDictionary xmlns="https://github.com/avaloniaui"
+                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                                x:Immutable="False">
+                <SolidColorBrush x:Key="Brush" Color="Red" />
+                <ResourceDictionary.MergedDictionaries>
+                    <ResourceDictionary />
+                </ResourceDictionary.MergedDictionaries>
+            </ResourceDictionary>
+            """);
+
+        Assert.False(resources.IsReadOnly);
+        Assert.False(((ResourceDictionary)resources.MergedDictionaries[0]).IsReadOnly);
+        resources.Add("New", Colors.Blue);
+    }
+
+    [Fact]
+    public void Resources_Property_ResourceDictionary_Is_ReadOnly()
+    {
+        using (UnitTestApplication.Start(TestServices.StyledWindow))
+        {
+            var border = (Border)AvaloniaRuntimeXamlLoader.Load("""
+                <Border xmlns="https://github.com/avaloniaui"
+                        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                    <Border.Resources>
+                        <ResourceDictionary x:Immutable="True">
+                            <SolidColorBrush x:Key="Brush" Color="Red" />
+                        </ResourceDictionary>
+                    </Border.Resources>
+                </Border>
+                """);
+
+            var resources = Assert.IsType<ResourceDictionary>(border.Resources);
+            Assert.True(resources.IsReadOnly);
+            Assert.IsType<ImmutableSolidColorBrush>(border.FindResource("Brush"));
+        }
+    }
+
+    [Fact]
+    public void MergeResourceInclude_Of_Immutable_Dictionary_Keeps_Parent_Writable()
+    {
+        var documents = new[]
+        {
+            new RuntimeXamlLoaderDocument(new Uri("avares://Tests/Resources.xaml"), """
+                <ResourceDictionary xmlns="https://github.com/avaloniaui"
+                                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                                    x:Immutable="True">
+                    <SolidColorBrush x:Key="Merged" Color="Red" />
+                    <ResourceDictionary.ThemeDictionaries>
+                        <ResourceDictionary x:Key="Dark">
+                            <SolidColorBrush x:Key="MergedThemed" Color="Black" />
+                        </ResourceDictionary>
+                    </ResourceDictionary.ThemeDictionaries>
+                </ResourceDictionary>
+                """),
+            new RuntimeXamlLoaderDocument("""
+                <ResourceDictionary xmlns="https://github.com/avaloniaui"
+                                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                    <SolidColorBrush x:Key="Own" Color="Blue" />
+                    <ResourceDictionary.ThemeDictionaries>
+                        <ResourceDictionary x:Key="Dark">
+                            <SolidColorBrush x:Key="OwnThemed" Color="White" />
+                        </ResourceDictionary>
+                    </ResourceDictionary.ThemeDictionaries>
+                    <ResourceDictionary.MergedDictionaries>
+                        <MergeResourceInclude Source="avares://Tests/Resources.xaml" />
+                    </ResourceDictionary.MergedDictionaries>
+                </ResourceDictionary>
+                """)
+        };
+
+        var resources = Assert.IsType<ResourceDictionary>(AvaloniaRuntimeXamlLoader.LoadGroup(documents)[1]);
+
+        Assert.False(resources.IsReadOnly);
+        Assert.IsType<ImmutableSolidColorBrush>(resources["Merged"]);
+        Assert.IsType<SolidColorBrush>(resources["Own"]);
+        resources.Remove("Own");
+
+        // Theme dictionaries with the same key are merged into the parent's one, which is writable.
+        var dark = (ResourceDictionary)resources.ThemeDictionaries[ThemeVariant.Dark];
+        Assert.False(dark.IsReadOnly);
+        Assert.IsType<ImmutableSolidColorBrush>(dark["MergedThemed"]);
+        Assert.IsType<SolidColorBrush>(dark["OwnThemed"]);
+    }
+
+    [Fact]
+    public void MergeResourceInclude_Into_Immutable_Dictionary_Is_ReadOnly_After_Merge()
+    {
+        var documents = new[]
+        {
+            new RuntimeXamlLoaderDocument(new Uri("avares://Tests/Resources.xaml"), """
+                <ResourceDictionary xmlns="https://github.com/avaloniaui"
+                                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                    <SolidColorBrush x:Key="Merged" Color="Red" />
+                    <ResourceDictionary.ThemeDictionaries>
+                        <ResourceDictionary x:Key="Dark">
+                            <SolidColorBrush x:Key="MergedThemed" Color="Black" />
+                        </ResourceDictionary>
+                    </ResourceDictionary.ThemeDictionaries>
+                </ResourceDictionary>
+                """),
+            new RuntimeXamlLoaderDocument("""
+                <ResourceDictionary xmlns="https://github.com/avaloniaui"
+                                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                                    x:Immutable="True">
+                    <SolidColorBrush x:Key="Own" Color="Blue" />
+                    <ResourceDictionary.ThemeDictionaries>
+                        <ResourceDictionary x:Key="Dark">
+                            <SolidColorBrush x:Key="OwnThemed" Color="White" />
+                        </ResourceDictionary>
+                    </ResourceDictionary.ThemeDictionaries>
+                    <ResourceDictionary.MergedDictionaries>
+                        <MergeResourceInclude Source="avares://Tests/Resources.xaml" />
+                    </ResourceDictionary.MergedDictionaries>
+                </ResourceDictionary>
+                """)
+        };
+
+        var resources = Assert.IsType<ResourceDictionary>(AvaloniaRuntimeXamlLoader.LoadGroup(documents)[1]);
+
+        Assert.True(resources.IsReadOnly);
+        Assert.Equal(2, resources.Count);
+        Assert.IsType<SolidColorBrush>(resources["Merged"]);
+        Assert.IsType<ImmutableSolidColorBrush>(resources["Own"]);
+
+        var dark = (ResourceDictionary)resources.ThemeDictionaries[ThemeVariant.Dark];
+        Assert.True(dark.IsReadOnly);
+        Assert.Equal(2, dark.Count);
     }
 
     [Fact]

@@ -46,6 +46,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             if (types.ResourceDictionary.IsAssignableFrom(type))
             {
                 AddScopedDirectives(obj);
+                // Dictionary is made read-only after it's populated. Order is fixed by AvaloniaXamlIlResourceDictionaryReadOnlyTransformer.
+                obj.Children.Add(new AvaloniaXamlIlResourceDictionaryReadOnlyTransformer.ReadOnlyNode(obj));
                 return node;
             }
 

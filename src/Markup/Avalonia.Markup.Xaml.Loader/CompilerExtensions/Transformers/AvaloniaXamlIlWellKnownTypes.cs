@@ -131,6 +131,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlMethod ResourceDictionaryNotSharedDeferredAdd { get; }
         public IXamlMethod ResourceDictionaryEnsureCapacity { get; }
         public IXamlMethod ResourceDictionaryGetCount { get; }
+        public IXamlMethod ResourceDictionaryMakeReadOnly { get; }
         public IXamlType IThemeVariantProvider { get; }
         public IXamlType UriKind { get; }
         public IXamlConstructor UriConstructor { get; }
@@ -347,6 +348,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
             ResourceDictionaryEnsureCapacity = ResourceDictionary.GetMethod("EnsureCapacity", XamlIlTypes.Void, true, XamlIlTypes.Int32);
             ResourceDictionaryGetCount = ResourceDictionary.GetMethod("get_Count", XamlIlTypes.Int32, true);
+            ResourceDictionaryMakeReadOnly = ResourceDictionary.GetMethod("MakeReadOnly", XamlIlTypes.Void, true);
             IThemeVariantProvider = typeSystem.GetType("Avalonia.Controls.IThemeVariantProvider");
             UriKind = typeSystem.GetType("System.UriKind");
             UriConstructor = Uri.GetConstructor(new List<IXamlType>() { typeSystem.WellKnownTypes.String, UriKind });

@@ -5,6 +5,7 @@ using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers;
 using XamlX;
 using XamlX.Ast;
 using XamlX.TypeSystem;
+using ReadOnlyNode = Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers.AvaloniaXamlIlResourceDictionaryReadOnlyTransformer.ReadOnlyNode;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.GroupTransformers;
 
@@ -117,6 +118,9 @@ internal class XamlMergeResourceGroupTransformer : IXamlAstGroupTransformer
         // We need to maintain this order when we inject "compiled merged" resources.
         // Doing this by injecting merged dictionaries in the beginning, so it can be overwritten by "own resources".  
         // MergedDictionaries are read first, so we need ot inject our merged values in the beginning.
+        // Merged dictionaries are flattened into this dictionary, so only its own x:Immutable makes it read-only.
+        var isReadOnly = ReadOnlyNode.IsReadOnly(resourceDictionaryManipulation);
+
         var children = resourceDictionaryManipulation.Children;
         children.InsertRange(0, manipulationGroup);
 
@@ -160,8 +164,10 @@ internal class XamlMergeResourceGroupTransformer : IXamlAstGroupTransformer
                         }
                         && ThemeVariantNodeEquals(context, key, sameKeyPrevAssignmentNode.Values[0]))
                     {
+                        var isThemeReadOnly = ReadOnlyNode.IsReadOnly(sameKeyPrevValueGroup);
                         sameKeyPrevValueGroup.Children.AddRange(valueGroup.Children);
                         FixEnsureCapacityNodes(context, sameKeyPrevValueGroup);
+                        ReadOnlyNode.MoveToEnd(sameKeyPrevValueGroup, isThemeReadOnly);
                         children.RemoveAt(i);
                         break;
                     }
@@ -170,6 +176,7 @@ internal class XamlMergeResourceGroupTransformer : IXamlAstGroupTransformer
         }
 
         FixEnsureCapacityNodes(context, resourceDictionaryManipulation);
+        ReadOnlyNode.MoveToEnd(resourceDictionaryManipulation, isReadOnly);
 
         return node;
     }
