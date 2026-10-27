@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Linq;
+using System.Text;
 using Avalonia.Controls.Documents;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
@@ -1274,6 +1275,33 @@ namespace Avalonia.Controls.UnitTests
             services.RunJobs();
 
             Assert.NotEmpty(child.GetVisualChildren());
+        }
+
+        [Fact]
+        public void Wrapped_TextBlock_Should_Keep_Its_Last_Word_When_Arranged_At_Its_Rounded_Desired_Width()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                // At size 17 this measures 1555.5000000000014 wide, and layout rounding at scale 2
+                // arranges it at 1555.5.
+                const string text = "The quick brown fox jumps over the lazy dog while five wizards box jolly quickly and " +
+                                    "pack my box with liquor jugs so sphinx of black quartz judge my vow because how " +
+                                    "vexingly quick daft zebras";
+
+                var target = new TextBlock { Text = text, FontSize = 17, TextWrapping = TextWrapping.Wrap };
+                var root = new TestRoot(new Canvas { Children = { target } }) { LayoutScaling = 2 };
+
+                target.Measure(Size.Infinity);
+
+                var measuredLength = Assert.Single(target.TextLayout.TextLines).Length;
+
+                root.LayoutManager.ExecuteInitialLayoutPass();
+
+                Assert.Equal(measuredLength, target.TextLayout.TextLines.Sum(x => x.Length));
+
+                // The premise of the test: the text is wider than the width it was arranged at.
+                Assert.True(target.TextLayout.WidthIncludingTrailingWhitespace > target.Bounds.Width);
+            }
         }
 
         private static Button CreateTemplatedChild() => new Button
