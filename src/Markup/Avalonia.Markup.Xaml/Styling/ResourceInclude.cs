@@ -6,14 +6,14 @@ using Avalonia.Styling;
 namespace Avalonia.Markup.Xaml.Styling
 {
     /// <summary>
-    /// Loads a resource dictionary from a specified URL.
+    /// Resource provider, which loads its resource dictionary on demand from a specified URL.
     /// </summary>
     /// <remarks>
     /// If used from the XAML code, it is replaced with direct resource dictionary reference.
     /// When used in runtime, this type might be unsafe with trimming and AOT.
     /// </remarks>
     [RequiresUnreferencedCode(TrimmingMessages.StyleResourceIncludeRequiresUnreferenceCodeMessage)]
-    public class ResourceInclude : IResourceProvider, IThemeVariantProvider, IResourceInclude
+    public class ResourceInclude : IResourceInclude, IThemeVariantProvider
     {
         private readonly IServiceProvider? _serviceProvider;
         private readonly Uri? _baseUri;

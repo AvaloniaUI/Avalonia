@@ -152,8 +152,7 @@ namespace Avalonia.Controls
         /// Gets a value indicating whether the dictionary is read-only.
         /// </summary>
         /// <remarks>
-        /// A read-only dictionary throws <see cref="NotSupportedException"/> on any attempt to change its resources,
-        /// <see cref="MergedDictionaries"/> or <see cref="ThemeDictionaries"/>.
+        /// A read-only dictionary throws <see cref="NotSupportedException"/> on any attempt to change its resources.
         /// </remarks>
         public bool IsReadOnly => _isReadOnly;
 
@@ -361,11 +360,6 @@ namespace Avalonia.Controls
         /// <summary>
         /// Makes the dictionary read-only. This can't be undone.
         /// </summary>
-        /// <remarks>
-        /// Merged and theme dictionaries are made read-only as well, including dictionaries loaded by ResourceInclude.
-        /// Other resource providers in <see cref="MergedDictionaries"/> and <see cref="ThemeDictionaries"/> are not affected.
-        /// Deferred resources are still resolved and cached on first access.
-        /// </remarks>
         public void MakeReadOnly()
         {
             if (_isReadOnly)
