@@ -16,7 +16,7 @@
 #include "avalonia-native.h"
 #import "AvnTextInputMethodDelegate.h"
 
-class AvnTextInputMethod: public virtual ComObject, public virtual IAvnTextInputMethod{
+class AvnTextInputMethod: public virtual ComObject, public virtual MicroComImpl<IAvnTextInputMethod>{
 private:
     id<AvnTextInputMethodDelegate> _inputMethodDelegate;
 public:
@@ -32,7 +32,7 @@ public:
     
     bool IsActive ();
     
-    HRESULT SetClient (IAvnTextInputMethodClient* client) override;
+    HRESULT SetClient (const ComPtr<IAvnTextInputMethodClient>& client) override;
     
     virtual void Reset () override;
     
