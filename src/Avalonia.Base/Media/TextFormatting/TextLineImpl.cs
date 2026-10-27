@@ -144,21 +144,21 @@ namespace Avalonia.Media.TextFormatting
         /// Renders the line behind each <see cref="ShapedTextRun"/> which requests it.
         /// </summary>
         /// <remarks>
-        /// Multiple consecutive runs with the same <see cref="LineRenderProperties"/> are merged together.
+        /// Multiple consecutive runs with the same <see cref="LineRenderOverrides"/> are merged together.
         /// </remarks>
         private void DrawLine(DrawingContext drawingContext, double x, double y)
         {
-            (Rect rect, LineRenderProperties properties)? mergedRuns = null;
+            (Rect rect, LineRenderOverrides overrides)? mergedRuns = null;
 
             for (int i = 0; i < _textRuns.Length; i++)
             {
                 if (_textRuns[i] is DrawableTextRun run)
                 {
-                    if (run is ShapedTextRun { OverrideProperties.LineRenderProperties: { } lineRenderProps } &&
-                        (mergedRuns == null || mergedRuns.Value.properties == lineRenderProps))
+                    if (run is ShapedTextRun { RenderOverrides.Line: { } runOverrides } &&
+                        (mergedRuns == null || mergedRuns.Value.overrides == runOverrides))
                     {
                         var runRect = new Rect(x, y, run.Size.Width, Height);
-                        mergedRuns = mergedRuns is { } current ? (current with { rect = current.rect.Union(runRect) }) : (runRect, lineRenderProps);
+                        mergedRuns = mergedRuns is { } current ? (current with { rect = current.rect.Union(runRect) }) : (runRect, runOverrides);
                     }
                     else
                     {
@@ -173,11 +173,12 @@ namespace Avalonia.Media.TextFormatting
 
             void DrawMergedRuns()
             {
-                if (mergedRuns is { properties: { } props, rect: { } rect })
+                if (mergedRuns is { overrides: { } props, rect: { } rect })
                 {
-                    drawingContext.DrawRectangle(props.Background, props.Stroke, new RoundedRect(rect.Inflate(props.Padding), props.CornerRadius));
-                    mergedRuns = null;
+                    drawingContext.DrawRectangle(props.Background, props.Stroke,
+                        new RoundedRect(props.Padding.HasValue ? rect.Inflate(props.Padding.Value) : rect, props.CornerRadius ?? default));
                 }
+                mergedRuns = null;
             }
         }
 

@@ -161,7 +161,7 @@ namespace Avalonia.Media.TextFormatting
         /// <summary>
         /// Creates a new <see cref="TextLayout"/> which draws another layout with altered rendering properties.
         /// </summary>
-        public TextLayout(TextLayout baseLayout, IEnumerable<ValueSpan<TextRenderOverrideProperties>> renderOverrides)
+        public TextLayout(TextLayout baseLayout, IEnumerable<ValueSpan<TextRenderOverrides>> renderOverrides)
         {
             _textSource = baseLayout._textSource;
             _paragraphProperties = baseLayout._paragraphProperties;
@@ -799,7 +799,7 @@ namespace Avalonia.Media.TextFormatting
             return (TextLineImpl)line.Collapse(collapsingProperties);
         }
 
-        private static TextLineImpl[] ApplyRenderOverrides(TextLayout baseLayout, IEnumerable<ValueSpan<TextRenderOverrideProperties>> overrides)
+        private static TextLineImpl[] ApplyRenderOverrides(TextLayout baseLayout, IEnumerable<ValueSpan<TextRenderOverrides>> overrides)
         {
             var overridenLines = new List<TextLineImpl>(baseLayout._textLines);
             foreach (var overrideSpan in overrides)
@@ -833,10 +833,10 @@ namespace Avalonia.Media.TextFormatting
                             continue;
                         }
 
-                        var runSplit = false;
+                        ShapedTextRun? sliceResult = null;
 
-                        if (!foundStart && startDelta <= run.Length) // does override start with the current run or a previous line?
-                        {                            
+                        if (!foundStart && startDelta < run.Length) // does override start with the current run or a previous line?
+                        {
                             if (startDelta > 0)
                             {
                                 // Split the run, assign the override properties to the RIGHT-hand side
@@ -844,14 +844,12 @@ namespace Avalonia.Media.TextFormatting
                                 if (left != null && right != null)
                                 {
                                     overriddenRuns[outputIndex++] = left;
-                                    right.OverrideProperties = overrideSpan.Value;
                                     overriddenRuns.Insert(outputIndex++, right);
-                                    anyRunsOverridden = true;
+                                    sliceResult = right;
 
                                     // move the iteration one step forward
                                     run = right;
                                     charIndex += left.Length;
-                                    runSplit = true;
                                 }
                             }
 
@@ -867,26 +865,35 @@ namespace Avalonia.Media.TextFormatting
                                 var (left, right) = shapedRun.Split(shapedRun.Length + endDelta);
                                 if (left != null && right != null)
                                 {
-                                    left.OverrideProperties = overrideSpan.Value;
                                     overriddenRuns[outputIndex++] = left;
                                     overriddenRuns.Insert(outputIndex++, right);
-                                    anyRunsOverridden = true;
+                                    sliceResult = left;
 
                                     // move the iteration one step forward
                                     run = right;
                                     charIndex += left.Length;
-                                    runSplit = true;
                                 }
                             }
 
                             foundEnd = true;
                         }
 
-                        if (!runSplit)
+                        if (sliceResult != null)
+                        {
+                            // We have already sliced out a run that we want to override
+                            sliceResult.RenderOverrides |= overrideSpan.Value;
+                            anyRunsOverridden = true;
+                        }
+                        else if (foundStart)
                         {
                             // the entire run is overridden
                             overriddenRuns[outputIndex++] = new ShapedTextRun(shapedRun, overrideSpan.Value);
                             anyRunsOverridden = true;
+                        }
+                        else
+                        {
+                            // no overrides
+                            outputIndex++;
                         }
 
                         charIndex += run.Length;
