@@ -83,8 +83,8 @@ namespace ControlCatalog.Desktop
                     {
                         DispatcherTimer.RunOnce(async () =>
                         {
-                            var window = ((IClassicDesktopStyleApplicationLifetime)Application.Current!.ApplicationLifetime!)
-                                .MainWindow!;
+                            if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime { MainWindow: { } window })
+                                throw new InvalidOperationException("ControlCatalog requires the classic desktop application lifetime");
                             var tc = window.GetLogicalDescendants().OfType<TabControl>().First();
                             foreach (var page in tc.Items.Cast<TabItem>().ToList())
                             {
