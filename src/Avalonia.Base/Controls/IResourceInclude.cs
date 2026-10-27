@@ -1,7 +1,7 @@
 namespace Avalonia.Controls;
 
 /// <summary>
-/// Resource provider, which loads its resource dictionary on demand, such as ResourceInclude.
+/// Resource provider, which loads its resource dictionary on demand.
 /// </summary>
 internal interface IResourceInclude : IResourceProvider
 {
