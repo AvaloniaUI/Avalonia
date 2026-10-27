@@ -49,6 +49,49 @@ public class DropDownButtonTests : ScopedTestBase
             Assert.Equal(expected, icon.Foreground);
         }
     }
+
+    [Fact]
+    public void Host_ControlTheme_Style_For_PathIcon_Inside_Templated_Flyout_Should_Apply_On_First_Open()
+    {
+        using (CreateServicesWithoutTheme())
+        {
+            var expected = Brushes.Red;
+            var icon = new PathIcon();
+            var flyout = new Flyout { Content = icon };
+            var host = new ContentControl
+            {
+                Template = new FuncControlTemplate<ContentControl>((_, _) =>
+                    new DropDownButton { Flyout = flyout }),
+                Theme = new ControlTheme(typeof(ContentControl))
+                {
+                    Children =
+                    {
+                        new Style(x => x.Nesting().Template().OfType<PathIcon>())
+                        {
+                            Setters = { new Setter(PathIcon.ForegroundProperty, expected) }
+                        }
+                    }
+                }
+            };
+            var window = new Window { Content = host };
+
+            window.Show();
+            window.ApplyStyling();
+            window.ApplyTemplate();
+            host.ApplyTemplate();
+
+            var dropDown = Assert.IsType<DropDownButton>(host.GetVisualDescendants().OfType<DropDownButton>().Single());
+            flyout.ShowAt(dropDown);
+
+            if (flyout.Popup.Host is OverlayPopupHost overlayHost)
+            {
+                overlayHost.Measure(Size.Infinity);
+                overlayHost.Arrange(new Rect(overlayHost.DesiredSize));
+            }
+
+            Assert.Equal(expected, icon.Foreground);
+        }
+    }
     
     private IDisposable CreateServicesWithoutTheme()
     {
