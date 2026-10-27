@@ -195,7 +195,15 @@ namespace Avalonia.Controls
             // queued measure, or a read of this property - so it cannot rely on the measure pass
             // having brought the complex content up to date.
             EnsureTextRuns();
-            MeasureEmbeddedControls(GetMaxSizeFromConstraint());
+
+            // A block whose measure is invalid at render time is one layout cannot reach, such as
+            // one under a hidden ancestor. Measuring its embedded controls here would apply their
+            // templates inside the render pass, which must not attach visuals. The pending measure
+            // pass measures them once the block becomes reachable.
+            if (IsMeasureValid)
+            {
+                MeasureEmbeddedControls(GetMaxSizeFromConstraint());
+            }
 
             return CreateTextLayout(Text);
         }

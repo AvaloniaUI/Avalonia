@@ -12,7 +12,7 @@ using Xunit;
 
 namespace Avalonia.Base.UnitTests.Animation
 {
-    public class AnimatableTests
+    public class AnimatableTests : ScopedTestBase
     {
         [Fact]
         public void Transition_Is_Not_Applied_When_Not_Attached_To_Visual_Tree()

@@ -11,6 +11,7 @@ namespace Avalonia.Logging
         private readonly Action<string> _logger;
         private readonly LogEventLevel _level;
         private readonly IList<string>? _areas;
+        private readonly Func<string, LogEventLevel>? _areaVerbosity;
 
         public StringLogSink(
             Action<string> logger,
@@ -22,8 +23,19 @@ namespace Avalonia.Logging
             _areas = areas?.Count > 0 ? areas : null;
         }
 
+        public StringLogSink(
+            Action<string> logger,
+            Func<string, LogEventLevel> areaVerbosity)
+        {
+            _logger = logger;
+            _areaVerbosity = areaVerbosity;
+        }
+
         public bool IsEnabled(LogEventLevel level, string area)
         {
+            if (_areaVerbosity is not null)
+                return level >= _areaVerbosity(area);
+
             return level >= _level && (_areas?.Contains(area) ?? true);
         }
 

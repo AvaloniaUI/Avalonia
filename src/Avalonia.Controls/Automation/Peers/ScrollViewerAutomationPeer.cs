@@ -172,7 +172,7 @@ namespace Avalonia.Automation.Peers
                 offset = offset.WithY((Owner.Extent.Height - Owner.Viewport.Height) * verticalPercent * 0.01);
             }
 
-            Owner.Offset = offset;
+            Owner.SetCurrentValue(ScrollViewer.OffsetProperty, offset);
         }
     }
 }

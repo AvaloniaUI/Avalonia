@@ -112,10 +112,10 @@ internal class DataTransferToOleDataObjectWrapper(IDataTransfer dataTransfer)
 
     unsafe uint Win32Com.IDataObject.GetData(FORMATETC* format, STGMEDIUM* medium)
     {
-        if (!ValidateFormat(format, out var result, out var dataFormat))
+        if (!ValidateFormat(format, out var result, out var dataFormat, out var tymed))
             return result;
 
-        if (format->tymed == TYMED.TYMED_GDI)
+        if (tymed == TYMED.TYMED_GDI)
         {
             *medium = default;
             medium->tymed = TYMED.TYMED_GDI;
@@ -131,7 +131,11 @@ internal class DataTransferToOleDataObjectWrapper(IDataTransfer dataTransfer)
 
     unsafe uint Win32Com.IDataObject.GetDataHere(FORMATETC* format, STGMEDIUM* medium)
     {
-        if (!ValidateFormat(format, out var result, out var dataFormat))
+        // Unlike GetData, only one medium can be specified here, and we only support HGLOBAL.
+        if (format->tymed != TYMED.TYMED_HGLOBAL)
+            return DV_E_TYMED;
+
+        if (!ValidateFormat(format, out var result, out var dataFormat, out _))
             return result;
 
         if (medium->unionmember == IntPtr.Zero)
@@ -142,19 +146,24 @@ internal class DataTransferToOleDataObjectWrapper(IDataTransfer dataTransfer)
 
     unsafe uint Win32Com.IDataObject.QueryGetData(FORMATETC* format)
     {
-        if (!ValidateFormat(format, out var result, out _))
+        if (!ValidateFormat(format, out var result, out _, out _))
             return result;
 
         return (uint)HRESULT.S_OK;
     }
 
     [MemberNotNullWhen(true, nameof(DataTransfer))]
-    private unsafe bool ValidateFormat(FORMATETC* format, out uint result, [NotNullWhen(true)] out DataFormat? dataFormat)
+    private unsafe bool ValidateFormat(FORMATETC* format, out uint result, [NotNullWhen(true)] out DataFormat? dataFormat, out TYMED tymed)
     {
         dataFormat = null;
 
-        if (!(format->tymed == TYMED.TYMED_HGLOBAL ||
-            (format->tymed == TYMED.TYMED_GDI && format->cfFormat == (ushort)ClipboardFormat.CF_BITMAP)))
+        // The requested tymed is a combination of the media accepted by the caller
+        // (e.g. WPF and WinForms ask for HGLOBAL | ISTREAM | GDI), pick the one we can provide.
+        tymed = format->cfFormat == (ushort)ClipboardFormat.CF_BITMAP && (format->tymed & TYMED.TYMED_GDI) != 0 ?
+            TYMED.TYMED_GDI :
+            TYMED.TYMED_HGLOBAL;
+
+        if ((format->tymed & tymed) == 0)
         {
             result = DV_E_TYMED;
             dataFormat = null;

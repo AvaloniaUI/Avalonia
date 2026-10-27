@@ -9,10 +9,11 @@ using System.Reactive.Subjects;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
 using Xunit;
+using Avalonia.UnitTests;
 
 namespace Avalonia.Base.UnitTests
 {
-    public class AvaloniaObjectTests_MultiBinding
+    public class AvaloniaObjectTests_MultiBinding : ScopedTestBase
     {
         [Fact]
         public void Should_Update()

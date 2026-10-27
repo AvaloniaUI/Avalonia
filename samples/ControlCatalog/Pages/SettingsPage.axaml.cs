@@ -37,8 +37,6 @@ namespace ControlCatalog.Pages
             {
                 _viewModel = viewModel;
                 _viewModel.CurrentCatalogTheme = App.CurrentTheme;
-
-                _viewModel.PropertyChanged += ViewModel_PropertyChanged;
             }
         }
 
@@ -70,6 +68,18 @@ namespace ControlCatalog.Pages
                 var topLevel = TopLevel.GetTopLevel(this)!;
                 if (topLevel is Window window)
                     viewModel.CurrentWindowDecorations = window.WindowDecorations;
+
+                viewModel.PropertyChanged += ViewModel_PropertyChanged;
+            }
+        }
+
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnDetachedFromVisualTree(e);
+
+            if (DataContext is SettingsViewModel viewModel)
+            {
+                viewModel.PropertyChanged -= ViewModel_PropertyChanged;
             }
         }
     }

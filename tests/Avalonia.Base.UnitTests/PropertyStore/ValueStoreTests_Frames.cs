@@ -6,12 +6,13 @@ using Avalonia.Styling;
 using Microsoft.Reactive.Testing;
 using Xunit;
 using static Microsoft.Reactive.Testing.ReactiveTest;
+using Avalonia.UnitTests;
 
 #nullable enable
 
 namespace Avalonia.Base.UnitTests.PropertyStore
 {
-    public class ValueStoreTests_Frames
+    public class ValueStoreTests_Frames : ScopedTestBase
     {
         [Fact]
         public void Adding_Frame_Raises_PropertyChanged()

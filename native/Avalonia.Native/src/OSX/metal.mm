@@ -87,8 +87,7 @@ public:
         return (__bridge void*) queue;
     }
     
-    HRESULT ImportIOSurface(void *handle, AvnPixelFormat pixelFormat, IAvnMetalTexture **ppv) override {
-        START_COM_ARP_CALL;
+    HRESULT ImportIOSurface(void *handle, AvnPixelFormat pixelFormat, ComPtr<IAvnMetalTexture>& ppv) override {
         auto surf = (IOSurfaceRef)handle;
         auto width = IOSurfaceGetWidth(surf);
         auto height = IOSurfaceGetHeight(surf);
@@ -111,16 +110,16 @@ public:
         auto texture = [device newTextureWithDescriptor:desc iosurface:surf plane:0];
         if(texture == nullptr)
             return E_FAIL;
-        *ppv = new AvnMetalTexture(texture);
+        ppv = comnew<AvnMetalTexture>(texture);
         return S_OK;
     }
     
-    HRESULT ImportSharedEvent(void *mtlSharedEventInstance, IAvnMTLSharedEvent**ppv) override {
+    HRESULT ImportSharedEvent(void *mtlSharedEventInstance, ComPtr<IAvnMTLSharedEvent>& ppv) override {
         if (@available(macOS 12.0, *)) {
             auto external = (__bridge id<MTLSharedEvent>)mtlSharedEventInstance;
             auto handle = external.newSharedEventHandle;
             auto imported = [device newSharedEventWithHandle: handle];
-            *ppv = new AvnMTLSharedEvent(imported);
+            ppv = comnew<AvnMTLSharedEvent>(imported);
             return S_OK;
         } 
         else
@@ -130,12 +129,11 @@ public:
     }
     
     
-    HRESULT SignalOrWait(IAvnMTLSharedEvent *ev, uint64_t value, bool wait)
+    HRESULT SignalOrWait(const ComPtr<IAvnMTLSharedEvent>& ev, uint64_t value, bool wait)
     {
-        START_ARP_CALL;
         if (@available(macOS 12.0, *))
         {
-            auto e = dynamic_cast<AvnMTLSharedEvent*>(ev);
+            auto e = ev.dynamicCast<AvnMTLSharedEvent>();
             if(e == nullptr)
                 return E_FAIL;
             auto buf = [queue commandBuffer];
@@ -150,11 +148,11 @@ public:
             return E_FAIL;
     }
     
-    HRESULT SubmitWait(IAvnMTLSharedEvent *ev, uint64_t value) override {
+    HRESULT SubmitWait(const ComPtr<IAvnMTLSharedEvent>& ev, uint64_t value) override {
         return SignalOrWait(ev, value, true);
     }
     
-    HRESULT SubmitSignal(IAvnMTLSharedEvent *ev, uint64_t value) override { 
+    HRESULT SubmitSignal(const ComPtr<IAvnMTLSharedEvent>& ev, uint64_t value) override {
         return SignalOrWait(ev, value, false);
     }
     
@@ -185,7 +183,7 @@ class AvnMetalRenderSession : public ComSingleObject<IAvnMetalRenderingSession, 
 public:
     FORWARD_IUNKNOWN()
 
-    AvnMetalRenderSession(AvnMetalDevice* device, CAMetalLayer* layer, id <CAMetalDrawable> drawable, const AvnPixelSize &size, double scaling, bool presentWithTransaction)
+    AvnMetalRenderSession(const ComPtr<AvnMetalDevice>& device, CAMetalLayer* layer, id <CAMetalDrawable> drawable, const AvnPixelSize &size, double scaling, bool presentWithTransaction)
             : _drawable(drawable), _size(size), _scaling(scaling), _queue(device->queue),
             _texture([drawable texture]), _presentWithTransaction(presentWithTransaction) {
         _layer = layer;
@@ -234,14 +232,13 @@ public:
     double PendingScaling = 1;
     AvnPixelSize PendingSize = {1,1};
     FORWARD_IUNKNOWN()
-    AvnMetalRenderTarget(CAMetalLayer* layer, ComPtr<AvnMetalDevice> device)
+    AvnMetalRenderTarget(CAMetalLayer* layer, const ComPtr<AvnMetalDevice>& device)
     {
         _layer = layer;
         _device = device;
     }
 
-    HRESULT BeginDrawing(IAvnMetalRenderingSession **ret) override {
-        START_COM_ARP_CALL;
+    HRESULT BeginDrawing(ComPtr<IAvnMetalRenderingSession>& ret) override {
         bool onMainThread = [NSThread isMainThread];
         if(onMainThread)
         {
@@ -264,10 +261,10 @@ public:
         {
             if(onMainThread)
                 _layer.presentsWithTransaction = NO;
-            *ret = nullptr;
+            ret = nullptr;
             return E_FAIL;
         }
-        *ret = new AvnMetalRenderSession(_device, _layer, drawable, _size, _scaling, onMainThread);
+        ret = comnew<AvnMetalRenderSession>(_device, _layer, drawable, _size, _scaling, onMainThread);
         return 0;
     }
 };
@@ -278,19 +275,21 @@ public:
     CAMetalLayer* _layer;
     ComPtr<AvnMetalRenderTarget> _target;
 }
-- (MetalRenderTarget *)initWithDevice:(IAvnMetalDevice *)device {
-    _device = dynamic_cast<AvnMetalDevice*>(device);
+- (MetalRenderTarget *)initWithDevice:(const ComPtr<IAvnMetalDevice>&)device {
+    _device = device.dynamicCast<AvnMetalDevice>();
+    if(!_device)
+        return nil;
     _layer = [CAMetalLayer new];
     _layer.opaque = false;
     _layer.device = _device->device;
-    _target.setNoAddRef(new AvnMetalRenderTarget(_layer, _device));
+    _target = comnew<AvnMetalRenderTarget>(_layer, _device);
     return self;
 }
 
 
--(void) getRenderTarget: (IAvnMetalRenderTarget**) ppv
+-(ComPtr<IAvnMetalRenderTarget>) createRenderTarget
 {
-    *ppv = static_cast<IAvnMetalRenderTarget*>(_target.getRetainedReference());
+    return _target;
 }
 
 - (void)resize:(AvnPixelSize)size withScale:(float)scale {
@@ -310,42 +309,41 @@ class AvnMetalDisplay : public ComSingleObject<IAvnMetalDisplay, &IID_IAvnMetalD
 {
 public:
     FORWARD_IUNKNOWN()
-    HRESULT CreateDevice(IAvnMetalDevice **ret) override {
-        START_COM_ARP_CALL;
+    HRESULT CreateDevice(ComPtr<IAvnMetalDevice>& ret) override {
         auto device = MTLCreateSystemDefaultDevice();
         if(device == nil) {
-            ret = nil;
+            ret = nullptr;
             return E_FAIL;
         }
         auto queue = [device newCommandQueue];
-        *ret = new AvnMetalDevice(device, queue);
+        ret = comnew<AvnMetalDevice>(device, queue);
         return S_OK;
     }
 };
 
 static ComStaticPtr<AvnMetalDisplay> _display(comnew<AvnMetalDisplay>());
 
-extern IAvnMetalDisplay* GetMetalDisplay()
+extern ComPtr<IAvnMetalDisplay> GetMetalDisplay()
 {
-    return _display;
+    return _display.get();
 }
 
 
-extern IAvnMTLSharedEvent* ImportMTLSharedEvent(void* object)
+extern ComPtr<IAvnMTLSharedEvent> ImportMTLSharedEvent(void* object)
 {
     if (@available(macOS 12.0, *)) {
     if(object == nullptr)
-        return nil;
+        return nullptr;
     auto evId = (__bridge id<MTLSharedEvent>)object;
     
     if(evId == nil)
-        return nil;
+        return nullptr;
     
     
-    return new AvnMTLSharedEvent(evId);
+    return comnew<AvnMTLSharedEvent>(evId);
     } 
     else
     {
-        return nil;
+        return nullptr;
     }
 }

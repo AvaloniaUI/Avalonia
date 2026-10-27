@@ -5,6 +5,7 @@ using Avalonia.Data;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.UnitTests;
+using Avalonia.VisualTree;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
@@ -1208,6 +1209,77 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal(expected.DesiredSize, target.DesiredSize);
         }
+
+        [Fact]
+        public void Should_Render_Embedded_Control_In_Hidden_Subtree()
+        {
+            using var services = new CompositorTestServices();
+
+            var child = CreateTemplatedChild();
+            var target = new TextBlock { Inlines = new InlineCollection { new Run("Text "), new InlineUIContainer(child) } };
+            var page = new StackPanel { IsVisible = false, Children = { target } };
+
+            services.TopLevel.Content = new StackPanel { Children = { new TextBlock { Text = "Shown" }, page } };
+            services.RunJobs();
+
+            page.IsVisible = true;
+            services.RunJobs();
+
+            Assert.NotEmpty(child.GetVisualChildren());
+            Assert.Equal(new Size(20, 10), child.DesiredSize);
+        }
+
+        [Fact]
+        public void Should_Render_Embedded_Control_Shown_Later_In_Hidden_Subtree()
+        {
+            using var services = new CompositorTestServices();
+
+            var child = CreateTemplatedChild();
+            child.IsVisible = false;
+            var title = new Run("Text ");
+            var target = new TextBlock { Inlines = new InlineCollection { title, new InlineUIContainer(child) } };
+            var page = new StackPanel { IsVisible = false, Children = { target } };
+
+            services.TopLevel.Content = new StackPanel { Children = { new TextBlock { Text = "Shown" }, page } };
+            services.RunJobs();
+
+            child.IsVisible = true;
+            title.Text = "Other text ";
+            services.RunJobs();
+
+            page.IsVisible = true;
+            services.RunJobs();
+
+            Assert.NotEmpty(child.GetVisualChildren());
+        }
+
+        [Fact]
+        public void Should_Render_Embedded_Control_Shown_After_Its_Page_Was_Hidden()
+        {
+            using var services = new CompositorTestServices();
+
+            var child = CreateTemplatedChild();
+            child.IsVisible = false;
+            var target = new TextBlock { Inlines = new InlineCollection { new Run("Text "), new InlineUIContainer(child) } };
+            var page = new StackPanel { Children = { target } };
+
+            services.TopLevel.Content = page;
+            services.RunJobs();
+
+            page.IsVisible = false;
+            child.IsVisible = true;
+            services.RunJobs();
+
+            page.IsVisible = true;
+            services.RunJobs();
+
+            Assert.NotEmpty(child.GetVisualChildren());
+        }
+
+        private static Button CreateTemplatedChild() => new Button
+        {
+            Template = new FuncControlTemplate<Button>((_, _) => new Border { Width = 20, Height = 10 })
+        };
 
         private class TestTextBlock : TextBlock
         {

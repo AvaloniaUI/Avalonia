@@ -2,10 +2,11 @@ using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Styling;
 using Xunit;
+using Avalonia.UnitTests;
 
 namespace Avalonia.Base.UnitTests.Styling
 {
-    public class SelectorTests_Not
+    public class SelectorTests_Not : ScopedTestBase
     {
         [Fact]
         public void Not_Selector_Should_Have_Correct_String_Representation()

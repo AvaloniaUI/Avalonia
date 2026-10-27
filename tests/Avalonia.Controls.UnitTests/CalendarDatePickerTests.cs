@@ -11,6 +11,9 @@ using Avalonia.UnitTests;
 using Moq;
 using Xunit;
 using System.Globalization;
+using Avalonia.Threading;
+using Avalonia.VisualTree;
+using Avalonia.Interactivity;
 
 namespace Avalonia.Controls.UnitTests
 {
@@ -289,6 +292,37 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Pointer_Focus_Should_Not_Move_Focus_To_TextBox()
+        {
+            using (UnitTestApplication.Start(FocusServices))
+            {
+                var datePicker = new CalendarDatePicker { Template = CreateTemplate() };
+                var root = new TestRoot(datePicker);
+                root.LayoutManager.ExecuteInitialLayoutPass();
+
+                datePicker.Focus(NavigationMethod.Pointer);
+
+                Assert.Same(datePicker, root.FocusManager.GetFocusedElement());
+            }
+        }
+
+        [Fact]
+        public void Focus_Should_Not_Close_An_Open_DropDown()
+        {
+            using (UnitTestApplication.Start(FocusServices))
+            {
+                var datePicker = new CalendarDatePicker { Template = CreateTemplate() };
+                var root = new TestRoot(datePicker);
+                root.LayoutManager.ExecuteInitialLayoutPass();
+
+                datePicker.IsDropDownOpen = true;
+                datePicker.Focus();
+
+                Assert.True(datePicker.IsDropDownOpen);
+            }
+        }
+
         private static TestServices FocusServices => TestServices.MockThreadingInterface.With(
             fontManagerImpl: new HeadlessFontManagerStub(),
             standardCursorFactory: Mock.Of<ICursorFactory>(),
@@ -391,6 +425,61 @@ namespace Avalonia.Controls.UnitTests
 
                 Assert.Equal(Media.Brushes.Purple, control.PlaceholderForeground);
             }
+        }
+
+
+        [Fact]
+        public void Opening_The_DropDown_Should_Focus_The_Calendar()
+        {
+            using var app = UnitTestApplication.Start(TestServices.FocusableWindow);
+
+            var picker = new CalendarDatePicker();
+            var window = new Window { Content = picker };
+            window.Show();
+            window.LayoutManager.ExecuteInitialLayoutPass();
+
+            picker.IsDropDownOpen = true;
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+            Assert.True(GetCalendar(picker).IsFocused);
+        }
+
+        [Fact]
+        public void Escape_Should_Put_The_Date_Back()
+        {
+            using var app = UnitTestApplication.Start(TestServices.FocusableWindow);
+
+            var chosen = new DateTime(2026, 5, 15);
+            var picker = new CalendarDatePicker { SelectedDate = chosen };
+            var window = new Window { Content = picker };
+            window.Show();
+            window.LayoutManager.ExecuteInitialLayoutPass();
+
+            picker.IsDropDownOpen = true;
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+            var calendar = GetCalendar(picker);
+
+            Press(calendar, Key.Down);
+            Assert.NotEqual(chosen, picker.SelectedDate);
+
+            Press(calendar, Key.Escape);
+
+            Assert.Equal(chosen, picker.SelectedDate);
+            Assert.False(picker.IsDropDownOpen);
+        }
+
+        private static Calendar GetCalendar(CalendarDatePicker picker)
+        {
+            var popup = picker.GetVisualDescendants().OfType<Popup>().First();
+
+            return popup.Child!.GetSelfAndVisualDescendants().OfType<Calendar>().First();
+        }
+
+        private static void Press(Control target, Key key)
+        {
+            target.RaiseEvent(new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = key });
+            Dispatcher.UIThread.RunJobs();
         }
 
     }

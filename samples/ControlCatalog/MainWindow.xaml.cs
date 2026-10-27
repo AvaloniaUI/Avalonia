@@ -32,13 +32,5 @@ namespace ControlCatalog
         {
             Close();
         }
-
-        public void ApplyWindowSettings()
-        {
-            if (DataContext is MainWindowViewModel viewModel && viewModel.SettingsViewModel is { } settingsViewModel)
-            {
-                App.ApplyTopLevelTransparency(this, settingsViewModel.CurrentWindowTransparencyLevel);
-            }
-        }
     }
 }
