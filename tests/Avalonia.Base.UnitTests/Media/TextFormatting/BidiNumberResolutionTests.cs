@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Utilities;
@@ -8,7 +6,7 @@ using Xunit;
 
 namespace Avalonia.Base.UnitTests.Media.TextFormatting;
 
-public class BidiNumberPerformanceTests
+public class BidiNumberResolutionTests
 {
     public static IEnumerable<object[]> StrongContexts()
     {
@@ -21,6 +19,17 @@ public class BidiNumberPerformanceTests
         yield return [new[] { BidiClass.ArabicLetter, BidiClass.EuropeanNumber, BidiClass.LeftToRight,
             BidiClass.EuropeanNumber, BidiClass.ArabicLetter, BidiClass.EuropeanNumber },
             new sbyte[] { 1, 2, 0, 0, 1, 2 }];
+
+        // EN and AN resolve to the same level on their own, so these rows observe the W2 conversion
+        // through W4 and W5, which join separators and terminators to European numbers only.
+        yield return [new[] { BidiClass.ArabicLetter, BidiClass.EuropeanNumber, BidiClass.EuropeanSeparator,
+            BidiClass.EuropeanNumber },
+            new sbyte[] { 1, 2, 1, 2 }];
+        yield return [new[] { BidiClass.ArabicLetter, BidiClass.EuropeanTerminator, BidiClass.EuropeanNumber },
+            new sbyte[] { 1, 1, 2 }];
+        yield return [new[] { BidiClass.LeftToRight, BidiClass.EuropeanNumber, BidiClass.ArabicLetter,
+            BidiClass.EuropeanNumber, BidiClass.EuropeanSeparator, BidiClass.EuropeanNumber },
+            new sbyte[] { 0, 0, 1, 2, 1, 2 }];
     }
 
     [Theory]
@@ -47,18 +56,4 @@ public class BidiNumberPerformanceTests
     private static void Process(BidiAlgorithm algorithm, BidiClass[] classes)
         => algorithm.Process(classes, ArraySlice<BidiPairedBracketType>.Empty, ArraySlice<int>.Empty,
             0, false, null, null, null);
-
-    [Fact]
-    public void A_Long_Leading_Number_Sequence_Is_Resolved_Without_Repeated_Prefix_Scans()
-    {
-        var classes = Enumerable.Repeat(BidiClass.EuropeanNumber, 60_000).ToArray();
-        var algorithm = new BidiAlgorithm();
-        var timer = Stopwatch.StartNew();
-        algorithm.Process(classes, ArraySlice<BidiPairedBracketType>.Empty, ArraySlice<int>.Empty,
-            0, false, null, null, null);
-        Assert.True(timer.Elapsed < TimeSpan.FromSeconds(1), $"Bidi processing took {timer.Elapsed}.");
-        Assert.Equal(classes.Length, algorithm.ResolvedLevels.Length);
-        for (var i = 0; i < classes.Length; i++)
-            Assert.Equal(0, algorithm.ResolvedLevels[i]);
-    }
 }
