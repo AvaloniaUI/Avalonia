@@ -54,8 +54,8 @@ namespace ControlCatalog.ViewModels
             CanMaximize = true;
 
             Filter();
-        }        
-        
+        }
+
         public bool ExtendClientAreaEnabled
         {
             get { return _extendClientAreaEnabled; }
@@ -91,7 +91,7 @@ namespace ControlCatalog.ViewModels
             get { return _displayEdgeToEdge; }
             set { RaiseAndSetIfChanged(ref _displayEdgeToEdge, value); }
         }
-        
+
         public Thickness SafeAreaPadding
         {
             get { return _safeAreaPadding; }
