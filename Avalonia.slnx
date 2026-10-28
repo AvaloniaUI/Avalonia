@@ -119,7 +119,6 @@
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
-    <File Path="azure-pipelines-integrationtests.yml" />
     <File Path="CODE_OF_CONDUCT.md" />
     <File Path="CONTRIBUTING.md" />
     <File Path="Directory.Build.props" />
@@ -151,7 +150,6 @@
     <Project Path="tests/Avalonia.Headless.NUnit.PerTest.UnitTests/Avalonia.Headless.NUnit.PerTest.UnitTests.csproj" />
     <Project Path="tests/Avalonia.Headless.XUnit.PerAssembly.UnitTests/Avalonia.Headless.XUnit.PerAssembly.UnitTests.csproj" />
     <Project Path="tests/Avalonia.Headless.XUnit.PerTest.UnitTests/Avalonia.Headless.XUnit.PerTest.UnitTests.csproj" />
-    <Project Path="tests/Avalonia.IntegrationTests.Appium/Avalonia.IntegrationTests.Appium.csproj" />
     <Project Path="tests/Avalonia.IntegrationTests.Win32/Avalonia.IntegrationTests.Win32.csproj" />
     <Project Path="tests/Avalonia.LeakTests/Avalonia.LeakTests.csproj" />
     <Project Path="tests/Avalonia.Markup.UnitTests/Avalonia.Markup.UnitTests.csproj" />

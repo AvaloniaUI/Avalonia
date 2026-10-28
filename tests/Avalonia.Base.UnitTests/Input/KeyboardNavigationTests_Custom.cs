@@ -1,10 +1,11 @@
 using Avalonia.Controls;
 using Avalonia.Input;
 using Xunit;
+using Avalonia.UnitTests;
 
 namespace Avalonia.Base.UnitTests.Input
 {
-    public class KeyboardNavigationTests_Custom
+    public class KeyboardNavigationTests_Custom : ScopedTestBase
     {
         [Fact]
         public void Tab_Should_Custom_Navigate_Within_Children()

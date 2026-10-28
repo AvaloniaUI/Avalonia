@@ -2,10 +2,11 @@ using System;
 using Avalonia.Controls;
 using Avalonia.Styling;
 using Xunit;
+using Avalonia.UnitTests;
 
 namespace Avalonia.Base.UnitTests.Styling
 {
-    public class SelectorTests_Or
+    public class SelectorTests_Or : ScopedTestBase
     {
         [Fact]
         public void Or_Selector_Should_Have_Correct_String_Representation()

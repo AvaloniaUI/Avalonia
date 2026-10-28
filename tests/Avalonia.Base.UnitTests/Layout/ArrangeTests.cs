@@ -1,10 +1,11 @@
 using Avalonia.Controls;
 using Avalonia.Layout;
 using Xunit;
+using Avalonia.UnitTests;
 
 namespace Avalonia.Base.UnitTests.Layout
 {
-    public class ArrangeTests
+    public class ArrangeTests : ScopedTestBase
     {
         [Fact]
         public void Bounds_Should_Not_Include_Margin()

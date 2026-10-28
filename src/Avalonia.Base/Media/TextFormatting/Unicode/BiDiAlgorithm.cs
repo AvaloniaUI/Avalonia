@@ -926,34 +926,21 @@ namespace Avalonia.Media.TextFormatting.Unicode
             // Rule W2
             if (hasEN)
             {
+                var precedingStrongClass = sos;
                 for (i = 0; i < _runLength; i++)
                 {
-                    if (_runResolvedClasses[i] != BidiClass.EuropeanNumber)
+                    var resolvedClass = _runResolvedClasses[i];
+                    switch (resolvedClass)
                     {
-                        continue;
-                    }
-
-                    for (var j = i - 1; j >= 0; j--)
-                    {
-                        var resolvedClass = _runResolvedClasses[j];
-
-                        switch (resolvedClass)
-                        {
-                            case BidiClass.LeftToRight:
-                            case BidiClass.RightToLeft:
-                            case BidiClass.ArabicLetter:
-                            {
-                                if (resolvedClass == BidiClass.ArabicLetter)
-                                {
-                                    _runResolvedClasses[i] = BidiClass.ArabicNumber;
-                                    hasAN = true;
-                                }
-
-                                j = -1;
-                                    
-                                break;
-                            }
-                        }
+                        case BidiClass.LeftToRight:
+                        case BidiClass.RightToLeft:
+                        case BidiClass.ArabicLetter:
+                            precedingStrongClass = resolvedClass;
+                            break;
+                        case BidiClass.EuropeanNumber when precedingStrongClass == BidiClass.ArabicLetter:
+                            _runResolvedClasses[i] = BidiClass.ArabicNumber;
+                            hasAN = true;
+                            break;
                     }
                 }
             }

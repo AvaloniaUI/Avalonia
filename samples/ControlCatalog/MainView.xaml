@@ -9,6 +9,7 @@
             d:DesignWidth="1200"
             d:DesignHeight="720"
             x:DataType="viewModels:MainWindowViewModel"
+            FlowDirection="{Binding SettingsViewModel.CurrentFlowDirection}"
             DrawerLayoutBehavior="Split"
             IsOpen="{Binding IsDrawerOpened , Mode=TwoWay}"
             DisplayMode="{Binding DisplayMode, Mode=TwoWay}"

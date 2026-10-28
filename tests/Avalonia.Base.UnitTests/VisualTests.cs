@@ -12,7 +12,7 @@ using Xunit;
 
 namespace Avalonia.Base.UnitTests
 {
-    public class VisualTests
+    public class VisualTests : ScopedTestBase
     {
         [Fact]
         public void BackdropEffectBoundsSource_Defaults_To_Layout()
