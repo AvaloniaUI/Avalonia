@@ -1508,6 +1508,41 @@ public class CommandBarOverflowKeyboardTests : ScopedTestBase
         cb.IsDynamicOverflowEnabled = true;
 
         Assert.InRange(visibilityChanges, 1, maxVisibilityChanges);
+        Assert.False(hiddenInOverflow.IsVisible);
+        Assert.DoesNotContain(hiddenInOverflow, cb.OverflowItems);
+    }
+
+    [Fact]
+    public void PrimaryVisibilityThatDependsOnAnotherCommandsOverflow_Settles()
+    {
+        const int maxVisibilityChanges = 10;
+        var first = new CommandBarButton();
+        var second = new CommandBarButton();
+        var trigger = new CommandBarButton();
+        var dependent = new CommandBarButton();
+        var hideWhenTriggerOverflows = dependent.Bind(Visual.IsVisibleProperty, new Binding("!IsInOverflow") { Source = trigger });
+        var cb = new CommandBar
+        {
+            ItemWidthBottom = 90,
+            PrimaryCommands = { first, second, trigger, dependent },
+        };
+        var root = new TestRoot(useGlobalStyles: true, child: cb)
+        {
+            ClientSize = new Size(300, 100),
+        };
+        root.LayoutManager.ExecuteInitialLayoutPass();
+        var visibilityChanges = 0;
+        dependent.PropertyChanged += (_, e) =>
+        {
+            // Four commands overflow the trigger, which hides the dependent command; the remaining three fit, which brings
+            // the trigger back and shows the dependent command again, so this cycle never settles on its own.
+            if (e.Property == Visual.IsVisibleProperty && ++visibilityChanges > maxVisibilityChanges)
+                hideWhenTriggerOverflows.Dispose();
+        };
+
+        cb.IsDynamicOverflowEnabled = true;
+
+        Assert.InRange(visibilityChanges, 1, maxVisibilityChanges);
     }
 
     [Fact]

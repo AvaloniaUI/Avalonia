@@ -638,11 +638,17 @@ namespace Avalonia.Controls
             if (_isOpeningOverflowPopup || _isDynamicUpdateInProgress)
                 return;
 
-            while (_hasDeferredDynamicOverflowUpdate)
+            // A visibility change during an update, such as a binding that resolves when a command is re-parented, needs
+            // another pass. A command whose visibility depends on the placement of others can invalidate every pass, so
+            // the last placement is kept after a few passes instead of looping forever on the UI thread.
+            const int maxPasses = 3;
+            for (var pass = 0; pass < maxPasses && _hasDeferredDynamicOverflowUpdate; pass++)
             {
                 _hasDeferredDynamicOverflowUpdate = false;
                 UpdateDynamicOverflow();
             }
+
+            _hasDeferredDynamicOverflowUpdate = false;
         }
 
         private void UpdateDynamicOverflow()
@@ -745,7 +751,12 @@ namespace Avalonia.Controls
 
                         for (var i = 0; i < PrimaryCommands.Count; i++)
                         {
-                            if (!IsCommandVisible(PrimaryCommands[i]) || visibleIndices.Contains(i))
+                            if (!IsCommandVisible(PrimaryCommands[i]))
+                            {
+                                // A hidden command keeps its placement state, so visibility that depends on IsInOverflow does not flip back.
+                                visiblePrimaryCommands.Add(PrimaryCommands[i]);
+                            }
+                            else if (visibleIndices.Contains(i))
                             {
                                 SetOverflowMode(PrimaryCommands[i], false);
                                 visiblePrimaryCommands.Add(PrimaryCommands[i]);
