@@ -32,11 +32,6 @@
     <AvaloniaResource Include="Xaml\StyleWithServiceProvider.xaml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\Avalonia.IntegrationTests.Appium\PlatformFactAttribute.cs">
-      <Link>PlatformFactAttribute.cs</Link>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Update="xunit.runner.console" Version="2.9.2">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
