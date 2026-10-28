@@ -281,7 +281,7 @@ public partial class OpenGlOffThreadPage : ContentPage
                     using (context.GlContext.MakeCurrent())
                     {
                         using var lease = texture.BeginDraw();
-                        var textureInfo = lease.Texture;
+                        var textureInfo = lease.TextureInfo;
                         gl.BindFramebuffer(GL_FRAMEBUFFER, fbo);
                         UpdateDepthBuffer(parameters.Size);
                         gl.FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
