@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Avalonia.Base.UnitTests.Layout
 {
-    public class MeasureTests
+    public class MeasureTests : ScopedTestBase
     {
         [Fact]
         public void Style_Hiding_Control_Should_Be_Applied_Before_Measuring()

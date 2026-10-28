@@ -3,10 +3,11 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Xunit;
+using Avalonia.UnitTests;
 
 namespace Avalonia.Base.UnitTests.Interactivity
 {
-    public class RoutedEventRegistryTests
+    public class RoutedEventRegistryTests : ScopedTestBase
     {
         [Fact]
         public void Pointer_Events_Should_Be_Registered()

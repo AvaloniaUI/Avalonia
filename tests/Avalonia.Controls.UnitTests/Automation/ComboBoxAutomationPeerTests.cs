@@ -75,4 +75,22 @@ public class ComboBoxAutomationPeerTests : ScopedTestBase
 
         Assert.Equal(1, raised);
     }
+
+    [Fact]
+    public void Expand_Preserves_Style_Binding()
+    {
+        var comboBox = new ComboBox();
+        var provider = (IExpandCollapseProvider)ControlAutomationPeer.CreatePeerForElement(comboBox);
+
+        AutomationPeerAssert.PreservesStyleBinding(comboBox, ComboBox.IsDropDownOpenProperty, false, true, provider.Expand);
+    }
+
+    [Fact]
+    public void Collapse_Preserves_Style_Binding()
+    {
+        var comboBox = new ComboBox();
+        var provider = (IExpandCollapseProvider)ControlAutomationPeer.CreatePeerForElement(comboBox);
+
+        AutomationPeerAssert.PreservesStyleBinding(comboBox, ComboBox.IsDropDownOpenProperty, true, false, provider.Collapse);
+    }
 }

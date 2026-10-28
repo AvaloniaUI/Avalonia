@@ -15,7 +15,7 @@ using Xunit;
 
 namespace Avalonia.Base.UnitTests.Styling
 {
-    public class SetterTests
+    public class SetterTests : ScopedTestBase
     {
         [Fact]
         public void Cannot_Assign_Control_To_Value()

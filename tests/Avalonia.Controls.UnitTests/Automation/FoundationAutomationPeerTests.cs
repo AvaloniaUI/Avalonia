@@ -162,6 +162,42 @@ public class FoundationAutomationPeerTests
             Assert.Equal(ExpandCollapseState.Collapsed, changed.OldValue);
             Assert.Equal(ExpandCollapseState.Expanded, changed.NewValue);
         }
+
+        [Fact]
+        public void Invoke_Preserves_Style_Binding()
+        {
+            var control = new CalendarDatePicker();
+            var peer = (IInvokeProvider)ControlAutomationPeer.CreatePeerForElement(control);
+
+            AutomationPeerAssert.PreservesStyleBinding(control, CalendarDatePicker.IsDropDownOpenProperty, false, true, peer.Invoke);
+        }
+
+        [Fact]
+        public void Expand_Preserves_Style_Binding()
+        {
+            var control = new CalendarDatePicker();
+            var peer = (IExpandCollapseProvider)ControlAutomationPeer.CreatePeerForElement(control);
+
+            AutomationPeerAssert.PreservesStyleBinding(control, CalendarDatePicker.IsDropDownOpenProperty, false, true, peer.Expand);
+        }
+
+        [Fact]
+        public void Collapse_Preserves_Style_Binding()
+        {
+            var control = new CalendarDatePicker();
+            var peer = (IExpandCollapseProvider)ControlAutomationPeer.CreatePeerForElement(control);
+
+            AutomationPeerAssert.PreservesStyleBinding(control, CalendarDatePicker.IsDropDownOpenProperty, true, false, peer.Collapse);
+        }
+
+        [Fact]
+        public void SetValue_Preserves_Style_Binding()
+        {
+            var control = new CalendarDatePicker();
+            var peer = (IValueProvider)ControlAutomationPeer.CreatePeerForElement(control);
+
+            AutomationPeerAssert.PreservesStyleBinding(control, CalendarDatePicker.TextProperty, "old", "new", () => peer.SetValue("new"));
+        }
     }
 
     public class NumericUpDownPeer : ScopedTestBase
@@ -261,6 +297,15 @@ public class FoundationAutomationPeerTests
             Assert.Equal(RangeValuePatternIdentifiers.ValueProperty, changed!.Property);
             Assert.Null(changed.OldValue);
             Assert.Equal(7.5m, changed.NewValue);
+        }
+
+        [Fact]
+        public void SetValue_Preserves_Style_Binding()
+        {
+            var control = new NumericUpDown();
+            var peer = (IRangeValueProvider)ControlAutomationPeer.CreatePeerForElement(control);
+
+            AutomationPeerAssert.PreservesStyleBinding(control, NumericUpDown.ValueProperty, 1m, 42m, () => peer.SetValue(42));
         }
     }
 }
