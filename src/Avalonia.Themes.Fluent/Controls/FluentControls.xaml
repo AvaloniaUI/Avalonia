@@ -1,7 +1,6 @@
-﻿<ResourceDictionary
-    xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    x:ClassModifier="internal">
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    x:ClassModifier="internal">
     <ResourceDictionary.MergedDictionaries>
         <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/AdornerLayer.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/Button.xaml" />
