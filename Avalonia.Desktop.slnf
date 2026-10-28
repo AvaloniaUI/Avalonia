@@ -58,7 +58,6 @@
       "tests\\Avalonia.Direct2D1.RenderTests\\Avalonia.Direct2D1.RenderTests.csproj",
       "tests\\Avalonia.Direct2D1.UnitTests\\Avalonia.Direct2D1.UnitTests.csproj",
       "tests\\Avalonia.Generators.Tests\\Avalonia.Generators.Tests.csproj",
-      "tests\\Avalonia.IntegrationTests.Appium\\Avalonia.IntegrationTests.Appium.csproj",
       "tests\\Avalonia.LeakTests\\Avalonia.LeakTests.csproj",
       "tests\\Avalonia.Markup.UnitTests\\Avalonia.Markup.UnitTests.csproj",
       "tests\\Avalonia.Markup.Xaml.UnitTests\\Avalonia.Markup.Xaml.UnitTests.csproj",
