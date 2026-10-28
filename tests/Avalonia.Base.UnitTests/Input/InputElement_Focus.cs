@@ -49,6 +49,46 @@ namespace Avalonia.Base.UnitTests.Input
             }
         }
 
+        [Theory]
+        [InlineData(false, false)]
+        [InlineData(true, false)]
+        [InlineData(false, true)]
+        [InlineData(true, true)]
+        public void Sequential_Focus_Should_Find_Available_Descendant_Of_Unfocusable_Containers(bool previous, bool hidden)
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var first = new Button();
+                var last = new Button();
+                var expected = new Button();
+                var unavailable = new StackPanel { Children = { new Button() } };
+                if (hidden)
+                    unavailable.IsVisible = false;
+                else
+                    unavailable.IsEnabled = false;
+                var nested = new StackPanel
+                {
+                    Children =
+                    {
+                        new StackPanel { Children = { expected } },
+                        unavailable,
+                    }
+                };
+                var root = new TestRoot
+                {
+                    Child = new StackPanel { Children = { first, nested, last } }
+                };
+                var current = previous ? last : first;
+                var direction = previous ? NavigationDirection.Previous : NavigationDirection.Next;
+                Assert.True(current.Focus());
+
+                Assert.Same(expected, root.FocusManager.FindNextElement(direction,
+                    new FindNextElementOptions { FocusedElement = current }));
+                Assert.True(root.FocusManager.TryMoveFocus(direction));
+                Assert.Same(expected, root.FocusManager.GetFocusedElement());
+            }
+        }
+
         [Fact]
         public void Focus_Should_Set_FocusManager_Current()
         {
