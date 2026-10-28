@@ -1478,6 +1478,39 @@ public class CommandBarOverflowKeyboardTests : ScopedTestBase
     }
 
     [Fact]
+    public void PrimaryVisibilityThatDependsOnOverflow_Settles()
+    {
+        const int maxVisibilityChanges = 10;
+        var first = new CommandBarButton();
+        var second = new CommandBarButton();
+        var third = new CommandBarButton();
+        var hiddenInOverflow = new CommandBarButton();
+        var hideInOverflow = hiddenInOverflow.Bind(Visual.IsVisibleProperty, new Binding("!IsInOverflow") { RelativeSource = new RelativeSource(RelativeSourceMode.Self) });
+        var cb = new CommandBar
+        {
+            ItemWidthBottom = 100,
+            PrimaryCommands = { first, second, third, hiddenInOverflow },
+        };
+        var root = new TestRoot(useGlobalStyles: true, child: cb)
+        {
+            ClientSize = new Size(300, 100),
+        };
+        root.LayoutManager.ExecuteInitialLayoutPass();
+        var visibilityChanges = 0;
+        hiddenInOverflow.PropertyChanged += (_, e) =>
+        {
+            // Overflowing hides the command, which frees its slot and brings it back, so an unbounded rebuild never returns.
+            // Disposing the binding breaks the cycle, so a regression fails the assertion below instead of hanging the run.
+            if (e.Property == Visual.IsVisibleProperty && ++visibilityChanges > maxVisibilityChanges)
+                hideInOverflow.Dispose();
+        };
+
+        cb.IsDynamicOverflowEnabled = true;
+
+        Assert.InRange(visibilityChanges, 1, maxVisibilityChanges);
+    }
+
+    [Fact]
     public void PrimaryVisibilityChange_WhileDetached_UpdatesOverflowOnReattach()
     {
         var first = new CommandBarButton();
