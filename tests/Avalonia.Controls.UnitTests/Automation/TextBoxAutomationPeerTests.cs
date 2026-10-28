@@ -80,6 +80,15 @@ public class TextBoxAutomationPeerTests : ScopedTestBase
         Assert.Equal(peer.Value, change.NewValue);
     }
 
+    [Fact]
+    public void SetValue_Preserves_Style_Binding()
+    {
+        var target = new TextBox();
+        var peer = (IValueProvider)ControlAutomationPeer.CreatePeerForElement(target);
+
+        AutomationPeerAssert.PreservesStyleBinding(target, TextBox.TextProperty, "old", "new", () => peer.SetValue("new"));
+    }
+
     private static List<AutomationPropertyChangedEventArgs> RecordValueChanges(AutomationPeer peer)
     {
         var result = new List<AutomationPropertyChangedEventArgs>();
