@@ -424,8 +424,6 @@ namespace Avalonia.Controls.Primitives
         /// <param name="templatedParent">The templated parent to apply.</param>
         internal static void ApplyTemplatedParent(StyledElement control, AvaloniaObject? templatedParent)
         {
-            control.TemplatedParent = templatedParent;
-
             var children = control.LogicalChildren;
             var count = children.Count;
 
@@ -436,6 +434,11 @@ namespace Avalonia.Controls.Primitives
                     ApplyTemplatedParent(child, templatedParent);
                 }
             }
+
+            // Setting TemplatedParent can activate template bindings and add user content
+            // to the logical children. Visit the template's existing children first so
+            // that content isn't assigned a templated parent or styled as template content.
+            control.TemplatedParent = templatedParent;
         }
 
         private protected override void OnControlThemeChanged()
