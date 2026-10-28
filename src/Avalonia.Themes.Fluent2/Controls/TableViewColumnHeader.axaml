@@ -11,11 +11,11 @@
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
       <SolidColorBrush x:Key="TableViewHeaderSeparatorFill" Color="{StaticResource SystemBaseLowColor}" />
-      <StaticResource x:Key="TableViewColumnHeaderSeparatorPointerOverFill" ResourceKey="AccentFillColorDefaultBrush" />
+      <StaticResource x:Key="TableViewHeaderSeparatorPointerOverFill" ResourceKey="AccentFillColorDefaultBrush" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
       <SolidColorBrush x:Key="TableViewHeaderSeparatorFill" Color="{StaticResource SystemBaseLowColor}" />
-      <StaticResource x:Key="TableViewColumnHeaderSeparatorPointerOverFill" ResourceKey="AccentFillColorDefaultBrush" />
+      <StaticResource x:Key="TableViewHeaderSeparatorPointerOverFill" ResourceKey="AccentFillColorDefaultBrush" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 
@@ -67,10 +67,10 @@
       </ControlTemplate>
     </Setter>
     <Style Selector="^:pointerover /template/ Rectangle#ResizerRectangle">
-      <Setter Property="Fill" Value="{DynamicResource TableViewColumnHeaderSeparatorPointerOverFill}" />
+      <Setter Property="Fill" Value="{DynamicResource TableViewHeaderSeparatorPointerOverFill}" />
     </Style>
     <Style Selector="^:pressed /template/ Rectangle#ResizerRectangle">
-      <Setter Property="Fill" Value="{DynamicResource TableViewColumnHeaderSeparatorPointerOverFill}" />
+      <Setter Property="Fill" Value="{DynamicResource TableViewHeaderSeparatorPointerOverFill}" />
     </Style>
   </ControlTheme>
 </ResourceDictionary>
