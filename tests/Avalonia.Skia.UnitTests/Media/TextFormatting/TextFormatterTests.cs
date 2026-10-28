@@ -1243,17 +1243,23 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     new TextCharacters(text.Slice(2, 2), new GenericTextRunProperties(Typeface.Default, foregroundBrush: Brushes.Green)),
                     new TextCharacters(text.Slice(4, 2), new GenericTextRunProperties(Typeface.Default, foregroundBrush: Brushes.Blue)));
 
-                var textLine = new TextFormatterImpl().FormatLine(textSource, 0, double.PositiveInfinity,
+                using var textLine = new TextFormatterImpl().FormatLine(textSource, 0, double.PositiveInfinity,
                     new GenericTextParagraphProperties(defaultProperties));
 
                 Assert.NotNull(textLine);
 
                 var shapedBuffer = Assert.Single(shaper.ShapedBuffers);
 
-                Assert.Equal(new[] { 2, 2, 2 }, textLine.TextRuns.Select(x => ((ShapedTextRun)x).ShapedBuffer.Length));
+                var shapedBuffers = textLine.TextRuns.Select(x => ((ShapedTextRun)x).ShapedBuffer).ToList();
+
+                Assert.Equal(new[] { 2, 2, 2 }, shapedBuffers.Select(x => x.Length));
 
                 // A disposed buffer has given its glyphs back.
                 Assert.Equal(0, shapedBuffer.Length);
+
+                // The second half of each split is split again and never reaches the shaper. Only the
+                // runs on the line may still reference the shared glyph storage.
+                Assert.All(shapedBuffers, x => Assert.Equal(shapedBuffers.Count, x.GlyphStorageRefCount));
             }
         }
 
