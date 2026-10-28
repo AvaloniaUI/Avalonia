@@ -36,9 +36,6 @@
     <AvaloniaResource Include="Xaml\StyleWithServiceProvider.xaml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\Avalonia.IntegrationTests.Appium\PlatformFactAttribute.cs">
-      <Link>PlatformFactAttribute.cs</Link>
-    </Compile>
     <Compile Include="../Shared/ScopedSanityCheck.cs"/>
   </ItemGroup>
   <ItemGroup>
