@@ -9,12 +9,12 @@
         <ResourceDictionary x:Key="Default">
           <SolidColorBrush x:Key="ColorControlLightSelectorBrush" Color="#FFFFFFFF" />
           <SolidColorBrush x:Key="ColorControlDarkSelectorBrush" Color="#E4000000" />
-          <SolidColorBrush x:Key="ColorControlDefaultSelectorBrush" Color="{StaticResource TextFillColorPrimary}" />
+          <StaticResource x:Key="ColorControlDefaultSelectorBrush" ResourceKey="TextFillColorPrimaryBrush" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Dark">
           <SolidColorBrush x:Key="ColorControlLightSelectorBrush" Color="#FFFFFFFF" />
           <SolidColorBrush x:Key="ColorControlDarkSelectorBrush" Color="#E4000000" />
-          <SolidColorBrush x:Key="ColorControlDefaultSelectorBrush" Color="{StaticResource TextFillColorPrimary}" />
+          <StaticResource x:Key="ColorControlDefaultSelectorBrush" ResourceKey="TextFillColorPrimaryBrush" />
         </ResourceDictionary>
       </ResourceDictionary.ThemeDictionaries>
 
