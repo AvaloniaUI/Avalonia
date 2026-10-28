@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Avalonia.Base.UnitTests.Styling
 {
-    public class ContainerTests
+    public class ContainerTests : ScopedTestBase
     {
         [Fact]
         public void Container_Cannot_Be_Added_To_Style_Children()

@@ -1,10 +1,11 @@
 using System;
 using System.Reactive.Linq;
 using Xunit;
+using Avalonia.UnitTests;
 
 namespace Avalonia.Base.UnitTests
 {
-    public class AvaloniaObjectTests_GetObservable
+    public class AvaloniaObjectTests_GetObservable : ScopedTestBase
     {
         [Fact]
         public void GetObservable_Returns_Initial_Value()

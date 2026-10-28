@@ -147,6 +147,33 @@ public class TreeViewItemAutomationPeerTests : ScopedTestBase
         Assert.Equal(ExpandCollapseState.Expanded, e.NewValue);
     }
 
+    [Fact]
+    public void Select_Preserves_Style_Binding()
+    {
+        var target = new TreeViewItem();
+        var peer = (ISelectionItemProvider)ControlAutomationPeer.CreatePeerForElement(target);
+
+        AutomationPeerAssert.PreservesStyleBinding(target, TreeViewItem.IsSelectedProperty, false, true, peer.Select);
+    }
+
+    [Fact]
+    public void AddToSelection_Preserves_Style_Binding()
+    {
+        var target = new TreeViewItem();
+        var peer = (ISelectionItemProvider)ControlAutomationPeer.CreatePeerForElement(target);
+
+        AutomationPeerAssert.PreservesStyleBinding(target, TreeViewItem.IsSelectedProperty, false, true, peer.AddToSelection);
+    }
+
+    [Fact]
+    public void RemoveFromSelection_Preserves_Style_Binding()
+    {
+        var target = new TreeViewItem();
+        var peer = (ISelectionItemProvider)ControlAutomationPeer.CreatePeerForElement(target);
+
+        AutomationPeerAssert.PreservesStyleBinding(target, TreeViewItem.IsSelectedProperty, true, false, peer.RemoveFromSelection);
+    }
+
     private static TreeViewItem CreateParentItem() => new() { Items = { new TreeViewItem() } };
 
     private static List<AutomationPropertyChangedEventArgs> CollectStateChanges(TreeViewItem item)
