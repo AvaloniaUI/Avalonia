@@ -50,7 +50,7 @@ partial class WindowBaseImpl
             args.KeyText = key.KeyText;
             args.KeyTextIgnoringModifiers = key.KeyTextIgnoringModifiers;
             args.ConsumedModifiers = key.ConsumedModifiers;
-            args.NativeKeyInfo = key.NativeKeyInfo;
+            args.PlatformKeyInfo = key.PlatformKeyInfo;
             return args;
         }
 
@@ -81,7 +81,7 @@ partial class WindowBaseImpl
 
             if (args is RawHeldKeyChangedEventArgs held)
             {
-                if (_repeatKey?.NativeKeyInfo.ScanCode == held.Key.NativeKeyInfo.ScanCode)
+                if (_repeatKey?.PlatformKeyInfo.ScanCode == held.Key.PlatformKeyInfo.ScanCode)
                 {
                     _repeatKey = held.Key;
                     _repeatModifiers = held.Modifiers;
@@ -96,7 +96,7 @@ partial class WindowBaseImpl
                     StartKeyRepeat(keyArgs);
                 }
                 else if (keyArgs.Type == RawKeyEventType.KeyUp
-                         && _repeatKey?.NativeKeyInfo.ScanCode == keyArgs.NativeKeyInfo?.ScanCode)
+                         && _repeatKey?.PlatformKeyInfo.ScanCode == keyArgs.PlatformKeyInfo?.ScanCode)
                 {
                     StopKeyRepeat();
                 }
@@ -116,11 +116,11 @@ partial class WindowBaseImpl
                 or Key.LeftAlt or Key.RightAlt or Key.LWin or Key.RWin)
                 return;
 
-            if (keyArgs.NativeKeyInfo is not { } nativeKeyInfo)
+            if (keyArgs.PlatformKeyInfo is not { } platformKeyInfo)
                 return;
 
             _repeatKey = new WaylandKeyInfo(keyArgs.Key, keyArgs.PhysicalKey, keyArgs.KeySymbol, keyArgs.KeyText,
-                keyArgs.KeyTextIgnoringModifiers, keyArgs.ConsumedModifiers, nativeKeyInfo);
+                keyArgs.KeyTextIgnoringModifiers, keyArgs.ConsumedModifiers, platformKeyInfo);
             _repeatModifiers = keyArgs.Modifiers;
 
             var intervalMs = Math.Max(1, 1000 / _keyRepeatRate);

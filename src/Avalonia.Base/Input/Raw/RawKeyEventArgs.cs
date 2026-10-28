@@ -49,6 +49,6 @@ namespace Avalonia.Input.Raw
 
         public RawInputModifiers? ConsumedModifiers { get; set; }
 
-        public NativeKeyInfo? NativeKeyInfo { get; set; }
+        public PlatformKeyInfo? PlatformKeyInfo { get; set; }
     }
 }

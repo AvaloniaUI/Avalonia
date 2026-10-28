@@ -13,4 +13,4 @@ internal sealed record WaylandKeyInfo(
     string? KeyText,
     string? KeyTextIgnoringModifiers,
     RawInputModifiers? ConsumedModifiers,
-    NativeKeyInfo NativeKeyInfo);
+    PlatformKeyInfo PlatformKeyInfo);

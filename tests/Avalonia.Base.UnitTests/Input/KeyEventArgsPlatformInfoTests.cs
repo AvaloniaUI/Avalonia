@@ -6,16 +6,15 @@ using Xunit;
 
 namespace Avalonia.Base.UnitTests.Input
 {
-    public class KeyEventArgsNativeInfoTests : ScopedTestBase
+    public class KeyEventArgsPlatformInfoTests : ScopedTestBase
     {
         [Theory]
         [InlineData(RawKeyEventType.KeyDown)]
         [InlineData(RawKeyEventType.KeyUp)]
         public void Raw_Key_Info_Should_Reach_KeyEventArgs(RawKeyEventType type)
         {
-            var nativeKeyInfo = new NativeKeyInfo
+            var platformKeyInfo = new PlatformKeyInfo(KnownPlatformKeyInfoFormats.Win32)
             {
-                Format = NativeKeyInfoFormat.Win32,
                 ScanCode = 0x2C,
                 VirtualKey = 0x5A,
                 Modifiers = 0x8
@@ -26,13 +25,13 @@ namespace Avalonia.Base.UnitTests.Input
                 e.KeyText = "\x1a";
                 e.KeyTextIgnoringModifiers = "z";
                 e.ConsumedModifiers = RawInputModifiers.Shift;
-                e.NativeKeyInfo = nativeKeyInfo;
+                e.PlatformKeyInfo = platformKeyInfo;
             });
 
             Assert.Equal("\x1a", received.KeyText);
             Assert.Equal("z", received.KeyTextIgnoringModifiers);
             Assert.Equal(KeyModifiers.Shift, received.ConsumedModifiers);
-            Assert.Same(nativeKeyInfo, received.NativeKeyInfo);
+            Assert.Same(platformKeyInfo, received.PlatformKeyInfo);
         }
 
         [Fact]
@@ -51,11 +50,11 @@ namespace Avalonia.Base.UnitTests.Input
         {
             // macOS reports the A key as keyCode 0
             var received = Send(RawKeyEventType.KeyDown, Key.A, RawInputModifiers.None, PhysicalKey.A, "a",
-                e => e.NativeKeyInfo = new NativeKeyInfo { Format = NativeKeyInfoFormat.MacOS, ScanCode = 0, VirtualKey = 0 });
+                e => e.PlatformKeyInfo = new PlatformKeyInfo(KnownPlatformKeyInfoFormats.MacOS) { ScanCode = 0, VirtualKey = 0 });
 
-            Assert.Equal(0u, received.NativeKeyInfo!.ScanCode);
-            Assert.Equal(0u, received.NativeKeyInfo.VirtualKey);
-            Assert.Null(received.NativeKeyInfo.Modifiers);
+            Assert.Equal(0u, received.PlatformKeyInfo!.ScanCode);
+            Assert.Equal(0u, received.PlatformKeyInfo.VirtualKey);
+            Assert.Null(received.PlatformKeyInfo.Modifiers);
         }
 
         private static KeyEventArgs Send(RawKeyEventType type, Key key, RawInputModifiers modifiers,

@@ -318,7 +318,7 @@ namespace Avalonia.Controls
                             KeyText = rawKeyEventArgs.KeyText,
                             KeyTextIgnoringModifiers = rawKeyEventArgs.KeyTextIgnoringModifiers,
                             ConsumedModifiers = (KeyModifiers?)rawKeyEventArgs.ConsumedModifiers,
-                            NativeKeyInfo = rawKeyEventArgs.NativeKeyInfo
+                            PlatformKeyInfo = rawKeyEventArgs.PlatformKeyInfo
                         };
 
                         backRequested = keymap.Any(key => key.Matches(keyEvent));

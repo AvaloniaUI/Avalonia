@@ -227,10 +227,9 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
             ConsumedModifiers = info.HasConsumedModifiers.FromComBool() ?
                 (RawInputModifiers)info.ConsumedModifiers :
                 null,
-            NativeKeyInfo = info.HasNativeKeyCode.FromComBool() ?
-                new NativeKeyInfo
+            PlatformKeyInfo = info.HasNativeKeyCode.FromComBool() ?
+                new PlatformKeyInfo(KnownPlatformKeyInfoFormats.MacOS)
                 {
-                    Format = NativeKeyInfoFormat.MacOS,
                     ScanCode = (uint)info.NativeKeyCode,
                     Modifiers = info.NativeModifiers
                 } :
@@ -444,7 +443,6 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
             }
             finally
             {
-
                 _parent?.Dispose();
                 n?.Dispose();
             }

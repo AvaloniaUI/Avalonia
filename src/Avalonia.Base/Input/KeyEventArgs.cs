@@ -168,5 +168,5 @@ public class KeyEventArgs : RoutedEventArgs, IKeyModifiersEventArgs
     /// <summary>
     /// Gets platform-specific data of the key event, or null if the platform doesn't provide any.
     /// </summary>
-    public NativeKeyInfo? NativeKeyInfo { get; init; }
+    public PlatformKeyInfo? PlatformKeyInfo { get; init; }
 }

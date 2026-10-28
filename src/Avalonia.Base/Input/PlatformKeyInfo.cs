@@ -1,41 +1,52 @@
 namespace Avalonia.Input;
 
 /// <summary>
-/// Identifies the platform that produced a <see cref="NativeKeyInfo"/>, and so the meaning of its values.
+/// Known values of <see cref="PlatformKeyInfo.Format"/>. Each value identifies the platform that produced a
+/// <see cref="PlatformKeyInfo"/>, and so the meaning of its values. Other platforms can report other formats.
 /// </summary>
-public enum NativeKeyInfoFormat
+public static class KnownPlatformKeyInfoFormats
 {
     /// <summary>
     /// Win32 keyboard messages.
     /// </summary>
-    Win32,
+    public static readonly string Win32 = nameof(Win32);
 
     /// <summary>
     /// X11 key events.
     /// </summary>
-    X11,
+    public static readonly string X11 = nameof(X11);
 
     /// <summary>
     /// Wayland <c>wl_keyboard</c> events.
     /// </summary>
-    Wayland,
+    public static readonly string Wayland = nameof(Wayland);
 
     /// <summary>
     /// macOS <c>NSEvent</c> key events.
     /// </summary>
-    MacOS
+    public static readonly string MacOS = nameof(MacOS);
 }
 
 /// <summary>
 /// Platform-specific data of a key event, for code that knows the platform, for example terminal emulators that
 /// encode keys the way a native terminal does. Each value is null when the platform doesn't provide it.
 /// </summary>
-public sealed class NativeKeyInfo
+public sealed class PlatformKeyInfo
 {
     /// <summary>
-    /// Gets the platform that produced the values.
+    /// Initializes a new instance of the <see cref="PlatformKeyInfo"/> class.
     /// </summary>
-    public NativeKeyInfoFormat Format { get; init; }
+    /// <param name="format">The platform that produced the values, usually one of
+    /// <see cref="KnownPlatformKeyInfoFormats"/>.</param>
+    public PlatformKeyInfo(string format)
+    {
+        Format = format;
+    }
+
+    /// <summary>
+    /// Gets the platform that produced the values, usually one of <see cref="KnownPlatformKeyInfoFormats"/>.
+    /// </summary>
+    public string Format { get; }
 
     /// <summary>
     /// Gets the scan code of the key.

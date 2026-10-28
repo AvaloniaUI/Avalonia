@@ -111,9 +111,8 @@ namespace Avalonia.X11
 
             if (forwardedKey.Type == RawKeyEventType.KeyDown && _x11.HasXkb)
                 args.KeyTextIgnoringModifiers = GetKeysymTextXkb(x11Key);
-            args.NativeKeyInfo = new NativeKeyInfo
+            args.PlatformKeyInfo = new PlatformKeyInfo(KnownPlatformKeyInfoFormats.X11)
             {
-                Format = NativeKeyInfoFormat.X11,
                 VirtualKey = x11Key != 0 ? (uint)x11Key : null
             };
 
@@ -162,9 +161,8 @@ namespace Avalonia.X11
                     physicalKey,
                     symbol);
 
-            args.NativeKeyInfo = new NativeKeyInfo
+            args.PlatformKeyInfo = new PlatformKeyInfo(KnownPlatformKeyInfoFormats.X11)
             {
-                Format = NativeKeyInfoFormat.X11,
                 ScanCode = (uint)ev.KeyEvent.keycode,
                 VirtualKey = x11Key != 0 ? (uint)x11Key : null,
                 Modifiers = (ulong)ev.KeyEvent.state

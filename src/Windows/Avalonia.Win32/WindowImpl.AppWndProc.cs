@@ -1584,7 +1584,7 @@ namespace Avalonia.Win32
                 KeyText = keyText,
                 KeyTextIgnoringModifiers = keyTextIgnoringModifiers,
                 ConsumedModifiers = KeyInterop.GetConsumedModifiers(virtualKey, WindowsKeyboardDevice.Instance.Modifiers),
-                NativeKeyInfo = KeyInterop.GetNativeKeyInfo(virtualKey, keyData)
+                PlatformKeyInfo = KeyInterop.GetPlatformKeyInfo(virtualKey, keyData)
             };
         }
 
@@ -1684,7 +1684,7 @@ namespace Avalonia.Win32
                 physicalKey,
                 keySymbol)
             {
-                NativeKeyInfo = KeyInterop.GetNativeKeyInfo(virtualKey, keyData)
+                PlatformKeyInfo = KeyInterop.GetPlatformKeyInfo(virtualKey, keyData)
             };
         }
     }

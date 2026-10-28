@@ -586,9 +586,8 @@ namespace Avalonia.Win32.Input
             return length;
         }
 
-        internal static NativeKeyInfo GetNativeKeyInfo(int virtualKey, int keyData) => new()
+        internal static PlatformKeyInfo GetPlatformKeyInfo(int virtualKey, int keyData) => new(KnownPlatformKeyInfoFormats.Win32)
         {
-            Format = NativeKeyInfoFormat.Win32,
             ScanCode = GetNativeScanCode(keyData),
             VirtualKey = (uint)virtualKey,
             Modifiers = GetNativeModifiers(keyData)

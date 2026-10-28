@@ -62,16 +62,16 @@ namespace ControlCatalog.Pages.Terminal
                 $"Key={e.Key} PhysicalKey={e.PhysicalKey} KeyModifiers={e.KeyModifiers} KeySymbol=\"{Escape(e.KeySymbol)}\"\n" +
                 $"KeyText=\"{Escape(e.KeyText)}\" KeyTextIgnoringModifiers=\"{Escape(e.KeyTextIgnoringModifiers)}\" " +
                 $"ConsumedModifiers={e.ConsumedModifiers?.ToString() ?? "null"}\n" +
-                $"{FormatNative(e.NativeKeyInfo)}\n" +
+                $"{FormatPlatform(e.PlatformKeyInfo)}\n" +
                 $"Sent: {sent}";
         }
 
-        private static string FormatNative(NativeKeyInfo? info)
+        private static string FormatPlatform(PlatformKeyInfo? info)
         {
             if (info is null)
-                return "NativeKeyInfo=null";
+                return "PlatformKeyInfo=null";
             static string Hex(ulong? value) => value is { } v ? $"0x{v:X}" : "null";
-            return $"Native({info.Format}): ScanCode={Hex(info.ScanCode)} VirtualKey={Hex(info.VirtualKey)} " +
+            return $"Platform({info.Format}): ScanCode={Hex(info.ScanCode)} VirtualKey={Hex(info.VirtualKey)} " +
                    $"Modifiers={Hex(info.Modifiers)}";
         }
 

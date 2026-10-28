@@ -258,7 +258,7 @@ namespace Avalonia.Input
                             KeyText = keyInput.KeyText,
                             KeyTextIgnoringModifiers = keyInput.KeyTextIgnoringModifiers,
                             ConsumedModifiers = keyInput.ConsumedModifiers?.ToKeyModifiers(),
-                            NativeKeyInfo = keyInput.NativeKeyInfo,
+                            PlatformKeyInfo = keyInput.PlatformKeyInfo,
                             Source = element
                         };
                         

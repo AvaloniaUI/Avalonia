@@ -58,9 +58,8 @@ partial class WaylandInputDispatcher
             var physicalKey = XkbKeyTransform.PhysicalKeyFromEvdev(key);
             if (_keymap == null)
                 return new WaylandKeyInfo(XkbKeyTransform.KeyFromEvdev(key), physicalKey, null, null, null, null,
-                    new NativeKeyInfo
+                    new PlatformKeyInfo(KnownPlatformKeyInfoFormats.Wayland)
                     {
-                        Format = NativeKeyInfoFormat.Wayland,
                         ScanCode = key + 8,
                         Modifiers = _effectiveMods
                     });
@@ -94,9 +93,8 @@ partial class WaylandInputDispatcher
                 press ? XkbCommonKeymap.KeysymToText(keysym) : null,
                 // Only pressed modifiers count; the GTK mode already reports consumed modifiers that are active
                 press ? XkbKeyTransform.ModifiersFromXkbMask(_keymap.GetConsumedModifiers(key) & _effectiveMods) : null,
-                new NativeKeyInfo
+                new PlatformKeyInfo(KnownPlatformKeyInfoFormats.Wayland)
                 {
-                    Format = NativeKeyInfoFormat.Wayland,
                     ScanCode = key + 8,
                     VirtualKey = keysym != 0 ? keysym : null,
                     Modifiers = _effectiveMods
