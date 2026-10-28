@@ -23,12 +23,11 @@
              performance and possible optimizations (MergeResourceInclude must come last) -->
         <MergeResourceInclude Source="/Accents/BaseResources.axaml" />
         <MergeResourceInclude Source="/Accents/Fluent2TokenResources.axaml" />
+        <MergeResourceInclude Source="/Controls/FluentControls.axaml" />
       </ResourceDictionary.MergedDictionaries>
       
       <!-- These are not part of MergedDictionaries so we can add or remove them easier -->
       <ResourceInclude x:Key="CompactStyles" Source="/DensityStyles/Compact.axaml" />
     </ResourceDictionary>
   </Styles.Resources>
-  
-  <StyleInclude Source="/Controls/FluentControls.axaml" />
 </Styles>
