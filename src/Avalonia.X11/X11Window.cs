@@ -167,6 +167,10 @@ namespace Avalonia.X11
                     // Emulate Window 7+'s default window size behavior.
                     defaultWidth = (int)(monitor.WorkingArea.Width * 0.75d);
                     defaultHeight = (int)(monitor.WorkingArea.Height * 0.7d);
+
+                    // The default size is in pixels, so initialize the scaling to match the monitor.
+                    // Otherwise UpdateScaling() would treat the pixel size as DIPs and scale it again.
+                    RenderScaling = monitor.Scaling;
                 }
             }
 
@@ -203,7 +207,13 @@ namespace Avalonia.X11
             Handle = new PlatformHandle(_handle, "XID");
 
             _mode.OnHandleCreated(_handle);
-            
+
+            // The window mode may have set a scaling override (e.g. XEmbed forces a scaling of 1), which takes
+            // precedence over the monitor scaling. Keep them in sync, otherwise UpdateScaling() would see a
+            // mismatch and trigger a spurious DPI resize.
+            if (_scalingOverride is { } scalingOverride)
+                RenderScaling = scalingOverride;
+
             _realSize = new PixelSize(defaultWidth, defaultHeight);
             platform.Windows[_handle] = new X11WindowInfo(OnEvent, this);
             XEventMask ignoredMask = XEventMask.SubstructureRedirectMask
@@ -593,6 +603,12 @@ namespace Avalonia.X11
                 _mapped = true;
                 if (_useRenderWindow)
                     XMapWindow(_x11.Display, _renderHandle);
+                EnqueuePositionRefresh();
+            }
+            else if (ev.type == XEventName.ReparentNotify)
+            {
+                if (ev.ReparentEvent.window == _handle)
+                    EnqueuePositionRefresh();
             }
             else if (ev.type == XEventName.UnmapNotify)
                 _mapped = false;
@@ -1044,6 +1060,30 @@ namespace Avalonia.X11
                 drag.Location = drag.Location / RenderScaling;
             
             _rawEventGrouper?.HandleEvent(args);
+        }
+
+        // A position translated on ConfigureNotify can be stale if the window manager was reparenting
+        // the window at the time, and some window managers (e.g. openbox with an undecorated window)
+        // send no later ConfigureNotify to correct it. Translate it again once that has settled.
+        private void EnqueuePositionRefresh()
+        {
+            Dispatcher.UIThread.Post(() =>
+            {
+                if (_handle == IntPtr.Zero || _configure != null)
+                    return;
+
+                XTranslateCoordinates(_x11.Display, _handle, _x11.RootWindow,
+                    0, 0,
+                    out var tx, out var ty, out _);
+                var npos = new PixelPoint(tx, ty);
+                if (_position == npos)
+                    return;
+
+                _position = npos;
+                PositionChanged?.Invoke(npos);
+                UpdateScaling();
+                UpdateImePosition();
+            }, DispatcherPriority.Background);
         }
 
         private void MouseEvent(RawPointerEventType type, ref XEvent ev, XModifierMask mods)

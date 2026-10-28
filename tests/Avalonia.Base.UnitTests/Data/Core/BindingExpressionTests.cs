@@ -17,7 +17,7 @@ using Avalonia.Utilities;
 namespace Avalonia.Base.UnitTests.Data.Core;
 
 [InvariantCulture]
-public abstract partial class BindingExpressionTests
+public abstract partial class BindingExpressionTests : ScopedTestBase
 {
     public partial class Reflection : BindingExpressionTests
     {

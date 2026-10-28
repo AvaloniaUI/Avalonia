@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Threading;
 using Avalonia.OpenGL.Egl;
+using Avalonia.Platform;
 using Avalonia.Reactive;
+using Avalonia.Rendering.Composition;
+using Avalonia.Win32.DirectX;
 using MicroCom.Runtime;
 
 namespace Avalonia.Win32.DComposition;
 
-internal class DirectCompositedWindow : IDisposable
+internal class DirectCompositedWindow : ISwapchainVisualHost, IDisposable
 {
     private readonly DirectCompositionShared _shared;
     public EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo WindowInfo { get; }
@@ -40,6 +43,18 @@ internal class DirectCompositedWindow : IDisposable
     }
 
     public void SetSurface(IDCompositionSurface surface) => _container.SetContent(surface);
+
+    public void SetSwapchainContent(IUnknown swapchain) => _container.SetContent(swapchain);
+
+    // A DComp visual displays its content at native size, nothing to resize
+    public void ResizeIfNeeded(PixelSize size)
+    {
+    }
+
+    // No composition effects on the DComp path
+    public void ApplyEffects(CompositionTransparencyLevel transparencyLevel, PlatformThemeVariant themeVariant)
+    {
+    }
 
     public IDisposable BeginTransaction()
     {

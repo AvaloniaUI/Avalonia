@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
   <PropertyGroup>
-    <TargetFrameworks>$(AvsCurrentTargetFramework)</TargetFrameworks>
+    <TargetFramework>$(AvsCurrentTargetFramework)</TargetFramework>
     <OutputType>Exe</OutputType>
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
@@ -25,20 +25,9 @@
     <ProjectReference Include="..\Avalonia.UnitTests\Avalonia.UnitTests.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <AvaloniaResource Include="Xaml\Style1.xaml">
-      <SubType>Designer</SubType>
-    </AvaloniaResource>
-    <AvaloniaResource Include="Xaml\Style2.xaml">
-      <SubType>Designer</SubType>
-    </AvaloniaResource>
-    <AvaloniaResource Include="Xaml\XamlIlClassWithPrecompiledXaml.xaml" />
-    <AvaloniaResource Include="Xaml\XamlIlClassWithCustomProperty.xaml" />
-    <AvaloniaResource Include="Xaml\StyleWithServiceProvider.xaml" />
+    <AvaloniaXaml Include="Xaml/*.xaml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\Avalonia.IntegrationTests.Appium\PlatformFactAttribute.cs">
-      <Link>PlatformFactAttribute.cs</Link>
-    </Compile>
     <Compile Include="../Shared/ScopedSanityCheck.cs"/>
   </ItemGroup>
   <ItemGroup>

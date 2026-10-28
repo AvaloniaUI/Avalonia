@@ -1,9 +1,10 @@
 ﻿using Avalonia.Media;
 using Xunit;
+using Avalonia.UnitTests;
 
 namespace Avalonia.Visuals.UnitTests.Media
 {
-    public class GeometryGroupTests
+    public class GeometryGroupTests : ScopedTestBase
     {
         [Fact]
         public void Children_Should_Have_Initial_Collection()
