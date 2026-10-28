@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using Avalonia.Themes.Fluent;
+using Avalonia.Themes.Fluent2;
 using Avalonia.Themes.Simple;
 using Avalonia.Themes.UnitTests.Utilities;
 using Xunit;
@@ -9,6 +10,8 @@ namespace Avalonia.Themes.UnitTests;
 
 [Trait("Category", "FluentTheme")]
 public class FluentPublicApiTests() : PublicApiTests(typeof(FluentTheme));
+[Trait("Category", "Fluent2Theme")]
+public class Fluent2PublicApiTests() : PublicApiTests(typeof(Fluent2Theme));
 [Trait("Category", "SimpleTheme")]
 public class SimplePublicApiTests() : PublicApiTests(typeof(SimpleTheme));
 
@@ -23,6 +26,7 @@ public abstract class PublicApiTests(Type typeEntryPoint) : ThemeTestBase(typeEn
 
         var xamlMethods = FindXamlPopulateMethods().Concat(FindXamlBuildMethods()).ToArray();
         Assert.NotEmpty(xamlMethods);
+        var s = xamlMethods.Where(x => x.IsPublic).ToList();
         Assert.DoesNotContain(xamlMethods, m => m.IsPublic);
     }
 }

@@ -202,7 +202,7 @@ namespace Avalonia.Rendering.Composition.Server
 
             var targetProperties = _renderTarget.Properties;
             // Exact quarter turns keep pixel edges aligned, including partial presentation clips.
-            var outputTransform = targetProperties.RequiresRotationForOrientation switch
+            var outputTransform = targetProperties.RequiredRotationForOrientation switch
             {
                 SurfaceOrientation.Rotation90 => new Matrix(0, 1, -1, 0, PixelSize.Height, 0),
                 SurfaceOrientation.Rotation180 => new Matrix(-1, 0, 0, -1, PixelSize.Width, PixelSize.Height),

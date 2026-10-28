@@ -75,7 +75,7 @@ public struct RenderTargetProperties
     /// A nonzero rotation requires an intermediate layer. Scene sizes remain in scene coordinates;
     /// the drawing context and partial presentation rectangles use native framebuffer coordinates.
     /// </summary>
-    public SurfaceOrientation RequiresRotationForOrientation { get; init; }
+    public SurfaceOrientation RequiredRotationForOrientation { get; init; }
 }
 
 [PrivateApi]

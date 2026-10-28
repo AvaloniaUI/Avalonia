@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Avalonia.Base.UnitTests.Layout
 {
-    public class LayoutableTests
+    public class LayoutableTests : ScopedTestBase
     {
         [Theory]
         [InlineData(0, 0, 0, 0, 100, 100)]

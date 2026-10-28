@@ -502,7 +502,7 @@ public class RenderTargetPresentationTests : TestBase
             {
                 SupportsPartialPresentation = _owner.SupportsPartialPresentation,
                 IsSuitableForDirectRendering = _owner._direct && !_owner.PreferLayer,
-                RequiresRotationForOrientation = _owner.Orientation
+                RequiredRotationForOrientation = _owner.Orientation
             };
             public PlatformRenderTargetState State => _corrupted ? PlatformRenderTargetState.Corrupted : PlatformRenderTargetState.Ready;
 

@@ -1,0 +1,70 @@
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    x:ClassModifier="internal">
+  <!-- https://docs.microsoft.com/en-us/previous-versions/windows/apps/dn518235(v=win.10)?redirectedfrom=MSDN -->
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Default">
+      <Color x:Key="SystemAltHighColor">#FFFFFFFF</Color>
+      <Color x:Key="SystemAltLowColor">#33FFFFFF</Color>
+      <Color x:Key="SystemAltMediumColor">#99FFFFFF</Color>
+      <Color x:Key="SystemAltMediumHighColor">#CCFFFFFF</Color>
+      <Color x:Key="SystemAltMediumLowColor">#66FFFFFF</Color>
+      <Color x:Key="SystemBaseHighColor">#FF000000</Color>
+      <Color x:Key="SystemBaseLowColor">#33000000</Color>
+      <Color x:Key="SystemBaseMediumColor">#99000000</Color>
+      <Color x:Key="SystemBaseMediumHighColor">#CC000000</Color>
+      <Color x:Key="SystemBaseMediumLowColor">#66000000</Color>
+      <Color x:Key="SystemChromeAltLowColor">#FF171717</Color>
+      <Color x:Key="SystemChromeBlackHighColor">#FF000000</Color>
+      <Color x:Key="SystemChromeBlackLowColor">#33000000</Color>
+      <Color x:Key="SystemChromeBlackMediumLowColor">#66000000</Color>
+      <Color x:Key="SystemChromeBlackMediumColor">#CC000000</Color>
+      <Color x:Key="SystemChromeDisabledHighColor">#FFCCCCCC</Color>
+      <Color x:Key="SystemChromeDisabledLowColor">#FF7A7A7A</Color>
+      <Color x:Key="SystemChromeHighColor">#FFCCCCCC</Color>
+      <Color x:Key="SystemChromeLowColor">#FFF2F2F2</Color>
+      <Color x:Key="SystemChromeMediumColor">#FFE6E6E6</Color>
+      <Color x:Key="SystemChromeMediumLowColor">#FFF2F2F2</Color>
+      <Color x:Key="SystemChromeWhiteColor">#FFFFFFFF</Color>
+      <Color x:Key="SystemChromeGrayColor">#FF767676</Color>
+      <Color x:Key="SystemListLowColor">#19000000</Color>
+      <Color x:Key="SystemListMediumColor">#33000000</Color>
+      <Color x:Key="SystemErrorTextColor">#C50500</Color>
+      <Color x:Key="SystemRegionColor">#FFFFFFFF</Color>
+      <Color x:Key="SystemRevealListLowColor">#17000000</Color>
+      <Color x:Key="SystemRevealListMediumColor">#2E000000</Color>
+    </ResourceDictionary>
+    <ResourceDictionary x:Key="Dark">
+      <Color x:Key="SystemAltHighColor">#FF000000</Color>
+      <Color x:Key="SystemAltLowColor">#33000000</Color>
+      <Color x:Key="SystemAltMediumColor">#99000000</Color>
+      <Color x:Key="SystemAltMediumHighColor">#CC000000</Color>
+      <Color x:Key="SystemAltMediumLowColor">#66000000</Color>
+      <Color x:Key="SystemBaseHighColor">#FFFFFFFF</Color>
+      <Color x:Key="SystemBaseLowColor">#33FFFFFF</Color>
+      <Color x:Key="SystemBaseMediumColor">#99FFFFFF</Color>
+      <Color x:Key="SystemBaseMediumHighColor">#CCFFFFFF</Color>
+      <Color x:Key="SystemBaseMediumLowColor">#66FFFFFF</Color>
+      <Color x:Key="SystemChromeAltLowColor">#FFF2F2F2</Color>
+      <Color x:Key="SystemChromeBlackHighColor">#FF000000</Color>
+      <Color x:Key="SystemChromeBlackLowColor">#33000000</Color>
+      <Color x:Key="SystemChromeBlackMediumLowColor">#66000000</Color>
+      <Color x:Key="SystemChromeBlackMediumColor">#CC000000</Color>
+      <Color x:Key="SystemChromeDisabledHighColor">#FF333333</Color>
+      <Color x:Key="SystemChromeDisabledLowColor">#FF858585</Color>
+      <Color x:Key="SystemChromeHighColor">#FF767676</Color>
+      <Color x:Key="SystemChromeLowColor">#FF171717</Color>
+      <Color x:Key="SystemChromeMediumColor">#FF1F1F1F</Color>
+      <Color x:Key="SystemChromeMediumLowColor">#FF2B2B2B</Color>
+      <Color x:Key="SystemChromeWhiteColor">#FFFFFFFF</Color>
+      <Color x:Key="SystemChromeGrayColor">#FF767676</Color>
+      <Color x:Key="SystemListLowColor">#19FFFFFF</Color>
+      <Color x:Key="SystemListMediumColor">#33FFFFFF</Color>
+      <Color x:Key="SystemErrorTextColor">#FFF000</Color>
+      <Color x:Key="SystemRegionColor">#FF000000</Color>
+      <Color x:Key="SystemRevealListLowColor">#18FFFFFF</Color>
+      <Color x:Key="SystemRevealListMediumColor">#30FFFFFF</Color>
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
+
+</ResourceDictionary>
