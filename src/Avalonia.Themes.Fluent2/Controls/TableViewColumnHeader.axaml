@@ -10,11 +10,11 @@
 
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
-      <StaticResource x:Key="TableViewColumnHeaderSeparatorFill" ResourceKey="SystemBaseLowColor" />
+      <SolidColorBrush x:Key="TableViewColumnHeaderSeparatorFill" Color="{StaticResource SystemBaseLowColor}" />
       <StaticResource x:Key="TableViewColumnHeaderSeparatorPointerOverFill" ResourceKey="AccentFillColorDefaultBrush" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
-      <StaticResource x:Key="TableViewColumnHeaderSeparatorFill" ResourceKey="SystemBaseLowColor" />
+      <SolidColorBrush x:Key="TableViewColumnHeaderSeparatorFill" Color="{StaticResource SystemBaseLowColor}" />
       <StaticResource x:Key="TableViewColumnHeaderSeparatorPointerOverFill" ResourceKey="AccentFillColorDefaultBrush" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>

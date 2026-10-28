@@ -15,74 +15,74 @@
 
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
-      <StaticResource x:Key="TabularSurfaceRowBackground" ResourceKey="SubtleFillColorTransparent" />
-      <StaticResource x:Key="TabularSurfaceRowBackgroundPointerOver" ResourceKey="SubtleFillColorSecondary" />
-      <StaticResource x:Key="TabularSurfaceRowBackgroundPressed" ResourceKey="SubtleFillColorTertiary" />
-      <StaticResource x:Key="TabularSurfaceRowBackgroundSelected" ResourceKey="SubtleFillColorSecondary" />
-      <StaticResource x:Key="TabularSurfaceRowBackgroundSelectedPointerOver" ResourceKey="SubtleFillColorTertiary" />
-      <StaticResource x:Key="TabularSurfaceRowBackgroundSelectedPressed" ResourceKey="SubtleFillColorSecondary" />
-      <StaticResource x:Key="TabularSurfaceRowBackgroundDisabled" ResourceKey="SubtleFillColorTransparent" />
-      <StaticResource x:Key="TabularSurfaceSelectionIndicatorFill" ResourceKey="SystemAccentColor" />
+      <StaticResource x:Key="TabularSurfaceRowBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="TabularSurfaceRowBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
+      <StaticResource x:Key="TabularSurfaceRowBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
+      <StaticResource x:Key="TabularSurfaceRowBackgroundSelected" ResourceKey="SubtleFillColorSecondaryBrush" />
+      <StaticResource x:Key="TabularSurfaceRowBackgroundSelectedPointerOver" ResourceKey="SubtleFillColorTertiaryBrush" />
+      <StaticResource x:Key="TabularSurfaceRowBackgroundSelectedPressed" ResourceKey="SubtleFillColorSecondaryBrush" />
+      <StaticResource x:Key="TabularSurfaceRowBackgroundDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
+      <SolidColorBrush x:Key="TabularSurfaceSelectionIndicatorFill" Color="{StaticResource SystemAccentColor}" />
 
       <SolidColorBrush x:Key="TabularSurfaceSelectionIndicatorFillDisabled" Color="#5C000000" />
 
-      <StaticResource x:Key="TabularSurfaceRowForeground" ResourceKey="TextFillColorPrimary" />
-      <StaticResource x:Key="TabularSurfaceRowForegroundSelected" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TabularSurfaceRowForeground" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="TabularSurfaceRowForegroundSelected" ResourceKey="TextFillColorPrimaryBrush" />
 
-      <StaticResource x:Key="TabularSurfaceRowForegroundSelectedPointerOver" ResourceKey="TextFillColorPrimary" />
-      <StaticResource x:Key="TabularSurfaceRowForegroundSelectedPressed" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TabularSurfaceRowForegroundSelectedPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="TabularSurfaceRowForegroundSelectedPressed" ResourceKey="TextFillColorPrimaryBrush" />
 
-      <StaticResource x:Key="TabularSurfaceRowForegroundPointerOver" ResourceKey="TextFillColorPrimary" />
-      <StaticResource x:Key="TabularSurfaceRowForegroundPressed" ResourceKey="TextFillColorPrimary" />
-      <StaticResource x:Key="TabularSurfaceRowForegroundDisabled" ResourceKey="TextFillColorDisabled" />
+      <StaticResource x:Key="TabularSurfaceRowForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="TabularSurfaceRowForegroundPressed" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="TabularSurfaceRowForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
       
-      <StaticResource x:Key="TabularSurfaceHeaderBackground" ResourceKey="SubtleFillColorSecondary" />
-      <StaticResource x:Key="TabularSurfaceHeaderForeground" ResourceKey="TextFillColorSecondary" />
-      <StaticResource x:Key="TabularSurfaceHeaderSeparator" ResourceKey="ControlStrokeColorDefault" />
-      <StaticResource x:Key="TabularSurfaceHeaderBackgroundPointerOver" ResourceKey="SubtleFillColorSecondary" />
-      <StaticResource x:Key="TabularSurfaceHeaderBackgroundPressed" ResourceKey="SubtleFillColorTertiary" />
-      <StaticResource x:Key="TabularSurfaceHeaderForegroundPointerOver" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TabularSurfaceHeaderBackground" ResourceKey="SubtleFillColorSecondaryBrush" />
+      <StaticResource x:Key="TabularSurfaceHeaderForeground" ResourceKey="TextFillColorSecondaryBrush" />
+      <StaticResource x:Key="TabularSurfaceHeaderSeparator" ResourceKey="ControlStrokeColorDefaultBrush" />
+      <StaticResource x:Key="TabularSurfaceHeaderBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
+      <StaticResource x:Key="TabularSurfaceHeaderBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
+      <StaticResource x:Key="TabularSurfaceHeaderForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
 
-      <StaticResource x:Key="TabularSurfaceHeaderForegroundPressed" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TabularSurfaceHeaderForegroundPressed" ResourceKey="TextFillColorPrimaryBrush" />
 
-      <StaticResource x:Key="TabularSurfaceGroupHeaderBackground" ResourceKey="LayerFillColorDefault" />
-      <StaticResource x:Key="TabularSurfaceGroupHeaderForeground" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TabularSurfaceGroupHeaderBackground" ResourceKey="LayerFillColorDefaultBrush" />
+      <StaticResource x:Key="TabularSurfaceGroupHeaderForeground" ResourceKey="TextFillColorPrimaryBrush" />
 
       <SolidColorBrush  x:Key="TabularSurfaceGroupHeaderBorder" Color="Transparent" />
       <SolidColorBrush x:Key="TabularSurfaceGridLine" Color="#29000000" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
-      <StaticResource x:Key="TabularSurfaceRowBackground" ResourceKey="SubtleFillColorTransparent" />
-      <StaticResource x:Key="TabularSurfaceRowBackgroundPointerOver" ResourceKey="SubtleFillColorSecondary" />
-      <StaticResource x:Key="TabularSurfaceRowBackgroundPressed" ResourceKey="SubtleFillColorTertiary" />
-      <StaticResource x:Key="TabularSurfaceRowBackgroundSelected" ResourceKey="SubtleFillColorSecondary" />
-      <StaticResource x:Key="TabularSurfaceRowBackgroundSelectedPointerOver" ResourceKey="SubtleFillColorTertiary" />
-      <StaticResource x:Key="TabularSurfaceRowBackgroundSelectedPressed" ResourceKey="SubtleFillColorSecondary" />
-      <StaticResource x:Key="TabularSurfaceRowBackgroundDisabled" ResourceKey="SubtleFillColorTransparent" />
-      <StaticResource x:Key="TabularSurfaceSelectionIndicatorFill" ResourceKey="SystemAccentColor" />
+      <StaticResource x:Key="TabularSurfaceRowBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="TabularSurfaceRowBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
+      <StaticResource x:Key="TabularSurfaceRowBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
+      <StaticResource x:Key="TabularSurfaceRowBackgroundSelected" ResourceKey="SubtleFillColorSecondaryBrush" />
+      <StaticResource x:Key="TabularSurfaceRowBackgroundSelectedPointerOver" ResourceKey="SubtleFillColorTertiaryBrush" />
+      <StaticResource x:Key="TabularSurfaceRowBackgroundSelectedPressed" ResourceKey="SubtleFillColorSecondaryBrush" />
+      <StaticResource x:Key="TabularSurfaceRowBackgroundDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
+      <SolidColorBrush x:Key="TabularSurfaceSelectionIndicatorFill" Color="{StaticResource SystemAccentColor}" />
 
       <SolidColorBrush x:Key="TabularSurfaceSelectionIndicatorFillDisabled" Color="#5DFFFFFF" />
 
-      <StaticResource x:Key="TabularSurfaceRowForeground" ResourceKey="TextFillColorPrimary" />
-      <StaticResource x:Key="TabularSurfaceRowForegroundSelected" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TabularSurfaceRowForeground" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="TabularSurfaceRowForegroundSelected" ResourceKey="TextFillColorPrimaryBrush" />
 
-      <StaticResource x:Key="TabularSurfaceRowForegroundSelectedPointerOver" ResourceKey="TextFillColorPrimary" />
-      <StaticResource x:Key="TabularSurfaceRowForegroundSelectedPressed" ResourceKey="TextFillColorPrimary" />
-      <StaticResource x:Key="TabularSurfaceRowForegroundPointerOver" ResourceKey="TextFillColorPrimary" />
-      <StaticResource x:Key="TabularSurfaceRowForegroundPressed" ResourceKey="TextFillColorPrimary" />
-      <StaticResource x:Key="TabularSurfaceRowForegroundDisabled" ResourceKey="TextFillColorDisabled" />
+      <StaticResource x:Key="TabularSurfaceRowForegroundSelectedPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="TabularSurfaceRowForegroundSelectedPressed" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="TabularSurfaceRowForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="TabularSurfaceRowForegroundPressed" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="TabularSurfaceRowForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
 
-      <StaticResource x:Key="TabularSurfaceHeaderBackground" ResourceKey="SubtleFillColorSecondary" />
-      <StaticResource x:Key="TabularSurfaceHeaderForeground" ResourceKey="TextFillColorSecondary" />
-      <StaticResource x:Key="TabularSurfaceHeaderSeparator" ResourceKey="ControlStrokeColorDefault" />
-      <StaticResource x:Key="TabularSurfaceHeaderBackgroundPointerOver" ResourceKey="SubtleFillColorSecondary" />
-      <StaticResource x:Key="TabularSurfaceHeaderBackgroundPressed" ResourceKey="SubtleFillColorTertiary" />
-      <StaticResource x:Key="TabularSurfaceHeaderForegroundPointerOver" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TabularSurfaceHeaderBackground" ResourceKey="SubtleFillColorSecondaryBrush" />
+      <StaticResource x:Key="TabularSurfaceHeaderForeground" ResourceKey="TextFillColorSecondaryBrush" />
+      <StaticResource x:Key="TabularSurfaceHeaderSeparator" ResourceKey="ControlStrokeColorDefaultBrush" />
+      <StaticResource x:Key="TabularSurfaceHeaderBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
+      <StaticResource x:Key="TabularSurfaceHeaderBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
+      <StaticResource x:Key="TabularSurfaceHeaderForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
 
-      <StaticResource x:Key="TabularSurfaceHeaderForegroundPressed" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TabularSurfaceHeaderForegroundPressed" ResourceKey="TextFillColorPrimaryBrush" />
 
-      <StaticResource x:Key="TabularSurfaceGroupHeaderBackground" ResourceKey="LayerFillColorDefault" />
-      <StaticResource x:Key="TabularSurfaceGroupHeaderForeground" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TabularSurfaceGroupHeaderBackground" ResourceKey="LayerFillColorDefaultBrush" />
+      <StaticResource x:Key="TabularSurfaceGroupHeaderForeground" ResourceKey="TextFillColorPrimaryBrush" />
       
       <SolidColorBrush  x:Key="TabularSurfaceGroupHeaderBorder" Color="Transparent" />
       <SolidColorBrush x:Key="TabularSurfaceGridLine" Color="#29FFFFFF" />

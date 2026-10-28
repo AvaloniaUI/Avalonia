@@ -5,7 +5,7 @@
     <ResourceDictionary x:Key="Default">
       <StaticResource x:Key="TitleBarBackgroundBrush" ResourceKey="SystemControlBackgroundAltHighBrush" />
       <SolidColorBrush x:Key="CaptionButtonPointerOverBackground" Color="#ffe5e5e5" />
-      <StaticResource x:Key="CaptionButtonPressedBackground" ResourceKey="SubtleFillColorTertiary" />
+      <StaticResource x:Key="CaptionButtonPressedBackground" ResourceKey="SubtleFillColorTertiaryBrush" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
       <StaticResource x:Key="TitleBarBackgroundBrush" ResourceKey="SystemControlBackgroundAltHighBrush" />
