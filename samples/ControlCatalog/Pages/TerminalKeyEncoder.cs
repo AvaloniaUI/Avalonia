@@ -2,16 +2,18 @@ using System;
 using System.Text;
 using Avalonia.Input;
 
-namespace ControlCatalog.Pages.Terminal
+namespace ControlCatalog.Pages
 {
     /// <summary>
-    /// Turns key presses into the bytes that a terminal sends to the program.
+    /// Turns key presses into the bytes that a terminal emulator sends to the program, the way xterm-like terminals
+    /// do. It shows how <see cref="KeyEventArgs.KeyText"/>, <see cref="KeyEventArgs.KeyTextIgnoringModifiers"/> and
+    /// <see cref="KeyEventArgs.ConsumedModifiers"/> are used.
     /// </summary>
     /// <remarks>
-    /// <c>ansi-mini</c> defines no key capabilities, so special keys use the common ANSI/xterm sequences.
+    /// Special keys use the common ANSI/xterm sequences.
     /// Keys that type text are left to the TextInput event, so that dead keys and input methods work.
     /// </remarks>
-    internal static class KeyEncoder
+    internal static class TerminalKeyEncoder
     {
         private const string Esc = "\x1b";
 
@@ -73,12 +75,6 @@ namespace ControlCatalog.Pages.Terminal
             }
             return Bytes(sb.ToString());
         }
-
-        /// <summary>
-        /// Encodes pasted text. Line breaks are sent as CR, like the Enter key.
-        /// </summary>
-        public static byte[] EncodePaste(string text) =>
-            Bytes(text.Replace("\r\n", "\r").Replace('\n', '\r'));
 
         private static string? EncodeSpecialKey(Key key, bool ctrl, bool shift) => key switch
         {
