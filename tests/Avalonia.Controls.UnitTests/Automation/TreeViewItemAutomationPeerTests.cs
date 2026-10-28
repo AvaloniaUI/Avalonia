@@ -133,6 +133,20 @@ public class TreeViewItemAutomationPeerTests : ScopedTestBase
         Assert.Empty(raised);
     }
 
+    [Fact]
+    public void Populating_Children_In_Expanded_Handler_Raises_Single_PropertyChanged()
+    {
+        var item = new TreeViewItem();
+        var raised = CollectStateChanges(item);
+
+        item.AddHandler(TreeViewItem.ExpandedEvent, (_, _) => item.Items.Add(new TreeViewItem()));
+        item.IsExpanded = true;
+
+        var e = Assert.Single(raised);
+        Assert.Equal(ExpandCollapseState.LeafNode, e.OldValue);
+        Assert.Equal(ExpandCollapseState.Expanded, e.NewValue);
+    }
+
     private static TreeViewItem CreateParentItem() => new() { Items = { new TreeViewItem() } };
 
     private static List<AutomationPropertyChangedEventArgs> CollectStateChanges(TreeViewItem item)

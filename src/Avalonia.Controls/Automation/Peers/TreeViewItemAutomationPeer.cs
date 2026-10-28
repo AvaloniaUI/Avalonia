@@ -8,9 +8,12 @@ public class TreeViewItemAutomationPeer : ItemsControlAutomationPeer,
     IExpandCollapseProvider,
     ISelectionItemProvider
 {
+    private ExpandCollapseState _lastState;
+
     public TreeViewItemAutomationPeer(TreeViewItem owner)
         : base(owner)
     {
+        _lastState = ToState(owner.IsExpanded, owner.ItemCount);
         owner.PropertyChanged += OwnerPropertyChanged;
     }
 
@@ -86,25 +89,18 @@ public class TreeViewItemAutomationPeer : ItemsControlAutomationPeer,
 
     private void OwnerPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
     {
-        ExpandCollapseState oldState, newState;
-
-        if (e.Property == TreeViewItem.IsExpandedProperty)
-        {
-            oldState = ToState(e.GetOldValue<bool>(), Owner.ItemCount);
-            newState = ToState(e.GetNewValue<bool>(), Owner.ItemCount);
-        }
-        else if (e.Property == ItemsControl.ItemCountProperty)
-        {
-            oldState = ToState(Owner.IsExpanded, e.GetOldValue<int>());
-            newState = ToState(Owner.IsExpanded, e.GetNewValue<int>());
-        }
-        else
-        {
+        if (e.Property != TreeViewItem.IsExpandedProperty && e.Property != ItemsControl.ItemCountProperty)
             return;
-        }
+
+        // Compare against the last reported state rather than the event's old/new values: the
+        // Expanded/Collapsed routed events are raised before this handler runs, and a handler
+        // there may change ItemCount, causing reentrant notifications.
+        var oldState = _lastState;
+        var newState = ExpandCollapseState;
 
         if (oldState != newState)
         {
+            _lastState = newState;
             RaisePropertyChangedEvent(
                 ExpandCollapsePatternIdentifiers.ExpandCollapseStateProperty,
                 oldState,
