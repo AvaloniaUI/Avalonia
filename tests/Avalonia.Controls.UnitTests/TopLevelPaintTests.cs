@@ -58,7 +58,7 @@ public sealed class TopLevelPaintTests : ScopedTestBase
         services.RunJobs();
 
         Exception? exception = null;
-        content.OnMeasure = () => exception = Record.Exception(() => Dispatcher.UIThread.RunJobs());
+        content.OnMeasure = () => exception = Record.Exception(() => Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken));
         content.InvalidateMeasure();
 
         Paint(services, new ITopLevelImpl.PaintOptions { FlushRenderPass = true });
@@ -108,7 +108,7 @@ public sealed class TopLevelPaintTests : ScopedTestBase
         Paint(services, new ITopLevelImpl.PaintOptions { FlushRenderPass = true });
         Assert.Equal(1, frames);
 
-        Dispatcher.UIThread.RunJobs();
+        Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
         Assert.Equal(1, frames);
     }
 
