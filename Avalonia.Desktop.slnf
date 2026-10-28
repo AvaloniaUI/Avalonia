@@ -58,7 +58,6 @@
       "tests\\Avalonia.Analyzers.Tests\\Avalonia.Analyzers.Tests.csproj",
       "tests\\Avalonia.Base.UnitTests\\Avalonia.Base.UnitTests.csproj",
       "tests\\Avalonia.Benchmarks\\Avalonia.Benchmarks.csproj",
-      "tests\\Avalonia.Build.Tasks.UnitTest\\Avalonia.Build.Tasks.UnitTest.csproj",
       "tests\\Avalonia.Controls.UnitTests\\Avalonia.Controls.UnitTests.csproj",
       "tests\\Avalonia.DesignerSupport.TestApp\\Avalonia.DesignerSupport.TestApp.csproj",
       "tests\\Avalonia.DesignerSupport.Tests\\Avalonia.DesignerSupport.Tests.csproj",
@@ -75,8 +74,7 @@
       "tests\\Avalonia.Skia.UnitTests\\Avalonia.Skia.UnitTests.csproj",
       "tests\\Avalonia.Themes.UnitTests\\Avalonia.Themes.UnitTests.csproj",
       "tests\\Avalonia.UnitTests\\Avalonia.UnitTests.csproj",
-      "tests\\Avalonia.Wayland.UnitTests\\Avalonia.Wayland.UnitTests.csproj",
-      "tests\\TestFiles\\BuildTasks\\PInvoke\\PInvoke.csproj"
+      "tests\\Avalonia.Wayland.UnitTests\\Avalonia.Wayland.UnitTests.csproj"
     ]
   }
 }
