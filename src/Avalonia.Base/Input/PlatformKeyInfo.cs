@@ -9,22 +9,22 @@ public static class KnownPlatformKeyInfoFormats
     /// <summary>
     /// Win32 keyboard messages.
     /// </summary>
-    public static readonly string Win32 = nameof(Win32);
+    public const string Win32 = nameof(Win32);
 
     /// <summary>
     /// X11 key events.
     /// </summary>
-    public static readonly string X11 = nameof(X11);
+    public const string X11 = nameof(X11);
 
     /// <summary>
     /// Wayland <c>wl_keyboard</c> events.
     /// </summary>
-    public static readonly string Wayland = nameof(Wayland);
+    public const string Wayland = nameof(Wayland);
 
     /// <summary>
     /// macOS <c>NSEvent</c> key events.
     /// </summary>
-    public static readonly string MacOS = nameof(MacOS);
+    public const string MacOS = nameof(MacOS);
 }
 
 /// <summary>
