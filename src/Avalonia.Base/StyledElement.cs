@@ -632,15 +632,21 @@ namespace Avalonia
         {
             base.OnPropertyChanged(change);
 
-            if (change.Property == TemplatedParentProperty && _stylesApplied)
+            if (change.Property == TemplatedParentProperty &&
+                (_stylesApplied || _templatedParentThemeApplied))
             {
                 var values = GetValueStore();
                 values.BeginStyling();
                 try
                 {
+                    // The parent theme can still be applied when ordinary styles are invalidated.
                     OnTemplatedParentControlThemeChanged();
-                    InvalidateStyles(recurse: false);
-                    ApplyStyling();
+
+                    if (_stylesApplied)
+                    {
+                        InvalidateStyles(recurse: false);
+                        ApplyStyling();
+                    }
                 }
                 finally
                 {
