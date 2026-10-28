@@ -141,7 +141,6 @@
     <Project Path="tests/Avalonia.Analyzers.Tests/Avalonia.Analyzers.Tests.csproj" />
     <Project Path="tests/Avalonia.Base.UnitTests/Avalonia.Base.UnitTests.csproj" />
     <Project Path="tests/Avalonia.Benchmarks/Avalonia.Benchmarks.csproj" />
-    <Project Path="tests/Avalonia.Build.Tasks.UnitTest/Avalonia.Build.Tasks.UnitTest.csproj" />
     <Project Path="tests/Avalonia.Controls.UnitTests/Avalonia.Controls.UnitTests.csproj" />
     <Project Path="tests/Avalonia.DesignerSupport.TestApp/Avalonia.DesignerSupport.TestApp.csproj" />
     <Project Path="tests/Avalonia.DesignerSupport.Tests/Avalonia.DesignerSupport.Tests.csproj" />
@@ -162,9 +161,6 @@
     <Project Path="tests/Avalonia.Wayland.UnitTests/Avalonia.Wayland.UnitTests.csproj" />
   </Folder>
   <Folder Name="/Tests/TestFiles/" />
-  <Folder Name="/Tests/TestFiles/BuildTasks/">
-    <Project Path="tests/TestFiles/BuildTasks/PInvoke/PInvoke.csproj" />
-  </Folder>
   <Folder Name="/Themes/">
     <Project Path="src/Avalonia.Themes.Fluent/Avalonia.Themes.Fluent.csproj" />
     <Project Path="src/Avalonia.Themes.Fluent2/Avalonia.Themes.Fluent2.csproj" />
