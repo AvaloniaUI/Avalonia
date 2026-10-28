@@ -345,6 +345,30 @@ namespace Avalonia
         internal static ControlTheme InvalidTheme
             => s_invalidTheme ??= new();
 
+        /// <summary>
+        /// Sets the TemplatedParent property for the created template children.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="templatedParent">The templated parent to apply.</param>
+        internal static void ApplyTemplatedParent(StyledElement control, AvaloniaObject? templatedParent)
+        {
+            var children = control.LogicalChildren;
+            var count = children.Count;
+
+            for (var i = 0; i < count; i++)
+            {
+                if (children[i] is StyledElement child && child.TemplatedParent is null)
+                {
+                    ApplyTemplatedParent(child, templatedParent);
+                }
+            }
+
+            // Setting TemplatedParent can activate template bindings and add user content
+            // to the logical children. Visit the template's existing children first so
+            // that content isn't assigned a templated parent or styled as template content.
+            control.TemplatedParent = templatedParent;
+        }
+
         /// <inheritdoc/>
         public virtual void BeginInit()
         {
