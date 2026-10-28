@@ -682,7 +682,7 @@ public class CommandBarCollectionTests : ScopedTestBase
 
         cb.PrimaryCommands!.Add(new CommandBarButton { Label = "Save" });
 
-        Assert.Equal(2, notifications);
+        Assert.Equal(1, notifications);
     }
 
     [Fact]
@@ -714,7 +714,7 @@ public class CommandBarCollectionTests : ScopedTestBase
 
         cb.SecondaryCommands!.Add(new CommandBarButton { Label = "Settings" });
 
-        Assert.Equal(2, notifications);
+        Assert.Equal(1, notifications);
     }
 
     [Fact]

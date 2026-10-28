@@ -862,41 +862,47 @@ namespace Avalonia.Controls
 
         private void ApplyCommandCollections(IReadOnlyList<ICommandBarElement> visiblePrimaryCommands, IReadOnlyList<ICommandBarElement> overflowItems)
         {
-            var updateVisiblePrimaryCommands = !SequencesMatch(_visiblePrimaryCommands, visiblePrimaryCommands);
-            var updateOverflowItems = !SequencesMatch(_overflowItems, overflowItems);
-            if (!updateVisiblePrimaryCommands && !updateOverflowItems)
-                return;
+            // Commands that keep their place must not be detached, or a focused command loses focus. Removals from both
+            // collections come first, so a command moving between them is never in both at once.
+            RemoveMissingCommands(_visiblePrimaryCommands, visiblePrimaryCommands);
+            RemoveMissingCommands(_overflowItems, overflowItems);
+            ArrangeCommands(_visiblePrimaryCommands, visiblePrimaryCommands);
+            ArrangeCommands(_overflowItems, overflowItems);
+        }
 
-            if (updateVisiblePrimaryCommands)
-                _visiblePrimaryCommands.Clear();
-            if (updateOverflowItems)
-                _overflowItems.Clear();
-
-            if (updateVisiblePrimaryCommands)
+        private static void RemoveMissingCommands(ObservableCollection<ICommandBarElement> commands, IReadOnlyList<ICommandBarElement> target)
+        {
+            for (var i = commands.Count - 1; i >= 0; i--)
             {
-                for (var i = 0; i < visiblePrimaryCommands.Count; i++)
-                    _visiblePrimaryCommands.Add(visiblePrimaryCommands[i]);
-            }
-
-            if (updateOverflowItems)
-            {
-                for (var i = 0; i < overflowItems.Count; i++)
-                    _overflowItems.Add(overflowItems[i]);
+                if (IndexOfCommand(target, commands[i], 0) < 0)
+                    commands.RemoveAt(i);
             }
         }
 
-        private static bool SequencesMatch(IReadOnlyList<ICommandBarElement> first, IReadOnlyList<ICommandBarElement> second)
+        private static void ArrangeCommands(ObservableCollection<ICommandBarElement> commands, IReadOnlyList<ICommandBarElement> target)
         {
-            if (first.Count != second.Count)
-                return false;
-
-            for (var i = 0; i < first.Count; i++)
+            for (var i = 0; i < target.Count; i++)
             {
-                if (!ReferenceEquals(first[i], second[i]))
-                    return false;
+                if (i < commands.Count && ReferenceEquals(commands[i], target[i]))
+                    continue;
+
+                var index = IndexOfCommand(commands, target[i], i + 1);
+                if (index >= 0)
+                    commands.Move(index, i);
+                else
+                    commands.Insert(i, target[i]);
+            }
+        }
+
+        private static int IndexOfCommand(IReadOnlyList<ICommandBarElement> commands, ICommandBarElement command, int startIndex)
+        {
+            for (var i = startIndex; i < commands.Count; i++)
+            {
+                if (ReferenceEquals(commands[i], command))
+                    return i;
             }
 
-            return true;
+            return -1;
         }
 
         private void RebuildCommandVisibilitySubscriptions(IList<ICommandBarElement>? commands, CompositeDisposable subscriptions)
