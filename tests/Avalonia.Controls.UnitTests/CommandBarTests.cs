@@ -1456,6 +1456,34 @@ public class CommandBarOverflowKeyboardTests : ScopedTestBase
     }
 
     [Fact]
+    public void PrimaryVisibilityChange_ThatChangesPlacement_PreservesFocusOnUnmovedCommand()
+    {
+        var first = new CommandBarButton { Label = "A" };
+        var second = new CommandBarButton { Label = "B" };
+        var third = new CommandBarButton { Label = "C" };
+        var fourth = new CommandBarButton { Label = "D" };
+        var cb = new CommandBar
+        {
+            ItemWidthBottom = 100,
+            IsDynamicOverflowEnabled = true,
+            PrimaryCommands = { first, second, third, fourth },
+        };
+        var root = new TestRoot(useGlobalStyles: true, child: cb)
+        {
+            ClientSize = new Size(300, 100),
+        };
+        root.LayoutManager.ExecuteInitialLayoutPass();
+        Assert.Equal(new ICommandBarElement[] { first, second }, cb.VisiblePrimaryCommands);
+        Assert.True(first.Focus(NavigationMethod.Tab));
+
+        fourth.IsVisible = false;
+
+        Assert.Equal(new ICommandBarElement[] { first, second, fourth }, cb.VisiblePrimaryCommands);
+        Assert.Equal(new ICommandBarElement[] { third }, cb.OverflowItems);
+        Assert.True(first.IsFocused);
+    }
+
+    [Fact]
     public void AddingSecondaryCommand_DoesNotClearPrimaryCommandsOrLoseFocus()
     {
         var primary = new CommandBarButton { Label = "A" };
