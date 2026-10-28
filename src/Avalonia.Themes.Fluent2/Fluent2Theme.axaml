@@ -7,16 +7,14 @@
   <Styles.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
-        <!-- Keep custom palettes higher priority than default BaseColorsPalette and SystemAccentColors
-             As that's an only place for user to redefine palette in a good way -->
-        <ResourceInclude Source="/Accents/BaseColorsPalette.axaml" />
-        <ResourceInclude Source="/Accents/Fluent2ColorPalette.axaml" />
+        <!-- Default palette colors have the lowest priority: custom palettes (ColorPaletteResourcesCollection)
+             and system accent colors are checked before them, as that's the only place for user to redefine palette in a good way -->
+        <ResourceInclude Source="/Accents/ColorPalettes.axaml" />
         <accents:SystemAccentColors />
         <fluent:ColorPaletteResourcesCollection />
 
-        <!-- Invariant strings, then culture-aware overrides: the provider is merged after the
-             invariant dictionary so a translation for the current UI culture wins, and it
-             returns false for untranslated cultures, falling back to invariant. -->
+        <!-- Invariant strings are kept as a separate dictionary, so a culture-aware provider can be merged after it
+             and override translated strings, falling back to invariant ones. -->
         <ResourceInclude Source="/Strings/InvariantResources.axaml" />
 
         <!-- Resources and brushes will be merged into current dictionary for slightly better

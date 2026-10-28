@@ -1,0 +1,9 @@
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    x:ClassModifier="internal">
+  <!-- Default palette colors, included by Fluent2Theme below the palette and accent color providers. Keys must be unique across these documents. -->
+  <ResourceDictionary.MergedDictionaries>
+    <MergeResourceInclude Source="/Accents/BaseColorsPalette.axaml" />
+    <MergeResourceInclude Source="/Accents/Fluent2ColorPalette.axaml" />
+  </ResourceDictionary.MergedDictionaries>
+</ResourceDictionary>
