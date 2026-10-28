@@ -69,21 +69,21 @@ public class EffectTests
     }
 }
 
-public class BackdropEffectCacheModeTests
+public class BackdropEffectCacheTests
 {
     [Fact]
     public void Parse_Parses_Retained()
-        => Assert.IsType<RetainedBackdropEffectCache>(BackdropEffectCacheMode.Parse("Retained"));
+        => Assert.IsType<RetainedBackdropEffectCache>(BackdropEffectCache.Parse("Retained"));
 
     [Fact]
     public void Parse_Parses_Volatile()
-        => Assert.IsType<VolatileBackdropEffectCache>(BackdropEffectCacheMode.Parse("Volatile"));
+        => Assert.IsType<VolatileBackdropEffectCache>(BackdropEffectCache.Parse("Volatile"));
 
     [Fact]
     public void Parse_Default_Returns_Null()
-        => Assert.Null(BackdropEffectCacheMode.Parse("Default"));
+        => Assert.Null(BackdropEffectCache.Parse("Default"));
 
     [Fact]
     public void Invalid_Parse_Fails()
-        => Assert.Throws<ArgumentException>(() => BackdropEffectCacheMode.Parse("Nope"));
+        => Assert.Throws<ArgumentException>(() => BackdropEffectCache.Parse("Nope"));
 }

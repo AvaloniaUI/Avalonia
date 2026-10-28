@@ -8,9 +8,9 @@ namespace Avalonia.Media;
 /// Controls whether a backdrop effect's sampled result is retained in a texture or resampled every frame.
 /// A null value lets the compositor decide based on the effect's sampling radius.
 /// </summary>
-public abstract class BackdropEffectCacheMode
+public abstract class BackdropEffectCache
 {
-    private protected BackdropEffectCacheMode()
+    private protected BackdropEffectCache()
     {
     }
 
@@ -18,27 +18,27 @@ public abstract class BackdropEffectCacheMode
     /// Parses a cache mode name, enabling the <c>BackdropEffectCache="Retained"</c> attribute syntax.
     /// <c>"Default"</c> maps to <c>null</c> (the compositor decides).
     /// </summary>
-    public static BackdropEffectCacheMode? Parse(string s) => s switch
+    public static BackdropEffectCache? Parse(string s) => s switch
     {
         "Default" => null,
         "Retained" => new RetainedBackdropEffectCache(),
         "Volatile" => new VolatileBackdropEffectCache(),
-        _ => throw new ArgumentException("Unknown BackdropEffectCacheMode: " + s)
+        _ => throw new ArgumentException("Unknown BackdropEffectCache: " + s)
     };
 
     // We currently only allow visual to be attached to one compositor at a time, so keep it simple for now
-    internal abstract CompositionBackdropEffectCacheMode GetForCompositor(Compositor c);
+    internal abstract CompositionBackdropEffectCache GetForCompositor(Compositor c);
 }
 
 /// <summary>
 /// A backdrop effect cache mode that retains the sampled backdrop in a texture.
 /// </summary>
-public sealed class RetainedBackdropEffectCache : BackdropEffectCacheMode
+public sealed class RetainedBackdropEffectCache : BackdropEffectCache
 {
     private CompositionRetainedBackdropEffectCache? _current;
 
     // We currently only allow visual to be attached to one compositor at a time, so keep it simple for now
-    internal override CompositionBackdropEffectCacheMode GetForCompositor(Compositor c)
+    internal override CompositionBackdropEffectCache GetForCompositor(Compositor c)
     {
         if (_current?.Compositor != c)
             _current = new CompositionRetainedBackdropEffectCache(c,
@@ -51,12 +51,12 @@ public sealed class RetainedBackdropEffectCache : BackdropEffectCacheMode
 /// <summary>
 /// A backdrop effect cache mode that resamples the backdrop from the live target every frame.
 /// </summary>
-public sealed class VolatileBackdropEffectCache : BackdropEffectCacheMode
+public sealed class VolatileBackdropEffectCache : BackdropEffectCache
 {
     private CompositionVolatileBackdropEffectCache? _current;
 
     // We currently only allow visual to be attached to one compositor at a time, so keep it simple for now
-    internal override CompositionBackdropEffectCacheMode GetForCompositor(Compositor c)
+    internal override CompositionBackdropEffectCache GetForCompositor(Compositor c)
     {
         if (_current?.Compositor != c)
             _current = new CompositionVolatileBackdropEffectCache(c,

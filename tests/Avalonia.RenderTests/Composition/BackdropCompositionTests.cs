@@ -38,7 +38,7 @@ public class BackdropCompositionTests : TestBase
     private static CompositionRetainedBackdropEffectCache MakeRetainedBackdrop(Compositor c) =>
         new(c, new ServerCompositionRetainedBackdropEffectCache(c.Server));
 
-    private static CompositionBackdropEffectCacheMode MakeBackdropCache(Compositor c, bool retained) =>
+    private static CompositionBackdropEffectCache MakeBackdropCache(Compositor c, bool retained) =>
         retained ? MakeRetainedBackdrop(c) : MakeVolatileBackdrop(c);
 
     private static ImmutableDropShadowEffect DropShadow(double offset, double blur) =>

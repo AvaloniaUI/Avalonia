@@ -97,8 +97,8 @@ namespace Avalonia
         /// <summary>
         /// Defines the <see cref="BackdropEffectCache"/> property.
         /// </summary>
-        public static readonly StyledProperty<BackdropEffectCacheMode?> BackdropEffectCacheProperty =
-            AvaloniaProperty.Register<Visual, BackdropEffectCacheMode?>(nameof(BackdropEffectCache));
+        public static readonly StyledProperty<BackdropEffectCache?> BackdropEffectCacheProperty =
+            AvaloniaProperty.Register<Visual, BackdropEffectCache?>(nameof(BackdropEffectCache));
 
         /// <summary>
         /// Defines the <see cref="HasMirrorTransform"/> property.
@@ -325,7 +325,7 @@ namespace Avalonia
         /// Gets or sets whether the backdrop effect's sampled result is retained in a texture
         /// or resampled from the live content every frame.
         /// </summary>
-        public BackdropEffectCacheMode? BackdropEffectCache
+        public BackdropEffectCache? BackdropEffectCache
         {
             get => GetValue(BackdropEffectCacheProperty);
             set => SetValue(BackdropEffectCacheProperty, value);

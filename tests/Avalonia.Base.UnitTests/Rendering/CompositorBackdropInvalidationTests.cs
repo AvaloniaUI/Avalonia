@@ -24,7 +24,7 @@ public class CompositorBackdropInvalidationTests : CompositorTestsBase
         new(compositor, new ServerCompositionVolatileBackdropEffectCache(compositor.Server));
 
     // 0 => Default (null), 1 => retained, 2 => volatile
-    private static CompositionBackdropEffectCacheMode? MakeBackdropCache(Compositor compositor, int selector) => selector switch
+    private static CompositionBackdropEffectCache? MakeBackdropCache(Compositor compositor, int selector) => selector switch
     {
         1 => MakeRetainedBackdrop(compositor),
         2 => MakeVolatileBackdrop(compositor),
