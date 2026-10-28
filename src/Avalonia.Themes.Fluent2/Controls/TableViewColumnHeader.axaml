@@ -10,11 +10,11 @@
 
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
-      <SolidColorBrush x:Key="TableViewColumnHeaderSeparatorFill" Color="{StaticResource SystemBaseLowColor}" />
+      <SolidColorBrush x:Key="TableViewHeaderSeparatorFill" Color="{StaticResource SystemBaseLowColor}" />
       <StaticResource x:Key="TableViewColumnHeaderSeparatorPointerOverFill" ResourceKey="AccentFillColorDefaultBrush" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
-      <SolidColorBrush x:Key="TableViewColumnHeaderSeparatorFill" Color="{StaticResource SystemBaseLowColor}" />
+      <SolidColorBrush x:Key="TableViewHeaderSeparatorFill" Color="{StaticResource SystemBaseLowColor}" />
       <StaticResource x:Key="TableViewColumnHeaderSeparatorPointerOverFill" ResourceKey="AccentFillColorDefaultBrush" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
@@ -61,7 +61,7 @@
         <Border Background="Transparent">
           <Rectangle Width="1"
                      Name="ResizerRectangle"
-                     Fill="{DynamicResource TableViewColumnHeaderSeparatorFill}"
+                     Fill="{DynamicResource TableViewHeaderSeparatorFill}"
                      HorizontalAlignment="Right" />
         </Border>
       </ControlTemplate>
