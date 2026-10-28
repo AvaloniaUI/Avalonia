@@ -1,4 +1,5 @@
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.Themes.Fluent;
@@ -88,6 +89,35 @@ public class TemplateSelectorTests : ScopedTestBase
 
         Assert.Equal(Brushes.Red, text.Foreground);
         Assert.Same(target, text.TemplatedParent);
+    }
+
+    [Fact]
+    public void Setter_Template_Children_Should_Resolve_TemplateBindings_Without_Control_Template()
+    {
+        var text = new TextBlock
+        {
+            [!TextBlock.TextProperty] = new TemplateBinding(ContentControl.TagProperty),
+        };
+        var target = new ContentControl { Tag = "Template value" };
+        var root = new TestRoot
+        {
+            Styles =
+            {
+                new Style(x => x.OfType<ContentControl>())
+                {
+                    Setters =
+                    {
+                        new Setter(ContentControl.ContentProperty,
+                            new FuncTemplate<Control>(() => new Border { Child = text })),
+                    },
+                },
+            },
+            Child = target,
+        };
+
+        Assert.Equal("Template value", text.Text);
+        Assert.Same(target, text.TemplatedParent);
+        Assert.Same(target, ((Border)target.Content!).TemplatedParent);
     }
 
     private static Style CreateTemplateStyle<T>() where T : Control =>
