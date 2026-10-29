@@ -14,11 +14,11 @@
 
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
-      <StaticResource x:Key="ListBoxBorderBrush" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="ListBoxBorderBrush" ResourceKey="TextFillColorPrimaryBrush" />
       <StaticResource x:Key="ListBoxBackground" ResourceKey="SystemControlBackgroundChromeMediumLowBrush" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
-      <StaticResource x:Key="ListBoxBorderBrush" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="ListBoxBorderBrush" ResourceKey="TextFillColorPrimaryBrush" />
       <StaticResource x:Key="ListBoxBackground" ResourceKey="SystemControlBackgroundChromeMediumLowBrush" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
