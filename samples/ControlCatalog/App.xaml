@@ -35,6 +35,7 @@
       <Fluent2Theme x:Key="Fluent2Theme" />
       <SimpleTheme x:Key="SimpleTheme" />
       <StyleInclude x:Key="ColorPickerFluent" Source="avares://Avalonia.Controls.ColorPicker/Themes/Fluent/Fluent.xaml" />
+      <StyleInclude x:Key="ColorPickerFluent2" Source="avares://Avalonia.Controls.ColorPicker/Themes/Fluent2.axaml" />
       <StyleInclude x:Key="ColorPickerSimple" Source="avares://Avalonia.Controls.ColorPicker/Themes/Simple/Simple.xaml" />
     </ResourceDictionary>
   </Application.Resources>
