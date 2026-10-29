@@ -16,12 +16,11 @@
         <MergeResourceInclude Source="/Accents/BaseResources.xaml" />
         <MergeResourceInclude Source="/Accents/FluentControlResources.xaml" />
         <MergeResourceInclude Source="/Strings/InvariantResources.xaml" />
+        <MergeResourceInclude Source="/Controls/FluentControls.xaml" />
       </ResourceDictionary.MergedDictionaries>
       
       <!-- These are not part of MergedDictionaries so we can add or remove them easier -->
       <ResourceInclude x:Key="CompactStyles" Source="/DensityStyles/Compact.xaml" />
     </ResourceDictionary>
   </Styles.Resources>
-  
-  <StyleInclude Source="/Controls/FluentControls.xaml" />
 </Styles>
