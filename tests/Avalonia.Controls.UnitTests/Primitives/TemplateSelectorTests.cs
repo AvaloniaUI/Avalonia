@@ -120,6 +120,25 @@ public class TemplateSelectorTests : ScopedTestBase
         Assert.Same(target, ((Border)target.Content!).TemplatedParent);
     }
 
+    [Fact]
+    public void Reapplying_TemplatedParent_Should_Not_Capture_Forwarded_User_Content()
+    {
+        var userContent = new TextBlock();
+        var owner = new ContentControl { Content = userContent };
+        var templateRoot = new ContentControl
+        {
+            [!ContentControl.ContentProperty] = new TemplateBinding(ContentControl.ContentProperty),
+        };
+
+        StyledElement.ApplyTemplatedParent(templateRoot, owner);
+        Assert.Same(userContent, templateRoot.Content);
+        Assert.Null(userContent.TemplatedParent);
+
+        StyledElement.ApplyTemplatedParent(templateRoot, owner);
+
+        Assert.Null(userContent.TemplatedParent);
+    }
+
     private static Style CreateTemplateStyle<T>() where T : Control =>
         new(x => x.OfType<T>().Template().OfType<TextBlock>())
         {

@@ -93,6 +93,51 @@ public class DropDownButtonTests : ScopedTestBase
         }
     }
     
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Child_Selector_For_PathIcon_Inside_Templated_Flyout_Should_Apply_On_First_Open(bool useTheme)
+    {
+        using (CreateServicesWithoutTheme())
+        {
+            var icon = new PathIcon();
+            var border = new Border { Child = icon };
+            var flyout = new Flyout { Content = border };
+            var host = new ContentControl
+            {
+                Template = new FuncControlTemplate<ContentControl>((_, _) =>
+                    new DropDownButton { Flyout = flyout }),
+            };
+            var style = new Style(x => (useTheme ? x.Nesting() : x.OfType<ContentControl>())
+                .Template().OfType<Border>().Child().OfType<PathIcon>())
+            {
+                Setters = { new Setter(PathIcon.ForegroundProperty, Brushes.Red) },
+            };
+            var window = new Window { Content = host };
+
+            if (useTheme)
+                host.Theme = new ControlTheme(typeof(ContentControl)) { Children = { style } };
+            else
+                window.Styles.Add(style);
+
+            window.Show();
+            host.ApplyTemplate();
+
+            var dropDown = Assert.Single(host.GetVisualDescendants().OfType<DropDownButton>());
+            flyout.ShowAt(dropDown);
+
+            if (flyout.Popup.Host is OverlayPopupHost overlayHost)
+            {
+                overlayHost.Measure(Size.Infinity);
+                overlayHost.Arrange(new Rect(overlayHost.DesiredSize));
+            }
+
+            Assert.Same(host, border.TemplatedParent);
+            Assert.Same(host, icon.TemplatedParent);
+            Assert.Equal(Brushes.Red, icon.Foreground);
+        }
+    }
+
     private IDisposable CreateServicesWithoutTheme()
     {
         return UnitTestApplication.Start(TestServices.StyledWindow.With(
