@@ -18,8 +18,6 @@ internal class XamlMergeResourceGroupTransformer : IXamlAstGroupTransformer
         return MergeResources(context, node, context.CurrentDocument?.Uri, mergingDocuments);
     }
 
-    /// <param name="documentUri">Uri of the document the node belongs to, relative sources are resolved against it.</param>
-    /// <param name="mergingDocuments">Documents being merged into each other, from the outermost one, to detect cycles.</param>
     private static IXamlAstNode MergeResources(AstGroupTransformationContext context, IXamlAstNode node,
         string? documentUri, List<IXamlDocumentResource> mergingDocuments)
     {
