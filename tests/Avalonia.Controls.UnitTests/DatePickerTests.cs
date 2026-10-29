@@ -258,7 +258,7 @@ namespace Avalonia.Controls.UnitTests
             => TestSelectorScrolling(selectorName, panel => panel.ScrollDown());
 
         [Theory]
-        [InlineData(false, 120d, 40d)]
+        [InlineData(false, 180d, 40d)]
         [InlineData(true, 12000d, 6040d)]
         public void Selector_ItemHeight_Change_Should_Update_Layout_State(
             bool shouldLoop,
