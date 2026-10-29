@@ -58,9 +58,7 @@
                            IsHitTestVisible="False"
                            HorizontalAlignment="Stretch"
                            VerticalAlignment="Stretch" />
-                  <ToolTip.Tip>
-                    <!-- Set in code-behind -->
-                  </ToolTip.Tip>
+                  <!-- ToolTip.Tip is set in code-behind -->
                 </Panel>
               </Canvas>
               <Rectangle x:Name="BorderRectangle"
