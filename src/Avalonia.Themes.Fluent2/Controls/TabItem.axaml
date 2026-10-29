@@ -14,17 +14,17 @@
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
       <StaticResource x:Key="TabItemHeaderPillFill" ResourceKey="AccentFillColorDefaultBrush"/>
-      <StaticResource x:Key="TabItemHeaderDisabledPillFill" ResourceKey="AccentFillColorDisabled"/>
+      <StaticResource x:Key="TabItemHeaderDisabledPillFill" ResourceKey="AccentFillColorDisabledBrush"/>
       <StaticResource x:Key="TabItemHeaderBorderBrush" ResourceKey="SystemControlTransparentBrush"/>
       <StaticResource x:Key="TabItemHeaderBorderBrushPointerOver" ResourceKey="SystemControlTransparentBrush"/>
       <StaticResource x:Key="TabItemHeaderBorderBrushSelected" ResourceKey="SystemControlTransparentBrush"/>
       <StaticResource x:Key="TabItemHeaderBorderBrushPressed" ResourceKey="SystemControlTransparentBrush"/>
       <StaticResource x:Key="TabItemHeaderBorderBrushDisabled" ResourceKey="SystemControlTransparentBrush"/>
-      <StaticResource x:Key="TabItemHeaderForeground" ResourceKey="TextFillColorPrimary"/>
-      <StaticResource x:Key="TabItemHeaderForegroundPointerOver" ResourceKey="TextFillColorSecondary"/>
-      <StaticResource x:Key="TabItemHeaderForegroundSelected" ResourceKey="TextFillColorPrimary"/>
-      <StaticResource x:Key="TabItemHeaderForegroundPressed" ResourceKey="TextFillColorTertiary"/>
-      <StaticResource x:Key="TabItemHeaderForegroundDisabled" ResourceKey="TextFillColorDisabled"/>
+      <StaticResource x:Key="TabItemHeaderForeground" ResourceKey="TextFillColorPrimaryBrush"/>
+      <StaticResource x:Key="TabItemHeaderForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush"/>
+      <StaticResource x:Key="TabItemHeaderForegroundSelected" ResourceKey="TextFillColorPrimaryBrush"/>
+      <StaticResource x:Key="TabItemHeaderForegroundPressed" ResourceKey="TextFillColorTertiaryBrush"/>
+      <StaticResource x:Key="TabItemHeaderForegroundDisabled" ResourceKey="TextFillColorDisabledBrush"/>
       <StaticResource x:Key="TabItemHeaderBackground" ResourceKey="SystemControlTransparentBrush"/>
       <StaticResource x:Key="TabItemHeaderBackgroundPointerOver" ResourceKey="SystemControlTransparentBrush"/>
       <StaticResource x:Key="TabItemHeaderBackgroundSelected" ResourceKey="SystemControlTransparentBrush"/>
@@ -33,17 +33,17 @@
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
       <StaticResource x:Key="TabItemHeaderPillFill" ResourceKey="AccentFillColorDefaultBrush"/>
-      <StaticResource x:Key="TabItemHeaderDisabledPillFill" ResourceKey="AccentFillColorDisabled"/>
+      <StaticResource x:Key="TabItemHeaderDisabledPillFill" ResourceKey="AccentFillColorDisabledBrush"/>
       <StaticResource x:Key="TabItemHeaderBorderBrush" ResourceKey="SystemControlTransparentBrush"/>
       <StaticResource x:Key="TabItemHeaderBorderBrushPointerOver" ResourceKey="SystemControlTransparentBrush"/>
       <StaticResource x:Key="TabItemHeaderBorderBrushSelected" ResourceKey="SystemControlTransparentBrush"/>
       <StaticResource x:Key="TabItemHeaderBorderBrushPressed" ResourceKey="SystemControlTransparentBrush"/>
       <StaticResource x:Key="TabItemHeaderBorderBrushDisabled" ResourceKey="SystemControlTransparentBrush"/>
-      <StaticResource x:Key="TabItemHeaderForeground" ResourceKey="TextFillColorPrimary"/>
-      <StaticResource x:Key="TabItemHeaderForegroundPointerOver" ResourceKey="TextFillColorSecondary"/>
-      <StaticResource x:Key="TabItemHeaderForegroundSelected" ResourceKey="TextFillColorPrimary"/>
-      <StaticResource x:Key="TabItemHeaderForegroundPressed" ResourceKey="TextFillColorTertiary"/>
-      <StaticResource x:Key="TabItemHeaderForegroundDisabled" ResourceKey="TextFillColorDisabled"/>
+      <StaticResource x:Key="TabItemHeaderForeground" ResourceKey="TextFillColorPrimaryBrush"/>
+      <StaticResource x:Key="TabItemHeaderForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush"/>
+      <StaticResource x:Key="TabItemHeaderForegroundSelected" ResourceKey="TextFillColorPrimaryBrush"/>
+      <StaticResource x:Key="TabItemHeaderForegroundPressed" ResourceKey="TextFillColorTertiaryBrush"/>
+      <StaticResource x:Key="TabItemHeaderForegroundDisabled" ResourceKey="TextFillColorDisabledBrush"/>
       <StaticResource x:Key="TabItemHeaderBackground" ResourceKey="SystemControlTransparentBrush"/>
       <StaticResource x:Key="TabItemHeaderBackgroundPointerOver" ResourceKey="SystemControlTransparentBrush"/>
       <StaticResource x:Key="TabItemHeaderBackgroundSelected" ResourceKey="SystemControlTransparentBrush"/>

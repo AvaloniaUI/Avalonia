@@ -10,14 +10,14 @@
 
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
-      <StaticResource x:Key="GroupBoxBackground" ResourceKey="CardBackgroundFillColorDefault" />
+      <StaticResource x:Key="GroupBoxBackground" ResourceKey="CardBackgroundFillColorDefaultBrush" />
       <StaticResource x:Key="GroupBoxBorderBrush" ResourceKey="ControlElevationBorderBrush" />
-      <StaticResource x:Key="GroupBoxHeaderForeground" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="GroupBoxHeaderForeground" ResourceKey="TextFillColorPrimaryBrush" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
-      <StaticResource x:Key="GroupBoxBackground" ResourceKey="CardBackgroundFillColorDefault" />
+      <StaticResource x:Key="GroupBoxBackground" ResourceKey="CardBackgroundFillColorDefaultBrush" />
       <StaticResource x:Key="GroupBoxBorderBrush" ResourceKey="ControlElevationBorderBrush" />
-      <StaticResource x:Key="GroupBoxHeaderForeground" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="GroupBoxHeaderForeground" ResourceKey="TextFillColorPrimaryBrush" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 

@@ -5,10 +5,11 @@ using Avalonia.Controls.Primitives;
 using Avalonia.PropertyStore;
 using Avalonia.Styling;
 using Xunit;
+using Avalonia.UnitTests;
 
 namespace Avalonia.Base.UnitTests.Styling
 {
-    public class ControlThemeTests
+    public class ControlThemeTests : ScopedTestBase
     {
         [Fact]
         public void ControlTheme_Attached_As_Theme_And_TemplatedParentTheme_Creates_Distinct_Instances()

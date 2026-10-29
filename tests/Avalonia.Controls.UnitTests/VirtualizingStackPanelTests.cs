@@ -306,6 +306,29 @@ namespace Avalonia.Controls.UnitTests
         [Theory]
         [InlineData(0d)]
         [InlineData(0.5d)]
+        public void ScrollIntoView_Inserted_Item_Does_Not_Recycle_Elements_Before_It(double bufferFactor)
+        {
+            using var app = App();
+            var (target, _, itemsControl) = CreateTarget(bufferFactor: bufferFactor);
+            var items = (IList)itemsControl.ItemsSource!;
+            var elementsBefore = target.GetRealizedElements().Take(5).ToList();
+            var cleared = new List<Control>();
+
+            itemsControl.ContainerClearing += (_, e) => cleared.Add(e.Container);
+
+            items.Insert(5, "new");
+            target.ScrollIntoView(5);
+
+            // The elements before the inserted item are still in the viewport, so they should be kept
+            // as they are rather than being recycled and realized again.
+            Assert.Equal(Enumerable.Range(0, 6), GetRealizedIndexes(target, itemsControl).Take(6));
+            Assert.Equal(elementsBefore, target.GetRealizedElements().Take(5));
+            Assert.Empty(cleared.Intersect(elementsBefore));
+        }
+
+        [Theory]
+        [InlineData(0d)]
+        [InlineData(0.5d)]
         public void Updates_Elements_On_Item_Moved(double bufferFactor)
         {
             // Arrange
