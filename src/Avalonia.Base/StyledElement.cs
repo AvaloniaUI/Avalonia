@@ -352,21 +352,49 @@ namespace Avalonia
         /// <param name="templatedParent">The templated parent to apply.</param>
         internal static void ApplyTemplatedParent(StyledElement control, AvaloniaObject? templatedParent)
         {
-            var children = control.LogicalChildren;
-            var count = children.Count;
+            control.VerifyAccess();
+            if (ReferenceEquals(control.TemplatedParent, templatedParent))
+                return;
 
-            for (var i = 0; i < count; i++)
+            var children = new PooledInlineList<StyledElement>();
+            try
             {
-                if (children[i] is StyledElement child && child.TemplatedParent is null)
+                ApplyTemplatedParent(control, templatedParent, ref children);
+            }
+            finally
+            {
+                children.Dispose();
+            }
+        }
+
+        // The caller owns the captured list and must dispose it after use.
+        internal static void ApplyTemplatedParent(
+            StyledElement control,
+            AvaloniaObject? templatedParent,
+            ref PooledInlineList<StyledElement> children)
+        {
+            Debug.Assert(children.Count == 0);
+
+            // Capture the original subtree before template bindings can introduce user content.
+            CollectTemplateChildren(control, ref children);
+
+            // Assign ancestors first so restyling each child sees the complete parent chain.
+            foreach (var child in children)
+                child.TemplatedParent = templatedParent;
+
+            static void CollectTemplateChildren(StyledElement control, ref PooledInlineList<StyledElement> children)
+            {
+                children.Add(control);
+
+                var logicalChildren = control.LogicalChildren;
+                var count = logicalChildren.Count;
+
+                for (var i = 0; i < count; i++)
                 {
-                    ApplyTemplatedParent(child, templatedParent);
+                    if (logicalChildren[i] is StyledElement child && child.TemplatedParent is null)
+                        CollectTemplateChildren(child, ref children);
                 }
             }
-
-            // Setting TemplatedParent can activate template bindings and add user content
-            // to the logical children. Visit the template's existing children first so
-            // that content isn't assigned a templated parent or styled as template content.
-            control.TemplatedParent = templatedParent;
         }
 
         /// <inheritdoc/>
