@@ -166,6 +166,20 @@ namespace Avalonia.Controls.UnitTests.Automation
             Assert.Equal(expected, AtSpiCollectionHandler.MatchesRule(node, rule));
         }
 
+        [Fact]
+        public async Task Window_Has_Active_State_Only_When_Active()
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+            var window = new Window();
+            await using var server = new AtSpiServer();
+            var handler = CreateHandler(window, server);
+            var active = 1u << (int)AtSpiState.Active;
+
+            Assert.Equal(0u, (await handler.GetStateAsync())[0] & active);
+            window.PlatformImpl!.Activated!();
+            Assert.Equal(active, (await handler.GetStateAsync())[0] & active);
+        }
+
         private static AtSpiAccessibleHandler CreateHandler(Control control, AtSpiServer server)
         {
             var peer = ControlAutomationPeer.CreatePeerForElement(control);
