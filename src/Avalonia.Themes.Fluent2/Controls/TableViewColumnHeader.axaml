@@ -10,12 +10,12 @@
 
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
-      <StaticResource x:Key="TableViewColumnHeaderSeparatorFill" ResourceKey="SystemBaseLowColor" />
-      <StaticResource x:Key="TableViewColumnHeaderSeparatorPointerOverFill" ResourceKey="AccentFillColorDefaultBrush" />
+      <SolidColorBrush x:Key="TableViewHeaderSeparatorFill" Color="{StaticResource SystemBaseLowColor}" />
+      <StaticResource x:Key="TableViewHeaderSeparatorPointerOverFill" ResourceKey="AccentFillColorDefaultBrush" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
-      <StaticResource x:Key="TableViewColumnHeaderSeparatorFill" ResourceKey="SystemBaseLowColor" />
-      <StaticResource x:Key="TableViewColumnHeaderSeparatorPointerOverFill" ResourceKey="AccentFillColorDefaultBrush" />
+      <SolidColorBrush x:Key="TableViewHeaderSeparatorFill" Color="{StaticResource SystemBaseLowColor}" />
+      <StaticResource x:Key="TableViewHeaderSeparatorPointerOverFill" ResourceKey="AccentFillColorDefaultBrush" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 
@@ -61,16 +61,16 @@
         <Border Background="Transparent">
           <Rectangle Width="1"
                      Name="ResizerRectangle"
-                     Fill="{DynamicResource TableViewColumnHeaderSeparatorFill}"
+                     Fill="{DynamicResource TableViewHeaderSeparatorFill}"
                      HorizontalAlignment="Right" />
         </Border>
       </ControlTemplate>
     </Setter>
     <Style Selector="^:pointerover /template/ Rectangle#ResizerRectangle">
-      <Setter Property="Fill" Value="{DynamicResource TableViewColumnHeaderSeparatorPointerOverFill}" />
+      <Setter Property="Fill" Value="{DynamicResource TableViewHeaderSeparatorPointerOverFill}" />
     </Style>
     <Style Selector="^:pressed /template/ Rectangle#ResizerRectangle">
-      <Setter Property="Fill" Value="{DynamicResource TableViewColumnHeaderSeparatorPointerOverFill}" />
+      <Setter Property="Fill" Value="{DynamicResource TableViewHeaderSeparatorPointerOverFill}" />
     </Style>
   </ControlTheme>
 </ResourceDictionary>

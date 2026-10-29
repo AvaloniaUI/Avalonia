@@ -11,7 +11,7 @@ namespace Avalonia.Base.UnitTests
 {
     public class AvaloniaObjectTests_DataValidation
     {
-        public abstract class TestBase<T>
+        public abstract class TestBase<T> : ScopedTestBase
             where T : AvaloniaProperty<int>
         {
             [Fact]

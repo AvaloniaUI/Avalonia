@@ -5,7 +5,6 @@ using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
-using Avalonia.OpenGL.Surfaces;
 using Avalonia.Platform;
 using Avalonia.Platform.Surfaces;
 using Avalonia.Rendering.Composition;
@@ -14,19 +13,19 @@ namespace Avalonia.Win32;
 
 /// <summary>
 /// A minimal <see cref="ITopLevelImpl"/> that hosts an Avalonia content tree on top of an
-/// externally managed swap-chain surface (e.g. a WinUI <c>SwapChainPanel</c> or any other
-/// host that supplies an <see cref="IGlPlatformSurface"/>). Sizing, scaling and input
-/// pumping are driven by the host.
+/// externally managed surface (e.g. a WinUI <c>SwapChainPanel</c> or any other host that
+/// supplies an <see cref="IPlatformRenderSurface"/>). Sizing, scaling and input pumping are
+/// driven by the host.
 /// </summary>
 internal class SwapChainTopLevelImpl : ITopLevelImpl
 {
-    private readonly IGlPlatformSurface _glSurface;
+    private readonly IPlatformRenderSurface _surface;
     private Size _clientSize;
     private double _scaling = 1.0;
 
-    public SwapChainTopLevelImpl(IGlPlatformSurface glSurface)
+    public SwapChainTopLevelImpl(IPlatformRenderSurface surface)
     {
-        _glSurface = glSurface;
+        _surface = surface;
         var platformGraphics = AvaloniaLocator.Current.GetService<IPlatformGraphics>();
         Compositor = new Compositor(platformGraphics);
     }
@@ -57,7 +56,7 @@ internal class SwapChainTopLevelImpl : ITopLevelImpl
 
     public Compositor Compositor { get; }
 
-    public IPlatformRenderSurface[] Surfaces => [_glSurface];
+    public IPlatformRenderSurface[] Surfaces => [_surface];
 
     public Action<RawInputEventArgs>? Input { get; set; }
 
@@ -73,7 +72,8 @@ internal class SwapChainTopLevelImpl : ITopLevelImpl
 
     public Action? LostFocus { get; set; }
 
-    public WindowTransparencyLevel TransparencyLevel => WindowTransparencyLevel.None;
+    // Embedded content is composed over the host's own visuals, so the swapchain keeps an alpha channel
+    public WindowTransparencyLevel TransparencyLevel => WindowTransparencyLevel.Transparent;
 
     public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new(1, 1, 1);
 
