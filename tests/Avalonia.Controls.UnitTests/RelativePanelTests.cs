@@ -198,5 +198,96 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(right.Bounds.Left, middle.Bounds.Right);
             Assert.Equal(middle.Bounds.Left, left.Bounds.Right);
         }
+
+        [Fact]
+        public void Measures_A_LeftOf_Chain_At_Infinite_Width()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var right = new Rectangle { Width = 80, Height = 40 };
+            var middle = new Rectangle { Width = 80, Height = 40 };
+            var left = new Rectangle { Width = 80, Height = 40 };
+
+            RelativePanel.SetAlignRightWithPanel(right, true);
+            RelativePanel.SetLeftOf(middle, right);
+            RelativePanel.SetLeftOf(left, middle);
+
+            var target = new RelativePanel { Children = { right, middle, left } };
+
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(target.DesiredSize));
+
+            Assert.Equal(new Size(240, 40), target.DesiredSize);
+            Assert.Equal(0, left.Bounds.Left);
+        }
+
+        [Fact]
+        public void Measures_A_LeftOf_Chain_With_A_Tall_Far_Child_At_Infinite_Width()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var right = new Rectangle { Width = 80, Height = 40 };
+            var middle = new Rectangle { Width = 80, Height = 40 };
+            var left = new Rectangle { Width = 80, Height = 200 };
+
+            RelativePanel.SetAlignRightWithPanel(right, true);
+            RelativePanel.SetLeftOf(middle, right);
+            RelativePanel.SetLeftOf(left, middle);
+
+            var target = new RelativePanel { Children = { right, middle, left } };
+
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(target.DesiredSize));
+
+            Assert.Equal(new Size(240, 200), target.DesiredSize);
+            Assert.Equal(new Point(0, 0), left.Bounds.Position);
+        }
+
+        [Fact]
+        public void Measures_An_Above_Chain_At_Infinite_Height()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var bottom = new Rectangle { Width = 80, Height = 40 };
+            var middle = new Rectangle { Width = 80, Height = 40 };
+            var top = new Rectangle { Width = 80, Height = 40 };
+
+            RelativePanel.SetAlignBottomWithPanel(bottom, true);
+            RelativePanel.SetAbove(middle, bottom);
+            RelativePanel.SetAbove(top, middle);
+
+            var target = new RelativePanel { Children = { bottom, middle, top } };
+
+            target.Measure(new Size(400, double.PositiveInfinity));
+            target.Arrange(new Rect(target.DesiredSize));
+
+            Assert.Equal(120, target.DesiredSize.Height);
+            Assert.Equal(0, top.Bounds.Top);
+        }
+
+        [Fact]
+        public void Measures_A_Chain_Declared_Before_Its_Targets_At_Infinite_Width()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var logo = new Rectangle { Width = 80, Height = 40 };
+            var min = new Rectangle { Width = 80, Height = 40 };
+            var full = new Rectangle { Width = 80, Height = 40 };
+            var close = new Rectangle { Width = 80, Height = 40 };
+
+            RelativePanel.SetAlignLeftWithPanel(logo, true);
+            RelativePanel.SetLeftOf(min, full);
+            RelativePanel.SetLeftOf(full, close);
+            RelativePanel.SetAlignRightWithPanel(close, true);
+
+            // Declared the way they read in markup, each one before the child it points at.
+            var target = new RelativePanel { Children = { logo, min, full, close } };
+
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(target.DesiredSize));
+
+            Assert.Equal(close.Bounds.Left, full.Bounds.Right);
+            Assert.Equal(full.Bounds.Left, min.Bounds.Right);
+        }
     }
 }
