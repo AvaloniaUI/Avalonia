@@ -319,6 +319,10 @@ namespace Avalonia.Controls.Primitives
                 {
                     foreach (var child in this.GetTemplateDescendants())
                     {
+                        // Setter-created content belongs to the setter's lifetime.
+                        if (child.IsSetterTemplateChild)
+                            continue;
+
                         child.TemplatedParent = null;
                         ((ISetLogicalParent)child).SetParent(null);
                     }
@@ -415,27 +419,6 @@ namespace Avalonia.Controls.Primitives
         protected virtual void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
         {
             InvalidateMeasure();
-        }
-
-        /// <summary>
-        /// Sets the TemplatedParent property for the created template children.
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="templatedParent">The templated parent to apply.</param>
-        internal static void ApplyTemplatedParent(StyledElement control, AvaloniaObject? templatedParent)
-        {
-            control.TemplatedParent = templatedParent;
-
-            var children = control.LogicalChildren;
-            var count = children.Count;
-
-            for (var i = 0; i < count; i++)
-            {
-                if (children[i] is StyledElement child && child.TemplatedParent is null)
-                {
-                    ApplyTemplatedParent(child, templatedParent);
-                }
-            }
         }
 
         private protected override void OnControlThemeChanged()
