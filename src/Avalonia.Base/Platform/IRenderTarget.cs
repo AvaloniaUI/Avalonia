@@ -47,6 +47,13 @@ namespace Avalonia.Platform
         public record struct RenderTargetSceneInfo(PixelSize Size, double Scaling, Size LogicalSize,
             CompositionTransparencyLevel TransparencyLevel, object? PlatformSpecificSceneInfo = null)
         {
+            /// <summary>
+            /// The top level's background when it is a single opaque color, for a platform to fill an area
+            /// the scene does not cover yet (a resized window before its frame arrives); transparent
+            /// (the default) when there is none.
+            /// </summary>
+            public Media.Color BackgroundColor { get; init; }
+
             public RenderTargetSceneInfo(PixelSize size, double scaling, CompositionTransparencyLevel transparencyLevel) : this(size, scaling, size.ToSize(scaling), transparencyLevel)
             {
             }
