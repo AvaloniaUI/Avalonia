@@ -208,6 +208,19 @@ namespace Avalonia.Skia.RenderTests
             AssertShiftedBy(30, typeface, typeface.WithVariation(WghtPosition(typeface, 900)), glyph);
         }
 
+        [Fact]
+        public void Left_Phantom_gvar_Delta_Is_Ignored_When_The_Font_Has_Hvar()
+        {
+            // With HVAR the horizontal metrics come from HVAR, and FreeType drops the gvar deltas of
+            // the horizontal phantom points, so the same tuple leaves the outline in place.
+            var font = SyntheticFont.FromAsset(InterVariableAsset);
+            var glyph = font.CreateGlyphTypeface().CharacterToGlyphMap['H'];
+
+            var typeface = font.WithLeftPhantomGvar(glyph, axis: 1, delta: -30).CreateGlyphTypeface();
+
+            AssertShiftedBy(0, typeface, typeface.WithVariation(WghtPosition(typeface, 900)), glyph);
+        }
+
         private static void AssertShiftedBy(double expected, GlyphTypeface original, GlyphTypeface shifted, ushort glyph)
         {
             var originalBounds = original.GetGlyphOutline(glyph)!.Bounds;

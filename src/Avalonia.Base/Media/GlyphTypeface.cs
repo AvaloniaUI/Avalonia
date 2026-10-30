@@ -1141,6 +1141,39 @@ namespace Avalonia.Media
             return true;
         }
 
+        /// <summary>
+        /// Gets the x coordinate of a glyph's left phantom point: <c>xMin - lsb</c> from the glyf
+        /// header and hmtx, plus its gvar delta at this instance when the font has no HVAR. TrueType rasterizers translate
+        /// the outline so that this point lands on the origin, which is how an hmtx left side
+        /// bearing that differs from xMin, or a varied one, positions the glyph. A composite
+        /// with a USE_MY_METRICS component uses that component's left phantom point.
+        /// </summary>
+        private bool TryGetLeftPhantomX(ushort glyphIndex, ReadOnlySpan<float> activeCoords, out float leftPhantomX)
+        {
+            leftPhantomX = 0;
+
+            if (_hmTable is null)
+            {
+                return false;
+            }
+
+            Span<float> x = stackalloc float[4];
+            Span<float> y = stackalloc float[4];
+
+            if (!_glyfTable!.TryGetPhantomDeltas(glyphIndex, _gvarTable, activeCoords, out var metricsGlyph, x, y)
+                || !_glyfTable.TryGetGlyphBounds(metricsGlyph, out var xMin, out _, out _, out _)
+                || !_hmTable.TryGetMetrics((ushort)metricsGlyph, out var metric))
+            {
+                return false;
+            }
+
+            // With HVAR the horizontal metrics come from HVAR, and FreeType drops the gvar deltas of
+            // the horizontal phantom points so they are not applied twice.
+            leftPhantomX = xMin - metric.LeftSideBearing + (_hvarTable is null ? x[0] : 0);
+
+            return true;
+        }
+
         private static ushort ApplyAdvanceDelta(ushort advance, float delta)
         {
             var adjusted = advance + (int)MathF.Round(delta);
@@ -1597,11 +1630,15 @@ namespace Avalonia.Media
                 ? _activeCoords
                 : default;
 
-            // Build the outline in font design-unit space (identity transform); callers apply
-            // the scale / position. The resulting geometry is immutable, so it can be cached and shared.
+            // Build the outline in font design-unit space; callers apply the scale / position. The
+            // resulting geometry is immutable, so it can be cached and shared.
+            var transform = TryGetLeftPhantomX(glyphIndex, activeCoords, out var leftPhantomX) && leftPhantomX != 0
+                ? Matrix.CreateTranslation(-leftPhantomX, 0)
+                : Matrix.Identity;
+
             if (_glyfTable.TryBuildGlyphGeometry(
                     glyphIndex,
-                    Matrix.Identity,
+                    transform,
                     builder,
                     _gvarTable,
                     activeCoords))

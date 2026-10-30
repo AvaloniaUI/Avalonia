@@ -231,7 +231,10 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
         /// flag the last one wins, as in FreeType and HarfBuzz.
         /// </remarks>
         /// <param name="glyphIndex">The glyph to resolve.</param>
-        /// <param name="gvarTable">The font's gvar table.</param>
+        /// <param name="gvarTable">
+        /// The font's gvar table. <c>null</c>, or an empty <paramref name="activeCoords"/>, only
+        /// resolves <paramref name="metricsGlyphIndex"/> and leaves the deltas at zero.
+        /// </param>
         /// <param name="activeCoords">Normalized variation coordinates in fvar axis order.</param>
         /// <param name="metricsGlyphIndex">
         /// The glyph whose hmtx / vmtx entry the deltas apply to: <paramref name="glyphIndex"/>
@@ -248,7 +251,7 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
         /// </returns>
         public bool TryGetPhantomDeltas(
             int glyphIndex,
-            GvarTable gvarTable,
+            GvarTable? gvarTable,
             ReadOnlySpan<float> activeCoords,
             out int metricsGlyphIndex,
             Span<float> xDeltas,
@@ -265,8 +268,11 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
 
                 if (metricsComponent < 0)
                 {
-                    GlyphVariationReader.TryGetPhantomDeltas(
-                        gvarTable, metricsGlyphIndex, activeCoords, pointCount, xDeltas, yDeltas);
+                    if (gvarTable is not null && !activeCoords.IsEmpty)
+                    {
+                        GlyphVariationReader.TryGetPhantomDeltas(
+                            gvarTable, metricsGlyphIndex, activeCoords, pointCount, xDeltas, yDeltas);
+                    }
 
                     return true;
                 }
