@@ -319,6 +319,21 @@ namespace Avalonia.Automation.Peers
                     null,
                     GetAutomationId());
             }
+            else if (e.Property == AutomationProperties.PositionInSetProperty)
+            {
+                // Notify automation clients when the set metadata on this element changes.
+                RaisePropertyChangedEvent(
+                    AutomationElementIdentifiers.PositionInSetProperty,
+                    e.OldValue,
+                    e.NewValue);
+            }
+            else if (e.Property == AutomationProperties.SizeOfSetProperty)
+            {
+                RaisePropertyChangedEvent(
+                    AutomationElementIdentifiers.SizeOfSetProperty,
+                    e.OldValue,
+                    e.NewValue);
+            }
         }
 
 
