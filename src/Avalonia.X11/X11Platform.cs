@@ -425,6 +425,13 @@ namespace Avalonia
         };
 
         /// <summary>
+        /// Enables partial presentation when supported by the rendering backend.
+        /// Currently supported with <see cref="X11RenderingMode.Egl"/>.
+        /// When <c>null</c>, uses the platform default, which is currently disabled.
+        /// </summary>
+        public bool? UsePartialPresentation { get; set; }
+
+        /// <summary>
         /// Embeds popups to the window when set to true. The default value is false.
         /// </summary>
         public bool OverlayPopups { get; set; }

@@ -48,7 +48,7 @@ namespace Avalonia.OpenGL.Egl
 
         // ReSharper disable UnassignedGetOnlyAutoProperty
         
-        [GetProcAddress("eglGetError")]
+        [GetProcAddress("eglGetError", GenerateInterface = true)]
         public partial int GetError();
         
         [GetProcAddress("eglGetDisplay")]
@@ -110,6 +110,21 @@ namespace Avalonia.OpenGL.Egl
 
         [GetProcAddress("eglSwapBuffers")]
         public partial void SwapBuffers(IntPtr display, IntPtr surface);
+
+        [GetProcAddress("eglSwapBuffers", GenerateInterface = true)]
+        internal partial uint SwapBuffersChecked(IntPtr display, IntPtr surface);
+
+        [GetProcAddress("eglQuerySurface", GenerateInterface = true)]
+        internal partial uint QuerySurface(IntPtr display, IntPtr surface, int attribute, out int value);
+
+        [GetProcAddress("eglSetDamageRegionKHR", true, GenerateInterface = true)]
+        internal partial uint SetDamageRegionKhr(IntPtr display, IntPtr surface, int[] rects, int count);
+
+        [GetProcAddress("eglSwapBuffersWithDamageKHR", true, GenerateInterface = true)]
+        internal partial uint SwapBuffersWithDamageKhr(IntPtr display, IntPtr surface, int[] rects, int count);
+
+        [GetProcAddress("eglSwapBuffersWithDamageEXT", true, GenerateInterface = true)]
+        internal partial uint SwapBuffersWithDamageExt(IntPtr display, IntPtr surface, int[] rects, int count);
 
         [GetProcAddress("eglSwapInterval")]
         public partial bool SwapInterval(IntPtr display, int interval);
