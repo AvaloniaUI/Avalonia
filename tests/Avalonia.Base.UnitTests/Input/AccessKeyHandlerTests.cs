@@ -284,6 +284,194 @@ namespace Avalonia.Base.UnitTests.Input
             }
         }
 
+        [Theory]
+        [InlineData(Key.LeftShift, KeyModifiers.Shift)]
+        [InlineData(Key.LeftCtrl, KeyModifiers.Control)]
+        [InlineData(Key.LWin, KeyModifiers.Meta)]
+        public void Should_Not_Open_MainMenu_On_Alt_KeyUp_When_Alt_Is_Pressed_With_Another_Modifier(
+            Key modifierKey,
+            KeyModifiers modifier)
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealFocus);
+
+            var target = new AccessKeyHandler();
+            var menu = new FakeMenu();
+            var root = new TestRoot(menu);
+
+            target.SetOwner(root);
+            target.MainMenu = menu;
+
+            KeyDown(root, modifierKey, modifiers: modifier);
+            KeyDown(root, Key.LeftAlt, modifiers: modifier | KeyModifiers.Alt);
+            KeyUp(root, Key.LeftAlt, modifiers: modifier);
+            KeyUp(root, modifierKey);
+
+            Assert.Equal(0, menu.TimesOpenCalled);
+        }
+
+        [Fact]
+        public void Should_Open_MainMenu_On_Alt_KeyUp_After_Alt_Was_Pressed_With_Another_Modifier()
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealFocus);
+
+            var target = new AccessKeyHandler();
+            var menu = new FakeMenu();
+            var root = new TestRoot(menu);
+
+            target.SetOwner(root);
+            target.MainMenu = menu;
+
+            KeyDown(root, Key.LeftShift, modifiers: KeyModifiers.Shift);
+            KeyDown(root, Key.LeftAlt, modifiers: KeyModifiers.Shift | KeyModifiers.Alt);
+            KeyUp(root, Key.LeftAlt, modifiers: KeyModifiers.Shift);
+            KeyUp(root, Key.LeftShift);
+
+            KeyDown(root, Key.LeftAlt, modifiers: KeyModifiers.Alt);
+            KeyUp(root, Key.LeftAlt);
+
+            Assert.Equal(1, menu.TimesOpenCalled);
+        }
+
+        [Fact]
+        public void Should_Open_MainMenu_On_Alt_KeyUp_After_Chord_Whose_Alt_KeyUp_Was_Missed()
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealFocus);
+
+            var target = new AccessKeyHandler();
+            var menu = new FakeMenu();
+            var root = new TestRoot(menu);
+
+            target.SetOwner(root);
+            target.MainMenu = menu;
+
+            // Shift+Alt+Tab: the window is deactivated before it receives any key up.
+            KeyDown(root, Key.LeftShift, modifiers: KeyModifiers.Shift);
+            KeyDown(root, Key.LeftAlt, modifiers: KeyModifiers.Shift | KeyModifiers.Alt);
+
+            KeyDown(root, Key.LeftAlt, modifiers: KeyModifiers.Alt);
+            KeyUp(root, Key.LeftAlt);
+
+            Assert.Equal(1, menu.TimesOpenCalled);
+        }
+
+        [Theory]
+        [InlineData(Key.LeftShift, KeyModifiers.Shift)]
+        [InlineData(Key.RightShift, KeyModifiers.Shift)]
+        [InlineData(Key.LeftCtrl, KeyModifiers.Control)]
+        [InlineData(Key.RightCtrl, KeyModifiers.Control)]
+        [InlineData(Key.LWin, KeyModifiers.Meta)]
+        [InlineData(Key.RWin, KeyModifiers.Meta)]
+        public void Should_Not_Open_MainMenu_On_Alt_KeyUp_When_Modifier_Is_Released_Before_Alt(
+            Key modifierKey,
+            KeyModifiers modifier)
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealFocus);
+
+            var target = new AccessKeyHandler();
+            var menu = new FakeMenu();
+            var root = new TestRoot(menu);
+
+            target.SetOwner(root);
+            target.MainMenu = menu;
+
+            KeyDown(root, modifierKey, modifiers: modifier);
+            KeyDown(root, Key.LeftAlt, modifiers: modifier | KeyModifiers.Alt);
+            KeyUp(root, modifierKey, modifiers: KeyModifiers.Alt);
+            KeyUp(root, Key.LeftAlt);
+
+            Assert.Equal(0, menu.TimesOpenCalled);
+        }
+
+        [Fact]
+        public void Should_Not_Open_MainMenu_On_Alt_KeyUp_When_Alt_Repeats_After_Modifier_Is_Released()
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealFocus);
+
+            var target = new AccessKeyHandler();
+            var menu = new FakeMenu();
+            var root = new TestRoot(menu);
+
+            target.SetOwner(root);
+            target.MainMenu = menu;
+
+            KeyDown(root, Key.LeftShift, modifiers: KeyModifiers.Shift);
+            KeyDown(root, Key.LeftAlt, modifiers: KeyModifiers.Shift | KeyModifiers.Alt);
+            KeyUp(root, Key.LeftShift, modifiers: KeyModifiers.Alt);
+            KeyDown(root, Key.LeftAlt, modifiers: KeyModifiers.Alt);
+            KeyUp(root, Key.LeftAlt);
+
+            Assert.Equal(0, menu.TimesOpenCalled);
+        }
+
+        [Fact]
+        public void Should_Not_Open_MainMenu_On_AltGr_KeyUp()
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealFocus);
+
+            var target = new AccessKeyHandler();
+            var menu = new FakeMenu();
+            var root = new TestRoot(menu);
+
+            target.SetOwner(root);
+            target.MainMenu = menu;
+
+            // Windows reports AltGr as LeftCtrl+RightAlt.
+            KeyDown(root, Key.LeftCtrl, modifiers: KeyModifiers.Control);
+            KeyDown(root, Key.RightAlt, modifiers: KeyModifiers.Control | KeyModifiers.Alt);
+            KeyUp(root, Key.LeftCtrl, modifiers: KeyModifiers.Alt);
+            KeyUp(root, Key.RightAlt);
+
+            Assert.Equal(0, menu.TimesOpenCalled);
+        }
+
+        [Theory]
+        [InlineData(Key.LeftShift, KeyModifiers.Shift)]
+        [InlineData(Key.LeftCtrl, KeyModifiers.Control)]
+        [InlineData(Key.LWin, KeyModifiers.Meta)]
+        public void Should_Show_AccessKeys_When_Alt_Is_Pressed_With_Another_Modifier(
+            Key modifierKey,
+            KeyModifiers modifier)
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealFocus);
+
+            var target = new AccessKeyHandler();
+            var root = new TestRoot();
+
+            target.SetOwner(root);
+
+            KeyDown(root, modifierKey, modifiers: modifier);
+            KeyDown(root, Key.LeftAlt, modifiers: modifier | KeyModifiers.Alt);
+
+            Assert.True(root.GetValue(AccessKeyHandler.ShowAccessKeyProperty));
+        }
+
+        [Theory]
+        [InlineData(Key.LeftShift, KeyModifiers.Shift)]
+        [InlineData(Key.LeftCtrl, KeyModifiers.Control)]
+        [InlineData(Key.LWin, KeyModifiers.Meta)]
+        public void Should_Close_Open_MainMenu_When_Alt_Is_Pressed_With_Another_Modifier(Key modifierKey,
+            KeyModifiers modifier)
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealFocus);
+
+            var target = new AccessKeyHandler();
+            var menu = new Mock<IMainMenu>();
+            var root = new TestRoot();
+
+            menu.Setup(x => x.IsOpen).Returns(true);
+
+            target.SetOwner(root);
+            target.MainMenu = menu.Object;
+
+            KeyDown(root, modifierKey, modifiers: modifier);
+            KeyDown(root, Key.LeftAlt, modifiers: modifier | KeyModifiers.Alt);
+            KeyUp(root, Key.LeftAlt, modifiers: modifier);
+            KeyUp(root, modifierKey);
+
+            menu.Verify(x => x.Close(), Times.Once);
+            menu.Verify(x => x.Open(), Times.Never);
+        }
+
         [Fact]
         public void Should_Raise_AccessKey_When_Nothing_Is_Focused()
         {
