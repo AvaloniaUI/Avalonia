@@ -106,7 +106,7 @@ internal abstract partial class WindowBaseImpl : IWindowBaseImpl
     public Action? Activated { get; set; }
     public Action? Deactivated { get; set; }
     public Action<RawInputEventArgs>? Input { get; set; }
-    public Action<Rect>? Paint { get; set; }
+    public Action<ITopLevelImpl.PaintOptions?>? Paint { get; set; }
     public Action<Size, WindowResizeReason>? Resized { get; set; }
     public Action<double>? ScalingChanged { get; set; }
     public Action<WindowTransparencyLevel>? TransparencyLevelChanged { get; set; }

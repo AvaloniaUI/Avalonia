@@ -320,7 +320,7 @@ namespace Avalonia.Controls.Remote.Server
             var framebuffer = GetOrCreateFramebuffer();
 
             if (framebuffer.Stride > 0)
-                Paint?.Invoke(new Rect(framebuffer.ClientSize));
+                Paint?.Invoke(null);
 
             SendLastFrameIfNeeded();
         }
