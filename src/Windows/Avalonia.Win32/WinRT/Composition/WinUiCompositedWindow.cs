@@ -6,11 +6,12 @@ using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
 using Avalonia.Reactive;
 using Avalonia.Rendering.Composition;
+using Avalonia.Win32.DirectX;
 using MicroCom.Runtime;
 
 namespace Avalonia.Win32.WinRT.Composition;
 
-internal class WinUiCompositedWindow : IDisposable
+internal class WinUiCompositedWindow : ISwapchainVisualHost, IDisposable
 {
     public EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo WindowInfo { get; }
     private readonly WinUiCompositionShared _shared;
@@ -23,11 +24,13 @@ internal class WinUiCompositedWindow : IDisposable
     private BlurEffect? _appliedBlurEffect;
     private readonly ICompositionSurfaceBrush _surfaceBrush;
     private readonly ICompositionTarget _target;
+    private ICompositionSurface? _swapchainSurface;
 
     public void Dispose()
     {
         lock (_shared.SyncRoot)
         {
+            _swapchainSurface?.Dispose();
             _compositionRoundedRectangleGeometry?.Dispose();
             _blur.Dispose();
             _micaLight?.Dispose();
@@ -83,6 +86,17 @@ internal class WinUiCompositedWindow : IDisposable
     }
 
     public void SetSurface(ICompositionSurface surface) => _surfaceBrush.SetSurface(surface);
+
+    public void SetSwapchainContent(IUnknown swapchain)
+    {
+        Debug.Assert(Monitor.IsEntered(_shared.SyncRoot));
+
+        using var interop = _shared.Compositor.QueryInterface<ICompositorInterop>();
+        var surface = interop.CreateCompositionSurfaceForSwapChain(swapchain);
+        _surfaceBrush.SetSurface(surface);
+        _swapchainSurface?.Dispose();
+        _swapchainSurface = surface;
+    }
 
     // Called from the render thread with the transaction (SyncRoot) held, so effect changes
     // are applied within the same composition batch as the frame they belong to.

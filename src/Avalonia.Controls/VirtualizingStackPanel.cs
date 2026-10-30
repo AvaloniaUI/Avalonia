@@ -963,7 +963,7 @@ namespace Avalonia.Controls
 
             // If the anchor element is at the beginning of, or before, the start of the viewport
             // then we can recycle all elements before it.
-            if (u <= viewport.anchorU)
+            if (u <= viewport.viewportUStart)
                 _realizedElements.RecycleElementsBefore(viewport.anchorIndex, _recycleElement);
 
             // Start at the anchor element and move forwards, realizing elements.

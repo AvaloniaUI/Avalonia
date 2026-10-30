@@ -2,10 +2,11 @@
 using Avalonia.Media;
 using Avalonia.Rendering.Utilities;
 using Xunit;
+using Avalonia.UnitTests;
 
 namespace Avalonia.Base.UnitTests.Rendering.Utilities
 {
-    public class TileBrushCalculatorTests
+    public class TileBrushCalculatorTests : ScopedTestBase
     {
         [Fact]
         public void NoTile_Fill_1x()

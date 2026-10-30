@@ -12,7 +12,7 @@ using Xunit;
 
 namespace Avalonia.Base.UnitTests
 {
-    public class VisualTests
+    public class VisualTests : ScopedTestBase
     {
         [Fact]
         public void Added_Child_Should_Have_VisualParent_Set()

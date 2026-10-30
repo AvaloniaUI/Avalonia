@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Controls;
+using ControlCatalog.ViewModels;
 
 namespace ControlCatalog.Pages
 {
@@ -8,6 +9,8 @@ namespace ControlCatalog.Pages
         public CalendarDatePickerPage()
         {
             InitializeComponent();
+
+            DataContext = new CalenderDatePickerViewModel();
 
             DatePicker1.SelectedDate = DateTime.Today;
             DatePicker2.SelectedDate = DateTime.Today.AddDays(10);
