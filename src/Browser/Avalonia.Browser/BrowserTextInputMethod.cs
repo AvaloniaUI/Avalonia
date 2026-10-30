@@ -11,10 +11,11 @@ internal class BrowserTextInputMethod(
     JSObject inputElement)
     : ITextInputMethodImpl
 {
-    private readonly JSObject _inputElement = inputElement ?? throw new ArgumentNullException(nameof(inputElement));
+    private JSObject _inputElement = inputElement ?? throw new ArgumentNullException(nameof(inputElement));
     private readonly JSObject _containerElement = containerElement ?? throw new ArgumentNullException(nameof(containerElement));
     private readonly BrowserInputHandler _inputHandler = inputHandler ?? throw new ArgumentNullException(nameof(inputHandler));
     private TextInputMethodClient? _client;
+    private bool _multiline;
 
     public bool IsComposing { get; private set; }
 
@@ -29,12 +30,14 @@ internal class BrowserTextInputMethod(
         if (_client != null)
         {
             _client.SurroundingTextChanged -= SurroundingTextChanged;
+            _client.SelectionChanged -= SurroundingTextChanged;
             _client.InputPaneActivationRequested -= InputPaneActivationRequested;
         }
 
         if (client != null)
         {
             client.SurroundingTextChanged += SurroundingTextChanged;
+            client.SelectionChanged += SurroundingTextChanged;
             client.InputPaneActivationRequested += InputPaneActivationRequested;
         }
 
@@ -92,6 +95,13 @@ internal class BrowserTextInputMethod(
 
     public void SetOptions(TextInputOptions options)
     {
+        if (_multiline != options.Multiline)
+        {
+            var previous = _inputElement;
+            _inputElement = InputHelper.SetMultiline(previous, options.Multiline);
+            previous.Dispose();
+            _multiline = options.Multiline;
+        }
     }
 
     public void Reset()
@@ -100,8 +110,26 @@ internal class BrowserTextInputMethod(
         InputHelper.SetSurroundingText(_inputElement, "", 0, 0);
     }
 
-    public void OnBeforeInput(string inputType, int start, int end)
+    public void OnBeforeInput(string inputType, int start, int end, string? data, ulong timestamp)
     {
+        if (_client is not null && !IsComposing &&
+            (inputType == "insertText" || inputType == "insertLineBreak"))
+        {
+            if (inputType == "insertLineBreak")
+            {
+                if (!_multiline || data is null)
+                    return;
+                data = "\n";
+            }
+            if (data is not null)
+            {
+                if (start >= 0 && end >= 0)
+                    _client.Selection = new TextSelection(start, end);
+                _inputHandler.RawTextEvent(timestamp, data);
+            }
+            return;
+        }
+
         if (inputType != "deleteByComposition")
         {
             if (inputType == "deleteContentBackward")
