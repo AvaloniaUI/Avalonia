@@ -238,36 +238,140 @@ namespace Avalonia.FreeDesktop.AtSpi
             if (!IsAttached)
                 return Array.Empty<AtSpiNode>();
 
-            if (!_childrenDirty)
-                return _attachedChildren;
+            if (_childrenDirty)
+                UpdateChildren(null);
 
-            var childPeers = GetChildPeers();
-            var nextChildren = new List<AtSpiNode>(childPeers.Count);
-            var nextChildrenSet = new HashSet<AtSpiNode>();
-            foreach (var childPeer in childPeers)
+            return _attachedChildren;
+        }
+
+        /// <summary>
+        /// Lists the removals and additions that turn one child list into another.
+        /// </summary>
+        /// <param name="oldChildren">The children before the change.</param>
+        /// <param name="newChildren">The children after the change.</param>
+        /// <param name="removed">Receives each removed child with its index in <paramref name="oldChildren"/>, highest index first.</param>
+        /// <param name="added">Receives each added child with its index in <paramref name="newChildren"/>, lowest index first.</param>
+        /// <remarks>
+        /// Applying the removals and then the additions in the order given turns the old list into the new one.
+        /// A child that changed position is reported as removed and added.
+        /// </remarks>
+        internal static void DiffChildren<T>(
+            IReadOnlyList<T> oldChildren,
+            IReadOnlyList<T> newChildren,
+            List<(int Index, T Child)> removed,
+            List<(int Index, T Child)> added)
+            where T : class
+        {
+            var oldIndices = new Dictionary<T, int>(oldChildren.Count);
+            for (var i = 0; i < oldChildren.Count; i++)
+                oldIndices[oldChildren[i]] = i;
+
+            // Children that keep their place must stay in the same order in both lists. Keeping the longest
+            // increasing run of old indices, taken in new order, reports the fewest moves.
+            var common = new List<T>();
+            var commonOldIndices = new List<int>();
+            foreach (var child in newChildren)
             {
-                var childNode = Server.GetOrCreateNode(childPeer);
-                if (!Server.AttachNode(childNode, this))
-                    continue;
-
-                nextChildren.Add(childNode);
-                nextChildrenSet.Add(childNode);
-            }
-
-            if (_attachedChildren.Count > 0)
-            {
-                var removed = _attachedChildren.Where(c => !nextChildrenSet.Contains(c)).ToArray();
-                foreach (var removedNode in removed)
+                if (oldIndices.TryGetValue(child, out var oldIndex))
                 {
-                    if (ReferenceEquals(removedNode.Parent, this))
-                        Server.DetachSubtreeRecursive(removedNode);
+                    common.Add(child);
+                    commonOldIndices.Add(oldIndex);
                 }
             }
 
-            _attachedChildren = nextChildren;
-            _childrenDirty = false;
-            return _attachedChildren;
+            var kept = new HashSet<T>();
+            foreach (var position in LongestIncreasingRun(commonOldIndices))
+                kept.Add(common[position]);
+
+            for (var i = oldChildren.Count - 1; i >= 0; i--)
+            {
+                if (!kept.Contains(oldChildren[i]))
+                    removed.Add((i, oldChildren[i]));
+            }
+
+            for (var i = 0; i < newChildren.Count; i++)
+            {
+                if (!kept.Contains(newChildren[i]))
+                    added.Add((i, newChildren[i]));
+            }
         }
+
+        // Returns the positions of a longest strictly increasing subsequence of the values.
+        private static List<int> LongestIncreasingRun(List<int> values)
+        {
+            // tails[k] is the position of the smallest value that ends an increasing run of length k + 1.
+            var tails = new List<int>();
+            var previous = new int[values.Count];
+            for (var i = 0; i < values.Count; i++)
+            {
+                int low = 0, high = tails.Count;
+                while (low < high)
+                {
+                    var middle = (low + high) / 2;
+                    if (values[tails[middle]] < values[i])
+                        low = middle + 1;
+                    else
+                        high = middle;
+                }
+
+                previous[i] = low > 0 ? tails[low - 1] : -1;
+                if (low == tails.Count)
+                    tails.Add(i);
+                else
+                    tails[low] = i;
+            }
+
+            var run = new List<int>(tails.Count);
+            for (var i = tails.Count > 0 ? tails[tails.Count - 1] : -1; i >= 0; i = previous[i])
+                run.Add(i);
+            return run;
+        }
+
+        // Rebuilds the child list. With an event handler, reports each change to clients as AT-SPI specifies.
+        private void UpdateChildren(AtSpiEventObjectHandler? eventHandler)
+        {
+            var oldChildren = _attachedChildren;
+            var childPeers = GetChildPeers();
+            var newChildren = new List<AtSpiNode>(childPeers.Count);
+            foreach (var childPeer in childPeers)
+            {
+                var childNode = Server.GetOrCreateNode(childPeer);
+                if (Server.AttachNode(childNode, this))
+                    newChildren.Add(childNode);
+            }
+
+            _attachedChildren = newChildren;
+            _childrenDirty = false;
+
+            if (oldChildren.Count == 0 && eventHandler is null)
+                return;
+
+            var removed = new List<(int Index, AtSpiNode Child)>();
+            var added = new List<(int Index, AtSpiNode Child)>();
+            DiffChildren(oldChildren, newChildren, removed, added);
+
+            if (removed.Count > 0)
+            {
+                var remaining = new HashSet<AtSpiNode>(newChildren);
+                foreach (var (index, child) in removed)
+                {
+                    // The reference must be sent before the child is detached, when it becomes the null reference.
+                    eventHandler?.EmitChildrenChangedSignal("remove", index, GetChildVariant(child));
+
+                    if (!remaining.Contains(child) && ReferenceEquals(child.Parent, this))
+                        Server.DetachSubtreeRecursive(child);
+                }
+            }
+
+            if (eventHandler is null)
+                return;
+
+            foreach (var (index, child) in added)
+                eventHandler.EmitChildrenChangedSignal("add", index, GetChildVariant(child));
+        }
+
+        private DBusVariant GetChildVariant(AtSpiNode child) =>
+            new(Server.GetReference(child).ToDbusStruct());
 
         public virtual void Detach()
         {
@@ -342,35 +446,11 @@ namespace Avalonia.FreeDesktop.AtSpi
             if (Server.A11yConnection is null || !IsAttached)
                 return;
 
-            _childrenDirty = true;
+            // No client has read these children, so there is nothing to report. The next read builds them.
+            if (_childrenDirty)
+                return;
 
-            var childPeers = GetChildPeers();
-            if (_attachedChildren.Count > 0)
-            {
-                var currentPeers = new HashSet<AutomationPeer>(childPeers);
-                var removedChildren = _attachedChildren
-                    .Where(childNode => !currentPeers.Contains(childNode.Peer))
-                    .ToArray();
-
-                foreach (var oldChild in removedChildren)
-                {
-                    if (ReferenceEquals(oldChild.Parent, this))
-                        Server.DetachSubtreeRecursive(oldChild);
-                }
-
-                if (removedChildren.Length > 0)
-                {
-                    var removedSet = new HashSet<AtSpiNode>(removedChildren);
-                    _attachedChildren = _attachedChildren
-                        .Where(childNode => !removedSet.Contains(childNode))
-                        .ToList();
-                }
-            }
-
-            if (!Server.HasEventListeners || EventObjectHandler is not { } eventHandler) return;
-            var reference = Server.GetReference(this);
-            var childVariant = new DBusVariant(reference.ToDbusStruct());
-            eventHandler.EmitChildrenChangedSignal("add", 0, childVariant);
+            UpdateChildren(Server.HasEventListeners ? EventObjectHandler : null);
         }
 
         private void OnPeerPropertyChanged(object? sender, AutomationPropertyChangedEventArgs e)

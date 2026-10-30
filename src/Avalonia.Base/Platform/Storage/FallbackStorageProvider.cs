@@ -8,13 +8,14 @@ namespace Avalonia.Platform.Storage;
 
 internal class FallbackStorageProvider : IStorageProvider
 {
+    private readonly object _lock = new();
     private Func<Task<IStorageProvider?>>[] _factories;
-    private readonly List<IStorageProvider> _providers = new();
-    private int _nextProviderFactory = 0;
+    private Task<IStorageProvider?>?[] _providers;
     
     public FallbackStorageProvider(Func<Task<IStorageProvider?>>[] factories)
     {
         _factories = factories;
+        _providers = new Task<IStorageProvider?>?[factories.Length];
     }
 
     /// <summary>
@@ -24,24 +25,54 @@ internal class FallbackStorageProvider : IStorageProvider
     /// </summary>
     public void Reset(Func<Task<IStorageProvider?>>[] factories)
     {
-        _factories = factories;
-        _providers.Clear();
-        _nextProviderFactory = 0;
+        lock (_lock)
+        {
+            _factories = factories;
+            _providers = new Task<IStorageProvider?>?[factories.Length];
+        }
     }
     
     async IAsyncEnumerable<IStorageProvider> GetProviders()
     {
-        foreach (var p in _providers)
-            yield return p;
-        for (;_nextProviderFactory < _factories.Length;)
+        Func<Task<IStorageProvider?>>[] factories;
+        Task<IStorageProvider?>?[] providers;
+
+        // Capture both arrays so that a Reset during enumeration doesn't mix up two factory lists.
+        lock (_lock)
         {
-            var p = await _factories[_nextProviderFactory]();
-            _nextProviderFactory++;
-            if (p != null)
+            factories = _factories;
+            providers = _providers;
+        }
+
+        for (var i = 0; i < factories.Length; i++)
+        {
+            Task<IStorageProvider?> task;
+
+            // Each factory is only invoked once: concurrent callers await the same task instead of
+            // invoking the factory again and skipping over the providers that come after it.
+            lock (_lock)
+                task = providers[i] ??= factories[i]();
+
+            IStorageProvider? p;
+
+            try
             {
-                _providers.Add(p);
-                yield return p;
+                p = await task;
             }
+            catch
+            {
+                // Let the next call retry a factory that failed.
+                lock (_lock)
+                {
+                    if (providers[i] == task)
+                        providers[i] = null;
+                }
+
+                throw;
+            }
+
+            if (p != null)
+                yield return p;
         }
     }
     

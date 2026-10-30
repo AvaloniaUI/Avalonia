@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using Avalonia.Themes.Fluent;
+using Avalonia.Themes.Fluent2;
 using Avalonia.Themes.Simple;
 using Avalonia.Themes.UnitTests.Utilities;
 using Xunit;
@@ -9,6 +10,8 @@ namespace Avalonia.Themes.UnitTests;
 
 [Trait("Category", "FluentTheme")]
 public class FluentResourceDictionaryTests() : ResourceDictionaryTests(typeof(FluentTheme));
+[Trait("Category", "Fluent2Theme")]
+public class Fluent2ResourceDictionaryTests() : ResourceDictionaryTests(typeof(Fluent2Theme));
 [Trait("Category", "SimpleTheme")]
 public class SimpleResourceDictionaryTests() : ResourceDictionaryTests(typeof(SimpleTheme));
 

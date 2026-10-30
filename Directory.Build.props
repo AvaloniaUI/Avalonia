@@ -17,5 +17,7 @@
     <CreateHardLinksForCopyFilesToOutputDirectoryIfPossible>true</CreateHardLinksForCopyFilesToOutputDirectoryIfPossible>
     <CreateHardLinksForCopyLocalIfPossible>true</CreateHardLinksForCopyLocalIfPossible>
     <CreateHardLinksForPublishFilesIfPossible>true</CreateHardLinksForPublishFilesIfPossible>
+    <!-- TODO hackfix for https://github.com/AvaloniaUI/Avalonia/issues/22465 until Avalonia XAML supports optimized publish targets -->
+    <UseOptimizedPublish>false</UseOptimizedPublish>
   </PropertyGroup>
 </Project>

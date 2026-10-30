@@ -13,17 +13,12 @@ namespace Avalonia.Styling
 
         internal override SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe, string? containerName = null)
         {
-            if (control is not Visual visual)
-            {
-                return SelectorMatch.NeverThisType;
-            }
-
             if (subscribe)
             {
-                return new SelectorMatch(new WidthActivator(visual, Argument, containerName));
+                return new SelectorMatch(new WidthActivator(control, Argument, containerName));
             }
 
-            if (ContainerQueryActivatorBase.GetContainer(visual, containerName) is { } container
+            if (ContainerQueryActivatorBase.GetContainer(control, containerName) is { } container
                 && container is Layoutable layoutable
                 && Container.GetQueryProvider(layoutable) is { } queryProvider
                 && Container.GetSizing(layoutable) == Styling.ContainerSizing.WidthAndHeight)
@@ -94,17 +89,12 @@ namespace Avalonia.Styling
 
         internal override SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe, string? containerName = null)
         {
-            if (control is not Visual visual)
-            {
-                return SelectorMatch.NeverThisType;
-            }
-
             if (subscribe)
             {
-                return new SelectorMatch(new HeightActivator(visual, Argument, containerName));
+                return new SelectorMatch(new HeightActivator(control, Argument, containerName));
             }
 
-            if (ContainerQueryActivatorBase.GetContainer(visual, containerName) is { } container
+            if (ContainerQueryActivatorBase.GetContainer(control, containerName) is { } container
                 && container is Layoutable layoutable
                 && Container.GetQueryProvider(layoutable) is { } queryProvider
                 && Container.GetSizing(layoutable) == Styling.ContainerSizing.WidthAndHeight)

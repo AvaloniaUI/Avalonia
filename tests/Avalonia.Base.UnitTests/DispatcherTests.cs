@@ -184,6 +184,47 @@ public partial class DispatcherTests
     }
 
     [Fact]
+    public void DispatcherTimerDueTimeIsOnTheClockOfTheNewImplementation()
+    {
+        var impl = new SimpleDispatcherWithBackgroundProcessingImpl { Now = 1_000_000 };
+        Dispatcher.InitializeUIThreadDispatcher(impl);
+
+        var ticks = 0;
+        var timer = new DispatcherTimer(TimeSpan.FromMilliseconds(100), DispatcherPriority.Normal, _uiThread,
+            (_, _) => ticks++);
+        timer.Start();
+
+        Assert.Equal(1_000_100, impl.NextTimer);
+
+        impl.ExecuteTimer();
+        impl.ExecuteSignal();
+        timer.Stop();
+
+        Assert.Equal(1, ticks);
+    }
+
+    [Fact]
+    public void DispatcherTimerStartedBeforeInitializationKeepsItsDueTimeOnTheNewImplementation()
+    {
+        var ticks = 0;
+        var timer = new DispatcherTimer(TimeSpan.FromSeconds(10), DispatcherPriority.Normal, _uiThread,
+            (_, _) => ticks++);
+        timer.Start();
+
+        var impl = new SimpleDispatcherWithBackgroundProcessingImpl { Now = 1_000_000 };
+        Dispatcher.InitializeUIThreadDispatcher(impl);
+
+        // Remaining interval carried over, less the time between Start and Initialize
+        Assert.InRange(impl.NextTimer!.Value, 1_009_000, 1_010_000);
+
+        impl.ExecuteTimer();
+        impl.ExecuteSignal();
+        timer.Stop();
+
+        Assert.Equal(1, ticks);
+    }
+
+    [Fact]
     public void DispatcherStopsItemProcessingWhenInteractivityDeadlineIsReached()
     {
         var impl = new SimpleDispatcherImpl();

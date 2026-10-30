@@ -521,6 +521,74 @@ namespace Avalonia.Controls.UnitTests.Platform
             }
 
             [Fact]
+            public void PointerExited_Closes_Submenu_After_Delay()
+            {
+                var timer = new TestTimer();
+                var target = new DefaultMenuInteractionHandler(false, null, timer.RunOnce);
+                var menu = new Menu();
+                var parentItem = CreateMockMenuItem(isTopLevel: true, hasSubMenu: true, parent: menu);
+                var item = CreateMockMenuItem(hasSubMenu: true, isSubMenuOpen: true, parent: parentItem.Object);
+                var e = new RoutedEventArgs(MenuItem.PointerExitedItemEvent, item.Object);
+
+                target.AttachCore(menu);
+                menu.Open();
+                parentItem.Object.SelectedItem = item.Object;
+
+                target.PointerExited(item, e);
+                item.VerifySet(x => x.IsSubMenuOpen = false, Times.Never);
+
+                timer.Pulse();
+                item.VerifySet(x => x.IsSubMenuOpen = false);
+            }
+
+            [Fact]
+            public void PointerExited_Doesnt_Close_Submenu_After_Delay_If_Menu_Was_Reopened()
+            {
+                var timer = new TestTimer();
+                var target = new DefaultMenuInteractionHandler(false, null, timer.RunOnce);
+                var menu = new Menu();
+                var parentItem = CreateMockMenuItem(isTopLevel: true, hasSubMenu: true, parent: menu);
+                var item = CreateMockMenuItem(hasSubMenu: true, isSubMenuOpen: true, parent: parentItem.Object);
+                var e = new RoutedEventArgs(MenuItem.PointerExitedItemEvent, item.Object);
+
+                target.AttachCore(menu);
+                menu.Open();
+                parentItem.Object.SelectedItem = item.Object;
+
+                target.PointerExited(item, e);
+
+                // The menu is closed then reopened before the delay elapses: the pending close is stale.
+                menu.Close();
+                menu.Open();
+
+                timer.Pulse();
+                item.VerifySet(x => x.IsSubMenuOpen = false, Times.Never);
+            }
+
+            [Fact]
+            public void PointerEntered_Doesnt_Open_Submenu_After_Delay_If_Menu_Was_Reopened()
+            {
+                var timer = new TestTimer();
+                var target = new DefaultMenuInteractionHandler(false, null, timer.RunOnce);
+                var menu = new Menu();
+                var parentItem = CreateMockMenuItem(isTopLevel: true, hasSubMenu: true, parent: menu);
+                var item = CreateMockMenuItem(hasSubMenu: true, parent: parentItem.Object);
+                var e = new RoutedEventArgs(MenuItem.PointerEnteredItemEvent, item.Object);
+
+                target.AttachCore(menu);
+                menu.Open();
+
+                target.PointerEntered(item.Object, e);
+
+                // The menu is closed then reopened before the delay elapses: the pending open is stale.
+                menu.Close();
+                menu.Open();
+
+                timer.Pulse();
+                item.Verify(x => x.Open(), Times.Never);
+            }
+
+            [Fact]
             public void PointerReleased_On_Item_With_No_SubMenu_Causes_Click()
             {
                 var target = new DefaultMenuInteractionHandler(false);
