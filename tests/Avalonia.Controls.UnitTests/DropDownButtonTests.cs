@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
@@ -12,6 +13,78 @@ namespace Avalonia.Controls.UnitTests;
 
 public class DropDownButtonTests : ScopedTestBase
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Reopening_Templated_Flyout_Styles_Replacement_Content(bool replaceWhileOpening)
+    {
+        using var services = CreateServicesWithoutTheme();
+        var flyout = new Flyout { Content = new PathIcon() };
+        var host = new ContentControl
+        {
+            Tag = 24d,
+            Template = new FuncControlTemplate<ContentControl>((_, _) => new DropDownButton { Flyout = flyout }),
+        };
+        var window = new Window { Content = host };
+        window.Styles.Add(new Style(x => x.OfType<ContentControl>().Template().OfType<PathIcon>())
+        {
+            Setters = { new Setter(PathIcon.ForegroundProperty, Brushes.Red) },
+        });
+        window.Show();
+        host.ApplyTemplate();
+        var dropDown = Assert.Single(host.GetVisualDescendants().OfType<DropDownButton>());
+        flyout.ShowAt(dropDown);
+        var presenter = flyout.Popup.Child;
+        flyout.Hide();
+
+        var replacement = new PathIcon
+        {
+            [!Control.WidthProperty] = new TemplateBinding(Control.TagProperty),
+        };
+        if (replaceWhileOpening)
+            flyout.Opening += (_, _) => flyout.Content = replacement;
+        else
+            flyout.Content = replacement;
+        flyout.ShowAt(dropDown);
+
+        Assert.Same(presenter, flyout.Popup.Child);
+        Assert.Same(host, replacement.TemplatedParent);
+        Assert.Equal(Brushes.Red, replacement.Foreground);
+        Assert.Equal(24d, replacement.Width);
+        host.Tag = 32d;
+        Assert.Equal(32d, replacement.Width);
+    }
+
+    [Fact]
+    public void Reopening_Templated_Flyout_Does_Not_Claim_Forwarded_Content()
+    {
+        using var services = CreateServicesWithoutTheme();
+        var userContent = new PathIcon();
+        var content = new Border
+        {
+            [!Border.ChildProperty] = new TemplateBinding(Control.TagProperty),
+        };
+        var flyout = new Flyout { Content = content };
+        var host = new ContentControl
+        {
+            Tag = userContent,
+            Template = new FuncControlTemplate<ContentControl>((_, _) => new DropDownButton { Flyout = flyout }),
+        };
+        var window = new Window { Content = host };
+        window.Show();
+        host.ApplyTemplate();
+        var dropDown = Assert.Single(host.GetVisualDescendants().OfType<DropDownButton>());
+
+        for (var i = 0; i < 2; ++i)
+        {
+            flyout.ShowAt(dropDown);
+            Assert.Same(host, content.TemplatedParent);
+            Assert.Same(userContent, content.Child);
+            Assert.Null(userContent.TemplatedParent);
+            flyout.Hide();
+        }
+    }
+
     [Fact]
     public void Window_Style_For_PathIcon_Inside_Templated_Flyout_Should_Apply_On_First_Open()
     {

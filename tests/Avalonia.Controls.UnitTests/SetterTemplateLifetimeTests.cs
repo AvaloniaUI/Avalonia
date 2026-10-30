@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Avalonia.Controls.Templates;
+using Avalonia.Controls.Presenters;
 using Avalonia.Data;
 using Avalonia.PropertyStore;
 using Avalonia.Styling;
@@ -13,6 +14,105 @@ namespace Avalonia.Controls.UnitTests;
 
 public class SetterTemplateLifetimeTests : ScopedTestBase
 {
+    [Fact]
+    public void Active_Setter_Does_Not_Retain_Removed_Descendants()
+    {
+        var (root, removed) = CreateRemovedContent();
+
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+
+        Assert.False(removed.TryGetTarget(out _));
+        GC.KeepAlive(root);
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static (TestRoot, WeakReference<Control>) CreateRemovedContent()
+    {
+        var target = CreateTarget();
+        var root = new TestRoot
+        {
+            Styles = { CreateStyle(() => new Border { Child = new Border { Child = new TextBlock() } }) },
+            Child = target,
+        };
+        var content = Assert.IsType<Border>(target.Content);
+        var removed = new WeakReference<Control>(content.Child!);
+        content.Child = null;
+        return (root, removed);
+    }
+
+    [Fact]
+    public void Reactivating_Setter_Does_Not_Claim_Retained_Forwarded_Content()
+    {
+        var userContent = new TextBlock();
+        var target = CreateTarget();
+        target.Tag = userContent;
+        target.Classes.Add("active");
+        var root = new TestRoot
+        {
+            Styles =
+            {
+                CreateStyle(() => new Border
+                {
+                    [!Border.ChildProperty] = new TemplateBinding(Control.TagProperty),
+                }, activeClass: true),
+                new Style(x => x.OfType<ContentControl>().Template().OfType<TextBlock>())
+                {
+                    Setters = { new Setter(TextBlock.TextProperty, "Template child") },
+                },
+            },
+            Child = target,
+        };
+        var content = Assert.IsType<Border>(target.Content);
+        Assert.Same(userContent, content.Child);
+        Assert.Null(userContent.TemplatedParent);
+
+        // Retain the forwarded value independently of the binding when the style deactivates.
+        content.Child = userContent;
+
+        for (var i = 0; i < 2; ++i)
+        {
+            target.Classes.Remove("active");
+            Assert.Same(userContent, content.Child);
+            target.Classes.Add("active");
+            Assert.Same(content, target.Content);
+            Assert.Same(target, content.TemplatedParent);
+            Assert.Same(userContent, content.Child);
+            Assert.Null(userContent.TemplatedParent);
+            Assert.NotEqual("Template child", userContent.Text);
+        }
+    }
+
+    [Fact]
+    public void Replacing_Control_Template_Preserves_Setter_Content_Ownership()
+    {
+        var target = CreateTarget();
+        var root = new TestRoot { Styles = { CreateStyle(BuildContent) }, Child = target };
+        var content = Assert.IsType<Border>(target.Content);
+        var text = Assert.IsType<TextBlock>(content.Child);
+
+        for (var i = 0; i < 2; ++i)
+        {
+            target.Template = new FuncControlTemplate<ContentControl>((_, scope) => new ContentPresenter
+            {
+                Name = "PART_ContentPresenter",
+                [!ContentPresenter.ContentProperty] = new TemplateBinding(ContentControl.ContentProperty),
+            }.RegisterInNameScope(scope));
+            target.ApplyTemplate();
+            target.Presenter!.UpdateChild();
+            Assert.Same(content, target.Presenter.Child);
+            Assert.Same(target, content.TemplatedParent);
+            Assert.Same(target, text.TemplatedParent);
+            target.Tag = $"Template {i}";
+            Assert.Equal($"Template {i}", text.Text);
+        }
+
+        target.InvalidateStyles(recurse: false);
+        Assert.Null(content.TemplatedParent);
+        Assert.Null(text.TemplatedParent);
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
