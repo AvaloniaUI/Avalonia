@@ -349,7 +349,6 @@ namespace Avalonia.Controls
                     }
                 }
                 
-                // An offset can be infinite while the panel has no size of its own, and subtracting it would give NaN.
                 var availableHeight = double.IsInfinity(AvailableSize.Height)
                     ? AvailableSize.Height
                     : AvailableSize.Height - node.Top - node.Bottom;
