@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 using Avalonia.Animation.Animators;
+using Avalonia.Animation.CompositionAnimations;
 using Avalonia.Media;
 
 namespace Avalonia.Animation;
@@ -22,6 +24,7 @@ partial class Animation
         {
             (prop =>(typeof(double).IsAssignableFrom(prop.PropertyType) && typeof(Transform).IsAssignableFrom(prop.OwnerType)),
                 typeof(TransformAnimator), () => new TransformAnimator()),
+            (prop => typeof(bool).IsAssignableFrom(prop.PropertyType) && prop.OwnerType == typeof(Composition), typeof(BooleanCompositionAnimator), () => new BooleanCompositionAnimator()),
             (prop => typeof(bool).IsAssignableFrom(prop.PropertyType), typeof(BoolAnimator), () => new BoolAnimator()),
             (prop => typeof(byte).IsAssignableFrom(prop.PropertyType), typeof(ByteAnimator), () => new ByteAnimator()),
             (prop => typeof(Int16).IsAssignableFrom(prop.PropertyType), typeof(Int16Animator), () => new Int16Animator()),
@@ -30,9 +33,18 @@ partial class Animation
             (prop => typeof(UInt16).IsAssignableFrom(prop.PropertyType), typeof(UInt16Animator), () => new UInt16Animator()), 
             (prop => typeof(UInt32).IsAssignableFrom(prop.PropertyType), typeof(UInt32Animator), () => new UInt32Animator()), 
             (prop => typeof(UInt64).IsAssignableFrom(prop.PropertyType), typeof(UInt64Animator), () => new UInt64Animator()),
+            (prop => typeof(float).IsAssignableFrom(prop.PropertyType) && prop.OwnerType == typeof(Composition), typeof(ScalarCompositionAnimator), () => new ScalarCompositionAnimator()),
+            (prop => typeof(double).IsAssignableFrom(prop.PropertyType) && prop.OwnerType == typeof(Composition), typeof(DoubleCompositionAnimator), () => new DoubleCompositionAnimator()),
             (prop => typeof(float).IsAssignableFrom(prop.PropertyType), typeof(FloatAnimator), () => new FloatAnimator()), 
             (prop => typeof(double).IsAssignableFrom(prop.PropertyType), typeof(DoubleAnimator), () => new DoubleAnimator()), 
             (prop => typeof(decimal).IsAssignableFrom(prop.PropertyType), typeof(DecimalAnimator), () => new DecimalAnimator()),
+            (prop => typeof(Color).IsAssignableFrom(prop.PropertyType) && prop.OwnerType == typeof(Composition), typeof(ColorCompositionAnimator), () => new ColorCompositionAnimator()),
+            (prop => typeof(Vector).IsAssignableFrom(prop.PropertyType) && prop.OwnerType == typeof(Composition), typeof(VectorCompositionAnimator), () => new VectorCompositionAnimator()),
+            (prop => typeof(Vector2).IsAssignableFrom(prop.PropertyType) && prop.OwnerType == typeof(Composition), typeof(Vector2CompositionAnimator), () => new Vector2CompositionAnimator()),
+            (prop => typeof(Vector3).IsAssignableFrom(prop.PropertyType) && prop.OwnerType == typeof(Composition), typeof(Vector3CompositionAnimator), () => new Vector3CompositionAnimator()),
+            (prop => typeof(Vector3D).IsAssignableFrom(prop.PropertyType) && prop.OwnerType == typeof(Composition), typeof(Vector3DCompositionAnimator), () => new Vector3DCompositionAnimator()),
+            (prop => typeof(Vector4).IsAssignableFrom(prop.PropertyType) && prop.OwnerType == typeof(Composition), typeof(Vector4CompositionAnimator), () => new Vector4CompositionAnimator()),
+            (prop => typeof(Quaternion).IsAssignableFrom(prop.PropertyType) && prop.OwnerType == typeof(Composition), typeof(QuaternionCompositionAnimator), () => new QuaternionCompositionAnimator()),
         };
 
     static Animation()
