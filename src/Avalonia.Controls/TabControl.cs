@@ -393,11 +393,12 @@ namespace Avalonia.Controls
             }
         }
 
-        private static void SetStripActiveElement(Panel panel, IInputElement? element)
+        private void SetStripActiveElement(Panel panel, IInputElement? element)
         {
-            var insideStrip = element is Visual visual && panel.IsVisualAncestorOf(visual);
+            if (element is not Visual visual || !panel.IsVisualAncestorOf(visual))
+                element = ContainerFromIndex(SelectedIndex) as IInputElement;
 
-            KeyboardNavigation.SetTabOnceActiveElement(panel, insideStrip ? element : null);
+            KeyboardNavigation.SetTabOnceActiveElement(panel, element);
         }
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
