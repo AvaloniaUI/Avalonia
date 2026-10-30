@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
@@ -680,7 +682,7 @@ public class CommandBarCollectionTests : ScopedTestBase
 
         cb.PrimaryCommands!.Add(new CommandBarButton { Label = "Save" });
 
-        Assert.Equal(2, notifications);
+        Assert.Equal(1, notifications);
     }
 
     [Fact]
@@ -712,7 +714,7 @@ public class CommandBarCollectionTests : ScopedTestBase
 
         cb.SecondaryCommands!.Add(new CommandBarButton { Label = "Settings" });
 
-        Assert.Equal(2, notifications);
+        Assert.Equal(1, notifications);
     }
 
     [Fact]
@@ -1196,6 +1198,59 @@ public class CommandBarItemWidthTests : ScopedTestBase
         Assert.Equal(2, visibleRight);
         Assert.Equal(4, visibleCollapsed);
     }
+
+    [Fact]
+    public void HiddenPrimaryCommand_DoesNotConsumeAvailableWidth()
+    {
+        var cb = CreateWithWidth(300);
+        cb.ItemWidthBottom = 100;
+
+        var first = new CommandBarButton();
+        var second = new CommandBarButton();
+        var hidden = new CommandBarButton { IsVisible = false };
+        var third = new CommandBarButton();
+
+        cb.PrimaryCommands!.Add(first);
+        cb.PrimaryCommands.Add(second);
+        cb.PrimaryCommands.Add(hidden);
+        cb.PrimaryCommands.Add(third);
+        cb.IsDynamicOverflowEnabled = true;
+
+        Assert.Equal(new ICommandBarElement[] { first, second, hidden, third }, cb.VisiblePrimaryCommands);
+        Assert.Empty(cb.OverflowItems);
+        Assert.False(hidden.IsInOverflow);
+    }
+
+    [Fact]
+    public void ChangingPrimaryCommandVisibility_UpdatesDynamicOverflow()
+    {
+        var cb = CreateWithWidth(300);
+        cb.ItemWidthBottom = 100;
+
+        var first = new CommandBarButton();
+        var second = new CommandBarButton();
+        var third = new CommandBarButton();
+        var fourth = new CommandBarButton();
+
+        cb.PrimaryCommands!.Add(first);
+        cb.PrimaryCommands.Add(second);
+        cb.PrimaryCommands.Add(third);
+        cb.PrimaryCommands.Add(fourth);
+        cb.IsDynamicOverflowEnabled = true;
+
+        Assert.Equal(new ICommandBarElement[] { first, second }, cb.VisiblePrimaryCommands);
+        Assert.Equal(new ICommandBarElement[] { third, fourth }, cb.OverflowItems);
+
+        third.IsVisible = false;
+
+        Assert.Equal(new ICommandBarElement[] { first, second, third, fourth }, cb.VisiblePrimaryCommands);
+        Assert.Empty(cb.OverflowItems);
+
+        third.IsVisible = true;
+
+        Assert.Equal(new ICommandBarElement[] { first, second }, cb.VisiblePrimaryCommands);
+        Assert.Equal(new ICommandBarElement[] { third, fourth }, cb.OverflowItems);
+    }
 }
 
 public class CommandBarOverflowKeyboardTests : ScopedTestBase
@@ -1376,6 +1431,220 @@ public class CommandBarOverflowKeyboardTests : ScopedTestBase
 
         Assert.True(cb.IsOpen);
         Assert.False(secondary.IsVisible);
+    }
+
+    [Fact]
+    public void PrimaryVisibilityChange_ThatDoesNotChangePlacement_PreservesFocus()
+    {
+        var first = new CommandBarButton { Label = "A" };
+        var second = new CommandBarButton { Label = "B" };
+        var cb = new CommandBar
+        {
+            IsDynamicOverflowEnabled = true,
+            PrimaryCommands = { first, second },
+        };
+        var root = new TestRoot(useGlobalStyles: true, child: cb)
+        {
+            ClientSize = new Size(300, 100),
+        };
+        root.LayoutManager.ExecuteInitialLayoutPass();
+        Assert.True(first.Focus(NavigationMethod.Tab));
+
+        second.IsVisible = false;
+
+        Assert.True(first.IsFocused);
+    }
+
+    [Fact]
+    public void PrimaryVisibilityChange_ThatChangesPlacement_PreservesFocusOnUnmovedCommand()
+    {
+        var first = new CommandBarButton { Label = "A" };
+        var second = new CommandBarButton { Label = "B" };
+        var third = new CommandBarButton { Label = "C" };
+        var fourth = new CommandBarButton { Label = "D" };
+        var cb = new CommandBar
+        {
+            ItemWidthBottom = 100,
+            IsDynamicOverflowEnabled = true,
+            PrimaryCommands = { first, second, third, fourth },
+        };
+        var root = new TestRoot(useGlobalStyles: true, child: cb)
+        {
+            ClientSize = new Size(300, 100),
+        };
+        root.LayoutManager.ExecuteInitialLayoutPass();
+        Assert.Equal(new ICommandBarElement[] { first, second }, cb.VisiblePrimaryCommands);
+        Assert.True(first.Focus(NavigationMethod.Tab));
+
+        fourth.IsVisible = false;
+
+        Assert.Equal(new ICommandBarElement[] { first, second, fourth }, cb.VisiblePrimaryCommands);
+        Assert.Equal(new ICommandBarElement[] { third }, cb.OverflowItems);
+        Assert.True(first.IsFocused);
+    }
+
+    [Fact]
+    public void AddingSecondaryCommand_DoesNotClearPrimaryCommandsOrLoseFocus()
+    {
+        var primary = new CommandBarButton { Label = "A" };
+        var cb = new CommandBar
+        {
+            IsDynamicOverflowEnabled = true,
+            PrimaryCommands = { primary },
+        };
+        var root = new TestRoot(useGlobalStyles: true, child: cb)
+        {
+            ClientSize = new Size(300, 100),
+        };
+        root.LayoutManager.ExecuteInitialLayoutPass();
+        Assert.True(primary.Focus(NavigationMethod.Tab));
+
+        cb.SecondaryCommands.Add(new CommandBarButton { Label = "B" });
+
+        Assert.True(primary.IsFocused);
+        Assert.Same(primary, Assert.Single(cb.VisiblePrimaryCommands));
+    }
+
+    [Fact]
+    public void PrimaryVisibilityThatDependsOnOverflow_Settles()
+    {
+        const int maxVisibilityChanges = 10;
+        var first = new CommandBarButton();
+        var second = new CommandBarButton();
+        var third = new CommandBarButton();
+        var hiddenInOverflow = new CommandBarButton();
+        var hideInOverflow = hiddenInOverflow.Bind(Visual.IsVisibleProperty, new Binding("!IsInOverflow") { RelativeSource = new RelativeSource(RelativeSourceMode.Self) });
+        var cb = new CommandBar
+        {
+            ItemWidthBottom = 100,
+            PrimaryCommands = { first, second, third, hiddenInOverflow },
+        };
+        var root = new TestRoot(useGlobalStyles: true, child: cb)
+        {
+            ClientSize = new Size(300, 100),
+        };
+        root.LayoutManager.ExecuteInitialLayoutPass();
+        var visibilityChanges = 0;
+        hiddenInOverflow.PropertyChanged += (_, e) =>
+        {
+            // Overflowing hides the command, which frees its slot and brings it back, so an unbounded rebuild never returns.
+            // Disposing the binding breaks the cycle, so a regression fails the assertion below instead of hanging the run.
+            if (e.Property == Visual.IsVisibleProperty && ++visibilityChanges > maxVisibilityChanges)
+                hideInOverflow.Dispose();
+        };
+
+        cb.IsDynamicOverflowEnabled = true;
+
+        Assert.InRange(visibilityChanges, 1, maxVisibilityChanges);
+        Assert.False(hiddenInOverflow.IsVisible);
+        Assert.DoesNotContain(hiddenInOverflow, cb.OverflowItems);
+    }
+
+    [Fact]
+    public void PrimaryVisibilityThatDependsOnAnotherCommandsOverflow_Settles()
+    {
+        const int maxVisibilityChanges = 10;
+        var first = new CommandBarButton();
+        var second = new CommandBarButton();
+        var trigger = new CommandBarButton();
+        var dependent = new CommandBarButton();
+        var hideWhenTriggerOverflows = dependent.Bind(Visual.IsVisibleProperty, new Binding("!IsInOverflow") { Source = trigger });
+        var cb = new CommandBar
+        {
+            ItemWidthBottom = 90,
+            PrimaryCommands = { first, second, trigger, dependent },
+        };
+        var root = new TestRoot(useGlobalStyles: true, child: cb)
+        {
+            ClientSize = new Size(300, 100),
+        };
+        root.LayoutManager.ExecuteInitialLayoutPass();
+        var visibilityChanges = 0;
+        dependent.PropertyChanged += (_, e) =>
+        {
+            // Four commands overflow the trigger, which hides the dependent command; the remaining three fit, which brings
+            // the trigger back and shows the dependent command again, so this cycle never settles on its own.
+            if (e.Property == Visual.IsVisibleProperty && ++visibilityChanges > maxVisibilityChanges)
+                hideWhenTriggerOverflows.Dispose();
+        };
+
+        cb.IsDynamicOverflowEnabled = true;
+
+        Assert.InRange(visibilityChanges, 1, maxVisibilityChanges);
+    }
+
+    [Fact]
+    public void PrimaryVisibilityChange_WhileDetached_UpdatesOverflowOnReattach()
+    {
+        var first = new CommandBarButton();
+        var second = new CommandBarButton();
+        var third = new CommandBarButton();
+        var fourth = new CommandBarButton();
+        var cb = new CommandBar
+        {
+            ItemWidthBottom = 100,
+            IsDynamicOverflowEnabled = true,
+            PrimaryCommands = { first, second, third, fourth },
+        };
+        var root = new TestRoot(useGlobalStyles: true, child: cb)
+        {
+            ClientSize = new Size(300, 100),
+        };
+        root.LayoutManager.ExecuteInitialLayoutPass();
+        Assert.Equal(new ICommandBarElement[] { first, second }, cb.VisiblePrimaryCommands);
+        Assert.Equal(new ICommandBarElement[] { third, fourth }, cb.OverflowItems);
+
+        root.Child = null;
+        third.IsVisible = false;
+        root.Child = cb;
+        root.LayoutManager.ExecuteLayoutPass();
+
+        Assert.Equal(new ICommandBarElement[] { first, second, third }, cb.VisiblePrimaryCommands);
+        Assert.Equal(new ICommandBarElement[] { fourth }, cb.OverflowItems);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void PrimaryVisibilityBinding_ChangesDuringRebuild_UpdatesOverflowWithoutResizing(bool isVisible)
+    {
+        var first = new CommandBarButton();
+        var second = new CommandBarButton();
+        var bound = new CommandBarButton();
+        var fourth = new CommandBarButton();
+        bound.Bind(Visual.IsVisibleProperty, new Binding("IsCommandVisible") { FallbackValue = !isVisible });
+        var cb = new CommandBar
+        {
+            Width = 300,
+            Height = 100,
+            Padding = new Thickness(0),
+            ItemWidthBottom = 100,
+            IsDynamicOverflowEnabled = true,
+            DataContext = new { IsCommandVisible = isVisible },
+            PrimaryCommands = { first, second },
+        };
+        var root = new TestRoot(useGlobalStyles: true, child: cb)
+        {
+            ClientSize = new Size(300, 100),
+        };
+        root.LayoutManager.ExecuteInitialLayoutPass();
+        Assert.Equal(!isVisible, bound.IsVisible);
+
+        cb.PrimaryCommands = new ObservableCollection<ICommandBarElement> { bound, first, second, fourth };
+        root.LayoutManager.ExecuteLayoutPass();
+
+        Assert.Equal(isVisible, bound.IsVisible);
+        Assert.Equal(new Size(300, 100), cb.Bounds.Size);
+        if (isVisible)
+        {
+            Assert.Equal(new ICommandBarElement[] { bound, first }, cb.VisiblePrimaryCommands);
+            Assert.Equal(new ICommandBarElement[] { second, fourth }, cb.OverflowItems);
+        }
+        else
+        {
+            Assert.Equal(new ICommandBarElement[] { bound, first, second, fourth }, cb.VisiblePrimaryCommands);
+            Assert.Empty(cb.OverflowItems);
+        }
     }
 
     private static ItemsControl GetOverflowPresenter(CommandBar cb)
