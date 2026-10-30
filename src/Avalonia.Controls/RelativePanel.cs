@@ -335,7 +335,7 @@ namespace Avalonia.Controls
 
                 if (node.BelowNode != null)
                 {
-                    if (node.Top.IsNaN() && !double.IsInfinity(AvailableSize.Height))
+                    if (node.Top.IsNaN())
                     {
                         node.Top = AvailableSize.Height - node.BelowNode.Bottom;
                     }
@@ -343,16 +343,16 @@ namespace Avalonia.Controls
                 
                 if (node.RightOfNode != null)
                 {
-                    if (node.Left.IsNaN() && !double.IsInfinity(AvailableSize.Width))
+                    if (node.Left.IsNaN())
                     {
                         node.Left = AvailableSize.Width - node.RightOfNode.Right;
                     }
                 }
                 
-                var hasWidth = !double.IsInfinity(AvailableSize.Width);
-                var hasHeight = !double.IsInfinity(AvailableSize.Height);
-
-                var availableHeight = AvailableSize.Height - node.Top - node.Bottom;
+                // An offset can be infinite while the panel has no size of its own, and subtracting it would give NaN.
+                var availableHeight = double.IsInfinity(AvailableSize.Height)
+                    ? AvailableSize.Height
+                    : AvailableSize.Height - node.Top - node.Bottom;
                 if (availableHeight.IsNaN())
                 {
                     availableHeight = AvailableSize.Height;
@@ -367,7 +367,9 @@ namespace Avalonia.Controls
                     }
                 }
 
-                var availableWidth = AvailableSize.Width - node.Left - node.Right;
+                var availableWidth = double.IsInfinity(AvailableSize.Width)
+                    ? AvailableSize.Width
+                    : AvailableSize.Width - node.Left - node.Right;
                 if (availableWidth.IsNaN())
                 {
                     availableWidth = AvailableSize.Width;
@@ -478,18 +480,14 @@ namespace Avalonia.Controls
                 if (node.Left.IsNaN())
                 {
                     if (!node.Right.IsNaN())
-                    {
-                        if (hasWidth)
-                            node.Left = AvailableSize.Width - node.Right - childSize.Width;
-                    }
+                        node.Left = AvailableSize.Width - node.Right - childSize.Width;
                     else
                     {
                         node.Left = 0;
-                        if (hasWidth)
-                            node.Right = AvailableSize.Width - childSize.Width;
+                        node.Right = AvailableSize.Width - childSize.Width;
                     }
                 }
-                else if (node.Right.IsNaN() && hasWidth)
+                else if (!node.Left.IsNaN() && node.Right.IsNaN())
                 {
                     node.Right = AvailableSize.Width - node.Left - childSize.Width;
                 }
@@ -497,18 +495,14 @@ namespace Avalonia.Controls
                 if (node.Top.IsNaN())
                 {
                     if (!node.Bottom.IsNaN())
-                    {
-                        if (hasHeight)
-                            node.Top = AvailableSize.Height - node.Bottom - childSize.Height;
-                    }
+                        node.Top = AvailableSize.Height - node.Bottom - childSize.Height;
                     else
                     {
                         node.Top = 0;
-                        if (hasHeight)
-                            node.Bottom = AvailableSize.Height - childSize.Height;
+                        node.Bottom = AvailableSize.Height - childSize.Height;
                     }
                 }
-                else if (node.Bottom.IsNaN() && hasHeight)
+                else if (!node.Top.IsNaN() && node.Bottom.IsNaN())
                 {
                     node.Bottom = AvailableSize.Height - node.Top - childSize.Height;
                 }
