@@ -77,6 +77,7 @@ partial class WindowImpl
         protected override void DisconnectFromSurface()
         {
             var proxy = Parent._surfaceProxy;
+            Parent._handle?.CancelActivation?.Invoke();
             Parent._handle = null;
             Parent._surfaceProxy = null;
             proxy?.Disconnect();
