@@ -7,6 +7,7 @@ using Avalonia.Media;
 using Avalonia.Media.Fonts;
 using Avalonia.Platform;
 using Avalonia.Skia;
+using Avalonia.UnitTests;
 using SkiaSharp;
 using Xunit;
 
@@ -165,6 +166,57 @@ namespace Avalonia.Skia.RenderTests
                 : (ushort)0;
 
             Assert.Null(gt.GetGlyphOutline(glyphIndex));
+        }
+
+        [Fact]
+        public void Outline_Is_Shifted_By_A_Left_Side_Bearing_That_Differs_From_xMin()
+        {
+            // The left phantom point sits at xMin - lsb, and the outline is translated so that it
+            // lands on the origin (FreeType's TT_Load_Glyph, HarfBuzz's glyf extents). An hmtx lsb
+            // 40 units larger than xMin therefore moves the outline 40 units right.
+            var original = SyntheticFont.FromAsset(InterRegularAsset);
+            var glyph = original.CreateGlyphTypeface().CharacterToGlyphMap['H'];
+
+            var shifted = SyntheticFont.FromAsset(InterRegularAsset).AddToLeftSideBearing(glyph, 40);
+
+            AssertShiftedBy(40, original.CreateGlyphTypeface(), shifted.CreateGlyphTypeface(), glyph);
+        }
+
+        [Fact]
+        public void Composite_Outline_Is_Shifted_By_Its_Use_My_Metrics_Component_Left_Phantom_Point()
+        {
+            // Á takes its metrics from 'A' through USE_MY_METRICS, so A's left phantom point decides
+            // where the whole composite sits, while Á's own hmtx entry stays untouched.
+            var original = SyntheticFont.FromAsset(InterRegularAsset);
+            var map = original.CreateGlyphTypeface().CharacterToGlyphMap;
+
+            var shifted = SyntheticFont.FromAsset(InterRegularAsset).AddToLeftSideBearing(map['A'], 40);
+
+            AssertShiftedBy(40, original.CreateGlyphTypeface(), shifted.CreateGlyphTypeface(), map['Á']);
+        }
+
+        [Fact]
+        public void Varied_Outline_Is_Shifted_By_The_gvar_Delta_Of_Its_Left_Phantom_Point()
+        {
+            // A gvar whose only tuple moves H's left phantom point 30 units left at wght 900 (and
+            // leaves every contour point alone) moves the varied outline 30 units right.
+            var font = SyntheticFont.FromAsset(InterVariableAsset).Remove("HVAR");
+            var glyph = font.CreateGlyphTypeface().CharacterToGlyphMap['H'];
+
+            var typeface = font.WithLeftPhantomGvar(glyph, axis: 1, delta: -30).CreateGlyphTypeface();
+
+            AssertShiftedBy(30, typeface, typeface.WithVariation(WghtPosition(typeface, 900)), glyph);
+        }
+
+        private static void AssertShiftedBy(double expected, GlyphTypeface original, GlyphTypeface shifted, ushort glyph)
+        {
+            var originalBounds = original.GetGlyphOutline(glyph)!.Bounds;
+            var shiftedBounds = shifted.GetGlyphOutline(glyph)!.Bounds;
+
+            Assert.Equal(originalBounds.X + expected, shiftedBounds.X, 3);
+            Assert.Equal(originalBounds.Y, shiftedBounds.Y, 3);
+            Assert.Equal(originalBounds.Width, shiftedBounds.Width, 3);
+            Assert.Equal(originalBounds.Height, shiftedBounds.Height, 3);
         }
 
         private static GlyphTypeface LoadGlyphTypeface(string assetUri)
