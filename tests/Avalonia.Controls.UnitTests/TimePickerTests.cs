@@ -274,6 +274,37 @@ namespace Avalonia.Controls.UnitTests
         public void Selector_ScrollDown_Should_Work(string selectorName)
             => TestSelectorScrolling(selectorName, panel => panel.ScrollDown());
 
+        [Fact]
+        public void Period_Selector_ScrollToEnd_Should_Select_Second_Item()
+        {
+            using var app = UnitTestApplication.Start(Services);
+
+            var panel = new DateTimePickerPanel
+            {
+                PanelType = DateTimePickerPanelType.TimePeriod,
+                MinimumValue = 0,
+                MaximumValue = 1,
+                ItemHeight = 40,
+            };
+
+            var scrollViewer = new ScrollViewer
+            {
+                Template = new FuncControlTemplate<ScrollViewer>(ScrollViewerTests.CreateTemplate),
+                VerticalScrollBarVisibility = ScrollBarVisibility.Hidden,
+                Width = 100,
+                Height = 200,
+                Content = panel,
+            };
+
+            var root = new TestRoot(scrollViewer);
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            scrollViewer.ScrollToEnd();
+            root.LayoutManager.ExecuteLayoutPass();
+
+            Assert.Equal(1, panel.SelectedValue);
+        }
+
         private static void TestSelectorScrolling(string selectorName, Action<DateTimePickerPanel> scroll)
         {
             using var app = UnitTestApplication.Start(Services);

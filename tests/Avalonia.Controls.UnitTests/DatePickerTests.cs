@@ -258,7 +258,7 @@ namespace Avalonia.Controls.UnitTests
             => TestSelectorScrolling(selectorName, panel => panel.ScrollDown());
 
         [Theory]
-        [InlineData(false, 120d, 40d)]
+        [InlineData(false, 180d, 40d)]
         [InlineData(true, 12000d, 6040d)]
         public void Selector_ItemHeight_Change_Should_Update_Layout_State(
             bool shouldLoop,
@@ -291,6 +291,79 @@ namespace Avalonia.Controls.UnitTests
             var selectedItem = Assert.Single(panel.Children.OfType<ListBoxItem>().Where(item => item.IsSelected));
             Assert.Equal(2, selectedItem.Tag);
             Assert.Equal(50, selectedItem.Bounds.Center.Y);
+        }
+
+        [Fact]
+        public void NonLooping_Selector_ScrollToEnd_Should_Select_Last_Item()
+        {
+            using var app = UnitTestApplication.Start(Services);
+
+            var (root, scrollViewer, panel) = CreateNonLoopingSelector();
+
+            scrollViewer.ScrollToEnd();
+            root.LayoutManager.ExecuteLayoutPass();
+
+            Assert.Equal(10, panel.SelectedValue);
+        }
+
+        [Fact]
+        public void NonLooping_Selector_Should_Keep_Last_Item_Selected_After_Layout()
+        {
+            using var app = UnitTestApplication.Start(Services);
+
+            var (root, _, panel) = CreateNonLoopingSelector();
+
+            panel.SelectedValue = 10;
+            root.LayoutManager.ExecuteLayoutPass();
+
+            Assert.Equal(10, panel.SelectedValue);
+        }
+
+        [Fact]
+        public void NonLooping_Selector_ScrollDown_Should_Stop_At_Last_Item()
+        {
+            using var app = UnitTestApplication.Start(Services);
+
+            var panel = new DateTimePickerPanel
+            {
+                MinimumValue = 1,
+                MaximumValue = 10,
+                ShouldLoop = false,
+                ItemHeight = 40,
+            };
+
+            panel.Measure(new Size(100, 200));
+            panel.Arrange(new Rect(0, 0, 100, 200));
+            panel.SelectedValue = 10;
+
+            panel.ScrollDown();
+
+            Assert.Equal(10, panel.SelectedValue);
+        }
+
+        private static (TestRoot, ScrollViewer, DateTimePickerPanel) CreateNonLoopingSelector()
+        {
+            var panel = new DateTimePickerPanel
+            {
+                PanelType = DateTimePickerPanelType.Year,
+                MinimumValue = 1,
+                MaximumValue = 10,
+                ShouldLoop = false,
+                ItemHeight = 40,
+            };
+
+            var scrollViewer = new ScrollViewer
+            {
+                Template = new FuncControlTemplate<ScrollViewer>(ScrollViewerTests.CreateTemplate),
+                VerticalScrollBarVisibility = ScrollBarVisibility.Hidden,
+                Width = 100,
+                Height = 200,
+                Content = panel,
+            };
+
+            var root = new TestRoot(scrollViewer);
+            root.LayoutManager.ExecuteInitialLayoutPass();
+            return (root, scrollViewer, panel);
         }
 
         private static void TestSelectorScrolling(string selectorName, Action<DateTimePickerPanel> scroll)
