@@ -6,6 +6,7 @@ using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
 using Avalonia.Controls.Primitives.PopupPositioning;
+using Avalonia.Platform;
 using Avalonia.Reactive;
 using Avalonia.Styling;
 
@@ -436,6 +437,7 @@ namespace Avalonia.Controls
                 _popup.Child = this;
                 _popup.TakesFocusFromNativeControl = false;
                 _popup.WindowManagerAddShadowHint = false;
+                _popup.Kind = PopupKind.ToolTip;
 
                 _popup.Opened += OnPopupOpened;
                 _popup.Closed += OnPopupClosed;

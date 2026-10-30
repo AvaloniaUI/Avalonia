@@ -180,6 +180,11 @@ namespace Avalonia.Controls.Primitives
         internal IPopupHost? Host => _openState?.PopupHost;
 
         /// <summary>
+        /// Gets or sets what the popup is used for, which is passed to the platform popup window.
+        /// </summary>
+        internal PopupKind Kind { get; set; }
+
+        /// <summary>
         /// Gets the popups that are currently open directly inside this popup, in the order they were opened.
         /// </summary>
         public IReadOnlyList<Popup> OpenedPopups => _openedPopups ?? (IReadOnlyList<Popup>)[];
@@ -583,6 +588,9 @@ namespace Avalonia.Controls.Primitives
                 topLevel.AddOpenedPopup(this);
 
             WindowManagerAddShadowHintChanged(popupHost, WindowManagerAddShadowHint);
+
+            if (popupHost is PopupRoot { PlatformImpl: IPopupWithKindImpl popupWithKind })
+                popupWithKind.SetPopupKind(Kind);
 
             popupHost.Show();
             IsUsingOverlayLayer = popupHost is OverlayPopupHost;
