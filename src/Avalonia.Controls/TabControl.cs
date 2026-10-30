@@ -15,6 +15,7 @@ using Avalonia.Controls.Metadata;
 using Avalonia.Logging;
 using Avalonia.Reactive;
 using Avalonia.Interactivity;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -388,10 +389,16 @@ namespace Avalonia.Controls
                     panel.SetCurrentValue(
                         KeyboardNavigation.TabNavigationProperty,
                         KeyboardNavigationMode.Once);
-                KeyboardNavigation.SetTabOnceActiveElement(
-                    panel,
-                    KeyboardNavigation.GetTabOnceActiveElement(this));
+                SetStripActiveElement(panel, KeyboardNavigation.GetTabOnceActiveElement(this));
             }
+        }
+
+        private void SetStripActiveElement(Panel panel, IInputElement? element)
+        {
+            if (element is not Visual visual || !panel.IsVisualAncestorOf(visual))
+                element = ContainerFromIndex(SelectedIndex) as IInputElement;
+
+            KeyboardNavigation.SetTabOnceActiveElement(panel, element);
         }
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
@@ -451,9 +458,7 @@ namespace Avalonia.Controls
             else if (change.Property == KeyboardNavigation.TabOnceActiveElementProperty &&
                 ItemsPresenterPart?.Panel is { } panel)
             {
-                KeyboardNavigation.SetTabOnceActiveElement(
-                    panel,
-                    change.GetNewValue<IInputElement?>());
+                SetStripActiveElement(panel, change.GetNewValue<IInputElement?>());
             }
         }
 
