@@ -10,4 +10,6 @@ internal class DebugEventsDirtyRectCollectorProxy(IDirtyRectCollector inner, ICo
         inner.AddRect(rect);
         events.RectInvalidated(rect);
     }
+
+    public DirtyRectWorkingSet GetWorkingSet() => inner.GetWorkingSet();
 }
