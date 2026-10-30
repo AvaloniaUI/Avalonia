@@ -25,16 +25,9 @@ internal static partial class StreamHelper
     [return: JSMarshalAs<JSType.Number>]
     public static partial long ByteLength(JSObject stream);
 
-    [JSImport("StreamHelper.sliceArrayBuffer", AvaloniaModule.MainModuleName)]
-    private static partial Task<JSObject> SliceToArrayBuffer(JSObject stream, [JSMarshalAs<JSType.Number>] long offset, int count);
-
-    [JSImport("StreamHelper.toMemoryView", AvaloniaModule.MainModuleName)]
-    [return: JSMarshalAs<JSType.Array<JSType.Number>>]
-    private static partial byte[] ArrayBufferToMemoryView(JSObject stream);
-
-    public static async Task<byte[]> SliceAsync(JSObject stream, long offset, int count)
-    {
-        using var buffer = await SliceToArrayBuffer(stream, offset, count);
-        return ArrayBufferToMemoryView(buffer);
-    }
+    /// <summary>
+    /// Reads up to <paramref name="target"/>.Count bytes of the blob starting at <paramref name="offset"/> directly into <paramref name="target"/>.
+    /// </summary>
+    [JSImport("StreamHelper.readInto", AvaloniaModule.MainModuleName)]
+    public static partial Task<int> ReadIntoAsync(JSObject stream, [JSMarshalAs<JSType.Number>] long offset, [JSMarshalAs<JSType.MemoryView>] ArraySegment<byte> target);
 }

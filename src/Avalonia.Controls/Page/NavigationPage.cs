@@ -24,7 +24,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// A navigation page that supports simple stack-based navigation.
     /// </summary>
-    [TemplatePart("PART_NavigationBar", typeof(Border))]
+    [TemplatePart("PART_NavigationBar", typeof(Decorator))]
     [TemplatePart("PART_BackButton", typeof(Button))]
     [TemplatePart("PART_ContentHost", typeof(Panel))]
     [TemplatePart("PART_PagePresenter", typeof(ContentPresenter))]
@@ -35,7 +35,7 @@ namespace Avalonia.Controls
     [TemplatePart("PART_BottomCommandBar", typeof(ContentPresenter))]
     [TemplatePart("PART_ModalBackPresenter", typeof(ContentPresenter))]
     [TemplatePart("PART_ModalPresenter", typeof(ContentPresenter))]
-    [TemplatePart("PART_NavBarShadow", typeof(Border))]
+    [TemplatePart("PART_NavBarShadow", typeof(Decorator))]
     [PseudoClasses(":nav-bar-inset", ":nav-bar-compact")]
     public class NavigationPage : MultiPage, INavigation
     {
@@ -50,8 +50,8 @@ namespace Avalonia.Controls
         private CancellationTokenSource? _currentTransition;
         private Task _lastPageTransitionTask = Task.CompletedTask;
         private CancellationTokenSource? _currentModalTransition;
-        private Border? _navBar;
-        private Border? _navBarShadow;
+        private Decorator? _navBar;
+        private Decorator? _navBarShadow;
         private bool _isPop;
         private bool _hasHadFirstPage;
         private BarLayoutBehavior _effectiveBarLayoutBehavior = BarLayoutBehavior.Inset;
@@ -672,9 +672,9 @@ namespace Avalonia.Controls
             _pageBackPresenter = e.NameScope.Find<ContentPresenter>("PART_PageBackPresenter");
             if (_navBar != null)
                 _navBar.SizeChanged -= OnNavBarSizeChanged;
-            _navBar = e.NameScope.Get<Border>("PART_NavigationBar");
+            _navBar = e.NameScope.Get<Decorator>("PART_NavigationBar");
             _navBar.SizeChanged += OnNavBarSizeChanged;
-            _navBarShadow = e.NameScope.Find<Border>("PART_NavBarShadow");
+            _navBarShadow = e.NameScope.Find<Decorator>("PART_NavBarShadow");
             _topCommandBarPresenter = e.NameScope.Find<ContentPresenter>("PART_TopCommandBar");
             UpdateTopCommandBarMaxWidth();
 

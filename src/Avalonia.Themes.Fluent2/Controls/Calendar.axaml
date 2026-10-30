@@ -1,0 +1,99 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    x:ClassModifier="internal">
+  <Design.PreviewWith>
+    <Border Padding="20">
+      <Calendar />
+    </Border>
+  </Design.PreviewWith>
+
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Default">
+      <StaticResource x:Key="CalendarSelectedHoverBorderBrush" ResourceKey="AccentFillColorSecondaryBrush" />
+      <StaticResource x:Key="CalendarSelectedPressedBorderBrush" ResourceKey="SubtleFillColorTertiaryBrush" />
+      <StaticResource x:Key="CalendarSelectedBorderBrush" ResourceKey="AccentFillColorDefaultBrush" />
+      <StaticResource x:Key="CalendarHoverBorderBrush" ResourceKey="ControlStrokeColorDefaultBrush" />
+      <StaticResource x:Key="CalendarPressedBorderBrush" ResourceKey="ControlStrokeColorDefaultBrush" />
+      <StaticResource x:Key="CalendarTodayForeground" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
+      <StaticResource x:Key="CalendarBlackoutForeground" ResourceKey="TextFillColorDisabledBrush" />
+      <StaticResource x:Key="CalendarOutOfScopeForeground" ResourceKey="TextFillColorTertiaryBrush" />
+      <StaticResource x:Key="CalendarCalendarItemForeground" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="CalendarOutOfScopeBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="CalendarForeground" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="CalendarBackground" ResourceKey="ControlFillColorInputActiveBrush" />
+      <StaticResource x:Key="CalendarBorderBrush" ResourceKey="ControlStrokeColorDefaultBrush" />
+      <StaticResource x:Key="CalendarWeekDayForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
+      <StaticResource x:Key="CalendarNavigationButtonBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="CalendarNavigationButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="CalendarNavigationButtonForegroundPressed" ResourceKey="ControlAltFillColorTertiaryBrush" />
+      <StaticResource x:Key="CalendarCalendarItemRevealBackground" ResourceKey="SystemControlTransparentRevealBackgroundBrush" />
+      <StaticResource x:Key="CalendarCalendarItemRevealBorderBrush" ResourceKey="SystemControlTransparentRevealBorderBrush" />
+      <StaticResource x:Key="CalendarNavigationButtonBorderBrushPointerOver" ResourceKey="ControlStrokeColorDefaultBrush" />
+      <StaticResource x:Key="CalendarNavigationButtonBorderBrush" ResourceKey="SubtleFillColorTransparentBrush" />
+    </ResourceDictionary>
+    <ResourceDictionary x:Key="Dark">
+      <StaticResource x:Key="CalendarSelectedHoverBorderBrush" ResourceKey="AccentFillColorSecondaryBrush" />
+      <StaticResource x:Key="CalendarSelectedPressedBorderBrush" ResourceKey="SubtleFillColorTertiaryBrush" />
+      <StaticResource x:Key="CalendarSelectedBorderBrush" ResourceKey="AccentFillColorDefaultBrush" />
+      <StaticResource x:Key="CalendarHoverBorderBrush" ResourceKey="ControlStrokeColorDefaultBrush" />
+      <StaticResource x:Key="CalendarPressedBorderBrush" ResourceKey="ControlStrokeColorDefaultBrush" />
+      <StaticResource x:Key="CalendarTodayForeground" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
+      <StaticResource x:Key="CalendarBlackoutForeground" ResourceKey="TextFillColorDisabledBrush" />
+      <StaticResource x:Key="CalendarOutOfScopeForeground" ResourceKey="TextFillColorTertiaryBrush" />
+      <StaticResource x:Key="CalendarCalendarItemForeground" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="CalendarOutOfScopeBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="CalendarForeground" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="CalendarBackground" ResourceKey="ControlFillColorInputActiveBrush" />
+      <StaticResource x:Key="CalendarBorderBrush" ResourceKey="ControlStrokeColorDefaultBrush" />
+      <StaticResource x:Key="CalendarWeekDayForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
+      <StaticResource x:Key="CalendarNavigationButtonBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="CalendarNavigationButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="CalendarNavigationButtonForegroundPressed" ResourceKey="ControlAltFillColorTertiaryBrush" />
+      <StaticResource x:Key="CalendarCalendarItemRevealBackground" ResourceKey="SystemControlTransparentRevealBackgroundBrush" />
+      <StaticResource x:Key="CalendarCalendarItemRevealBorderBrush" ResourceKey="SystemControlTransparentRevealBorderBrush" />
+      <StaticResource x:Key="CalendarNavigationButtonBorderBrushPointerOver" ResourceKey="ControlStrokeColorDefaultBrush" />
+      <StaticResource x:Key="CalendarNavigationButtonBorderBrush" ResourceKey="SubtleFillColorTransparentBrush" />
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
+  <x:Double x:Key="CalendarFontSize">20</x:Double>
+  <x:Double x:Key="CalendarDayButtonFontSize">12</x:Double>
+  <FontWeight x:Key="CalendarTodayFontWeight">SemiBold</FontWeight>
+  <Thickness x:Key="CalendarHeaderNavigationButtonMargin">7,6,3,7</Thickness>
+  <Thickness x:Key="CalendarHeaderNavigationButtonPadding">8,7,8,8</Thickness>
+  <x:Double x:Key="CalendarHeaderNavigationButtonFontSize">14</x:Double>
+  <FontWeight x:Key="CalendarHeaderNavigationFontWeight">SemiBold</FontWeight>
+  <Thickness x:Key="CalendarNavigationButtonPadding">12,11.5,12,11.5</Thickness>
+  <Thickness x:Key="CalendarNavigationPreviousButtonMargin">3,6,3,7</Thickness>
+  <Thickness x:Key="CalendarNavigationNextButtonMargin">3,6,7,7</Thickness>
+  <x:Double x:Key="CalendarNavigationButtonIconSize">8</x:Double>
+
+
+  <ControlTheme x:Key="{x:Type Calendar}" TargetType="Calendar" BasedOn="{StaticResource DefaultCalendarTheme}"/>
+
+  <ControlTheme x:Key="DefaultCalendarTheme" TargetType="Calendar">
+    <Setter Property="Foreground" Value="{DynamicResource CalendarForeground}" />
+    <Setter Property="Background" Value="{DynamicResource CalendarBackground}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource CalendarBorderBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="{DynamicResource OverlayCornerRadius}" />
+    <Setter Property="HorizontalAlignment" Value="Left" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="FontSize" Value="{DynamicResource CalendarFontSize}" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <StackPanel
+          Name="PART_Root"
+          HorizontalAlignment="Center"
+          ClipToBounds="True">
+          <CalendarItem
+            Name="PART_CalendarItem"
+            Background="{TemplateBinding Background}"
+            BorderBrush="{TemplateBinding BorderBrush}"
+            BorderThickness="{TemplateBinding BorderThickness}"
+            CornerRadius="{TemplateBinding CornerRadius}"
+            HeaderBackground="{TemplateBinding HeaderBackground}" />
+        </StackPanel>
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+</ResourceDictionary>

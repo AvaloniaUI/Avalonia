@@ -14,6 +14,7 @@ using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.Themes.Fluent;
+using Avalonia.Themes.Fluent2;
 using Avalonia.Themes.Simple;
 using Avalonia.Themes.UnitTests.Utilities;
 using Xunit;
@@ -22,6 +23,8 @@ namespace Avalonia.Themes.UnitTests;
 
 [Trait("Category", "FluentTheme")]
 public class FluentControlThemeTests() : ControlThemeTests(typeof(FluentTheme));
+[Trait("Category", "Fluent2Theme")]
+public class Fluent2ControlThemeTests() : ControlThemeTests(typeof(Fluent2Theme));
 [Trait("Category", "SimpleTheme")]
 public class SimpleControlThemeTests() : ControlThemeTests(typeof(SimpleTheme));
 

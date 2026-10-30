@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.JavaScript;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,10 +16,9 @@ internal sealed class WriteableStream : Stream
     // Unfortunatelly we can't read current length/position, so we need to keep it C#-side only.
     private long _length, _position;
 
-    internal WriteableStream(JSObject jSReference, long initialLength)
+    internal WriteableStream(JSObject jSReference)
     {
         _jSReference = jSReference;
-        _length = initialLength;
     }
 
     private JSObject JSReference => _jSReference ?? throw new ObjectDisposedException(nameof(WriteableStream));
@@ -34,7 +34,7 @@ internal sealed class WriteableStream : Stream
     public override long Position
     {
         get => _position;
-        set => Seek(_position, SeekOrigin.Begin);
+        set => Seek(value, SeekOrigin.Begin);
     }
 
     public override void Flush()
@@ -55,8 +55,13 @@ internal sealed class WriteableStream : Stream
             SeekOrigin.End => _length + offset,
             _ => offset
         };
+        if (position < 0)
+        {
+            throw new IOException("An attempt was made to move the position before the beginning of the stream.");
+        }
+
         StreamHelper.Seek(JSReference, position);
-        return position;
+        return _position = position;
     }
 
     public override void SetLength(long value)
@@ -80,6 +85,11 @@ internal sealed class WriteableStream : Stream
 
     public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
     {
+        if (MemoryMarshal.TryGetArray(buffer, out var segment))
+        {
+            return new ValueTask(WriteAsyncInternal(segment.Array!, segment.Offset, segment.Count, cancellationToken));
+        }
+
         return new ValueTask(WriteAsyncInternal(buffer.ToArray(), 0, buffer.Length, cancellationToken));
     }
 
@@ -102,6 +112,10 @@ internal sealed class WriteableStream : Stream
     private Task WriteAsyncInternal(byte[] buffer, int offset, int count, CancellationToken _)
     {
         _position += count;
+        if (_position > _length)
+        {
+            _length = _position;
+        }
 
         return StreamHelper.WriteAsync(JSReference, buffer, offset, count);
     }

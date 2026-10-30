@@ -54,12 +54,12 @@ namespace Avalonia.Controls
             {
                 if (_decreaseButton != null)
                 {
-                    _decreaseButton.Click -= OnButtonClick;
+                    _decreaseButton.Click -= OnDecreaseButtonClick;
                 }
                 _decreaseButton = value;
                 if (_decreaseButton != null)
                 {
-                    _decreaseButton.Click += OnButtonClick;
+                    _decreaseButton.Click += OnDecreaseButtonClick;
                 }
             }
         }
@@ -75,12 +75,12 @@ namespace Avalonia.Controls
             {
                 if (_increaseButton != null)
                 {
-                    _increaseButton.Click -= OnButtonClick;
+                    _increaseButton.Click -= OnIncreaseButtonClick;
                 }
                 _increaseButton = value;
                 if (_increaseButton != null)
                 {
-                    _increaseButton.Click += OnButtonClick;
+                    _increaseButton.Click += OnIncreaseButtonClick;
                 }
             }
         }
@@ -272,12 +272,19 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event args.</param>
-        private void OnButtonClick(object? sender, RoutedEventArgs e)
+        private void OnIncreaseButtonClick(object? sender, RoutedEventArgs e)
         {
             if (AllowSpin)
             {
-                var direction = sender == IncreaseButton ? SpinDirection.Increase : SpinDirection.Decrease;
-                OnSpin(new SpinEventArgs(SpinEvent, direction));
+                OnSpin(new SpinEventArgs(SpinEvent, SpinDirection.Increase));
+            }
+        }
+
+        private void OnDecreaseButtonClick(object? sender, RoutedEventArgs e)
+        {
+            if (AllowSpin)
+            {
+                OnSpin(new SpinEventArgs(SpinEvent, SpinDirection.Decrease));
             }
         }
 

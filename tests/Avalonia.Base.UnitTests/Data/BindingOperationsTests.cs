@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Avalonia.Base.UnitTests.Data;
 
-public class BindingOperationsTests
+public class BindingOperationsTests : ScopedTestBase
 {
     [Fact]
     public void GetBindingExpressionBase_Returns_Null_When_Not_Bound()

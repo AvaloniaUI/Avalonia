@@ -982,16 +982,13 @@ namespace Avalonia.Media
                 return null;
             }
 
-            var geometry = _renderInterface.CreateStreamGeometry();
+            using var builder = _renderInterface.CreateStreamGeometryBuilder();
 
-            using (var ctx = geometry.Open())
+            // Build the outline in font design-unit space (identity transform); callers apply
+            // the scale / position. The resulting geometry is immutable, so it can be cached and shared.
+            if (_glyfTable.TryBuildGlyphGeometry(glyphIndex, Matrix.Identity, builder))
             {
-                // Build the outline in font design-unit space (identity transform); callers apply
-                // the scale / position. Wrapped so the shared, cacheable result is immutable.
-                if (_glyfTable.TryBuildGlyphGeometry((int)glyphIndex, Matrix.Identity, ctx))
-                {
-                    return new ImmutableGeometryImpl(geometry);
-                }
+                return builder.ToGeometry();
             }
 
             return null;

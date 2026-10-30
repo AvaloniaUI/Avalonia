@@ -8,13 +8,14 @@ using Avalonia.Media;
 namespace Avalonia.Controls.Primitives
 {
     /// <summary>
-    /// Contains and allows modification of Hue, Saturation and Value components.
+    /// Contains and allows modification of 64bit floating point Hue, Saturation and Value components.
     /// </summary>
     /// <remarks>
-    ///   The is a specialized struct optimized for performance and memory:
+    ///   This is a specialized struct optimized for performance, memory and high bit-depth:
     ///   <list type="bullet">
-    ///     <item>This is not a read-only struct like <see cref="HsvColor"/> and allows editing the fields</item>
-    ///     <item>Removes the alpha component unnecessary in core calculations</item>
+    ///     <item>High bit-depth per component (64bit floating point) to avoid conversion/calculation losses.</item>
+    ///     <item>This is not a read-only struct like <see cref="HsvColor"/> and allows editing the fields.</item>
+    ///     <item>Removes the alpha component unnecessary in core calculations.</item>
     ///     <item>No component bounds checks or clamping is done.</item>
     ///   </list>
     /// </remarks>
@@ -72,12 +73,14 @@ namespace Avalonia.Controls.Primitives
 
         /// <summary>
         /// Returns the <see cref="Rgb"/> color model equivalent of this <see cref="Hsv"/> color.
+        /// Warning: Precision will be reduced to 8 bits per component.
         /// </summary>
         /// <returns>The <see cref="Rgb"/> equivalent color.</returns>
         public Rgb ToRgb()
         {
             // Instantiating a Color is unfortunately necessary to use existing conversions
             // Clamping is done internally in the conversion method
+            // Note: a separate conversion could be added here in the future to preserve high bit depth
             Color color = HsvColor.ToRgb(H, S, V);
 
             return new Rgb(color);
