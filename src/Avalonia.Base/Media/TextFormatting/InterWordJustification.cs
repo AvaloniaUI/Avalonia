@@ -110,7 +110,7 @@ namespace Avalonia.Media.TextFormatting
 
                 if (writableBuffer != null)
                 {
-                    var justifiedRun = new ShapedTextRun(writableBuffer, shapedText!.Properties);
+                    var justifiedRun = new ShapedTextRun(writableBuffer, shapedText!.Properties) { RenderOverrides = shapedText.RenderOverrides  };
 
                     lineImpl.ReplaceTextRun(runIndex, justifiedRun);
 

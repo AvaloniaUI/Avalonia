@@ -12,7 +12,7 @@ namespace Avalonia.Media.TextFormatting
         private readonly ITextSource _textSource;
         private readonly TextParagraphProperties _paragraphProperties;
         private readonly TextTrimming _textTrimming;
-        private readonly TextLine[] _textLines;
+        private readonly TextLineImpl[] _textLines;
         private readonly CachedMetrics _metrics = new();
         private readonly TextRunCache? _textRunCache;
 
@@ -156,6 +156,21 @@ namespace Avalonia.Media.TextFormatting
             int maxLines)
             : this(textSource, paragraphProperties, textTrimming, maxWidth, maxHeight, maxLines, null)
         {
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="TextLayout"/> which draws another layout with altered rendering properties.
+        /// </summary>
+        public TextLayout(TextLayout baseLayout, IEnumerable<ValueSpan<TextRenderOverrides>> renderOverrides)
+        {
+            _textSource = baseLayout._textSource;
+            _paragraphProperties = baseLayout._paragraphProperties;
+            _textTrimming = baseLayout._textTrimming;
+            _metrics = baseLayout._metrics;
+            _textRunCache = baseLayout._textRunCache;
+            _textSourceLength = baseLayout._textSourceLength;
+
+            _textLines = ApplyRenderOverrides(baseLayout, renderOverrides);
         }
 
         /// <summary>
@@ -562,7 +577,7 @@ namespace Avalonia.Media.TextFormatting
                 textRunStyle, textWrapping, lineHeight, 0, letterSpacing);
         }
 
-        private TextLine[] CreateTextLines()
+        private TextLineImpl[] CreateTextLines()
         {
             var objectPool = FormattingObjectPool.Instance;
 
@@ -574,7 +589,7 @@ namespace Avalonia.Media.TextFormatting
 
                 UpdateMetrics(textLine, ref first);
 
-                return new TextLine[] { textLine };
+                return [textLine];
             }
 
             var textLines = objectPool.TextLines.Rent();
@@ -782,6 +797,116 @@ namespace Avalonia.Media.TextFormatting
             }
 
             return (TextLineImpl)line.Collapse(collapsingProperties);
+        }
+
+        private static TextLineImpl[] ApplyRenderOverrides(TextLayout baseLayout, IEnumerable<ValueSpan<TextRenderOverrides>> overrides)
+        {
+            var overridenLines = new List<TextLineImpl>(baseLayout._textLines);
+            foreach (var overrideSpan in overrides)
+            {
+                if (overrideSpan.Length == 0)
+                {
+                    continue;
+                }
+
+                var lineRange = (Start: baseLayout.GetLineIndexFromCharacterIndex(overrideSpan.Start, false), End: baseLayout.GetLineIndexFromCharacterIndex(overrideSpan.Start + overrideSpan.Length, true));
+
+                for (int lineIndex = lineRange.Start; lineIndex <= lineRange.End; lineIndex++)
+                {
+                    var line = overridenLines[lineIndex];
+                    var overriddenRuns = new List<TextRun>(line.TextRuns);
+                    var anyRunsOverridden = false;
+
+                    var foundStart = false;
+                    var foundEnd = false;
+
+                    var charIndex = line.FirstTextSourceIndex;
+                    var outputIndex = 0;
+                    for (int inputIndex = 0; inputIndex < line.TextRuns.Count && !foundEnd; inputIndex++)
+                    {
+                        var startDelta = overrideSpan.Start - charIndex;
+                        var run = line.TextRuns[inputIndex];
+
+                        if (run is not ShapedTextRun shapedRun)
+                        {
+                            charIndex += run.Length;
+                            continue;
+                        }
+
+                        ShapedTextRun? sliceResult = null;
+
+                        if (!foundStart && startDelta < run.Length) // does override start with the current run or a previous line?
+                        {
+                            if (startDelta > 0)
+                            {
+                                // Split the run, assign the override properties to the RIGHT-hand side
+                                var (left, right) = shapedRun.Split(startDelta);
+                                if (left != null && right != null)
+                                {
+                                    overriddenRuns[outputIndex++] = left;
+                                    overriddenRuns.Insert(outputIndex++, right);
+                                    sliceResult = right;
+
+                                    // move the iteration one step forward
+                                    run = right;
+                                    charIndex += left.Length;
+                                }
+                            }
+
+                            foundStart = true;
+                        }
+
+                        var endDelta = (overrideSpan.Start + overrideSpan.Length) - (charIndex + run.Length);
+                        if (!foundEnd && endDelta <= 0) // does override end with the current run or a subsequent line?
+                        {
+                            if (endDelta < 0)
+                            {
+                                // split the run, assign the override properties to the LEFT-hand side
+                                var (left, right) = shapedRun.Split(shapedRun.Length + endDelta);
+                                if (left != null && right != null)
+                                {
+                                    overriddenRuns[outputIndex++] = left;
+                                    overriddenRuns.Insert(outputIndex++, right);
+                                    sliceResult = left;
+
+                                    // move the iteration one step forward
+                                    run = right;
+                                    charIndex += left.Length;
+                                }
+                            }
+
+                            foundEnd = true;
+                        }
+
+                        if (sliceResult != null)
+                        {
+                            // We have already sliced out a run that we want to override
+                            sliceResult.RenderOverrides |= overrideSpan.Value;
+                            anyRunsOverridden = true;
+                        }
+                        else if (foundStart)
+                        {
+                            // the entire run is overridden
+                            overriddenRuns[outputIndex++] = new ShapedTextRun(shapedRun, overrideSpan.Value);
+                            anyRunsOverridden = true;
+                        }
+                        else
+                        {
+                            // no overrides
+                            outputIndex++;
+                        }
+
+                        charIndex += run.Length;
+                    }
+
+                    if (anyRunsOverridden)
+                    {
+                        overridenLines[lineIndex] = new TextLineImpl(line, [.. overriddenRuns]);
+                    }
+                }
+
+            }
+            return [.. overridenLines];
         }
 
         public void Dispose()

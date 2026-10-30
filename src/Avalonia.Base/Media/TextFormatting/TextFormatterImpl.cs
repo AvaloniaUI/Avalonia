@@ -1209,7 +1209,7 @@ namespace Avalonia.Media.TextFormatting
 
                             if (!ReferenceEquals(newBuffer, shapedTextRun.ShapedBuffer))
                             {
-                                trailingWhitespaceRuns[i] = new ShapedTextRun(newBuffer, shapedTextRun.Properties);
+                                trailingWhitespaceRuns[i] = new ShapedTextRun(newBuffer, shapedTextRun.Properties) { RenderOverrides = shapedTextRun.RenderOverrides };
                                 shapedTextRun.Dispose();
                             }
                         }

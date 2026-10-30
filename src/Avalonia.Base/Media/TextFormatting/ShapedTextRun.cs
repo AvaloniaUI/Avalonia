@@ -31,6 +31,16 @@ namespace Avalonia.Media.TextFormatting
             TextMetrics = new TextMetrics(properties.CachedGlyphTypeface, properties.FontRenderingEmSize);
         }
 
+        internal ShapedTextRun(ShapedTextRun baseRun, TextRenderOverrides renderOverrides)
+        {
+            ShapedBuffer = baseRun.ShapedBuffer;
+            Properties = baseRun.Properties;
+            TextMetrics = baseRun.TextMetrics;
+            RenderOverrides = baseRun.RenderOverrides | renderOverrides;
+        }
+
+        internal TextRenderOverrides? RenderOverrides { get; set; }
+
         public sbyte BidiLevel => ShapedBuffer.BidiLevel;
 
         public ShapedBuffer ShapedBuffer { get; }
@@ -78,26 +88,29 @@ namespace Avalonia.Media.TextFormatting
                     return;
                 }
 
-                if (Properties.ForegroundBrush == null)
+                var foregroundBrush = RenderOverrides?.Run?.Foreground ?? Properties.ForegroundBrush;
+                if (foregroundBrush == null)
                 {
                     return;
                 }
 
-                if (Properties.BackgroundBrush != null)
+                var backgroundBrush = RenderOverrides?.Run?.Background ?? Properties.BackgroundBrush;
+                if (backgroundBrush != null)
                 {
-                    drawingContext.DrawRectangle(Properties.BackgroundBrush, null, GlyphRun.Bounds);
+                    drawingContext.DrawRectangle(backgroundBrush, null, GlyphRun.Bounds);
                 }
 
-                drawingContext.DrawGlyphRun(Properties.ForegroundBrush, GlyphRun);
+                drawingContext.DrawGlyphRun(foregroundBrush, GlyphRun);
 
-                if (Properties.TextDecorations == null)
+                var textDecorations = RenderOverrides?.Run?.TextDecorations ?? Properties.TextDecorations;
+                if (textDecorations == null)
                 {
                     return;
                 }
 
-                foreach (var textDecoration in Properties.TextDecorations)
+                foreach (var textDecoration in textDecorations)
                 {
-                    textDecoration.Draw(drawingContext, GlyphRun, TextMetrics, Properties.ForegroundBrush);
+                    textDecoration.Draw(drawingContext, GlyphRun, TextMetrics, foregroundBrush);
                 }
             }
         }
@@ -143,7 +156,7 @@ namespace Avalonia.Media.TextFormatting
             var splitBuffer = ShapedBuffer.Split(length);
 
             // first cannot be null as length > 0
-            var first = new ShapedTextRun(splitBuffer.First!, Properties);
+            var first = new ShapedTextRun(splitBuffer.First!, Properties) { RenderOverrides = RenderOverrides };
 
             if (first.Length < length)
             {
@@ -155,7 +168,7 @@ namespace Avalonia.Media.TextFormatting
                 return new SplitResult<ShapedTextRun>(first, null);
             }
 
-            var second = new ShapedTextRun(splitBuffer.Second, Properties);
+            var second = new ShapedTextRun(splitBuffer.Second, Properties) { RenderOverrides = RenderOverrides };
 
             return new SplitResult<ShapedTextRun>(first, second);
         }

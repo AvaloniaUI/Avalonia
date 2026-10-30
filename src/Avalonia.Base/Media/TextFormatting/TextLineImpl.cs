@@ -38,6 +38,22 @@ namespace Avalonia.Media.TextFormatting
             _resolvedFlowDirection = resolvedFlowDirection;
         }
 
+        public TextLineImpl(TextLineImpl baseLine, TextRun[] overrideRuns)
+        {
+            FirstTextSourceIndex = baseLine.FirstTextSourceIndex;
+            Length = baseLine.Length;
+            _textLineBreak = baseLine._textLineBreak;
+            _textLineMetrics = baseLine._textLineMetrics;
+            HasCollapsed = baseLine.HasCollapsed;
+
+            _paragraphWidth = baseLine._paragraphWidth;
+            _paragraphProperties = baseLine._paragraphProperties;
+
+            _resolvedFlowDirection = baseLine._resolvedFlowDirection;
+
+            _textRuns = overrideRuns;
+        }
+
         /// <inheritdoc/>
         public override IReadOnlyList<TextRun> TextRuns => _textRuns;
 
@@ -104,6 +120,8 @@ namespace Avalonia.Media.TextFormatting
         {
             var (currentX, currentY) = lineOrigin + new Point(Start, 0);
 
+            DrawLine(drawingContext, currentX, currentY);
+
             foreach (var textRun in _textRuns)
             {
                 switch (textRun)
@@ -119,6 +137,48 @@ namespace Avalonia.Media.TextFormatting
                             break;
                         }
                 }
+            }
+        }
+
+        /// <summary>
+        /// Renders the line behind each <see cref="ShapedTextRun"/> which requests it.
+        /// </summary>
+        /// <remarks>
+        /// Multiple consecutive runs with the same <see cref="LineRenderOverrides"/> are merged together.
+        /// </remarks>
+        private void DrawLine(DrawingContext drawingContext, double x, double y)
+        {
+            (Rect rect, LineRenderOverrides overrides)? mergedRuns = null;
+
+            for (int i = 0; i < _textRuns.Length; i++)
+            {
+                if (_textRuns[i] is DrawableTextRun run)
+                {
+                    if (run is ShapedTextRun { RenderOverrides.Line: { } runOverrides } &&
+                        (mergedRuns == null || mergedRuns.Value.overrides == runOverrides))
+                    {
+                        var runRect = new Rect(x, y, run.Size.Width, Height);
+                        mergedRuns = mergedRuns is { } current ? (current with { rect = current.rect.Union(runRect) }) : (runRect, runOverrides);
+                    }
+                    else
+                    {
+                        DrawMergedRuns();
+                    }
+
+                    x += run.Size.Width;
+                }
+            }
+
+            DrawMergedRuns();
+
+            void DrawMergedRuns()
+            {
+                if (mergedRuns is { overrides: { } props, rect: { } rect })
+                {
+                    drawingContext.DrawRectangle(props.Background, props.Stroke,
+                        new RoundedRect(props.Padding.HasValue ? rect.Inflate(props.Padding.Value) : rect, props.CornerRadius ?? default));
+                }
+                mergedRuns = null;
             }
         }
 
