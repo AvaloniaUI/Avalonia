@@ -1,7 +1,7 @@
 ﻿<ResourceDictionary
-    xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    x:ClassModifier="internal">
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  x:ClassModifier="internal">
   <Design.PreviewWith>
     <Border Padding="20">
       <StackPanel Spacing="20">
@@ -15,6 +15,8 @@
   <x:Double x:Key="TabItemMinHeight">48</x:Double>
   <x:Double x:Key="TabItemVerticalPipeHeight">24</x:Double>
   <x:Double x:Key="TabItemPipeThickness">2</x:Double>
+  <x:Double x:Key="TabItemHeaderSpacing">8</x:Double>
+  <Thickness x:Key="TabItemIconVisualMargin">-2,0</Thickness>
 
   <ControlTheme x:Key="{x:Type TabItem}" TargetType="TabItem">
     <Setter Property="FontSize" Value="{DynamicResource TabItemHeaderFontSize}" />
@@ -28,20 +30,33 @@
     <Setter Property="Template">
       <ControlTemplate>
         <Border
-            Name="PART_LayoutRoot"
-            Background="{TemplateBinding Background}"
-            BorderBrush="{TemplateBinding BorderBrush}"
-            BorderThickness="{TemplateBinding BorderThickness}"
-            CornerRadius="{TemplateBinding CornerRadius}"
-            Padding="{TemplateBinding Padding}">
+          Name="PART_LayoutRoot"
+          Background="{TemplateBinding Background}"
+          BorderBrush="{TemplateBinding BorderBrush}"
+          BorderThickness="{TemplateBinding BorderThickness}"
+          CornerRadius="{TemplateBinding CornerRadius}"
+          Padding="{TemplateBinding Padding}">
           <Panel>
-            <ContentPresenter
+            <DockPanel
+              Name="DockPanelHost"
+              VerticalSpacing="{StaticResource TabItemHeaderSpacing}"
+              HorizontalSpacing="{StaticResource TabItemHeaderSpacing}"
+              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+              VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
+              <ContentPresenter x:Name="PART_IconVisual"
+                                Content="{TemplateBinding Icon}"
+                                ContentTemplate="{TemplateBinding IconTemplate}"
+                                Margin="{DynamicResource TabItemIconVisualMargin}"
+                                Foreground="{TemplateBinding Foreground}"
+                                RenderTransformOrigin="0.5,0.5"/>
+              <ContentPresenter
                 Name="PART_ContentPresenter"
                 HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                 Content="{TemplateBinding Header}"
                 ContentTemplate="{TemplateBinding HeaderTemplate}"
                 />
+            </DockPanel>
             <Border Name="PART_SelectedPipe"
                     Background="{DynamicResource TabItemHeaderSelectedPipeFill}"
                     CornerRadius="{DynamicResource ControlCornerRadius}"
@@ -53,6 +68,14 @@
 
     <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
       <Setter Property="RecognizesAccessKey" Value="True" />
+    </Style>
+
+    <Style Selector="^ /template/ ContentPresenter#PART_IconVisual:empty">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+
+    <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter:empty">
+      <Setter Property="IsVisible" Value="False" />
     </Style>
 
     <!--  Selected state  -->

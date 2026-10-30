@@ -1,7 +1,7 @@
 ﻿<ResourceDictionary
-    xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    x:ClassModifier="internal">
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  x:ClassModifier="internal">
   <Design.PreviewWith>
     <Border Padding="20">
       <StackPanel Spacing="20">
@@ -14,6 +14,8 @@
 
   <x:Double x:Key="TabStripItemMinHeight">48</x:Double>
   <x:Double x:Key="TabStripItemPipeThickness">2</x:Double>
+  <x:Double x:Key="TabStripItemSpacing">8</x:Double>
+  <Thickness x:Key="TabStripItemIconVisualMargin">-2,0</Thickness>
 
   <ControlTheme x:Key="{x:Type TabStripItem}" TargetType="TabStripItem">
     <Setter Property="FontSize" Value="{DynamicResource TabItemHeaderFontSize}" />
@@ -27,19 +29,32 @@
     <Setter Property="Template">
       <ControlTemplate>
         <Border
-            Name="PART_LayoutRoot"
-            Background="{TemplateBinding Background}"
-            BorderBrush="{TemplateBinding BorderBrush}"
-            BorderThickness="{TemplateBinding BorderThickness}"
-            CornerRadius="{TemplateBinding CornerRadius}"
-            Padding="{TemplateBinding Padding}">
+          Name="PART_LayoutRoot"
+          Background="{TemplateBinding Background}"
+          BorderBrush="{TemplateBinding BorderBrush}"
+          BorderThickness="{TemplateBinding BorderThickness}"
+          CornerRadius="{TemplateBinding CornerRadius}"
+          Padding="{TemplateBinding Padding}">
           <Panel>
-            <ContentPresenter
+            <DockPanel
+              Name="DockPanelHost"
+              VerticalSpacing="{StaticResource TabStripItemSpacing}"
+              HorizontalSpacing="{StaticResource TabStripItemSpacing}"
+              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+              VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
+              <ContentPresenter x:Name="PART_IconVisual"
+                                Content="{TemplateBinding Icon}"
+                                ContentTemplate="{TemplateBinding IconTemplate}"
+                                Margin="{DynamicResource TabStripItemIconVisualMargin}"
+                                Foreground="{TemplateBinding Foreground}"
+                                RenderTransformOrigin="0.5,0.5"/>
+              <ContentPresenter
                 Name="PART_ContentPresenter"
                 HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                 Content="{TemplateBinding Content}"
                 ContentTemplate="{TemplateBinding ContentTemplate}" />
+            </DockPanel>
             <Border Name="PART_SelectedPipe"
                     Background="{DynamicResource TabItemHeaderSelectedPipeFill}"
                     CornerRadius="{DynamicResource ControlCornerRadius}"
@@ -51,6 +66,14 @@
         </Border>
       </ControlTemplate>
     </Setter>
+
+    <Style Selector="^ /template/ ContentPresenter#PART_IconVisual:empty">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+
+    <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter:empty">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
 
     <!--  Selected state  -->
     <!--  We don't use selector to PART_LayoutRoot, so developer can override selected item background with TabStripItem.Background  -->
