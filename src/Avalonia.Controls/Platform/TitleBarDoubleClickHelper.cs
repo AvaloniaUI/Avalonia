@@ -1,9 +1,10 @@
+using Avalonia.Controls;
 using Avalonia.Input;
-using Avalonia.Platform;
 
-namespace Avalonia.Native
+namespace Avalonia.Platform
 {
-    internal class DoubleClickHelper
+    /// <summary>Detects double-clicks on client-drawn title bars.</summary>
+    internal sealed class TitleBarDoubleClickHelper
     {
         private int _clickCount;
         private Rect _lastClickRect;
@@ -28,6 +29,19 @@ namespace Avalonia.Native
                 .Inflate(new Thickness(doubleClickSize.Width / 2, doubleClickSize.Height / 2));
 
             return _clickCount == 2;
+        }
+
+        public void Reset() => _clickCount = 0;
+
+        /// <summary>Gets the allowed double-click state change, if any.</summary>
+        public static WindowState? GetStateAfterDoubleClick(WindowState current, bool canMaximize, bool canResize)
+        {
+            return current switch
+            {
+                WindowState.Maximized or WindowState.FullScreen when canResize => WindowState.Normal,
+                WindowState.Normal when canMaximize => WindowState.Maximized,
+                _ => null
+            };
         }
     }
 }
