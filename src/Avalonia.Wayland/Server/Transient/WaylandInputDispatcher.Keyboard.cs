@@ -23,12 +23,9 @@ partial class WaylandInputDispatcher
         private int _repeatDelay; // ms before first repeat
         private XkbCommonKeymap? _keymap;
         private XkbComposeState? _composeState;
+        private uint _effectiveMods;
+        private uint? _heldKey;
 
-        // Standard XKB modifier bit positions
-        private const uint ModShift = 1 << 0;
-        private const uint ModControl = 1 << 2;
-        private const uint ModAlt = 1 << 3;    // Mod1
-        private const uint ModMeta = 1 << 6;   // Mod4 / Super
 
         public KeyboardHandler(Seat seat)
         {
@@ -39,15 +36,6 @@ partial class WaylandInputDispatcher
             _keyboard = seat.WlSeat.GetKeyboard(new Listener(this));
         }
 
-        private static RawInputModifiers ModifiersFromXkbMask(uint mask)
-        {
-            var mods = RawInputModifiers.None;
-            if ((mask & ModShift) != 0) mods |= RawInputModifiers.Shift;
-            if ((mask & ModControl) != 0) mods |= RawInputModifiers.Control;
-            if ((mask & ModAlt) != 0) mods |= RawInputModifiers.Alt;
-            if ((mask & ModMeta) != 0) mods |= RawInputModifiers.Meta;
-            return mods;
-        }
 
         public void Dispose()
         {
@@ -58,6 +46,59 @@ partial class WaylandInputDispatcher
             _keymap = null;
             _composeTable?.Dispose();
             _xkbContext.Dispose();
+        }
+
+        /// <summary>
+        /// Resolves an evdev key code against the current xkb state. With <paramref name="compose"/>, the key also
+        /// runs through the compose state, but only when the focused surface has an active text input client
+        /// (e.g. a TextBox). Returns null when a compose sequence is in progress and the event must be suppressed.
+        /// </summary>
+        private WaylandKeyInfo? ResolveKey(uint key, bool press, bool compose)
+        {
+            var physicalKey = XkbKeyTransform.PhysicalKeyFromEvdev(key);
+            if (_keymap == null)
+                return new WaylandKeyInfo(XkbKeyTransform.KeyFromEvdev(key), physicalKey, null, null, null, null,
+                    new PlatformKeyInfo(KnownPlatformKeyInfoFormats.Wayland)
+                    {
+                        ScanCode = key + 8,
+                        Modifiers = _effectiveMods
+                    });
+
+            var (avKey, keySymbol, text, keysym) = XkbKeyTransform.ResolveKeyWithFallback(_keymap, key, physicalKey);
+
+            if (compose
+                && _composeState != null
+                && _focusedSurface is { HasTextInputClient: true })
+            {
+                switch (_composeState.Feed(keysym))
+                {
+                    case XKB_COMPOSE_COMPOSING:
+                        // In the middle of a compose sequence — suppress entire event
+                        return null;
+                    case XKB_COMPOSE_COMPOSED:
+                        // Compose sequence complete — use composed text
+                        text = _composeState.GetComposedText();
+                        keySymbol = XkbKeyTransform.FilterKeySymbol(text);
+                        var composedKey = XkbKeyTransform.KeyFromKeysym(_composeState.GetComposedKeysym());
+                        if (composedKey != Key.None)
+                            avKey = composedKey;
+                        break;
+                    // XKB_COMPOSE_CANCELLED — sequence cancelled, normal processing of current key
+                    // XKB_COMPOSE_NOTHING — normal processing
+                }
+            }
+
+            return new WaylandKeyInfo(avKey, physicalKey, keySymbol,
+                press ? text : null,
+                press ? XkbCommonKeymap.KeysymToText(keysym) : null,
+                // Only pressed modifiers count; the GTK mode already reports consumed modifiers that are active
+                press ? XkbKeyTransform.ModifiersFromXkbMask(_keymap.GetConsumedModifiers(key) & _effectiveMods) : null,
+                new PlatformKeyInfo(KnownPlatformKeyInfoFormats.Wayland)
+                {
+                    ScanCode = key + 8,
+                    VirtualKey = keysym != 0 ? keysym : null,
+                    Modifiers = _effectiveMods
+                });
         }
 
         class Listener(KeyboardHandler handler) : WlKeyboard.Listener
@@ -105,6 +146,8 @@ partial class WaylandInputDispatcher
                 handler._focusedSurface?.EventSink.OnKeyboardLeave();
                 handler._focusedSurface = null;
                 handler._seat.KeyboardModifiers = RawInputModifiers.None;
+                handler._effectiveMods = 0;
+                handler._heldKey = null;
             }
 
             protected override void Key(WlKeyboard eventSender, uint serial, uint time, uint key, WlKeyboard.KeyStateEnum state)
@@ -116,57 +159,23 @@ partial class WaylandInputDispatcher
                 if (sink == null)
                     return;
 
-                var physicalKey = XkbKeyTransform.PhysicalKeyFromEvdev(key);
                 var mods = handler._seat.KeyboardModifiers;
+                var pressed = state == WlKeyboard.KeyStateEnum.Pressed;
+                var info = handler.ResolveKey(key, pressed, pressed);
+                if (info == null)
+                    return;
 
-                Key avKey;
-                string? keySymbol;
-
-                if (handler._keymap != null)
+                if (pressed)
                 {
-                    (avKey, keySymbol) = XkbKeyTransform.ResolveKeyWithFallback(
-                        handler._keymap, key, physicalKey);
-
-                    // Process compose sequences on key press only, and only when the
-                    // focused surface has an active text input client (e.g. a TextBox)
-                    if (state == WlKeyboard.KeyStateEnum.Pressed
-                        && handler._composeState != null
-                        && handler._focusedSurface is { HasTextInputClient: true })
-                    {
-                        var (resolvedKeysym, _) = handler._keymap.ResolveKey(key);
-                        var composeStatus = handler._composeState.Feed(resolvedKeysym);
-
-                        switch (composeStatus)
-                        {
-                            case XKB_COMPOSE_COMPOSING:
-                                // In the middle of a compose sequence — suppress entire event
-                                return;
-                            case XKB_COMPOSE_COMPOSED:
-                                // Compose sequence complete — use composed text
-                                keySymbol = XkbKeyTransform.FilterKeySymbol(
-                                    handler._composeState.GetComposedText());
-                                var composedKeysym = handler._composeState.GetComposedKeysym();
-                                var composedKey = XkbKeyTransform.KeyFromKeysym(composedKeysym);
-                                if (composedKey != Avalonia.Input.Key.None)
-                                    avKey = composedKey;
-                                break;
-                            case XKB_COMPOSE_CANCELLED:
-                                // Sequence cancelled — normal processing of current key
-                                break;
-                            // XKB_COMPOSE_NOTHING — normal processing
-                        }
-                    }
+                    handler._heldKey = key;
+                    sink.OnKeyDown(time, mods, info);
                 }
                 else
                 {
-                    avKey = XkbKeyTransform.KeyFromEvdev(key);
-                    keySymbol = null;
+                    if (handler._heldKey == key)
+                        handler._heldKey = null;
+                    sink.OnKeyUp(time, mods, info);
                 }
-
-                if (state == WlKeyboard.KeyStateEnum.Pressed)
-                    sink.OnKeyDown(time, avKey, mods, physicalKey, keySymbol);
-                else
-                    sink.OnKeyUp(time, avKey, mods, physicalKey, keySymbol);
             }
 
             protected override void Modifiers(WlKeyboard eventSender, uint serial, uint modsDepressed, uint modsLatched, uint modsLocked, uint group)
@@ -174,7 +183,13 @@ partial class WaylandInputDispatcher
                 handler._keymap?.UpdateModifiers(modsDepressed, modsLatched, modsLocked, group);
 
                 var effective = modsDepressed | modsLatched | modsLocked;
-                handler._seat.KeyboardModifiers = ModifiersFromXkbMask(effective);
+                handler._seat.KeyboardModifiers = XkbKeyTransform.ModifiersFromXkbMask(effective);
+                handler._effectiveMods = effective;
+
+                if (handler._heldKey is { } heldKey
+                    && handler._focusedSurface?.EventSink is { } sink
+                    && handler.ResolveKey(heldKey, true, false) is { } info)
+                    sink.OnHeldKeyChanged(handler._seat.KeyboardModifiers, info);
             }
 
             protected override void RepeatInfo(WlKeyboard eventSender, int rate, int delay)

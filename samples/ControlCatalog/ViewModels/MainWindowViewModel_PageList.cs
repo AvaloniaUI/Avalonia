@@ -110,6 +110,7 @@ partial class MainWindowViewModel
             s.Add<FocusPage>("Focus", Icons.Target, "Track and control keyboard focus");
             s.Add<GesturePage>("Gestures", Icons.Gesture, "Tap, scroll and pinch gesture recognition");
             s.Add<PointersPage>("Pointers", Icons.Cursor, "Raw pointer input");
+            s.Add<KeyEventsPage>("Key Events", Icons.Keyboard, "Key text, consumed modifiers and terminal encoding of key presses");
         }),
         Section("Window & Platform", Icons.DesktopMobile, s =>
         {

@@ -50,6 +50,7 @@ namespace Avalonia.Win32
 
                             case WindowActivate.WA_INACTIVE:
                                 {
+                                    _deadCharPending = false;
                                     Deactivated?.Invoke();
                                     break;
                                 }
@@ -229,11 +230,11 @@ namespace Avalonia.Win32
                     return LoadIcon(requestIcon, requestDpi)?.Handle ?? default;
 
                 case WindowsMessage.WM_KEYDOWN:
-                    e = TryCreateRawKeyEventArgs(RawKeyEventType.KeyDown, timestamp, wParam, lParam, true);
+                    e = TryCreateKeyDownEventArgs(timestamp, wParam, lParam, false);
                     break;
 
                 case WindowsMessage.WM_SYSKEYDOWN:
-                    e = TryCreateRawKeyEventArgs(RawKeyEventType.KeyDown, timestamp, wParam, lParam, false);
+                    e = TryCreateKeyDownEventArgs(timestamp, wParam, lParam, true);
                     break;
 
                 case WindowsMessage.WM_SYSCOMMAND:
@@ -884,6 +885,7 @@ namespace Avalonia.Win32
                     }
 
                 case WindowsMessage.WM_KILLFOCUS:
+                    _deadCharPending = false;
                     if (Imm32InputMethod.Current.IsComposing)
                     {
                         _killFocusRequested = true;
@@ -897,6 +899,7 @@ namespace Avalonia.Win32
 
                 case WindowsMessage.WM_INPUTLANGCHANGE:
                     {
+                        _deadCharPending = false;
                         UpdateInputMethod(lParam);
                         // call DefWindowProc to pass to all children
                         break;
@@ -981,11 +984,27 @@ namespace Avalonia.Win32
             {
                 Input(e);
 
-                if (message is WindowsMessage.WM_KEYDOWN or WindowsMessage.WM_SYSKEYDOWN)
+                if (message is WindowsMessage.WM_KEYDOWN or WindowsMessage.WM_SYSKEYDOWN
+                    && e is RawKeyEventArgs keyDownArgs)
                 {
-                    if (e is RawKeyEventArgs args && args.Key == Key.ImeProcessed)
+                    if (keyDownArgs.Key == Key.ImeProcessed)
                     {
                         _ignoreWmChar = true;
+                    }
+                    else if (keyDownArgs.KeyText is { } pairedText)
+                    {
+                        // The WM_CHAR/WM_SYSCHAR messages of this key were already removed from the queue
+                        if (!e.Handled)
+                        {
+                            if (message == WindowsMessage.WM_KEYDOWN)
+                                RaisePairedTextInput(timestamp, pairedText);
+                            else
+                            {
+                                // DefWindowProc turns WM_SYSCHAR into SC_KEYMENU (e.g. Alt+Space opens the system menu)
+                                foreach (var c in pairedText)
+                                    DefWindowProc(hWnd, (uint)WindowsMessage.WM_SYSCHAR, (IntPtr)c, lParam);
+                            }
+                        }
                     }
                     else
                     {
@@ -1513,6 +1532,148 @@ namespace Avalonia.Win32
             return modifiers;
         }
 
+        private RawKeyEventArgs? TryCreateKeyDownEventArgs(ulong timestamp, IntPtr wParam, IntPtr lParam, bool isSystemKey)
+        {
+            var virtualKey = ToInt32(wParam);
+            var keyData = ToInt32(lParam);
+            var key = KeyInterop.KeyFromVirtualKey(virtualKey, keyData);
+            var physicalKey = KeyInterop.PhysicalKeyFromVirtualKey(virtualKey, keyData);
+
+            if ((key == Key.None && physicalKey == PhysicalKey.None)
+                || virtualKey is (int)VirtualKeyStates.VK_PROCESSKEY or (int)VirtualKeyStates.VK_PACKET)
+            {
+                // No pairing: the chars of this key stay in the queue for the WM_CHAR handler
+                return TryCreateRawKeyEventArgs(RawKeyEventType.KeyDown, timestamp, wParam, lParam, !isSystemKey);
+            }
+
+            var keyText = TakePairedChars(isSystemKey, keyData, out var deadChar);
+            var isControlOrAlt = GetKeyState((int)VirtualKeyStates.VK_CONTROL) < 0
+                                 || GetKeyState((int)VirtualKeyStates.VK_MENU) < 0;
+
+            string? keySymbol, keyTextIgnoringModifiers;
+            if (isSystemKey)
+            {
+                // No ToUnicodeEx call during WM_SYSKEYDOWN: it breaks the keyboard state.
+                keySymbol = KeyInterop.GetKeySymbolFromVirtualKey(virtualKey);
+                keyTextIgnoringModifiers = IsPrintable(keyText) ?
+                    keyText :
+                    KeyInterop.GetTextIgnoringControlAndAlt(virtualKey);
+            }
+            else if (!isControlOrAlt)
+            {
+                keySymbol = KeyInterop.GetKeySymbol(virtualKey, keyData, out keyTextIgnoringModifiers);
+            }
+            else
+            {
+                // The paired chars are the result of the full-state translation, so KeySymbol doesn't need
+                // another ToUnicodeEx call. At most one call per key event keeps the dead-key state intact
+                // on Windows versions that ignore the "do not change keyboard state" flag.
+                keySymbol = deadChar ?? KeyInterop.FilterKeySymbol(keyText);
+                keyTextIgnoringModifiers = IsPrintable(keyText) ?
+                    keyText :
+                    KeyInterop.GetTextIgnoringControlAndAlt(virtualKey);
+            }
+
+            // A dead key produces no text by itself, and the translation above sees the dead state that
+            // TranslateMessage already set, so it reports the char twice
+            if (deadChar != null)
+                keyTextIgnoringModifiers = deadChar;
+
+            // A key that uses a pending dead key is masked, so that it can't match any gesture.
+            // Ctrl chords that produce control chars leave the dead key pending.
+            if (IsPrintable(keyText))
+            {
+                if (_deadCharPending && !isSystemKey)
+                    key = Key.DeadCharProcessed;
+                _deadCharPending = false;
+            }
+
+            return new RawKeyEventArgs(
+                WindowsKeyboardDevice.Instance,
+                timestamp,
+                Owner,
+                RawKeyEventType.KeyDown,
+                key,
+                WindowsKeyboardDevice.Instance.Modifiers,
+                physicalKey,
+                keySymbol)
+            {
+                KeyText = keyText,
+                KeyTextIgnoringModifiers = keyTextIgnoringModifiers,
+                ConsumedModifiers = KeyInterop.GetConsumedModifiers(virtualKey, WindowsKeyboardDevice.Instance.Modifiers),
+                PlatformKeyInfo = KeyInterop.GetPlatformKeyInfo(virtualKey, keyData)
+            };
+        }
+
+        /// <summary>
+        /// Removes the WM_CHAR (or WM_SYSCHAR) messages that TranslateMessage posted for the key down being
+        /// processed, and returns their text. A pending WM_DEADCHAR stays in the queue for DefWindowProc.
+        /// </summary>
+        private string? TakePairedChars(bool isSystemKey, int keyData, out string? deadChar)
+        {
+            const uint pmNoRemove = 0x0;
+            const uint pmRemove = 0x1;
+            // PM_QS_* filters would keep sent messages from being dispatched here, but they also skip the chars that
+            // TranslateMessage queued
+            const uint flags = 0x2; // PM_NOYIELD
+            const int maxChars = 16;
+
+            var charMessage = (uint)(isSystemKey ? WindowsMessage.WM_SYSCHAR : WindowsMessage.WM_CHAR);
+            var deadCharMessage = (uint)(isSystemKey ? WindowsMessage.WM_SYSDEADCHAR : WindowsMessage.WM_DEADCHAR);
+            var scanCode = KeyInterop.GetNativeScanCode(keyData);
+
+            deadChar = null;
+
+            if (PeekMessage(out var msg, _hwnd, deadCharMessage, deadCharMessage, pmNoRemove | flags)
+                && KeyInterop.GetNativeScanCode(ToInt32(msg.lParam)) == scanCode)
+            {
+                deadChar = new string((char)ToInt32(msg.wParam), 1);
+                _deadCharPending = true;
+                return null;
+            }
+
+            // Scan codes are compared so that chars posted by other means are not attached to this key.
+            // Surrogate pairs and ligature keys produce several messages.
+            System.Text.StringBuilder? text = null;
+            while ((text?.Length ?? 0) < maxChars
+                   && PeekMessage(out msg, _hwnd, charMessage, charMessage, pmNoRemove | flags)
+                   && KeyInterop.GetNativeScanCode(ToInt32(msg.lParam)) == scanCode)
+            {
+                PeekMessage(out msg, _hwnd, charMessage, charMessage, pmRemove | flags);
+                (text ??= new System.Text.StringBuilder()).Append((char)ToInt32(msg.wParam));
+            }
+
+            return text?.ToString();
+        }
+
+        private void RaisePairedTextInput(ulong timestamp, string text)
+        {
+            if (Imm32InputMethod.Current.IsComposing || Input == null)
+                return;
+
+            var filtered = new System.Text.StringBuilder(text.Length);
+            foreach (var c in text)
+            {
+                if (c >= 32 && c != 0x7F)
+                    filtered.Append(c);
+            }
+
+            if (filtered.Length > 0)
+                Input(new RawTextInputEventArgs(WindowsKeyboardDevice.Instance, timestamp, Owner, filtered.ToString()));
+        }
+
+        private static bool IsPrintable([NotNullWhen(true)] string? text)
+        {
+            if (string.IsNullOrEmpty(text))
+                return false;
+            foreach (var c in text)
+            {
+                if (c < 32 || c == 0x7F)
+                    return false;
+            }
+            return true;
+        }
+
         private RawKeyEventArgs? TryCreateRawKeyEventArgs(RawKeyEventType eventType, ulong timestamp, IntPtr wParam, IntPtr lParam, bool useKeySymbol)
         {
             var virtualKey = ToInt32(wParam);
@@ -1538,7 +1699,10 @@ namespace Avalonia.Win32
                 key,
                 WindowsKeyboardDevice.Instance.Modifiers,
                 physicalKey,
-                keySymbol);
+                keySymbol)
+            {
+                PlatformKeyInfo = KeyInterop.GetPlatformKeyInfo(virtualKey, keyData)
+            };
         }
     }
 }

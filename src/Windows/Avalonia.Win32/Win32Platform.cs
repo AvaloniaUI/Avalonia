@@ -82,6 +82,7 @@ namespace Avalonia.Win32
             s_options = options;
 
             SetDpiAwareness();
+            KeyboardLayoutTable.Prepare();
 
             Dispatcher.InitializeUIThreadDispatcher(s_instance._dispatcher);
             

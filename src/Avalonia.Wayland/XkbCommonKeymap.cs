@@ -25,10 +25,28 @@ sealed unsafe class XkbCommonKeymap : IDisposable
 
         try
         {
-            // size includes null terminator; xkb_keymap_new_from_buffer expects length without it
-            _keymap = xkb_keymap_new_from_buffer(
-                context.Handle, (byte*)mapped, (IntPtr)(size - 1),
-                XKB_KEYMAP_FORMAT_TEXT_V1, XKB_KEYMAP_COMPILE_NO_FLAGS);
+            // size includes null terminator
+            Initialize(context, new ReadOnlySpan<byte>((byte*)mapped, (int)size - 1));
+        }
+        finally
+        {
+            UnsafeNativeMethods.munmap(mapped, (IntPtr)size);
+        }
+    }
+
+    /// <summary>
+    /// Creates a keymap from its text form (without a terminating NUL).
+    /// </summary>
+    public XkbCommonKeymap(XkbContext context, ReadOnlySpan<byte> text) => Initialize(context, text);
+
+    private void Initialize(XkbContext context, ReadOnlySpan<byte> text)
+    {
+        try
+        {
+            fixed (byte* buffer = text)
+                _keymap = xkb_keymap_new_from_buffer(
+                    context.Handle, buffer, (IntPtr)text.Length,
+                    XKB_KEYMAP_FORMAT_TEXT_V1, XKB_KEYMAP_COMPILE_NO_FLAGS);
 
             if (_keymap == IntPtr.Zero)
                 throw new InvalidOperationException("Failed to create xkb keymap from buffer");
@@ -41,10 +59,6 @@ sealed unsafe class XkbCommonKeymap : IDisposable
         {
             Dispose();
             throw;
-        }
-        finally
-        {
-            UnsafeNativeMethods.munmap(mapped, (IntPtr)size);
         }
     }
 
@@ -87,6 +101,24 @@ sealed unsafe class XkbCommonKeymap : IDisposable
 
         var text = Encoding.UTF8.GetString(buf, needed);
         return (keysym, text);
+    }
+
+    /// <summary>
+    /// Gets the modifiers (as an XKB mask) that selected the key's level in the current state, the way GTK reports them.
+    /// </summary>
+    public uint GetConsumedModifiers(uint evdevKeycode) =>
+        _state != IntPtr.Zero ? xkb_state_key_get_consumed_mods2(_state, evdevKeycode + 8, XKB_CONSUMED_MODE_GTK) : 0;
+
+    /// <summary>
+    /// Converts a keysym to its UTF-8 text without applying any modifier transformations.
+    /// </summary>
+    public static string? KeysymToText(uint keysym)
+    {
+        const int bufferSize = 8;
+        var buffer = stackalloc byte[bufferSize];
+        var length = xkb_keysym_to_utf8(keysym, buffer, bufferSize);
+        // The returned length includes the terminating NUL byte
+        return length > 1 ? Encoding.UTF8.GetString(buffer, length - 1) : null;
     }
 
     /// <summary>

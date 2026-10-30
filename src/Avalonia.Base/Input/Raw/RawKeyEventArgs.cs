@@ -42,5 +42,13 @@ namespace Avalonia.Input.Raw
         public KeyDeviceType KeyDeviceType { get; set; }
 
         public string? KeySymbol { get; set; }
+
+        public string? KeyText { get; set; }
+
+        public string? KeyTextIgnoringModifiers { get; set; }
+
+        public RawInputModifiers? ConsumedModifiers { get; set; }
+
+        public PlatformKeyInfo? PlatformKeyInfo { get; set; }
     }
 }
