@@ -36,8 +36,8 @@ internal static partial class InputHelper
     }
 
     [JSExport]
-    public static Task OnBeforeInput(int topLevelId, string inputType, int start, int end) =>
-        RedirectInputAsync(topLevelId, t => t.InputHandler.TextInputMethod.OnBeforeInput(inputType, start, end));
+    public static Task OnBeforeInput(int topLevelId, string inputType, int start, int end, string? data, double timeStamp) =>
+        RedirectInputAsync(topLevelId, t => t.InputHandler.TextInputMethod.OnBeforeInput(inputType, start, end, data, (ulong)timeStamp));
 
     [JSExport]
     public static Task OnCompositionStart(int topLevelId) =>
@@ -60,8 +60,17 @@ internal static partial class InputHelper
         RedirectInputAsync(topLevelId, t => t.InputHandler.InputPane
             .OnGeometryChange(x, y, width, height));
 
+    [JSImport("InputHelper.setMultiline", AvaloniaModule.MainModuleName)]
+    public static partial JSObject SetMultiline(JSObject htmlElement, bool multiline);
+
     [JSImport("InputHelper.clearInput", AvaloniaModule.MainModuleName)]
     public static partial void ClearInputElement(JSObject htmlElement);
+
+    [JSImport("InputHelper.replaceInputElement", AvaloniaModule.MainModuleName)]
+    public static partial JSObject ReplaceInputElement(JSObject htmlElement);
+
+    [JSImport("InputHelper.blurElement", AvaloniaModule.MainModuleName)]
+    public static partial void BlurElement(JSObject htmlElement);
 
     [JSImport("InputHelper.focusElement", AvaloniaModule.MainModuleName)]
     public static partial void FocusElement(JSObject htmlElement);
