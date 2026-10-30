@@ -187,21 +187,21 @@ namespace Avalonia.Media.TextFormatting
 
                     if (defaultCanShape &&
                         TryGetShapeableLength(textSpan, defaultGlyphTypeface, null, defaultCanShapeScript: false,
-                            requireFullCluster, out count))
+                            requireFullCluster, out count, out var runScript))
                     {
                         // Primary font: the properties already carry this typeface, so reuse them
                         // directly. This avoids a needless copy and preserves a custom
                         // TextRunProperties subclass that WithTypeface would otherwise flatten.
-                        return new UnshapedTextRun(text.Slice(0, count), defaultProperties, biDiLevel);
+                        return new UnshapedTextRun(text.Slice(0, count), defaultProperties, biDiLevel, runScript);
                     }
 
                     if (allowPreviousTypeface && previousGlyphTypeface is not null &&
                         (!requireShapingCapability || previousGlyphTypeface.CanShapeScript(firstScript)) &&
                         TryGetShapeableLength(textSpan, previousGlyphTypeface, defaultGlyphTypeface, defaultCanShape,
-                            requireFullCluster, out count))
+                            requireFullCluster, out count, out runScript))
                     {
                         return new UnshapedTextRun(text.Slice(0, count),
-                            defaultProperties.WithTypeface(previousTypeface!.Value), biDiLevel);
+                            defaultProperties.WithTypeface(previousTypeface!.Value), biDiLevel, runScript);
                     }
 
                     // Resolve the fallback once, after the primary/previous probes fail. It is keyed on
@@ -229,10 +229,10 @@ namespace Avalonia.Media.TextFormatting
 
                     if (fallbackGlyphTypeface is not null &&
                         TryGetShapeableLength(textSpan, fallbackGlyphTypeface, defaultGlyphTypeface, defaultCanShape,
-                            requireFullCluster, out count))
+                            requireFullCluster, out count, out runScript))
                     {
                         return new UnshapedTextRun(text.Slice(0, count),
-                            defaultProperties.WithTypeface(fallbackTypeface), biDiLevel);
+                            defaultProperties.WithTypeface(fallbackTypeface), biDiLevel, runScript);
                     }
                 }
             }
@@ -298,9 +298,20 @@ namespace Avalonia.Media.TextFormatting
             bool defaultCanShapeScript,
             bool requireFullCluster,
             out int length)
+            => TryGetShapeableLength(text, glyphTypeface, defaultGlyphTypeface, defaultCanShapeScript,
+                requireFullCluster, out length, out _);
+
+        internal static bool TryGetShapeableLength(
+            ReadOnlySpan<char> text,
+            GlyphTypeface glyphTypeface,
+            GlyphTypeface? defaultGlyphTypeface,
+            bool defaultCanShapeScript,
+            bool requireFullCluster,
+            out int length,
+            out Script script)
         {
             length = 0;
-            var script = Script.Unknown;
+            script = Script.Unknown;
 
             if (text.IsEmpty)
             {
@@ -361,6 +372,11 @@ namespace Avalonia.Media.TextFormatting
                 }
 
                 length += currentGrapheme.Length;
+            }
+
+            if (script == Script.Unknown)
+            {
+                script = Script.Common;
             }
 
             return length > 0;

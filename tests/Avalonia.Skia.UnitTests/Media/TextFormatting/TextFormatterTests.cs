@@ -1263,6 +1263,37 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        [Fact]
+        public void Runs_With_Different_Scripts_Should_Not_Be_Shaped_Together_In_Same_Buffer()
+        {
+            using (Start())
+            {
+                var shaper = new RecordingTextShaper(AvaloniaLocator.Current.GetRequiredService<ITextShaperImpl>());
+
+                AvaloniaLocator.CurrentMutable.Bind<TextShaper>().ToConstant(new TextShaper(shaper));
+
+                // A single font (DejaVu Sans) covers both Latin ("Hello") and Cyrillic ("Привет").
+                // HarfBuzz contract requires uniform buffers (single script per buffer).
+                // They must not be coalesced into a single buffer.
+                var dejavuUri = new Uri("resm:Avalonia.Skia.UnitTests.Fonts.DejaVuSans.ttf?assembly=Avalonia.Skia.UnitTests");
+                var typeface = new Typeface(new FontFamily(dejavuUri, "DejaVu Sans"));
+                var defaultProperties = new GenericTextRunProperties(typeface);
+
+                const string mixedText = "Hello Привет";
+                var textSource = new SingleBufferTextSource(mixedText, defaultProperties);
+
+                using var textLine = new TextFormatterImpl().FormatLine(textSource, 0, double.PositiveInfinity,
+                    new GenericTextParagraphProperties(defaultProperties));
+
+                Assert.NotNull(textLine);
+
+                // Both runs were shaped in separate buffers according to their respective scripts:
+                // Run 1: Latin "Hello " (with trailing common space)
+                // Run 2: Cyrillic "Привет"
+                Assert.Equal(2, shaper.ShapedBuffers.Count);
+            }
+        }
+
         private class CustomDrawableRun : DrawableTextRun
         {
             public CustomDrawableRun(Size size, double baseLine)

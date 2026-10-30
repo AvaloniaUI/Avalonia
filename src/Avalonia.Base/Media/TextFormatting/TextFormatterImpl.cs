@@ -407,6 +407,7 @@ namespace Avalonia.Media.TextFormatting
 
                                 var text = shapeableRun.Text;
                                 var properties = shapeableRun.Properties;
+                                var groupScript = shapeableRun.Script;
 
                                 while (index + 1 < processedRuns.Count)
                                 {
@@ -417,7 +418,8 @@ namespace Avalonia.Media.TextFormatting
 
                                     if (shapeableRun.BidiLevel == nextRun.BidiLevel
                                         && TryJoinContiguousMemories(text, nextRun.Text, out var joinedText)
-                                        && CanShapeTogether(properties, nextRun.Properties))
+                                        && CanShapeTogether(properties, nextRun.Properties)
+                                        && CanShapeScriptTogether(ref groupScript, nextRun.Script))
                                     {
                                         groupedRuns.Add(nextRun);
                                         index++;
@@ -527,6 +529,31 @@ namespace Avalonia.Media.TextFormatting
             => MathUtilities.AreClose(x.FontRenderingEmSize, y.FontRenderingEmSize)
                && x.Typeface == y.Typeface
                && x.BaselineAlignment == y.BaselineAlignment;
+
+        private static bool CanShapeScriptTogether(ref Script groupScript, Script nextScript)
+        {
+            if (groupScript == nextScript)
+            {
+                return true;
+            }
+
+            if (groupScript is Script.Common or Script.Inherited or Script.Unknown)
+            {
+                if (nextScript is not (Script.Common or Script.Inherited or Script.Unknown))
+                {
+                    groupScript = nextScript;
+                }
+
+                return true;
+            }
+
+            if (nextScript is Script.Common or Script.Inherited or Script.Unknown)
+            {
+                return true;
+            }
+
+            return false;
+        }
 
         private static void ShapeTogether(IReadOnlyList<UnshapedTextRun> textRuns, ReadOnlyMemory<char> text,
             TextShaperOptions options, TextShaper textShaper, RentedList<TextRun> results)
