@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
+using Avalonia.Controls;
 using static Avalonia.FreeDesktop.AtSpi.AtSpiConstants;
 
 namespace Avalonia.FreeDesktop.AtSpi
@@ -98,10 +99,10 @@ namespace Avalonia.FreeDesktop.AtSpi
                 states.Add(AtSpiState.Required);
 
             // Window-level active state and text entry states
-            var controlType = Peer.GetAutomationControlType();
-            if (controlType == AutomationControlType.Window)
+            if (Peer is ControlAutomationPeer { Owner: WindowBase { IsActive: true } })
                 states.Add(AtSpiState.Active);
 
+            var controlType = Peer.GetAutomationControlType();
             if (controlType == AutomationControlType.Edit)
                 states.Add(AtSpiState.SingleLine);
 
