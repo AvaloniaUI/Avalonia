@@ -1105,6 +1105,38 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Tab_Should_Come_Back_To_The_Selected_Tab()
+        {
+            using (UnitTestApplication.Start(TestServices.FocusableWindow))
+            {
+                var before = new Button { Content = "before" };
+                var content = new Button { Content = "content" };
+
+                var target = new TabControl
+                {
+                    ItemsSource = new[]
+                    {
+                        new TabItem { Header = "first", Content = "first page" },
+                        new TabItem { Header = "second", Content = content },
+                    },
+                    SelectedIndex = 1
+                };
+
+                var root = CreateRoot(new StackPanel { Children = { before, target } });
+                root.LayoutManager.ExecuteInitialLayoutPass();
+
+                var second = target.GetVisualDescendants().OfType<TabItem>().ElementAt(1);
+
+                // Focusing something in the page makes the tab control remember it.
+                content.Focus();
+
+                var next = KeyboardNavigationHandler.GetNext(before, NavigationDirection.Next);
+
+                Assert.Same(second, next);
+            }
+        }
+
         private static IControlTemplate TabControlTemplate()
         {
             return new FuncControlTemplate<TabControl>((parent, scope) =>
