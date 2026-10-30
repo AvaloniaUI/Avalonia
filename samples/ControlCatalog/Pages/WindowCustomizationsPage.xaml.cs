@@ -1,4 +1,5 @@
 ﻿using Avalonia.Controls;
+using Avalonia.Interactivity;
 
 namespace ControlCatalog.Pages
 {
@@ -8,5 +9,8 @@ namespace ControlCatalog.Pages
         {
             InitializeComponent();
         }
+
+        private void OpenTrafficLightPlaceholder(object? sender, RoutedEventArgs e) =>
+            new TrafficLightPlaceholderWindow().Show();
     }
 }

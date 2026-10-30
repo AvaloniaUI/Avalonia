@@ -399,6 +399,12 @@ enum SystemDecorations
     SystemDecorationsFull = 2,
 }
 
+enum AvnFlowDirection
+{
+    AvnFlowDirectionLeftToRight = 0,
+    AvnFlowDirectionRightToLeft = 1,
+}
+
 enum AvnAutomationProperty
 {
     AutomationPeer_AutomationId,
@@ -813,6 +819,9 @@ interface IAvnWindow : IAvnWindowBase
      HRESULT GetExtendTitleBarHeight(double*ret);
      HRESULT SetExtendTitleBarHeight(double value);
      HRESULT GetWindowZOrder(long*ret);
+     HRESULT SetTrafficLightPosition(AvnPoint position, bool useCustomLayout);
+     HRESULT GetTrafficLightSize(AvnSize*ret);
+     AvnFlowDirection GetTitlebarFlowDirection();
 }
 
 [uuid(fda9c1b3-69e0-43d7-9459-8cc97cb41f6a)]
@@ -866,8 +875,14 @@ interface IAvnWindowEvents : IAvnWindowBaseEvents
      bool Closing();
     
      void WindowStateChanged(AvnWindowState state);
-    
+
      void GotInputWhenDisabled();
+
+     /**
+      * Called when the size of the standard window button group available for custom placement changes.
+      * The size is empty while the buttons cannot be placed in the client area.
+      */
+     void TrafficLightSizeChanged(AvnSize size);
 }
 
 [uuid(f2079145-a2d9-42b8-a85e-2732e3c2b055)]
