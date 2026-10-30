@@ -10,9 +10,10 @@ namespace Avalonia.Styling
         private readonly ITemplate _template;
         private readonly StyledElement _target;
         private object? _value;
-        private PooledInlineList<StyledElement> _ownedTemplateChildren;
+        private WeakReference<StyledElement>[]? _ownedTemplateChildren;
         private bool _isUnsubscribing;
         private bool _isBuilt;
+        private bool _isActive;
 
         public PropertySetterTemplateInstance(AvaloniaProperty property, ITemplate template, StyledElement target)
         {
@@ -30,10 +31,42 @@ namespace Avalonia.Styling
             {
                 _value = _template.Build();
                 _isBuilt = true;
+                if (_value is StyledElement element)
+                {
+                    var children = new PooledInlineList<StyledElement>();
+                    try
+                    {
+                        StyledElement.ApplyTemplatedParent(element, _target, ref children);
+                        _ownedTemplateChildren = new WeakReference<StyledElement>[children.Count];
+                        var i = 0;
+                        foreach (var child in children)
+                        {
+                            child.IsSetterTemplateChild = true;
+                            _ownedTemplateChildren[i++] = new(child);
+                        }
+                    }
+                    finally
+                    {
+                        children.Dispose();
+                    }
+                }
+                _isActive = true;
             }
 
-            if (_value is StyledElement element && _ownedTemplateChildren.Count == 0 && !_isUnsubscribing)
-                StyledElement.ApplyTemplatedParent(element, _target, ref _ownedTemplateChildren);
+            // Reuse only the original identities: bindings may have since forwarded user
+            // content into the subtree. Detached descendants must remain collectible.
+            if (!_isActive && !_isUnsubscribing && _ownedTemplateChildren is { } owned)
+            {
+                _isActive = true;
+                foreach (var reference in owned)
+                {
+                    if (reference.TryGetTarget(out var child) && child.TemplatedParent is null)
+                    {
+                        child.TemplatedParent = _target;
+                        child.IsSetterTemplateChild = true;
+                    }
+                }
+            }
 
             return _value;
         }
@@ -47,25 +80,23 @@ namespace Avalonia.Styling
 
         void IValueEntry.Unsubscribe()
         {
-            if (_ownedTemplateChildren.Count == 0)
+            if (!_isActive || _ownedTemplateChildren is not { } children)
                 return;
 
-            var children = _ownedTemplateChildren;
-            _ownedTemplateChildren = default;
+            _isActive = false;
             // Reentrant reads must not reattach bindings while this entry is being removed.
             _isUnsubscribing = true;
             try
             {
-                foreach (var child in children)
+                foreach (var reference in children)
                 {
-                    if (ReferenceEquals(child.TemplatedParent, _target))
+                    if (reference.TryGetTarget(out var child) && ReferenceEquals(child.TemplatedParent, _target))
                         child.TemplatedParent = null;
                 }
             }
             finally
             {
                 _isUnsubscribing = false;
-                children.Dispose();
             }
         }
     }

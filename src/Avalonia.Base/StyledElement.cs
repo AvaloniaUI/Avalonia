@@ -251,8 +251,19 @@ namespace Avalonia
         public AvaloniaObject? TemplatedParent
         {
             get => _templatedParent;
-            internal set => SetAndRaise(TemplatedParentProperty, ref _templatedParent, value);
+            internal set
+            {
+                if (!ReferenceEquals(_templatedParent, value))
+                    IsSetterTemplateChild = false;
+                SetAndRaise(TemplatedParentProperty, ref _templatedParent, value);
+            }
         }
+
+        /// <summary>
+        /// Gets or sets whether template ownership belongs to a property setter rather than
+        /// the control template, and must survive replacement of the control template.
+        /// </summary>
+        internal bool IsSetterTemplateChild { get; set; }
 
         /// <summary>
         /// Gets or sets the theme to be applied to the element.

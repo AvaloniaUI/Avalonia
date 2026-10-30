@@ -319,6 +319,10 @@ namespace Avalonia.Controls.Primitives
                 {
                     foreach (var child in this.GetTemplateDescendants())
                     {
+                        // Setter-created content belongs to the setter's lifetime.
+                        if (child.IsSetterTemplateChild)
+                            continue;
+
                         child.TemplatedParent = null;
                         ((ISetLogicalParent)child).SetParent(null);
                     }
