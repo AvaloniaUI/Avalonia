@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Logging;
 using Avalonia.Platform;
 
@@ -146,21 +147,44 @@ namespace Avalonia.Media.Fonts.Tables.Cff
         /// 32-bit (CFF2) vs 16-bit (CFF) INDEX count.
         /// </summary>
         internal static CffIndex ParseLocalSubrs(ReadOnlyMemory<byte> data, CffDict dict, bool wideCount = false)
+            => TryParsePrivateDict(data, dict, out var privateDict, out var privateOffset)
+                ? ReadLocalSubrs(data, privateDict, privateOffset, wideCount)
+                : default;
+
+        /// <summary>
+        /// Parses the Private DICT referenced by a DICT's Private entry (size, offset). Returns
+        /// <c>false</c> when there is none or it does not fit the table.
+        /// </summary>
+        internal static bool TryParsePrivateDict(ReadOnlyMemory<byte> data, CffDict dict,
+            [NotNullWhen(true)] out CffDict? privateDict, out int privateOffset)
         {
+            privateDict = null;
+            privateOffset = 0;
+
             if (!dict.TryGetOperands(OpPrivate, out var priv) || priv.Length != 2)
             {
-                return default;
+                return false;
             }
 
             int privateSize = (int)priv[0];
-            int privateOffset = (int)priv[1];
+            privateOffset = (int)priv[1];
 
             if (privateSize <= 0 || privateOffset <= 0 || privateOffset + privateSize > data.Length)
             {
-                return default;
+                return false;
             }
 
-            var privateDict = CffDict.Parse(data.Span.Slice(privateOffset, privateSize));
+            privateDict = CffDict.Parse(data.Span.Slice(privateOffset, privateSize));
+            return true;
+        }
+
+        /// <summary>
+        /// Reads the Local Subr INDEX of a parsed Private DICT located at <paramref name="privateOffset"/>,
+        /// or an empty INDEX when it has none.
+        /// </summary>
+        internal static CffIndex ReadLocalSubrs(ReadOnlyMemory<byte> data, CffDict privateDict, int privateOffset,
+            bool wideCount)
+        {
             int localSubrsOffset = privateDict.GetInt(OpLocalSubrs, 0);
 
             // The Local Subr offset is relative to the start of the Private DICT.

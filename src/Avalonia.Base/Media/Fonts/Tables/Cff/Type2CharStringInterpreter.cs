@@ -82,7 +82,11 @@ namespace Avalonia.Media.Fonts.Tables.Cff
             _blendScalersValid = false;
         }
 
-        /// <summary>Creates an interpreter for a CFF2 charstring, enabling the blend / vsindex operators.</summary>
+        /// <summary>
+        /// Creates an interpreter for a CFF2 charstring, enabling the blend / vsindex operators.
+        /// <paramref name="defaultVsIndex"/> is the glyph's Font DICT Private <c>vsindex</c>, which
+        /// blends use until the charstring selects another with the <c>vsindex</c> operator.
+        /// </summary>
         public Type2CharStringInterpreter(
             IGeometryContext context,
             Matrix transform,
@@ -90,11 +94,13 @@ namespace Avalonia.Media.Fonts.Tables.Cff
             CffIndex localSubrs,
             Span<double> stack,
             ItemVariationStore? vstore,
+            int defaultVsIndex,
             ReadOnlySpan<float> activeCoords,
             Span<float> blendScalers)
             : this(context, transform, globalSubrs, localSubrs, stack)
         {
             _vstore = vstore;
+            _vsindex = defaultVsIndex;
             _activeCoords = activeCoords;
             _blendScalers = blendScalers;
             _widthParsed = true; // CFF2 charstrings carry no leading width
