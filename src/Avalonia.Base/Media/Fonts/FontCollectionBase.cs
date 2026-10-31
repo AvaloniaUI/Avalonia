@@ -1234,11 +1234,15 @@ namespace Avalonia.Media.Fonts
             FontCollectionKey key)
         {
             var candidates = new Dictionary<FontCollectionKey, GlyphTypeface?>(glyphTypefaces);
+            var closestFaces = new List<GlyphTypeface>(variableFaces.Count);
 
             foreach (var face in variableFaces)
             {
                 face.TryCreateAxisPosition(key, out var closest);
-                AddCandidate(face.Typeface.WithVariation(closest));
+
+                var closestFace = face.Typeface.WithVariation(closest);
+                closestFaces.Add(closestFace);
+                AddCandidate(closestFace);
 
                 foreach (var instance in face.Instances)
                 {
@@ -1249,7 +1253,37 @@ namespace Avalonia.Media.Fonts
                 }
             }
 
+            // The weight fallback probes the requested weight in steps of 50, so it misses an axis
+            // end off that grid (wght 900 for a request of 975) and ends on an arbitrary face. When
+            // no candidate is further towards the request than the clamped position, that position
+            // is the nearest weight, so it is also keyed at the requested weight.
+            foreach (var closestFace in closestFaces)
+            {
+                if (closestFace.Weight != key.Weight && !HasWeightBeyond(closestFace.Weight))
+                {
+                    var aliasKey = new FontCollectionKey(closestFace.Style, key.Weight, closestFace.Stretch);
+
+                    if (!candidates.ContainsKey(aliasKey))
+                    {
+                        candidates.Add(aliasKey, closestFace);
+                    }
+                }
+            }
+
             return candidates;
+
+            bool HasWeightBeyond(FontWeight weight)
+            {
+                foreach (var candidateKey in candidates.Keys)
+                {
+                    if (key.Weight > weight ? candidateKey.Weight > weight : candidateKey.Weight < weight)
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
 
             void AddCandidate(GlyphTypeface candidate)
             {
