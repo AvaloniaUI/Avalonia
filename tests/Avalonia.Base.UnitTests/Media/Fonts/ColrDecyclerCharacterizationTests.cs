@@ -116,6 +116,33 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
             Assert.Null(Record.Exception(() => typeface!.GetGlyphDrawing(3)));
         }
 
+        [Fact]
+        public void Shared_Layer_Dag_Over_The_Edge_Budget_Yields_No_Drawing()
+        {
+            // Two nested PaintColrLayers levels whose 255 entries all point at the same paint: no
+            // cycle and a shallow depth, but the expanded tree has over 130,000 paints, past the
+            // per-glyph edge budget. The glyph then has no drawing instead of an unbounded paint tree.
+            var typeface = BuildSharedLayerDag(levels: 2);
+
+            Assert.Null(typeface.GetGlyphDrawing(3));
+        }
+
+        private static GlyphTypeface BuildSharedLayerDag(int levels)
+        {
+            var plain = SyntheticFont.FromAsset(SyntheticFont.Assets.InterRegular).TryCreateGlyphTypeface()!;
+
+            var paint = ColrPaint.Glyph(plain.CharacterToGlyphMap['A'], ColrPaint.Solid(0));
+            for (var i = 0; i < levels; i++)
+            {
+                paint = ColrPaint.Layers(Enumerable.Repeat(paint, 255).ToArray());
+            }
+
+            var colr = new ColrV1Builder().BaseGlyph(3, paint).Build();
+
+            return ColrTestFont.Graft(SyntheticFont.FromAsset(SyntheticFont.Assets.InterRegular), colr)
+                .TryCreateGlyphTypeface()!;
+        }
+
         // ── helpers ──
 
         /// <summary>
