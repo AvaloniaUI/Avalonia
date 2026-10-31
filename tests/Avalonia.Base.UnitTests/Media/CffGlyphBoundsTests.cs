@@ -36,6 +36,10 @@ namespace Avalonia.Base.UnitTests.Media
         // Local Subr and a Private DICT vsindex of 1; the tests describe the glyphs they use.
         private const string Cff2FdAsset = "resm:Avalonia.Base.UnitTests.Assets.Cff2FdTest.otf?assembly=Avalonia.Base.UnitTests";
 
+        // Synthetic non-CID CFF font with operator-level fixtures, among them an accented glyph built
+        // by seac.
+        private const string CffOpsAsset = "resm:Avalonia.Base.UnitTests.Assets.CffOpsTest.otf?assembly=Avalonia.Base.UnitTests";
+
         private const int OpFdSelect = CffDict.TwoByteOperatorBase + 37;
 
         private static readonly OpenTypeTag s_wghtTag = OpenTypeTag.Parse("wght");
@@ -96,6 +100,17 @@ namespace Avalonia.Base.UnitTests.Media
             var gt = LoadTypeface(CffAsset);
 
             AssertBounds(BoundsOf(gt, ch), xMin, yMin, xMax, yMax);
+        }
+
+        [Fact]
+        public void Seac_Composes_The_Base_And_The_Offset_Accent()
+        {
+            var gt = LoadTypeface(CffOpsAsset);
+
+            // U+00C1 is "250 -50 65 194 endchar": base StandardEncoding 65 ('A', box 100..600 x 0..700)
+            // plus accent 194 ('acute', box 300..400 x 750..850) moved by (250, -50) to
+            // 550..650 x 700..800. fontTools' ControlBoundsPen gives the union (100, 0, 650, 800).
+            Assert.Equal(new GlyphBounds(100, 0, 650, 800), BoundsOf(gt, '\u00C1'));
         }
 
         // --- CID-keyed CFF: same outlines reached through FDSelect + FDArray local subrs. ---
