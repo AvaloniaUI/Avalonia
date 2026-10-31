@@ -14,6 +14,9 @@ namespace Avalonia.Media.Fonts.Tables.Cff
     {
         private const int MaxDepth = 10;
 
+        // Type 2 implementation limit for the transient array that put / get address.
+        private const int TransientArraySize = 32;
+
         // Total-operation budget across the whole charstring (shared through the recursive
         // Execute calls). MaxDepth bounds call *nesting*, but each level can fan out to
         // thousands of callsubr/callgsubr ops, so depth alone allows ~fanout^MaxDepth executions
@@ -45,6 +48,11 @@ namespace Avalonia.Media.Fonts.Tables.Cff
         private bool _done;
         private int _depth;
         private int _ops;
+
+        // CFF1 arithmetic / storage state. CFF2 removes those operators, so it never touches either.
+        private readonly bool _isCff2;
+        private double[]? _transient;
+        private uint _randomState;
 
         // CFF2 variation state. _vstore + _activeCoords drive blend's region scalers (cached per
         // vsindex into _blendScalers); null / empty for CFF1, where blend / vsindex never appear.
@@ -80,6 +88,9 @@ namespace Avalonia.Media.Fonts.Tables.Cff
             _done = false;
             _depth = 0;
             _ops = 0;
+            _isCff2 = false;
+            _transient = null;
+            _randomState = 0x9E3779B9;
             _vstore = null;
             _activeCoords = default;
             _blendScalers = default;
@@ -105,6 +116,7 @@ namespace Avalonia.Media.Fonts.Tables.Cff
             Span<float> blendScalers)
             : this(context, transform, globalSubrs, localSubrs, stack)
         {
+            _isCff2 = true;
             _vstore = vstore;
             _vsindex = defaultVsIndex;
             _activeCoords = activeCoords;
@@ -271,7 +283,13 @@ namespace Avalonia.Media.Fonts.Tables.Cff
                             case 35: Flex(); break;
                             case 36: HFlex1(); break;
                             case 37: Flex1(); break;
-                            default: _sp = 0; break; // unknown/arith op — drop operands
+                            default:
+                                if (_isCff2 || !TryArithmetic(b1))
+                                {
+                                    _sp = 0; // reserved operator: drop the operands
+                                }
+
+                                break;
                         }
                         break;
                     }
@@ -283,6 +301,153 @@ namespace Avalonia.Media.Fonts.Tables.Cff
             }
 
             _depth--;
+        }
+
+        // The CFF1 arithmetic, storage and conditional operators (Type 2 spec, sections 4.4 to 4.6).
+        // Each pops its arguments and pushes its result in place. An operator with too few operands
+        // clears the stack, as a reserved operator does. Returns false for an operator not in this set.
+        private bool TryArithmetic(byte op)
+        {
+            int arity = op switch
+            {
+                5 or 9 or 14 or 18 or 21 or 26 or 27 or 29 => 1, // not abs neg drop get sqrt dup index
+                3 or 4 or 10 or 11 or 12 or 15 or 20 or 24 or 28 or 30 => 2, // and or add sub div eq put mul exch roll
+                22 => 4, // ifelse
+                23 => 0, // random
+                _ => -1
+            };
+
+            if (arity < 0)
+            {
+                return false;
+            }
+
+            if (_sp < arity)
+            {
+                _sp = 0;
+                return true;
+            }
+
+            switch (op)
+            {
+                case 3: Replace2(_stack[_sp - 2] != 0 && _stack[_sp - 1] != 0 ? 1 : 0); break; // and
+                case 4: Replace2(_stack[_sp - 2] != 0 || _stack[_sp - 1] != 0 ? 1 : 0); break; // or
+                case 5: _stack[_sp - 1] = _stack[_sp - 1] == 0 ? 1 : 0; break; // not
+                case 9: _stack[_sp - 1] = Math.Abs(_stack[_sp - 1]); break; // abs
+                case 10: Replace2(_stack[_sp - 2] + _stack[_sp - 1]); break; // add
+                case 11: Replace2(_stack[_sp - 2] - _stack[_sp - 1]); break; // sub
+                case 12: // div
+                    Replace2(_stack[_sp - 1] != 0 ? _stack[_sp - 2] / _stack[_sp - 1] : 0);
+                    break;
+                case 14: _stack[_sp - 1] = -_stack[_sp - 1]; break; // neg
+                case 15: Replace2(_stack[_sp - 2] == _stack[_sp - 1] ? 1 : 0); break; // eq
+                case 18: _sp--; break; // drop
+                case 20: // put: val i put
+                {
+                    int index = (int)_stack[_sp - 1];
+                    if ((uint)index < TransientArraySize)
+                    {
+                        (_transient ??= new double[TransientArraySize])[index] = _stack[_sp - 2];
+                    }
+
+                    _sp -= 2;
+                    break;
+                }
+                case 21: // get: i get
+                {
+                    int index = (int)_stack[_sp - 1];
+                    _stack[_sp - 1] = (uint)index < TransientArraySize && _transient is not null
+                        ? _transient[index]
+                        : 0;
+                    break;
+                }
+                case 22: // ifelse: s1 s2 v1 v2 ifelse -> s1 when v1 <= v2, else s2
+                {
+                    double result = _stack[_sp - 2] <= _stack[_sp - 1] ? _stack[_sp - 4] : _stack[_sp - 3];
+                    _sp -= 3;
+                    _stack[_sp - 1] = result;
+                    break;
+                }
+                case 23: Push(NextRandom()); break; // random
+                case 24: Replace2(_stack[_sp - 2] * _stack[_sp - 1]); break; // mul
+                case 26: _stack[_sp - 1] = _stack[_sp - 1] > 0 ? Math.Sqrt(_stack[_sp - 1]) : 0; break; // sqrt
+                case 27: Push(_stack[_sp - 1]); break; // dup
+                case 28: (_stack[_sp - 2], _stack[_sp - 1]) = (_stack[_sp - 1], _stack[_sp - 2]); break; // exch
+                case 29: Index(); break;
+                case 30: Roll(); break;
+            }
+
+            return true;
+        }
+
+        private void Replace2(double result)
+        {
+            _sp--;
+            _stack[_sp - 1] = result;
+        }
+
+        private void Push(double value)
+        {
+            if (_sp >= _stack.Length)
+            {
+                throw new InvalidOperationException("CFF charstring operand stack overflow.");
+            }
+
+            _stack[_sp++] = value;
+        }
+
+        // num(n-1) ... num0 i index: replaces i with a copy of num_i, counting from the top. A
+        // negative i copies num0.
+        private void Index()
+        {
+            int i = (int)_stack[--_sp];
+
+            if (i < 0)
+            {
+                i = 0;
+            }
+
+            if (i >= _sp)
+            {
+                _sp = 0;
+                return;
+            }
+
+            Push(_stack[_sp - 1 - i]);
+        }
+
+        // num(n-1) ... num0 n j roll: rotates the top n operands by j, positive j moving them toward
+        // the top of the stack.
+        private void Roll()
+        {
+            int j = (int)_stack[--_sp];
+            int n = (int)_stack[--_sp];
+
+            if (n <= 0 || n > _sp)
+            {
+                _sp = 0;
+                return;
+            }
+
+            var window = _stack.Slice(_sp - n, n);
+            int shift = ((j % n) + n) % n;
+
+            // Rotating right by `shift` is the three-reversal rotation.
+            window.Reverse();
+            window.Slice(0, shift).Reverse();
+            window.Slice(shift).Reverse();
+        }
+
+        // random: a value in (0, 1]. A fixed-seed xorshift keeps outlines reproducible across runs.
+        private double NextRandom()
+        {
+            uint x = _randomState;
+            x ^= x << 13;
+            x ^= x >> 17;
+            x ^= x << 5;
+            _randomState = x;
+
+            return (x + 1.0) / (uint.MaxValue + 1.0);
         }
 
         private int ConsumeWidth(WidthRule rule)
