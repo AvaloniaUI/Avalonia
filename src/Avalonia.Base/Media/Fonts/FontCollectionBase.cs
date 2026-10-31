@@ -926,8 +926,9 @@ namespace Avalonia.Media.Fonts
 
         private void MaterializeInstanceFamily(string familyName)
         {
-            if (!_instanceFamilies.IsEmpty &&
-                _instanceFamilies.TryGetValue(familyName, out var family) &&
+            // TryGetValue takes no lock; IsEmpty takes all of them when the dictionary is empty,
+            // which it is for every lookup in a collection without instance families.
+            if (_instanceFamilies.TryGetValue(familyName, out var family) &&
                 family.HasPending)
             {
                 family.Materialize(this);
