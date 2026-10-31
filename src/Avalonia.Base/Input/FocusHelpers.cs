@@ -27,27 +27,16 @@ namespace Avalonia.Input
 
             var children = GetInputElementChildren(parent);
 
-            bool hasFocusChildren = false;
-
             foreach (var child in children)
             {
-                if (IsVisible(child))
-                {
-                    if (child.Focusable)
-                    {
-                        hasFocusChildren = true;
-                    }
-                    else if (CanHaveFocusableChildren(child as AvaloniaObject))
-                    {
-                        hasFocusChildren = true;
-                    }
-                }
+                if (!child.IsEffectivelyEnabled || !IsVisible(child))
+                    continue;
 
-                if (hasFocusChildren)
-                    break;
+                if (IsFocusable(child) || CanHaveFocusableChildren(child as AvaloniaObject))
+                    return true;
             }
 
-            return hasFocusChildren;
+            return false;
         }
 
         public static IInputElement? GetFocusParent(IInputElement? inputElement)
@@ -83,7 +72,7 @@ namespace Avalonia.Input
 
         internal static bool IsFocusable(IInputElement? element)
         {
-            return element?.Focusable ?? false;
+            return element is { Focusable: true, IsEffectivelyEnabled: true } && IsVisible(element);
         }
 
         internal static bool CanHaveChildren(IInputElement? element)
