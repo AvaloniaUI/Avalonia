@@ -515,9 +515,12 @@ namespace Avalonia.Media.Fonts.Tables.Colr
 
         private static Matrix CreateSkew(double xAngleRadians, double yAngleRadians, Point center)
         {
+            // Angles are counter-clockwise in y-up font space: a positive x angle leans the y axis
+            // toward -x, so x' = x - y tan(xAngle), while y' = y + x tan(yAngle) (fontTools
+            // skew(-x, y), HarfBuzz push_skew).
             var skewMatrix = new Matrix(
                 1.0, Math.Tan(yAngleRadians),
-                Math.Tan(xAngleRadians), 1.0,
+                -Math.Tan(xAngleRadians), 1.0,
                 0.0, 0.0
             );
 
