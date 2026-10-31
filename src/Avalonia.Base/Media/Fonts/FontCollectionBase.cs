@@ -337,30 +337,21 @@ namespace Avalonia.Media.Fonts
         /// </summary>
         private GlyphTypeface ResolveFromFace(GlyphTypeface glyphTypeface, FontCollectionKey key)
         {
-            var nearest = glyphTypeface;
-
-            if (glyphTypeface.VariationAxes.Count > 0 && glyphTypeface.FontSimulations == FontSimulations.None)
+            // A one-face family: the face is registered under its style alone, the way a request
+            // is keyed.
+            var faces = new Dictionary<FontCollectionKey, GlyphTypeface?>
             {
-                var variableFaces = new List<VariableFace>(1)
-                {
-                    _variableFaces.GetValue(glyphTypeface, static gt => new VariableFace(gt))
-                };
+                [glyphTypeface.ToFontCollectionKey() with { Variation = default }] = glyphTypeface
+            };
 
-                if (TryGetVariedMatch(variableFaces, key, out var varied))
-                {
-                    return varied;
-                }
+            if (!TryGetMatch(faces, key, allowNearestMatch: true, out var nearest, out var matchKind))
+            {
+                return glyphTypeface;
+            }
 
-                var faces = new Dictionary<FontCollectionKey, GlyphTypeface?>
-                {
-                    [new FontCollectionKey(glyphTypeface.Style, glyphTypeface.Weight, glyphTypeface.Stretch)] =
-                        glyphTypeface
-                };
-
-                if (TryGetNearestMatch(CreateVariedCandidates(faces, variableFaces, key), key, out var candidate))
-                {
-                    nearest = candidate;
-                }
+            if (matchKind == MatchKind.VariedFace)
+            {
+                return nearest;
             }
 
             if (!nearest.ToFontCollectionKey().StyleEquals(key) &&
