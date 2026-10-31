@@ -399,18 +399,19 @@ namespace Avalonia.Media
         /// <para>
         /// Reference-shared (no per-clone allocation): every Tables/* parser instance,
         /// the name records, the family / face name dictionaries, the character map,
-        /// the glyph count, and the static-design weight / style / stretch. None of
-        /// these depend on variation — the per-glyph delta tables (HVAR / VVAR /
-        /// gvar) are read on demand against the clone's variation point, and MVAR's
-        /// font-wide deltas are applied to a fresh <see cref="FontMetrics"/> struct
-        /// here at clone time.
+        /// and the glyph count. None of these depend on variation — the per-glyph
+        /// delta tables (HVAR / VVAR / gvar) are read on demand against the clone's
+        /// variation point, and MVAR's font-wide deltas are applied to a fresh
+        /// <see cref="FontMetrics"/> struct here at clone time.
         /// </para>
         /// <para>
         /// Per-clone: the platform typeface (cloned via
         /// <see cref="IPlatformTypeface.WithVariation"/> — a no-op when the platform
         /// hasn't overridden it, an actual variation-bound face when it has), the
-        /// variation position, and the lazy shaper typeface (cleared so the clone
-        /// materializes its own variation-aware shaper).
+        /// variation position, the lazy shaper typeface (cleared so the clone
+        /// materializes its own variation-aware shaper), and <see cref="Weight"/> /
+        /// <see cref="Style"/> / <see cref="Stretch"/>, which are projected from the
+        /// <c>wght</c>, <c>ital</c> / <c>slnt</c> and <c>wdth</c> axes of the position.
         /// </para>
         /// </remarks>
         private GlyphTypeface(GlyphTypeface source, IPlatformTypeface platformTypeface, NormalizedVariationPosition variation)
@@ -460,14 +461,12 @@ namespace Avalonia.Media
             IsLastResort = source.IsLastResort;
             FontSimulations = source.FontSimulations;
 
-            // Weight / Style / Stretch stay at the source's design values. A future
-            // change could project the variation onto these (e.g. wght=900 →
-            // Weight.Black) so reflected typeface identity tracks the active
-            // variation. For now, clones identify by their normalized variation
-            // position, not by these properties.
-            Weight = source.Weight;
-            Style = source.Style;
-            Stretch = source.Stretch;
+            // Weight / Style / Stretch describe the face the clone draws, so font matching sees
+            // a wght=700 clone as Bold and does not synthesize bold on top of it. Axes the font
+            // lacks keep the source's static values.
+            Weight = ProjectWeight(source, variation);
+            Style = ProjectStyle(source, variation);
+            Stretch = ProjectStretch(source, variation);
 
             // Metrics: apply MVAR deltas to the source's default-instance metrics. The
             // sign conventions follow GlyphTypeface's source constructor — Avalonia's
@@ -572,6 +571,170 @@ namespace Avalonia.Media
                 StrikethroughPosition = strikethroughPosition,
                 StrikethroughThickness = strikethroughThickness,
             };
+        }
+
+        /// <summary>
+        /// Gets the Weight / Style / Stretch a clone of this typeface at
+        /// <paramref name="variation"/> reports, without creating the clone.
+        /// </summary>
+        internal FontCollectionKey GetProjectedKey(NormalizedVariationPosition variation)
+        {
+            // Positions are absolute, so a clone at a position draws what its source draws there.
+            // The clone's own Weight / Style / Stretch describe only its own position and would
+            // misreport the default position and the axes the font lacks.
+            if (_sourceTypeface is not null)
+            {
+                return _sourceTypeface.GetProjectedKey(variation);
+            }
+
+            if (_fvarTable is null || variation.IsDefault)
+            {
+                return new FontCollectionKey(Style, Weight, Stretch);
+            }
+
+            return new FontCollectionKey(
+                ProjectStyle(this, variation),
+                ProjectWeight(this, variation),
+                ProjectStretch(this, variation));
+        }
+
+        private static FontWeight ProjectWeight(GlyphTypeface source, NormalizedVariationPosition variation)
+        {
+            if (!source.TryGetUserAxisValue(variation, FvarAxisTags.Weight, out var wght))
+            {
+                return source.Weight;
+            }
+
+            var weight = (FontWeight)Math.Clamp((int)MathF.Round(wght), 1, 1000);
+
+            // A bold-simulated source reports Bold whatever its design weight; the emboldened
+            // outlines stay at least that heavy at every position.
+            if ((source.FontSimulations & FontSimulations.Bold) != 0 && weight < FontWeight.Bold)
+            {
+                weight = FontWeight.Bold;
+            }
+
+            return weight;
+        }
+
+        private static FontStyle ProjectStyle(GlyphTypeface source, NormalizedVariationPosition variation)
+        {
+            // An oblique-simulated source is slanted at every position.
+            if ((source.FontSimulations & FontSimulations.Oblique) != 0)
+            {
+                return source.Style;
+            }
+
+            var hasItal = source.TryGetUserAxisValue(variation, FvarAxisTags.Italic, out var ital);
+            var hasSlnt = source.TryGetUserAxisValue(variation, FvarAxisTags.Slant, out var slnt);
+
+            if (hasItal && ital >= 0.5f)
+            {
+                return FontStyle.Italic;
+            }
+
+            // slnt is measured counter-clockwise, so a conventional forward slant is negative.
+            if (hasSlnt && slnt < 0f)
+            {
+                return FontStyle.Oblique;
+            }
+
+            return hasItal || hasSlnt ? FontStyle.Normal : source.Style;
+        }
+
+        private static FontStretch ProjectStretch(GlyphTypeface source, NormalizedVariationPosition variation)
+        {
+            return source.TryGetUserAxisValue(variation, FvarAxisTags.Width, out var wdth)
+                ? GetFontStretch(wdth)
+                : source.Stretch;
+        }
+
+        /// <summary>
+        /// Maps a <c>wdth</c> axis value (percent of normal width) to the nearest
+        /// <see cref="FontStretch"/>, using the OS/2 <c>usWidthClass</c> percentages.
+        /// </summary>
+        internal static FontStretch GetFontStretch(float widthPercentage)
+        {
+            // The thresholds are the midpoints between neighbouring usWidthClass percentages.
+            return widthPercentage switch
+            {
+                < 56.25f => FontStretch.UltraCondensed,
+                < 68.75f => FontStretch.ExtraCondensed,
+                < 81.25f => FontStretch.Condensed,
+                < 93.75f => FontStretch.SemiCondensed,
+                < 106.25f => FontStretch.Normal,
+                < 118.75f => FontStretch.SemiExpanded,
+                < 137.5f => FontStretch.Expanded,
+                < 175f => FontStretch.ExtraExpanded,
+                _ => FontStretch.UltraExpanded
+            };
+        }
+
+        /// <summary>
+        /// Maps a <see cref="FontStretch"/> to its <c>wdth</c> axis value (percent of normal
+        /// width), the OS/2 <c>usWidthClass</c> percentage.
+        /// </summary>
+        internal static float GetWidthPercentage(FontStretch stretch)
+        {
+            return stretch switch
+            {
+                FontStretch.UltraCondensed => 50f,
+                FontStretch.ExtraCondensed => 62.5f,
+                FontStretch.Condensed => 75f,
+                FontStretch.SemiCondensed => 87.5f,
+                FontStretch.SemiExpanded => 112.5f,
+                FontStretch.Expanded => 125f,
+                FontStretch.ExtraExpanded => 150f,
+                FontStretch.UltraExpanded => 200f,
+                _ => 100f
+            };
+        }
+
+        /// <summary>
+        /// Converts the normalized coordinate of <paramref name="axis"/> in
+        /// <paramref name="position"/> back to user space, undoing the avar correction and the
+        /// fvar normalization <see cref="CreateNormalizedPosition(FontVariationSettings, int?)"/> applies.
+        /// </summary>
+        /// <remarks>
+        /// Normalized coordinates are quantized to F2Dot14, so the result can differ from the
+        /// user value the position was created from by a fraction of a unit.
+        /// </remarks>
+        /// <returns><c>false</c> when the font has no such axis.</returns>
+        internal bool TryGetUserAxisValue(NormalizedVariationPosition position, OpenTypeTag axis, out float userValue)
+        {
+            userValue = 0f;
+
+            if (_fvarTable is null)
+            {
+                return false;
+            }
+
+            var axes = _fvarTable.Axes;
+
+            for (var i = 0; i < axes.Length; i++)
+            {
+                var record = axes[i];
+
+                if (record.Tag != axis)
+                {
+                    continue;
+                }
+
+                var normalized = position.GetCoordinateOrDefault(axis);
+
+                if (_avarTable is not null)
+                {
+                    normalized = _avarTable.Unmap(i, normalized);
+                }
+
+                userValue = normalized < 0f
+                    ? record.DefaultValue + normalized * (record.DefaultValue - record.MinimumValue)
+                    : record.DefaultValue + normalized * (record.MaximumValue - record.DefaultValue);
+
+                return true;
+            }
+
+            return false;
         }
 
         private static ushort GetFontDesignEmHeight(HeadTable? headTable)
@@ -950,7 +1113,7 @@ namespace Avalonia.Media
         /// <para>
         /// These are the normalized coordinates used by gvar / HVAR / MVAR / VVAR
         /// consumers. They are produced from human-readable user-space values
-        /// (e.g. <c>wght = 700</c>) by <see cref="CreateNormalizedPosition"/>.
+        /// (e.g. <c>wght = 700</c>) by <see cref="CreateNormalizedPosition(FontVariationSettings, int?)"/>.
         /// </para>
         /// </remarks>
         internal NormalizedVariationPosition VariationPosition => _variationPosition;
@@ -979,7 +1142,7 @@ namespace Avalonia.Media
         /// Named instances are pre-defined points in variation space the font designer has
         /// labeled (e.g. "SemiBold" at <c>wght=600</c>). Pass an instance's
         /// <see cref="FontVariationInstance.Index"/> to
-        /// <see cref="CreateNormalizedPosition"/> as a shorthand for "give me the
+        /// <see cref="CreateNormalizedPosition(FontVariationSettings, int?)"/> as a shorthand for "give me the
         /// position of this preset".
         /// </remarks>
         public IReadOnlyList<FontVariationInstance> NamedInstances
@@ -1698,11 +1861,7 @@ namespace Avalonia.Media
                 return default;
             }
 
-            var axes = _fvarTable.Axes;
-
-            // Start from the named instance's coords when one was requested, then overlay
-            // any explicit user values. Both inputs are user-space.
-            Dictionary<OpenTypeTag, float>? effective = null;
+            NormalizedVariationPosition basePosition = default;
 
             if (instanceIndex is int idx)
             {
@@ -1714,84 +1873,70 @@ namespace Avalonia.Media
                         $"Instance index must be in the range [0, {_fvarTable.Instances.Length}).");
                 }
 
-                var instance = _fvarTable.Instances[idx];
-                effective = new Dictionary<OpenTypeTag, float>(instance.Coordinates);
+                basePosition = NormalizeUserValues(_fvarTable.Instances[idx].Coordinates);
             }
 
-            if (settings is not null && !settings.IsEmpty)
+            return CreateNormalizedPosition(settings, basePosition);
+        }
+
+        /// <summary>
+        /// Derives this font's <see cref="NormalizedVariationPosition"/> by starting from
+        /// <paramref name="basePosition"/> and overriding it per axis with the user-space
+        /// <paramref name="settings"/>.
+        /// </summary>
+        /// <remarks>
+        /// This is the CSS order of font matching: the position chosen from weight, width and
+        /// style comes first, and <c>font-variation-settings</c> overrides only the axes it names.
+        /// </remarks>
+        /// <param name="settings">
+        /// User-space axis values; axes the font does not declare are ignored. <c>null</c> or
+        /// empty keeps <paramref name="basePosition"/> unchanged.
+        /// </param>
+        /// <param name="basePosition">
+        /// A normalized position of this font, for example the <see cref="VariationPosition"/>
+        /// of a clone picked during font matching.
+        /// </param>
+        /// <returns>
+        /// The combined normalized position; <c>default(NormalizedVariationPosition)</c> for
+        /// static fonts and when every axis resolves to its default value.
+        /// </returns>
+        internal NormalizedVariationPosition CreateNormalizedPosition(
+            FontVariationSettings? settings,
+            NormalizedVariationPosition basePosition)
+        {
+            if (_fvarTable is null)
             {
-                effective ??= new Dictionary<OpenTypeTag, float>(settings.Variations.Length);
-                foreach (var variation in settings.Variations)
-                {
-                    effective[variation.Tag] = (float)variation.Value;
-                }
+                return default;
             }
 
-            // Per-axis normalization. Skip axes that resolve to the default so the result
-            // equals default(NormalizedVariationPosition) when the caller asked for the
-            // default-instance point — important for cache identity at the
-            // GlyphTypeface layer (WithVariation(default) returns the source).
+            if (settings is null || settings.IsEmpty)
+            {
+                return basePosition;
+            }
+
+            var axes = _fvarTable.Axes;
+            var variations = settings.Variations;
+
+            // Skip axes that resolve to the default so the result equals
+            // default(NormalizedVariationPosition) when the caller asked for the default-instance
+            // point — important for cache identity at the GlyphTypeface layer
+            // (WithVariation(default) returns the source).
             Dictionary<OpenTypeTag, float>? normalized = null;
 
             for (var i = 0; i < axes.Length; i++)
             {
                 var axis = axes[i];
+                var normalizedValue = basePosition.GetCoordinateOrDefault(axis.Tag);
 
-                var userValue = axis.DefaultValue;
-                if (effective is not null && effective.TryGetValue(axis.Tag, out var supplied))
+                // The last setting for an axis wins, matching CSS declaration order.
+                for (var j = variations.Length - 1; j >= 0; j--)
                 {
-                    userValue = supplied;
+                    if (variations[j].Tag == axis.Tag)
+                    {
+                        normalizedValue = NormalizeAxisValue(i, (float)variations[j].Value);
+                        break;
+                    }
                 }
-
-                // Clamp to the axis range. fvar treats values outside [min, max] as a
-                // best-effort clamp rather than an error — matches CSS and DirectWrite.
-                if (userValue < axis.MinimumValue)
-                {
-                    userValue = axis.MinimumValue;
-                }
-                else if (userValue > axis.MaximumValue)
-                {
-                    userValue = axis.MaximumValue;
-                }
-
-                // Linear fvar normalization into [-1, 1] anchored at the default value.
-                // The two halves of the axis (below and above default) are normalized
-                // independently — this is what makes the design "default" land at 0
-                // regardless of where min and max sit.
-                float normalizedValue;
-                if (userValue == axis.DefaultValue)
-                {
-                    normalizedValue = 0f;
-                }
-                else if (userValue < axis.DefaultValue)
-                {
-                    var range = axis.DefaultValue - axis.MinimumValue;
-                    normalizedValue = range > 0f
-                        ? (userValue - axis.DefaultValue) / range
-                        : 0f;
-                }
-                else
-                {
-                    var range = axis.MaximumValue - axis.DefaultValue;
-                    normalizedValue = range > 0f
-                        ? (userValue - axis.DefaultValue) / range
-                        : 0f;
-                }
-
-                // avar segment-map correction. Identity on axes the table doesn't cover
-                // (or when the table is absent), so safe to call unconditionally inside
-                // the loop once we've checked _avarTable is non-null.
-                if (_avarTable is not null)
-                {
-                    normalizedValue = _avarTable.Remap(i, normalizedValue);
-                }
-
-                // Quantize to the F2Dot14 grid (1/16384) the font binary itself uses for
-                // normalized coordinates — gvar, avar and the item variation stores cannot
-                // represent a finer position, so this loses nothing. It also bounds the
-                // per-source variation-clone cache under animation: a swept axis lands on
-                // at most 32769 distinct positions instead of one per float progress value.
-                normalizedValue = MathF.Round(normalizedValue * 16384f) / 16384f;
 
                 if (normalizedValue != 0f)
                 {
@@ -1800,13 +1945,93 @@ namespace Avalonia.Media
                 }
             }
 
-            if (normalized is null)
+            return normalized is null ? default : NormalizedVariationPosition.FromCoordinates(normalized);
+        }
+
+        /// <summary>
+        /// Normalizes a full set of user-space axis values, such as a named instance's
+        /// coordinates. Axes missing from <paramref name="userValues"/> take their default.
+        /// </summary>
+        private NormalizedVariationPosition NormalizeUserValues(IReadOnlyDictionary<OpenTypeTag, float> userValues)
+        {
+            var axes = _fvarTable!.Axes;
+
+            Dictionary<OpenTypeTag, float>? normalized = null;
+
+            for (var i = 0; i < axes.Length; i++)
             {
-                // Every axis came out at default — return the canonical "no variation" value.
-                return default;
+                if (!userValues.TryGetValue(axes[i].Tag, out var userValue))
+                {
+                    continue;
+                }
+
+                var normalizedValue = NormalizeAxisValue(i, userValue);
+
+                if (normalizedValue != 0f)
+                {
+                    normalized ??= new Dictionary<OpenTypeTag, float>(axes.Length);
+                    normalized[axes[i].Tag] = normalizedValue;
+                }
             }
 
-            return NormalizedVariationPosition.FromCoordinates(normalized);
+            return normalized is null ? default : NormalizedVariationPosition.FromCoordinates(normalized);
+        }
+
+        /// <summary>
+        /// Converts a user-space value of the axis at <paramref name="axisIndex"/> to its
+        /// normalized, avar-corrected, F2Dot14-quantized coordinate.
+        /// </summary>
+        private float NormalizeAxisValue(int axisIndex, float userValue)
+        {
+            var axis = _fvarTable!.Axes[axisIndex];
+
+            // Clamp to the axis range. fvar treats values outside [min, max] as a
+            // best-effort clamp rather than an error — matches CSS and DirectWrite.
+            if (userValue < axis.MinimumValue)
+            {
+                userValue = axis.MinimumValue;
+            }
+            else if (userValue > axis.MaximumValue)
+            {
+                userValue = axis.MaximumValue;
+            }
+
+            // Linear fvar normalization into [-1, 1] anchored at the default value.
+            // The two halves of the axis (below and above default) are normalized
+            // independently — this is what makes the design "default" land at 0
+            // regardless of where min and max sit.
+            float normalizedValue;
+            if (userValue == axis.DefaultValue)
+            {
+                normalizedValue = 0f;
+            }
+            else if (userValue < axis.DefaultValue)
+            {
+                var range = axis.DefaultValue - axis.MinimumValue;
+                normalizedValue = range > 0f
+                    ? (userValue - axis.DefaultValue) / range
+                    : 0f;
+            }
+            else
+            {
+                var range = axis.MaximumValue - axis.DefaultValue;
+                normalizedValue = range > 0f
+                    ? (userValue - axis.DefaultValue) / range
+                    : 0f;
+            }
+
+            // avar segment-map correction. Identity on axes the table doesn't cover.
+            if (_avarTable is not null)
+            {
+                normalizedValue = _avarTable.Remap(axisIndex, normalizedValue);
+            }
+
+            // Quantize to the F2Dot14 grid (1/16384) the font binary itself uses for
+            // normalized coordinates — gvar, avar and the item variation stores cannot
+            // represent a finer position, so this loses nothing. It also bounds the
+            // per-source variation-clone cache under animation: a swept axis lands on
+            // at most 32769 distinct positions instead of one per float progress value.
+            return MathF.Round(normalizedValue * 16384f) / 16384f;
         }
 
         /// <summary>
@@ -1844,12 +2069,21 @@ namespace Avalonia.Media
             => WithVariation(CreateNormalizedPosition(settings, instanceIndex));
 
         /// <summary>
+        /// Returns a <see cref="GlyphTypeface"/> at this typeface's own
+        /// <see cref="VariationPosition"/> with the axes named by <paramref name="settings"/>
+        /// replaced. Unlike <see cref="WithVariations"/>, which measures settings from the
+        /// design default, the axes the settings leave out keep the values font matching chose.
+        /// </summary>
+        internal GlyphTypeface WithVariationOverrides(FontVariationSettings? settings)
+            => WithVariation(CreateNormalizedPosition(settings, _variationPosition));
+
+        /// <summary>
         /// Returns a <see cref="GlyphTypeface"/> bound to the same underlying font face
         /// but at the specified variation point.
         /// </summary>
         /// <param name="variation">
         /// Normalized variation coordinates, typically produced by
-        /// <see cref="CreateNormalizedPosition"/>. Pass
+        /// <see cref="CreateNormalizedPosition(FontVariationSettings, int?)"/>. Pass
         /// <c>default(NormalizedVariationPosition)</c> to request the default-instance
         /// typeface.
         /// </param>
