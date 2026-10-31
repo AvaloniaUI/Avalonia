@@ -60,6 +60,32 @@ namespace Avalonia.Skia.UnitTests.Media
             }
         }
 
+        [Theory]
+        [InlineData(925)]
+        [InlineData(975)]
+        public void Weight_Beyond_The_Axis_Range_Off_The_50_Grid_Uses_The_Axis_Maximum(int weight)
+        {
+            using (Start(out var root))
+            {
+                var glyphTypeface = Resolve(new Typeface(InterVariable, weight: (FontWeight)weight));
+
+                Assert.Equal(FontSimulations.Bold, glyphTypeface.FontSimulations);
+                Assert.Equal(Position(root, "wght=900"), glyphTypeface.VariationPosition);
+            }
+        }
+
+        [Fact]
+        public void Weight_Below_The_Axis_Range_Off_The_50_Grid_Uses_The_Axis_Minimum()
+        {
+            using (Start(out var root))
+            {
+                var glyphTypeface = Resolve(new Typeface(InterVariable, weight: (FontWeight)75));
+
+                Assert.Equal(FontSimulations.None, glyphTypeface.FontSimulations);
+                Assert.Equal(Position(root, "wght=100"), glyphTypeface.VariationPosition);
+            }
+        }
+
         [Fact]
         public void Italic_Request_Simulates_Oblique_Over_The_Upright_Face()
         {
