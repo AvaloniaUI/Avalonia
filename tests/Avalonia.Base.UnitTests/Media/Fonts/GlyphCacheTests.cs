@@ -22,11 +22,10 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
 
         // Builds and caches a geometry for `glyph`, returning the payload that was stored.
         private static object BuildGeometry(GlyphCache cache, ushort glyph, int cost,
-            GlyphPayloadKind kind = GlyphPayloadKind.Outline, ushort[]? dependencies = null,
-            bool retainBounds = false)
+            GlyphPayloadKind kind = GlyphPayloadKind.Outline, ushort[]? dependencies = null)
         {
             var payload = new object();
-            var entry = cache.GetEntry(glyph, retainBounds);
+            var entry = cache.GetEntry(glyph);
             cache.GetOrBuildGeometry(entry, _ => Built(cost, payload, kind, dependencies));
             return payload;
         }
@@ -34,7 +33,7 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
         [Fact]
         public void New_Entry_Has_Neither_Bounds_Nor_Geometry()
         {
-            var entry = new GlyphCache().GetEntry(7, retainBounds: true);
+            var entry = new GlyphCache(retainBounds: true).GetEntry(7);
 
             Assert.False(entry.HasBounds);
             Assert.False(entry.HasGeometry);
@@ -43,7 +42,7 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
         [Fact]
         public void SetBoundsOnce_Stores_The_First_Box_And_Ignores_Later_Writes()
         {
-            var entry = new GlyphCache().GetEntry(7, retainBounds: true);
+            var entry = new GlyphCache(retainBounds: true).GetEntry(7);
 
             entry.SetBoundsOnce(new GlyphBounds(1, 2, 3, 4));
             Assert.True(entry.HasBounds);
@@ -57,7 +56,7 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
         public void GetOrBuildGeometry_Builds_Once_Then_Serves_The_Same_Payload()
         {
             var cache = new GlyphCache();
-            var entry = cache.GetEntry(5, retainBounds: false);
+            var entry = cache.GetEntry(5);
             var builds = 0;
 
             var first = cache.GetOrBuildGeometry(entry, _ => { builds++; return Built(100); });
@@ -70,8 +69,8 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
         [Fact]
         public void Building_A_Cff_Geometry_Populates_The_Entry_Bounds()
         {
-            var cache = new GlyphCache();
-            var entry = cache.GetEntry(5, retainBounds: true);
+            var cache = new GlyphCache(retainBounds: true);
+            var entry = cache.GetEntry(5);
 
             cache.GetOrBuildGeometry(entry, _ =>
                 new BuiltGeometry(new object(), 100, GlyphPayloadKind.Outline, Array.Empty<ushort>(),
@@ -96,19 +95,20 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
         [Fact]
         public void Evicting_Geometry_Keeps_A_Retained_Bounds_Entry()
         {
-            var cache = new GlyphCache(budgetBytes: 1); // holds one cost-1 geometry
+            // A CFF cache: entries keep their bounds through geometry eviction. It holds one cost-1
+            // geometry.
+            var cache = new GlyphCache(retainBounds: true, budgetBytes: 1);
 
-            // A CFF entry: bounds plus geometry, retainBounds = true.
-            var cff = cache.GetEntry(1, retainBounds: true);
+            var cff = cache.GetEntry(1);
             cff.SetBoundsOnce(new GlyphBounds(0, 0, 10, 10));
             cache.GetOrBuildGeometry(cff, _ => Built(1));
             Assert.True(cff.HasGeometry);
 
             // Building a second geometry evicts the first.
-            BuildGeometry(cache, 2, cost: 1, retainBounds: false);
+            BuildGeometry(cache, 2, cost: 1);
 
             // The CFF entry survived for its bounds, but its geometry was dropped.
-            Assert.Same(cff, cache.GetEntry(1, retainBounds: true));
+            Assert.Same(cff, cache.GetEntry(1));
             Assert.True(cff.HasBounds);
             Assert.False(cff.HasGeometry);
         }
@@ -118,9 +118,9 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
         {
             var cache = new GlyphCache(budgetBytes: 2); // holds two cost-1 geometries
 
-            var a = cache.GetEntry(1, retainBounds: false);
+            var a = cache.GetEntry(1);
             cache.GetOrBuildGeometry(a, _ => Built(1));
-            var b = cache.GetEntry(2, retainBounds: false);
+            var b = cache.GetEntry(2);
             cache.GetOrBuildGeometry(b, _ => Built(1));
 
             // Age both, then access only 'a'.
@@ -139,10 +139,10 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
         {
             var cache = new GlyphCache();
 
-            var component = cache.GetEntry(10, retainBounds: false);
+            var component = cache.GetEntry(10);
             cache.GetOrBuildGeometry(component, _ => Built(1));
 
-            var composite = cache.GetEntry(11, retainBounds: false);
+            var composite = cache.GetEntry(11);
             cache.GetOrBuildGeometry(composite, _ =>
                 Built(1, kind: GlyphPayloadKind.CompositeOutline, dependencies: new ushort[] { 10 }));
 
@@ -158,12 +158,12 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
         {
             var cache = new GlyphCache(budgetBytes: 2);
 
-            var component = cache.GetEntry(20, retainBounds: false);
+            var component = cache.GetEntry(20);
             cache.GetOrBuildGeometry(component, _ => Built(1));
 
             // A color drawing references its component, so the component is pinned while the drawing is
             // live: even under pressure the component outlives the drawing.
-            var drawing = cache.GetEntry(21, retainBounds: false);
+            var drawing = cache.GetEntry(21);
             cache.GetOrBuildGeometry(drawing, _ =>
                 Built(1, kind: GlyphPayloadKind.ColorDrawing, dependencies: new ushort[] { 20 }));
 
@@ -178,10 +178,10 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
         {
             var cache = new GlyphCache(budgetBytes: 2);
 
-            var component = cache.GetEntry(30, retainBounds: false);
+            var component = cache.GetEntry(30);
             cache.GetOrBuildGeometry(component, _ => Built(1));
 
-            var composite = cache.GetEntry(31, retainBounds: false);
+            var composite = cache.GetEntry(31);
             cache.GetOrBuildGeometry(composite, _ =>
                 Built(1, kind: GlyphPayloadKind.CompositeOutline, dependencies: new ushort[] { 30 }));
 
@@ -196,7 +196,7 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
             var cache = new GlyphCache(budgetBytes: 1);
             var payload = new DisposablePayload();
 
-            var entry = cache.GetEntry(40, retainBounds: false);
+            var entry = cache.GetEntry(40);
             var handedOut = cache.GetOrBuildGeometry(entry, _ => Built(1, payload));
 
             BuildGeometry(cache, 41, cost: 1); // evicts glyph 40
@@ -212,7 +212,7 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
         public void Memoised_Miss_Is_Marked_Referenced_On_A_Hit()
         {
             var cache = new GlyphCache();
-            var entry = cache.GetEntry(50, retainBounds: false);
+            var entry = cache.GetEntry(50);
             var builds = 0;
 
             // A malformed glyph builds to null; the null result is memoised.
@@ -233,13 +233,13 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
             var cache = new GlyphCache(budgetBytes: 1);
 
             // Evicting glyph 60 drops its entry from the map, but a caller may still hold it.
-            var orphan = cache.GetEntry(60, retainBounds: false);
+            var orphan = cache.GetEntry(60);
             cache.GetOrBuildGeometry(orphan, _ => Built(1));
             BuildGeometry(cache, 61, cost: 1);
             Assert.False(orphan.HasGeometry);
 
             // A later lookup creates a fresh entry for the same glyph.
-            var fresh = cache.GetEntry(60, retainBounds: false);
+            var fresh = cache.GetEntry(60);
             Assert.NotSame(orphan, fresh);
             cache.GetOrBuildGeometry(fresh, _ => Built(1));
 
@@ -249,7 +249,7 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
             cache.GetOrBuildGeometry(orphan, _ => Built(1));
 
             Assert.False(orphan.HasGeometry);
-            Assert.Same(fresh, cache.GetEntry(60, retainBounds: false));
+            Assert.Same(fresh, cache.GetEntry(60));
         }
 
         private sealed class DisposablePayload : IDisposable

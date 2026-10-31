@@ -2011,7 +2011,7 @@ namespace Avalonia.Media
             }
 
             var cache = _glyphCache ?? GetOrCreateGlyphCache();
-            var entry = cache.GetEntry(glyph, retainBounds: true);
+            var entry = cache.GetEntry(glyph);
 
             if (!entry.HasBounds)
             {
@@ -2040,7 +2040,9 @@ namespace Avalonia.Media
 
         private GlyphCache GetOrCreateGlyphCache()
         {
-            var created = new GlyphCache();
+            // CFF / CFF2 bounds cost a charstring interpret, so their entries outlive geometry
+            // eviction; glyf bounds are a header read and are not worth keeping an entry for.
+            var created = new GlyphCache(retainBounds: _cffTable is not null || _cff2Table is not null);
 
             // First publisher wins; later racers reuse it.
             return Interlocked.CompareExchange(ref _glyphCache, created, null) ?? created;
@@ -2106,7 +2108,7 @@ namespace Avalonia.Media
             // fills the entry's cheap ink box for the metrics path. Per instance, so a variation clone
             // caches at its own variation point. The build delegate is cached to keep hits alloc-free.
             var cache = _glyphCache ?? GetOrCreateGlyphCache();
-            var entry = cache.GetEntry(glyphIndex, retainBounds: _cffTable is not null || _cff2Table is not null);
+            var entry = cache.GetEntry(glyphIndex);
 
             return (IGeometryImpl?)cache.GetOrBuildGeometry(entry, _buildGlyphGeometry ??= BuildGlyphGeometryEntry);
         }

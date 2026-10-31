@@ -65,11 +65,21 @@ namespace Avalonia.Media.Fonts
         private readonly ConcurrentDictionary<ushort, GlyphCacheEntry> _entries = new();
         private readonly IGlyphEvictionPolicy _policy;
         private readonly int _budget;
+        private readonly bool _retainBounds;
         private readonly object _lock = new();
         private int _totalCost;
 
-        public GlyphCache(int budgetBytes = DefaultBudgetBytes, IGlyphEvictionPolicy? policy = null)
+        /// <param name="retainBounds">
+        /// Whether entries survive geometry eviction for the sake of their cached bounds. This is a
+        /// per-typeface constant: <c>true</c> where bounds are expensive to recompute (CFF / CFF2),
+        /// <c>false</c> where they are a cheap header read (glyf).
+        /// </param>
+        /// <param name="budgetBytes">The geometry byte budget eviction keeps the cache under.</param>
+        /// <param name="policy">The eviction policy; CLOCK when omitted.</param>
+        public GlyphCache(bool retainBounds = false, int budgetBytes = DefaultBudgetBytes,
+            IGlyphEvictionPolicy? policy = null)
         {
+            _retainBounds = retainBounds;
             _budget = budgetBytes < 1 ? 1 : budgetBytes;
             _policy = policy ?? new ClockEvictionPolicy();
         }
@@ -81,11 +91,11 @@ namespace Avalonia.Media.Fonts
         public int TotalCost => Volatile.Read(ref _totalCost);
 
         /// <summary>
-        /// Gets (creating if absent) the entry for <paramref name="glyph"/>. <paramref name="retainBounds"/>
-        /// decides whether the entry survives geometry eviction for its cached bounds (CFF / CFF2). Lock-free.
+        /// Gets (creating if absent) the entry for <paramref name="glyph"/>. Whether the entry survives
+        /// geometry eviction for its cached bounds is the cache's <c>retainBounds</c> setting. Lock-free.
         /// </summary>
-        public GlyphCacheEntry GetEntry(ushort glyph, bool retainBounds)
-            => _entries.GetOrAdd(glyph, s_createEntry, retainBounds);
+        public GlyphCacheEntry GetEntry(ushort glyph)
+            => _entries.GetOrAdd(glyph, s_createEntry, _retainBounds);
 
         /// <summary>
         /// Returns the built outline geometry for <paramref name="entry"/>, building it with
