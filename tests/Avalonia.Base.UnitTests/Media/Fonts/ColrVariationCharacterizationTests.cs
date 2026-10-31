@@ -144,6 +144,48 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
             Assert.Equal(atDefault.Height, atPeak.Height, 6);
         }
 
+        [Fact]
+        public void PaintVarSolid_Alpha_Delta_Is_Added_Before_Multiplying_The_Palette_Alpha()
+        {
+            var plain = SyntheticFont.FromAsset(SyntheticFont.Assets.InterVariable).TryCreateGlyphTypeface()!;
+            var axes = plain.VariationAxes;
+            var outlineGlyph = plain.CharacterToGlyphMap['A'];
+
+            // Palette alpha 128, paint alpha 0.5, alpha delta 8192 / 16384 = 0.5 at the peak:
+            // the color's alpha is 128 * (0.5 + 0.5) = 128.
+            var colr = new ColrV1Builder()
+                .BaseGlyph(3, ColrPaint.Glyph(outlineGlyph, ColrPaint.Solid(0, alpha: 0.5, varIndexBase: 0)))
+                .ItemVariationStore(BuildItemVariationStore(axes.Count, new short[] { 8192 }))
+                .Build();
+
+            var typeface = ColrTestFont
+                .Graft(SyntheticFont.FromAsset(SyntheticFont.Assets.InterVariable), colr,
+                    ColrTestFont.Cpal(new[] { Color.FromArgb(128, 255, 0, 0) }))
+                .TryCreateGlyphTypeface()!;
+            var varied = typeface.WithVariation(NormalizedVariationPosition.FromCoordinates(
+                new Dictionary<OpenTypeTag, float> { [axes[0].Tag] = 1f }));
+
+            var resolved = ResolveBasePaint(varied, 3);
+
+            var solid = Assert.IsType<ResolvedSolid>(Assert.IsType<Glyph>(resolved).Paint);
+            Assert.Equal(128, solid.Color.A);
+        }
+
+        private static Paint ResolveBasePaint(GlyphTypeface typeface, ushort glyph)
+        {
+            Assert.True(ColrTable.TryLoad(typeface, out var colrTable));
+            Assert.True(CpalTable.TryLoad(typeface, out var cpalTable));
+            Assert.True(colrTable!.TryGetBaseGlyphV1Record(glyph, out var record));
+
+            var context = new ColrContext(typeface, colrTable, cpalTable!, 0);
+            var decycler = new PaintDecycler();
+
+            Assert.True(PaintParser.TryParse(colrTable.ColrData.Span, colrTable.GetAbsolutePaintOffset(record.PaintOffset),
+                in context, in decycler, out var paint));
+
+            return PaintResolver.ResolvePaint(paint!, in context);
+        }
+
         /// <summary>
         /// Builds an ItemVariationStore with one region peaking on axis 0 and a single ItemVariationData
         /// of <paramref name="deltas"/>.Length items, each carrying one word delta over that region.
