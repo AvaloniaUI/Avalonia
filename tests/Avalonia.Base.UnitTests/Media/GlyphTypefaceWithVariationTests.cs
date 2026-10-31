@@ -644,6 +644,30 @@ namespace Avalonia.Base.UnitTests.Media
             Assert.False(black.TryGetGlyphInkBounds(glyph, out _));
         }
 
+        [Fact]
+        public void Single_And_Batch_Metrics_Agree_For_A_Truncated_Glyph_At_A_Non_Default_Instance()
+        {
+            var font = SyntheticFont.FromAsset(SyntheticFont.Assets.InterVariable);
+            var glyph = font.CreateGlyphTypeface().CharacterToGlyphMap['H'];
+
+            var def = WithTruncatedGlyphBody(font, glyph).CreateGlyphTypeface();
+            var black = def.WithVariation(WghtPosition(def, 900));
+
+            // Without ink bounds the bearings fall back to the side bearings, which for 'H' are not zero.
+            Assert.True(black.TryGetGlyphMetrics(glyph, out var single));
+            Assert.NotEqual(0, single.XBearing);
+
+            var batch = new GlyphMetrics[1];
+            Assert.True(black.TryGetGlyphMetrics(new[] { glyph }, batch));
+
+            Assert.Equal(single.XBearing, batch[0].XBearing);
+            Assert.Equal(single.YBearing, batch[0].YBearing);
+            Assert.Equal(single.Width, batch[0].Width);
+            Assert.Equal(single.Height, batch[0].Height);
+            Assert.Equal(single.AdvanceWidth, batch[0].AdvanceWidth);
+            Assert.Equal(single.AdvanceHeight, batch[0].AdvanceHeight);
+        }
+
         /// <summary>
         /// Raises a simple glyph's numberOfContours to the int16 maximum while keeping its header box,
         /// so the endPtsOfContours array, flags and coordinates it declares run past the glyph's loca
