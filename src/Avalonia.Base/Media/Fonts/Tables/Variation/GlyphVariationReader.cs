@@ -379,8 +379,9 @@ namespace Avalonia.Media.Fonts.Tables.Variation
                     {
                         // IUP only interpolates along contours, so a phantom point the tuple
                         // does not reference keeps a zero delta and only the phantom points
-                        // are needed here.
-                        for (var i = 0; i < tuplePointCount; i++)
+                        // are needed here. A glyph without contour points reaches this branch
+                        // from the outline path too, which asks for no phantom deltas.
+                        for (var i = 0; applyToPhantoms && i < tuplePointCount; i++)
                         {
                             var phantomIndex = tuplePoints![i] - contourPointCount;
 
