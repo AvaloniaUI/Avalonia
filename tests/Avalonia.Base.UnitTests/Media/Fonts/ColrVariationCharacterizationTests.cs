@@ -114,6 +114,36 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
             Assert.Equal(new Rect(10, -140, 120, 120), atPeak!.Bounds);
         }
 
+        [Fact]
+        public void PaintVarTransform_Reads_VarIndexBase_From_The_VarAffine2x3()
+        {
+            var plain = SyntheticFont.FromAsset(SyntheticFont.Assets.InterVariable).TryCreateGlyphTypeface()!;
+            var axes = plain.VariationAxes;
+            var outlineGlyph = plain.CharacterToGlyphMap['A'];
+
+            // PaintVarTransform (identity) -> PaintGlyph(A) -> PaintSolid. The VarAffine2x3's
+            // VarIndexBase 0 maps xx to item 0, whose Fixed delta 16384 / 65536 = 0.25 at the peak.
+            var colr = new ColrV1Builder()
+                .BaseGlyph(3, ColrPaint.Transform(1, 0, 0, 1, 0, 0,
+                    ColrPaint.Glyph(outlineGlyph, ColrPaint.Solid(0)), varIndexBase: 0))
+                .ItemVariationStore(BuildItemVariationStore(axes.Count, new short[] { 16384, 0, 0, 0, 0, 0 }))
+                .Build();
+
+            var typeface = ColrTestFont
+                .Graft(SyntheticFont.FromAsset(SyntheticFont.Assets.InterVariable), colr)
+                .TryCreateGlyphTypeface()!;
+            var varied = typeface.WithVariation(NormalizedVariationPosition.FromCoordinates(
+                new Dictionary<OpenTypeTag, float> { [axes[0].Tag] = 1f }));
+
+            var atDefault = typeface.GetGlyphDrawing(3)!.Bounds;
+            var atPeak = varied.GetGlyphDrawing(3)!.Bounds;
+
+            Assert.Equal(atDefault.X * 1.25, atPeak.X, 6);
+            Assert.Equal(atDefault.Width * 1.25, atPeak.Width, 6);
+            Assert.Equal(atDefault.Y, atPeak.Y, 6);
+            Assert.Equal(atDefault.Height, atPeak.Height, 6);
+        }
+
         /// <summary>
         /// Builds an ItemVariationStore with one region peaking on axis 0 and a single ItemVariationData
         /// of <paramref name="deltas"/>.Length items, each carrying one word delta over that region.
