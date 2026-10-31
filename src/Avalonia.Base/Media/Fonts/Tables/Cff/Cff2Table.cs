@@ -100,12 +100,23 @@ namespace Avalonia.Media.Fonts.Tables.Cff
                     fdLocalSubrs[i] = CffTable.ParseLocalSubrs(data, CffDict.Parse(fdArray[i].Span), wideCount: true);
                 }
 
-                // FDSelect is optional — absent means every glyph uses Font DICT 0.
+                // FDSelect is optional: absent means every glyph uses Font DICT 0. One that is present
+                // but does not parse fails the load, since falling back to Font DICT 0 would draw
+                // glyphs with another Font DICT's subroutines.
                 FdSelect? fdSelect = null;
-                int fdSelectOffset = topDict.GetInt(OpFdSelect, 0);
-                if (fdSelectOffset > 0 && fdSelectOffset < data.Length)
+                if (topDict.Contains(OpFdSelect))
                 {
+                    int fdSelectOffset = topDict.GetInt(OpFdSelect, 0);
+                    if (fdSelectOffset <= 0 || fdSelectOffset >= data.Length)
+                    {
+                        return false;
+                    }
+
                     fdSelect = FdSelect.Parse(data, fdSelectOffset, charStrings.Count);
+                    if (fdSelect is null)
+                    {
+                        return false;
+                    }
                 }
 
                 // The vstore is an ItemVariationStore preceded by a uint16 length.
