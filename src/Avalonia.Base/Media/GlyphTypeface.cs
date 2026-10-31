@@ -1143,10 +1143,11 @@ namespace Avalonia.Media
 
         /// <summary>
         /// Gets the x coordinate of a glyph's left phantom point: <c>xMin - lsb</c> from the glyf
-        /// header and hmtx, plus its gvar delta at this instance when the font has no HVAR. TrueType rasterizers translate
-        /// the outline so that this point lands on the origin, which is how an hmtx left side
-        /// bearing that differs from xMin, or a varied one, positions the glyph. A composite
-        /// with a USE_MY_METRICS component uses that component's left phantom point.
+        /// header and hmtx, plus its gvar delta at this instance when the font has no HVAR.
+        /// TrueType rasterizers translate the outline so that this point lands on the origin,
+        /// which is how an hmtx left side bearing that differs from xMin, or a varied one,
+        /// positions the glyph. A composite with a USE_MY_METRICS component uses that component's
+        /// left phantom point.
         /// </summary>
         private bool TryGetLeftPhantomX(ushort glyphIndex, ReadOnlySpan<float> activeCoords, out float leftPhantomX)
         {
@@ -1600,6 +1601,13 @@ namespace Avalonia.Media
         /// <c>emSize / DesignEmHeight</c> scale, the Y-flip, and the glyph position yourself — via
         /// <c>IGeometryImpl.WithTransform</c> or a drawing-context transform. Variable-font axis
         /// configuration is taken from the typeface instance itself.
+        /// <para>
+        /// As in TrueType rasterizers, the outline is placed with the glyph's left phantom point at
+        /// x = 0. That point sits at <c>xMin - lsb</c> from the <c>glyf</c> header and <c>hmtx</c>,
+        /// plus its <c>gvar</c> delta at a varied instance when the font has no <c>HVAR</c>; a
+        /// composite with a USE_MY_METRICS component uses that component's point. For most glyphs
+        /// the left side bearing equals xMin and the outline keeps its stored coordinates.
+        /// </para>
         /// </remarks>
         /// <param name="glyphIndex">The identifier of the glyph to retrieve.</param>
         /// <returns>
