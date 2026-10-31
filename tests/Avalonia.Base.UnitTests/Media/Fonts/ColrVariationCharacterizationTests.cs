@@ -1,4 +1,7 @@
 using System;
+using System.Collections.Generic;
+using Avalonia.Media;
+using Avalonia.Media.Fonts;
 using Avalonia.Media.Fonts.Tables.Colr;
 using Avalonia.UnitTests;
 using Xunit;
@@ -76,6 +79,39 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
             // At the default instance the deltas vanish → the base box.
             Assert.True(colrTable.TryGetClipBox(3, atDefault, out var defaultBox));
             Assert.Equal(new Rect(0, 0, 100, 100), defaultBox);
+        }
+
+        [Fact]
+        public void Varied_Clone_Applies_Clip_Box_Variation_Through_GetGlyphDrawing()
+        {
+            var plain = SyntheticFont.FromAsset(SyntheticFont.Assets.InterVariable).TryCreateGlyphTypeface()!;
+            var axes = plain.VariationAxes;
+            var outlineGlyph = plain.CharacterToGlyphMap['A'];
+
+            // Base box (0,0)-(100,100); corner deltas xMin+10, yMin+20, xMax+30, yMax+40 at the peak.
+            var colr = new ColrV1Builder()
+                .BaseGlyph(3, ColrPaint.Glyph(outlineGlyph, ColrPaint.Solid(0)))
+                .Clip(3, 0, 0, 100, 100, varIndexBase: 0)
+                .ItemVariationStore(BuildItemVariationStore(axes.Count, new short[] { 10, 20, 30, 40 }))
+                .Build();
+
+            var typeface = ColrTestFont
+                .Graft(SyntheticFont.FromAsset(SyntheticFont.Assets.InterVariable), colr)
+                .TryCreateGlyphTypeface()!;
+
+            var varied = typeface.WithVariation(NormalizedVariationPosition.FromCoordinates(
+                new Dictionary<OpenTypeTag, float> { [axes[0].Tag] = 1f }));
+            Assert.NotSame(typeface, varied);
+
+            var atDefault = typeface.GetGlyphDrawing(3);
+            var atPeak = varied.GetGlyphDrawing(3);
+
+            Assert.NotNull(atDefault);
+            Assert.NotNull(atPeak);
+
+            // Drawing space is Y-down: the font-space box (x0,y0)-(x1,y1) becomes Rect(x0, -y1, w, h).
+            Assert.Equal(new Rect(0, -100, 100, 100), atDefault!.Bounds);
+            Assert.Equal(new Rect(10, -140, 120, 120), atPeak!.Bounds);
         }
 
         /// <summary>
