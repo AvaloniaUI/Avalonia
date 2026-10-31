@@ -2173,13 +2173,22 @@ namespace Avalonia.Media
             IGlyphDrawing? drawing = null;
             var dependencies = Array.Empty<ushort>();
 
+            // A v1 record whose paint graph cannot be built yields no v1 drawing; the glyph then uses
+            // its v0 layers if it has any, and otherwise has no drawing at all, so callers fall back
+            // to the outline instead of drawing nothing.
             if (_colrTable!.HasV1Data && _colrTable.TryGetBaseGlyphV1Record(glyphIndex, out var record))
             {
-                var v1 = new ColorGlyphV1Drawing(this, _colrTable, _cpalTable!, glyphIndex, record, entry.Palette);
-                drawing = v1;
-                dependencies = v1.Dependencies;
+                var context = new ColrContext(this, _colrTable, _cpalTable!, entry.Palette);
+
+                if (TryGetBaseGlyphV1Paint(context, record, out var paint))
+                {
+                    var v1 = new ColorGlyphV1Drawing(context, glyphIndex, paint);
+                    drawing = v1;
+                    dependencies = v1.Dependencies;
+                }
             }
-            else if (_colrTable.HasColorLayers(glyphIndex))
+
+            if (drawing is null && _colrTable.TryGetBaseGlyphRecord(glyphIndex, out _))
             {
                 drawing = new ColorGlyphDrawing(this, _colrTable, _cpalTable!, glyphIndex, entry.Palette);
                 dependencies = CollectColorLayerDependencies(glyphIndex);
@@ -3073,45 +3082,38 @@ namespace Avalonia.Media
         private readonly int _paletteIndex;
 
         private readonly Rect _bounds;
-        private readonly Paint? _paint;
+        private readonly Paint _paint;
         private readonly ushort[] _dependencies;
 
-        public ColorGlyphV1Drawing(GlyphTypeface glyphTypeface, ColrTable colrTable, CpalTable cpalTable,
-            ushort glyphIndex, BaseGlyphV1Record record, int paletteIndex = 0)
+        public ColorGlyphV1Drawing(ColrContext context, ushort glyphIndex, Paint paint)
         {
-            _context = new ColrContext(glyphTypeface, colrTable, cpalTable, paletteIndex);
+            _context = context;
             _glyphIndex = glyphIndex;
-            _paletteIndex = paletteIndex;
+            _paletteIndex = context.PaletteIndex;
+            _paint = paint;
 
-            var dependencies = Array.Empty<ushort>();
+            // Traverse the paint graph once (no render backend) to collect the referenced layer
+            // glyphs — the drawing's cache dependencies — and, as a by-product, the conservative
+            // painted extent. COLR v1 paint graphs are in font space (Y-up), so any extent is
+            // flipped to drawing space (Y-down) to match Draw's transform. The traverser walks
+            // the already-resolved (acyclic) paint tree, so no decycler is needed here.
+            var analysis = new ColorGlyphV1BoundsPainter(_context);
 
-            if (glyphTypeface.TryGetBaseGlyphV1Paint(_context, record, out _paint))
+            PaintTraverser.Traverse(_paint, analysis, Matrix.Identity);
+
+            _dependencies = analysis.Dependencies;
+
+            if (_context.ColrTable.TryGetClipBox(_glyphIndex, _context.ActiveCoords, out var clipRect))
             {
-                // Traverse the paint graph once (no render backend) to collect the referenced layer
-                // glyphs — the drawing's cache dependencies — and, as a by-product, the conservative
-                // painted extent. COLR v1 paint graphs are in font space (Y-up), so any extent is
-                // flipped to drawing space (Y-down) to match Draw's transform. The traverser walks
-                // the already-resolved (acyclic) paint tree, so no decycler is needed here.
-                var analysis = new ColorGlyphV1BoundsPainter(_context);
-
-                PaintTraverser.Traverse(_paint, analysis, Matrix.Identity);
-
-                dependencies = analysis.Dependencies;
-
-                if (_context.ColrTable.TryGetClipBox(_glyphIndex, _context.ActiveCoords, out var clipRect))
-                {
-                    _bounds = clipRect.TransformToAABB(Matrix.CreateScale(1, -1));
-                }
-                else if (analysis.HasBounds)
-                {
-                    // No ClipList (the common case): fall back to the union of the painted outlines'
-                    // control-point extents. Stays empty when the font carries no buildable outline
-                    // for the painted glyphs, rather than guessing.
-                    _bounds = analysis.Bounds.TransformToAABB(Matrix.CreateScale(1, -1));
-                }
+                _bounds = clipRect.TransformToAABB(Matrix.CreateScale(1, -1));
             }
-
-            _dependencies = dependencies;
+            else if (analysis.HasBounds)
+            {
+                // No ClipList (the common case): fall back to the union of the painted outlines'
+                // control-point extents. Stays empty when the font carries no buildable outline
+                // for the painted glyphs, rather than guessing.
+                _bounds = analysis.Bounds.TransformToAABB(Matrix.CreateScale(1, -1));
+            }
         }
 
         public GlyphDrawingType Type => GlyphDrawingType.ColorLayers;
@@ -3124,11 +3126,6 @@ namespace Avalonia.Media
 
         public void Draw(DrawingContext context, Point origin)
         {
-            if (_paint == null)
-            {
-                return;
-            }
-
             // No decycler here: the paint tree was already resolved (and made acyclic) at parse
             // time, so the traverser just walks it. The painter is disposed via `using` so that a
             // throw mid-paint unwinds any transform/clip/layer it pushed onto the caller's context
