@@ -407,6 +407,7 @@ namespace Avalonia.Media.TextFormatting
 
                                 var text = shapeableRun.Text;
                                 var properties = shapeableRun.Properties;
+                                var script = shapeableRun.Script;
 
                                 while (index + 1 < processedRuns.Count)
                                 {
@@ -417,7 +418,8 @@ namespace Avalonia.Media.TextFormatting
 
                                     if (shapeableRun.BidiLevel == nextRun.BidiLevel
                                         && TryJoinContiguousMemories(text, nextRun.Text, out var joinedText)
-                                        && CanShapeTogether(properties, nextRun.Properties))
+                                        && CanShapeTogether(properties, nextRun.Properties)
+                                        && TryJoinScripts(script, nextRun.Script, out script))
                                     {
                                         groupedRuns.Add(nextRun);
                                         index++;
@@ -521,6 +523,29 @@ namespace Avalonia.Media.TextFormatting
                 joinedStart = default;
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Joins the scripts of two neighbouring runs. Runs of two different scripts must not share a
+        /// buffer: the shaper picks one script for the whole buffer, so the other one would be shaped
+        /// without its complex-script rules.
+        /// </summary>
+        private static bool TryJoinScripts(Script x, Script y, out Script joined)
+        {
+            if (x == y || y is Script.Common or Script.Unknown)
+            {
+                joined = x;
+                return true;
+            }
+
+            if (x is Script.Common or Script.Unknown)
+            {
+                joined = y;
+                return true;
+            }
+
+            joined = x;
+            return false;
         }
 
         private static bool CanShapeTogether(TextRunProperties x, TextRunProperties y)

@@ -539,7 +539,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.True(TextCharacters.TryGetShapeableLength(text.AsSpan(), probedGlyphTypeface,
                     defaultGlyphTypeface, defaultCanShapeScript: false, requireFullCluster: true,
-                    out var length));
+                    out var length, out _));
 
                 Assert.Equal(3, length);
             }
