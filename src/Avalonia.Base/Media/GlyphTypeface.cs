@@ -2225,24 +2225,6 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Per-glyph memo of built outline geometries. <see cref="State"/> is a parallel computed-flag
-        /// array (0 = not yet computed) read / written with <see cref="Volatile"/> so the geometry
-        /// reference is visible before the flag flips. <c>null</c> in <see cref="Outlines"/> is a valid
-        /// memoised result (a malformed glyph), which is why the flag — not the reference — marks "done".
-        /// </summary>
-        private sealed class OutlineCache
-        {
-            public readonly IGeometryImpl?[] Outlines;
-            public readonly byte[] State;
-
-            public OutlineCache(int glyphCount)
-            {
-                Outlines = new IGeometryImpl?[glyphCount];
-                State = new byte[glyphCount];
-            }
-        }
-
-        /// <summary>
         /// Derives this font's <see cref="NormalizedVariationPosition"/> from user-space
         /// settings (e.g. <c>wght = 700</c>), normalizing through the font's <c>fvar</c>
         /// and <c>avar</c> tables. Internal: normalized coordinates are font-relative, so
