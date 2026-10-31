@@ -1,5 +1,6 @@
 ﻿using System;
 using Avalonia.Input.Raw;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Input
 {
@@ -112,9 +113,21 @@ namespace Avalonia.Input
         }
 
         private static IInputElement? GetEffectivePointerOverElement(IInputElement? hitTestElement, IInputElement? captured)
-            => captured is not null && hitTestElement != captured ?
-                null :
-                hitTestElement;
+        {
+            if (captured is null)
+            {
+                return hitTestElement;
+            }
+
+            var ancestor = (hitTestElement as Visual).FindCommonVisualAncestor(captured as Visual);
+
+            while (ancestor is not null and not IInputElement)
+            {
+                ancestor = ancestor.VisualParent;
+            }
+
+            return ancestor as IInputElement;
+        }
 
         private void ClearPointerOver()
         {
@@ -204,6 +217,10 @@ namespace Avalonia.Input
                 {
                     ClearPointerOver(pointer, root, timestamp, position, properties, inputModifiers);
                 }
+            }
+            else
+            {
+                root.CursorElement = pointer.Captured ?? element;
             }
 
             _currentPointer = (pointer, screenPosition);
