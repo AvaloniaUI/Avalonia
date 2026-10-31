@@ -1866,6 +1866,28 @@ namespace Avalonia.Media
                 }
             }
 
+            // A varied glyf glyph whose outline cannot be built has no ink box; like the single-glyph
+            // path, its bearings fall back to the (HVAR/VVAR-adjusted) side bearings.
+            if (_glyfTable is not null && _gvarTable is not null && _activeCoords is not null)
+            {
+                for (int i = 0; i < glyphIndices.Length; i++)
+                {
+                    var hasBounds = TryGetGlyfBounds(glyphIndices[i], out var b);
+
+                    metrics[i] = new GlyphMetrics
+                    {
+                        XBearing = hasBounds ? b.XMin : (hasHorizontal ? hMetrics[i].LeftSideBearing : (short)0),
+                        YBearing = hasBounds ? b.YMax : (hasVertical ? vMetrics[i].TopSideBearing : (short)0),
+                        Width = hasBounds ? (ushort)b.Width : (ushort)0,
+                        Height = hasBounds ? (ushort)b.Height : (ushort)0,
+                        AdvanceWidth = hasHorizontal ? hMetrics[i].AdvanceWidth : (ushort)0,
+                        AdvanceHeight = hasVertical ? vMetrics[i].AdvanceHeight : (ushort)0,
+                    };
+                }
+
+                return true;
+            }
+
             // Read every glyph's ink box from whichever outline table the font has (glyf header box /
             // CFF / CFF2) in one pass. A font with no outline table, or one whose boxes cannot be
             // read, falls back to hmtx/vmtx bearings with a zero box.
