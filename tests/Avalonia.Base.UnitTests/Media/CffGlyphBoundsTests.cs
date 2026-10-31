@@ -174,6 +174,25 @@ namespace Avalonia.Base.UnitTests.Media
         }
 
         [Fact]
+        public void Cff2_Blend_Uses_The_Private_Dict_Vsindex_As_Default()
+        {
+            var gt = LoadTypeface(Cff2FdAsset);
+
+            // wght 650 normalizes to 0.5 (axis 100..400..900, no avar). The vstore has two regions,
+            // R0 = (0, 1, 1) and R1 = (0, 0.5, 1), scaling to 0.5 and 1 there; VarData 0 covers [R0],
+            // VarData 1 covers [R0, R1].
+            var instance = gt.WithVariation(gt.CreateNormalizedPosition(new FontVariationSettings(
+                new[] { new FontVariation(s_wghtTag, 650) })));
+
+            // 'a' (FD 0, default vsindex 0): right edge 100 + 50 * R0 = 125.
+            Assert.Equal(new GlyphBounds(0, 0, 125, 100), BoundsOf(instance, 'a'));
+
+            // 'b' (FD 1, Private vsindex 1, no vsindex operator in the charstring): its blends carry
+            // two deltas each, so the right edge is 100 + 50 * R0 + 20 * R1 = 145.
+            Assert.Equal(new GlyphBounds(0, 0, 145, 100), BoundsOf(instance, 'b'));
+        }
+
+        [Fact]
         public void Cff2_Fails_To_Load_When_FdSelect_Does_Not_Parse()
         {
             var gt = LoadTypeface(Cff2FdAsset, OpenTypeTag.Parse("CFF2"), cff2 =>
