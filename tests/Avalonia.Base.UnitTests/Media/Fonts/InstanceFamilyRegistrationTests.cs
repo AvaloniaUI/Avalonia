@@ -84,6 +84,25 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
         }
 
         [Fact]
+        public void Instance_Family_Lookup_After_Disposal_Does_Not_Throw()
+        {
+            using (Start())
+            {
+                var root = SyntheticFont.FromAsset(SyntheticFont.Assets.InterVariable).CreateGlyphTypeface();
+                var collection = new TestFontCollection();
+
+                Assert.True(collection.TryAddGlyphTypeface(root));
+
+                ((IDisposable)collection).Dispose();
+
+                var exception = Record.Exception(() => collection.TryGetGlyphTypeface("Inter Variable Display",
+                    FontStyle.Normal, FontWeight.Normal, FontStretch.Normal, out _));
+
+                Assert.Null(exception);
+            }
+        }
+
+        [Fact]
         public void Static_Face_Registers_No_Instance_Families()
         {
             using (Start())
