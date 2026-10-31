@@ -1,10 +1,14 @@
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Threading;
 
 namespace Avalonia.Media.Fonts
 {
-    /// <summary>The result of building a glyph's outline geometry, handed back to <see cref="GlyphCache"/>.</summary>
+    /// <summary>
+    /// The result of building a glyph's outline geometry, handed back to <see cref="GlyphCache"/>.
+    /// The payload must be an immutable, non-disposable object (see the cache remarks).
+    /// </summary>
     internal readonly struct BuiltGeometry
     {
         public BuiltGeometry(object? geometry, int cost, GlyphPayloadKind kind, ushort[] dependencies,
@@ -33,9 +37,18 @@ namespace Avalonia.Media.Fonts
     /// geometry but keeps the entry's bounds when they are worth retaining (CFF / CFF2).
     /// </summary>
     /// <remarks>
+    /// <para>
     /// Bounds reads and built-geometry hits are lock-free; the geometry build / eviction take a lock.
     /// Composite components are kept at least as recent as their composites via recency propagation;
     /// referencing payloads (color drawings) additionally pin their dependencies.
+    /// </para>
+    /// <para>
+    /// Payloads must be immutable, non-disposable managed objects: hits are handed out lock-free and
+    /// escape with unbounded lifetime (public callers, retained compositor render data), so eviction
+    /// only unlinks. The GC reclaims a payload, and any native memory behind it through finalizers,
+    /// once the last outside reference drops. Anything that needs deterministic teardown must not be
+    /// cached here.
+    /// </para>
     /// </remarks>
     internal sealed class GlyphCache
     {
@@ -87,7 +100,27 @@ namespace Avalonia.Media.Fonts
 
             if (entry.HasGeometry)
             {
-                return null;   // built, but the glyph has no outline (malformed)
+                // The built flag is published after the geometry and cleared before it, so a re-read
+                // under a set flag is exact: non-null means the null read above raced a concurrent
+                // build; null with the flag still set means the glyph is genuinely malformed; null
+                // with the flag now clear means the entry was evicted between the reads, so fall
+                // through and rebuild under the lock.
+                geometry = Volatile.Read(ref entry.Geometry);
+
+                if (geometry != null)
+                {
+                    _policy.OnAccessed(entry);
+                    PropagateRecency(entry);
+                    return geometry;
+                }
+
+                if (entry.HasGeometry)
+                {
+                    // Keep the memoised miss warm too, or malformed entries are evicted first under
+                    // pressure and re-parsed on every request.
+                    _policy.OnAccessed(entry);
+                    return null;   // built, but the glyph has no outline (malformed)
+                }
             }
 
             lock (_lock)
@@ -181,22 +214,22 @@ namespace Avalonia.Media.Fonts
                     break;   // everything pinned — stay over budget until a dependent frees
                 }
 
-                var payload = victim.Geometry;
                 _totalCost -= victim.Cost;
                 _policy.OnRemoved(victim);
                 UnpinDependencies(victim);
                 victim.ClearGeometry();
 
-                // Keep the entry alive for its retained bounds (CFF / CFF2); otherwise drop it.
+                // Keep the entry alive for its retained bounds (CFF / CFF2); otherwise drop it. Remove
+                // only this entry: an orphan (already dropped from the map, then rebuilt by a caller
+                // that still held it) must not take a fresh entry for the same glyph with it.
                 if (!victim.RetainBounds)
                 {
-                    _entries.TryRemove(victim.Glyph, out _);
+                    _entries.TryRemove(new KeyValuePair<ushort, GlyphCacheEntry>(victim.Glyph, victim));
                 }
 
-                if (payload is IDisposable disposable)
-                {
-                    disposable.Dispose();
-                }
+                // No Dispose here: the payload may still be referenced by anyone the lock-free hit
+                // path handed it to, or by retained compositor render data, so deterministic teardown
+                // would be a use-after-dispose. The GC reclaims it once the last reference drops.
             }
         }
     }
