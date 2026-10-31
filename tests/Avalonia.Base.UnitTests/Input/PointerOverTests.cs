@@ -128,11 +128,12 @@ namespace Avalonia.Base.UnitTests.Input
             var device = CreatePointerDeviceMock(pointer.Object).Object;
             var impl = CreateTopLevelImplMock();
 
+            Panel panel;
             Canvas canvas;
             Border border;
             Decorator decorator;
 
-            var root = CreateInputRoot(impl.Object, new Panel
+            var root = CreateInputRoot(impl.Object, panel = new Panel
             {
                 Children =
                 {
@@ -153,13 +154,126 @@ namespace Avalonia.Base.UnitTests.Input
             Assert.False(decorator.IsPointerOver);
             Assert.False(border.IsPointerOver);
             Assert.False(canvas.IsPointerOver);
-            Assert.False(root.IsPointerOver);
+            Assert.True(panel.IsPointerOver);
+            Assert.True(root.IsPointerOver);
 
             // Move back the pointer over the decorator: raise events normally for it since it's captured.
             SetHit(renderer, decorator);
             impl.Object.Input!(CreateRawPointerMovedArgs(device, root));
 
             Assert.True(decorator.IsPointerOver);
+            Assert.True(border.IsPointerOver);
+            Assert.False(canvas.IsPointerOver);
+            Assert.True(root.IsPointerOver);
+        }
+
+        [Fact]
+        public void HitTest_On_Descendant_Of_Captured_Element_Should_Keep_PointerOver_On_Captured_Element()
+        {
+            using var app = UnitTestApplication.Start(new TestServices(inputManager: new InputManager()));
+
+            var renderer = new Mock<IHitTester>();
+            var pointer = new Mock<IPointer>();
+            var device = CreatePointerDeviceMock(pointer.Object).Object;
+            var impl = CreateTopLevelImplMock();
+
+            Canvas canvas;
+            Border border;
+            Decorator decorator;
+
+            var root = CreateInputRoot(impl.Object, new Panel
+            {
+                Children =
+                {
+                    (canvas = new Canvas()),
+                    (border = new Border
+                    {
+                        Child = decorator = new Decorator(),
+                    })
+                }
+            }, renderer.Object);
+
+            pointer.SetupGet(p => p.Captured).Returns(border);
+
+            SetHit(renderer, border);
+            impl.Object.Input!(CreateRawPointerMovedArgs(device, root));
+
+            Assert.True(border.IsPointerOver);
+
+            SetHit(renderer, decorator);
+            impl.Object.Input!(CreateRawPointerMovedArgs(device, root));
+
+            Assert.False(decorator.IsPointerOver);
+            Assert.True(border.IsPointerOver);
+            Assert.False(canvas.IsPointerOver);
+            Assert.True(root.IsPointerOver);
+        }
+
+        [Fact]
+        public void Captured_Element_In_Another_Root_Should_Clear_PointerOver()
+        {
+            using var app = UnitTestApplication.Start(new TestServices(inputManager: new InputManager()));
+
+            var renderer = new Mock<IHitTester>();
+            var pointer = new Mock<IPointer>();
+            var device = CreatePointerDeviceMock(pointer.Object).Object;
+            var impl = CreateTopLevelImplMock();
+
+            Canvas canvas;
+            var root = CreateInputRoot(impl.Object, canvas = new Canvas(), renderer.Object);
+
+            var otherCaptured = new Decorator();
+            CreateInputRoot(CreateTopLevelImplMock().Object, otherCaptured, new Mock<IHitTester>().Object);
+
+            SetHit(renderer, canvas);
+            impl.Object.Input!(CreateRawPointerMovedArgs(device, root));
+
+            Assert.True(canvas.IsPointerOver);
+
+            pointer.SetupGet(p => p.Captured).Returns(otherCaptured);
+            impl.Object.Input!(CreateRawPointerMovedArgs(device, root));
+
+            Assert.False(canvas.IsPointerOver);
+            Assert.False(root.IsPointerOver);
+        }
+
+        [Fact]
+        public void HitTest_On_Ancestor_Of_Captured_Element_Should_Keep_PointerOver_On_Ancestor()
+        {
+            using var app = UnitTestApplication.Start(new TestServices(inputManager: new InputManager()));
+
+            var renderer = new Mock<IHitTester>();
+            var pointer = new Mock<IPointer>();
+            var device = CreatePointerDeviceMock(pointer.Object).Object;
+            var impl = CreateTopLevelImplMock();
+
+            Canvas canvas;
+            Border border;
+            Decorator decorator;
+
+            var root = CreateInputRoot(impl.Object, new Panel
+            {
+                Children =
+                {
+                    (canvas = new Canvas()),
+                    (border = new Border
+                    {
+                        Child = decorator = new Decorator(),
+                    })
+                }
+            }, renderer.Object);
+
+            pointer.SetupGet(p => p.Captured).Returns(decorator);
+
+            SetHit(renderer, decorator);
+            impl.Object.Input!(CreateRawPointerMovedArgs(device, root));
+
+            Assert.True(decorator.IsPointerOver);
+
+            SetHit(renderer, border);
+            impl.Object.Input!(CreateRawPointerMovedArgs(device, root));
+
+            Assert.False(decorator.IsPointerOver);
             Assert.True(border.IsPointerOver);
             Assert.False(canvas.IsPointerOver);
             Assert.True(root.IsPointerOver);
