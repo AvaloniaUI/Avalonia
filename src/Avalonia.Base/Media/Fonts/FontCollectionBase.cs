@@ -750,7 +750,7 @@ namespace Avalonia.Media.Fonts
             //Add the TypographicFamilyName to the cache
             if (!string.IsNullOrEmpty(glyphTypeface.TypographicFamilyName))
             {
-                if (TryAddGlyphTypeface(glyphTypeface.TypographicFamilyName, key, glyphTypeface))
+                if (TryAddOwnFamilyName(glyphTypeface.TypographicFamilyName, key, glyphTypeface))
                 {
                     result = true;
                 }
@@ -758,14 +758,14 @@ namespace Avalonia.Media.Fonts
 
             // FamilyNames holds only the Windows-platform names, so a font that names its family on
             // another platform alone would otherwise not be found under its own family name.
-            if (TryAddGlyphTypeface(glyphTypeface.FamilyName, key, glyphTypeface))
+            if (TryAddOwnFamilyName(glyphTypeface.FamilyName, key, glyphTypeface))
             {
                 result = true;
             }
 
             foreach (var kvp in glyphTypeface.FamilyNames)
             {
-                if (TryAddGlyphTypeface(kvp.Value, key, glyphTypeface))
+                if (TryAddOwnFamilyName(kvp.Value, key, glyphTypeface))
                 {
                     result = true;
                 }
@@ -780,6 +780,22 @@ namespace Avalonia.Media.Fonts
         }
 
         /// <summary>
+        /// Adds <paramref name="glyphTypeface"/> under one of the family names it declares. A font
+        /// declaring a family name owns that family, so an instance family STAT composed under the
+        /// same name for another font is dropped with the faces it created, instead of mixing
+        /// faces of two fonts in one family.
+        /// </summary>
+        private bool TryAddOwnFamilyName(string familyName, FontCollectionKey key, GlyphTypeface glyphTypeface)
+        {
+            if (!string.IsNullOrEmpty(familyName) && _instanceFamilies.TryRemove(familyName, out var family))
+            {
+                family.Remove(this);
+            }
+
+            return TryAddGlyphTypeface(familyName, key, glyphTypeface);
+        }
+
+        /// <summary>
         /// Whether registering a variable face also makes the families of its instances
         /// addressable. A collection whose platform enumerates those families itself opts out.
         /// </summary>
@@ -788,7 +804,8 @@ namespace Avalonia.Media.Fonts
         /// <summary>
         /// Registers the instance families of an unsimulated default-instance variable face
         /// without creating their faces; <see cref="MaterializeInstanceFamily"/> does that on the
-        /// first lookup of a family.
+        /// first lookup of a family. A family name another font of the collection already
+        /// declares stays that font's.
         /// </summary>
         private void AddInstanceFamilies(GlyphTypeface glyphTypeface)
         {
@@ -801,6 +818,12 @@ namespace Avalonia.Media.Fonts
 
             foreach (var candidate in GetInstanceFamilies(glyphTypeface))
             {
+                if (!_instanceFamilies.ContainsKey(candidate.FamilyName) &&
+                    _glyphTypefaceCache.ContainsKey(candidate.FamilyName))
+                {
+                    continue;
+                }
+
                 var family = _instanceFamilies.GetOrAdd(candidate.FamilyName, static name => new InstanceFamily(name));
 
                 if (family.TryAdd(glyphTypeface, candidate.Position))
@@ -926,7 +949,8 @@ namespace Avalonia.Media.Fonts
         private sealed class InstanceFamily
         {
             private readonly List<(GlyphTypeface Root, NormalizedVariationPosition Position)> _members = new(1);
-            private readonly List<GlyphTypeface> _faces = new(1);
+            private int _materializedCount;
+            private bool _isRemoved;
             private volatile bool _hasPending;
 
             public InstanceFamily(string name) => Name = name;
@@ -939,6 +963,11 @@ namespace Avalonia.Media.Fonts
             {
                 lock (_members)
                 {
+                    if (_isRemoved)
+                    {
+                        return false;
+                    }
+
                     foreach (var member in _members)
                     {
                         if (ReferenceEquals(member.Root, root))
@@ -963,16 +992,40 @@ namespace Avalonia.Media.Fonts
             {
                 lock (_members)
                 {
-                    for (var i = _faces.Count; i < _members.Count; i++)
+                    if (_isRemoved)
                     {
-                        var (root, position) = _members[i];
+                        return;
+                    }
+
+                    for (; _materializedCount < _members.Count; _materializedCount++)
+                    {
+                        var (root, position) = _members[_materializedCount];
                         var face = root.WithVariation(position);
 
-                        _faces.Add(face);
                         collection.TryAddGlyphTypeface(Name, face.ToFontCollectionKey(), face);
                     }
 
                     _hasPending = false;
+                }
+            }
+
+            /// <summary>
+            /// Stops the family from creating faces and removes those registered under its name.
+            /// That cache entry holds only faces of the members (created here, or found for them
+            /// by font matching), because a family name another font declares never becomes an
+            /// instance family. The faces stay owned by their variable faces, which dispose them.
+            /// </summary>
+            public void Remove(FontCollectionBase collection)
+            {
+                lock (_members)
+                {
+                    _isRemoved = true;
+                    _hasPending = false;
+
+                    if (collection._glyphTypefaceCache.TryGetValue(Name, out var glyphTypefaces))
+                    {
+                        glyphTypefaces.Clear();
+                    }
                 }
             }
         }
