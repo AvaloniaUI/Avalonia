@@ -185,6 +185,35 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
         }
 
         [Fact]
+        public void Family_Positions_Stay_Bounded_When_An_Axis_Names_Many_Values()
+        {
+            var custom = OpenTypeTag.Parse("CUST");
+            var axes = new List<FontVariationAxis>(s_axes)
+            {
+                new(custom, "Custom", 0, 0, 4000, false),
+                new(s_grad, "Grade", 0, 0, 100, false),
+            };
+            var builder = new StatTableBuilder()
+                .Axis("CUST", 256, 0)
+                .Axis("GRAD", 257, 1)
+                .Format1(1, 0, 309, 0)
+                .Format1(1, 0, 309, 100);
+
+            for (var i = 0; i < 4000; i++)
+            {
+                builder.Format1(0, 0, 304, i);
+            }
+
+            var positions = VariableFontNaming.GetFamilyPositions(StatTable.TryParse(builder.Build()), axes);
+
+            Assert.InRange(positions.Count, 1, 64);
+            Assert.Equal(
+                positions.Count,
+                positions.Select(x => string.Join(",", x.OrderBy(c => c.Key.ToString())
+                    .Select(c => $"{c.Key}={c.Value}"))).Distinct().Count());
+        }
+
+        [Fact]
         public void Font_Without_STAT_Has_No_Family_Positions()
         {
             Assert.Empty(VariableFontNaming.GetFamilyPositions(null, s_axes));
