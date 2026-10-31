@@ -139,6 +139,24 @@ namespace Avalonia.Skia.UnitTests.Media
         }
 
         [Fact]
+        public void Family_Of_A_Varied_Clone_Projects_Named_Instances_From_The_Source()
+        {
+            using (Start(out var root, out var collection))
+            {
+                // The family holds only the wght=700 clone, so its named instances are matched
+                // from the clone. The Regular instance sits at the default position and draws
+                // wght 400, whatever the clone reports.
+                collection.AddFamily("Inter Clone", root.WithVariations(FontVariationSettings.Parse("wght=700")));
+
+                var glyphTypeface = Resolve(new Typeface(CollectionKey + "#Inter Clone", weight: FontWeight.Bold));
+
+                Assert.Equal(FontSimulations.None, glyphTypeface.FontSimulations);
+                Assert.Equal(FontWeight.Bold, glyphTypeface.Weight);
+                Assert.Equal(Position(root, "wght=700"), glyphTypeface.VariationPosition);
+            }
+        }
+
+        [Fact]
         public void FontVariations_Override_Only_Their_Axes_Of_The_Resolved_Position()
         {
             using (Start(out var root))
