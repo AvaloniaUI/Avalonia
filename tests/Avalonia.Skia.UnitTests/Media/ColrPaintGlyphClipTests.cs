@@ -81,12 +81,32 @@ namespace Avalonia.Skia.UnitTests.Media
             }
         }
 
+        [Fact]
+        public void Root_Clip_Box_Clips_The_Glyph()
+        {
+            using (Start())
+            {
+                var a = OutlineGlyph('A');
+
+                var ops = Draw(ColrPaint.Glyph(a, ColrPaint.Solid(0)), clip: true);
+
+                Assert.Equal(new[] { "PushTransform", "PushClip", "DrawGeometry #FFFF0000", "PopClip", "PopTransform" },
+                    ops);
+            }
+        }
+
         private static ushort OutlineGlyph(char c)
             => SyntheticFont.FromAsset(InterAsset).TryCreateGlyphTypeface()!.CharacterToGlyphMap[c];
 
-        private static List<string> Draw(ColrPaint paint)
+        private static List<string> Draw(ColrPaint paint, bool clip = false)
         {
-            var colr = new ColrV1Builder().BaseGlyph(3, paint).Build();
+            var builder = new ColrV1Builder().BaseGlyph(3, paint);
+            if (clip)
+            {
+                builder.Clip(3, 0, 0, 500, 500);
+            }
+
+            var colr = builder.Build();
             var typeface = ColrTestFont
                 .Graft(SyntheticFont.FromAsset(InterAsset), colr, ColrTestFont.Cpal(new[] { Colors.Red, Colors.Blue }))
                 .TryCreateGlyphTypeface()!;
