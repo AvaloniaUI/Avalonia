@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Media.Immutable;
 using Avalonia.Platform;
+using Avalonia.Utilities;
 
 namespace Avalonia.Media.Fonts.Tables.Colr
 {
@@ -151,11 +152,19 @@ namespace Avalonia.Media.Fonts.Tables.Colr
         public void FillRadialGradient(Point c0, double r0, Point c1, double r1, GradientStop[] stops, GradientSpreadMethod extend)
         {
             // A COLR PaintRadialGradient interpolates between circle 0 (c0, r0) at color-line
-            // position 0 and circle 1 (c1, r1) at position 1. Avalonia's RadialGradientBrush models
-            // the position-1 circle as Center + radius and position 0 as a focal *point*
-            // (GradientOrigin), so map circle 1 → Center/radius and circle 0's centre → the focal
-            // point. The focal radius r0 has no equivalent and is approximated as 0 — exact for the
-            // common focal-radial case (r0 == 0), an approximation otherwise.
+            // position 0 and circle 1 (c1, r1) at position 1. Avalonia's RadialGradientBrush is a
+            // single circle (Center + radius) at stop offset 1 with a focal point (GradientOrigin)
+            // at offset 0.
+            if (MathUtilities.AreClose(c0.X, c1.X) && MathUtilities.AreClose(c0.Y, c1.Y))
+            {
+                FillConcentricRadialGradient(c1, r0, r1, stops, extend);
+                return;
+            }
+
+            // Two distinct circles map circle 1 to Center + radius and circle 0's centre to the focal
+            // point; circle 0's radius is dropped. That is exact only when r0 is 0. A general
+            // two-circle gradient with r0 > 0 needs a two-point conical brush, which the drawing
+            // backends do not expose.
             Fill(new ImmutableRadialGradientBrush(
                 gradientStops: ToImmutableStops(stops),
                 opacity: 1.0,
@@ -164,6 +173,42 @@ namespace Avalonia.Media.Fonts.Tables.Colr
                 gradientOrigin: new RelativePoint(c0, RelativeUnit.Absolute),
                 radiusX: new RelativeScalar(r1, RelativeUnit.Absolute),
                 radiusY: new RelativeScalar(r1, RelativeUnit.Absolute)));
+        }
+
+        /// <summary>
+        /// Fills a radial gradient whose two circles share a centre. Color-line position t lies at
+        /// radius r0 + t (r1 - r0); the brush spans the larger radius R, so each stop moves to brush
+        /// offset (r0 + t (r1 - r0)) / R, in reverse order when r0 &gt; r1. Exact for the Pad extend;
+        /// Repeat and Reflect repeat over [0, R] rather than over the [r0, r1] band, so they are exact
+        /// only when the smaller radius is 0.
+        /// </summary>
+        private void FillConcentricRadialGradient(Point center, double r0, double r1, GradientStop[] stops,
+            GradientSpreadMethod extend)
+        {
+            var radius = Math.Max(r0, r1);
+
+            if (radius <= 0)
+            {
+                return;
+            }
+
+            var gradientStops = new ImmutableGradientStop[stops.Length];
+
+            for (var i = 0; i < stops.Length; i++)
+            {
+                var stop = r0 > r1 ? stops[stops.Length - 1 - i] : stops[i];
+                var offset = (r0 + stop.Offset * (r1 - r0)) / radius;
+                gradientStops[i] = new ImmutableGradientStop(offset, stop.Color);
+            }
+
+            Fill(new ImmutableRadialGradientBrush(
+                gradientStops: gradientStops,
+                opacity: 1.0,
+                spreadMethod: extend,
+                center: new RelativePoint(center, RelativeUnit.Absolute),
+                gradientOrigin: new RelativePoint(center, RelativeUnit.Absolute),
+                radiusX: new RelativeScalar(radius, RelativeUnit.Absolute),
+                radiusY: new RelativeScalar(radius, RelativeUnit.Absolute)));
         }
 
         public void FillConicGradient(Point center, double startAngle, double endAngle, GradientStop[] stops, GradientSpreadMethod extend)
