@@ -92,6 +92,18 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
             Assert.Same(defaultPalette, undefined);
         }
 
+        [Fact]
+        public void V1_Glyph_Whose_Root_Paint_Does_Not_Parse_Has_No_Drawing()
+        {
+            // Format 99 is not a paint format, so the glyph's paint graph cannot be built. Callers
+            // must see null and fall back to GetGlyphOutline instead of drawing nothing.
+            var colr = new ColrV1Builder().BaseGlyph(3, ColrPaint.Raw(99, 0, 0, 0)).Build();
+
+            var typeface = ColrTestFont.Graft(InterRegular(), colr).TryCreateGlyphTypeface()!;
+
+            Assert.Null(typeface.GetGlyphDrawing(3));
+        }
+
         private static SyntheticFont InterRegular() => SyntheticFont.FromAsset(SyntheticFont.Assets.InterRegular);
 
         /// <summary>
