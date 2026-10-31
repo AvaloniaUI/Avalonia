@@ -1007,8 +1007,13 @@ namespace Avalonia.Media.Fonts
                 {
                     // Exact match found in snapshot. Use the exact family name for lookup
                     if (_glyphTypefaceCache.TryGetValue(snapshot[mid].Name, out var exactGlyphTypefaces) &&
-                        TryGetMatch(exactGlyphTypefaces, key, allowNearestMatch, out glyphTypeface, out _))
+                        TryGetMatch(exactGlyphTypefaces, key, allowNearestMatch, out glyphTypeface, out var exactMatchKind))
                     {
+                        if (exactMatchKind == MatchKind.VariedFace)
+                        {
+                            TryAddGlyphTypeface(snapshot[mid].Name, key, glyphTypeface);
+                        }
+
                         return true;
                     }
 
@@ -1045,8 +1050,15 @@ namespace Avalonia.Media.Fonts
                     }
 
                     if (_glyphTypefaceCache.TryGetValue(fontFamily.Name, out glyphTypefaces) &&
-                        TryGetMatch(glyphTypefaces, key, allowNearestMatch, out glyphTypeface, out _))
+                        TryGetMatch(glyphTypefaces, key, allowNearestMatch, out glyphTypeface, out var prefixMatchKind))
                     {
+                        // Registered like the direct lookup does, so the next request through this
+                        // name is an exact hit instead of another pass over the variation space.
+                        if (prefixMatchKind == MatchKind.VariedFace)
+                        {
+                            TryAddGlyphTypeface(fontFamily.Name, key, glyphTypeface);
+                        }
+
                         return true;
                     }
                 }
