@@ -579,6 +579,14 @@ namespace Avalonia.Media
         /// </summary>
         internal FontCollectionKey GetProjectedKey(NormalizedVariationPosition variation)
         {
+            // Positions are absolute, so a clone at a position draws what its source draws there.
+            // The clone's own Weight / Style / Stretch describe only its own position and would
+            // misreport the default position and the axes the font lacks.
+            if (_sourceTypeface is not null)
+            {
+                return _sourceTypeface.GetProjectedKey(variation);
+            }
+
             if (_fvarTable is null || variation.IsDefault)
             {
                 return new FontCollectionKey(Style, Weight, Stretch);
