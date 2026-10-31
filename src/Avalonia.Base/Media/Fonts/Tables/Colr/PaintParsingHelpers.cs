@@ -29,33 +29,6 @@ namespace Avalonia.Media.Fonts.Tables.Colr
         }
 
         /// <summary>
-        /// Specifies the numeric format used to represent delta values in font tables.
-        /// </summary>
-        /// <remarks>Use this enumeration to indicate how a delta value should be interpreted or converted
-        /// when processing font data. Each member corresponds to a specific numeric representation commonly found in
-        /// OpenType and TrueType font tables.</remarks>
-        public enum DeltaTargetType
-        {
-            /// <summary>FWORD - design units (int16) - no conversion needed</summary>
-            FWORD,
-            /// <summary>F2DOT14 - fixed-point with 2.14 format (divide by 16384)</summary>
-            F2Dot14,
-            /// <summary>Fixed - fixed-point with 16.16 format (divide by 65536)</summary>
-            Fixed
-        }
-
-        public static double ConvertDelta(int deltaValue, DeltaTargetType targetType)
-        {
-            return targetType switch
-            {
-                DeltaTargetType.FWORD => deltaValue,
-                DeltaTargetType.F2Dot14 => F2Dot14ToDouble((short)deltaValue),
-                DeltaTargetType.Fixed => FixedToDouble(deltaValue),
-                _ => deltaValue
-            };
-        }
-
-        /// <summary>
         /// Reads the Affine2x3 (format 12) or VarAffine2x3 (format 13) a PaintTransform points to.
         /// <paramref name="span"/> starts at the paint: uint8 format, Offset24 paint, Offset24
         /// transform. A VarAffine2x3 is the six Fixed fields followed by its uint32 VarIndexBase.

@@ -3076,7 +3076,6 @@ namespace Avalonia.Media
     {
         private readonly ColrContext _context;
         private readonly ushort _glyphIndex;
-        private readonly int _paletteIndex;
 
         private readonly Rect _bounds;
         private readonly Paint _paint;
@@ -3086,7 +3085,6 @@ namespace Avalonia.Media
         {
             _context = context;
             _glyphIndex = glyphIndex;
-            _paletteIndex = context.PaletteIndex;
 
             // The base glyph's ClipBox clips everything the glyph paints, so it wraps the root paint
             // and is pushed on every draw.
@@ -3100,7 +3098,7 @@ namespace Avalonia.Media
             // the already-resolved (acyclic) paint tree, so no decycler is needed here.
             var analysis = new ColorGlyphV1BoundsPainter(_context);
 
-            PaintTraverser.Traverse(_paint, analysis, Matrix.Identity);
+            PaintTraverser.Traverse(_paint, analysis);
 
             _dependencies = analysis.Dependencies;
 
@@ -3134,7 +3132,7 @@ namespace Avalonia.Media
             using (context.PushTransform(Matrix.CreateScale(1, -1) * Matrix.CreateTranslation(origin)))
             using (var painter = new ColorGlyphV1Painter(context, _context))
             {
-                PaintTraverser.Traverse(_paint, painter, Matrix.Identity);
+                PaintTraverser.Traverse(_paint, painter);
             }
         }
     }

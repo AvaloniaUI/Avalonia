@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Drawing;
-using System.Linq;
 using Avalonia.Media.Immutable;
 
 namespace Avalonia.Media.Fonts.Tables.Colr

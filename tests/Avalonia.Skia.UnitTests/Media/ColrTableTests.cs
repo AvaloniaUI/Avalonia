@@ -148,7 +148,7 @@ namespace Avalonia.Skia.UnitTests.Media
                 var boundsPainter = new BoundsTrackingPainter(glyphTypeface);
 
                 // Traverse the paint graph
-                PaintTraverser.Traverse(resolvedPaint, boundsPainter, Matrix.Identity);
+                PaintTraverser.Traverse(resolvedPaint, boundsPainter);
 
                 var finalBounds = boundsPainter.GetFinalBounds();
 
@@ -222,7 +222,7 @@ namespace Avalonia.Skia.UnitTests.Media
                 var boundsPainter = new BoundsTrackingPainter(glyphTypeface);
 
                 // Traverse the paint graph
-                PaintTraverser.Traverse(resolvedPaint, boundsPainter, Matrix.Identity);
+                PaintTraverser.Traverse(resolvedPaint, boundsPainter);
 
                 var finalBounds = boundsPainter.GetFinalBounds();
 
@@ -312,7 +312,7 @@ namespace Avalonia.Skia.UnitTests.Media
                 var trackingPainter = new TransformTrackingPainter();
 
                 // Traverse the paint graph
-                PaintTraverser.Traverse(resolvedPaint, trackingPainter, Matrix.Identity);
+                PaintTraverser.Traverse(resolvedPaint, trackingPainter);
 
                 // Analyze the results
                 Assert.NotEmpty(trackingPainter.TransformStack);
@@ -414,7 +414,7 @@ namespace Avalonia.Skia.UnitTests.Media
                 var diagnosticPainter = new DetailedDiagnosticPainter(glyphTypeface);
 
                 // Traverse the paint graph
-                PaintTraverser.Traverse(resolvedPaint, diagnosticPainter, Matrix.Identity);
+                PaintTraverser.Traverse(resolvedPaint, diagnosticPainter);
 
                 // Output all the collected diagnostic information
                 System.Diagnostics.Debug.WriteLine($"\n=== Bridge at Night Emoji 🌉 (U+{bridgeCodepoint:X4}, GlyphID: {bridgeGlyphId}) Detailed Paint Operations ===\n");
