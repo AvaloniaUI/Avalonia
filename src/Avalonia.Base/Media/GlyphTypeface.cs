@@ -2130,11 +2130,10 @@ namespace Avalonia.Media
                 return true;
             }
 
-            // TryGetGlyphOutlineBounds also returns false for an empty glyph; distinguish it from a
-            // malformed one via the header path, which yields the zero box for an empty glyph and
-            // false for a malformed one (out-of-range is already excluded by the caller).
+            // TryGetGlyphOutlineBounds also returns false for an empty glyph, which has the zero box.
+            // Any other glyph that fails to build is malformed, even when its header box is readable.
             box = default;
-            return _glyfTable.TryGetGlyphBounds(glyph, out _, out _, out _, out _);
+            return _glyfTable.IsEmptyGlyph(glyph);
         }
 
         private GlyphCache GetOrCreateGlyphCache()

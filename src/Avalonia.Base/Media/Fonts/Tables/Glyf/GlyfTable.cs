@@ -258,6 +258,30 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
         }
 
         /// <summary>
+        /// Returns <see langword="true"/> when a glyph carries no outline by design: its loca extent
+        /// is empty (e.g. whitespace), or its header declares zero contours. Returns
+        /// <see langword="false"/> for an out-of-range glyph, a header shorter than 10 bytes, and any
+        /// glyph that declares contours or components, whether or not its body is well formed.
+        /// </summary>
+        /// <param name="glyphIndex">The zero-based glyph index.</param>
+        public bool IsEmptyGlyph(int glyphIndex)
+        {
+            if (!TryGetGlyphData(glyphIndex, out var data))
+            {
+                return false;
+            }
+
+            if (data.IsEmpty)
+            {
+                return true;
+            }
+
+            var span = data.Span;
+
+            return span.Length >= 10 && BinaryPrimitives.ReadInt16BigEndian(span) == 0;
+        }
+
+        /// <summary>
         /// Reads bounding boxes for a batch of glyphs into <paramref name="bounds"/>, placed where
         /// the outlines are placed at the default instance.
         /// </summary>

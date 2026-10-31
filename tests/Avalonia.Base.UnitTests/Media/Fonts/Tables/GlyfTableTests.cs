@@ -61,6 +61,17 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
             Assert.Equal(new GlyphBounds(headerXMin, headerYMin, headerXMax, headerYMax), interpreted);
         }
 
+        [Fact]
+        public void IsEmptyGlyph_Is_True_Only_For_A_Glyph_Without_Outline_Data()
+        {
+            var typeface = LoadInter();
+            var glyf = LoadGlyf(typeface);
+
+            Assert.True(glyf.IsEmptyGlyph(GlyphFor(typeface, ' ')));
+            Assert.False(glyf.IsEmptyGlyph(GlyphFor(typeface, 'A')));
+            Assert.False(glyf.IsEmptyGlyph(glyf.GlyphCount + 5));
+        }
+
         [Theory]
         [InlineData(-1)]
         [InlineData(int.MaxValue)]
