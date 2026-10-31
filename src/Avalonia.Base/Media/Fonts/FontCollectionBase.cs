@@ -1001,7 +1001,18 @@ namespace Avalonia.Media.Fonts
                     for (; _materializedCount < _members.Count; _materializedCount++)
                     {
                         var (root, position) = _members[_materializedCount];
-                        var face = root.WithVariation(position);
+                        GlyphTypeface face;
+
+                        try
+                        {
+                            face = root.WithVariation(position);
+                        }
+                        catch (ObjectDisposedException)
+                        {
+                            // A variable face disposed by its owner has released the resources
+                            // a clone would share; the family gets no face from it.
+                            continue;
+                        }
 
                         collection.TryAddGlyphTypeface(Name, face.ToFontCollectionKey(), face);
                     }
@@ -1020,13 +1031,24 @@ namespace Avalonia.Media.Fonts
             {
                 lock (_members)
                 {
-                    _isRemoved = true;
-                    _hasPending = false;
+                    Close();
 
                     if (collection._glyphTypefaceCache.TryGetValue(Name, out var glyphTypefaces))
                     {
                         glyphTypefaces.Clear();
                     }
+                }
+            }
+
+            /// <summary>
+            /// Stops the family from creating faces, leaving those it registered in place.
+            /// </summary>
+            public void Close()
+            {
+                lock (_members)
+                {
+                    _isRemoved = true;
+                    _hasPending = false;
                 }
             }
         }
@@ -2082,6 +2104,15 @@ namespace Avalonia.Media.Fonts
 
         void IDisposable.Dispose()
         {
+            // Creating a face of an instance family needs its variable face, which is disposed
+            // below.
+            foreach (var family in _instanceFamilies.Values)
+            {
+                family.Close();
+            }
+
+            _instanceFamilies.Clear();
+
             foreach (var glyphTypefaces in _glyphTypefaceCache.Values)
             {
                 foreach (var pair in glyphTypefaces)
