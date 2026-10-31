@@ -166,6 +166,8 @@ namespace Avalonia.Media.Fonts.Tables.Variation
             Span<float> peak = stackalloc float[axisCount];
             Span<float> intermediateStart = stackalloc float[axisCount];
             Span<float> intermediateEnd = stackalloc float[axisCount];
+            Span<float> phantomTupleX = stackalloc float[4];
+            Span<float> phantomTupleY = stackalloc float[4];
 
             // The tuple variation headers run from offset 4 (after tvCount + dataOffset)
             // up to dataOffsetFromEntryStart. The serialized per-tuple data follows
@@ -323,6 +325,30 @@ namespace Avalonia.Media.Fonts.Tables.Variation
                         tuplePoints = null;
                         tuplePointCount = totalPointCount;
                         tuplePointsIsAll = true;
+                    }
+
+                    if (tuplePointsIsAll && !applyToContours)
+                    {
+                        // Only the phantom points at the tail can be needed, so the contour
+                        // deltas are walked without being stored.
+                        if (!TryReadPackedDeltaTail(
+                                entry, ref dataPos, tupleDataEnd, tuplePointCount, contourPointCount, phantomTupleX) ||
+                            !TryReadPackedDeltaTail(
+                                entry, ref dataPos, tupleDataEnd, tuplePointCount, contourPointCount, phantomTupleY))
+                        {
+                            dataPos = tupleDataEnd;
+                            continue;
+                        }
+
+                        for (var i = 0; applyToPhantoms && i < 4; i++)
+                        {
+                            phantomXDeltas[i] += scaler * phantomTupleX[i];
+                            phantomYDeltas[i] += scaler * phantomTupleY[i];
+                        }
+
+                        appliedAny = true;
+                        dataPos = tupleDataEnd;
+                        continue;
                     }
 
                     // Read packed x and y deltas. There are tuplePointCount values for
@@ -774,6 +800,65 @@ namespace Avalonia.Media.Fonts.Tables.Variation
                     }
                     written = runEnd;
                 }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Walks <paramref name="count"/> packed deltas like <see cref="TryReadPackedDeltas"/>, but
+        /// decodes only the ones at indices <paramref name="skip"/> to
+        /// <paramref name="skip"/> + <c>output.Length</c> - 1 into <paramref name="output"/>; the
+        /// others are stepped over. Output entries no delta reaches stay zero.
+        /// </summary>
+        private static bool TryReadPackedDeltaTail(
+            ReadOnlySpan<byte> data,
+            ref int pos,
+            int end,
+            int count,
+            int skip,
+            Span<float> output)
+        {
+            output.Clear();
+
+            var index = 0;
+
+            while (index < count)
+            {
+                if (pos >= end)
+                {
+                    return false;
+                }
+
+                var control = data[pos++];
+                var runCount = Math.Min((control & DeltaRunCountMask) + 1, count - index);
+
+                if ((control & DeltasAreZeroFlag) != 0)
+                {
+                    index += runCount;
+                    continue;
+                }
+
+                var size = (control & DeltasAreWordsFlag) != 0 ? 2 : 1;
+
+                if (pos + runCount * size > end)
+                {
+                    return false;
+                }
+
+                var last = Math.Min(index + runCount, skip + output.Length);
+
+                for (var i = Math.Max(index, skip); i < last; i++)
+                {
+                    var at = pos + (i - index) * size;
+
+                    output[i - skip] = size == 2
+                        ? BinaryPrimitives.ReadInt16BigEndian(data.Slice(at, 2))
+                        : (sbyte)data[at];
+                }
+
+                pos += runCount * size;
+                index += runCount;
             }
 
             return true;
