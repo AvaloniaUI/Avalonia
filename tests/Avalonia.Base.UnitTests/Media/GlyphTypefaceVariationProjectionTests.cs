@@ -1,3 +1,4 @@
+using Avalonia.Base.UnitTests.Media.Fonts.Tables;
 using Avalonia.Media;
 using Avalonia.Media.Fonts;
 using Avalonia.UnitTests;
@@ -56,6 +57,21 @@ namespace Avalonia.Base.UnitTests.Media
             Assert.Equal(FontWeight.Normal, varied.Weight);
             Assert.Equal(FontStyle.Normal, varied.Style);
             Assert.Equal(FontStretch.Normal, varied.Stretch);
+        }
+
+        [Fact]
+        public void Default_Weight_On_An_Avar_Plateau_Projects_The_Default_Weight()
+        {
+            // wght -0.5 .. 0 all map to 0, so the clone's wght coordinate 0 is the default 400
+            // even though other user values reach it too.
+            var gt = SyntheticFont.FromAsset(SyntheticFont.Assets.InterVariable)
+                .Replace("avar", AvarTableTests.BuildInterAvar((-1, -1), (-0.5, 0), (0, 0), (1, 1)))
+                .CreateGlyphTypeface();
+
+            var varied = gt.WithVariations(FontVariationSettings.Parse("opsz=32"));
+
+            Assert.NotSame(gt, varied);
+            Assert.Equal(FontWeight.Normal, varied.Weight);
         }
 
         [Fact]
