@@ -428,9 +428,14 @@ namespace Avalonia.Media.Fonts.Tables.Colr
         {
             paint = null;
 
-            var minSize = isVariable ? 12 : 8; // 8 for fixed, 12 for variable (+ 4 bytes for varIndexBase)
+            // Both formats are uint8 format, Offset24 paint, Offset24 transform; the variable form's
+            // VarIndexBase is the last field of the VarAffine2x3 the transform offset points to.
+            if (span.Length < 7)
+            {
+                return false;
+            }
 
-            if (span.Length < minSize)
+            if (!PaintParsingHelpers.TryParseAffine2x3(span, isVariable, out var transform, out var varIndexBase))
             {
                 return false;
             }
@@ -447,12 +452,8 @@ namespace Avalonia.Media.Fonts.Tables.Colr
                 return false;
             }
 
-            var transform = PaintParsingHelpers.ParseAffine2x3(span);
-
             if (isVariable)
             {
-                var varIndexBase = BinaryPrimitives.ReadUInt32BigEndian(span.Slice(minSize - 4));
-
                 paint = new TransformVar(sourcePaint, transform, varIndexBase);
             }
             else

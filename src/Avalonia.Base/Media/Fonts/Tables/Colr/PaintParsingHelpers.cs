@@ -54,22 +54,33 @@ namespace Avalonia.Media.Fonts.Tables.Colr
             };
         }
 
-        public static Matrix ParseAffine2x3(ReadOnlySpan<byte> span)
+        /// <summary>
+        /// Reads the Affine2x3 (format 12) or VarAffine2x3 (format 13) a PaintTransform points to.
+        /// <paramref name="span"/> starts at the paint: uint8 format, Offset24 paint, Offset24
+        /// transform. A VarAffine2x3 is the six Fixed fields followed by its uint32 VarIndexBase.
+        /// </summary>
+        /// <returns><c>false</c> when the transform table does not fit in the data.</returns>
+        public static bool TryParseAffine2x3(ReadOnlySpan<byte> span, bool isVariable, out Matrix matrix,
+            out uint varIndexBase)
         {
-            // Format 12 layout: [format][paintOffset][transformOffset]
+            matrix = Matrix.Identity;
+            varIndexBase = 0xFFFFFFFF;
+
+            var size = isVariable ? 28 : 24;
+
             if (span.Length < 7)
             {
-                return Matrix.Identity;
+                return false;
             }
 
-            var transformOffset = PaintParsingHelpers.ReadOffset24(span.Slice(4));
+            var transformOffset = ReadOffset24(span.Slice(4));
 
-            if (transformOffset > (uint)span.Length || span.Length - (int)transformOffset < 24)
+            if ((long)transformOffset + size > span.Length)
             {
-                return Matrix.Identity;
+                return false;
             }
 
-            var transformSpan = span.Slice((int)transformOffset, 24);
+            var transformSpan = span.Slice((int)transformOffset, size);
 
             var xx = FixedToDouble(BinaryPrimitives.ReadInt32BigEndian(transformSpan));
             var yx = FixedToDouble(BinaryPrimitives.ReadInt32BigEndian(transformSpan.Slice(4)));
@@ -78,7 +89,13 @@ namespace Avalonia.Media.Fonts.Tables.Colr
             var dx = FixedToDouble(BinaryPrimitives.ReadInt32BigEndian(transformSpan.Slice(16)));
             var dy = FixedToDouble(BinaryPrimitives.ReadInt32BigEndian(transformSpan.Slice(20)));
 
-            return new Matrix(xx, yx, xy, yy, dx, dy);
+            if (isVariable)
+            {
+                varIndexBase = BinaryPrimitives.ReadUInt32BigEndian(transformSpan.Slice(24));
+            }
+
+            matrix = new Matrix(xx, yx, xy, yy, dx, dy);
+            return true;
         }
 
         public static bool TryParseColorLine(
