@@ -902,24 +902,6 @@ namespace Avalonia.Media.Fonts
             }
         }
 
-        /// <summary>
-        /// Returns the faces representing the instance family <paramref name="familyName"/>, one
-        /// per variable face that has instances in it, creating and registering them under the
-        /// family on first use.
-        /// </summary>
-        internal bool TryGetInstanceFamilyFaces(string familyName,
-            [NotNullWhen(true)] out IReadOnlyList<GlyphTypeface>? faces)
-        {
-            if (!_instanceFamilies.TryGetValue(familyName, out var family))
-            {
-                faces = null;
-                return false;
-            }
-
-            faces = family.Materialize(this);
-            return faces.Count > 0;
-        }
-
         private void MaterializeInstanceFamily(string familyName)
         {
             if (!_instanceFamilies.IsEmpty &&
@@ -978,7 +960,7 @@ namespace Avalonia.Media.Fonts
             /// the family. The lock is held until they are registered, so a lookup that finds
             /// nothing pending also finds them in the family's cache.
             /// </summary>
-            public IReadOnlyList<GlyphTypeface> Materialize(FontCollectionBase collection)
+            public void Materialize(FontCollectionBase collection)
             {
                 lock (_members)
                 {
@@ -992,8 +974,6 @@ namespace Avalonia.Media.Fonts
                     }
 
                     _hasPending = false;
-
-                    return _faces.ToArray();
                 }
             }
         }

@@ -296,9 +296,6 @@ namespace Avalonia.Media
 
             TypographicFamilyName = _nameTable?.GetNameById((ushort)CultureInfo.InvariantCulture.LCID, KnownNameIds.TypographicFamilyName) ?? FamilyName;
 
-            TypographicSubfamilyName = _nameTable?.GetNameById(
-                (ushort)CultureInfo.InvariantCulture.LCID, KnownNameIds.TypographicSubfamilyName) ?? string.Empty;
-
             if (_nameTable != null)
             {
                 Dictionary<CultureInfo, string>? familyNames = null;
@@ -464,7 +461,6 @@ namespace Avalonia.Media
             // Shareable face-level metadata.
             FamilyName = source.FamilyName;
             TypographicFamilyName = source.TypographicFamilyName;
-            TypographicSubfamilyName = source.TypographicSubfamilyName;
             FamilyNames = source.FamilyNames;
             FaceNames = source.FaceNames;
             GlyphCount = source.GlyphCount;
@@ -787,13 +783,6 @@ namespace Avalonia.Media
         /// Gets the typographic family name of the font.
         /// </summary>
         public string TypographicFamilyName { get; }
-
-        /// <summary>
-        /// Gets the typographic subfamily name (name ID 17) of the font, the style name within
-        /// <see cref="TypographicFamilyName"/>. Empty when the font has no such name record, which
-        /// means the legacy subfamily name (name ID 2) already names the style.
-        /// </summary>
-        internal string TypographicSubfamilyName { get; }
 
         /// <summary>
         /// Gets a read-only mapping of localized culture-specific family names.
@@ -1158,42 +1147,6 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Composes the family and style name of this variable font's instance at
-        /// <paramref name="position"/>, following the STAT naming model described on
-        /// <see cref="VariableFontNaming"/>.
-        /// </summary>
-        /// <remarks>
-        /// Normalized coordinates are quantized, so each coordinate is matched back to the STAT or
-        /// named-instance value that normalizes to it before the names are selected.
-        /// </remarks>
-        /// <returns>
-        /// <c>false</c> for static fonts, and for a position that is no named instance of a font
-        /// without STAT axis values.
-        /// </returns>
-        internal bool TryGetInstanceNames(NormalizedVariationPosition position, out FontInstanceNames names)
-        {
-            if (_fvarTable is null)
-            {
-                names = default;
-                return false;
-            }
-
-            var axes = _fvarTable.Axes;
-            var userCoordinates = new Dictionary<OpenTypeTag, float>(axes.Length);
-
-            for (var i = 0; i < axes.Length; i++)
-            {
-                var tag = axes[i].Tag;
-
-                TryGetUserAxisValue(position, tag, out var userValue);
-
-                userCoordinates[tag] = SnapToDeclaredValue(i, position.GetCoordinateOrDefault(tag), userValue);
-            }
-
-            return TryGetInstanceNames(userCoordinates, out names);
-        }
-
-        /// <summary>
         /// Composes the family and style name of this variable font's instance at the user-space
         /// <paramref name="userCoordinates"/>, such as a named instance's coordinates.
         /// </summary>
@@ -1326,56 +1279,6 @@ namespace Avalonia.Media
                     familyNames.Add(name);
                 }
             }
-        }
-
-        /// <summary>
-        /// Returns the value a STAT axis value or a named instance declares for the fvar axis at
-        /// <paramref name="axisIndex"/> when it normalizes to <paramref name="normalized"/>;
-        /// otherwise <paramref name="userValue"/>.
-        /// </summary>
-        private float SnapToDeclaredValue(int axisIndex, float normalized, float userValue)
-        {
-            var axis = _fvarTable!.Axes[axisIndex];
-
-            if (normalized == 0f)
-            {
-                return axis.DefaultValue;
-            }
-
-            if (StatTable is { } stat)
-            {
-                foreach (var value in stat.AxisValues)
-                {
-                    foreach (var record in value.Records)
-                    {
-                        if (stat.DesignAxes[record.AxisIndex].Tag == axis.Tag &&
-                            NormalizesTo(axisIndex, record.Value, normalized))
-                        {
-                            return record.Value;
-                        }
-                    }
-                }
-            }
-
-            foreach (var instance in _fvarTable.Instances)
-            {
-                if (instance.Coordinates.TryGetValue(axis.Tag, out var value) &&
-                    NormalizesTo(axisIndex, value, normalized))
-                {
-                    return value;
-                }
-            }
-
-            return userValue;
-        }
-
-        // NormalizeAxisValue clamps, so a value outside the axis range would claim the axis ends.
-        private bool NormalizesTo(int axisIndex, float userValue, float normalized)
-        {
-            var axis = _fvarTable!.Axes[axisIndex];
-
-            return userValue >= axis.MinimumValue && userValue <= axis.MaximumValue &&
-                   NormalizeAxisValue(axisIndex, userValue) == normalized;
         }
 
         /// <summary>

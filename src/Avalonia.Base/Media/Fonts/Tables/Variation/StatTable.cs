@@ -53,8 +53,7 @@ namespace Avalonia.Media.Fonts.Tables.Variation
             ushort valueNameId,
             ImmutableArray<StatAxisValueRecord> records,
             float rangeMinValue,
-            float rangeMaxValue,
-            float? linkedValue)
+            float rangeMaxValue)
         {
             Format = format;
             Flags = flags;
@@ -62,7 +61,6 @@ namespace Avalonia.Media.Fonts.Tables.Variation
             Records = records;
             RangeMinValue = rangeMinValue;
             RangeMaxValue = rangeMaxValue;
-            LinkedValue = linkedValue;
         }
 
         /// <summary>
@@ -95,12 +93,6 @@ namespace Avalonia.Media.Fonts.Tables.Variation
         /// format 4.
         /// </summary>
         public float RangeMaxValue { get; }
-
-        /// <summary>
-        /// Gets the style-linked value of a format 3 table, such as Bold (700) for Regular (400);
-        /// <c>null</c> for the other formats.
-        /// </summary>
-        public float? LinkedValue { get; }
 
         public bool IsElidable => (Flags & StatAxisValueFlags.ElidableAxisValueName) != 0;
 
@@ -347,16 +339,11 @@ namespace Avalonia.Media.Fonts.Tables.Variation
 
                     var rangeMin = value;
                     var rangeMax = value;
-                    float? linkedValue = null;
 
                     if (format == 2)
                     {
                         rangeMin = reader.ReadFixed();
                         rangeMax = reader.ReadFixed();
-                    }
-                    else if (format == 3)
-                    {
-                        linkedValue = reader.ReadFixed();
                     }
 
                     axisValue = new StatAxisValue(
@@ -365,8 +352,7 @@ namespace Avalonia.Media.Fonts.Tables.Variation
                         valueNameId,
                         ImmutableArray.Create(new StatAxisValueRecord(axisIndex, value)),
                         rangeMin,
-                        rangeMax,
-                        linkedValue);
+                        rangeMax);
 
                     return true;
                 }
@@ -408,8 +394,7 @@ namespace Avalonia.Media.Fonts.Tables.Variation
                         valueNameId,
                         records.MoveToImmutable(),
                         float.NaN,
-                        float.NaN,
-                        linkedValue: null);
+                        float.NaN);
 
                     return true;
                 }

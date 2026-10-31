@@ -129,12 +129,10 @@ namespace Avalonia.Skia.UnitTests.Media
             {
                 Assert.False(collection._glyphTypefaceCache.ContainsKey("Inter Variable Display"));
 
-                Assert.True(collection.TryGetInstanceFamilyFaces("Inter Variable Display", out var faces));
+                Assert.True(collection.TryGetFamilyTypefaces("Inter Variable Display", out var typefaces));
 
-                var face = Assert.Single(faces);
-
-                Assert.True(collection._glyphTypefaceCache.ContainsKey("Inter Variable Display"));
-                Assert.Same(face, collection._glyphTypefaceCache["Inter Variable Display"].Values.Single());
+                Assert.Single(typefaces);
+                Assert.NotNull(Assert.Single(collection._glyphTypefaceCache["Inter Variable Display"].Values));
             }
         }
 
@@ -143,10 +141,13 @@ namespace Avalonia.Skia.UnitTests.Media
         {
             using (Start(out var root, out var collection))
             {
-                Assert.True(collection.TryGetInstanceFamilyFaces("Inter Variable Display", out var display));
-                Assert.True(collection.TryGetInstanceFamilyFaces("Inter Variable Text", out var text));
+                Assert.True(collection.TryGetFamilyTypefaces("Inter Variable Display", out _));
+                Assert.True(collection.TryGetFamilyTypefaces("Inter Variable Text", out _));
 
-                Assert.Equal(Position(root, "opsz=32"), Assert.Single(display).VariationPosition);
+                var display = collection._glyphTypefaceCache["Inter Variable Display"].Values;
+                var text = collection._glyphTypefaceCache["Inter Variable Text"].Values;
+
+                Assert.Equal(Position(root, "opsz=32"), Assert.Single(display)!.VariationPosition);
                 Assert.Same(root, Assert.Single(text));
                 Assert.DoesNotContain(collection._glyphTypefaceCache["Inter Variable"].Values,
                     x => x is not null && !x.VariationPosition.IsDefault);

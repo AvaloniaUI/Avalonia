@@ -77,7 +77,6 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
                 Assert.Empty(FontCollectionBase.GetInstanceFamilies(root));
                 Assert.True(collection.TryAddGlyphTypeface(root));
 
-                Assert.False(collection.TryGetInstanceFamilyFaces("Inter Variable", out _));
                 Assert.True(collection.TryGetGlyphTypeface("Inter Variable", FontStyle.Normal,
                     FontWeight.Normal, FontStretch.Normal, out var glyphTypeface));
                 Assert.Same(root, glyphTypeface);

@@ -47,12 +47,11 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
             Assert.Equal(new StatAxisValueRecord(0, 32f), Assert.Single(display.Records));
             Assert.False(display.IsElidable);
 
-            // "Regular" names wght=400, style-links to Bold and is elided from composed names.
+            // "Regular" names wght=400 and is elided from composed names.
             var regular = stat.AxisValues[5];
             Assert.Equal(3, regular.Format);
             Assert.Equal(264, regular.ValueNameId);
             Assert.Equal(new StatAxisValueRecord(1, 400f), Assert.Single(regular.Records));
-            Assert.Equal(700f, regular.LinkedValue);
             Assert.True(regular.IsElidable);
             Assert.False(regular.IsOlderSiblingFontAttribute);
         }
@@ -99,7 +98,6 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
             Assert.Equal(new StatAxisValueRecord(0, 700f), Assert.Single(value.Records));
             Assert.Equal(700f, value.RangeMinValue);
             Assert.Equal(700f, value.RangeMaxValue);
-            Assert.Null(value.LinkedValue);
         }
 
         [Fact]
@@ -112,11 +110,10 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
             Assert.Equal(new StatAxisValueRecord(0, 12f), Assert.Single(value.Records));
             Assert.Equal(9.5f, value.RangeMinValue);
             Assert.Equal(18.5f, value.RangeMaxValue);
-            Assert.Null(value.LinkedValue);
         }
 
         [Fact]
-        public void Format_3_Names_A_Value_With_Its_Style_Link()
+        public void Format_3_Names_A_Single_Value()
         {
             var stat = Parse(new StatTableBuilder().Axis("wght", 256, 0).Format3(0, 2, 302, 400, 700));
 
@@ -124,7 +121,6 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
             Assert.Equal(3, value.Format);
             Assert.Equal(StatAxisValueFlags.ElidableAxisValueName, value.Flags);
             Assert.Equal(new StatAxisValueRecord(0, 400f), Assert.Single(value.Records));
-            Assert.Equal(700f, value.LinkedValue);
         }
 
         [Fact]
@@ -141,7 +137,6 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
             Assert.Equal(
                 new[] { new StatAxisValueRecord(0, 600f), new StatAxisValueRecord(1, 75f) },
                 value.Records);
-            Assert.Null(value.LinkedValue);
         }
 
         [Fact]
