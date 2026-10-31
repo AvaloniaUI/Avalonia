@@ -1678,6 +1678,77 @@ namespace Avalonia.Base.UnitTests.Input
             Assert.Same(target, KeyboardNavigationHandler.GetNext(before, NavigationDirection.Next));
         }
 
+        [Fact]
+        public void Tab_And_FocusManager_Honor_ProcessTabStopOverride()
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealFocus);
+            Button current, target;
+            var focusManager = CreateCycleRoot(new TabStopProcessingPanel
+            {
+                Children =
+                {
+                    (current = new Button { Name = "Current" }),
+                    new Button { Name = "Skipped" },
+                    (target = new Button { Name = "Target" }),
+                }
+            });
+            ((TabStopProcessingPanel)current.Parent!).TabStop = target;
+
+            Assert.Same(target, KeyboardNavigationHandler.GetNext(current, NavigationDirection.Next));
+            Assert.Same(target, FindNext(focusManager, current));
+        }
+
+        [Fact]
+        public void Tab_And_FocusManager_Honor_ProcessCandidateTabStopOverride()
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealFocus);
+            Button current, target;
+            var candidates = new TabStopProcessingPanel
+            {
+                Children =
+                {
+                    new Button { Name = "Candidate" },
+                    (target = new Button { Name = "Target" }),
+                }
+            };
+            candidates.CandidateTabStop = target;
+            var focusManager = CreateCycleRoot(new StackPanel
+            {
+                Children =
+                {
+                    (current = new Button { Name = "Current" }),
+                    candidates,
+                }
+            });
+
+            Assert.Same(target, KeyboardNavigationHandler.GetNext(current, NavigationDirection.Next));
+            Assert.Same(target, FindNext(focusManager, current));
+        }
+
+        [Fact]
+        public void ProcessCandidateTabStopOverride_Can_Redirect_Result_Of_ProcessTabStopOverride()
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealFocus);
+            Button current, redirected, target;
+            var candidates = new TabStopProcessingPanel
+            {
+                Children =
+                {
+                    (redirected = new Button { Name = "Redirected" }),
+                    (target = new Button { Name = "Target" }),
+                }
+            };
+            candidates.CandidateTabStop = target;
+            var focused = new TabStopProcessingPanel
+            {
+                Children = { (current = new Button { Name = "Current" }) },
+                TabStop = redirected,
+            };
+            CreateCycleRoot(new StackPanel { Children = { focused, candidates } });
+
+            Assert.Same(target, KeyboardNavigationHandler.GetNext(current, NavigationDirection.Next));
+        }
+
         private static FocusManager CreateCycleRoot(Control child)
         {
             var root = new TestRoot { Child = child };
@@ -1707,6 +1778,34 @@ namespace Avalonia.Base.UnitTests.Input
             public InputElement? FirstFocusable { get; set; }
 
             protected internal override InputElement? GetFirstFocusableElementOverride() => FirstFocusable;
+        }
+
+        private class TabStopProcessingPanel : StackPanel
+        {
+            public InputElement? TabStop { get; set; }
+            public InputElement? CandidateTabStop { get; set; }
+
+            protected internal override bool ProcessTabStopOverride(
+                IInputElement? focusedElement,
+                IInputElement? candidateTabStopElement,
+                bool isReverse,
+                bool didCycleFocusAtRootVisual,
+                ref IInputElement? newTabStop)
+            {
+                newTabStop = TabStop;
+                return TabStop is not null;
+            }
+
+            protected internal override bool ProcessCandidateTabStopOverride(
+                IInputElement? focusedElement,
+                IInputElement? candidateTabStopElement,
+                IInputElement? overridenCandidateTabStopElement,
+                bool isReverse,
+                ref IInputElement? newTabStop)
+            {
+                newTabStop = CandidateTabStop;
+                return CandidateTabStop is not null;
+            }
         }
     }
 }
