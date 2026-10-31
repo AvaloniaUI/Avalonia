@@ -1432,17 +1432,32 @@ namespace Avalonia.Media.Fonts
             {
                 if (style == FontStyle.Normal)
                 {
+                    if (_italic is null && _slant is null)
+                    {
+                        return Typeface.Style == FontStyle.Normal;
+                    }
+
+                    // An axis range may exclude upright, so exactness follows the clamped values
+                    // with the thresholds the projected Style uses.
+                    var isUpright = true;
+
                     if (_italic is { } uprightItalic)
                     {
-                        settings.Add(new FontVariation(uprightItalic.Tag, Clamp(0f, uprightItalic)));
+                        var ital = Clamp(0f, uprightItalic);
+
+                        settings.Add(new FontVariation(uprightItalic.Tag, ital));
+                        isUpright &= ital < 0.5f;
                     }
 
                     if (_slant is { } uprightSlant)
                     {
-                        settings.Add(new FontVariation(uprightSlant.Tag, Clamp(0f, uprightSlant)));
+                        var slnt = Clamp(0f, uprightSlant);
+
+                        settings.Add(new FontVariation(uprightSlant.Tag, slnt));
+                        isUpright &= slnt >= 0f;
                     }
 
-                    return Typeface.Style == FontStyle.Normal || _italic is not null || _slant is not null;
+                    return isUpright;
                 }
 
                 if (Typeface.Style == style)
