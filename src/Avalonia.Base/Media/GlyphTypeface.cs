@@ -690,7 +690,6 @@ namespace Avalonia.Media
             };
         }
 
-
         /// <summary>
         /// Converts the normalized coordinate of <paramref name="axis"/> in
         /// <paramref name="position"/> back to user space, undoing the avar correction and the
