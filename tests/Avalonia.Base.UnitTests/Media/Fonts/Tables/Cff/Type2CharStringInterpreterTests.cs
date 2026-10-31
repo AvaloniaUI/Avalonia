@@ -207,6 +207,115 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables.Cff
             Assert.IsType<InvalidOperationException>(ex);
         }
 
+        [Fact]
+        public void Div_Yields_A_Fractional_Coordinate()
+        {
+            // 0 0 rmoveto  100 3 div  -50 4 div  rlineto  endchar
+            var cs = new CharStringBuilder()
+                .Int(0).Int(0).Op(21)
+                .Int(100).Int(3).Esc(12)     // div
+                .Int(-50).Int(4).Esc(12)     // div
+                .Op(5)
+                .Op(14)
+                .ToArray();
+
+            var ctx = Run(cs);
+
+            AssertPoints(Assert.Single(ctx.Figures), (0, 0), (100.0 / 3, -12.5));
+        }
+
+        [Fact]
+        public void Put_Get_And_Arithmetic_Compute_Operands()
+        {
+            // 0 0 rmoveto  7 0 put  0 get 3 mul 5 sub  16 sqrt 3 neg abs add  rlineto  endchar
+            // dx = 7 * 3 - 5 = 16 ; dy = sqrt(16) + abs(-3) = 7
+            var cs = new CharStringBuilder()
+                .Int(0).Int(0).Op(21)
+                .Int(7).Int(0).Esc(20)                 // put: transient[0] = 7
+                .Int(0).Esc(21)                        // get
+                .Int(3).Esc(24)                        // mul
+                .Int(5).Esc(11)                        // sub
+                .Int(16).Esc(26)                       // sqrt
+                .Int(3).Esc(14)                        // neg
+                .Esc(9)                                // abs
+                .Esc(10)                               // add
+                .Op(5)
+                .Op(14)
+                .ToArray();
+
+            var ctx = Run(cs);
+
+            AssertPoints(Assert.Single(ctx.Figures), (0, 0), (16, 7));
+        }
+
+        [Fact]
+        public void Logic_And_IfElse_Select_Operands()
+        {
+            // 0 0 rmoveto  10 20 1 2 ifelse  (v1 <= v2 -> 10)
+            //              3 3 eq  0 not and  1 0 or  add  (1 and 1 = 1 ; 1 or 0 = 1 ; 1 + 1 = 2)
+            //              rlineto  endchar
+            var cs = new CharStringBuilder()
+                .Int(0).Int(0).Op(21)
+                .Int(10).Int(20).Int(1).Int(2).Esc(22)  // ifelse
+                .Int(3).Int(3).Esc(15)                  // eq
+                .Int(0).Esc(5)                          // not
+                .Esc(3)                                 // and
+                .Int(1).Int(0).Esc(4)                   // or
+                .Esc(10)                                // add
+                .Op(5)
+                .Op(14)
+                .ToArray();
+
+            var ctx = Run(cs);
+
+            AssertPoints(Assert.Single(ctx.Figures), (0, 0), (10, 2));
+        }
+
+        [Fact]
+        public void Stack_Operators_Rearrange_Operands()
+        {
+            // 0 0 rmoveto  1 2 3  3 1 roll   -> 3 1 2
+            //              drop exch         -> 1 3
+            //              rlineto           -> (1, 3)
+            //              5 9  1 index      -> 5 9 5
+            //              sub  dup drop     -> 5 4
+            //              rlineto           -> (6, 7)
+            //              endchar
+            var cs = new CharStringBuilder()
+                .Int(0).Int(0).Op(21)
+                .Int(1).Int(2).Int(3).Int(3).Int(1).Esc(30)  // roll
+                .Esc(18)                                     // drop
+                .Esc(28)                                     // exch
+                .Op(5)
+                .Int(5).Int(9).Int(1).Esc(29)                // index
+                .Esc(11)                                     // sub
+                .Esc(27)                                     // dup
+                .Esc(18)                                     // drop
+                .Op(5)
+                .Op(14)
+                .ToArray();
+
+            var ctx = Run(cs);
+
+            AssertPoints(Assert.Single(ctx.Figures), (0, 0), (1, 3), (6, 7));
+        }
+
+        [Fact]
+        public void Random_Is_Greater_Than_Zero_And_At_Most_One()
+        {
+            // 0 0 rmoveto  random 0 rlineto  endchar
+            var cs = new CharStringBuilder()
+                .Int(0).Int(0).Op(21)
+                .Esc(23).Int(0).Op(5)
+                .Op(14)
+                .ToArray();
+
+            var figure = Assert.Single(Run(cs).Figures);
+
+            Assert.Equal(2, figure.Count);
+            Assert.InRange(figure[1].X, double.Epsilon, 1.0);
+        }
+
         // --- helpers ---------------------------------------------------------------------------
 
         private static FigureRecordingContext Run(byte[] charString, CffIndex globalSubrs = default, CffIndex localSubrs = default)
@@ -287,6 +396,13 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables.Cff
 
             public CharStringBuilder Op(byte op)
             {
+                _bytes.Add(op);
+                return this;
+            }
+
+            public CharStringBuilder Esc(byte op)
+            {
+                _bytes.Add(12);
                 _bytes.Add(op);
                 return this;
             }
