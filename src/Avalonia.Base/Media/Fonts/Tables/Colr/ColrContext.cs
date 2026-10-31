@@ -52,24 +52,6 @@ namespace Avalonia.Media.Fonts.Tables.Colr
             => GetScaledDelta(varIndexBase, fieldOffset) / 65536.0;
 
         /// <summary>
-        /// Applies the alpha delta for a variable solid / colour field to a colour. Alpha is an
-        /// F2DOT14 field at <paramref name="fieldOffset"/> from <paramref name="varIndexBase"/>.
-        /// </summary>
-        public Color ApplyAlphaDelta(Color color, uint varIndexBase, uint fieldOffset)
-        {
-            var alphaDelta = GetF2Dot14Delta(varIndexBase, fieldOffset);
-
-            if (alphaDelta == 0.0)
-            {
-                return color;
-            }
-
-            var newAlpha = Math.Clamp(color.A / 255.0 + alphaDelta, 0.0, 1.0);
-
-            return Color.FromArgb((byte)(newAlpha * 255), color.R, color.G, color.B);
-        }
-
-        /// <summary>
         /// Applies the Affine2x3 component deltas (Fixed / 16.16) to a matrix. Each component is its
         /// own delta-set index: xx, yx, xy, yy, dx, dy → <c>VarIndexBase + 0..5</c> →
         /// M11, M12, M21, M22, M31, M32.

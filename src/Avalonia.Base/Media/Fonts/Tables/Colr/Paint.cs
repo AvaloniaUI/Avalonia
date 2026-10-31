@@ -101,24 +101,25 @@ namespace Avalonia.Media.Fonts.Tables.Colr
                 color = Colors.Black;
             }
 
-            color = Color.FromArgb((byte)(color.A * alpha), color.R, color.G, color.B);
-
             if (isVariable)
             {
+                // The alpha delta applies to the paint alpha, so the palette color and the alpha stay
+                // separate until the resolver knows the instance.
                 var varIndexBase = BinaryPrimitives.ReadUInt32BigEndian(span.Slice(5));
 
-                paint = new SolidVar(color, varIndexBase);
+                paint = new SolidVar(color, alpha, varIndexBase);
             }
             else
             {
-                paint = new Solid(color);
+                paint = new Solid(Color.FromArgb((byte)(color.A * alpha), color.R, color.G, color.B));
             }
 
             return true;
         }
     }
 
-    internal record SolidVar(Color Color, uint VarIndexBase) : Paint
+    /// <summary>PaintVarSolid: the palette color and the F2DOT14 paint alpha, not yet multiplied.</summary>
+    internal record SolidVar(Color PaletteColor, double Alpha, uint VarIndexBase) : Paint
     {
         public static bool TryParse(ReadOnlySpan<byte> span, in ColrContext context, out Paint? paint)
         {
