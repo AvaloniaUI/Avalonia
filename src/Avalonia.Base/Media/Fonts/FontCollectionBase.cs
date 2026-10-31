@@ -825,6 +825,7 @@ namespace Avalonia.Media.Fonts
         {
             var result = new List<(string FamilyName, NormalizedVariationPosition Position)>();
             var ranks = new List<int>();
+            var indices = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
             var names = new List<string>(1);
             var instances = root.NamedInstances;
 
@@ -866,11 +867,9 @@ namespace Avalonia.Media.Fonts
                         continue;
                     }
 
-                    var index = result.FindIndex(x =>
-                        string.Equals(x.FamilyName, name, StringComparison.OrdinalIgnoreCase));
-
-                    if (index < 0)
+                    if (!indices.TryGetValue(name, out var index))
                     {
+                        indices.Add(name, result.Count);
                         result.Add((name, position));
                         ranks.Add(rank);
                     }

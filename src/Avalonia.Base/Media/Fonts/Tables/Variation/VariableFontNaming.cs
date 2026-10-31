@@ -47,8 +47,9 @@ namespace Avalonia.Media.Fonts.Tables.Variation
 
         private const string DefaultStyleName = "Regular";
 
-        // Bounds the combinations of named values on the non-style axes. A font with several
-        // named custom axes would otherwise multiply into a family per combination.
+        // Bounds the family positions of a font. A font with several named custom axes would
+        // otherwise multiply into a family per combination, and one axis may name thousands of
+        // values.
         private const int MaxFamilyPositions = 64;
 
         /// <summary>
@@ -60,8 +61,9 @@ namespace Avalonia.Media.Fonts.Tables.Variation
         /// <remarks>
         /// Every combination of the named values of those axes is returned when there are at most
         /// <see cref="MaxFamilyPositions"/>; otherwise each named value is varied on its own from
-        /// the default position. Values outside the fvar axis range and values of format 4
-        /// combinations are skipped.
+        /// the default position, in table order, until <see cref="MaxFamilyPositions"/> positions
+        /// are returned. Values outside the fvar axis range and values of format 4 combinations
+        /// are skipped.
         /// </remarks>
         public static List<Dictionary<OpenTypeTag, float>> GetFamilyPositions(
             StatTable? stat,
@@ -106,6 +108,13 @@ namespace Avalonia.Media.Fonts.Tables.Variation
                     if (!values.Exists(x => AreEqual(x, record.Value)))
                     {
                         values.Add(record.Value);
+
+                        // More values than positions are never used, and stopping here keeps
+                        // the duplicate check bounded.
+                        if (values.Count > MaxFamilyPositions)
+                        {
+                            break;
+                        }
                     }
                 }
 
@@ -127,6 +136,11 @@ namespace Avalonia.Media.Fonts.Tables.Variation
                 {
                     foreach (var value in values)
                     {
+                        if (result.Count == MaxFamilyPositions)
+                        {
+                            return result;
+                        }
+
                         result.Add(new Dictionary<OpenTypeTag, float> { [tag] = value });
                     }
                 }
