@@ -128,7 +128,52 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
             Assert.Equal(overlap.TransformToAABB(Matrix.CreateScale(1, -1)), drawing!.Bounds);
         }
 
+        [Fact]
+        public void Drawing_Type_Tells_A_Paint_Graph_Glyph_From_A_Layered_Glyph()
+        {
+            var outlineGlyph = InterRegular().TryCreateGlyphTypeface()!.CharacterToGlyphMap['A'];
+
+            var v1 = ColrTestFont
+                .Graft(InterRegular(), BuildColrV1GlyphSolid(baseGlyph: 3, outlineGlyph, clip: null))
+                .TryCreateGlyphTypeface()!
+                .GetGlyphDrawing(3);
+
+            var v0 = ColrTestFont
+                .Graft(InterRegular(), BuildColrV0SingleLayer(baseGlyph: 3, outlineGlyph))
+                .TryCreateGlyphTypeface()!
+                .GetGlyphDrawing(3);
+
+            Assert.NotNull(v1);
+            Assert.NotNull(v0);
+            Assert.NotEqual(GlyphDrawingType.ColorLayers, v1!.Type);
+            Assert.Equal(GlyphDrawingType.ColorLayers, v0!.Type);
+        }
+
         private static SyntheticFont InterRegular() => SyntheticFont.FromAsset(SyntheticFont.Assets.InterRegular);
+
+        /// <summary>
+        /// Builds a COLR v0 table with one base glyph drawn as a single layer of
+        /// <paramref name="outlineGlyph"/> in palette entry 0.
+        /// </summary>
+        private static byte[] BuildColrV0SingleLayer(ushort baseGlyph, ushort outlineGlyph)
+        {
+            var colr = new BigEndianBuffer();
+
+            colr.UInt16(0);   // version
+            colr.UInt16(1);   // numBaseGlyphRecords
+            colr.UInt32(14);  // baseGlyphRecordsOffset
+            colr.UInt32(20);  // layerRecordsOffset
+            colr.UInt16(1);   // numLayerRecords
+
+            colr.UInt16(baseGlyph); // BaseGlyph record: glyphID, firstLayerIndex, numLayers
+            colr.UInt16(0);
+            colr.UInt16(1);
+
+            colr.UInt16(outlineGlyph); // Layer record: glyphID, paletteIndex
+            colr.UInt16(0);
+
+            return colr.ToArray();
+        }
 
         /// <summary>
         /// Builds a COLR v1 table: base glyph -> PaintGlyph(outlineGlyph) -> PaintSolid, with an
