@@ -527,7 +527,7 @@ namespace Avalonia.Skia.UnitTests.Media
                 Operations.Add($"[{_operationIndex++}] FillConicGradient: Center={FormatPoint(center)}, Start={startAngle:F2}°, End={endAngle:F2}°, Stops={stops.Length}, Extend={extend}");
             }
 
-            public void Glyph(ushort glyphIndex)
+            public void PushGlyphClip(ushort glyphIndex)
             {
                 var geometry = _glyphTypeface.GetGlyphOutline(glyphIndex);
                 var bounds = geometry?.Bounds ?? default;
@@ -624,7 +624,7 @@ namespace Avalonia.Skia.UnitTests.Media
                 FillCount++;
             }
 
-            public void Glyph(ushort glyphIndex)
+            public void PushGlyphClip(ushort glyphIndex)
             {
                 GlyphCount++;
             }
@@ -677,7 +677,7 @@ namespace Avalonia.Skia.UnitTests.Media
             public void FillRadialGradient(Point c0, double r0, Point c1, double r1, GradientStop[] stops, GradientSpreadMethod extend) { }
             public void FillConicGradient(Point center, double startAngle, double endAngle, GradientStop[] stops, GradientSpreadMethod extend) { }
 
-            public void Glyph(ushort glyphIndex)
+            public void PushGlyphClip(ushort glyphIndex)
             {
                 GlyphCount++;
 

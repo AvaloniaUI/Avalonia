@@ -52,20 +52,29 @@ namespace Avalonia.Media.Fonts.Tables.Colr
         void PushClip(Rect clipBox);
 
         /// <summary>
-        /// Removes the most recently added clip from the stack.
+        /// Intersects the clip region with the outline of the specified glyph, in the current
+        /// transform (COLR v1 PaintGlyph). A glyph without an outline clips everything away.
         /// </summary>
-        /// <remarks>Call this method to revert the last PushClip operation and restore the previous
-        /// clipping region. If there are no clips on the stack, calling this method has no effect.</remarks>
+        /// <param name="glyphIndex">The glyph whose outline becomes part of the clip.</param>
+        void PushGlyphClip(ushort glyphIndex);
+
+        /// <summary>
+        /// Removes the most recently added clip (a clip box or a glyph clip) from the stack.
+        /// </summary>
+        /// <remarks>Call this method to revert the last PushClip or PushGlyphClip operation and
+        /// restore the previous clipping region. If there are no clips on the stack, calling this
+        /// method has no effect.</remarks>
         void PopClip();
 
         /// <summary>
-        /// Fills the current path with a solid color.
+        /// Fills the current clip region with a solid color. A fill outside any clip is unbounded
+        /// and paints nothing.
         /// </summary>
-        /// <param name="color"></param>
+        /// <param name="color">The fill color.</param>
         void FillSolid(Color color);
 
         /// <summary>
-        /// Fills the current path with a linear gradient defined by the specified points and gradient stops.
+        /// Fills the current clip region with a linear gradient defined by the specified points and gradient stops.
         /// </summary>
         /// <remarks>The gradient is interpolated between the specified points using the provided gradient
         /// stops. The spread method determines how the gradient is rendered outside the range defined by the start and
@@ -78,7 +87,7 @@ namespace Avalonia.Media.Fonts.Tables.Colr
         void FillLinearGradient(Point p0, Point p1, GradientStop[] stops, GradientSpreadMethod extend);
 
         /// <summary>
-        /// Fills the current path with a radial gradient defined by two circles and a set of gradient stops.
+        /// Fills the current clip region with a radial gradient defined by two circles and a set of gradient stops.
         /// </summary>
         /// <remarks>The gradient transitions from the color at the starting circle to the color at the
         /// ending circle, interpolating colors as defined by the gradient stops. The spread method determines how the
@@ -93,7 +102,7 @@ namespace Avalonia.Media.Fonts.Tables.Colr
         void FillRadialGradient(Point c0, double r0, Point c1, double r1, GradientStop[] stops, GradientSpreadMethod extend);
 
         /// <summary>
-        /// Fills the current path with a conic gradient defined by the given center point, angle range, color stops,
+        /// Fills the current clip region with a conic gradient defined by the given center point, angle range, color stops,
         /// and spread method.
         /// </summary>
         /// <remarks>The conic gradient is drawn by interpolating colors between the specified stops along
@@ -108,11 +117,5 @@ namespace Avalonia.Media.Fonts.Tables.Colr
         /// <param name="extend">A value that specifies how the gradient is extended beyond its normal range, as defined by the <see
         /// cref="GradientSpreadMethod"/> enumeration.</param>
         void FillConicGradient(Point center, double startAngle, double endAngle, GradientStop[] stops, GradientSpreadMethod extend);
-
-        /// <summary>
-        /// Pushes a glyph outline onto the painter's current state as the active path for subsequent fill operations.
-        /// </summary>
-        /// <param name="glyphIndex"></param>
-        void Glyph(ushort glyphIndex);
     }
 }

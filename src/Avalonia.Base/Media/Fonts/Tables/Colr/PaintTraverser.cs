@@ -58,8 +58,11 @@
                     break;
 
                 case Glyph glyph:
-                    painter.Glyph(glyph.GlyphIndex);
+                    // PaintGlyph clips its child paint to the glyph outline in the current transform;
+                    // fills inside paint the clip region, whatever transforms or layers sit between.
+                    painter.PushGlyphClip(glyph.GlyphIndex);
                     Traverse(glyph.Paint, painter, currentMatrix);
+                    painter.PopClip();
                     break;
 
                 case Composite comp:
