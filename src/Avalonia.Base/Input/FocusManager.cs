@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Input.Navigation;
 using Avalonia.Interactivity;
@@ -669,26 +668,14 @@ namespace Avalonia.Input
 
             if (mode != KeyboardNavigationMode.None)
             {
-                var members = GetTabGroupMembers(container, element, false);
-                var index = element == null || element == container ? -1 : members.IndexOf(element);
-                var steps = mode == KeyboardNavigationMode.Cycle ? members.Count : members.Count - index - 1;
+                if (EnterTabGroupMembers(element, container, mode, false, ref didCycle) is { } inside)
+                    return inside;
 
-                for (var step = 1; step <= steps; step++)
+                // Keep searching inside a Once group, but don't leave it.
+                if (mode == KeyboardNavigationMode.Once &&
+                    FindNextTabOrderKey(container, long.MinValue, long.MaxValue, false, long.MaxValue) != long.MaxValue)
                 {
-                    var next = members[(index + step) % members.Count];
-
-                    if (next == element && !IsTabStopOrGroup(next))
-                        continue;
-
-                    if (index + step >= members.Count && GetTabParent(container) == null)
-                        didCycle = true;
-
-                    if (GetNextTabStop(null, next, true, ref didCycle) is { } inside)
-                        return inside;
-
-                    // Keep searching inside a Once group, but don't leave it.
-                    if (mode == KeyboardNavigationMode.Once)
-                        mode = KeyboardNavigationMode.Contained;
+                    mode = KeyboardNavigationMode.Contained;
                 }
             }
 
@@ -723,10 +710,10 @@ namespace Avalonia.Input
                 // Entering a Once group backwards still lands on its first item.
                 if (mode == KeyboardNavigationMode.Once)
                 {
-                    var members = GetTabGroupMembers(container, null, true);
+                    var firstKey = FindNextTabOrderKey(container, long.MinValue, long.MaxValue, false, long.MaxValue);
 
-                    if (members.Count > 0)
-                        return GetPreviousTabStop(null, members[0], true, ref didCycle);
+                    if (firstKey != long.MaxValue && FindFirstTabGroupMember(container, (int)firstKey) is { } first)
+                        return GetPreviousTabStop(null, first, true, ref didCycle);
 
                     if (IsTabStop(container))
                         return container;
@@ -742,28 +729,11 @@ namespace Avalonia.Input
                 return IsTabStop(container) ? container : GetPreviousTabStop(container, null, false, ref didCycle);
             }
 
-            if (mode != KeyboardNavigationMode.None && element != container)
+            if (mode != KeyboardNavigationMode.None &&
+                element != container &&
+                EnterTabGroupMembers(element, container, mode, true, ref didCycle) is { } inside)
             {
-                var members = GetTabGroupMembers(container, element, true);
-                var index = element == null ? members.Count : members.IndexOf(element);
-                var steps = mode == KeyboardNavigationMode.Cycle ? members.Count : index;
-
-                for (var step = 1; step <= steps; step++)
-                {
-                    var previous = members[(index - step + members.Count) % members.Count];
-
-                    if (previous == element && !IsTabStopOrGroup(previous))
-                        continue;
-
-                    if (index - step < 0 && GetTabParent(container) == null)
-                        didCycle = true;
-
-                    if (IsTabStop(previous) && !IsTabGroup(previous))
-                        return previous;
-
-                    if (GetPreviousTabStop(null, previous, true, ref didCycle) is { } inside)
-                        return inside;
-                }
+                return inside;
             }
 
             if (mode == KeyboardNavigationMode.Contained)
@@ -778,32 +748,212 @@ namespace Avalonia.Input
             return null;
         }
 
-        private static List<IInputElement> GetTabGroupMembers(IInputElement group, IInputElement? element, bool isReverse)
-        {
-            var members = new List<IInputElement>();
-            CollectTabGroupMembers(group, element, isReverse, members);
-            return members.OrderBy(GetTabIndex).ToList();
-        }
-
-        private static void CollectTabGroupMembers(
-            IInputElement parent,
+        // Tries members in tab order: same TabIndex from the start element, then later values, then the Cycle wrap.
+        private static IInputElement? EnterTabGroupMembers(
             IInputElement? element,
+            IInputElement container,
+            KeyboardNavigationMode mode,
             bool isReverse,
-            List<IInputElement> members)
+            ref bool didCycle)
         {
-            foreach (var child in FocusHelpers.GetInputElementChildren(parent as AvaloniaObject))
-            {
-                var isAvailable = IsAvailableForTabbing(child);
-                var isScope = IsTabGroup(child) || GetEntryOverride(child, isReverse) != null;
+            if (element == null || element == container)
+                return EnterMembersByTabOrderKey(container, long.MinValue, long.MaxValue, isReverse, ref didCycle);
 
-                // The start keeps its place even when it can't be tabbed to.
-                if (child == element || (isAvailable && (isScope || IsTabStop(child))))
-                    members.Add(child);
+            if (EnterSameIndexMembersFrom(element, container, isReverse, ref didCycle) is { } sameIndex)
+                return sameIndex;
 
-                if (!isScope && (isAvailable || (child as Visual)?.IsVisualAncestorOf(element as Visual) == true))
-                    CollectTabGroupMembers(child, element, isReverse, members);
-            }
+            var startKey = GetTabOrderKey(GetTabIndex(element), isReverse);
+
+            if (EnterMembersByTabOrderKey(container, startKey, long.MaxValue, isReverse, ref didCycle) is { } later)
+                return later;
+
+            if (mode != KeyboardNavigationMode.Cycle)
+                return null;
+
+            if (GetTabParent(container) == null)
+                didCycle = true;
+
+            return EnterMembersByTabOrderKey(container, long.MinValue, startKey, isReverse, ref didCycle);
         }
+
+        private static IInputElement? EnterSameIndexMembersFrom(
+            IInputElement element,
+            IInputElement container,
+            bool isReverse,
+            ref bool didCycle)
+        {
+            var tabIndex = GetTabIndex(element);
+            var step = isReverse ? -1 : 1;
+
+            if (!isReverse &&
+                IsAvailableForTabbing(element) &&
+                !IsTabScope(element, false) &&
+                EnterChildMembers(element, tabIndex, false, ref didCycle) is { } descendant)
+            {
+                return descendant;
+            }
+
+            for (var current = element; current != container && GetTabParent(current) is { } parent; current = parent)
+            {
+                if (parent is Visual parentVisual && current is Visual currentVisual)
+                {
+                    var siblings = parentVisual.TypedVisualChildren;
+                    var start = siblings.IndexOf(currentVisual);
+
+                    for (var i = start + step; start >= 0 && i >= 0 && i < siblings.Count; i += step)
+                    {
+                        if (siblings[i] is IInputElement sibling &&
+                            EnterMember(sibling, tabIndex, isReverse, ref didCycle) is { } tabStop)
+                        {
+                            return tabStop;
+                        }
+                    }
+                }
+
+                if (isReverse &&
+                    parent != container &&
+                    IsAvailableForTabbing(parent) &&
+                    (IsTabScope(parent, true) || IsTabStop(parent)) &&
+                    GetTabIndex(parent) == tabIndex &&
+                    EnterPreviousMember(parent, ref didCycle) is { } enclosing)
+                {
+                    return enclosing;
+                }
+            }
+
+            return null;
+        }
+
+        private static IInputElement? EnterMembersByTabOrderKey(
+            IInputElement container,
+            long fromKey,
+            long toKey,
+            bool isReverse,
+            ref bool didCycle)
+        {
+            var lastKey = GetTabOrderKey(isReverse ? int.MinValue : int.MaxValue, isReverse);
+
+            while (fromKey < lastKey)
+            {
+                var key = FindNextTabOrderKey(container, fromKey, toKey, isReverse, long.MaxValue);
+
+                if (key == long.MaxValue)
+                    return null;
+
+                var tabIndex = (int)(isReverse ? -key : key);
+
+                if (EnterChildMembers(container, tabIndex, isReverse, ref didCycle) is { } tabStop)
+                    return tabStop;
+
+                fromKey = key;
+            }
+
+            return null;
+        }
+
+        private static IInputElement? EnterChildMembers(
+            IInputElement parent,
+            int tabIndex,
+            bool isReverse,
+            ref bool didCycle)
+        {
+            if (parent is not Visual visual)
+                return null;
+
+            var children = visual.TypedVisualChildren;
+            var step = isReverse ? -1 : 1;
+
+            for (var i = isReverse ? children.Count - 1 : 0; i >= 0 && i < children.Count; i += step)
+            {
+                if (children[i] is IInputElement child &&
+                    EnterMember(child, tabIndex, isReverse, ref didCycle) is { } tabStop)
+                {
+                    return tabStop;
+                }
+            }
+
+            return null;
+        }
+
+        private static IInputElement? EnterMember(IInputElement element, int tabIndex, bool isReverse, ref bool didCycle)
+        {
+            if (!IsAvailableForTabbing(element))
+                return null;
+
+            var isScope = IsTabScope(element, isReverse);
+            var isCandidate = (isScope || IsTabStop(element)) && GetTabIndex(element) == tabIndex;
+
+            if (!isReverse && isCandidate && GetNextTabStop(null, element, true, ref didCycle) is { } next)
+                return next;
+
+            if (!isScope && EnterChildMembers(element, tabIndex, isReverse, ref didCycle) is { } descendant)
+                return descendant;
+
+            return isReverse && isCandidate ? EnterPreviousMember(element, ref didCycle) : null;
+        }
+
+        private static IInputElement? EnterPreviousMember(IInputElement element, ref bool didCycle) =>
+            IsTabStop(element) && !IsTabGroup(element) ?
+                element :
+                GetPreviousTabStop(null, element, true, ref didCycle);
+
+        private static long FindNextTabOrderKey(IInputElement parent, long fromKey, long toKey, bool isReverse, long best)
+        {
+            if (parent is not Visual visual)
+                return best;
+
+            var children = visual.TypedVisualChildren;
+
+            for (var i = 0; i < children.Count; i++)
+            {
+                if (children[i] is not IInputElement child || !IsAvailableForTabbing(child))
+                    continue;
+
+                var isScope = IsTabScope(child, isReverse);
+
+                if (isScope || IsTabStop(child))
+                {
+                    var key = GetTabOrderKey(GetTabIndex(child), isReverse);
+
+                    if (key > fromKey && key <= toKey && key < best)
+                        best = key;
+                }
+
+                if (!isScope)
+                    best = FindNextTabOrderKey(child, fromKey, toKey, isReverse, best);
+            }
+
+            return best;
+        }
+
+        private static IInputElement? FindFirstTabGroupMember(IInputElement parent, int tabIndex)
+        {
+            if (parent is not Visual visual)
+                return null;
+
+            var children = visual.TypedVisualChildren;
+
+            for (var i = 0; i < children.Count; i++)
+            {
+                if (children[i] is not IInputElement child || !IsAvailableForTabbing(child))
+                    continue;
+
+                var isScope = IsTabScope(child, false);
+
+                if ((isScope || IsTabStop(child)) && GetTabIndex(child) == tabIndex)
+                    return child;
+
+                if (!isScope && FindFirstTabGroupMember(child, tabIndex) is { } member)
+                    return member;
+            }
+
+            return null;
+        }
+
+        private static long GetTabOrderKey(int tabIndex, bool isReverse) => isReverse ? -(long)tabIndex : tabIndex;
+
+        private static bool IsTabScope(IInputElement element, bool isReverse) =>
+            IsTabGroup(element) || GetEntryOverride(element, isReverse) != null;
 
         private static IInputElement GetLastInTabOrderTree(IInputElement container)
         {
@@ -878,10 +1028,8 @@ namespace Avalonia.Input
         private static bool IsTabGroup(IInputElement element) =>
             GetTabNavigationMode(element) != KeyboardNavigationMode.Continue;
 
-        private static bool IsTabStopOrGroup(IInputElement element) => IsTabStop(element) || IsTabGroup(element);
-
         private static bool IsTabStop(IInputElement element) =>
-            element is InputElement { IsTabStop: true, Focusable: true } &&
+            element is InputElement { Focusable: true, IsTabStop: true } &&
             element.IsEffectivelyEnabled &&
             FocusHelpers.IsVisible(element);
 
