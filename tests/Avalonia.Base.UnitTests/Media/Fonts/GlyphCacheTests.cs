@@ -17,6 +17,9 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
             => new(payload ?? new object(), cost, kind, dependencies ?? Array.Empty<ushort>(),
                 default, hasBounds: false);
 
+        private static BuiltGeometry BuiltNull()
+            => new(null, 1, GlyphPayloadKind.Outline, Array.Empty<ushort>(), default, hasBounds: false);
+
         // Builds and caches a geometry for `glyph`, returning the payload that was stored.
         private static object BuildGeometry(GlyphCache cache, ushort glyph, int cost,
             GlyphPayloadKind kind = GlyphPayloadKind.Outline, ushort[]? dependencies = null,
@@ -188,18 +191,65 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
         }
 
         [Fact]
-        public void Evicted_Disposable_Payload_Is_Disposed_Once()
+        public void Evicted_Disposable_Payload_Is_Not_Disposed()
         {
             var cache = new GlyphCache(budgetBytes: 1);
             var payload = new DisposablePayload();
 
             var entry = cache.GetEntry(40, retainBounds: false);
-            cache.GetOrBuildGeometry(entry, _ => Built(1, payload));
+            var handedOut = cache.GetOrBuildGeometry(entry, _ => Built(1, payload));
 
             BuildGeometry(cache, 41, cost: 1); // evicts glyph 40
 
+            // Hits are handed out lock-free and escape into retained render data, so eviction only
+            // unlinks the payload; a caller still holding it must find it intact.
             Assert.False(entry.HasGeometry);
-            Assert.Equal(1, payload.DisposeCount);
+            Assert.Same(payload, handedOut);
+            Assert.Equal(0, payload.DisposeCount);
+        }
+
+        [Fact]
+        public void Memoised_Miss_Is_Marked_Referenced_On_A_Hit()
+        {
+            var cache = new GlyphCache();
+            var entry = cache.GetEntry(50, retainBounds: false);
+            var builds = 0;
+
+            // A malformed glyph builds to null; the null result is memoised.
+            Assert.Null(cache.GetOrBuildGeometry(entry, _ => { builds++; return BuiltNull(); }));
+
+            entry.Referenced = 0;
+            Assert.Null(cache.GetOrBuildGeometry(entry, _ => { builds++; return BuiltNull(); }));
+
+            // The hit refreshes the miss like any other entry, so under pressure it is not the first
+            // victim and re-parsed on every request.
+            Assert.Equal(1, builds);
+            Assert.Equal(1, entry.Referenced);
+        }
+
+        [Fact]
+        public void Evicting_An_Orphaned_Entry_Keeps_The_Fresh_Entry_For_The_Same_Glyph()
+        {
+            var cache = new GlyphCache(budgetBytes: 1);
+
+            // Evicting glyph 60 drops its entry from the map, but a caller may still hold it.
+            var orphan = cache.GetEntry(60, retainBounds: false);
+            cache.GetOrBuildGeometry(orphan, _ => Built(1));
+            BuildGeometry(cache, 61, cost: 1);
+            Assert.False(orphan.HasGeometry);
+
+            // A later lookup creates a fresh entry for the same glyph.
+            var fresh = cache.GetEntry(60, retainBounds: false);
+            Assert.NotSame(orphan, fresh);
+            cache.GetOrBuildGeometry(fresh, _ => Built(1));
+
+            // Rebuilding through the orphan puts it back in the ring; pinning the fresh entry makes
+            // the orphan the victim of the resulting eviction.
+            fresh.PinCount = 1;
+            cache.GetOrBuildGeometry(orphan, _ => Built(1));
+
+            Assert.False(orphan.HasGeometry);
+            Assert.Same(fresh, cache.GetEntry(60, retainBounds: false));
         }
 
         private sealed class DisposablePayload : IDisposable
