@@ -8,7 +8,7 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
     /// COLR v1 glyph bounds, computed without a render backend. A ClipList yields bounds directly;
     /// the no-ClipList fallback unions the painted outlines' control-point extents, read via the
     /// outline tables' bounds path (the <c>glyf</c> header / a <c>BoundsGeometryContext</c> interpret
-    /// pass) rather than by building geometry — so neither path needs a geometry backend.
+    /// pass) rather than by building geometry, so neither path needs a geometry backend.
     /// </summary>
     public class ColrRenderingCharacterizationTests
     {
@@ -19,7 +19,7 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
             Assert.NotNull(plain);
             var outlineGlyph = plain!.CharacterToGlyphMap['A'];
 
-            // base 3 → PaintGlyph(outline) → PaintSolid, with a ClipList.
+            // base 3 -> PaintGlyph(outline) -> PaintSolid, with a ClipList.
             var clipped = ColrTestFont
                 .Graft(InterRegular(), BuildColrV1GlyphSolid(baseGlyph: 3, outlineGlyph, clip: (0, 0, 1000, 1000)))
                 .TryCreateGlyphTypeface()!
@@ -27,7 +27,7 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
 
             Assert.NotNull(clipped);
 
-            // The clip box yields non-empty bounds without building any geometry — which also proves
+            // The clip box yields non-empty bounds without building any geometry, which also proves
             // the paint resolved (bounds are only computed when the paint parses).
             Assert.NotEqual(default, clipped!.Bounds);
         }
@@ -40,7 +40,7 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
             var outlineGlyph = plain!.CharacterToGlyphMap['A'];
 
             // The referenced outline's control-point box (the glyf header for this static font),
-            // flipped from font space (Y-up) to drawing space (Y-down) — what the fallback derives,
+            // flipped from font space (Y-up) to drawing space (Y-down), what the fallback derives,
             // with no render backend.
             var header = new GlyphBounds[1];
             Assert.True(plain.TryGetGlyphBounds(new[] { outlineGlyph }, header));
@@ -48,7 +48,7 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
             var expected = new Rect(box.XMin, box.YMin, box.Width, box.Height)
                 .TransformToAABB(Matrix.CreateScale(1, -1));
 
-            // The identical glyph WITHOUT a ClipList falls back to the painted outline's extent — read
+            // The identical glyph WITHOUT a ClipList falls back to the painted outline's extent, read
             // from the outline table's bounds path, no geometry built and no backend required.
             var clipless = ColrTestFont
                 .Graft(InterRegular(), BuildColrV1GlyphSolid(baseGlyph: 3, outlineGlyph, clip: null))
@@ -131,7 +131,7 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
         private static SyntheticFont InterRegular() => SyntheticFont.FromAsset(SyntheticFont.Assets.InterRegular);
 
         /// <summary>
-        /// Builds a COLR v1 table: base glyph → PaintGlyph(outlineGlyph) → PaintSolid, with an
+        /// Builds a COLR v1 table: base glyph -> PaintGlyph(outlineGlyph) -> PaintSolid, with an
         /// optional single-glyph ClipList. Offsets are constant because the layout is sequential.
         /// </summary>
         private static byte[] BuildColrV1GlyphSolid(
@@ -153,7 +153,7 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
             colr.UInt32(0);   // varIndexMapOffset @26
             colr.UInt32(0);   // itemVariationStoreOffset @30
 
-            // BaseGlyphV1List: one record → the PaintGlyph paint.
+            // BaseGlyphV1List: one record -> the PaintGlyph paint.
             var baseListStart = colr.Position;
             colr.PatchUInt32(baseListOffsetPos, (uint)baseListStart);
             colr.UInt32(1);

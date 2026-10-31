@@ -51,7 +51,7 @@ namespace Avalonia.Media.Fonts.Tables.Colr
 
         /// <summary>
         /// Applies the Affine2x3 component deltas (Fixed / 16.16) to a matrix. Each component is its
-        /// own delta-set index: xx, yx, xy, yy, dx, dy → <c>VarIndexBase + 0..5</c> →
+        /// own delta-set index: xx, yx, xy, yy, dx, dy -> <c>VarIndexBase + 0..5</c> ->
         /// M11, M12, M21, M22, M31, M32.
         /// </summary>
         public Matrix ApplyAffineDeltas(Matrix matrix, uint varIndexBase)

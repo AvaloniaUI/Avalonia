@@ -13,7 +13,7 @@ namespace Avalonia.Media.Fonts.Tables.Colr
     /// <para>
     /// Paint-graph transforms are pushed onto the drawing context rather than baked into the
     /// geometry: each cached design-space outline is drawn as-is (no per-draw transformed clone),
-    /// the context maps gradient coordinates — which COLR defines in the same glyph space — without
+    /// the context maps gradient coordinates, which COLR defines in the same glyph space, without
     /// a manual brush transform, and a pushed clip box clips exactly under rotation / skew instead
     /// of as an axis-aligned approximation.
     /// </para>
@@ -33,7 +33,7 @@ namespace Avalonia.Media.Fonts.Tables.Colr
         // Every push (transform / clip / layer) onto the caller's DrawingContext lands on this one
         // LIFO stack. The traverser pairs each push with a pop in correct nesting order, so the top
         // is always the matching state; on a mid-paint throw the traverser's pop is skipped, so
-        // Dispose unwinds whatever remains — otherwise the pushed states would leak into the
+        // Dispose unwinds whatever remains, otherwise the pushed states would leak into the
         // caller's context and corrupt all subsequent drawing.
         private readonly Stack<IDisposable> _pushedStates = new Stack<IDisposable>();
 
@@ -72,9 +72,9 @@ namespace Avalonia.Media.Fonts.Tables.Colr
         {
             MaterializePendingClip();
 
-            // COLR v1 composite modes are not fully supported in the base drawing context
-            // For now, we use opacity layers to provide basic composition support
-            // TODO: Implement proper blend mode support when available
+            // DrawingContext has no blend-mode layer, so every PaintComposite mode composites as
+            // SrcOver: the backdrop is drawn, then the source over it, inside an opacity-1 layer.
+            // Modes other than SrcOver render incorrectly.
             _pushedStates.Push(_drawingContext.PushOpacity(1.0));
         }
 
@@ -84,7 +84,7 @@ namespace Avalonia.Media.Fonts.Tables.Colr
         {
             MaterializePendingClip();
 
-            // The context transform applies to the clip, so the box clips exactly — even rotated.
+            // The context transform applies to the clip, so the box clips exactly, even rotated.
             _pushedStates.Push(_drawingContext.PushClip(clipBox));
             _clips.Push(new ClipEntry(null, Intersect(clipBox.TransformToAABB(_transform)), isPushed: true));
         }
@@ -124,7 +124,7 @@ namespace Avalonia.Media.Fonts.Tables.Colr
         }
 
         /// <summary>
-        /// Unwinds any states still pushed onto the caller's <see cref="DrawingContext"/> — the
+        /// Unwinds any states still pushed onto the caller's <see cref="DrawingContext"/>, the
         /// normal case leaves none (every push was popped during traversal), but a throw mid-paint
         /// leaves the in-flight states here, and disposing in reverse-push (LIFO) order restores
         /// the context exactly.

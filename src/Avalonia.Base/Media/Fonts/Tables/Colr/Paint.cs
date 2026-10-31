@@ -275,10 +275,9 @@ namespace Avalonia.Media.Fonts.Tables.Colr
             var startAngleFixed = BinaryPrimitives.ReadInt16BigEndian(span.Slice(8));
             var endAngleFixed = BinaryPrimitives.ReadInt16BigEndian(span.Slice(10));
 
-            // F2DOT14 sweep angles are in units of 180° per 1.0 of value. Keep them in those raw units
-            // here; NormalizeConicGradient multiplies by 180 to produce the degrees that
-            // IConicGradientBrush.Angle expects. (Converting to radians here would then be wrongly
-            // scaled by 180 instead of 180/π.)
+            // F2DOT14 sweep angles are in units of 180 degrees per 1.0 of value. They stay in those raw
+            // units here; NormalizeConicGradient multiplies by 180 to produce the degrees that
+            // IConicGradientBrush.Angle expects.
             var startAngle = PaintParsingHelpers.F2Dot14ToDouble(startAngleFixed);
             var endAngle = PaintParsingHelpers.F2Dot14ToDouble(endAngleFixed);
 
@@ -379,7 +378,7 @@ namespace Avalonia.Media.Fonts.Tables.Colr
             }
 
             // The referenced glyph's base paint is guarded by the offset the recursive
-            // PaintParser.TryParse below enters: a glyph cycle (G1 → G2 → G1) re-enters G1's base
+            // PaintParser.TryParse below enters: a glyph cycle (G1 -> G2 -> G1) re-enters G1's base
             // paint offset and trips cycle detection, so no separate glyph-id guard is needed.
             if (!PaintParser.TryParse(context.ColrData.Span, absolutePaintOffset, in context, in decycler, out var innerPaint))
             {
@@ -785,7 +784,7 @@ namespace Avalonia.Media.Fonts.Tables.Colr
                 return false;
             }
 
-            // F2DOT14 angles: 180° per 1.0 of value, so multiply by π (not 2π)
+            // F2DOT14 angles: 180 degrees per 1.0 of value, so multiply by pi (not 2pi)
             var angle = PaintParsingHelpers.F2Dot14ToDouble(BinaryPrimitives.ReadInt16BigEndian(span.Slice(4))) * Math.PI;
 
             if (isVariable)
@@ -843,7 +842,7 @@ namespace Avalonia.Media.Fonts.Tables.Colr
                 return false;
             }
 
-            // F2DOT14 angles: 180° per 1.0 of value, so multiply by π (not 2π)
+            // F2DOT14 angles: 180 degrees per 1.0 of value, so multiply by pi (not 2pi)
             var angle = PaintParsingHelpers.F2Dot14ToDouble(BinaryPrimitives.ReadInt16BigEndian(span.Slice(4))) * Math.PI;
             var centerX = BinaryPrimitives.ReadInt16BigEndian(span.Slice(6));
             var centerY = BinaryPrimitives.ReadInt16BigEndian(span.Slice(8));
@@ -903,7 +902,7 @@ namespace Avalonia.Media.Fonts.Tables.Colr
                 return false;
             }
 
-            // F2DOT14 angles: 180° per 1.0 of value, so multiply by π (not 2π)
+            // F2DOT14 angles: 180 degrees per 1.0 of value, so multiply by pi (not 2pi)
             var xAngle = PaintParsingHelpers.F2Dot14ToDouble(BinaryPrimitives.ReadInt16BigEndian(span.Slice(4))) * Math.PI;
             var yAngle = PaintParsingHelpers.F2Dot14ToDouble(BinaryPrimitives.ReadInt16BigEndian(span.Slice(6))) * Math.PI;
 
@@ -962,7 +961,7 @@ namespace Avalonia.Media.Fonts.Tables.Colr
                 return false;
             }
 
-            // F2DOT14 angles: 180° per 1.0 of value, so multiply by π (not 2π)
+            // F2DOT14 angles: 180 degrees per 1.0 of value, so multiply by pi (not 2pi)
             var xAngle = PaintParsingHelpers.F2Dot14ToDouble(BinaryPrimitives.ReadInt16BigEndian(span.Slice(4))) * Math.PI;
             var yAngle = PaintParsingHelpers.F2Dot14ToDouble(BinaryPrimitives.ReadInt16BigEndian(span.Slice(6))) * Math.PI;
             var centerX = BinaryPrimitives.ReadInt16BigEndian(span.Slice(8));
