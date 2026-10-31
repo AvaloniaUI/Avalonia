@@ -1,4 +1,5 @@
 using System;
+using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -620,6 +621,48 @@ namespace Avalonia.Base.UnitTests.Media
 
             Assert.Equal(defHasBounds, blackHasBounds);
             Assert.Equal(defBox, blackBox);
+        }
+
+        [Fact]
+        public void Variable_Glyf_Ink_Bounds_Are_Unavailable_For_A_Truncated_Glyph_At_A_Non_Default_Instance()
+        {
+            var font = SyntheticFont.FromAsset(SyntheticFont.Assets.InterVariable);
+            var glyph = font.CreateGlyphTypeface().CharacterToGlyphMap['H'];
+
+            var def = WithTruncatedGlyphBody(font, glyph).CreateGlyphTypeface();
+            var black = def.WithVariation(WghtPosition(def, 900));
+
+            // The header box survives, so the default instance still reads it; the varied instance
+            // has to build the outline, which the truncated body cannot provide.
+            Assert.True(def.TryGetGlyphInkBounds(glyph, out var defBox));
+            Assert.NotEqual(default, defBox);
+
+            Assert.False(black.TryGetGlyphInkBounds(glyph, out var blackBox));
+            Assert.Equal(default, blackBox);
+
+            // A failed read is not memoised as an empty box.
+            Assert.False(black.TryGetGlyphInkBounds(glyph, out _));
+        }
+
+        /// <summary>
+        /// Raises a simple glyph's numberOfContours to the int16 maximum while keeping its header box,
+        /// so the endPtsOfContours array, flags and coordinates it declares run past the glyph's loca
+        /// extent. The header stays readable; the outline cannot be built.
+        /// </summary>
+        private static SyntheticFont WithTruncatedGlyphBody(SyntheticFont font, ushort glyph)
+        {
+            var head = font.GetTable("head");
+            var loca = font.GetTable("loca");
+
+            var start = BinaryPrimitives.ReadInt16BigEndian(head.AsSpan(50)) == 0
+                ? BinaryPrimitives.ReadUInt16BigEndian(loca.AsSpan(glyph * 2)) * 2
+                : (int)BinaryPrimitives.ReadUInt32BigEndian(loca.AsSpan(glyph * 4));
+
+            return font.Mutate("glyf", glyf =>
+            {
+                Assert.True(BinaryPrimitives.ReadInt16BigEndian(glyf.AsSpan(start)) > 0);
+                BinaryPrimitives.WriteInt16BigEndian(glyf.AsSpan(start), short.MaxValue);
+            });
         }
 
         private static GlyphBounds InkBounds(GlyphTypeface typeface, ushort glyph)
