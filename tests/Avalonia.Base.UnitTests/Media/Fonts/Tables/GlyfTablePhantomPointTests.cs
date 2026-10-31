@@ -75,7 +75,161 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
             Assert.Equal(2, context.FigureCount);
         }
 
+        [Fact]
+        public void Shared_Point_Numbers_Carry_Phantom_Deltas()
+        {
+            // The square has points 0-3, so points 4 and 5 are pp1 and pp2.
+            var gvar = BuildGvar(1, (0, Entry(
+                new[] { 1, 4, 5 },
+                SharedPointsTuple(new short[] { 3, -10, 30 }, new short[] { 9, 0, 7 }))));
+
+            AssertPhantomDeltas(BuildGlyf(Square(100)), gvar, 0, 0, new float[] { -10, 30, 0, 0 }, new float[] { 0, 7, 0, 0 });
+        }
+
+        [Fact]
+        public void Private_Point_Numbers_Carry_Phantom_Deltas_Without_Interpolation()
+        {
+            // Contour points 0 and 2 are referenced too; pp1 and pp2 are not and stay at zero, as
+            // IUP only interpolates along contours.
+            var gvar = BuildGvar(1, (0, Entry(
+                null,
+                PrivatePointsTuple(new[] { 0, 2, 6, 7 }, new short[] { 1, 2, 3, 4 }, new short[] { 5, 6, 7, 8 }))));
+
+            AssertPhantomDeltas(BuildGlyf(Square(100)), gvar, 0, 0, new float[] { 0, 0, 3, 4 }, new float[] { 0, 0, 7, 8 });
+        }
+
+        [Fact]
+        public void All_Points_Tuple_Carries_Phantom_Deltas_After_The_Contour_Points()
+        {
+            var gvar = BuildGvar(1, (0, Entry(
+                null,
+                SharedPointsTuple(new short[] { 1, 2, 3, 4, -5, 6, 7, 8 }, new short[] { 0, 0, 0, 0, 0, 0, 9, -10 }))));
+
+            AssertPhantomDeltas(BuildGlyf(Square(100)), gvar, 0, 0, new float[] { -5, 6, 7, 8 }, new float[] { 0, 0, 9, -10 });
+        }
+
+        [Fact]
+        public void Phantom_Deltas_Of_Several_Tuples_Add_Up()
+        {
+            var gvar = BuildGvar(1, (0, Entry(
+                new[] { 5 },
+                SharedPointsTuple(new short[] { 30 }, new short[] { 0 }),
+                SharedPointsTuple(new short[] { 12 }, new short[] { 0 }))));
+
+            AssertPhantomDeltas(BuildGlyf(Square(100)), gvar, 0, 0, new float[] { 0, 42, 0, 0 }, new float[4]);
+        }
+
+        [Fact]
+        public void Use_My_Metrics_Chain_Takes_The_Phantom_Deltas_Of_Its_Last_Glyph()
+        {
+            // glyph 1 takes its metrics from glyph 0, glyph 3 from glyph 1. The composites' own
+            // entries move their pp2 (point 3 after two components, point 2 after one) and are
+            // ignored.
+            var glyf = BuildGlyf(
+                Square(100),
+                Composite((0, CompositeFlags.UseMyMetrics), (2, 0)),
+                Square(10),
+                Composite((1, CompositeFlags.UseMyMetrics)));
+
+            var gvar = BuildGvar(
+                4,
+                (0, Entry(null, PrivatePointsTuple(new[] { 5 }, new short[] { 30 }, new short[] { 0 }))),
+                (1, Entry(null, PrivatePointsTuple(new[] { 3 }, new short[] { 99 }, new short[] { 0 }))),
+                (3, Entry(null, PrivatePointsTuple(new[] { 2 }, new short[] { 77 }, new short[] { 0 }))));
+
+            var expectedX = new float[] { 0, 30, 0, 0 };
+
+            AssertPhantomDeltas(glyf, gvar, 1, 0, expectedX, new float[4]);
+            AssertPhantomDeltas(glyf, gvar, 3, 0, expectedX, new float[4]);
+        }
+
+        [Fact]
+        public void Use_My_Metrics_Cycle_Is_Malformed()
+        {
+            var glyf = BuildGlyf(
+                Square(100),
+                Composite((2, CompositeFlags.UseMyMetrics)),
+                Composite((1, CompositeFlags.UseMyMetrics)));
+
+            Assert.False(glyf.TryGetPhantomDeltas(1, null, default, out _, new float[4], new float[4]));
+            Assert.False(glyf.TryGetPhantomDeltas(2, BuildGvar(3), s_atPeak, out _, new float[4], new float[4]));
+        }
+
+        [Theory]
+        [InlineData(GlyphDecycler.MaxTraversalDepth - 1, true)]
+        [InlineData(GlyphDecycler.MaxTraversalDepth, false)]
+        public void Use_My_Metrics_Chain_Ends_Within_The_Traversal_Depth(int compositeCount, bool resolves)
+        {
+            // Glyph 0 is a square; glyph i takes its metrics from glyph i - 1, so resolving the last
+            // glyph walks compositeCount composites and then the square.
+            var glyphs = new byte[compositeCount + 1][];
+            glyphs[0] = Square(100);
+
+            for (var i = 1; i <= compositeCount; i++)
+            {
+                glyphs[i] = Composite(((ushort)(i - 1), CompositeFlags.UseMyMetrics));
+            }
+
+            var glyf = BuildGlyf(glyphs);
+
+            Assert.Equal(resolves, glyf.TryGetPhantomDeltas(compositeCount, null, default, out var metricsGlyph, new float[4], new float[4]));
+
+            if (resolves)
+            {
+                Assert.Equal(0, metricsGlyph);
+            }
+        }
+
+        private static void AssertPhantomDeltas(
+            GlyfTable glyf, GvarTable gvar, int glyph, int expectedMetricsGlyph, float[] expectedX, float[] expectedY)
+        {
+            var x = new float[4];
+            var y = new float[4];
+
+            Assert.True(glyf.TryGetPhantomDeltas(glyph, gvar, s_atPeak, out var metricsGlyph, x, y));
+            Assert.Equal(expectedMetricsGlyph, metricsGlyph);
+            Assert.Equal(expectedX, x);
+            Assert.Equal(expectedY, y);
+
+            if (glyph == 0)
+            {
+                // The reader on its own, given the square's four contour points.
+                var readerX = new float[4];
+                var readerY = new float[4];
+
+                GlyphVariationReader.TryGetPhantomDeltas(gvar, glyph, s_atPeak, 4, readerX, readerY);
+
+                Assert.Equal(expectedX, readerX);
+                Assert.Equal(expectedY, readerY);
+            }
+        }
+
         // --- glyf builders ------------------------------------------------------------------------
+
+        /// <summary>A composite whose components all sit at (0, 0) by x/y offset.</summary>
+        private static byte[] Composite(params (ushort Glyph, CompositeFlags Flags)[] components)
+        {
+            var data = new List<byte>();
+            WriteI16(data, -1);
+            WriteI16(data, 0);
+            WriteI16(data, 0);
+            WriteI16(data, 100);
+            WriteI16(data, 100);
+
+            for (var i = 0; i < components.Length; i++)
+            {
+                var flags = components[i].Flags | CompositeFlags.ArgsAreXYValues;
+
+                if (i < components.Length - 1)
+                {
+                    flags |= CompositeFlags.MoreComponents;
+                }
+
+                WriteComponent(data, flags, components[i].Glyph, 0, 0);
+            }
+
+            return data.ToArray();
+        }
 
         private static GlyfTable BuildGlyf(params byte[][] glyphs)
         {
