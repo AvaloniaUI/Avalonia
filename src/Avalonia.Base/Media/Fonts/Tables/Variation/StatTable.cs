@@ -109,7 +109,8 @@ namespace Avalonia.Media.Fonts.Tables.Variation
     /// Versions 1.0, 1.1 (adds the elided fallback name ID) and 1.2 (adds axis value format 4)
     /// are read; later minor versions are read as 1.2. A table whose offsets or counts point
     /// outside the table, or whose axis value records reference a missing design axis, is
-    /// rejected as a whole. Axis value tables of an unknown format are skipped.
+    /// rejected as a whole. Axis value tables of an unknown format are skipped, as are format 4
+    /// tables without records or naming one axis twice.
     /// </para>
     /// <para>
     /// Reference: <see href="https://learn.microsoft.com/en-us/typography/opentype/spec/stat"/>.
@@ -267,6 +268,7 @@ namespace Avalonia.Media.Fonts.Tables.Variation
 
                 var valuesBuilder = ImmutableArray.CreateBuilder<StatAxisValue>(axisValueCount);
                 var arrayStart = (int)offsetToAxisValueOffsets;
+                bool[]? seenAxes = null;
 
                 for (var i = 0; i < axisValueCount; i++)
                 {
@@ -274,9 +276,10 @@ namespace Avalonia.Media.Fonts.Tables.Variation
 
                     var tableOffset = (long)arrayStart + reader.ReadOffset16();
 
-                    if (!TryReadAxisValue(span, tableOffset, designAxisCount, out var axisValue, out var isKnownFormat))
+                    if (!TryReadAxisValue(span, tableOffset, designAxisCount, ref seenAxes, out var axisValue,
+                            out var rejectsTable))
                     {
-                        if (isKnownFormat)
+                        if (rejectsTable)
                         {
                             return null;
                         }
@@ -293,15 +296,31 @@ namespace Avalonia.Media.Fonts.Tables.Variation
             return new StatTable(designAxes, axisValues, elidedFallbackNameId);
         }
 
+        /// <summary>
+        /// Reads the axis value table at <paramref name="offset"/>.
+        /// </summary>
+        /// <param name="span">The STAT table data.</param>
+        /// <param name="offset">Offset of the axis value table from the start of the STAT table.</param>
+        /// <param name="designAxisCount">Number of design axes, which bounds the axis indices.</param>
+        /// <param name="seenAxes">
+        /// Scratch space for the duplicate axis check of format 4 tables, allocated on first use
+        /// and returned cleared.
+        /// </param>
+        /// <param name="rejectsTable">
+        /// On failure, whether the whole STAT table is malformed rather than only this axis value
+        /// table, which is then skipped.
+        /// </param>
+        /// <param name="axisValue">The parsed axis value table.</param>
         private static bool TryReadAxisValue(
             ReadOnlySpan<byte> span,
             long offset,
             int designAxisCount,
+            ref bool[]? seenAxes,
             [NotNullWhen(true)] out StatAxisValue? axisValue,
-            out bool isKnownFormat)
+            out bool rejectsTable)
         {
             axisValue = null;
-            isKnownFormat = true;
+            rejectsTable = true;
 
             if (!IsInRange(span, offset, 2))
             {
@@ -368,12 +387,21 @@ namespace Avalonia.Media.Fonts.Tables.Variation
                     var flags = (StatAxisValueFlags)reader.ReadUInt16();
                     var valueNameId = reader.ReadUInt16();
 
-                    if (axisCount == 0 || !IsInRange(span, offset + 8, axisCount * 6L))
+                    if (!IsInRange(span, offset + 8, axisCount * 6L))
                     {
                         return false;
                     }
 
+                    if (axisCount == 0)
+                    {
+                        rejectsTable = false;
+                        return false;
+                    }
+
                     var records = ImmutableArray.CreateBuilder<StatAxisValueRecord>(axisCount);
+                    var hasRepeatedAxis = false;
+
+                    seenAxes ??= new bool[designAxisCount];
 
                     for (var i = 0; i < axisCount; i++)
                     {
@@ -382,10 +410,24 @@ namespace Avalonia.Media.Fonts.Tables.Variation
 
                         if (axisIndex >= designAxisCount)
                         {
+                            ClearSeenAxes(records, seenAxes);
                             return false;
                         }
 
+                        // A repeated axis would count twice when the combination with the most
+                        // records is selected.
+                        hasRepeatedAxis |= seenAxes[axisIndex];
+                        seenAxes[axisIndex] = true;
+
                         records.Add(new StatAxisValueRecord(axisIndex, value));
+                    }
+
+                    ClearSeenAxes(records, seenAxes);
+
+                    if (hasRepeatedAxis)
+                    {
+                        rejectsTable = false;
+                        return false;
                     }
 
                     axisValue = new StatAxisValue(
@@ -399,8 +441,16 @@ namespace Avalonia.Media.Fonts.Tables.Variation
                     return true;
                 }
                 default:
-                    isKnownFormat = false;
+                    rejectsTable = false;
                     return false;
+            }
+        }
+
+        private static void ClearSeenAxes(ImmutableArray<StatAxisValueRecord>.Builder records, bool[] seenAxes)
+        {
+            foreach (var record in records)
+            {
+                seenAxes[record.AxisIndex] = false;
             }
         }
 
