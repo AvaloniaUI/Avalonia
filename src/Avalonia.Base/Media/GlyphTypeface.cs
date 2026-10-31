@@ -3087,7 +3087,11 @@ namespace Avalonia.Media
             _context = context;
             _glyphIndex = glyphIndex;
             _paletteIndex = context.PaletteIndex;
-            _paint = paint;
+
+            // The base glyph's ClipBox clips everything the glyph paints, so it wraps the root paint
+            // and is pushed on every draw.
+            var hasClipBox = _context.ColrTable.TryGetClipBox(_glyphIndex, _context.ActiveCoords, out var clipRect);
+            _paint = hasClipBox ? new ResolvedClipBox(clipRect, paint) : paint;
 
             // Traverse the paint graph once (no render backend) to collect the referenced layer
             // glyphs — the drawing's cache dependencies — and, as a by-product, the conservative
@@ -3100,7 +3104,7 @@ namespace Avalonia.Media
 
             _dependencies = analysis.Dependencies;
 
-            if (_context.ColrTable.TryGetClipBox(_glyphIndex, _context.ActiveCoords, out var clipRect))
+            if (hasClipBox)
             {
                 _bounds = clipRect.TransformToAABB(Matrix.CreateScale(1, -1));
             }
