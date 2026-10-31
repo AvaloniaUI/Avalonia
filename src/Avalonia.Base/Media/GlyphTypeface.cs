@@ -2119,7 +2119,13 @@ namespace Avalonia.Media
         /// </summary>
         private bool TryComputeGlyfGlyphBounds(ushort glyph, out GlyphBounds box)
         {
-            if (_glyfTable!.TryGetGlyphOutlineBounds(glyph, _gvarTable, _activeCoords, out box))
+            // Measure the outline where GetGlyphOutline places it, with its left phantom point on
+            // the origin.
+            var transform = TryGetLeftPhantomX(glyph, _activeCoords, out var leftPhantomX) && leftPhantomX != 0
+                ? Matrix.CreateTranslation(-leftPhantomX, 0)
+                : Matrix.Identity;
+
+            if (_glyfTable!.TryGetGlyphOutlineBounds(glyph, transform, _gvarTable, _activeCoords, out box))
             {
                 return true;
             }

@@ -54,7 +54,7 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
 
             Assert.True(glyf.TryGetGlyphBounds(glyph, out var headerXMin, out var headerYMin, out var headerXMax, out var headerYMax));
 
-            Assert.True(glyf.TryGetGlyphOutlineBounds(glyph, gvarTable: null, activeCoords: default, out var interpreted));
+            Assert.True(glyf.TryGetGlyphOutlineBounds(glyph, Matrix.Identity, gvarTable: null, activeCoords: default, out var interpreted));
 
             // Interpreting the contours into the control-point box (no geometry, no render backend)
             // yields exactly the stored header box for a static font with integer coordinates.

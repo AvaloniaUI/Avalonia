@@ -537,11 +537,13 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
         /// for an out-of-range, empty, or malformed glyph.
         /// </summary>
         /// <param name="glyphIndex">The zero-based glyph index.</param>
+        /// <param name="transform">Transform applied to every outline point before it is measured.</param>
         /// <param name="gvarTable">Optional gvar table for variation deformation. <c>null</c> skips deformation.</param>
         /// <param name="activeCoords">Normalized variation coordinates in fvar axis order. Empty means no variation.</param>
         /// <param name="bounds">The computed control-point box; the zero box when this returns <see langword="false"/>.</param>
         public bool TryGetGlyphOutlineBounds(
             int glyphIndex,
+            Matrix transform,
             GvarTable? gvarTable,
             ReadOnlySpan<float> activeCoords,
             out GlyphBounds bounds)
@@ -550,7 +552,7 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
 
             var context = new BoundsGeometryContext();
 
-            if (!TryBuildGlyphGeometry(glyphIndex, Matrix.Identity, context, gvarTable, activeCoords))
+            if (!TryBuildGlyphGeometry(glyphIndex, transform, context, gvarTable, activeCoords))
             {
                 return false;
             }
