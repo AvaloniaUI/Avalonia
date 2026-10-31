@@ -5,6 +5,8 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.Marshalling;
+using Avalonia.Win32.Automation.Interop;
 
 namespace Avalonia.Win32.Automation.Marshalling;
 
@@ -233,6 +235,12 @@ internal struct ComVariant : IDisposable
         {
             variant.VarType = VarEnum.VT_UNKNOWN;
             variant._typeUnion._unionTypes._unknown = unknown;
+        }
+        else if (value is IRawElementProviderSimple provider)
+        {
+            variant.VarType = VarEnum.VT_UNKNOWN;
+            variant._typeUnion._unionTypes._unknown =
+                (IntPtr)ComInterfaceMarshaller<IRawElementProviderSimple>.ConvertToUnmanaged(provider);
         }
         else
         {
