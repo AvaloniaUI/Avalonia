@@ -38,7 +38,6 @@
     bool _isTitlebarSession;
     AvnMenu* _menu;
     ComPtr<IAvnAutomationPeer> _automationPeer;
-    ComPtr<AvnAutomationNode> _automationNode;
 }
 
 -(AvnView* _Nullable) view
@@ -641,8 +640,7 @@
         if (peer != nullptr)
         {
             _automationPeer = peer;
-            _automationNode = comnew<AvnAutomationNode>(self);
-            _automationPeer->SetNode(_automationNode);
+            AvnAutomationNode::Bind(_automationPeer, self);
         }
     }
 
