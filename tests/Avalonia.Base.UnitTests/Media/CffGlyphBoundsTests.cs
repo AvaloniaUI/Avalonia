@@ -178,6 +178,30 @@ namespace Avalonia.Base.UnitTests.Media
             Assert.NotEqual(BoundsOf(gt, 'o'), BoundsOf(black, 'o'));
         }
 
+        [Theory]
+        [InlineData(2, GlyphOutlineType.Cff)]
+        [InlineData(1, GlyphOutlineType.None)]
+        public void Cff_Loads_Only_Type2_Charstrings(int charstringType, GlyphOutlineType expected)
+        {
+            var gt = LoadTypeface(CffOpsAsset, OpenTypeTag.Parse("CFF "), cff =>
+            {
+                // The Top DICT's Weight entry ("Regular", SID 388: f8 18 04) is three bytes, as is
+                // "<type> 12 6" (CharstringType), so it can be rewritten in place.
+                var weight = new byte[] { 0xf8, 0x18, 0x04 };
+                var at = cff.AsSpan().IndexOf(weight);
+                Assert.True(at > 0);
+                Assert.Equal(-1, cff.AsSpan(at + 1).IndexOf(weight));
+
+                cff[at] = (byte)(charstringType + 139);
+                cff[at + 1] = 12;
+                cff[at + 2] = 6;
+            });
+
+            // Type 1 charstrings are a different program format; interpreting them as Type 2 would
+            // draw garbage.
+            Assert.Equal(expected, gt.OutlineType);
+        }
+
         [Fact]
         public void Cff2_Format4_FdSelect_Selects_The_Glyph_Font_Dict()
         {
