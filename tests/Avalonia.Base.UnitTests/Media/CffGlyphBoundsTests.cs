@@ -1,8 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using Avalonia.Base.UnitTests.Media.Fonts.Tables;
 using Avalonia.Media;
 using Avalonia.Media.Fonts;
+using Avalonia.Media.Fonts.Tables.Cff;
 using Avalonia.Platform;
 using Xunit;
 
@@ -29,6 +32,12 @@ namespace Avalonia.Base.UnitTests.Media
         private const string SourceCodeProAsset = "resm:Avalonia.Base.UnitTests.Assets.SourceCodePro-Subset.otf?assembly=Avalonia.Base.UnitTests";
         private const string AdobeVfAsset = "resm:Avalonia.Base.UnitTests.Assets.AdobeVFPrototype-Subset.otf?assembly=Avalonia.Base.UnitTests";
 
+        // Synthetic CFF2 font with two Font DICTs selected by an FDSelect in format 4. FD 1 carries a
+        // Local Subr and a Private DICT vsindex of 1; the tests describe the glyphs they use.
+        private const string Cff2FdAsset = "resm:Avalonia.Base.UnitTests.Assets.Cff2FdTest.otf?assembly=Avalonia.Base.UnitTests";
+
+        private const int OpFdSelect = CffDict.TwoByteOperatorBase + 37;
+
         private static readonly OpenTypeTag s_wghtTag = OpenTypeTag.Parse("wght");
 
         private static GlyphTypeface LoadTypeface(string assetUri)
@@ -36,6 +45,14 @@ namespace Avalonia.Base.UnitTests.Media
             var assetLoader = new StandardAssetLoader();
             using var stream = assetLoader.Open(new Uri(assetUri));
             return new GlyphTypeface(new CustomPlatformTypeface(stream));
+        }
+
+        // Loads the font with one table's bytes rewritten by `patch`.
+        private static GlyphTypeface LoadTypeface(string assetUri, OpenTypeTag tag, Action<byte[]> patch)
+        {
+            var assetLoader = new StandardAssetLoader();
+            using var stream = assetLoader.Open(new Uri(assetUri));
+            return new GlyphTypeface(new TablePatchingPlatformTypeface(new CustomPlatformTypeface(stream), tag, patch));
         }
 
         private static GlyphBounds BoundsOf(GlyphTypeface gt, char ch)
@@ -147,6 +164,32 @@ namespace Avalonia.Base.UnitTests.Media
         }
 
         [Fact]
+        public void Cff2_Format4_FdSelect_Selects_The_Glyph_Font_Dict()
+        {
+            var gt = LoadTypeface(Cff2FdAsset);
+
+            // 'c' (gid 3, FD 1) is "-107 callsubr": FD 1's only Local Subr draws 0..200 x 0..300.
+            // FD 0 has no Local Subrs, so the box is only reached through the right Font DICT.
+            Assert.Equal(new GlyphBounds(0, 0, 200, 300), BoundsOf(gt, 'c'));
+        }
+
+        [Fact]
+        public void Cff2_Fails_To_Load_When_FdSelect_Does_Not_Parse()
+        {
+            var gt = LoadTypeface(Cff2FdAsset, OpenTypeTag.Parse("CFF2"), cff2 =>
+            {
+                // Rewrite the FDSelect format byte to an undefined format.
+                var headerSize = cff2[2];
+                var topDictLength = (cff2[3] << 8) | cff2[4];
+                var topDict = CffDict.Parse(cff2.AsSpan(headerSize, topDictLength));
+                cff2[topDict.GetInt(OpFdSelect)] = 5;
+            });
+
+            // Mapping every glyph to FD 0 instead would silently draw with the wrong subroutines.
+            Assert.Equal(GlyphOutlineType.None, gt.OutlineType);
+        }
+
+        [Fact]
         public void Repeated_Reads_Return_The_Same_Bounds()
         {
             var gt = LoadTypeface(SourceCodeProAsset);
@@ -222,6 +265,49 @@ namespace Avalonia.Base.UnitTests.Media
                 // GlyphMetrics is a record struct: structural equality across both paths.
                 Assert.Equal(single, batch[i]);
             }
+        }
+
+        private sealed class TablePatchingPlatformTypeface : IPlatformTypeface
+        {
+            private readonly IPlatformTypeface _inner;
+            private readonly OpenTypeTag _tag;
+            private readonly ReadOnlyMemory<byte> _patched;
+
+            public TablePatchingPlatformTypeface(IPlatformTypeface inner, OpenTypeTag tag, Action<byte[]> patch)
+            {
+                _inner = inner;
+                _tag = tag;
+
+                Assert.True(inner.TryGetTable(tag, out var original));
+                var copy = original.ToArray();
+                patch(copy);
+                _patched = copy;
+            }
+
+            public FontWeight Weight => _inner.Weight;
+
+            public FontStyle Style => _inner.Style;
+
+            public FontStretch Stretch => _inner.Stretch;
+
+            public string FamilyName => _inner.FamilyName;
+
+            public FontSimulations FontSimulations => _inner.FontSimulations;
+
+            public bool TryGetTable(OpenTypeTag tag, out ReadOnlyMemory<byte> table)
+            {
+                if (tag == _tag)
+                {
+                    table = _patched;
+                    return true;
+                }
+
+                return _inner.TryGetTable(tag, out table);
+            }
+
+            public bool TryGetStream([NotNullWhen(true)] out Stream? stream) => _inner.TryGetStream(out stream);
+
+            public void Dispose() => _inner.Dispose();
         }
     }
 }
