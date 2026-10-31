@@ -187,6 +187,39 @@ namespace Avalonia.Skia.UnitTests.Media
             }
         }
 
+        [Theory]
+        [InlineData(50, 100, 0.5, 1.0, false)]
+        [InlineData(100, 50, 0.5, 1.0, true)]
+        public void Concentric_Radial_Gradient_Maps_The_Inner_Radius_Onto_The_Stops(
+            ushort r0, ushort r1, double expectedFirst, double expectedLast, bool reversed)
+        {
+            using (UnitTestApplication.Start(
+                TestServices.MockPlatformRenderInterface.With(renderInterface: new PlatformRenderInterface())))
+            {
+                var outlineGlyph = SyntheticFont.FromAsset(InterAsset).TryCreateGlyphTypeface()!
+                    .CharacterToGlyphMap['A'];
+
+                // Concentric circles at (0,0): color-line position t lies at radius r0 + t (r1 - r0).
+                // The brush spans the larger radius, so a stop's brush offset is that radius divided by
+                // max(r0, r1): red (t = 0) at r0, blue (t = 1) at r1.
+                var colr = new ColrV1Builder()
+                    .BaseGlyph(3, ColrPaint.Glyph(outlineGlyph, ColrPaint.RadialGradient(0, 0, r0, 0, 0, r1, 0,
+                        new ColrStop(0, 0), new ColrStop(1, 1))))
+                    .Build();
+
+                var recorder = DrawColrGlyph(colr, ColrTestFont.Cpal(new[] { Colors.Red, Colors.Blue }));
+
+                var brush = Assert.IsType<ImmutableRadialGradientBrush>(Assert.Single(recorder.Brushes));
+
+                Assert.Equal(new Point(0, 0), brush.Center.Point);
+                Assert.Equal(new Point(0, 0), brush.GradientOrigin.Point);
+                Assert.Equal(System.Math.Max(r0, r1), brush.RadiusX.Scalar);
+                Assert.Equal(new[] { expectedFirst, expectedLast }, brush.GradientStops.Select(s => s.Offset));
+                Assert.Equal(reversed ? new[] { Colors.Blue, Colors.Red } : new[] { Colors.Red, Colors.Blue },
+                    brush.GradientStops.Select(s => s.Color));
+            }
+        }
+
         [Fact]
         public void Sweep_Gradient_Stops_Are_Normalized_By_Narrowing_The_Angles()
         {
