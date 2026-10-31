@@ -1,13 +1,16 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reactive.Disposables;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Headless.UnitTests;
 
@@ -61,6 +64,113 @@ public class InputTests
         AssertHelper.True(buttonClicked);
     }
     
+#if NUNIT
+    [AvaloniaTest]
+#elif XUNIT
+    [AvaloniaFact]
+#endif
+    public void Pressed_Button_Should_Keep_IsPointerOver_While_Pointer_Moves_Within_It()
+    {
+        var text = new TextBlock { Text = "Text", Background = Brushes.Green, HorizontalAlignment = HorizontalAlignment.Center };
+        var button = new Button
+        {
+            Padding = new Thickness(20),
+            Content = text,
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Stretch
+        };
+
+        _window.Content = button;
+        _window.Show();
+
+        var onPadding = new Point(5, 5);
+        var onText = text.TranslatePoint(new Point(text.Bounds.Width / 2, text.Bounds.Height / 2), _window)!.Value;
+
+        _window.MouseDown(onPadding, MouseButton.Left);
+        _window.MouseMove(onText, RawInputModifiers.LeftMouseButton);
+
+        AssertHelper.True(button.IsPointerOver);
+        AssertHelper.False(text.IsPointerOver);
+
+        _window.MouseUp(onText, MouseButton.Left);
+
+        AssertHelper.True(text.IsPointerOver);
+
+        _window.MouseDown(onText, MouseButton.Left);
+        _window.MouseMove(onPadding, RawInputModifiers.LeftMouseButton);
+
+        AssertHelper.True(button.IsPointerOver);
+        AssertHelper.False(text.IsPointerOver);
+
+        _window.MouseUp(onPadding, MouseButton.Left);
+    }
+
+#if NUNIT
+    [AvaloniaTest]
+#elif XUNIT
+    [AvaloniaFact]
+#endif
+    public void Pressed_Pointer_Should_Not_Set_IsPointerOver_On_Other_Button()
+    {
+        var button = new Button { Width = 40, Height = 40 };
+        var container = new Panel { Background = Brushes.Red, Children = { button } };
+
+        _window.Content = container;
+        _window.Show();
+
+        var onContainer = new Point(5, 5);
+        var onButton = new Point(50, 50);
+
+        _window.MouseDown(onContainer, MouseButton.Left);
+        _window.MouseMove(onButton, RawInputModifiers.LeftMouseButton);
+
+        AssertHelper.True(container.IsPointerOver);
+        AssertHelper.False(button.IsPointerOver);
+
+        _window.MouseUp(onButton, MouseButton.Left);
+
+        AssertHelper.True(button.IsPointerOver);
+    }
+
+#if NUNIT
+    [AvaloniaTest]
+#elif XUNIT
+    [AvaloniaFact]
+#endif
+    public void Dragged_Slider_Should_Keep_IsPointerOver_While_Pointer_Is_Over_Its_Track()
+    {
+        var slider = new Slider
+        {
+            Maximum = 100,
+            Value = 50,
+            IsSnapToTickEnabled = true,
+            TickFrequency = 50,
+            VerticalAlignment = VerticalAlignment.Center
+        };
+        var outside = new Panel { Background = Brushes.Red, Children = { slider } };
+
+        _window.Content = outside;
+        _window.Show();
+
+        var thumb = slider.GetVisualDescendants().OfType<Thumb>().First();
+        var onThumb = thumb.TranslatePoint(new Point(thumb.Bounds.Width / 2, thumb.Bounds.Height / 2), _window)!.Value;
+        var onTrack = onThumb + new Point(thumb.Bounds.Width, 0);
+        var outsideSlider = new Point(onThumb.X, 1);
+
+        _window.MouseDown(onThumb, MouseButton.Left);
+        _window.MouseMove(onTrack, RawInputModifiers.LeftMouseButton);
+
+        AssertHelper.True(slider.IsPointerOver);
+        AssertHelper.False(thumb.IsPointerOver);
+
+        _window.MouseMove(outsideSlider, RawInputModifiers.LeftMouseButton);
+
+        AssertHelper.False(slider.IsPointerOver);
+        AssertHelper.True(outside.IsPointerOver);
+
+        _window.MouseUp(outsideSlider, MouseButton.Left);
+    }
+
 #if NUNIT
     [AvaloniaTest]
 #elif XUNIT
