@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Avalonia.Media.Fonts.Tables.Colr
 {
@@ -103,10 +104,10 @@ namespace Avalonia.Media.Fonts.Tables.Colr
             uint offset,
             in ColrContext context,
             bool isVarColorLine,
-            out Immutable.ImmutableGradientStop[] stops,
+            out GradientStop[] stops,
             out GradientSpreadMethod extend)
         {
-            stops = Array.Empty<Immutable.ImmutableGradientStop>();
+            stops = Array.Empty<GradientStop>();
             extend = GradientSpreadMethod.Pad;
 
             if (offset >= data.Length)
@@ -137,6 +138,8 @@ namespace Avalonia.Media.Fonts.Tables.Colr
                 return false;
             }
 
+            // Stops are kept as the COLR GradientStop record, not ImmutableGradientStop, because the
+            // latter clamps offsets to [0, 1].
             // ColorStop is 6 bytes, VarColorStop is 10 bytes (each has varIndexBase)
             int stopSize = isVarColorLine ? 10 : 6;
 
@@ -147,7 +150,7 @@ namespace Avalonia.Media.Fonts.Tables.Colr
                 return false;
             }
 
-            var tempStops = new Immutable.ImmutableGradientStop[numStops];
+            var tempStops = new GradientStop[numStops];
 
             int stopOffset = 3;
             for (int i = 0; i < numStops; i++)
@@ -166,8 +169,9 @@ namespace Avalonia.Media.Fonts.Tables.Colr
                     alpha += context.GetF2Dot14Delta(varIndexBase, 1);
                 }
 
-                // Clamp to the valid [0, 1] range (the spec requires it; font data may not honour it).
-                stopPos = Math.Clamp(stopPos, 0.0, 1.0);
+                // Stop offsets keep their raw value: the color line extends past [0, 1], and the
+                // resolver maps the stops onto [0, 1] by moving the gradient geometry. Alpha is a
+                // coverage multiplier and is clamped.
                 alpha = Math.Clamp(alpha, 0.0, 1.0);
 
                 if (!context.CpalTable.TryGetColor(context.PaletteIndex, paletteIndex, out var color))
@@ -176,17 +180,18 @@ namespace Avalonia.Media.Fonts.Tables.Colr
                 }
 
                 color = Color.FromArgb((byte)(color.A * alpha), color.R, color.G, color.B);
-                tempStops[i] = new Immutable.ImmutableGradientStop(stopPos, color);
+                tempStops[i] = new GradientStop(stopPos, color);
 
                 stopOffset += stopSize;
             }
 
-            // Sort stops by offset (required for proper gradient rendering)
-            Array.Sort(tempStops, (a, b) => a.Offset.CompareTo(b.Offset));
+            // Sort stops by offset (required for proper gradient rendering). The sort is stable: stops
+            // sharing an offset form a hard color transition and keep their font order.
+            tempStops = tempStops.OrderBy(s => s.Offset).ToArray();
 
             // Remove consecutive duplicate stops (same offset AND color)
             // NOTE: We preserve stops with the same offset but different colors (hard color transitions)
-            var deduplicatedList = new List<Immutable.ImmutableGradientStop>(numStops);
+            var deduplicatedList = new List<GradientStop>(numStops);
             const double epsilon = 1e-6;
 
             for (int i = 0; i < tempStops.Length; i++)
