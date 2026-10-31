@@ -262,12 +262,14 @@
                      BorderThickness="0"
                      IsVisible="{TemplateBinding IsEditable}">
               <TextBox.Resources>
-                <!-- WinUI's editable ComboBox hosts a chromeless TextBox (ComboBoxTextBoxStyle):
-                no fill and, unlike a standalone TextBox, no focus accent underline. -->
-                <SolidColorBrush x:Key="TextControlBackgroundFocused">Transparent</SolidColorBrush>
-                <SolidColorBrush x:Key="TextControlBackgroundPointerOver">Transparent</SolidColorBrush>
-                <SolidColorBrush x:Key="TextControlBorderBrushFocused">Transparent</SolidColorBrush>
-                <Thickness x:Key="TextControlThemeBorderThicknessFocused">0</Thickness>
+                <ResourceDictionary x:Immutable="True">
+                  <!-- WinUI's editable ComboBox hosts a chromeless TextBox (ComboBoxTextBoxStyle):
+                  no fill and, unlike a standalone TextBox, no focus accent underline. -->
+                  <SolidColorBrush x:Key="TextControlBackgroundFocused">Transparent</SolidColorBrush>
+                  <SolidColorBrush x:Key="TextControlBackgroundPointerOver">Transparent</SolidColorBrush>
+                  <SolidColorBrush x:Key="TextControlBorderBrushFocused">Transparent</SolidColorBrush>
+                  <Thickness x:Key="TextControlThemeBorderThicknessFocused">0</Thickness>
+                </ResourceDictionary>
               </TextBox.Resources>
             </TextBox>
 

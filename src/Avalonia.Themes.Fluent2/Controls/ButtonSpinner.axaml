@@ -93,14 +93,16 @@
     <Setter Property="BorderBrush" Value="Transparent" />
     <Setter Property="Padding" Value="4" />
     <ControlTheme.Resources>
-      <x:Double x:Key="FlyoutThemeMinWidth">0</x:Double>
-      <x:Double x:Key="FlyoutThemeMinHeight">0</x:Double>
-      <SolidColorBrush x:Key="ButtonBackgroundPointerOver">Transparent</SolidColorBrush>
-      <SolidColorBrush x:Key="ButtonBackgroundPressed">Transparent</SolidColorBrush>
-      <SolidColorBrush x:Key="ButtonBackgroundDisabled">Transparent</SolidColorBrush>
-      <SolidColorBrush x:Key="ButtonBorderBrushPointerOver">Transparent</SolidColorBrush>
-      <SolidColorBrush x:Key="ButtonBorderBrushPressed">Transparent</SolidColorBrush>
-      <SolidColorBrush x:Key="ButtonBorderBrushDisabled">Transparent</SolidColorBrush>
+      <ResourceDictionary x:Immutable="True">
+        <x:Double x:Key="FlyoutThemeMinWidth">0</x:Double>
+        <x:Double x:Key="FlyoutThemeMinHeight">0</x:Double>
+        <SolidColorBrush x:Key="ButtonBackgroundPointerOver">Transparent</SolidColorBrush>
+        <SolidColorBrush x:Key="ButtonBackgroundPressed">Transparent</SolidColorBrush>
+        <SolidColorBrush x:Key="ButtonBackgroundDisabled">Transparent</SolidColorBrush>
+        <SolidColorBrush x:Key="ButtonBorderBrushPointerOver">Transparent</SolidColorBrush>
+        <SolidColorBrush x:Key="ButtonBorderBrushPressed">Transparent</SolidColorBrush>
+        <SolidColorBrush x:Key="ButtonBorderBrushDisabled">Transparent</SolidColorBrush>
+      </ResourceDictionary>
     </ControlTheme.Resources>
   </ControlTheme>
 
