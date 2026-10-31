@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using Avalonia.Media;
 using Avalonia.Media.Fonts.Tables;
 using Avalonia.Media.Fonts.Tables.Glyf;
 using Avalonia.Media.Fonts.Tables.Variation;
+using Avalonia.Platform;
 using Xunit;
 
 namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
@@ -38,6 +40,39 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
 
             Assert.False(glyf.TryGetPhantomDeltas(1, null, default, out _, x, y));
             Assert.False(glyf.TryGetPhantomDeltas(1, BuildGvar(2), s_atPeak, out _, x, y));
+        }
+
+        [Fact]
+        public void Tuple_Naming_A_Phantom_Point_Applies_To_A_Glyph_Without_Contour_Points()
+        {
+            // A glyph without contour points has only its phantom points, so point 0 is pp1.
+            var gvar = BuildGvar(1, (0, Entry(null, PrivatePointsTuple(new[] { 0 }, new short[] { 5 }, new short[] { 0 }))));
+
+            Assert.True(GlyphVariationReader.TryApplyDeltas(gvar, 0, s_atPeak, default, default, default, default, default));
+        }
+
+        [Fact]
+        public void PointMatched_Composite_Keeps_Its_Outline_When_A_Component_Without_Contours_Varies_A_Phantom_Point()
+        {
+            // glyph 0: 100x100 square, glyph 1: no contours, glyph 2: 10x10 square, glyph 3: glyph 0
+            // and glyph 1 at (0, 0), then glyph 2 matched by its point 0 onto point 2 of glyph 0.
+            var composite = new List<byte>();
+            WriteI16(composite, -1);
+            WriteI16(composite, 0);
+            WriteI16(composite, 0);
+            WriteI16(composite, 110);
+            WriteI16(composite, 110);
+            WriteComponent(composite, CompositeFlags.ArgsAreXYValues | CompositeFlags.MoreComponents, 0, 0, 0);
+            WriteComponent(composite, CompositeFlags.ArgsAreXYValues | CompositeFlags.MoreComponents, 1, 0, 0);
+            WriteComponent(composite, 0, 2, 2, 0);
+
+            var glyf = BuildGlyf(Square(100), NoContours(), Square(10), composite.ToArray());
+            var gvar = BuildGvar(4, (1, Entry(null, PrivatePointsTuple(new[] { 0 }, new short[] { 5 }, new short[] { 0 }))));
+
+            var context = new FigureCountingContext();
+
+            Assert.True(glyf.TryBuildGlyphGeometry(3, Matrix.Identity, context, gvar, s_atPeak));
+            Assert.Equal(2, context.FigureCount);
         }
 
         // --- glyf builders ------------------------------------------------------------------------
@@ -101,6 +136,29 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
             return data.ToArray();
         }
 
+        /// <summary>A simple glyph header with zero contours and no instructions.</summary>
+        private static byte[] NoContours()
+        {
+            var data = new List<byte>();
+
+            WriteI16(data, 0);      // numberOfContours
+            WriteI16(data, 0);
+            WriteI16(data, 0);
+            WriteI16(data, 0);
+            WriteI16(data, 0);
+            WriteU16(data, 0);      // instructionLength
+
+            return data.ToArray();
+        }
+
+        private static void WriteComponent(List<byte> data, CompositeFlags flags, ushort glyph, byte arg1, byte arg2)
+        {
+            WriteU16(data, (ushort)flags);
+            WriteU16(data, glyph);
+            data.Add(arg1);
+            data.Add(arg2);
+        }
+
         // --- gvar builders ------------------------------------------------------------------------
 
         /// <summary>
@@ -157,6 +215,97 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
                 headerSize, dataArrayStart, dataArrayStart, 0);
         }
 
+        /// <summary>
+        /// Builds one glyph's variation data from tuples that each peak at +1 on the single axis.
+        /// <paramref name="sharedPoints"/>, when given, is written as the shared point number list
+        /// (empty meaning all points).
+        /// </summary>
+        private static byte[] Entry(int[]? sharedPoints, params (bool PrivatePoints, byte[] Data)[] tuples)
+        {
+            var serialized = new List<byte>();
+
+            if (sharedPoints is not null)
+            {
+                WritePackedPoints(serialized, sharedPoints);
+            }
+
+            var headers = new List<byte>();
+
+            foreach (var (privatePoints, data) in tuples)
+            {
+                WriteU16(headers, (ushort)data.Length);                         // variationDataSize
+                WriteU16(headers, (ushort)(0x8000 | (privatePoints ? 0x2000 : 0)));
+                WriteU16(headers, 0x4000);                                      // peak = 1.0
+                serialized.AddRange(data);
+            }
+
+            var entry = new List<byte>();
+            WriteU16(entry, (ushort)((sharedPoints is not null ? 0x8000 : 0) | tuples.Length));
+            WriteU16(entry, (ushort)(4 + headers.Count));                       // offset to serialized data
+            entry.AddRange(headers);
+            entry.AddRange(serialized);
+
+            if ((entry.Count & 1) != 0)
+            {
+                entry.Add(0);
+            }
+
+            return entry.ToArray();
+        }
+
+        /// <summary>A tuple with its own point number list and one x and y delta per listed point.</summary>
+        private static (bool, byte[]) PrivatePointsTuple(int[] points, short[] x, short[] y)
+        {
+            var data = new List<byte>();
+            WritePackedPoints(data, points);
+            WritePackedDeltas(data, x);
+            WritePackedDeltas(data, y);
+
+            return (true, data.ToArray());
+        }
+
+        /// <summary>
+        /// A tuple that uses the shared point numbers, or every point when the entry has none, with
+        /// one x and y delta per point.
+        /// </summary>
+        private static (bool, byte[]) SharedPointsTuple(short[] x, short[] y)
+        {
+            var data = new List<byte>();
+            WritePackedDeltas(data, x);
+            WritePackedDeltas(data, y);
+
+            return (false, data.ToArray());
+        }
+
+        private static void WritePackedPoints(List<byte> data, int[] points)
+        {
+            data.Add((byte)points.Length);                      // fewer than 128; 0 means all points
+
+            if (points.Length == 0)
+            {
+                return;
+            }
+
+            data.Add((byte)(0x80 | (points.Length - 1)));       // POINTS_ARE_WORDS, one run
+
+            var previous = 0;
+            foreach (var point in points)
+            {
+                WriteU16(data, (ushort)(point - previous));
+                previous = point;
+            }
+        }
+
+        private static void WritePackedDeltas(List<byte> data, short[] deltas)
+        {
+            data.Add((byte)(0x40 | (deltas.Length - 1)));       // DELTAS_ARE_WORDS, one run
+
+            foreach (var delta in deltas)
+            {
+                WriteI16(data, delta);
+            }
+        }
+
         private static T Construct<T>(Type[] parameterTypes, params object[] arguments)
         {
             var ctor = typeof(T).GetConstructor(
@@ -179,6 +328,28 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
         {
             WriteU16(data, (ushort)(value >> 16));
             WriteU16(data, (ushort)(value & 0xFFFF));
+        }
+
+        private sealed class FigureCountingContext : IGeometryContext
+        {
+            public int FigureCount { get; private set; }
+
+            public void BeginFigure(Point startPoint, bool isFilled = true) => FigureCount++;
+
+            public void LineTo(Point point, bool isStroked = true) { }
+
+            public void QuadraticBezierTo(Point controlPoint, Point endPoint, bool isStroked = true) { }
+
+            public void CubicBezierTo(Point controlPoint1, Point controlPoint2, Point endPoint, bool isStroked = true) { }
+
+            public void ArcTo(Point point, Size size, double rotationAngle, bool isLargeArc,
+                SweepDirection sweepDirection, bool isStroked = true) { }
+
+            public void EndFigure(bool isClosed) { }
+
+            public void SetFillRule(FillRule fillRule) { }
+
+            public void Dispose() { }
         }
     }
 }
