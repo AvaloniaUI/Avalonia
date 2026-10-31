@@ -280,10 +280,6 @@ namespace Avalonia.Media
             {
                 // Load glyf table once and cache for reuse by GetGlyphOutline
                 GlyfTable.TryLoad(this, headTable, maxpTable, out _glyfTable);
-
-                // Load COLR and CPAL tables for color glyph support
-                ColrTable.TryLoad(this, out _colrTable);
-                CpalTable.TryLoad(this, out _cpalTable);
             }
 
             IsLastResort = (headTable is not null && (headTable.Flags & HeadFlags.LastResortFont) != 0) ||
@@ -422,6 +418,14 @@ namespace Avalonia.Media
                 }
             }
 
+            // COLR / CPAL color glyphs. COLR runs after fvar: its ItemVariationStore validates its
+            // region records against the fvar axis count and is dropped on a mismatch.
+            if (headTable is not null)
+            {
+                ColrTable.TryLoad(this, out _colrTable);
+                CpalTable.TryLoad(this, out _cpalTable);
+            }
+
             static CultureInfo GetCulture(int lcid)
             {
                 if (lcid == ushort.MaxValue)
@@ -486,6 +490,8 @@ namespace Avalonia.Media
             _hmTable = source._hmTable;
             _vmTable = source._vmTable;
             _glyfTable = source._glyfTable;
+            _colrTable = source._colrTable;
+            _cpalTable = source._cpalTable;
             _cffTable = source._cffTable;
             _cff2Table = source._cff2Table;
             _fvarTable = source._fvarTable;
