@@ -1,4 +1,5 @@
 using System;
+using System.Buffers.Binary;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Logging;
 using Avalonia.Platform;
@@ -23,6 +24,7 @@ namespace Avalonia.Media.Fonts.Tables.Cff
         internal static OpenTypeTag Tag { get; } = OpenTypeTag.Parse(TableName);
 
         // Top DICT / Private DICT operator keys (see CffDict for the 12xx two-byte encoding).
+        private const int OpCharset = 15;
         private const int OpCharStrings = 17;
         private const int OpPrivate = 18;
         private const int OpLocalSubrs = 19;
@@ -30,8 +32,13 @@ namespace Avalonia.Media.Fonts.Tables.Cff
         private const int OpFdArray = CffDict.TwoByteOperatorBase + 36;
         private const int OpFdSelect = CffDict.TwoByteOperatorBase + 37;
 
+        private readonly ReadOnlyMemory<byte> _table;
         private readonly CffIndex _charStrings;
         private readonly CffIndex _globalSubrs;
+
+        // Top DICT charset: 0 / 1 / 2 select a predefined charset, anything else is the offset of the
+        // font's own. Only read to resolve seac accent components, so it is parsed on demand.
+        private readonly int _charset;
 
         // Non-CID fonts use a single Local Subr INDEX (_localSubrs). CID-keyed fonts instead select a
         // Font DICT per glyph via _fdSelect and use that FD's Local Subrs from _fdLocalSubrs.
@@ -40,9 +47,11 @@ namespace Avalonia.Media.Fonts.Tables.Cff
         private readonly FdSelect? _fdSelect;
         private readonly CffIndex[]? _fdLocalSubrs;
 
-        private CffTable(CffIndex charStrings, CffIndex globalSubrs, CffIndex localSubrs, bool isCid,
-            FdSelect? fdSelect, CffIndex[]? fdLocalSubrs)
+        private CffTable(ReadOnlyMemory<byte> table, CffIndex charStrings, CffIndex globalSubrs, int charset,
+            CffIndex localSubrs, bool isCid, FdSelect? fdSelect, CffIndex[]? fdLocalSubrs)
         {
+            _table = table;
+            _charset = charset;
             _charStrings = charStrings;
             _globalSubrs = globalSubrs;
             _localSubrs = localSubrs;
@@ -125,7 +134,10 @@ namespace Avalonia.Media.Fonts.Tables.Cff
                     localSubrs = ParseLocalSubrs(data, topDict);
                 }
 
-                cffTable = new CffTable(charStrings, globalSubrs, localSubrs, isCid, fdSelect, fdLocalSubrs);
+                int charset = topDict.GetInt(OpCharset, 0);
+
+                cffTable = new CffTable(data, charStrings, globalSubrs, charset, localSubrs, isCid, fdSelect,
+                    fdLocalSubrs);
                 return true;
             }
             catch (Exception ex)
@@ -232,7 +244,11 @@ namespace Avalonia.Media.Fonts.Tables.Cff
             try
             {
                 Span<double> stack = stackalloc double[48];
-                var interpreter = new Type2CharStringInterpreter(context, transform, _globalSubrs, localSubrs, stack);
+
+                // seac addresses its components through the Standard Encoding and the charset, which
+                // only non-CID fonts have.
+                var interpreter = new Type2CharStringInterpreter(context, transform, _globalSubrs, localSubrs, stack,
+                    _isCid ? null : this);
                 interpreter.Run(_charStrings[glyphIndex]);
                 return true;
             }
@@ -245,6 +261,126 @@ namespace Avalonia.Media.Fonts.Tables.Cff
 
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Resolves a seac component, given as a Standard Encoding code, to its glyph's charstring
+        /// through the font's charset. Returns <c>false</c> when the code is unencoded, the charset
+        /// has no glyph of that name, or the font is CID-keyed.
+        /// </summary>
+        internal bool TryGetSeacComponent(int standardCode, out ReadOnlyMemory<byte> charString)
+        {
+            charString = default;
+
+            if (_isCid || (uint)standardCode > 255)
+            {
+                return false;
+            }
+
+            int sid = StandardEncodingSid(standardCode);
+            int glyph = sid == 0 ? -1 : FindGlyphBySid(sid);
+
+            if (glyph < 0)
+            {
+                return false;
+            }
+
+            charString = _charStrings[glyph];
+            return true;
+        }
+
+        // The Standard Encoding (CFF spec, Appendix B) as code -> standard string SID; 0 is unencoded.
+        // Codes 32..126 map to SIDs 1..95 in order, so only the upper half needs a table.
+        private static int StandardEncodingSid(int code)
+            => code is >= 32 and <= 126 ? code - 31
+                : code >= 161 ? StandardEncodingUpperSids[code - 161]
+                : 0;
+
+        private static ReadOnlySpan<byte> StandardEncodingUpperSids => new byte[]
+        {
+            96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 0, 111, 112, 113, 114,
+            0, 115, 116, 117, 118, 119, 120, 121, 122, 0, 123, 0, 124, 125, 126, 127, 128, 129, 130, 131,
+            0, 132, 133, 0, 134, 135, 136, 137, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 138, 0,
+            139, 0, 0, 0, 0, 140, 141, 142, 143, 0, 0, 0, 0, 0, 144, 0, 0, 0, 145, 0, 0, 146, 147, 148, 149,
+            0, 0, 0, 0
+        };
+
+        /// <summary>
+        /// Finds the glyph whose charset entry is <paramref name="sid"/>, or -1. Scans the charset in
+        /// place: seac is rare, so no reverse map is kept.
+        /// </summary>
+        private int FindGlyphBySid(int sid)
+        {
+            int glyphCount = _charStrings.Count;
+
+            switch (_charset)
+            {
+                case 0:
+                    // ISOAdobe: glyph i is SID i for SIDs 0..228.
+                    return sid <= 228 && sid < glyphCount ? sid : -1;
+                case 1:
+                case 2:
+                    // The Expert charsets name expert glyphs, which the Standard Encoding cannot address.
+                    return -1;
+            }
+
+            var span = _table.Span;
+            int p = _charset;
+
+            if ((uint)p >= (uint)span.Length)
+            {
+                return -1;
+            }
+
+            byte format = span[p++];
+
+            // Glyph 0 is always .notdef and has no charset entry.
+            int glyph = 1;
+
+            if (format == 0)
+            {
+                for (; glyph < glyphCount; glyph++, p += 2)
+                {
+                    if (p + 2 > span.Length)
+                    {
+                        return -1;
+                    }
+
+                    if (BinaryPrimitives.ReadUInt16BigEndian(span.Slice(p)) == sid)
+                    {
+                        return glyph;
+                    }
+                }
+
+                return -1;
+            }
+
+            if (format is 1 or 2)
+            {
+                int leftSize = format == 1 ? 1 : 2;
+
+                while (glyph < glyphCount)
+                {
+                    if (p + 2 + leftSize > span.Length)
+                    {
+                        return -1;
+                    }
+
+                    int first = BinaryPrimitives.ReadUInt16BigEndian(span.Slice(p));
+                    int left = leftSize == 1 ? span[p + 2] : BinaryPrimitives.ReadUInt16BigEndian(span.Slice(p + 2));
+                    p += 2 + leftSize;
+
+                    if (sid >= first && sid <= first + left)
+                    {
+                        int found = glyph + (sid - first);
+                        return found < glyphCount ? found : -1;
+                    }
+
+                    glyph += left + 1;
+                }
+            }
+
+            return -1;
         }
 
         /// <summary>

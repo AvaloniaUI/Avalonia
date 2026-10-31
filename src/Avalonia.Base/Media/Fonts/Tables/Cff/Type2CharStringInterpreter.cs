@@ -30,6 +30,10 @@ namespace Avalonia.Media.Fonts.Tables.Cff
         private readonly int _globalBias;
         private readonly int _localBias;
 
+        // Resolves seac components (CFF1, non-CID only); null disables seac, which is also how a
+        // seac component is kept from composing again.
+        private readonly CffTable? _seacSource;
+
         private readonly Span<double> _stack;
         private int _sp;
 
@@ -56,9 +60,11 @@ namespace Avalonia.Media.Fonts.Tables.Cff
             Matrix transform,
             CffIndex globalSubrs,
             CffIndex localSubrs,
-            Span<double> stack)
+            Span<double> stack,
+            CffTable? seacSource = null)
         {
             _context = context;
+            _seacSource = seacSource;
             _transform = transform;
             _globalSubrs = globalSubrs;
             _localSubrs = localSubrs;
@@ -633,16 +639,45 @@ namespace Avalonia.Media.Fonts.Tables.Cff
 
         private void EndChar()
         {
-            ConsumeWidth(WidthRule.EndChar);
+            int s = ConsumeWidth(WidthRule.EndChar);
 
-            // seac (4-arg accent composition) is legacy and rare; left unrendered in this PR.
             if (_open)
             {
                 _context.EndFigure(true);
                 _open = false;
             }
 
+            // endchar with four arguments is the seac accent composition: adx ady bchar achar. The
+            // base glyph is drawn at the origin and the accent offset by (adx, ady), both addressed
+            // by Standard Encoding code.
+            if (_sp - s == 4 && _seacSource is not null)
+            {
+                double adx = _stack[s];
+                double ady = _stack[s + 1];
+                int baseCode = (int)_stack[s + 2];
+                int accentCode = (int)_stack[s + 3];
+
+                if (_seacSource.TryGetSeacComponent(baseCode, out var baseCharString) &&
+                    _seacSource.TryGetSeacComponent(accentCode, out var accentCharString))
+                {
+                    RunSeacComponent(baseCharString, _transform);
+                    RunSeacComponent(accentCharString, Matrix.CreateTranslation(adx, ady) * _transform);
+                }
+            }
+
+            _sp = 0;
             _done = true;
+        }
+
+        // Interprets a seac component as a glyph of its own: fresh operand stack, origin, width and
+        // hint state, sharing this charstring's subroutines and operation budget.
+        private void RunSeacComponent(ReadOnlyMemory<byte> charString, Matrix transform)
+        {
+            Span<double> stack = stackalloc double[48];
+            var component = new Type2CharStringInterpreter(_context, transform, _globalSubrs, _localSubrs, stack);
+            component._ops = _ops;
+            component.Run(charString);
+            _ops = component._ops;
         }
 
         // CFF2 blend: the stack holds n default values, then n*k deltas (k = the region count for the
