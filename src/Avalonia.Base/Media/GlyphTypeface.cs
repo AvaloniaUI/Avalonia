@@ -3115,7 +3115,7 @@ namespace Avalonia.Media
             }
         }
 
-        public GlyphDrawingType Type => GlyphDrawingType.ColorLayers;
+        public GlyphDrawingType Type => GlyphDrawingType.ColorPaintGraph;
 
         public Rect Bounds => _bounds;
 
