@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Selection;
 using Avalonia.UnitTests;
@@ -960,6 +961,45 @@ namespace Avalonia.Controls.UnitTests.Selection
                 Assert.Equal(4, target.AnchorIndex);
                 Assert.Equal(1, indexesChangedraised);
                 Assert.Equal(0, selectionChangedRaised);
+            }
+
+            [Fact]
+            public void SelectedItems_Does_Not_Desync_From_ItemsView_When_Source_Is_Cleared_And_Refilled()
+            {
+                // Reproduces https://github.com/AvaloniaUI/Avalonia/issues/6128:
+                // AutoCompleteBox clears and refills its items source while the
+                // selection is still held; the next selection change enumerates
+                // SelectedItems (both from the event args and the model) and must
+                // stay in sync with the current ItemsView.
+                var target = CreateTarget();
+                var data = (AvaloniaList<string>)target.Source!;
+
+                target.Select(4);
+
+                // Simulate AutoCompleteBox search: Clear() raises Reset, AddRange raises Adds.
+                data.Clear();
+                data.AddRange(new[] { "new1", "new2", "new3" });
+
+                // Simulate the user clicking an item in the drop-down
+                // (AutoCompleteBox.CloseDropDown -> SelectedItem setter).
+                var selectionChangedEnumerated = 0;
+                target.SelectionChanged += (s, e) =>
+                {
+                    // SelectingItemsControl.OnSelectionModelSelectionChanged does
+                    // exactly this via e.DeselectedItems / e.SelectedItems and
+                    // Selection.SelectedItems.
+                    _ = e.DeselectedIndexes.ToList();
+                    _ = e.DeselectedItems.ToList();
+                    _ = e.SelectedIndexes.ToList();
+                    _ = e.SelectedItems.ToList();
+                    _ = target.SelectedItems.ToList();
+                    ++selectionChangedEnumerated;
+                };
+
+                target.SelectedIndex = 1;
+
+                Assert.Equal(1, selectionChangedEnumerated);
+                Assert.Equal(new[] { "new2" }, target.SelectedItems);
             }
 
             [Fact]
