@@ -28,6 +28,7 @@ namespace Avalonia.Media.Fonts.Tables.Cff
         private const int OpCharStrings = 17;
         private const int OpPrivate = 18;
         private const int OpLocalSubrs = 19;
+        private const int OpCharstringType = CffDict.TwoByteOperatorBase + 6;
         private const int OpRos = CffDict.TwoByteOperatorBase + 30;
         private const int OpFdArray = CffDict.TwoByteOperatorBase + 36;
         private const int OpFdSelect = CffDict.TwoByteOperatorBase + 37;
@@ -88,6 +89,12 @@ namespace Avalonia.Media.Fonts.Tables.Cff
                 }
 
                 var topDict = CffDict.Parse(topDictIndex[0].Span);
+
+                // Only Type 2 charstrings can be interpreted; 2 is also the default when absent.
+                if (topDict.GetInt(OpCharstringType, 2) != 2)
+                {
+                    return false;
+                }
 
                 int charStringsOffset = topDict.GetInt(OpCharStrings, 0);
                 if (charStringsOffset <= 0 || charStringsOffset >= data.Length)

@@ -82,8 +82,15 @@ namespace Avalonia.Media.Fonts.Tables.Cff
             }
 
             int offsetArrayEnd = (int)offsetArrayEndLong;
-            // Offsets are 1-based, relative to the byte preceding the object data.
+            // Offsets are 1-based, relative to the byte preceding the object data, so the first is
+            // always 1.
             int dataBase = offsetArrayEnd - 1;
+
+            if (ReadOffset(span, offsetsStart, offSize) != 1)
+            {
+                throw new ArgumentException("Corrupt CFF INDEX: first offset is not 1.");
+            }
+
             int lastOffset = ReadOffset(span, offsetsStart + ((int)count * offSize), offSize);
             int endOffset = dataBase + lastOffset;
 
@@ -106,15 +113,16 @@ namespace Avalonia.Media.Fonts.Tables.Cff
                 }
 
                 var span = _table.Span;
-                int start = _dataBase + ReadOffset(span, _offsetsStart + (i * _offSize), _offSize);
-                int end = _dataBase + ReadOffset(span, _offsetsStart + ((i + 1) * _offSize), _offSize);
+                int startOffset = ReadOffset(span, _offsetsStart + (i * _offSize), _offSize);
+                int endOffset = ReadOffset(span, _offsetsStart + ((i + 1) * _offSize), _offSize);
 
-                if (end < start || end > _table.Length)
+                // An offset of 0 would address the last byte of the offset array.
+                if (startOffset < 1 || endOffset < startOffset || _dataBase + endOffset > _table.Length)
                 {
                     throw new ArgumentException("Corrupt CFF INDEX offsets.");
                 }
 
-                return _table.Slice(start, end - start);
+                return _table.Slice(_dataBase + startOffset, endOffset - startOffset);
             }
         }
 
