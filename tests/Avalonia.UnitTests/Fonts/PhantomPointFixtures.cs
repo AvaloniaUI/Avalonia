@@ -75,6 +75,84 @@ namespace Avalonia.UnitTests
             return font.Replace("gvar", table.ToArray());
         }
 
+        /// <summary>
+        /// Replaces the glyf data of the font's last glyph with <paramref name="glyphData"/>, appended
+        /// at the end of glyf. Only the last glyph can change length without moving the others, as
+        /// its loca end offset is not another glyph's start.
+        /// </summary>
+        public static SyntheticFont WithLastGlyphData(this SyntheticFont font, byte[] glyphData, out ushort glyph)
+        {
+            var glyphCount = BinaryPrimitives.ReadUInt16BigEndian(font.GetTable("maxp").AsSpan(4));
+            var shortLoca = BinaryPrimitives.ReadInt16BigEndian(font.GetTable("head").AsSpan(50)) == 0;
+            var oldGlyf = font.GetTable("glyf");
+            var loca = font.GetTable("loca");
+
+            glyph = (ushort)(glyphCount - 1);
+
+            var start = (oldGlyf.Length + 3) & ~3;
+            var glyf = new byte[start + ((glyphData.Length + 3) & ~3)];
+            oldGlyf.CopyTo(glyf, 0);
+            glyphData.CopyTo(glyf, start);
+
+            var end = start + glyphData.Length;
+
+            if (shortLoca)
+            {
+                if ((end & 1) != 0 || end / 2 > ushort.MaxValue)
+                {
+                    throw new ArgumentException("The glyph data does not fit a short loca table.", nameof(glyphData));
+                }
+
+                BinaryPrimitives.WriteUInt16BigEndian(loca.AsSpan(glyph * 2), (ushort)(start / 2));
+                BinaryPrimitives.WriteUInt16BigEndian(loca.AsSpan(glyph * 2 + 2), (ushort)(end / 2));
+            }
+            else
+            {
+                BinaryPrimitives.WriteUInt32BigEndian(loca.AsSpan(glyph * 4), (uint)start);
+                BinaryPrimitives.WriteUInt32BigEndian(loca.AsSpan(glyph * 4 + 4), (uint)end);
+            }
+
+            return font.Replace("glyf", glyf).Replace("loca", loca);
+        }
+
+        /// <summary>
+        /// Builds the glyf data of a composite glyph whose single component, with byte arguments,
+        /// ends after its glyph index: 14 bytes where the record needs 16.
+        /// </summary>
+        public static byte[] TruncatedCompositeGlyph(ushort component)
+        {
+            var data = new List<byte>();
+            WriteU16(data, 0xFFFF);                                 // numberOfContours = -1
+            WriteU16(data, 0);                                      // xMin
+            WriteU16(data, 0);                                      // yMin
+            WriteU16(data, 100);                                    // xMax
+            WriteU16(data, 100);                                    // yMax
+            WriteU16(data, 0x0002);                                 // ARGS_ARE_XY_VALUES, byte args
+            WriteU16(data, component);
+
+            return data.ToArray();
+        }
+
+        /// <summary>
+        /// Builds the glyf data of a composite glyph with one component, placed at (0, 0) and
+        /// flagged USE_MY_METRICS.
+        /// </summary>
+        public static byte[] UseMyMetricsCompositeGlyph(ushort component)
+        {
+            var data = new List<byte>();
+            WriteU16(data, 0xFFFF);                                 // numberOfContours = -1
+            WriteU16(data, 0);                                      // xMin
+            WriteU16(data, 0);                                      // yMin
+            WriteU16(data, 100);                                    // xMax
+            WriteU16(data, 100);                                    // yMax
+            WriteU16(data, 0x0202);                                 // USE_MY_METRICS, ARGS_ARE_XY_VALUES
+            WriteU16(data, component);
+            data.Add(0);
+            data.Add(0);
+
+            return data.ToArray();
+        }
+
         /// <summary>Reads a simple glyph's point count from its last contour end point.</summary>
         private static int CountSimpleGlyphPoints(SyntheticFont font, ushort glyph)
         {

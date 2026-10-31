@@ -153,6 +153,65 @@ namespace Avalonia.Base.UnitTests.Media
             Assert.Equal(700, batchMetrics[0].AdvanceWidth);
         }
 
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Truncated_Composite_Glyph_Has_No_Outline_And_Plain_Hmtx_Metrics(bool varied)
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var font = SyntheticFont.FromAsset(varied ? SyntheticFont.Assets.InterVariable : SyntheticFont.Assets.InterRegular)
+                .Remove("HVAR");
+            var original = new GlyphTypeface(font.ToPlatformTypeface());
+
+            font = font.WithLastGlyphData(PhantomPointFixtures.TruncatedCompositeGlyph(InterA), out var glyph);
+
+            var typeface = new GlyphTypeface(font.ToPlatformTypeface());
+
+            if (varied)
+            {
+                typeface = AtWeight(typeface, 900);
+            }
+
+            AssertPlainHmtxAdvance(original, typeface, glyph);
+        }
+
+        [Fact]
+        public void Use_My_Metrics_Cycle_Falls_Back_To_The_Glyph_Own_Hmtx_Advance()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var font = SyntheticFont.FromAsset(SyntheticFont.Assets.InterVariable).Remove("HVAR");
+            var original = new GlyphTypeface(font.ToPlatformTypeface());
+            var last = (ushort)(original.GlyphCount - 1);
+
+            // The last glyph takes its metrics from itself, so the chain never ends.
+            font = font.WithLastGlyphData(PhantomPointFixtures.UseMyMetricsCompositeGlyph(last), out var glyph);
+
+            AssertPlainHmtxAdvance(original, AtWeight(new GlyphTypeface(font.ToPlatformTypeface()), 900), glyph);
+        }
+
+        private static void AssertPlainHmtxAdvance(GlyphTypeface original, GlyphTypeface typeface, ushort glyph)
+        {
+            Assert.True(original.TryGetHorizontalGlyphAdvance(glyph, out var expected));
+
+            Assert.Null(typeface.GetGlyphOutline(glyph));
+
+            Assert.True(typeface.TryGetHorizontalGlyphAdvance(glyph, out var single));
+            Assert.Equal(expected, single);
+
+            var batch = new ushort[1];
+            Assert.True(typeface.TryGetHorizontalGlyphAdvances(new[] { glyph }, batch));
+            Assert.Equal(expected, batch[0]);
+
+            Assert.True(typeface.TryGetGlyphMetrics(glyph, out var metrics));
+            Assert.Equal(expected, metrics.AdvanceWidth);
+
+            var batchMetrics = new GlyphMetrics[1];
+            Assert.True(typeface.TryGetGlyphMetrics(new[] { glyph }, batchMetrics));
+            Assert.Equal(expected, batchMetrics[0].AdvanceWidth);
+        }
+
         private static GlyphTypeface InterWithoutHvar()
             => new GlyphTypeface(SyntheticFont.FromAsset(SyntheticFont.Assets.InterVariable)
                 .Remove("HVAR")
