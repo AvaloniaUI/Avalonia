@@ -114,6 +114,45 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
             Assert.Equal(new Rect(10, -140, 120, 120), atPeak!.Bounds);
         }
 
+        [Fact]
+        public void PaintVarTransform_Reads_VarIndexBase_From_The_VarAffine2x3()
+        {
+            var plain = SyntheticFont.FromAsset(SyntheticFont.Assets.InterVariable).TryCreateGlyphTypeface()!;
+            var axes = plain.VariationAxes;
+            var outlineGlyph = plain.CharacterToGlyphMap['A'];
+
+            // PaintVarTransform (identity) -> PaintGlyph(A) -> PaintSolid. The VarAffine2x3's
+            // VarIndexBase 0 maps xx to item 0, whose Fixed delta 16384 / 65536 = 0.25 at the peak.
+            // The outline of 'A' varies too, so the reference is the same paint graph with a zero
+            // delta at the same instance: only the transform's xx differs between the two.
+            var peak = NormalizedVariationPosition.FromCoordinates(
+                new Dictionary<OpenTypeTag, float> { [axes[0].Tag] = 1f });
+
+            Rect BoundsAtPeak(short xxDelta)
+            {
+                var colr = new ColrV1Builder()
+                    .BaseGlyph(3, ColrPaint.Transform(1, 0, 0, 1, 0, 0,
+                        ColrPaint.Glyph(outlineGlyph, ColrPaint.Solid(0)), varIndexBase: 0))
+                    .ItemVariationStore(BuildItemVariationStore(axes.Count, new short[] { xxDelta, 0, 0, 0, 0, 0 }))
+                    .Build();
+
+                return ColrTestFont
+                    .Graft(SyntheticFont.FromAsset(SyntheticFont.Assets.InterVariable), colr)
+                    .TryCreateGlyphTypeface()!
+                    .WithVariation(peak)
+                    .GetGlyphDrawing(3)!
+                    .Bounds;
+            }
+
+            var reference = BoundsAtPeak(0);
+            var scaled = BoundsAtPeak(16384);
+
+            Assert.Equal(reference.X * 1.25, scaled.X, 6);
+            Assert.Equal(reference.Width * 1.25, scaled.Width, 6);
+            Assert.Equal(reference.Y, scaled.Y, 6);
+            Assert.Equal(reference.Height, scaled.Height, 6);
+        }
+
         /// <summary>
         /// Builds an ItemVariationStore with one region peaking on axis 0 and a single ItemVariationData
         /// of <paramref name="deltas"/>.Length items, each carrying one word delta over that region.
