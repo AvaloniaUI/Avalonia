@@ -1609,8 +1609,6 @@ namespace Avalonia.Base.UnitTests.Input
             using var app = UnitTestApplication.Start(TestServices.RealFocus);
             Button current;
 
-            // The hidden group is only reachable as a sibling of the start and the wrap never returns to it,
-            // so a search that stops on reaching its first visited member again would never end.
             var root = new TestRoot
             {
                 Child = new StackPanel

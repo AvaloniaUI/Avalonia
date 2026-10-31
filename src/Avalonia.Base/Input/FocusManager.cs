@@ -597,7 +597,7 @@ namespace Avalonia.Input
                     return candidate;
             }
 
-            // This API always wraps at the root, unlike the Tab key, which leaves a root that isn't Cycle.
+            // Unlike the Tab key, this API wraps at a root that isn't Cycle.
             didCycleFocusAtRootVisualScope = true;
             var ignored = false;
 
@@ -606,12 +606,6 @@ namespace Avalonia.Input
                 GetNextTabStop(root, root, true, ref ignored);
         }
 
-        /// <summary>
-        /// Finds the element that the Tab key should focus next.
-        /// </summary>
-        /// <param name="element">The focused element, or the root when nothing is focused.</param>
-        /// <param name="isReverse">Whether to search backwards.</param>
-        /// <returns>The element, or null when navigation stops at the edge of a group or root.</returns>
         internal static IInputElement? FindNextTabStop(IInputElement element, bool isReverse)
         {
             var didCycle = false;
@@ -619,9 +613,6 @@ namespace Avalonia.Input
             return ApplyTabStopOverrides(null, element, candidate, isReverse, didCycle);
         }
 
-        /// <summary>
-        /// Finds the tab stop that follows all of the content of a container.
-        /// </summary>
         internal static IInputElement? FindNextTabStopAfter(IInputElement container)
         {
             var didCycle = false;
@@ -629,9 +620,6 @@ namespace Avalonia.Input
             return GetNextTabStop(last, GetTabGroupParent(last), false, ref didCycle);
         }
 
-        /// <summary>
-        /// Finds the tab stop that precedes all of the content of a container.
-        /// </summary>
         internal static IInputElement? FindPreviousTabStopBefore(IInputElement container)
         {
             if (GetFirstAvailableChild(container) is not { } first)
@@ -698,8 +686,7 @@ namespace Avalonia.Input
                     if (GetNextTabStop(null, next, true, ref didCycle) is { } inside)
                         return inside;
 
-                    // Once only limits entering the group: an empty first member shouldn't make it unreachable,
-                    // but having tried one shouldn't let the search leave a group it was asked to enter.
+                    // Keep searching inside a Once group, but don't leave it.
                     if (mode == KeyboardNavigationMode.Once)
                         mode = KeyboardNavigationMode.Contained;
                 }
@@ -733,7 +720,7 @@ namespace Avalonia.Input
                 if (GetActiveElement(container) is { } activeElement)
                     return GetPreviousTabStop(null, activeElement, true, ref didCycle);
 
-                // A Once group is a single stop, so entering it backwards still lands on its first item.
+                // Entering a Once group backwards still lands on its first item.
                 if (mode == KeyboardNavigationMode.Once)
                 {
                     var members = GetTabGroupMembers(container, null, true);
@@ -791,13 +778,6 @@ namespace Avalonia.Input
             return null;
         }
 
-        /// <summary>
-        /// Gets the elements that take part in a group's tab order, sorted by that order.
-        /// </summary>
-        /// <remarks>
-        /// Containers that aren't groups are transparent, so a TabIndex competes with every other one in the
-        /// group, however deeply nested. The sort must be stable: elements with equal indices use tree order.
-        /// </remarks>
         private static List<IInputElement> GetTabGroupMembers(IInputElement group, IInputElement? element, bool isReverse)
         {
             var members = new List<IInputElement>();
@@ -816,8 +796,7 @@ namespace Avalonia.Input
                 var isAvailable = IsAvailableForTabbing(child);
                 var isScope = IsTabGroup(child) || GetEntryOverride(child, isReverse) != null;
 
-                // The starting element keeps its place even when it can't be tabbed to: it may have lost
-                // that ability while focused, and the search still has to continue from where it is.
+                // The start keeps its place even when it can't be tabbed to.
                 if (child == element || (isAvailable && (isScope || IsTabStop(child))))
                     members.Add(child);
 
@@ -901,14 +880,12 @@ namespace Avalonia.Input
 
         private static bool IsTabStopOrGroup(IInputElement element) => IsTabStop(element) || IsTabGroup(element);
 
-        // IsTabStop defaults to true on every InputElement, so it can't identify a stop without Focusable.
         private static bool IsTabStop(IInputElement element) =>
             element is InputElement { IsTabStop: true, Focusable: true } &&
             element.IsEffectivelyEnabled &&
             FocusHelpers.IsVisible(element);
 
-        // Uses the element's own IsVisible so that a search starting inside a hidden subtree can still find
-        // its way out of it. IsTabStop is what keeps the hidden elements themselves from being returned.
+        // Uses the element's own IsVisible so that a search can leave a hidden subtree.
         private static bool IsAvailableForTabbing(IInputElement element) =>
             element.IsEffectivelyEnabled && element is Visual { IsVisible: true };
 
