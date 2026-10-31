@@ -354,9 +354,10 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
 
                 return true;
             }
-            catch (ArgumentOutOfRangeException)
+            catch (Exception ex) when (ex is ArgumentOutOfRangeException or IndexOutOfRangeException)
             {
-                // A component record runs past the end of the glyph data.
+                // A component record runs past the end of the glyph data: word fields fail their
+                // slice, byte arguments their indexer.
                 return false;
             }
         }
