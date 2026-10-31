@@ -20,7 +20,7 @@ namespace Avalonia.Skia.RenderTests
         private const string InterRegularAsset =
             "resm:Avalonia.Skia.RenderTests.Assets.Inter-Regular.ttf?assembly=Avalonia.Skia.RenderTests";
 
-        // The COLR base glyph id the drawing is requested for. Any in-range id works — it only
+        // The COLR base glyph id the drawing is requested for. Any in-range id works, it only
         // needs a COLR record; the painted outlines are the layer glyphs resolved via cmap.
         private const ushort BaseGlyph = 3;
 
@@ -69,7 +69,7 @@ namespace Avalonia.Skia.RenderTests
         [Fact]
         public async Task Should_Render_Colr_V1_Solid_Glyph()
         {
-            // The smallest v1 paint graph: PaintGlyph('A') → PaintSolid(palette entry 0) — a red 'A'.
+            // The smallest v1 paint graph: PaintGlyph('A') -> PaintSolid(palette entry 0), a red 'A'.
             var plain = CreatePlainTypeface();
             var colr = BuildColrV1Solid(BaseGlyph, plain.CharacterToGlyphMap['A'], paletteEntry: 0);
 
@@ -82,9 +82,9 @@ namespace Avalonia.Skia.RenderTests
         [Fact]
         public async Task Should_Render_Colr_V1_Linear_Gradient_Glyph()
         {
-            // PaintGlyph('A') → PaintLinearGradient, red → blue left-to-right across the glyph's
-            // ink. p2 is perpendicular to p0→p1 (the spec's no-skew configuration), so the
-            // effective gradient is exactly p0→p1.
+            // PaintGlyph('A') -> PaintLinearGradient, red -> blue left-to-right across the glyph's
+            // ink. p2 is perpendicular to p0->p1 (the spec's no-skew configuration), so the
+            // effective gradient is exactly p0->p1.
             var plain = CreatePlainTypeface();
             var ink = InkBounds(plain, 'A');
 
@@ -102,7 +102,7 @@ namespace Avalonia.Skia.RenderTests
         [Fact]
         public async Task Should_Render_Colr_V1_Radial_Gradient_Glyph()
         {
-            // PaintGlyph('A') → PaintRadialGradient: a focal radial (r0 = 0) centred on the glyph's
+            // PaintGlyph('A') -> PaintRadialGradient: a focal radial (r0 = 0) centred on the glyph's
             // ink box, red core fading to blue at a radius covering the whole glyph.
             var plain = CreatePlainTypeface();
             var ink = InkBounds(plain, 'A');
@@ -122,9 +122,9 @@ namespace Avalonia.Skia.RenderTests
         [Fact]
         public async Task Should_Render_Colr_V1_Sweep_Gradient_Glyph()
         {
-            // PaintGlyph('A') → PaintSweepGradient centred on the glyph's ink box, sweeping red →
-            // blue over half a turn (F2DOT14 angles 0.0 → 1.0 are 0° → 180° before the OpenType
-            // +180° shift); the Pad extend fills the remaining arc with the end colours.
+            // PaintGlyph('A') -> PaintSweepGradient centred on the glyph's ink box, sweeping red ->
+            // blue over half a turn (F2DOT14 angles 0.0 -> 1.0 are 0 degrees -> 180 degrees before the OpenType
+            // +180 degrees shift); the Pad extend fills the remaining arc with the end colours.
             var plain = CreatePlainTypeface();
             var ink = InkBounds(plain, 'A');
             var center = ink.Center;
@@ -181,9 +181,9 @@ namespace Avalonia.Skia.RenderTests
             };
 
         /// <summary>
-        /// Renders one colour-glyph drawing. The drawing applies the font-space (Y-up) →
+        /// Renders one colour-glyph drawing. The drawing applies the font-space (Y-up) ->
         /// drawing-space (Y-down) flip itself, so the control only pushes the em scale and places
-        /// the baseline origin — mirroring how a text renderer would integrate
+        /// the baseline origin, mirroring how a text renderer would integrate
         /// <see cref="IGlyphDrawing"/>.
         /// </summary>
         private sealed class ColorGlyphControl : Control
@@ -258,7 +258,7 @@ namespace Avalonia.Skia.RenderTests
             colr.UInt32(0);   // varIndexMapOffset
             colr.UInt32(0);   // itemVariationStoreOffset
 
-            // BaseGlyphV1List → PaintGlyph.
+            // BaseGlyphV1List -> PaintGlyph.
             var baseListStart = colr.Position;
             colr.PatchUInt32(baseListOffsetPos, (uint)baseListStart);
             colr.UInt32(1);
@@ -274,7 +274,7 @@ namespace Avalonia.Skia.RenderTests
             return colr;
         }
 
-        // A two-stop colour line: extend = Pad, stop 0 → palette entry 0, stop 1 → palette entry 1.
+        // A two-stop colour line: extend = Pad, stop 0 -> palette entry 0, stop 1 -> palette entry 1.
         private static void WriteRedToBlueColorLine(BigEndianBuffer colr)
         {
             colr.UInt8(0);            // extend = Pad
@@ -283,7 +283,7 @@ namespace Avalonia.Skia.RenderTests
             colr.F2Dot14(1.0).UInt16(1).F2Dot14(1.0);
         }
 
-        /// <summary>COLR v1: PaintGlyph → PaintSolid (format 2) at full alpha.</summary>
+        /// <summary>COLR v1: PaintGlyph -> PaintSolid (format 2) at full alpha.</summary>
         private static byte[] BuildColrV1Solid(ushort baseGlyph, ushort outlineGlyph, ushort paletteEntry)
         {
             var colr = BeginColrV1PaintGlyph(baseGlyph, outlineGlyph);
@@ -295,7 +295,7 @@ namespace Avalonia.Skia.RenderTests
             return colr.ToArray();
         }
 
-        /// <summary>COLR v1: PaintGlyph → PaintLinearGradient (format 4), 16 bytes + colour line.</summary>
+        /// <summary>COLR v1: PaintGlyph -> PaintLinearGradient (format 4), 16 bytes + colour line.</summary>
         private static byte[] BuildColrV1LinearGradient(ushort baseGlyph, ushort outlineGlyph,
             short p0X, short p0Y, short p1X, short p1Y, short p2X, short p2Y)
         {
@@ -310,7 +310,7 @@ namespace Avalonia.Skia.RenderTests
             return colr.ToArray();
         }
 
-        /// <summary>COLR v1: PaintGlyph → PaintRadialGradient (format 6), 16 bytes + colour line.</summary>
+        /// <summary>COLR v1: PaintGlyph -> PaintRadialGradient (format 6), 16 bytes + colour line.</summary>
         private static byte[] BuildColrV1RadialGradient(ushort baseGlyph, ushort outlineGlyph,
             short c0X, short c0Y, ushort r0, short c1X, short c1Y, ushort r1)
         {
@@ -326,7 +326,7 @@ namespace Avalonia.Skia.RenderTests
             return colr.ToArray();
         }
 
-        /// <summary>COLR v1: PaintGlyph → PaintSweepGradient (format 8), 12 bytes + colour line.</summary>
+        /// <summary>COLR v1: PaintGlyph -> PaintSweepGradient (format 8), 12 bytes + colour line.</summary>
         private static byte[] BuildColrV1SweepGradient(ushort baseGlyph, ushort outlineGlyph,
             short centerX, short centerY, short startAngleF2Dot14, short endAngleF2Dot14)
         {

@@ -116,7 +116,7 @@ namespace Avalonia.Skia.UnitTests.Media
                 Assert.True(CpalTable.TryLoad(glyphTypeface, out var cpalTable));
                 Assert.True(colrTable.HasV1Data);
 
-                // Test with clock emoji 🕐 (U+1F550)
+                // Test with clock emoji (U+1F550)
                 const int clockCodepoint = 0x1F550;
                 var clockGlyphId = glyphTypeface.CharacterToGlyphMap[clockCodepoint];
 
@@ -190,7 +190,7 @@ namespace Avalonia.Skia.UnitTests.Media
                 Assert.True(CpalTable.TryLoad(glyphTypeface, out var cpalTable));
                 Assert.True(colrTable.HasV1Data);
 
-                // Test with bridge at night emoji 🌉 (U+1F309)
+                // Test with bridge at night emoji (U+1F309)
                 const int bridgeCodepoint = 0x1F309;
                 var bridgeGlyphId = glyphTypeface.CharacterToGlyphMap[bridgeCodepoint];
 

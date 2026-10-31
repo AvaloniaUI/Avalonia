@@ -229,7 +229,7 @@ namespace Avalonia.Media.Fonts.Tables.Colr
                 // Format 25: VarRotate
                 case RotateVar varRotate:
                     {
-                        // Angle delta is F2DOT14: 180° per 1.0, so multiply by π to convert to radians.
+                        // Angle delta is F2DOT14: 180 degrees per 1.0, so multiply by pi to convert to radians.
                         var angle = varRotate.Angle + context.GetF2Dot14Delta(varRotate.VarIndexBase, 0) * Math.PI;
 
                         return new ResolvedTransform(
@@ -249,7 +249,7 @@ namespace Avalonia.Media.Fonts.Tables.Colr
                 case RotateAroundCenterVar varRotateCenter:
                     {
                         var b = varRotateCenter.VarIndexBase;
-                        // Angle delta F2DOT14 → radians (base+0); centre deltas FWORD (base+1,+2).
+                        // Angle delta F2DOT14 -> radians (base+0); centre deltas FWORD (base+1,+2).
                         var angle = varRotateCenter.Angle + context.GetF2Dot14Delta(b, 0) * Math.PI;
                         var centerX = varRotateCenter.Center.X + context.GetFWordDelta(b, 1);
                         var centerY = varRotateCenter.Center.Y + context.GetFWordDelta(b, 2);
@@ -270,7 +270,7 @@ namespace Avalonia.Media.Fonts.Tables.Colr
                 // Format 29: VarSkew
                 case SkewVar varSkew:
                     {
-                        // Angle deltas are F2DOT14: 180° per 1.0, so multiply by π to convert to radians.
+                        // Angle deltas are F2DOT14: 180 degrees per 1.0, so multiply by pi to convert to radians.
                         var xAngle = varSkew.XAngle + context.GetF2Dot14Delta(varSkew.VarIndexBase, 0) * Math.PI;
                         var yAngle = varSkew.YAngle + context.GetF2Dot14Delta(varSkew.VarIndexBase, 1) * Math.PI;
 
@@ -291,7 +291,7 @@ namespace Avalonia.Media.Fonts.Tables.Colr
                 case SkewAroundCenterVar varSkewCenter:
                     {
                         var b = varSkewCenter.VarIndexBase;
-                        // Angle deltas F2DOT14 → radians (base+0,+1); centre deltas FWORD (base+2,+3).
+                        // Angle deltas F2DOT14 -> radians (base+0,+1); centre deltas FWORD (base+2,+3).
                         var xAngle = varSkewCenter.XAngle + context.GetF2Dot14Delta(b, 0) * Math.PI;
                         var yAngle = varSkewCenter.YAngle + context.GetF2Dot14Delta(b, 1) * Math.PI;
                         var centerX = varSkewCenter.Center.X + context.GetFWordDelta(b, 2);
@@ -375,8 +375,8 @@ namespace Avalonia.Media.Fonts.Tables.Colr
 
         private static ResolvedPaint ResolveSweepGradient(SweepGradientVar grad, ColrContext context, uint varIndexBase)
         {
-            // Centre deltas FWORD (base+0,+1); angle deltas F2DOT14 in the same raw 180°-per-1.0 units
-            // as the base angles (base+2,+3) — NormalizeConicGradient converts the sum to degrees.
+            // Centre deltas FWORD (base+0,+1); angle deltas F2DOT14 in the same raw 180 degrees-per-1.0 units
+            // as the base angles (base+2,+3), NormalizeConicGradient converts the sum to degrees.
             var center = new Point(grad.Center.X + context.GetFWordDelta(varIndexBase, 0), grad.Center.Y + context.GetFWordDelta(varIndexBase, 1));
             var startAngle = grad.StartAngle + context.GetF2Dot14Delta(varIndexBase, 2);
             var endAngle = grad.EndAngle + context.GetF2Dot14Delta(varIndexBase, 3);

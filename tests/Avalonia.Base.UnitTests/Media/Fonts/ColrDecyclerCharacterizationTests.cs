@@ -7,22 +7,22 @@ using Xunit;
 namespace Avalonia.Base.UnitTests.Media.Fonts
 {
     /// <summary>
-    /// Regression tests for the COLR v1 decycler. A cyclic / over-deep paint graph must be contained:
+    /// Tests for the COLR v1 decycler. A cyclic / over-deep paint graph must be contained:
     /// the parse boundary catches the <c>DecyclerException</c> so it never escapes the public
     /// <see cref="GlyphTypeface.GetGlyphDrawing(ushort)"/>, and the <c>using var guard = decycler.Enter(...)</c>
     /// pattern keeps Enter/Exit balanced so a failed sub-paint can't poison a sibling.
     /// </summary>
     /// <remarks>
     /// Each test grafts a hand-built COLR v1 + CPAL table onto a real font (Inter) via
-    /// <see cref="SyntheticFont"/>, then drives the (formerly) crashing path through the public API
-    /// and asserts it no longer throws.
+    /// <see cref="SyntheticFont"/>, then drives the hostile graph through the public API and asserts
+    /// that nothing throws.
     /// </remarks>
     public class ColrDecyclerCharacterizationTests
     {
         [Fact]
         public void SelfReferential_ColrGlyph_Does_Not_Throw_From_GetGlyphDrawing()
         {
-            // Glyph 3's paint is PaintColrGlyph(3): parsing it re-enters glyph 3 → cycle. The boundary
+            // Glyph 3's paint is PaintColrGlyph(3): parsing it re-enters glyph 3 -> cycle. The boundary
             // catch turns the DecyclerException into "no color drawing" instead of letting it escape.
             var typeface = BuildColrTypeface((3, 3));
 
@@ -32,7 +32,7 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
         [Fact]
         public void Mutual_ColrGlyph_Cycle_Does_Not_Throw_From_GetGlyphDrawing()
         {
-            // Glyph 3 → PaintColrGlyph(4) and glyph 4 → PaintColrGlyph(3): A↔B cycle, contained.
+            // Glyph 3 -> PaintColrGlyph(4) and glyph 4 -> PaintColrGlyph(3): A<->B cycle, contained.
             var typeface = BuildColrTypeface((3, 4), (4, 3));
 
             Assert.Null(Record.Exception(() => typeface.GetGlyphDrawing(3)));
@@ -41,8 +41,8 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
         [Fact]
         public void Deep_Acyclic_ColrGlyph_Chain_Exceeds_Depth_Limit_Without_Throwing()
         {
-            // An acyclic chain g(10)→g(11)→…→g(74)→g(75) deeper than PaintDecycler.MaxTraversalDepth (64).
-            // The depth limit still fires, but the exception is now caught at the boundary.
+            // An acyclic chain g(10)->g(11)->...->g(74)->g(75) deeper than PaintDecycler.MaxTraversalDepth (64).
+            // The depth limit fires, and the parse boundary catches the exception.
             const int chainLength = PaintDecycler.MaxTraversalDepth + 1; // 65 records: glyphs 10..74
             var records = new (ushort Glyph, ushort RefGlyph)[chainLength];
             for (var i = 0; i < chainLength; i++)
@@ -58,9 +58,9 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
         [Fact]
         public void NonCyclic_ColrGlyph_Does_Not_Throw()
         {
-            // Positive control: glyph 3 → PaintColrGlyph(99) where glyph 99 has no base record.
+            // Positive control: glyph 3 -> PaintColrGlyph(99) where glyph 99 has no base record.
             // The reference resolves to "no paint" and GetGlyphDrawing returns a (drawing-nothing)
-            // result without throwing — proving the harness's COLR is genuinely parsed and that the
+            // result without throwing, proving the harness's COLR is genuinely parsed and that the
             // non-cyclic path is graceful.
             var typeface = BuildColrTypeface((3, 99));
 
@@ -73,9 +73,9 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
         public void Malformed_Sibling_Layer_Does_Not_Poison_The_Decycler()
         {
             // A PaintColrLayers with two layers that both reference color glyph 4 (which has no base
-            // record). Each reference resolves to "no paint"; with the balanced using-guard the first
-            // layer's failed lookup no longer leaves glyph 4 in the visited set, so the second layer is
-            // not misdetected as a cycle — both skip gracefully and nothing throws.
+            // record). Each reference resolves to "no paint"; the balanced using-guard removes glyph 4
+            // from the visited set after the first layer's failed lookup, so the second layer is not
+            // misdetected as a cycle. Both skip gracefully and nothing throws.
             var typeface = BuildColrLayersTypeface(baseGlyph: 3, layerRefGlyph: 4);
 
             Assert.Null(Record.Exception(() => typeface.GetGlyphDrawing(3)));
@@ -85,10 +85,10 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
         public void SelfReferential_Transform_Paint_Does_Not_Throw_From_GetGlyphDrawing()
         {
             // Glyph 3's paint is a PaintScaleUniform (format 20) whose 24-bit sub-paint offset is 0,
-            // so it points at itself. This is a paint→paint cycle that never crosses a glyph
-            // boundary: the old guard (entered only at PaintGlyph / PaintColrGlyph) missed it and
-            // the parser recursed into an uncatchable StackOverflow. The offset-keyed decycler now
-            // trips on the repeated paint offset and the boundary catch contains it.
+            // so it points at itself. This is a paint->paint cycle that never crosses a glyph
+            // boundary, so a guard entered only at PaintGlyph / PaintColrGlyph would let the parser
+            // recurse into an uncatchable StackOverflow. The offset-keyed decycler trips on the
+            // repeated paint offset and the boundary catch contains it.
             var font = SyntheticFont.FromAsset(SyntheticFont.Assets.InterRegular)
                 .Replace("COLR", BuildColrV1WithSelfReferentialPaint(glyph: 3))
                 .Replace("CPAL", BuildMinimalCpal());
@@ -103,9 +103,8 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
         public void Long_Acyclic_Transform_Chain_Is_Bounded_Without_Throwing()
         {
             // A chain of PaintScaleUniform paints, each pointing to the next, deeper than the
-            // decycler's depth limit. No cycle is involved — purely acyclic nesting — yet the old
-            // code (which never entered the decycler on transform edges) would recurse the whole
-            // chain. The per-paint depth guard now bounds it and the boundary catch contains it.
+            // decycler's depth limit. No cycle is involved, purely acyclic nesting, so only the
+            // per-paint depth guard on transform edges bounds it; the boundary catch contains it.
             var font = SyntheticFont.FromAsset(SyntheticFont.Assets.InterRegular)
                 .Replace("COLR", BuildColrV1WithTransformChain(glyph: 3, chainLength: PaintDecycler.MaxTraversalDepth + 5))
                 .Replace("CPAL", BuildMinimalCpal());
@@ -153,11 +152,11 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
                 .TryCreateGlyphTypeface()!;
         }
 
-        // ── helpers ──
+        // -- helpers --
 
         /// <summary>
         /// Builds a COLR v1 table whose <paramref name="glyph"/> paints a single PaintScaleUniform
-        /// (format 20) with a sub-paint offset of 0 — a self-referential paint→paint edge.
+        /// (format 20) with a sub-paint offset of 0, a self-referential paint->paint edge.
         /// </summary>
         private static byte[] BuildColrV1WithSelfReferentialPaint(ushort glyph)
         {
@@ -173,7 +172,7 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
             // PaintScaleUniform (format 20): format(1) + subPaintOffset24(3) + scale F2Dot14(2).
             colr.PatchUInt32(paintOffsetPos, (uint)(colr.Position - listStart));
             colr.UInt8(20);
-            colr.UInt24(0);          // sub-paint offset 0 → this paint references itself
+            colr.UInt24(0);          // sub-paint offset 0 -> this paint references itself
             colr.F2Dot14(1.0);       // scale
 
             return colr.ToArray();
@@ -251,7 +250,7 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
 
             var colr = new BigEndianBuffer();
 
-            // COLR header (v1) — 34 bytes; only baseGlyphV1ListOffset is non-zero.
+            // COLR header (v1), 34 bytes; only baseGlyphV1ListOffset is non-zero.
             colr.UInt16(1);   // version
             colr.UInt16(0);   // numBaseGlyphRecords (v0)
             colr.UInt32(0);   // baseGlyphRecordsOffset (v0)
@@ -306,7 +305,7 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
         {
             var colr = new BigEndianBuffer();
 
-            // COLR header (v1) — baseGlyphV1ListOffset @14 and layerV1ListOffset @18 are back-patched.
+            // COLR header (v1), baseGlyphV1ListOffset @14 and layerV1ListOffset @18 are back-patched.
             colr.UInt16(1);   // version
             colr.UInt16(0);   // numBaseGlyphRecords (v0)
             colr.UInt32(0);   // baseGlyphRecordsOffset (v0)
@@ -318,7 +317,7 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
             colr.UInt32(0);   // varIndexMapOffset @26
             colr.UInt32(0);   // itemVariationStoreOffset @30
 
-            // BaseGlyphV1List: one record for baseGlyph → the PaintColrLayers paint.
+            // BaseGlyphV1List: one record for baseGlyph -> the PaintColrLayers paint.
             var baseListStart = colr.Position;
             colr.PatchUInt32(baseListOffsetPos, (uint)baseListStart);
             colr.UInt32(1);                 // numBaseGlyphV1Records

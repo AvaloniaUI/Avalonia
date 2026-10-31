@@ -5,13 +5,13 @@ namespace Avalonia.Media.Fonts.Tables.Colr
 {
     /// <summary>
     /// Walks a resolved COLR v1 paint graph and accumulates two things, in one backend-free pass: the
-    /// axis-aligned union of the painted clip regions (in font space, Y-up — used to derive a colour
+    /// axis-aligned union of the painted clip regions (in font space, Y-up, used to derive a colour
     /// glyph's bounds when the font ships no ClipList), and the set of referenced glyph ids (the
-    /// colour drawing's cache dependencies — the layer outlines it re-fetches on every draw). A fill
+    /// colour drawing's cache dependencies, the layer outlines it re-fetches on every draw). A fill
     /// paints its clip region: the intersection of the enclosing PaintGlyph outlines' control-point
     /// boxes and clip boxes, each taken in the transform it was declared in.
     /// Each referenced outline's box is read through <see cref="GlyphTypeface.TryGetGlyphInkBounds"/>,
-    /// which interprets the outline (or reads the <c>glyf</c> header) <b>without building geometry</b> —
+    /// which interprets the outline (or reads the <c>glyf</c> header) <b>without building geometry</b>,
     /// so no render backend is required and no outline is materialised just to size the glyph.
     /// </summary>
     internal sealed class ColorGlyphV1BoundsPainter : IColorPainter
@@ -71,7 +71,7 @@ namespace Avalonia.Media.Fonts.Tables.Colr
         public void PushGlyphClip(ushort glyphIndex)
         {
             // Record the referenced glyph as a dependency (deduped) regardless of whether it has a
-            // readable box — Draw re-fetches its outline either way, so the cache should pin it.
+            // readable box, Draw re-fetches its outline either way, so the cache should pin it.
             if (!_dependencies.Contains(glyphIndex))
             {
                 _dependencies.Add(glyphIndex);

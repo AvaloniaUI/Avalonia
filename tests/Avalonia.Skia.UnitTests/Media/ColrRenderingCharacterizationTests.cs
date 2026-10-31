@@ -42,7 +42,7 @@ namespace Avalonia.Skia.UnitTests.Media
                 // The painter maps the two COLR circles onto Avalonia's focal-point radial model:
                 // circle 1 (c1/r1) becomes Center + outer radius, and circle 0's centre (c0) becomes
                 // the focal point (GradientOrigin). The focal radius r0 has no equivalent and is
-                // approximated as 0 — exact here because r0 == 0.
+                // approximated as 0, exact here because r0 == 0.
                 Assert.NotEqual(brush.Center, brush.GradientOrigin);
                 Assert.Equal(new Point(100, 200), brush.Center.Point);     // c1
                 Assert.Equal(new Point(0, 0), brush.GradientOrigin.Point); // c0
@@ -60,7 +60,7 @@ namespace Avalonia.Skia.UnitTests.Media
                 var outlineGlyph = SyntheticFont.FromAsset(InterAsset).TryCreateGlyphTypeface()!
                     .CharacterToGlyphMap['A'];
 
-                // F2DOT14 sweep angles are 180° per 1.0 of value: 0.25 → 45°, 0.75 → 135°.
+                // F2DOT14 sweep angles are 180 degrees per 1.0 of value: 0.25 -> 45 degrees, 0.75 -> 135 degrees.
                 var colr = BuildColrV1GlyphSweepGradient(
                     baseGlyph: 3, outlineGlyph, centerX: 0, centerY: 0,
                     startAngleF2Dot14: 4096 /* 0.25 */, endAngleF2Dot14: 12288 /* 0.75 */);
@@ -69,9 +69,9 @@ namespace Avalonia.Skia.UnitTests.Media
 
                 var brush = Assert.IsType<ImmutableConicGradientBrush>(Assert.Single(recorder.Brushes));
 
-                // IConicGradientBrush.Angle is in degrees. After the OpenType +180° shift, the
-                // counter-clockwise→clockwise flip, and the start<end swap, 0.25/0.75 resolve to a
-                // 45° start angle — NOT the ~-244° a radians-scaled-by-180 decode would produce.
+                // IConicGradientBrush.Angle is in degrees. After the OpenType +180 degrees shift, the
+                // counter-clockwise->clockwise flip, and the start<end swap, 0.25/0.75 resolve to a
+                // 45 degrees start angle, NOT the ~-244 degrees a radians-scaled-by-180 decode would produce.
                 Assert.Equal(45.0, brush.Angle, 3);
             }
         }
@@ -271,7 +271,7 @@ namespace Avalonia.Skia.UnitTests.Media
         }
 
         /// <summary>
-        /// COLR v1: base glyph → PaintGlyph(outlineGlyph) → PaintSolid referencing palette entry 0
+        /// COLR v1: base glyph -> PaintGlyph(outlineGlyph) -> PaintSolid referencing palette entry 0
         /// at full alpha. Sub-paint offsets are constant because the layout is sequential.
         /// </summary>
         private static byte[] BuildColrV1GlyphSolid(ushort baseGlyph, ushort outlineGlyph)
@@ -290,7 +290,7 @@ namespace Avalonia.Skia.UnitTests.Media
             colr.UInt32(0);   // varIndexMapOffset
             colr.UInt32(0);   // itemVariationStoreOffset
 
-            // BaseGlyphV1List → PaintGlyph.
+            // BaseGlyphV1List -> PaintGlyph.
             var baseListStart = colr.Position;
             colr.PatchUInt32(baseListOffsetPos, (uint)baseListStart);
             colr.UInt32(1);
@@ -312,7 +312,7 @@ namespace Avalonia.Skia.UnitTests.Media
         }
 
         /// <summary>
-        /// COLR v1: base glyph → PaintGlyph(outlineGlyph) → PaintRadialGradient with a 2-stop color
+        /// COLR v1: base glyph -> PaintGlyph(outlineGlyph) -> PaintRadialGradient with a 2-stop color
         /// line. Sub-paint offsets are constant because the layout is sequential.
         /// </summary>
         private static byte[] BuildColrV1GlyphRadialGradient(
@@ -333,7 +333,7 @@ namespace Avalonia.Skia.UnitTests.Media
             colr.UInt32(0);   // varIndexMapOffset @26
             colr.UInt32(0);   // itemVariationStoreOffset @30
 
-            // BaseGlyphV1List → PaintGlyph.
+            // BaseGlyphV1List -> PaintGlyph.
             var baseListStart = colr.Position;
             colr.PatchUInt32(baseListOffsetPos, (uint)baseListStart);
             colr.UInt32(1);
@@ -362,7 +362,7 @@ namespace Avalonia.Skia.UnitTests.Media
         }
 
         /// <summary>
-        /// COLR v1: base glyph → PaintGlyph(outlineGlyph) → PaintSweepGradient with a 2-stop colour
+        /// COLR v1: base glyph -> PaintGlyph(outlineGlyph) -> PaintSweepGradient with a 2-stop colour
         /// line. The colour line follows the 12-byte sweep paint, so its offset is constant.
         /// </summary>
         private static byte[] BuildColrV1GlyphSweepGradient(
@@ -383,7 +383,7 @@ namespace Avalonia.Skia.UnitTests.Media
             colr.UInt32(0);   // varIndexMapOffset
             colr.UInt32(0);   // itemVariationStoreOffset
 
-            // BaseGlyphV1List → PaintGlyph.
+            // BaseGlyphV1List -> PaintGlyph.
             var baseListStart = colr.Position;
             colr.PatchUInt32(baseListOffsetPos, (uint)baseListStart);
             colr.UInt32(1);
@@ -426,7 +426,7 @@ namespace Avalonia.Skia.UnitTests.Media
 
             protected override void PushOpacityCore(double opacity) => Opacities.Add(opacity);
 
-            // Remaining abstract members — no-ops.
+            // Remaining abstract members, no-ops.
             protected override void DrawEllipseCore(IBrush? brush, IPen? pen, Rect rect) { }
             protected override void DrawLineCore(IPen pen, Point p1, Point p2) { }
             protected override void DrawRectangleCore(IBrush? brush, IPen? pen, RoundedRect rrect, BoxShadows boxShadows = default) { }

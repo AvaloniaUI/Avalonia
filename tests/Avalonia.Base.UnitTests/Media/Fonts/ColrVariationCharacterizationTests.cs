@@ -11,8 +11,7 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
     /// <summary>
     /// COLR v1 variation resolves through the shared <c>Tables.Variation.ItemVariationStore</c>: a
     /// paint record's <c>VarIndexBase</c> (plus a per-field offset) maps to an (outer, inner) delta,
-    /// which is scaled by the variation region's contribution at the instance's coordinates. This
-    /// pins the region scaling and the index resolution that the COLR-local store used to lack.
+    /// which is scaled by the variation region's contribution at the instance's coordinates.
     /// </summary>
     public class ColrVariationCharacterizationTests
     {
@@ -72,11 +71,11 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
             atPeak[0] = 1f;
             var atDefault = new float[axisCount];
 
-            // At the region peak: corners become (10,20)-(130,140) → Rect(10, 20, 120, 120).
+            // At the region peak: corners become (10,20)-(130,140) -> Rect(10, 20, 120, 120).
             Assert.True(colrTable!.TryGetClipBox(3, atPeak, out var peakBox));
             Assert.Equal(new Rect(10, 20, 120, 120), peakBox);
 
-            // At the default instance the deltas vanish → the base box.
+            // At the default instance the deltas vanish -> the base box.
             Assert.True(colrTable.TryGetClipBox(3, atDefault, out var defaultBox));
             Assert.Equal(new Rect(0, 0, 100, 100), defaultBox);
         }
@@ -198,7 +197,7 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
             ivs.UInt16(1);                              // itemVariationDataCount
             var ivdOffsetPos = ivs.ReserveOffset32();   // itemVariationDataOffsets[0]
 
-            // VariationRegionList: one region. Axis 0 ramps 0 → peak 1.0 → end 1.0; other axes flat.
+            // VariationRegionList: one region. Axis 0 ramps 0 -> peak 1.0 -> end 1.0; other axes flat.
             ivs.PatchUInt32(regionListOffsetPos, (uint)ivs.Position);
             ivs.UInt16((ushort)axisCount);
             ivs.UInt16(1);                              // regionCount
@@ -231,7 +230,7 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
         /// <summary>
         /// Builds a minimal COLR v1 table whose only populated field is an ItemVariationStore (one item
         /// with one word delta). No DeltaSetIndexMap, so the implicit (outer = index &gt;&gt; 16,
-        /// inner = index &amp; 0xFFFF) mapping applies — index 0 → (0, 0).
+        /// inner = index &amp; 0xFFFF) mapping applies, index 0 -> (0, 0).
         /// </summary>
         private static byte[] BuildColrWithItemVariationStore(short rawDelta, int axisCount)
         {
@@ -244,7 +243,7 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
             colr.UInt32(0);   // baseGlyphV1ListOffset
             colr.UInt32(0);   // layerV1ListOffset
             colr.UInt32(0);   // clipListOffset
-            colr.UInt32(0);   // varIndexMapOffset (0 → implicit mapping)
+            colr.UInt32(0);   // varIndexMapOffset (0 -> implicit mapping)
             var ivsOffsetPos = colr.ReserveOffset32(); // itemVariationStoreOffset
             colr.PatchUInt32(ivsOffsetPos, (uint)colr.Position);
             colr.Bytes(BuildItemVariationStore(axisCount, new[] { rawDelta }));
@@ -275,7 +274,7 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
             colr.PatchUInt32(bglOffsetPos, (uint)colr.Position);
             colr.UInt32(0);   // numBaseGlyphV1Records
 
-            // ClipList format 1: one record for glyph 3 → a format-2 (variable) ClipBox.
+            // ClipList format 1: one record for glyph 3 -> a format-2 (variable) ClipBox.
             var clipListStart = colr.Position;
             colr.PatchUInt32(clipOffsetPos, (uint)clipListStart);
             colr.UInt8(1);    // format
@@ -285,7 +284,7 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
             colr.UInt24(12);  // clipBoxOffset (relative to ClipList): the box follows the 12-byte header+record
             colr.UInt8(2);    // ClipBox format 2
             colr.Int16(0).Int16(0).Int16(100).Int16(100); // xMin, yMin, xMax, yMax
-            colr.UInt32(0);   // varIndexBase = 0 → corners use index 0..3
+            colr.UInt32(0);   // varIndexBase = 0 -> corners use index 0..3
 
             // ItemVariationStore: four items (one per corner delta).
             colr.PatchUInt32(ivsOffsetPos, (uint)colr.Position);

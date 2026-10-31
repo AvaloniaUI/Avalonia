@@ -33,9 +33,9 @@ namespace Avalonia.Media.Fonts.Tables.Colr
         private readonly int _numLayerV1Records;
         private readonly int _numClips;
 
-        // Cached variation tables (loaded during construction). These are the shared parsers under
-        // Tables.Variation — the same ItemVariationStore HVAR / VVAR / MVAR use — which apply
-        // region scaling against the instance's coords (the COLR-local copies did not).
+        // Variation tables, loaded once at construction. These are the shared parsers under
+        // Tables.Variation, the same ItemVariationStore HVAR / VVAR / MVAR use, which apply
+        // region scaling against the instance's coords.
         private readonly Variation.DeltaSetIndexMap? _deltaSetIndexMap;
         private readonly Variation.ItemVariationStore? _itemVariationStore;
 
@@ -312,12 +312,9 @@ namespace Avalonia.Media.Fonts.Tables.Colr
         }
 
         /// <summary>
-        /// Gets the layer record at the specified index (v0 format).
-        /// /// Gets the number of base glyph records (v0).
-        /// /// Gets whether this table has COLR v1 data.
-        /// /// Gets the LayerV1List offset from the COLR table header.
-        /// Returns 0 if the LayerV1List is not present (COLR v0 or no LayerV1List in v1).
-        /// /// </summary>
+        /// Gets the layer record at the specified index (v0 format). Returns <c>false</c> when the
+        /// index is outside the layer records.
+        /// </summary>
         public bool TryGetLayerRecord(int layerIndex, out LayerRecord record)
         {
             record = default;
@@ -470,7 +467,7 @@ namespace Avalonia.Media.Fonts.Tables.Colr
         /// <remarks>
         /// The <c>(varIndexBase + fieldOffset)</c> variation index is mapped to an <c>(outer, inner)</c>
         /// pair via the DeltaSetIndexMap (or the implicit high/low-16-bit split when absent), then the
-        /// shared <see cref="Variation.ItemVariationStore"/> sums <c>regionScaler(coords) × delta</c>
+        /// shared <see cref="Variation.ItemVariationStore"/> sums <c>regionScaler(coords) x delta</c>
         /// across regions.
         /// </remarks>
         internal bool TryGetScaledDelta(uint varIndexBase, uint fieldOffset, ReadOnlySpan<float> coords, out float delta)

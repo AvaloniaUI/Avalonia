@@ -2131,7 +2131,7 @@ namespace Avalonia.Media
 
             if (!isColorGlyph)
             {
-                return null;   // outline-only glyph — caller should use GetGlyphOutline()
+                return null;   // outline-only glyph, caller should use GetGlyphOutline()
             }
 
             // Normalize the palette before keying the cache, so every out-of-range request shares the
@@ -2160,12 +2160,12 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Builds the colour-drawing payload for an in-range colour glyph — the cold path behind
+        /// Builds the colour-drawing payload for an in-range colour glyph, the cold path behind
         /// <see cref="GetGlyphDrawing(ushort, GlyphDrawingOptions?)"/>'s cache. The payload is a COLR
         /// v1 paint-graph drawing or a v0 layer drawing, resolved with the entry's (normalized) CPAL
         /// palette; <see cref="BuiltGeometry.Dependencies"/> are the layer glyphs it re-fetches on
-        /// every draw, and <see cref="BuiltGeometry.Cost"/> reflects the drawing's own (small) footprint
-        /// — the layer outlines are charged on their own entries.
+        /// every draw, and <see cref="BuiltGeometry.Cost"/> reflects the drawing's own (small) footprint;
+        /// the layer outlines are charged on their own entries.
         /// </summary>
         private BuiltGeometry BuildColorDrawingEntry(GlyphCacheEntry entry)
         {
@@ -2337,7 +2337,7 @@ namespace Avalonia.Media
 
             // Resolved per build (a cache miss) rather than captured statically: the locator scope can
             // change in-process (e.g. headless test sessions), and a static initializer would latch the
-            // first scope's interface — or poison the type if none is registered at first touch.
+            // first scope's interface, or poison the type if none is registered at first touch.
             var renderInterface = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
             using var builder = renderInterface.CreateStreamGeometryBuilder();
 
@@ -3007,7 +3007,7 @@ namespace Avalonia.Media
         public GlyphDrawingType Type => GlyphDrawingType.ColorLayers;
 
         /// <summary>
-        /// The union of the layers' control-point ink boxes, flipped to drawing space (Y-down) —
+        /// The union of the layers' control-point ink boxes, flipped to drawing space (Y-down),
         /// computed once at parse time from the outline tables' bounds path, so no geometry is built
         /// and no render backend is required just to size the glyph.
         /// </summary>
@@ -3047,7 +3047,7 @@ namespace Avalonia.Media
             }
 
             // One pushed transform maps font space (Y-up design units) to drawing space at the origin,
-            // so every cached design-space outline is drawn as-is — no per-layer transformed clone.
+            // so every cached design-space outline is drawn as-is, no per-layer transformed clone.
             using (context.PushTransform(Matrix.CreateScale(1, -1) * Matrix.CreateTranslation(origin.X, origin.Y)))
             {
                 foreach (var layerRecord in layerRecords)
@@ -3092,7 +3092,7 @@ namespace Avalonia.Media
             _paint = hasClipBox ? new ResolvedClipBox(clipRect, paint) : paint;
 
             // Traverse the paint graph once (no render backend) to collect the referenced layer
-            // glyphs — the drawing's cache dependencies — and, as a by-product, the conservative
+            // glyphs, the drawing's cache dependencies, and, as a by-product, the conservative
             // painted extent. COLR v1 paint graphs are in font space (Y-up), so any extent is
             // flipped to drawing space (Y-down) to match Draw's transform. The traverser walks
             // the already-resolved (acyclic) paint tree, so no decycler is needed here.

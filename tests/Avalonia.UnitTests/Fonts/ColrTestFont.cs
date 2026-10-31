@@ -19,7 +19,7 @@ namespace Avalonia.UnitTests
 
         /// <summary>
         /// Grafts <paramref name="colr"/> and the given <paramref name="cpal"/> onto
-        /// <paramref name="baseFont"/> — for tests that need specific palettes (see <see cref="Cpal"/>).
+        /// <paramref name="baseFont"/>, for tests that need specific palettes (see <see cref="Cpal"/>).
         /// </summary>
         public static SyntheticFont Graft(SyntheticFont baseFont, byte[] colr, byte[] cpal)
             => baseFont
