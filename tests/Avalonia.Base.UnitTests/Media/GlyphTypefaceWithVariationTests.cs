@@ -562,9 +562,8 @@ namespace Avalonia.Base.UnitTests.Media
             var black = def.WithVariation(WghtPosition(def, 900));
             Assert.NotSame(def, black);
 
-            // Before the fix the varied instance returned the static (default-instance) glyf header
-            // box, so every glyph's ink bounds matched the default. With gvar applied at the heavier
-            // weight the outlines deform, so at least one glyph's control-point box must now differ.
+            // The glyf header box describes the default instance only. gvar deforms the outlines at
+            // the heavier weight, so at least one glyph's control-point box differs from the default.
             var anyDifferent = false;
             var max = Math.Min(def.GlyphCount, 300);
 
@@ -600,11 +599,8 @@ namespace Avalonia.Base.UnitTests.Media
         [Fact]
         public void Variable_Glyf_Ink_Bounds_Contract_Matches_The_Default_Instance()
         {
-            // R30: at a varied instance, TryGetGlyphInkBounds must keep the same true/false contract
-            // as the default instance — false for an out-of-range glyph, and true + zero box for a
-            // valid empty glyph (whitespace). The varied path caches the deformed box, and a naive
-            // failure-to-build would otherwise either return true + zero for an out-of-range glyph
-            // or flip an empty glyph to false.
+            // A varied instance keeps the default instance's contract: false for an out-of-range
+            // glyph, true with the zero box for a valid empty glyph such as whitespace.
             var def = LoadTypeface(InterVariableAsset);
             var black = def.WithVariation(WghtPosition(def, 900));
 

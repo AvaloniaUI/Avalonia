@@ -553,7 +553,7 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
 
         /// <summary>
         /// Computes a glyph's control-point bounding box by interpreting its outline into a
-        /// bounds-accumulating sink (<see cref="BoundsGeometryContext"/>) — the equivalent of the
+        /// bounds-accumulating sink (<see cref="BoundsGeometryContext"/>), the equivalent of the
         /// CFF / CFF2 bounds pass. Unlike
         /// <see cref="TryGetGlyphBounds(int, out short, out short, out short, out short)"/>, which reads
         /// the static header box, this reflects gvar deformation at the requested variation instance;

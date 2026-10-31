@@ -162,7 +162,7 @@ public class CffGlyphBoundsBenchmark : IDisposable
     public bool GlyfVariableDefault() => _glyfVariable.TryGetGlyphBounds(_glyfVariableIds, _bounds.AsSpan(0, GlyphCount));
 
     // Variable glyf at a non-default instance: the header box is stale, so bounds come from the
-    // gvar-deformed outline interpreted once and memoised — steady state here is a per-glyph cache hit.
+    // gvar-deformed outline interpreted once and memoised; steady state here is a per-glyph cache hit.
     [Benchmark]
     public bool GlyfVaried() => _glyfVaried.TryGetGlyphBounds(_glyfVariableIds, _bounds.AsSpan(0, GlyphCount));
 
