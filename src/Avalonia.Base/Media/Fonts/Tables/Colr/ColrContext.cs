@@ -87,50 +87,50 @@ namespace Avalonia.Media.Fonts.Tables.Colr
         }
 
         /// <summary>
-        /// Normalizes color stops to 0-1 range and handles edge cases.
-        /// Modifies the array in-place to avoid allocations when possible.
+        /// Maps sorted color stops onto [0, 1], the range gradient brushes interpolate over.
         /// </summary>
-        public GradientStop[] NormalizeColorStops(GradientStop[] stops)
+        /// <remarks>
+        /// COLR stop offsets may lie anywhere; brushes only honour [0, 1]. The stops are rescaled so
+        /// the first lands at 0 and the last at 1, and <paramref name="first"/> / <paramref name="last"/>
+        /// report the raw offsets that now map to 0 and 1. The caller must move the gradient geometry
+        /// to those positions on the color line (as HarfBuzz and Skia do), or the colors land in the
+        /// wrong place. Returns a new array unless the stops already span exactly [0, 1].
+        /// </remarks>
+        public GradientStop[] NormalizeColorStops(GradientStop[] stops, out double first, out double last)
         {
+            first = 0.0;
+            last = 1.0;
+
             if (stops.Length == 0)
                 return stops;
 
-            // Sort by offset (ImmutableGradientStop is immutable, so we need to sort the array)
-            Array.Sort(stops, (a, b) => a.Offset.CompareTo(b.Offset));
-
-            // Get first and last stops for normalization
             var firstStop = stops[0];
             var lastStop = stops[stops.Length - 1];
             var colorStopRange = lastStop.Offset - firstStop.Offset;
 
-            // If all stops are at the same position
+            // All stops at one position: extend the last color over one unit of the color line so the
+            // range is not degenerate.
             if (Math.Abs(colorStopRange) < 1e-6)
             {
-                // For Pad mode with zero range, add an extra stop
-                if (colorStopRange == 0.0)
-                {
-                    var newStops = new GradientStop[stops.Length + 1];
-                    Array.Copy(stops, newStops, stops.Length);
-                    newStops[stops.Length] = new GradientStop(lastStop.Offset + 1.0, lastStop.Color);
-                    stops = newStops;
-                    colorStopRange = 1.0;
-                    firstStop = stops[0];
-                }
-                else
-                {
-                    return stops;
-                }
+                var newStops = new GradientStop[stops.Length + 1];
+                Array.Copy(stops, newStops, stops.Length);
+                newStops[stops.Length] = new GradientStop(firstStop.Offset + 1.0, lastStop.Color);
+                stops = newStops;
+                colorStopRange = 1.0;
             }
 
-            // Check if normalization is needed
-            var needsNormalization = Math.Abs(colorStopRange - 1.0) > 1e-6 || Math.Abs(firstStop.Offset) > 1e-6;
+            first = firstStop.Offset;
+            last = first + colorStopRange;
 
-            if (!needsNormalization)
+            if (Math.Abs(first) <= 1e-6 && Math.Abs(colorStopRange - 1.0) <= 1e-6)
+            {
+                first = 0.0;
+                last = 1.0;
                 return stops;
+            }
 
-            // Normalize stops to 0-1 range
             var scale = 1.0 / colorStopRange;
-            var startOffset = firstStop.Offset;
+            var startOffset = first;
 
             // Create new array with normalized values
             var normalizedStops = new GradientStop[stops.Length];

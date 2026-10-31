@@ -328,9 +328,9 @@ namespace Avalonia.Media.Fonts.Tables.Colr
 
         private static ResolvedPaint ResolveLinearGradient(LinearGradient grad, ColrContext context)
         {
-            var stops = context.NormalizeColorStops(grad.Stops);
+            var stops = context.NormalizeColorStops(grad.Stops, out var first, out var last);
 
-            return NormalizeLinearGradient(grad.P0, grad.P1, grad.P2, stops, grad.Extend);
+            return NormalizeLinearGradient(grad.P0, grad.P1, grad.P2, stops, first, last, grad.Extend);
         }
 
         private static ResolvedPaint ResolveLinearGradient(LinearGradientVar grad, ColrContext context, uint varIndexBase)
@@ -340,14 +340,14 @@ namespace Avalonia.Media.Fonts.Tables.Colr
             var p1 = new Point(grad.P1.X + context.GetFWordDelta(varIndexBase, 2), grad.P1.Y + context.GetFWordDelta(varIndexBase, 3));
             var p2 = new Point(grad.P2.X + context.GetFWordDelta(varIndexBase, 4), grad.P2.Y + context.GetFWordDelta(varIndexBase, 5));
 
-            var stops = context.NormalizeColorStops(grad.Stops);
-            return NormalizeLinearGradient(p0, p1, p2, stops, grad.Extend);
+            var stops = context.NormalizeColorStops(grad.Stops, out var first, out var last);
+            return NormalizeLinearGradient(p0, p1, p2, stops, first, last, grad.Extend);
         }
 
         private static ResolvedPaint ResolveRadialGradient(RadialGradient grad, ColrContext context)
         {
-            var stops = context.NormalizeColorStops(grad.Stops);
-            return new ResolvedRadialGradient(grad.C0, grad.R0, grad.C1, grad.R1, stops, grad.Extend);
+            var stops = context.NormalizeColorStops(grad.Stops, out var first, out var last);
+            return NormalizeRadialGradient(grad.C0, grad.R0, grad.C1, grad.R1, stops, first, last, grad.Extend);
         }
 
         private static ResolvedPaint ResolveRadialGradient(RadialGradientVar grad, ColrContext context, uint varIndexBase)
@@ -358,14 +358,14 @@ namespace Avalonia.Media.Fonts.Tables.Colr
             var c1 = new Point(grad.C1.X + context.GetFWordDelta(varIndexBase, 3), grad.C1.Y + context.GetFWordDelta(varIndexBase, 4));
             var r1 = grad.R1 + context.GetFWordDelta(varIndexBase, 5);
 
-            var stops = context.NormalizeColorStops(grad.Stops);
-            return new ResolvedRadialGradient(c0, r0, c1, r1, stops, grad.Extend);
+            var stops = context.NormalizeColorStops(grad.Stops, out var first, out var last);
+            return NormalizeRadialGradient(c0, r0, c1, r1, stops, first, last, grad.Extend);
         }
 
         private static ResolvedPaint ResolveSweepGradient(SweepGradient grad, ColrContext context)
         {
-            var stops = context.NormalizeColorStops(grad.Stops);
-            return NormalizeConicGradient(grad.Center, grad.StartAngle, grad.EndAngle, stops, grad.Extend);
+            var stops = context.NormalizeColorStops(grad.Stops, out var first, out var last);
+            return NormalizeConicGradient(grad.Center, grad.StartAngle, grad.EndAngle, stops, first, last, grad.Extend);
         }
 
         private static ResolvedPaint ResolveSweepGradient(SweepGradientVar grad, ColrContext context, uint varIndexBase)
@@ -376,13 +376,17 @@ namespace Avalonia.Media.Fonts.Tables.Colr
             var startAngle = grad.StartAngle + context.GetF2Dot14Delta(varIndexBase, 2);
             var endAngle = grad.EndAngle + context.GetF2Dot14Delta(varIndexBase, 3);
 
-            var stops = context.NormalizeColorStops(grad.Stops);
-            return NormalizeConicGradient(center, startAngle, endAngle, stops, grad.Extend);
+            var stops = context.NormalizeColorStops(grad.Stops, out var first, out var last);
+            return NormalizeConicGradient(center, startAngle, endAngle, stops, first, last, grad.Extend);
         }
+
+        // The normalized stops span [first, last] of the original color line; each Normalize*
+        // moves the gradient geometry to those positions so the colors stay where the font put them.
 
         private static ResolvedPaint NormalizeLinearGradient(
             Point p0, Point p1, Point p2,
             GradientStop[] stops,
+            double first, double last,
             GradientSpreadMethod extend)
         {
             // If no stops or single stop, return solid color
@@ -405,8 +409,24 @@ namespace Avalonia.Media.Fonts.Tables.Colr
             // Compute P3 as orthogonal projection of p0->p1 onto perpendicular to p0->p2
             var perpToP2 = new Vector(p0ToP2.Y, -p0ToP2.X);
             var p3 = p0 + ProjectOnto(p0ToP1, perpToP2);
+            var p0ToP3 = p3 - p0;
 
-            return new ResolvedLinearGradient(p0, p3, stops, extend);
+            return new ResolvedLinearGradient(p0 + p0ToP3 * first, p0 + p0ToP3 * last, stops, extend);
+        }
+
+        private static ResolvedPaint NormalizeRadialGradient(
+            Point c0, double r0, Point c1, double r1,
+            GradientStop[] stops,
+            double first, double last,
+            GradientSpreadMethod extend)
+        {
+            var c0ToC1 = c1 - c0;
+            var dr = r1 - r0;
+
+            return new ResolvedRadialGradient(
+                c0 + c0ToC1 * first, r0 + dr * first,
+                c0 + c0ToC1 * last, r0 + dr * last,
+                stops, extend);
         }
 
         private static ResolvedPaint NormalizeConicGradient(
@@ -414,6 +434,7 @@ namespace Avalonia.Media.Fonts.Tables.Colr
             double startAngle,
             double endAngle,
             GradientStop[] stops,
+            double first, double last,
             GradientSpreadMethod extend)
         {
             if (stops.Length == 0)
@@ -421,6 +442,10 @@ namespace Avalonia.Media.Fonts.Tables.Colr
 
             if (stops.Length == 1)
                 return new ResolvedSolid(stops[0].Color);
+
+            var sweep = endAngle - startAngle;
+            endAngle = startAngle + sweep * last;
+            startAngle += sweep * first;
 
             // OpenType 1.9.1 adds a shift to ease 0-360 degree specification
             var startAngleDeg = startAngle * 180.0 + 180.0;

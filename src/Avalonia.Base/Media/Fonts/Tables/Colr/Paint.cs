@@ -161,19 +161,12 @@ namespace Avalonia.Media.Fonts.Tables.Colr
                 paintOffset + colorLineOffset,
                 in context,
                 isVarColorLine: isVariable,
-                out var immutableStops,
+                out var stops,
                 out var extend))
             {
                 return false;
             }
 
-            // Per-stop offset / alpha variation is already applied during colour-line parsing.
-            var stops = new GradientStop[immutableStops.Length];
-
-            for (int i = 0; i < immutableStops.Length; i++)
-            {
-                stops[i] = new GradientStop(immutableStops[i].Offset, immutableStops[i].Color);
-            }
 
             if (isVariable)
             {
@@ -227,19 +220,12 @@ namespace Avalonia.Media.Fonts.Tables.Colr
             var colorLineAbsOffset = paintOffset + colorLineOffset;
 
             if (!PaintParsingHelpers.TryParseColorLine(context.ColrData.Span, colorLineAbsOffset, in context, isVarColorLine: isVariable,
-                out var immutableStops,
+                out var stops,
                 out var extend))
             {
                 return false;
             }
 
-            // Per-stop offset / alpha variation is already applied during colour-line parsing.
-            var stops = new GradientStop[immutableStops.Length];
-
-            for (int i = 0; i < immutableStops.Length; i++)
-            {
-                stops[i] = new GradientStop(immutableStops[i].Offset, immutableStops[i].Color);
-            }
 
             if (isVariable)
             {
@@ -302,19 +288,12 @@ namespace Avalonia.Media.Fonts.Tables.Colr
                 colorLineAbsOffset,
                 in context,
                 isVarColorLine: isVariable,
-                out var immutableStops,
+                out var stops,
                 out var extend))
             {
                 return false;
             }
 
-            // Per-stop offset / alpha variation is already applied during colour-line parsing.
-            var stops = new GradientStop[immutableStops.Length];
-
-            for (int i = 0; i < immutableStops.Length; i++)
-            {
-                stops[i] = new GradientStop(immutableStops[i].Offset, immutableStops[i].Color);
-            }
 
             if (isVariable)
             {
