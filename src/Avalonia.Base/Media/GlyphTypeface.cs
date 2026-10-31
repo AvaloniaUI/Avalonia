@@ -1697,7 +1697,8 @@ namespace Avalonia.Media
                 hasVertical = _vmTable.TryGetMetrics(glyph, out vMetric);
             }
 
-            // Ink box from whichever outline table the font has (glyf header box / CFF / CFF2).
+            // Ink box at this instance's variation point from whichever outline table the font has
+            // (glyf: header box at the default instance, deformed outline otherwise; CFF / CFF2).
             // Unlike the batch fill, this reports per-glyph validity so an out-of-range glyph with
             // no metrics at all still returns false below.
             var hasBounds = TryGetGlyphInkBounds(glyph, out var box);
@@ -1767,8 +1768,8 @@ namespace Avalonia.Media
 
             metrics = new GlyphMetrics
             {
-                // Bounding box (ink extent) from the glyf header; side bearings fall back
-                // to hmtx/vmtx (HVAR/VVAR-adjusted) when the glyph has no outline data.
+                // Bounding box (ink extent) from the outline table; side bearings fall back
+                // to hmtx/vmtx (HVAR/VVAR-adjusted) when the glyph has no ink box.
                 XBearing = hasBounds ? box.XMin : (hasHorizontal ? leftSideBearing : (short)0),
                 YBearing = hasBounds ? box.YMax : (hasVertical ? topSideBearing : (short)0),
                 Width = hasBounds ? (ushort)box.Width : (ushort)0,
@@ -1866,9 +1867,31 @@ namespace Avalonia.Media
                 }
             }
 
-            // Read every glyph's ink box from whichever outline table the font has (glyf header box /
-            // CFF / CFF2) in one pass. A font with no outline table, or one whose boxes cannot be
-            // read, falls back to hmtx/vmtx bearings with a zero box.
+            // A varied glyf glyph whose outline cannot be built has no ink box; like the single-glyph
+            // path, its bearings fall back to the (HVAR/VVAR-adjusted) side bearings.
+            if (_glyfTable is not null && _gvarTable is not null && _activeCoords is not null)
+            {
+                for (int i = 0; i < glyphIndices.Length; i++)
+                {
+                    var hasBounds = TryGetGlyfBounds(glyphIndices[i], out var b);
+
+                    metrics[i] = new GlyphMetrics
+                    {
+                        XBearing = hasBounds ? b.XMin : (hasHorizontal ? hMetrics[i].LeftSideBearing : (short)0),
+                        YBearing = hasBounds ? b.YMax : (hasVertical ? vMetrics[i].TopSideBearing : (short)0),
+                        Width = hasBounds ? (ushort)b.Width : (ushort)0,
+                        Height = hasBounds ? (ushort)b.Height : (ushort)0,
+                        AdvanceWidth = hasHorizontal ? hMetrics[i].AdvanceWidth : (ushort)0,
+                        AdvanceHeight = hasVertical ? vMetrics[i].AdvanceHeight : (ushort)0,
+                    };
+                }
+
+                return true;
+            }
+
+            // Read every glyph's ink box from whichever outline table the font has (glyf header box at
+            // the default instance, CFF / CFF2) in one pass. A font with no outline table, or one
+            // whose boxes cannot be read, falls back to hmtx/vmtx bearings with a zero box.
             if (_glyfTable != null || _cffTable != null || _cff2Table != null)
             {
                 Span<GlyphBounds> bounds = glyphIndices.Length <= 256
@@ -1941,17 +1964,29 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Reads a single glyph's control-point ink box from whichever outline table the font carries.
-        /// Unlike <see cref="TryFillInkBounds"/> (which reports table presence and zero-fills invalid
-        /// glyphs), this returns <c>false</c> for an out-of-range or malformed glyph — the per-glyph
-        /// contract the single <see cref="TryGetGlyphMetrics(ushort, out GlyphMetrics)"/> path needs.
+        /// Whether a glyph cache entry should survive geometry eviction for the sake of its cached ink
+        /// box. True for CFF / CFF2 (the box is an expensive charstring interpret) and for a non-default
+        /// variable <c>glyf</c> instance (whose box comes from interpreting the gvar-deformed outline,
+        /// not the static header); false for a static / default-instance <c>glyf</c> font, whose box is
+        /// a cheap header read worth no retention.
         /// </summary>
-        private bool TryGetGlyphInkBounds(ushort glyph, out GlyphBounds box)
+        private bool RetainsGlyphBounds =>
+            _cffTable is not null || _cff2Table is not null ||
+            (_glyfTable is not null && _gvarTable is not null && _activeCoords is not null);
+
+        /// <summary>
+        /// Reads a single glyph's control-point ink box at this instance's variation point, from
+        /// whichever outline table the font carries, <b>without building geometry</b> (no render backend
+        /// required). Unlike <see cref="TryFillInkBounds"/> (which reports table presence and zero-fills
+        /// invalid glyphs), this returns <c>false</c> for an out-of-range or malformed glyph: the
+        /// per-glyph contract the single <see cref="TryGetGlyphMetrics(ushort, out GlyphMetrics)"/> path
+        /// and the COLR v1 paint-graph extents fallback need.
+        /// </summary>
+        internal bool TryGetGlyphInkBounds(ushort glyph, out GlyphBounds box)
         {
             if (_glyfTable is not null)
             {
-                // The header box is placed where GetGlyphOutline places the outline.
-                return _glyfTable.TryGetGlyphBounds(glyph, _hmTable, out box);
+                return TryGetGlyfBounds(glyph, out box);
             }
 
             if (_cffTable is not null || _cff2Table is not null)
@@ -1965,15 +2000,30 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Fills <paramref name="bounds"/> with each glyph's control-point ink box from whichever
-        /// outline table the font carries — <c>glyf</c> (header box), CFF or CFF2 (computed from the
+        /// Fills <paramref name="bounds"/> with each glyph's control-point ink box at this instance's
+        /// variation point, from whichever outline table the font carries: <c>glyf</c> (header box, or
+        /// the gvar-deformed outline at a non-default instance), CFF or CFF2 (computed from the
         /// charstring). Returns <c>false</c> when the font has no outline table.
         /// </summary>
         private bool TryFillInkBounds(ReadOnlySpan<ushort> glyphIndices, Span<GlyphBounds> bounds)
         {
             if (_glyfTable is not null)
             {
-                _glyfTable.GetGlyphBounds(glyphIndices, bounds, _hmTable);
+                // A non-default variable instance must reflect gvar deformation, so resolve each glyph
+                // through the per-glyph (cached) path. The static / default-instance fast path reads
+                // headers in one tight pass.
+                if (_gvarTable is not null && _activeCoords is not null)
+                {
+                    for (int i = 0; i < glyphIndices.Length; i++)
+                    {
+                        bounds[i] = TryGetGlyfBounds(glyphIndices[i], out var box) ? box : default;
+                    }
+                }
+                else
+                {
+                    _glyfTable.GetGlyphBounds(glyphIndices, bounds, _hmTable);
+                }
+
                 return true;
             }
 
@@ -2038,15 +2088,90 @@ namespace Avalonia.Media
             return _cff2Table!.TryGetGlyphBounds(glyph, activeCoords, out var cff2Box) ? cff2Box : default;
         }
 
+        /// <summary>
+        /// Returns a <c>glyf</c> glyph's control-point ink box at this instance's variation point. At the
+        /// default instance the stored header box is exact and read directly; at a non-default variable
+        /// instance the gvar-deformed outline is interpreted into the box (no geometry built, no render
+        /// backend) and cached in the unified glyph cache, since re-interpreting on every metrics read
+        /// would be far costlier than the header read it replaces. Returns <c>false</c> for an
+        /// out-of-range or malformed glyph.
+        /// </summary>
+        private bool TryGetGlyfBounds(ushort glyph, out GlyphBounds box)
+        {
+            if (_gvarTable is not null && _activeCoords is not null)
+            {
+                box = default;
+
+                if (glyph >= GlyphCount)
+                {
+                    return false;
+                }
+
+                var cache = _glyphCache ?? GetOrCreateGlyphCache();
+                var entry = cache.GetEntry(glyph);
+
+                if (entry.HasBounds)
+                {
+                    box = entry.Bounds;
+                    return true;
+                }
+
+                // A malformed glyph has no buildable outline, so it reports false and caches
+                // nothing, keeping the TryGetGlyphInkBounds contract. A valid empty glyph yields the
+                // zero box and is memoised like any other.
+                if (!TryComputeGlyfGlyphBounds(glyph, out box))
+                {
+                    return false;
+                }
+
+                entry.SetBoundsOnce(box);
+                return true;
+            }
+
+            // The header box is placed where GetGlyphOutline places the outline.
+            return _glyfTable!.TryGetGlyphBounds(glyph, _hmTable, out box);
+        }
+
+        /// <summary>
+        /// Interprets one gvar-deformed <c>glyf</c> outline into its control-point box via
+        /// <see cref="BoundsGeometryContext"/>, the cold path behind <see cref="TryGetGlyfBounds"/> at a
+        /// non-default variable instance. Returns <c>false</c> for a malformed glyph (no buildable
+        /// outline); a valid empty glyph (whitespace) yields the zero box, matching the
+        /// default-instance header path.
+        /// </summary>
+        private bool TryComputeGlyfGlyphBounds(ushort glyph, out GlyphBounds box)
+        {
+            // Measure the outline where GetGlyphOutline places it, with its left phantom point on
+            // the origin.
+            var transform = TryGetLeftPhantomX(glyph, _activeCoords, out var leftPhantomX) && leftPhantomX != 0
+                ? Matrix.CreateTranslation(-leftPhantomX, 0)
+                : Matrix.Identity;
+
+            if (_glyfTable!.TryGetGlyphOutlineBounds(glyph, transform, _gvarTable, _activeCoords, out box))
+            {
+                return true;
+            }
+
+            // TryGetGlyphOutlineBounds also returns false for an empty glyph, which has the zero box.
+            // Any other glyph that fails to build is malformed, even when its header box is readable.
+            box = default;
+            return _glyfTable.IsEmptyGlyph(glyph);
+        }
+
         private GlyphCache GetOrCreateGlyphCache()
         {
-            // CFF / CFF2 bounds cost a charstring interpret, so their entries outlive geometry
-            // eviction; glyf bounds are a header read and are not worth keeping an entry for.
-            var created = new GlyphCache(retainBounds: _cffTable is not null || _cff2Table is not null);
+            var created = new GlyphCache(retainBounds: RetainsGlyphBounds);
 
             // First publisher wins; later racers reuse it.
             return Interlocked.CompareExchange(ref _glyphCache, created, null) ?? created;
         }
+
+        /// <summary>
+        /// The per-instance glyph payload cache, or <c>null</c> until the first glyph needs ink bounds
+        /// or an outline. Exposed internally only so tests can assert cache lifecycle (e.g. that the
+        /// cache survives disposal, since its payloads can outlive the typeface).
+        /// </summary>
+        internal GlyphCache? GlyphCache => _glyphCache;
 
         /// <summary>
         /// Gets the vector-outline technology this typeface's glyphs use.
@@ -2147,12 +2272,14 @@ namespace Avalonia.Media
                 dependencies = components;
             }
 
-            // For CFF / CFF2 the build's control-point box is the entry's ink box, so a later metrics
-            // read needs no separate charstring interpret. glyf bounds come from the header (cheaper
-            // than this), so leave them unset here.
+            // Where the metrics path computes the ink box by interpretation (CFF / CFF2 always; a
+            // non-default variable glyf instance, whose static header box is stale), the build's
+            // control-point box is that ink box, so a later metrics read is a cache hit with no
+            // separate interpret pass. Static / default-instance glyf bounds come from the header
+            // (cheaper than this), so leave them unset here.
             var bounds = default(GlyphBounds);
             var hasBounds = false;
-            if (outline is not null && (_cffTable is not null || _cff2Table is not null))
+            if (outline is not null && RetainsGlyphBounds)
             {
                 bounds = controlBounds;
                 hasBounds = true;
@@ -2763,6 +2890,11 @@ namespace Avalonia.Media
             {
                 _textShaperTypeface?.Dispose();
             }
+
+            // The per-instance glyph cache is deliberately left for the GC, not torn down here. Its
+            // payloads are handed out lock-free and escape into retained compositor render data that
+            // can outlive the typeface, so clearing or disposing the cache on Dispose would risk a
+            // use-after-free. The cache holds no unmanaged handles of its own.
 
             // Only the source-of-truth owns and disposes the platform typeface. When
             // the platform's WithVariation override returned 'this', the clone shares
