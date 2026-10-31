@@ -71,8 +71,8 @@ namespace Avalonia.Media
 
         /// <summary>
         /// Gets the <c>name</c> table ID that <see cref="Name"/> is resolved from: 2, 17, or an ID
-        /// in the font-specific range 256-32767. Kept raw so family grouping can resolve the name
-        /// again, for example in another language.
+        /// in the font-specific range 256-32767. Instance naming resolves it through its own name
+        /// lookup for an instance whose <see cref="Name"/> is empty.
         /// </summary>
         internal ushort SubfamilyNameId { get; }
 

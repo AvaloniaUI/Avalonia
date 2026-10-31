@@ -69,6 +69,9 @@ namespace Avalonia.Media.Fonts.Tables.Variation
         /// </summary>
         public int Format { get; }
 
+        /// <summary>
+        /// Gets the flags of the table.
+        /// </summary>
         public StatAxisValueFlags Flags { get; }
 
         /// <summary>
@@ -94,8 +97,15 @@ namespace Avalonia.Media.Fonts.Tables.Variation
         /// </summary>
         public float RangeMaxValue { get; }
 
+        /// <summary>
+        /// Gets whether the value name is left out of composed names.
+        /// </summary>
         public bool IsElidable => (Flags & StatAxisValueFlags.ElidableAxisValueName) != 0;
 
+        /// <summary>
+        /// Gets whether the table describes other fonts of the family rather than this font, so
+        /// naming its instances ignores it.
+        /// </summary>
         public bool IsOlderSiblingFontAttribute => (Flags & StatAxisValueFlags.OlderSiblingFontAttribute) != 0;
     }
 
@@ -159,6 +169,13 @@ namespace Avalonia.Media.Fonts.Tables.Variation
         /// </summary>
         public ushort ElidedFallbackNameId { get; }
 
+        /// <summary>
+        /// Loads and parses the STAT table of <paramref name="glyphTypeface"/>.
+        /// </summary>
+        /// <returns>
+        /// <c>false</c> when the font has no STAT table, or one of an unsupported version or with
+        /// malformed data.
+        /// </returns>
         public static bool TryLoad(GlyphTypeface glyphTypeface, [NotNullWhen(true)] out StatTable? statTable)
         {
             statTable = null;
