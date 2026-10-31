@@ -1993,7 +1993,7 @@ namespace Avalonia.Media
         /// <summary>
         /// Returns the control-point ink box for a CFF / CFF2 glyph from the unified glyph cache. The
         /// box is set lazily — by this metrics path (interpreting the charstring) or by the geometry
-        /// build (taken from the outline's bounds), whichever happens first — then kept, so repeated
+        /// build (accumulated from the emitted points), whichever happens first — then kept, so repeated
         /// reads are an O(1) cache hit. Returns <c>false</c> for an out-of-range glyph.
         /// </summary>
         /// <remarks>
@@ -2121,12 +2121,13 @@ namespace Avalonia.Media
         /// Builds the outline geometry for an in-range glyph — the cold path behind
         /// <see cref="GetGlyphOutline"/>'s cache. The geometry is <c>null</c> for a malformed or
         /// outline-less glyph (still memoised so it is not rebuilt); <see cref="BuiltGeometry.Cost"/> is
-        /// estimated from the segment count, and for CFF / CFF2 the ink box is taken from the geometry.
+        /// estimated from the segment count, and for CFF / CFF2 the ink box is the control-point box of
+        /// the points the build emitted.
         /// </summary>
         private BuiltGeometry BuildGlyphGeometryEntry(GlyphCacheEntry entry)
         {
             var glyphIndex = entry.Glyph;
-            var outline = BuildGlyphOutline(glyphIndex, out var segmentCount);
+            var outline = BuildGlyphOutline(glyphIndex, out var segmentCount, out var controlBounds);
             var cost = OutlineBaseCost + (segmentCount * OutlineSegmentCost);
 
             var kind = GlyphPayloadKind.Outline;
@@ -2143,39 +2144,34 @@ namespace Avalonia.Media
                 dependencies = components;
             }
 
-            // For CFF / CFF2 the built outline's bounds ARE the control-point ink box, so reuse them as
-            // the entry's bounds — a later metrics read then needs no separate charstring interpret.
-            // glyf bounds come from the header (cheaper than this), so leave them unset here.
+            // For CFF / CFF2 the build's control-point box is the entry's ink box, so a later metrics
+            // read needs no separate charstring interpret. glyf bounds come from the header (cheaper
+            // than this), so leave them unset here.
             var bounds = default(GlyphBounds);
             var hasBounds = false;
             if (outline is not null && (_cffTable is not null || _cff2Table is not null))
             {
-                bounds = ToGlyphBounds(outline.Bounds);
+                bounds = controlBounds;
                 hasBounds = true;
             }
 
             return new BuiltGeometry(outline, cost, kind, dependencies, bounds, hasBounds);
         }
 
-        // Converts a geometry's control-point bounds (font design units) to the GlyphBounds box the
-        // metrics path uses — floor the minima, ceil the maxima, matching BoundsGeometryContext.
-        private static GlyphBounds ToGlyphBounds(Rect bounds)
-            => new(ClampToShort(Math.Floor(bounds.Left)), ClampToShort(Math.Floor(bounds.Top)),
-                ClampToShort(Math.Ceiling(bounds.Right)), ClampToShort(Math.Ceiling(bounds.Bottom)));
-
-        private static short ClampToShort(double value) => (short)Math.Clamp(value, short.MinValue, short.MaxValue);
-
         /// <summary>
         /// Builds the immutable outline geometry for an in-range glyph and reports the number of path
-        /// segments emitted (the cost proxy). Returns <c>null</c> for a malformed glyph.
+        /// segments emitted (the cost proxy) and the control-point box of the emitted points. Returns
+        /// <c>null</c> for a malformed glyph.
         /// </summary>
-        private IGeometryImpl? BuildGlyphOutline(ushort glyphIndex, out int segmentCount)
+        private IGeometryImpl? BuildGlyphOutline(ushort glyphIndex, out int segmentCount, out GlyphBounds controlBounds)
         {
             segmentCount = 0;
+            controlBounds = default;
 
             using var builder = _renderInterface.CreateStreamGeometryBuilder();
 
-            // Count emitted segments to estimate the payload's retained size, without a second pass.
+            // Count emitted segments to estimate the payload's retained size and accumulate the
+            // control-point box, without a second pass.
             var counting = new SegmentCountingGeometryContext(builder);
 
             // Build the outline in font design-unit space; callers apply the scale / position. The
@@ -2221,6 +2217,7 @@ namespace Avalonia.Media
             if (built)
             {
                 segmentCount = counting.SegmentCount;
+                controlBounds = counting.GetControlBounds();
                 return builder.ToGeometry();
             }
 
