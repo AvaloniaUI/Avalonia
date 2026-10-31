@@ -1,17 +1,19 @@
-﻿using Avalonia.Utilities;
-
-namespace Avalonia.Media.Fonts.Tables.Colr
+﻿namespace Avalonia.Media.Fonts.Tables.Colr
 {
     /// <summary>
-    /// Decycler for the COLR v1 paint graph, keyed on the absolute paint offset within the COLR
-    /// table. Every recursive parse edge goes through <see cref="PaintParser.TryParse"/>, which
-    /// enters this guard on the paint's offset — so both paint→paint cycles (an offset that
+    /// Decycler for the COLR v1 paint graph of one glyph, keyed on the absolute paint offset within
+    /// the COLR table. Every recursive parse edge goes through <see cref="PaintParser.TryParse"/>,
+    /// which enters this guard on the paint's offset, so paint-to-paint cycles (an offset that
     /// reappears on the current path) and unbounded acyclic nesting (depth past
     /// <see cref="MaxTraversalDepth"/>) are caught, mirroring HarfBuzz's per-paint nesting cap.
-    /// Offsets uniquely identify a paint (and each glyph resolves to one base-paint offset), so an
-    /// offset key also subsumes the older glyph-boundary cycle check.
     /// </summary>
-    internal class PaintDecycler : Decycler<uint>
+    /// <remarks>
+    /// Cycle detection is path-scoped, so a DAG whose nodes are shared by many parents (for example
+    /// PaintColrLayers entries that all reference one nested PaintColrLayers) passes it while
+    /// expanding exponentially. <see cref="CountEdge"/> bounds the total number of paints parsed
+    /// for one glyph, like HarfBuzz's HB_COLRV1_MAX_EDGE_COUNT. Use one instance per glyph parse.
+    /// </remarks>
+    internal sealed class PaintDecycler : Decycler<uint>
     {
         /// <summary>
         /// Maximum depth for paint graph traversal.
@@ -19,35 +21,30 @@ namespace Avalonia.Media.Fonts.Tables.Colr
         /// </summary>
         public const int MaxTraversalDepth = 64;
 
-        private static readonly ObjectPool<PaintDecycler> Pool = new ObjectPool<PaintDecycler>(
-            factory: () => new PaintDecycler(),
-            validator: decycler =>
-            {
-                decycler.Reset();
-                return true;
-            },
-            maxSize: 32);
+        /// <summary>
+        /// Maximum number of paints parsed for one glyph, matching HarfBuzz's
+        /// HB_COLRV1_MAX_EDGE_COUNT.
+        /// </summary>
+        public const int MaxEdgeCount = 65536;
+
+        private int _edgeCount;
 
         public PaintDecycler() : base(MaxTraversalDepth)
         {
         }
 
         /// <summary>
-        /// Rents a PaintDecycler from the pool.
+        /// Counts one paint edge against the per-glyph budget.
         /// </summary>
-        /// <returns>A pooled PaintDecycler instance.</returns>
-        public static PaintDecycler Rent()
+        /// <exception cref="DecyclerException">The budget of <see cref="MaxEdgeCount"/> is exhausted.</exception>
+        public void CountEdge()
         {
-            return Pool.Rent();
-        }
-
-        /// <summary>
-        /// Returns a PaintDecycler to the pool.
-        /// </summary>
-        /// <param name="decycler">The decycler to return to the pool.</param>
-        public static void Return(PaintDecycler decycler)
-        {
-            Pool.Return(decycler);
+            if (++_edgeCount > MaxEdgeCount)
+            {
+                throw new DecyclerException(
+                    DecyclerError.DepthLimitExceeded,
+                    $"Paint graph edge budget of {MaxEdgeCount} exceeded");
+            }
         }
     }
 }

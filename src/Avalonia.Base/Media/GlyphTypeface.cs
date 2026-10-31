@@ -2960,7 +2960,8 @@ namespace Avalonia.Media
 
             var absolutePaintOffset = _colrTable!.GetAbsolutePaintOffset(record.PaintOffset);
 
-            var decycler = PaintDecycler.Rent();
+            // One decycler per glyph: its edge budget covers this glyph's whole paint graph.
+            var decycler = new PaintDecycler();
             try
             {
                 if (!PaintParser.TryParse(_colrTable.ColrData.Span, absolutePaintOffset, in context, in decycler, out var parsedPaint))
@@ -2974,13 +2975,9 @@ namespace Avalonia.Media
             }
             catch (DecyclerException)
             {
-                // A cyclic or over-deep paint graph degrades to "no color drawing" rather than
-                // escaping the public GetGlyphDrawing API.
+                // A cyclic, over-deep or over-budget paint graph degrades to "no color drawing"
+                // rather than escaping the public GetGlyphDrawing API.
                 return false;
-            }
-            finally
-            {
-                PaintDecycler.Return(decycler);
             }
         }
     }

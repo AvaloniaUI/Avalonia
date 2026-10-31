@@ -127,6 +127,16 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
             Assert.Null(typeface.GetGlyphDrawing(3));
         }
 
+        [Fact]
+        public void Deep_Shared_Layer_Dag_Is_Rejected_In_Bounded_Time()
+        {
+            // 30 levels of 255 shared entries describe 255^30 paints; the edge budget stops the parse
+            // after a bounded number of paints.
+            var typeface = BuildSharedLayerDag(levels: 30);
+
+            Assert.Null(typeface.GetGlyphDrawing(3));
+        }
+
         private static GlyphTypeface BuildSharedLayerDag(int levels)
         {
             var plain = SyntheticFont.FromAsset(SyntheticFont.Assets.InterRegular).TryCreateGlyphTypeface()!;

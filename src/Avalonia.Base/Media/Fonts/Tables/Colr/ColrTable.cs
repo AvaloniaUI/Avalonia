@@ -448,52 +448,6 @@ namespace Avalonia.Media.Fonts.Tables.Colr
         }
 
         /// <summary>
-        /// Attempts to resolve and retrieve the paint definition for the specified glyph, if available.
-        /// </summary>
-        /// <remarks>This method returns <see langword="false"/> if the glyph does not have a version 1
-        /// base glyph record or if the paint cannot be parsed or resolved. The output parameter <paramref
-        /// name="paint"/> is set only when the method returns <see langword="true"/>.</remarks>
-        /// <param name="context">The context containing color and font information used to resolve the paint.</param>
-        /// <param name="glyphIndex">The identifier of the glyph for which to retrieve the resolved paint.</param>
-        /// <param name="paint">When this method returns, contains the resolved paint for the specified glyph if the operation succeeds;
-        /// otherwise, <see langword="null"/>. This parameter is passed uninitialized.</param>
-        /// <returns><see langword="true"/> if the resolved paint was successfully retrieved; otherwise, <see langword="false"/>.</returns>
-        public bool TryGetResolvedPaint(ColrContext context, ushort glyphIndex, [NotNullWhen(true)] out Paint? paint)
-        {
-            paint = null;
-
-            if (!TryGetBaseGlyphV1Record(glyphIndex, out var record))
-            {
-                return false;
-            }
-
-            var absolutePaintOffset = GetAbsolutePaintOffset(record.PaintOffset);
-
-            var decycler = PaintDecycler.Rent();
-            try
-            {
-                if (!PaintParser.TryParse(_colrData.Span, absolutePaintOffset, in context, in decycler, out var parsedPaint))
-                {
-                    return false;
-                }
-
-                paint = PaintResolver.ResolvePaint(parsedPaint, in context);
-
-                return true;
-            }
-            catch (DecyclerException)
-            {
-                // Cyclic or over-deep paint graph in an adversarial COLR font — treat as "no resolved
-                // paint" instead of letting the exception escape to the caller.
-                return false;
-            }
-            finally
-            {
-                PaintDecycler.Return(decycler);
-            }
-        }
-
-        /// <summary>
         /// Checks if the specified glyph has color layers defined (v0 or v1).
         /// </summary>
         public bool HasColorLayers(ushort glyphIndex)
