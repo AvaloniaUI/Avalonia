@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Buffers.Binary;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Platform;
 
@@ -27,6 +26,13 @@ namespace Avalonia.Media.Fonts.Tables.Colr
         private readonly uint _baseGlyphV1ListOffset;
         private readonly uint _layerV1ListOffset;
         private readonly uint _clipListOffset;
+
+        // Record counts clamped at load to the records that fit in the table, so lookups never read
+        // past the data and record positions never overflow.
+        private readonly int _numBaseGlyphV1Records;
+        private readonly int _numLayerV1Records;
+        private readonly int _numClips;
+
         private readonly uint _varIndexMapOffset;
         private readonly uint _itemVariationStoreOffset;
 
@@ -46,6 +52,9 @@ namespace Avalonia.Media.Fonts.Tables.Colr
             uint baseGlyphV1ListOffset = 0,
             uint layerV1ListOffset = 0,
             uint clipListOffset = 0,
+            int numBaseGlyphV1Records = 0,
+            int numLayerV1Records = 0,
+            int numClips = 0,
             uint varIndexMapOffset = 0,
             uint itemVariationStoreOffset = 0,
             Variation.DeltaSetIndexMap? deltaSetIndexMap = null,
@@ -60,6 +69,9 @@ namespace Avalonia.Media.Fonts.Tables.Colr
             _baseGlyphV1ListOffset = baseGlyphV1ListOffset;
             _layerV1ListOffset = layerV1ListOffset;
             _clipListOffset = clipListOffset;
+            _numBaseGlyphV1Records = numBaseGlyphV1Records;
+            _numLayerV1Records = numLayerV1Records;
+            _numClips = numClips;
             _varIndexMapOffset = varIndexMapOffset;
             _itemVariationStoreOffset = itemVariationStoreOffset;
             _deltaSetIndexMap = deltaSetIndexMap;
@@ -86,6 +98,12 @@ namespace Avalonia.Media.Fonts.Tables.Colr
         /// Returns 0 if the LayerV1List is not present (COLR v0 or no LayerV1List in v1).
         /// </summary>
         public uint LayerV1ListOffset => _layerV1ListOffset;
+
+        /// <summary>
+        /// Gets the number of paint offsets in the LayerV1List that fit in the table (0 when the list
+        /// is absent).
+        /// </summary>
+        public int LayerV1Count => _numLayerV1Records;
 
         public ReadOnlyMemory<byte> ColrData => _colrData;
 
@@ -174,6 +192,20 @@ namespace Avalonia.Media.Fonts.Tables.Colr
                 // Note: 0 offset means the optional table is not present
             }
 
+            // A v1 subtable whose offset leaves no room for its header is treated as absent, and every
+            // count is clamped to the records that fit, so a hostile header cannot drive a lookup past
+            // the data.
+            var numBaseGlyphV1Records = ClampRecordCount(span, ref baseGlyphV1ListOffset, headerSize: 4, recordSize: 6);
+            var numLayerV1Records = ClampRecordCount(span, ref layerV1ListOffset, headerSize: 4, recordSize: 4);
+
+            // ClipList: uint8 format (only 1 is defined), then uint32 numClips.
+            if (clipListOffset != 0 && clipListOffset < span.Length && span[(int)clipListOffset] != 1)
+            {
+                clipListOffset = 0;
+            }
+
+            var numClips = ClampRecordCount(span, ref clipListOffset, headerSize: 5, recordSize: 7);
+
             // Load DeltaSetIndexMap if present (shared parser, data sliced to the subtable).
             Variation.DeltaSetIndexMap? deltaSetIndexMap = null;
             if (version >= 1 && varIndexMapOffset > 0 && varIndexMapOffset < colrData.Length)
@@ -202,12 +234,35 @@ namespace Avalonia.Media.Fonts.Tables.Colr
                 baseGlyphV1ListOffset,
                 layerV1ListOffset,
                 clipListOffset,
+                numBaseGlyphV1Records,
+                numLayerV1Records,
+                numClips,
                 varIndexMapOffset,
                 itemVariationStoreOffset,
                 deltaSetIndexMap,
                 itemVariationStore);
 
             return true;
+        }
+
+        /// <summary>
+        /// Validates a v1 subtable that starts with a uint32 record count (after
+        /// <paramref name="headerSize"/> - 4 leading bytes) and returns how many of its fixed-size
+        /// records fit in the table. An offset that leaves no room for the header is reset to 0.
+        /// </summary>
+        private static int ClampRecordCount(ReadOnlySpan<byte> table, ref uint offset, int headerSize, int recordSize)
+        {
+            if (offset == 0 || (long)offset + headerSize > table.Length)
+            {
+                offset = 0;
+                return 0;
+            }
+
+            var subtable = table.Slice((int)offset);
+            var count = BinaryPrimitives.ReadUInt32BigEndian(subtable.Slice(headerSize - 4));
+            var fitting = (uint)((subtable.Length - headerSize) / recordSize);
+
+            return (int)Math.Min(count, fitting);
         }
 
         /// <summary>
@@ -335,24 +390,14 @@ namespace Avalonia.Media.Fonts.Tables.Colr
                 return false;
             }
 
-            var span = _colrData.Span;
-            var baseGlyphV1ListSpan = span.Slice((int)_baseGlyphV1ListOffset);
-
             // BaseGlyphV1List format:
             // uint32 numBaseGlyphV1Records
             // BaseGlyphV1Record[numBaseGlyphV1Records] (sorted by glyphID)
-
-            if (baseGlyphV1ListSpan.Length < 4)
-            {
-                return false;
-            }
-
-            var numRecords = BinaryPrimitives.ReadUInt32BigEndian(baseGlyphV1ListSpan);
-
-            Debug.Assert(4 + numRecords * 6 <= _colrData.Length - _baseGlyphV1ListOffset);
+            // The count was clamped at load to the records that fit, so every record read is in range.
+            var baseGlyphV1ListSpan = _colrData.Span.Slice((int)_baseGlyphV1ListOffset);
 
             int low = 0;
-            int high = (int)numRecords - 1;
+            int high = _numBaseGlyphV1Records - 1;
             int recordOffset = 4;
 
             while (low <= high)
@@ -398,7 +443,8 @@ namespace Avalonia.Media.Fonts.Tables.Colr
             // According to the OpenType spec, paint offsets in BaseGlyphV1Records are
             // relative to the BaseGlyphV1List, so we add the BaseGlyphV1List offset to get
             // the absolute position in the COLR table
-            return _baseGlyphV1ListOffset + relativePaintOffset;
+            // Saturate instead of wrapping, so an out-of-range sum fails the caller's bounds check.
+            return (uint)Math.Min((ulong)_baseGlyphV1ListOffset + relativePaintOffset, uint.MaxValue);
         }
 
         /// <summary>
@@ -526,43 +572,20 @@ namespace Avalonia.Media.Fonts.Tables.Colr
         {
             clipBox = default;
 
-            // ClipList is only available in COLR v1
-            if (!HasV1Data || _clipListOffset == 0)
+            // ClipList is only available in COLR v1. Its format and record count were validated and
+            // clamped at load.
+            if (!HasV1Data || _numClips == 0)
             {
                 return false;
             }
 
             var span = _colrData.Span;
-
-            if (_clipListOffset >= span.Length)
-            {
-                return false;
-            }
-
             var clipListSpan = span.Slice((int)_clipListOffset);
 
             // ClipList format:
             // uint8 format (must be 1)
             // uint32 numClips
             // ClipRecord[numClips] (sorted by startGlyphID)
-
-            if (clipListSpan.Length < 5) // format (1) + numClips (4)
-            {
-                return false;
-            }
-
-            var format = clipListSpan[0];
-            if (format != 1)
-            {
-                return false; // Only format 1 is defined
-            }
-
-            var numClips = BinaryPrimitives.ReadUInt32BigEndian(clipListSpan.Slice(1));
-
-            if (numClips == 0)
-            {
-                return false;
-            }
 
             // Binary search for the clip record
             // ClipRecord format:
@@ -572,7 +595,7 @@ namespace Avalonia.Media.Fonts.Tables.Colr
 
             int recordSize = 7; // 2 + 2 + 3
             int low = 0;
-            int high = (int)numClips - 1;
+            int high = _numClips - 1;
             int recordsOffset = 5; // After format + numClips
 
             while (low <= high)

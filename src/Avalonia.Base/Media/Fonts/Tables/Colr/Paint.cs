@@ -32,20 +32,16 @@ namespace Avalonia.Media.Fonts.Tables.Colr
 
             var layerListOffset = context.ColrTable.LayerV1ListOffset;
 
-            // Skip the 4-byte count field at the start of LayerList
-            var paintOffsetsStart = layerListOffset + 4L;
-
-            // Calculate the byte offset for the first paint offset of this glyph's layers
-            // Each offset is 4 bytes (Offset32). Compute in long so a hostile firstLayerIndex
-            // (up to ~4 billion) can't wrap the position negative and slip the bounds check.
-            var firstPaintOffsetPos = paintOffsetsStart + (long)firstLayerIndex * 4;
-
-            // Ensure we have enough data for all the paint offsets we need to read
-            var requiredBytes = firstPaintOffsetPos + (long)numLayers * 4;
-            if (requiredBytes > context.ColrData.Length)
+            // The slice must lie within the LayerList's own count (which ColrTable clamped to the
+            // offsets that fit in the table), not merely within the table bytes. 64-bit math keeps a
+            // hostile firstLayerIndex from wrapping.
+            if ((long)firstLayerIndex + numLayers > context.ColrTable.LayerV1Count)
             {
                 return false;
             }
+
+            // Skip the 4-byte count field at the start of LayerList; each entry is an Offset32.
+            var firstPaintOffsetPos = layerListOffset + 4L + (long)firstLayerIndex * 4;
 
             var paints = new List<Paint>((int)numLayers);
 
