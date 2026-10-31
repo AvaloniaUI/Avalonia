@@ -13,7 +13,8 @@ import { RecordType } from "./inputLayout.g";
 * which will un-handle KeyDown event, basically allowing browser to pass a Paste event properly.
 * On actual Paste event we execute promise callbacks, resuming async operation, and returning pasted text to the app.
 * Note #1, on every KeyUp event we will reset all the state and reject pending promises if any, as this event it expected to come after Paste.
-* Note #2, whole this code will be executed only on older browsers where clipboard.read/readText is not available.
+* Note #2, whole this code will be executed only on older browsers where clipboard.read/readText is not available,
+* or in non-secure contexts where navigator.clipboard is undefined.
 * Note #3, with all of these hacks Clipboard.ReadText will still work only on actual "paste" gesture initiated by user.
 * */
 enum ClipboardState {
@@ -72,7 +73,8 @@ export class InputHelper {
                 return;
             }
 
-            const items = this.getDataTransferItems(args.clipboardData);
+            // The event's DataTransfer becomes inaccessible once the event ends, so copy it now.
+            const items = args.clipboardData == null ? [] : this.getDataTransferItems(this.copyDataTransfer(args.clipboardData));
             this.resolveClipboard({ result: items.map((item) => ({ type: "dataTransferItem", value: item }))} as ClipboardResult);
         });
         this.clipboardState = ClipboardState.Ready;
@@ -83,8 +85,24 @@ export class InputHelper {
         return dataTransferList == null ? [] : Array.from(dataTransferList);
     }
 
+    private static copyDataTransfer(dataTransfer: DataTransfer): DataTransfer {
+        const copy = new DataTransfer();
+        for (const item of this.getDataTransferItems(dataTransfer)) {
+            if (item.kind === "string") {
+                copy.setData(item.type, dataTransfer.getData(item.type));
+            } else if (item.kind === "file") {
+                const file = item.getAsFile();
+                if (file != null) {
+                    copy.items.add(file);
+                }
+            }
+        }
+        return copy;
+    }
+
     public static isClipboardFormatSupported(format: string): boolean {
-        if (ClipboardItem.supports) {
+        // ClipboardItem only exists in secure contexts.
+        if (typeof ClipboardItem !== "undefined" && ClipboardItem.supports) {
             return ClipboardItem.supports(format);
         }
 
@@ -114,10 +132,11 @@ export class InputHelper {
         const clipboard = window.navigator.clipboard;
 
         try {
-            if (clipboard.read) {
+            // navigator.clipboard only exists in secure contexts.
+            if (clipboard?.read) {
                 const clipboardItems = await clipboard.read();
                 return { result: clipboardItems.map((item) => ({ type: "clipboardItem", value: item })) } as ClipboardResult;
-            } else if (clipboard.readText) {
+            } else if (clipboard?.readText) {
                 const item: ReadableDataItem = {
                     type: "string",
                     value: await clipboard.readText()
@@ -146,6 +165,11 @@ export class InputHelper {
     }
 
     public static async writeClipboard(window: Window, source?: WriteableClipboardSource | null): Promise<string> {
+        // navigator.clipboard only exists in secure contexts.
+        if (!window.navigator.clipboard) {
+            return "denied";
+        }
+
         try {
             const items = source?.items ?? [];
             if (items.length === 0) {
