@@ -221,6 +221,33 @@ namespace Avalonia.Skia.RenderTests
             AssertShiftedBy(0, typeface, typeface.WithVariation(WghtPosition(typeface, 900)), glyph);
         }
 
+        [Fact]
+        public void Glyph_Metrics_Describe_The_Outline_When_The_Left_Side_Bearing_Differs_From_xMin()
+        {
+            // The glyf header box and the outline are control-point boxes of the same points, so
+            // once both are placed by the left phantom point they coincide. Á follows A's lsb
+            // through USE_MY_METRICS.
+            var font = SyntheticFont.FromAsset(InterRegularAsset);
+            var map = font.CreateGlyphTypeface().CharacterToGlyphMap;
+
+            var typeface = font.AddToLeftSideBearing(map['H'], 40).AddToLeftSideBearing(map['A'], 40)
+                .CreateGlyphTypeface();
+
+            foreach (var character in "HAÁ")
+            {
+                var glyph = map[character];
+                var bounds = typeface.GetGlyphOutline(glyph)!.Bounds;
+
+                Assert.True(typeface.TryGetGlyphMetrics(glyph, out var metrics));
+                Assert.Equal(metrics.XBearing, bounds.X, 3);
+                Assert.Equal(metrics.XBearing + metrics.Width, bounds.Right, 3);
+
+                var batchMetrics = new GlyphMetrics[1];
+                Assert.True(typeface.TryGetGlyphMetrics(new[] { glyph }, batchMetrics));
+                Assert.Equal(metrics, batchMetrics[0]);
+            }
+        }
+
         private static void AssertShiftedBy(double expected, GlyphTypeface original, GlyphTypeface shifted, ushort glyph)
         {
             var originalBounds = original.GetGlyphOutline(glyph)!.Bounds;
