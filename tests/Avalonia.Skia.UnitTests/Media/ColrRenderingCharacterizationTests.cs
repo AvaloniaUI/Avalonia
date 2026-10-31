@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using Avalonia.Platform;
@@ -126,6 +127,101 @@ namespace Avalonia.Skia.UnitTests.Media
                 var brush = Assert.IsType<ImmutableSolidColorBrush>(Assert.Single(recorder.Brushes));
                 Assert.Equal(Colors.Blue, brush.Color);
             }
+        }
+
+        [Theory]
+        [InlineData(0.25, 0.75, 25, 75)]
+        [InlineData(-0.5, 1.5, -50, 150)]
+        public void Linear_Gradient_Stops_Are_Normalized_By_Moving_The_Gradient_Line(
+            double firstStop, double lastStop, double expectedStartX, double expectedEndX)
+        {
+            using (UnitTestApplication.Start(
+                TestServices.MockPlatformRenderInterface.With(renderInterface: new PlatformRenderInterface())))
+            {
+                var outlineGlyph = SyntheticFont.FromAsset(InterAsset).TryCreateGlyphTypeface()!
+                    .CharacterToGlyphMap['A'];
+
+                // p0 = (0,0), p1 = (100,0), p2 perpendicular: the color line runs along x. Stops at
+                // offsets t map to x = 100 t, so normalizing them to [0, 1] moves the brush endpoints
+                // to the first and last stop positions.
+                var colr = new ColrV1Builder()
+                    .BaseGlyph(3, ColrPaint.Glyph(outlineGlyph, ColrPaint.LinearGradient(0, 0, 100, 0, 0, 100, 0,
+                        new ColrStop(firstStop, 0), new ColrStop(lastStop, 1))))
+                    .Build();
+
+                var recorder = DrawColrGlyph(colr, ColrTestFont.Cpal(new[] { Colors.Red, Colors.Blue }));
+
+                var brush = Assert.IsType<ImmutableLinearGradientBrush>(Assert.Single(recorder.Brushes));
+
+                Assert.Equal(new Point(expectedStartX, 0), brush.StartPoint.Point);
+                Assert.Equal(new Point(expectedEndX, 0), brush.EndPoint.Point);
+                Assert.Equal(new[] { 0.0, 1.0 }, brush.GradientStops.Select(s => s.Offset));
+                Assert.Equal(new[] { Colors.Red, Colors.Blue }, brush.GradientStops.Select(s => s.Color));
+            }
+        }
+
+        [Fact]
+        public void Radial_Gradient_Stops_Are_Normalized_By_Interpolating_The_Circles()
+        {
+            using (UnitTestApplication.Start(
+                TestServices.MockPlatformRenderInterface.With(renderInterface: new PlatformRenderInterface())))
+            {
+                var outlineGlyph = SyntheticFont.FromAsset(InterAsset).TryCreateGlyphTypeface()!
+                    .CharacterToGlyphMap['A'];
+
+                // Circle 0 (0,0) r0 = 0, circle 1 (100,0) r1 = 100; stops at 0.25 / 0.75 move the
+                // circles to (25,0) r 25 and (75,0) r 75.
+                var colr = new ColrV1Builder()
+                    .BaseGlyph(3, ColrPaint.Glyph(outlineGlyph, ColrPaint.RadialGradient(0, 0, 0, 100, 0, 100, 0,
+                        new ColrStop(0.25, 0), new ColrStop(0.75, 1))))
+                    .Build();
+
+                var recorder = DrawColrGlyph(colr, ColrTestFont.Cpal(new[] { Colors.Red, Colors.Blue }));
+
+                var brush = Assert.IsType<ImmutableRadialGradientBrush>(Assert.Single(recorder.Brushes));
+
+                Assert.Equal(new Point(25, 0), brush.GradientOrigin.Point);
+                Assert.Equal(new Point(75, 0), brush.Center.Point);
+                Assert.Equal(75, brush.RadiusX.Scalar);
+                Assert.Equal(new[] { 0.0, 1.0 }, brush.GradientStops.Select(s => s.Offset));
+            }
+        }
+
+        [Fact]
+        public void Sweep_Gradient_Stops_Are_Normalized_By_Narrowing_The_Angles()
+        {
+            using (UnitTestApplication.Start(
+                TestServices.MockPlatformRenderInterface.With(renderInterface: new PlatformRenderInterface())))
+            {
+                var outlineGlyph = SyntheticFont.FromAsset(InterAsset).TryCreateGlyphTypeface()!
+                    .CharacterToGlyphMap['A'];
+
+                // Sweep 0 -> 1.0 (180 degree units) with stops at 0.25 / 0.75 narrows to 0.25 -> 0.75,
+                // which resolves to a 45 degree start angle (see Sweep_Gradient_Angle_Is_Decoded_To_Degrees).
+                var colr = new ColrV1Builder()
+                    .BaseGlyph(3, ColrPaint.Glyph(outlineGlyph, ColrPaint.SweepGradient(0, 0, 0.0, 1.0, 0,
+                        new ColrStop(0.25, 0), new ColrStop(0.75, 1))))
+                    .Build();
+
+                var recorder = DrawColrGlyph(colr, ColrTestFont.Cpal(new[] { Colors.Red, Colors.Blue }));
+
+                var brush = Assert.IsType<ImmutableConicGradientBrush>(Assert.Single(recorder.Brushes));
+
+                Assert.Equal(45.0, brush.Angle, 3);
+            }
+        }
+
+        private static RecordingDrawingContext DrawColrGlyph(byte[] colr, byte[] cpal)
+        {
+            var typeface = ColrTestFont.Graft(SyntheticFont.FromAsset(InterAsset), colr, cpal).TryCreateGlyphTypeface();
+            Assert.NotNull(typeface);
+
+            var drawing = typeface!.GetGlyphDrawing(3);
+            Assert.NotNull(drawing);
+
+            var recorder = new RecordingDrawingContext();
+            drawing!.Draw(recorder, new Point(0, 0));
+            return recorder;
         }
 
         private static RecordingDrawingContext DrawColrGlyph(byte[] colr)
