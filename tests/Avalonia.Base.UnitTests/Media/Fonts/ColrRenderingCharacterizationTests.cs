@@ -145,7 +145,7 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
 
             Assert.NotNull(v1);
             Assert.NotNull(v0);
-            Assert.NotEqual(GlyphDrawingType.ColorLayers, v1!.Type);
+            Assert.Equal(GlyphDrawingType.ColorPaintGraph, v1!.Type);
             Assert.Equal(GlyphDrawingType.ColorLayers, v0!.Type);
         }
 

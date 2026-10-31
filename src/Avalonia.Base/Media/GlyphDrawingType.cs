@@ -9,8 +9,9 @@
     public enum GlyphDrawingType
     {
         Outline,     // glyf / CFF / CFF2
-        ColorLayers, // COLR/CPAL
+        ColorLayers, // COLR v0 / CPAL
         Svg,         // SVG table
-        Bitmap       // sbix / CBDT / EBDT
+        Bitmap,      // sbix / CBDT / EBDT
+        ColorPaintGraph // COLR v1 / CPAL
     }
 }
