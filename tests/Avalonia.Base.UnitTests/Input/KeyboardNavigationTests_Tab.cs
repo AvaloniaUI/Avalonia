@@ -1604,6 +1604,37 @@ namespace Avalonia.Base.UnitTests.Input
         }
 
         [Fact]
+        public void Next_From_Hidden_Element_Does_Not_Hang_When_Only_Empty_Groups_Remain()
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealFocus);
+            Button current;
+
+            // The hidden group is only reachable as a sibling of the start and the wrap never returns to it,
+            // so a search that stops on reaching its first visited member again would never end.
+            var root = new TestRoot
+            {
+                Child = new StackPanel
+                {
+                    Children =
+                    {
+                        (current = new Button { Name = "Button1", IsVisible = false }),
+                        new StackPanel
+                        {
+                            [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.None,
+                            IsVisible = false,
+                        },
+                        new StackPanel
+                        {
+                            [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Contained,
+                        },
+                    }
+                }
+            };
+
+            Assert.Null(KeyboardNavigationHandler.GetNext(current, NavigationDirection.Next));
+        }
+
+        [Fact]
         public void Tab_Honors_GetNextTabStopOverride()
         {
             Button current, target;

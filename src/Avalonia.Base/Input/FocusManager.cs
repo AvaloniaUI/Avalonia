@@ -1,5 +1,5 @@
 using System;
-using System.Diagnostics;
+using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Input.Navigation;
 using Avalonia.Interactivity;
@@ -423,7 +423,7 @@ namespace Avalonia.Input
             if (direction is NavigationDirection.Previous or NavigationDirection.Next || focusedElement == null)
             {
                 var isReverse = direction == NavigationDirection.Previous;
-                nextFocusedElement = ProcessTabStopInternal(focusedElement, isReverse, true);
+                nextFocusedElement = ProcessTabStopInternal(focusedElement, isReverse);
             }
             else
             {
@@ -555,428 +555,362 @@ namespace Avalonia.Input
             return lastFocus;
         }
 
-        private IInputElement? ProcessTabStopInternal(IInputElement? focusedElement, bool isReverse, bool queryOnly)
+        private IInputElement? ProcessTabStopInternal(IInputElement? focusedElement, bool isReverse)
         {
-            IInputElement? newTabStop = null;
+            var candidate = GetTabStopCandidateElement(focusedElement, isReverse, out var didCycleFocusAtRootVisualScope);
+            return ApplyTabStopOverrides(_contentRoot, focusedElement, candidate, isReverse, didCycleFocusAtRootVisualScope);
+        }
 
-            var defaultCandidateTabStop = GetTabStopCandidateElement(focusedElement, isReverse, queryOnly, out var didCycleFocusAtRootVisualScope);
-
-            var isTabStopOverriden = InputElement.ProcessTabStop(_contentRoot,
+        private static IInputElement? ApplyTabStopOverrides(
+            IInputElement? contentRoot,
+            IInputElement? focusedElement,
+            IInputElement? candidate,
+            bool isReverse,
+            bool didCycleFocusAtRootVisualScope)
+        {
+            var isTabStopOverriden = InputElement.ProcessTabStop(contentRoot,
                 focusedElement,
-                defaultCandidateTabStop,
+                candidate,
                 isReverse,
                 didCycleFocusAtRootVisualScope,
                 out var newTabStopFromCallback);
 
-            if (isTabStopOverriden)
-            {
-                newTabStop = newTabStopFromCallback;
-            }
-
-            if (!isTabStopOverriden && newTabStop == null && defaultCandidateTabStop != null)
-            {
-                newTabStop = defaultCandidateTabStop;
-            }
-
-            return newTabStop;
+            return isTabStopOverriden ? newTabStopFromCallback : candidate;
         }
 
         private IInputElement? GetTabStopCandidateElement(
             IInputElement? focusedElement,
             bool isReverse,
-            bool queryOnly,
             out bool didCycleFocusAtRootVisualScope)
         {
             didCycleFocusAtRootVisualScope = false;
-            IInputElement? newTabStop;
             var root = _contentRoot;
 
             if (root == null)
                 return null;
 
-            bool internalCycleWorkaround = false;
-
             if (focusedElement != null)
             {
-                internalCycleWorkaround = CanProcessTabStop(focusedElement, isReverse);
+                var candidate = FindTabStopFrom(focusedElement, isReverse, ref didCycleFocusAtRootVisualScope);
+
+                if (candidate != null || IsInContainedTabGroup(focusedElement))
+                    return candidate;
             }
 
-            if (focusedElement == null)
-            {
-                if (!isReverse)
-                {
-                    newTabStop = GetFirstFocusableElement(root, null);
-                }
-                else
-                {
-                    newTabStop = GetLastFocusableElement(root, null);
-                }
+            // This API always wraps at the root, unlike the Tab key, which leaves a root that isn't Cycle.
+            didCycleFocusAtRootVisualScope = true;
+            var ignored = false;
 
-                didCycleFocusAtRootVisualScope = true;
-            }
-            else if (!isReverse)
-            {
-                newTabStop = GetNextTabStop(focusedElement);
-
-                if (newTabStop == null && (internalCycleWorkaround || queryOnly))
-                {
-                    newTabStop = GetFirstFocusableElement(root, null);
-
-                    didCycleFocusAtRootVisualScope = true;
-                }
-            }
-            else
-            {
-                newTabStop = GetPreviousTabStop(focusedElement);
-
-                if (newTabStop == null && (internalCycleWorkaround || queryOnly))
-                {
-                    newTabStop = GetLastFocusableElement(root, null);
-                    didCycleFocusAtRootVisualScope = true;
-                }
-            }
-
-            return newTabStop;
+            return isReverse ?
+                GetPreviousTabStop(null, root, true, ref ignored) :
+                GetNextTabStop(root, root, true, ref ignored);
         }
 
-        private IInputElement? GetNextTabStop(IInputElement? currentTabStop, bool ignoreCurrentTabStop = false)
+        /// <summary>
+        /// Finds the element that the Tab key should focus next.
+        /// </summary>
+        /// <param name="element">The focused element, or the root when nothing is focused.</param>
+        /// <param name="isReverse">Whether to search backwards.</param>
+        /// <returns>The element, or null when navigation stops at the edge of a group or root.</returns>
+        internal static IInputElement? FindNextTabStop(IInputElement element, bool isReverse)
         {
-            var focused = currentTabStop;
-            if (focused == null || _contentRoot == null)
-            {
+            var didCycle = false;
+            var candidate = FindTabStopFrom(element, isReverse, ref didCycle);
+            return ApplyTabStopOverrides(null, element, candidate, isReverse, didCycle);
+        }
+
+        /// <summary>
+        /// Finds the tab stop that follows all of the content of a container.
+        /// </summary>
+        internal static IInputElement? FindNextTabStopAfter(IInputElement container)
+        {
+            var didCycle = false;
+            var last = GetLastInTabOrderTree(container);
+            return GetNextTabStop(last, GetTabGroupParent(last), false, ref didCycle);
+        }
+
+        /// <summary>
+        /// Finds the tab stop that precedes all of the content of a container.
+        /// </summary>
+        internal static IInputElement? FindPreviousTabStopBefore(IInputElement container)
+        {
+            if (GetFirstAvailableChild(container) is not { } first)
                 return null;
-            }
 
-            IInputElement? currentCompare = focused;
-            IInputElement? newTabStop = (focused as InputElement)?.GetNextTabStopOverride();
-
-            if (newTabStop == null && !ignoreCurrentTabStop
-                && (FocusHelpers.IsVisible(focused) && (FocusHelpers.CanHaveFocusableChildren(focused as AvaloniaObject) || FocusHelpers.CanHaveChildren(focused))))
-            {
-                newTabStop = GetFirstFocusableElement(focused, newTabStop);
-            }
-
-            if (newTabStop == null)
-            {
-                var currentPassed = false;
-                var current = focused;
-                var parent = FocusHelpers.GetFocusParent(focused);
-                var parentIsRootVisual = parent == (_contentRoot as Visual)?.VisualRoot;
-
-                while (parent != null && !parentIsRootVisual && newTabStop == null)
-                {
-                    if (IsValidTabStopSearchCandidate(current) && current is InputElement c && KeyboardNavigation.GetTabNavigation(c) == KeyboardNavigationMode.Cycle)
-                    {
-                        if (current == GetParentTabStopElement(focused))
-                        {
-                            newTabStop = GetFirstFocusableElement(focused, null);
-                        }
-                        else
-                        {
-                            newTabStop = GetFirstFocusableElement(current, current);
-                        }
-                        break;
-                    }
-
-                    if (IsValidTabStopSearchCandidate(parent) && parent is InputElement p && KeyboardNavigation.GetTabNavigation(p) == KeyboardNavigationMode.Once)
-                    {
-                        current = parent;
-                        parent = FocusHelpers.GetFocusParent(current);
-                        if (parent == null)
-                            break;
-                    }
-                    else if (!IsValidTabStopSearchCandidate(parent))
-                    {
-                        var parentElement = GetParentTabStopElement(parent);
-                        if (parentElement == null)
-                        {
-                            parent = GetRootOfPopupSubTree(current) as IInputElement;
-
-                            if (parent != null)
-                            {
-                                newTabStop = GetNextOrPreviousTabStopInternal(parent, current, newTabStop, true, ref currentPassed, ref currentCompare);
-
-                                if (newTabStop != null && !FocusHelpers.IsFocusable(newTabStop))
-                                {
-                                    newTabStop = GetFirstFocusableElement(newTabStop, null);
-                                }
-                                if (newTabStop == null)
-                                {
-                                    newTabStop = GetFirstFocusableElement(parent, null);
-                                }
-                                break;
-                            }
-
-                            parent = (_contentRoot as Visual)?.VisualRoot as IInputElement;
-                        }
-                        else if (parentElement is InputElement pIE && KeyboardNavigation.GetTabNavigation(pIE) == KeyboardNavigationMode.None)
-                        {
-                            current = pIE;
-                            parent = FocusHelpers.GetFocusParent(current);
-                            if (parent == null)
-                                break;
-                        }
-                        else
-                        {
-                            parent = parentElement as IInputElement;
-                        }
-                    }
-
-                    newTabStop = GetNextOrPreviousTabStopInternal(parent, current, newTabStop, true, ref currentPassed, ref currentCompare);
-
-                    if (newTabStop != null && !FocusHelpers.IsFocusable(newTabStop) && FocusHelpers.CanHaveFocusableChildren(newTabStop as AvaloniaObject))
-                    {
-                        newTabStop = GetFirstFocusableElement(newTabStop, null);
-                    }
-
-                    if (newTabStop != null)
-                        break;
-
-                    if (IsValidTabStopSearchCandidate(parent))
-                    {
-                        current = parent;
-                    }
-
-                    parent = FocusHelpers.GetFocusParent(parent);
-                    currentPassed = false;
-
-                    parentIsRootVisual = parent == (_contentRoot as Visual)?.VisualRoot;
-                }
-            }
-
-            return newTabStop;
+            var didCycle = false;
+            return GetPreviousTabStop(first, null, false, ref didCycle);
         }
 
-        private IInputElement? GetPreviousTabStop(IInputElement? currentTabStop, bool ignoreCurrentTabStop = false)
+        private static IInputElement? FindTabStopFrom(IInputElement element, bool isReverse, ref bool didCycle)
         {
-            var focused = currentTabStop;
-            if (focused == null || _contentRoot == null)
-            {
-                return null;
-            }
-            IInputElement? newTabStop = (focused as InputElement)?.GetPreviousTabStopOverride();
-            IInputElement? currentCompare = focused;
+            var inputElement = element as InputElement;
 
-            if (newTabStop == null)
-            {
-                var currentPassed = false;
-                var current = focused;
-                var parent = FocusHelpers.GetFocusParent(focused);
-                var parentIsRootVisual = parent == (_contentRoot as Visual)?.VisualRoot;
-
-                while (parent != null && !parentIsRootVisual && newTabStop == null)
-                {
-                    if (IsValidTabStopSearchCandidate(current) && current is InputElement c && KeyboardNavigation.GetTabNavigation(c) == KeyboardNavigationMode.Cycle)
-                    {
-                        // Wrapping backwards inside a Cycle scope lands on the LAST focusable
-                        // element, mirroring the forward wrap (last -> first).
-                        // Matches WinUI: GetLastFocusableElement(pCurrent, pCurrent).
-                        newTabStop = GetLastFocusableElement(current, current);
-                        break;
-                    }
-
-                    if (IsValidTabStopSearchCandidate(parent) && parent is InputElement p && KeyboardNavigation.GetTabNavigation(p) == KeyboardNavigationMode.Once)
-                    {
-                        if (FocusHelpers.IsFocusable(parent))
-                        {
-                            newTabStop = parent;
-                        }
-                        else
-                        {
-                            current = parent;
-                            parent = FocusHelpers.GetFocusParent(current);
-                            if (parent == null)
-                                break;
-                        }
-                    }
-                    else if (!IsValidTabStopSearchCandidate(parent))
-                    {
-                        var parentElement = GetParentTabStopElement(parent);
-                        if (parentElement == null)
-                        {
-                            parent = GetRootOfPopupSubTree(current) as IInputElement;
-
-                            if (parent != null)
-                            {
-                                newTabStop = GetNextOrPreviousTabStopInternal(parent, current, newTabStop, false, ref currentPassed, ref currentCompare);
-
-                                if (newTabStop != null && !FocusHelpers.IsFocusable(newTabStop))
-                                {
-                                    newTabStop = GetLastFocusableElement(newTabStop, null);
-                                }
-                                if (newTabStop == null)
-                                {
-                                    newTabStop = GetLastFocusableElement(parent, null);
-                                }
-                                break;
-                            }
-
-                            parent = (_contentRoot as Visual)?.VisualRoot as IInputElement;
-                        }
-                        else if (parentElement is InputElement pIE && KeyboardNavigation.GetTabNavigation(pIE) == KeyboardNavigationMode.None)
-                        {
-                            if (FocusHelpers.IsFocusable(parent))
-                            {
-                                newTabStop = parent;
-                            }
-                            else
-                            {
-                                current = parent;
-                                parent = FocusHelpers.GetFocusParent(current);
-                                if (parent == null)
-                                    break;
-                            }
-                        }
-                        else
-                        {
-                            parent = parentElement as IInputElement;
-                        }
-                    }
-
-                    newTabStop = GetNextOrPreviousTabStopInternal(parent, current, newTabStop, false, ref currentPassed, ref currentCompare);
-
-                    if (newTabStop == null && FocusHelpers.IsPotentialTabStop(parent) && FocusHelpers.IsFocusable(parent))
-                    {
-                        if (parent is InputElement iE && KeyboardNavigation.GetTabNavigation(iE) == KeyboardNavigationMode.Cycle)
-                        {
-                            newTabStop = GetLastFocusableElement(parent, null);
-                        }
-                        else
-                        {
-                            newTabStop = parent;
-                        }
-                    }
-                    else
-                    {
-                        if (newTabStop != null && FocusHelpers.CanHaveFocusableChildren(newTabStop as AvaloniaObject))
-                        {
-                            newTabStop = GetLastFocusableElement(newTabStop, null);
-                        }
-                    }
-
-                    if (newTabStop != null)
-                        break;
-
-                    if (IsValidTabStopSearchCandidate(parent))
-                    {
-                        current = parent;
-                    }
-
-                    parent = FocusHelpers.GetFocusParent(parent);
-                    currentPassed = false;
-                }
-            }
-
-            return newTabStop;
+            return isReverse ?
+                inputElement?.GetPreviousTabStopOverride() ?? GetPreviousTabStop(element, null, false, ref didCycle) :
+                inputElement?.GetNextTabStopOverride() ?? GetNextTabStop(element, GetTabGroupParent(element), false, ref didCycle);
         }
 
-        private IInputElement? GetNextOrPreviousTabStopInternal(IInputElement? parent, IInputElement? current, IInputElement? candidate, bool findNext, ref bool currentPassed, ref IInputElement? currentCompare)
+        private static IInputElement? GetNextTabStop(
+            IInputElement? element,
+            IInputElement container,
+            bool goDownOnly,
+            ref bool didCycle)
         {
-            var newTabStop = candidate;
-            IInputElement? childStop = null;
-            int compareIndexResult = 0;
-            bool compareCurrentForPreviousElement = false;
+            var mode = GetTabNavigationMode(container);
 
-            if (IsValidTabStopSearchCandidate(current))
+            if (element == null)
             {
-                currentCompare = current;
+                if (IsTabStop(container))
+                    return container;
+
+                if (GetEntryOverride(container, false) is { } entryOverride &&
+                    GetNextTabStop(null, entryOverride, true, ref didCycle) is { } entryTabStop)
+                {
+                    return entryTabStop;
+                }
+
+                if (GetActiveElement(container) is { } activeElement)
+                    return GetNextTabStop(null, activeElement, true, ref didCycle);
+            }
+            else if (mode is KeyboardNavigationMode.Once or KeyboardNavigationMode.None && container != element)
+            {
+                return goDownOnly ?
+                    null :
+                    GetNextTabStop(container, GetTabGroupParent(container), false, ref didCycle);
             }
 
-            if (parent != null)
+            if (mode != KeyboardNavigationMode.None)
             {
-                bool foundCurrent = false;
-                foreach (var child in FocusHelpers.GetInputElementChildren(parent as AvaloniaObject))
+                var members = GetTabGroupMembers(container, element, false);
+                var index = element == null || element == container ? -1 : members.IndexOf(element);
+                var steps = mode == KeyboardNavigationMode.Cycle ? members.Count : members.Count - index - 1;
+
+                for (var step = 1; step <= steps; step++)
                 {
-                    childStop = null;
-                    compareCurrentForPreviousElement = false;
-                    if (child == current)
-                    {
-                        foundCurrent = true;
-                        currentPassed = true;
+                    var next = members[(index + step) % members.Count];
+
+                    if (next == element && !IsTabStopOrGroup(next))
                         continue;
-                    }
 
-                    if (FocusHelpers.IsVisible(child))
-                    {
-                        if (child == current)
-                        {
-                            foundCurrent = true;
-                            currentPassed = true;
-                            continue;
-                        }
+                    if (index + step >= members.Count && GetTabParent(container) == null)
+                        didCycle = true;
 
-                        if (IsValidTabStopSearchCandidate(child))
-                        {
-                            if (!FocusHelpers.IsPotentialTabStop(child))
-                            {
-                                childStop = GetNextOrPreviousTabStopInternal(childStop, current, newTabStop, findNext, ref currentPassed, ref currentCompare);
-                                compareCurrentForPreviousElement = true;
-                            }
-                            else
-                            {
-                                childStop = child;
-                            }
-                        }
-                        else if (FocusHelpers.CanHaveFocusableChildren(child as AvaloniaObject))
-                        {
-                            childStop = GetNextOrPreviousTabStopInternal(child, current, newTabStop, findNext, ref currentPassed, ref currentCompare);
-                            compareCurrentForPreviousElement = true;
-                        }
-                    }
+                    if (GetNextTabStop(null, next, true, ref didCycle) is { } inside)
+                        return inside;
 
-                    if (childStop != null && (FocusHelpers.IsFocusable(childStop) || FocusHelpers.CanHaveFocusableChildren(childStop as AvaloniaObject)))
-                    {
-                        compareIndexResult = CompareTabIndex(childStop, currentCompare);
-
-                        if (findNext)
-                        {
-                            if (compareIndexResult > 0 || ((foundCurrent || currentPassed) && compareIndexResult == 0))
-                            {
-                                if (newTabStop != null)
-                                {
-                                    if (CompareTabIndex(childStop, newTabStop) < 0)
-                                    {
-                                        newTabStop = childStop;
-                                    }
-                                }
-                                else
-                                {
-                                    newTabStop = childStop;
-                                }
-                            }
-                        }
-                        else
-                        {
-                            // A candidate with an equal tab index is "previous" only while the walk has not
-                            // passed the focused element yet; candidates from a nested container scan
-                            // (compareCurrentForPreviousElement) already enforced the ordering themselves.
-                            // Matches WinUI: (((!bFoundCurrent && !bCurrentPassed) || bCurrentCompare) && ...)
-                            if (compareIndexResult < 0 || (((!foundCurrent && !currentPassed) || compareCurrentForPreviousElement) && compareIndexResult == 0))
-                            {
-                                if (newTabStop != null)
-                                {
-                                    if (CompareTabIndex(childStop, newTabStop) >= 0)
-                                    {
-                                        newTabStop = childStop;
-                                    }
-                                }
-                                else
-                                {
-                                    newTabStop = childStop;
-                                }
-                            }
-                        }
-                    }
+                    // Once only limits entering the group: an empty first member shouldn't make it unreachable,
+                    // but having tried one shouldn't let the search leave a group it was asked to enter.
+                    if (mode == KeyboardNavigationMode.Once)
+                        mode = KeyboardNavigationMode.Contained;
                 }
             }
 
-            return newTabStop;
+            if (!goDownOnly && mode != KeyboardNavigationMode.Contained && GetTabParent(container) != null)
+                return GetNextTabStop(container, GetTabGroupParent(container), false, ref didCycle);
+
+            return null;
         }
 
-        private static int CompareTabIndex(IInputElement? control1, IInputElement? control2)
+        private static IInputElement? GetPreviousTabStop(
+            IInputElement? element,
+            IInputElement? container,
+            bool goDownOnly,
+            ref bool didCycle)
         {
-            return GetTabIndex(control1).CompareTo(GetTabIndex(control2));
+            container ??= GetTabGroupParent(
+                element ?? throw new InvalidOperationException("Either 'element' or 'container' must be non-null."));
+
+            var mode = GetTabNavigationMode(container);
+
+            if (element == null)
+            {
+                if (GetEntryOverride(container, true) is { } entryOverride &&
+                    GetPreviousTabStop(null, entryOverride, true, ref didCycle) is { } entryTabStop)
+                {
+                    return entryTabStop;
+                }
+
+                if (GetActiveElement(container) is { } activeElement)
+                    return GetPreviousTabStop(null, activeElement, true, ref didCycle);
+
+                // A Once group is a single stop, so entering it backwards still lands on its first item.
+                if (mode == KeyboardNavigationMode.Once)
+                {
+                    var members = GetTabGroupMembers(container, null, true);
+
+                    if (members.Count > 0)
+                        return GetPreviousTabStop(null, members[0], true, ref didCycle);
+
+                    if (IsTabStop(container))
+                        return container;
+
+                    return goDownOnly ? null : GetPreviousTabStop(container, null, false, ref didCycle);
+                }
+            }
+            else if (mode is KeyboardNavigationMode.Once or KeyboardNavigationMode.None)
+            {
+                if (goDownOnly || container == element)
+                    return null;
+
+                return IsTabStop(container) ? container : GetPreviousTabStop(container, null, false, ref didCycle);
+            }
+
+            if (mode != KeyboardNavigationMode.None && element != container)
+            {
+                var members = GetTabGroupMembers(container, element, true);
+                var index = element == null ? members.Count : members.IndexOf(element);
+                var steps = mode == KeyboardNavigationMode.Cycle ? members.Count : index;
+
+                for (var step = 1; step <= steps; step++)
+                {
+                    var previous = members[(index - step + members.Count) % members.Count];
+
+                    if (previous == element && !IsTabStopOrGroup(previous))
+                        continue;
+
+                    if (index - step < 0 && GetTabParent(container) == null)
+                        didCycle = true;
+
+                    if (IsTabStop(previous) && !IsTabGroup(previous))
+                        return previous;
+
+                    if (GetPreviousTabStop(null, previous, true, ref didCycle) is { } inside)
+                        return inside;
+                }
+            }
+
+            if (mode == KeyboardNavigationMode.Contained)
+                return null;
+
+            if (element != container && IsTabStop(container))
+                return container;
+
+            if (!goDownOnly && GetTabParent(container) != null)
+                return GetPreviousTabStop(container, null, false, ref didCycle);
+
+            return null;
         }
+
+        /// <summary>
+        /// Gets the elements that take part in a group's tab order, sorted by that order.
+        /// </summary>
+        /// <remarks>
+        /// Containers that aren't groups are transparent, so a TabIndex competes with every other one in the
+        /// group, however deeply nested. The sort must be stable: elements with equal indices use tree order.
+        /// </remarks>
+        private static List<IInputElement> GetTabGroupMembers(IInputElement group, IInputElement? element, bool isReverse)
+        {
+            var members = new List<IInputElement>();
+            CollectTabGroupMembers(group, element, isReverse, members);
+            return members.OrderBy(GetTabIndex).ToList();
+        }
+
+        private static void CollectTabGroupMembers(
+            IInputElement parent,
+            IInputElement? element,
+            bool isReverse,
+            List<IInputElement> members)
+        {
+            foreach (var child in FocusHelpers.GetInputElementChildren(parent as AvaloniaObject))
+            {
+                var isAvailable = IsAvailableForTabbing(child);
+                var isScope = IsTabGroup(child) || GetEntryOverride(child, isReverse) != null;
+
+                // The starting element keeps its place even when it can't be tabbed to: it may have lost
+                // that ability while focused, and the search still has to continue from where it is.
+                if (child == element || (isAvailable && (isScope || IsTabStop(child))))
+                    members.Add(child);
+
+                if (!isScope && (isAvailable || (child as Visual)?.IsVisualAncestorOf(element as Visual) == true))
+                    CollectTabGroupMembers(child, element, isReverse, members);
+            }
+        }
+
+        private static IInputElement GetLastInTabOrderTree(IInputElement container)
+        {
+            var result = container;
+
+            while (GetLastAvailableChild(result) is { } last)
+            {
+                if (IsTabGroup(last))
+                    return last;
+
+                result = last;
+            }
+
+            return result;
+        }
+
+        private static IInputElement? GetFirstAvailableChild(IInputElement element) =>
+            IsAvailableForTabbing(element) ?
+                FocusHelpers.GetInputElementChildren(element as AvaloniaObject).FirstOrDefault(IsAvailableForTabbing) :
+                null;
+
+        private static IInputElement? GetLastAvailableChild(IInputElement element) =>
+            IsAvailableForTabbing(element) ?
+                FocusHelpers.GetInputElementChildren(element as AvaloniaObject).LastOrDefault(IsAvailableForTabbing) :
+                null;
+
+        private static IInputElement? GetEntryOverride(IInputElement element, bool isReverse)
+        {
+            if (element is not InputElement inputElement)
+                return null;
+
+            return isReverse ?
+                inputElement.GetLastFocusableElementOverride() :
+                inputElement.GetFirstFocusableElementOverride();
+        }
+
+        private static IInputElement? GetActiveElement(IInputElement element) =>
+            (element as InputElement)?.GetValue(KeyboardNavigation.TabOnceActiveElementProperty);
+
+        private static IInputElement GetTabGroupParent(IInputElement element)
+        {
+            var result = element;
+
+            while (GetTabParent(result) is { } parent)
+            {
+                if (IsTabGroup(parent))
+                    return parent;
+
+                result = parent;
+            }
+
+            return result;
+        }
+
+        private static IInputElement? GetTabParent(IInputElement element) =>
+            (element as Visual)?.FindAncestorOfType<IInputElement>();
+
+        private static bool IsInContainedTabGroup(IInputElement element)
+        {
+            for (var parent = GetTabParent(element); parent != null; parent = GetTabParent(parent))
+            {
+                if (GetTabNavigationMode(parent) == KeyboardNavigationMode.Contained)
+                    return true;
+            }
+
+            return false;
+        }
+
+        private static KeyboardNavigationMode GetTabNavigationMode(IInputElement element) =>
+            (element as InputElement)?.GetValue(KeyboardNavigation.TabNavigationProperty) ?? KeyboardNavigationMode.Continue;
+
+        private static bool IsTabGroup(IInputElement element) =>
+            GetTabNavigationMode(element) != KeyboardNavigationMode.Continue;
+
+        private static bool IsTabStopOrGroup(IInputElement element) => IsTabStop(element) || IsTabGroup(element);
+
+        // IsTabStop defaults to true on every InputElement, so it can't identify a stop without Focusable.
+        private static bool IsTabStop(IInputElement element) =>
+            element is InputElement { IsTabStop: true, Focusable: true } &&
+            element.IsEffectivelyEnabled &&
+            FocusHelpers.IsVisible(element);
+
+        // Uses the element's own IsVisible so that a search starting inside a hidden subtree can still find
+        // its way out of it. IsTabStop is what keeps the hidden elements themselves from being returned.
+        private static bool IsAvailableForTabbing(IInputElement element) =>
+            element.IsEffectivelyEnabled && element is Visual { IsVisible: true };
 
         private static int GetTabIndex(IInputElement? element)
         {
@@ -984,107 +918,6 @@ namespace Avalonia.Input
                 return inputElement.TabIndex;
 
             return int.MaxValue;
-        }
-
-        private bool CanProcessTabStop(IInputElement? focusedElement, bool isReverse)
-        {
-            bool isFocusOnFirst = false;
-            bool isFocusOnLast = false;
-            bool canProcessTab = true;
-            if (IsFocusedElementInPopup(focusedElement))
-            {
-                return true;
-            }
-
-            if (isReverse)
-            {
-                isFocusOnFirst = IsFocusOnFirstTabStop(focusedElement);
-            }
-            else
-            {
-                isFocusOnLast = IsFocusOnLastTabStop(focusedElement);
-            }
-
-            if (isFocusOnFirst || isFocusOnLast)
-            {
-                canProcessTab = false;
-            }
-
-            if (canProcessTab)
-            {
-                var edge = GetFirstFocusableElementFromRoot(!isReverse);
-
-                if (edge != null)
-                {
-                    var edgeParent = GetParentTabStopElement(edge);
-                    if (edgeParent is InputElement inputElement && KeyboardNavigation.GetTabNavigation(inputElement) == KeyboardNavigationMode.Once && edgeParent == GetParentTabStopElement(focusedElement))
-                    {
-                        canProcessTab = false;
-                    }
-                }
-                else
-                {
-                    canProcessTab = false;
-                }
-            }
-            else
-            {
-                if (isFocusOnLast || isFocusOnFirst)
-                {
-                    if (focusedElement is InputElement inputElement && KeyboardNavigation.GetTabNavigation(inputElement) == KeyboardNavigationMode.Cycle)
-                    {
-                        canProcessTab = true;
-                    }
-                    else
-                    {
-                        var focusedParent = GetParentTabStopElement(focusedElement);
-                        while (focusedParent != null)
-                        {
-                            if (focusedParent is InputElement iE && KeyboardNavigation.GetTabNavigation(iE) == KeyboardNavigationMode.Cycle)
-                            {
-                                canProcessTab = true;
-                                break;
-                            }
-
-                            focusedParent = GetParentTabStopElement(focusedParent as IInputElement);
-                        }
-                    }
-                }
-            }
-
-            return canProcessTab;
-        }
-
-        private AvaloniaObject? GetParentTabStopElement(IInputElement? current)
-        {
-            if (current != null)
-            {
-                var parent = FocusHelpers.GetFocusParent(current);
-
-                while (parent != null)
-                {
-                    if (IsValidTabStopSearchCandidate(parent) && parent is InputElement element)
-                    {
-                        return element;
-                    }
-
-                    parent = FocusHelpers.GetFocusParent(parent);
-                }
-            }
-
-            return null;
-        }
-
-        private bool IsValidTabStopSearchCandidate(IInputElement? element)
-        {
-            var isValid = FocusHelpers.IsPotentialTabStop(element);
-
-            if (!isValid)
-            {
-                isValid = (element as InputElement)?.IsSet(KeyboardNavigation.TabNavigationProperty) ?? false;
-            }
-
-            return isValid;
         }
 
         private IInputElement? GetFirstFocusableElementFromRoot(bool isReverse)
@@ -1095,32 +928,6 @@ namespace Avalonia.Input
                 return !isReverse ? GetFirstFocusableElement(root, null) : GetLastFocusableElement(root, null);
 
             return null;
-        }
-
-        private bool IsFocusOnLastTabStop(IInputElement? focusedElement)
-        {
-            if (focusedElement == null || _contentRoot is not Visual visual)
-                return false;
-            var root = visual.VisualRoot as IInputElement;
-
-            Debug.Assert(root != null);
-
-            var lastFocus = GetLastFocusableElement(root, null);
-
-            return lastFocus == focusedElement;
-        }
-
-        private bool IsFocusOnFirstTabStop(IInputElement? focusedElement)
-        {
-            if (focusedElement == null || _contentRoot is not Visual visual)
-                return false;
-            var root = visual.VisualRoot as IInputElement;
-
-            Debug.Assert(root != null);
-
-            var firstFocus = GetFirstFocusableElement(root, null);
-
-            return firstFocus == focusedElement;
         }
 
         private static IInputElement? GetFirstFocusableElement(IInputElement searchStart, IInputElement? firstFocus = null)
@@ -1145,14 +952,6 @@ namespace Avalonia.Input
             }
 
             return lastFocus;
-        }
-
-        private bool IsFocusedElementInPopup(IInputElement? focusedElement) => focusedElement != null && GetRootOfPopupSubTree(focusedElement) != null;
-
-        private Visual? GetRootOfPopupSubTree(IInputElement? current)
-        {
-            //TODO Popup api
-            return null;
         }
 
         private bool FindAndSetNextFocus(IInputElement? focusedElement, NavigationDirection direction, XYFocusOptions xYFocusOptions)
