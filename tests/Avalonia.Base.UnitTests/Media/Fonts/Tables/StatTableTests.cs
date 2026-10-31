@@ -303,6 +303,31 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
         }
 
         [Fact]
+        public void Format_4_Without_Records_Is_Skipped()
+        {
+            var stat = Parse(new StatTableBuilder()
+                .Axis("wght", 256, 0)
+                .Format4(0, 303)
+                .Format1(0, 0, 300, 700));
+
+            var value = Assert.Single(stat.AxisValues);
+            Assert.Equal(300, value.ValueNameId);
+        }
+
+        [Fact]
+        public void Format_4_Naming_An_Axis_Twice_Is_Skipped()
+        {
+            var stat = Parse(new StatTableBuilder()
+                .Axis("wght", 256, 0)
+                .Axis("wdth", 257, 1)
+                .Format4(0, 303, (0, 600), (1, 75), (0, 700))
+                .Format1(0, 0, 300, 700));
+
+            var value = Assert.Single(stat.AxisValues);
+            Assert.Equal(300, value.ValueNameId);
+        }
+
+        [Fact]
         public void Malformed_STAT_Does_Not_Deny_The_Font()
         {
             var font = SyntheticFont.FromAsset(SyntheticFont.Assets.InterVariable).Truncate("STAT", 30);
