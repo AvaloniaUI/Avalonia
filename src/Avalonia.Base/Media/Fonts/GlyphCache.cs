@@ -59,10 +59,14 @@ namespace Avalonia.Media.Fonts
         /// </summary>
         public const int DefaultBudgetBytes = 4 * 1024 * 1024;
 
-        private static readonly Func<ushort, bool, GlyphCacheEntry> s_createEntry =
-            static (glyph, retainBounds) => new GlyphCacheEntry(glyph, retainBounds);
+        private static readonly Func<GlyphCacheKey, bool, GlyphCacheEntry> s_createEntry =
+            static (key, retainBounds) => new GlyphCacheEntry(key, retainBounds);
 
-        private readonly ConcurrentDictionary<ushort, GlyphCacheEntry> _entries = new();
+        // One map for every representation: the key carries (glyph, requested kind, palette), so a
+        // colour base glyph, its palette variants and its own fallback outline coexist as distinct
+        // entries while sharing the eviction ring and the byte budget.
+        private readonly ConcurrentDictionary<GlyphCacheKey, GlyphCacheEntry> _entries = new();
+
         private readonly IGlyphEvictionPolicy _policy;
         private readonly int _budget;
         private readonly bool _retainBounds;
@@ -70,9 +74,10 @@ namespace Avalonia.Media.Fonts
         private int _totalCost;
 
         /// <param name="retainBounds">
-        /// Whether entries survive geometry eviction for the sake of their cached bounds. This is a
-        /// per-typeface constant: <c>true</c> where bounds are expensive to recompute (CFF / CFF2),
-        /// <c>false</c> where they are a cheap header read (glyf).
+        /// Whether outline entries survive geometry eviction for the sake of their cached bounds;
+        /// colour-drawing entries never do. This is a per-typeface constant: <c>true</c> where bounds
+        /// are expensive to recompute (CFF / CFF2), <c>false</c> where they are a cheap header read
+        /// (glyf).
         /// </param>
         /// <param name="budgetBytes">The geometry byte budget eviction keeps the cache under.</param>
         /// <param name="policy">The eviction policy; CLOCK when omitted.</param>
@@ -84,18 +89,28 @@ namespace Avalonia.Media.Fonts
             _policy = policy ?? new ClockEvictionPolicy();
         }
 
-        /// <summary>Number of cached entries (with or without built geometry).</summary>
+        /// <summary>Number of cached entries (outline and colour-drawing, with or without built geometry).</summary>
         public int Count => _entries.Count;
 
         /// <summary>Total retained geometry cost (bytes).</summary>
         public int TotalCost => Volatile.Read(ref _totalCost);
 
         /// <summary>
-        /// Gets (creating if absent) the entry for <paramref name="glyph"/>. Whether the entry survives
-        /// geometry eviction for its cached bounds is the cache's <c>retainBounds</c> setting. Lock-free.
+        /// Gets (creating if absent) the outline entry for <paramref name="glyph"/>. Whether the entry
+        /// survives geometry eviction for its cached bounds is the cache-level
+        /// <c>retainBounds</c> setting (CFF / CFF2). Lock-free.
         /// </summary>
         public GlyphCacheEntry GetEntry(ushort glyph)
-            => _entries.GetOrAdd(glyph, s_createEntry, _retainBounds);
+            => _entries.GetOrAdd(GlyphCacheKey.Outline(glyph), s_createEntry, _retainBounds);
+
+        /// <summary>
+        /// Gets (creating if absent) the colour-drawing entry for <paramref name="glyph"/> resolved
+        /// with <paramref name="palette"/> — one entry per (glyph, palette) pair, so palette variants
+        /// of the same glyph are cached side by side. Colour drawings carry no retained bounds (the
+        /// drawing exposes its own), so the entry is dropped whole on eviction. Lock-free.
+        /// </summary>
+        public GlyphCacheEntry GetColorEntry(ushort glyph, ushort palette = 0)
+            => _entries.GetOrAdd(GlyphCacheKey.Color(glyph, palette), s_createEntry, false);
 
         /// <summary>
         /// Returns the built outline geometry for <paramref name="entry"/>, building it with
@@ -162,17 +177,79 @@ namespace Avalonia.Media.Fonts
             }
         }
 
+        /// <summary>
+        /// Returns the cached colour-drawing payload for <paramref name="entry"/>, building it with
+        /// <paramref name="build"/> on a miss. The payload (a COLR drawing) is parsed <em>outside</em>
+        /// the lock: parsing builds no geometry — so it needs no render backend, unlike the layer
+        /// outlines it references — and holding the lock across the per-layer ink-box reads would
+        /// serialise the whole cache. A built hit is lock-free; two racing parses is acceptable (one
+        /// wins at insertion, the other is discarded). On insertion the drawing pins every layer entry
+        /// it references, creating those that are not cached yet — a pin on an unbuilt entry is inert
+        /// until its outline is built, which then arrives pre-pinned.
+        /// </summary>
+        public object? GetOrBuildDrawing(GlyphCacheEntry entry, Func<GlyphCacheEntry, BuiltGeometry> build)
+        {
+            var existing = Volatile.Read(ref entry.Geometry);
+            if (existing != null)
+            {
+                _policy.OnAccessed(entry);
+                PropagateRecency(entry);
+                return existing;
+            }
+
+            if (entry.HasGeometry)
+            {
+                // Same re-read protocol as GetOrBuildGeometry: under a set flag, non-null means the
+                // null read above raced a concurrent parse; null with the flag still set means the
+                // glyph genuinely has no colour drawing; flag now clear means evicted — reparse.
+                existing = Volatile.Read(ref entry.Geometry);
+
+                if (existing != null)
+                {
+                    _policy.OnAccessed(entry);
+                    PropagateRecency(entry);
+                    return existing;
+                }
+
+                if (entry.HasGeometry)
+                {
+                    _policy.OnAccessed(entry);
+                    return null;   // built, but the glyph has no colour drawing
+                }
+            }
+
+            var built = build(entry);
+
+            lock (_lock)
+            {
+                if (entry.HasGeometry)
+                {
+                    return entry.Geometry;   // another thread built it while we parsed
+                }
+
+                entry.SetGeometry(built.Geometry, built.Cost, built.Kind, built.Dependencies);
+                _policy.OnAdded(entry);
+                _totalCost += built.Cost;
+
+                PinDependencies(entry);
+                EvictToBudget();
+
+                return built.Geometry;
+            }
+        }
+
         // Mark a composite's cached direct components referenced on every hit of the composite, so
         // CLOCK gives them the same second chance. This approximates keeping a component at least as
         // recent as its composites; it does not guarantee eviction order, and components of
-        // components are not reached.
+        // components are not reached. Dependencies are always layer / component outlines, so they
+        // are looked up under outline keys.
         private void PropagateRecency(GlyphCacheEntry entry)
         {
             var deps = entry.Dependencies;
 
             for (var i = 0; i < deps.Length; i++)
             {
-                if (_entries.TryGetValue(deps[i], out var dep) && dep.HasGeometry)
+                if (_entries.TryGetValue(GlyphCacheKey.Outline(deps[i]), out var dep) && dep.HasGeometry)
                 {
                     _policy.OnAccessed(dep);
                 }
@@ -190,10 +267,11 @@ namespace Avalonia.Media.Fonts
 
             for (var i = 0; i < deps.Length; i++)
             {
-                if (_entries.TryGetValue(deps[i], out var dep))
-                {
-                    dep.PinCount++;
-                }
+                // Create entries for not-yet-cached components so Unpin exactly reverses Pin — an
+                // eviction of this payload must never release a pin owned by another. A pin on an
+                // unbuilt entry is inert (it joins the eviction ring only once its outline is built),
+                // and the outline then arrives pre-pinned, as intended.
+                _entries.GetOrAdd(GlyphCacheKey.Outline(deps[i]), s_createEntry, _retainBounds).PinCount++;
             }
         }
 
@@ -208,7 +286,9 @@ namespace Avalonia.Media.Fonts
 
             for (var i = 0; i < deps.Length; i++)
             {
-                if (_entries.TryGetValue(deps[i], out var dep) && dep.PinCount > 0)
+                // Always found: Pin created the entry, and pinned entries are never evicted from the
+                // map; the guards are belt-and-braces only.
+                if (_entries.TryGetValue(GlyphCacheKey.Outline(deps[i]), out var dep) && dep.PinCount > 0)
                 {
                     dep.PinCount--;
                 }
@@ -235,12 +315,13 @@ namespace Avalonia.Media.Fonts
                 UnpinDependencies(victim);
                 victim.ClearGeometry();
 
-                // Keep the entry alive for its retained bounds (CFF / CFF2); otherwise drop it. Remove
-                // only this entry: an orphan (already dropped from the map, then rebuilt by a caller
-                // that still held it) must not take a fresh entry for the same glyph with it.
+                // Keep the entry alive for its retained bounds (CFF / CFF2); otherwise drop it whole
+                // (colour drawings never retain bounds, so they are always dropped whole). Remove only
+                // this entry: an orphan (already dropped from the map, then rebuilt by a caller that
+                // still held it) must not take a fresh entry for the same key with it.
                 if (!victim.RetainBounds)
                 {
-                    _entries.TryRemove(new KeyValuePair<ushort, GlyphCacheEntry>(victim.Glyph, victim));
+                    _entries.TryRemove(new KeyValuePair<GlyphCacheKey, GlyphCacheEntry>(victim.Key, victim));
                 }
 
                 // No Dispose here: the payload may still be referenced by anyone the lock-free hit

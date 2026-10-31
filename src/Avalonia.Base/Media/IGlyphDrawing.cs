@@ -20,8 +20,8 @@
         GlyphDrawingType Type { get; }
 
         /// <summary>
-        /// Gets the axis-aligned bounding rectangle of the drawing, in drawing-space
-        /// coordinates (Y-down).
+        /// Gets the axis-aligned bounding rectangle of the drawing, in font design units
+        /// (the font's units-per-em space, no em-size scaling) with the Y axis pointing down.
         /// </summary>
         /// <remarks>
         /// The rectangle is relative to the drawing's local origin. To get bounds at a
@@ -34,10 +34,15 @@
         /// <summary>
         /// Draws the glyph into <paramref name="context"/> at <paramref name="origin"/>.
         /// </summary>
+        /// <remarks>
+        /// The glyph is drawn in font design units, one drawing unit per font unit. To draw it at
+        /// an em size, push a scale of <c>emSize / DesignEmHeight</c> onto
+        /// <paramref name="context"/> first.
+        /// </remarks>
         /// <param name="context">The drawing context to render to.</param>
         /// <param name="origin">
-        /// The drawing-space point (Y-down) at which the glyph's local origin should
-        /// land. For text rendering this is typically the pen position on the baseline.
+        /// The point, in the coordinate space of <paramref name="context"/> (Y-down), at which
+        /// the glyph's local origin should land. For text rendering this is typically the pen position on the baseline.
         /// Implementations apply the Y-flip from font-space (Y-up) internally, so
         /// callers don't need to flip <paramref name="origin"/> themselves.
         /// </param>
