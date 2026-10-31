@@ -104,6 +104,30 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
             Assert.Null(typeface.GetGlyphDrawing(3));
         }
 
+        [Fact]
+        public void Nested_PaintGlyph_Bounds_Are_The_Intersection_Of_Both_Outlines()
+        {
+            var plain = InterRegular().TryCreateGlyphTypeface()!;
+            var outlineGlyph = plain.CharacterToGlyphMap['A'];
+            var header = new GlyphBounds[1];
+            Assert.True(plain.TryGetGlyphBounds(new[] { outlineGlyph }, header));
+            var box = new Rect(header[0].XMin, header[0].YMin, header[0].Width, header[0].Height);
+
+            // PaintGlyph(A) -> PaintTranslate(dx) -> PaintGlyph(A) -> PaintSolid: the inner glyph clip
+            // intersects the outer one, so only the overlap of the two boxes can be painted.
+            const short dx = 200;
+            var colr = new ColrV1Builder()
+                .BaseGlyph(3, ColrPaint.Glyph(outlineGlyph,
+                    ColrPaint.Translate(dx, 0, ColrPaint.Glyph(outlineGlyph, ColrPaint.Solid(0)))))
+                .Build();
+
+            var drawing = ColrTestFont.Graft(InterRegular(), colr).TryCreateGlyphTypeface()!.GetGlyphDrawing(3);
+
+            var overlap = new Rect(box.X + dx, box.Y, box.Width - dx, box.Height);
+            Assert.NotNull(drawing);
+            Assert.Equal(overlap.TransformToAABB(Matrix.CreateScale(1, -1)), drawing!.Bounds);
+        }
+
         private static SyntheticFont InterRegular() => SyntheticFont.FromAsset(SyntheticFont.Assets.InterRegular);
 
         /// <summary>
