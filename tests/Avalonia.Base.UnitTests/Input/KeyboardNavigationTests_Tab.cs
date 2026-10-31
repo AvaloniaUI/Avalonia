@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
@@ -1319,6 +1321,363 @@ namespace Avalonia.Base.UnitTests.Input
             Assert.False(executed);
         }
 
+        [Fact]
+        public void FocusManager_Contained_Stops_At_Both_Edges()
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealFocus);
+            Button first, middle, last;
+            var focusManager = CreateCycleRoot(new StackPanel
+            {
+                Children =
+                {
+                    new StackPanel
+                    {
+                        [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Contained,
+                        Children =
+                        {
+                            (first = new Button { Name = "Button1" }),
+                            (middle = new Button { Name = "Button2" }),
+                            (last = new Button { Name = "Button3" }),
+                        }
+                    },
+                    new Button { Name = "Button4" },
+                }
+            });
 
+            Assert.Same(middle, FindNext(focusManager, first));
+            Assert.Null(FindNext(focusManager, last));
+            Assert.Null(FindPrevious(focusManager, first));
+        }
+
+        [Fact]
+        public void FocusManager_Contained_Stops_Instead_Of_Wrapping_At_Root()
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealFocus);
+            Button first, last;
+            var root = new TestRoot
+            {
+                Child = new StackPanel
+                {
+                    [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Contained,
+                    Children =
+                    {
+                        (first = new Button { Name = "Button1" }),
+                        (last = new Button { Name = "Button2" }),
+                    }
+                }
+            };
+            var focusManager = (FocusManager)root.FocusManager;
+
+            Assert.Null(FindNext(focusManager, last));
+            Assert.Null(FindPrevious(focusManager, first));
+        }
+
+        [Fact]
+        public void FocusManager_Continue_Compares_TabIndex_Across_Panels()
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealFocus);
+            Button start;
+            var focusManager = CreateCycleRoot(new StackPanel
+            {
+                Children =
+                {
+                    new StackPanel
+                    {
+                        Children =
+                        {
+                            new Button { Name = "Button1", TabIndex = 5 },
+                            (start = new Button { Name = "Button2", TabIndex = 2 }),
+                            new Button { Name = "Button3", TabIndex = 1 },
+                        }
+                    },
+                    new StackPanel
+                    {
+                        Children =
+                        {
+                            new Button { Name = "Button4", TabIndex = 3 },
+                            new Button { Name = "Button5", TabIndex = 6 },
+                            new Button { Name = "Button6", TabIndex = 4 },
+                        }
+                    },
+                }
+            });
+
+            var forwards = new List<string?>();
+            var backwards = new List<string?>();
+            var current = (IInputElement?)start;
+
+            do
+            {
+                forwards.Add(((Control)current!).Name);
+                current = FindNext(focusManager, current);
+            } while (current is not null && current != start);
+
+            do
+            {
+                backwards.Add(((Control)current!).Name);
+                current = FindPrevious(focusManager, current);
+            } while (current is not null && current != start);
+
+            Assert.Equal(new[] { "Button2", "Button4", "Button6", "Button1", "Button5", "Button3" }, forwards);
+            Assert.Equal(new[] { "Button2", "Button3", "Button5", "Button1", "Button6", "Button4" }, backwards);
+        }
+
+        [Fact]
+        public void FocusManager_Does_Not_Enter_Container_With_TabNavigation_None()
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealFocus);
+            Button before, after;
+            var focusManager = CreateCycleRoot(new StackPanel
+            {
+                Children =
+                {
+                    (before = new Button { Name = "Button1" }),
+                    new StackPanel
+                    {
+                        [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.None,
+                        Children = { new Button { Name = "Button2" } }
+                    },
+                    (after = new Button { Name = "Button3" }),
+                }
+            });
+
+            Assert.Same(after, FindNext(focusManager, before));
+            Assert.Same(before, FindPrevious(focusManager, after));
+        }
+
+        [Fact]
+        public void FocusManager_Once_Enters_On_Active_Element()
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealFocus);
+            StackPanel once;
+            Button before, active, after;
+            var focusManager = CreateCycleRoot(new StackPanel
+            {
+                Children =
+                {
+                    (before = new Button { Name = "Button1" }),
+                    (once = new StackPanel
+                    {
+                        [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Once,
+                        Children =
+                        {
+                            new Button { Name = "Button2" },
+                            (active = new Button { Name = "Button3" }),
+                            new Button { Name = "Button4" },
+                        }
+                    }),
+                    (after = new Button { Name = "Button5" }),
+                }
+            });
+
+            KeyboardNavigation.SetTabOnceActiveElement(once, active);
+
+            Assert.Same(active, FindNext(focusManager, before));
+            Assert.Same(active, FindPrevious(focusManager, after));
+            Assert.Same(after, FindNext(focusManager, active));
+        }
+
+        [Fact]
+        public void FocusManager_Once_Enters_On_First_Element_Moving_Backwards_Without_Active_Element()
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealFocus);
+            Button first, after;
+            var focusManager = CreateCycleRoot(new StackPanel
+            {
+                Children =
+                {
+                    new StackPanel
+                    {
+                        [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Once,
+                        Children =
+                        {
+                            (first = new Button { Name = "Button1" }),
+                            new Button { Name = "Button2" },
+                        }
+                    },
+                    (after = new Button { Name = "Button3" }),
+                }
+            });
+
+            Assert.Same(first, FindPrevious(focusManager, after));
+        }
+
+        [Fact]
+        public void FocusManager_Nested_Cycle_Wraps_Inside_Container()
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealFocus);
+            Button first, last;
+            var focusManager = CreateCycleRoot(new StackPanel
+            {
+                Children =
+                {
+                    new Button { Name = "Before" },
+                    new StackPanel
+                    {
+                        [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
+                        Children =
+                        {
+                            (first = new Button { Name = "Button1" }),
+                            (last = new Button { Name = "Button2" }),
+                        }
+                    },
+                    new Button { Name = "After" },
+                }
+            });
+
+            Assert.Same(first, FindNext(focusManager, last));
+            Assert.Same(last, FindPrevious(focusManager, first));
+        }
+
+        [Fact]
+        public void FocusManager_Skips_Child_Of_Disabled_Control()
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealFocus);
+            Button before, after;
+            var focusManager = CreateCycleRoot(new StackPanel
+            {
+                Children =
+                {
+                    (before = new Button { Name = "Button1" }),
+                    new Border { IsEnabled = false, Child = new Button { Name = "Button2" } },
+                    (after = new Button { Name = "Button3" }),
+                }
+            });
+
+            Assert.Same(after, FindNext(focusManager, before));
+            Assert.Same(before, FindPrevious(focusManager, after));
+        }
+
+        [Fact]
+        public void FocusManager_Leaves_Content_Of_Templated_Control_In_Tab_Order()
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealFocus);
+            Button content, after;
+            var contentControl = new ContentControl
+            {
+                Template = new FuncControlTemplate<ContentControl>((parent, _) => new ContentPresenter
+                {
+                    Name = "PART_ContentPresenter",
+                    [~ContentPresenter.ContentProperty] = parent[~ContentControl.ContentProperty],
+                }),
+                Content = content = new Button { Name = "Content" },
+            };
+            var focusManager = CreateCycleRoot(new StackPanel
+            {
+                Children =
+                {
+                    contentControl,
+                    (after = new Button { Name = "After" }),
+                }
+            });
+
+            contentControl.ApplyTemplate();
+            contentControl.Presenter!.UpdateChild();
+
+            Assert.Same(after, FindNext(focusManager, content));
+            Assert.Same(content, FindPrevious(focusManager, after));
+        }
+
+        [Fact]
+        public void Tab_Stops_At_Edge_Of_Continue_Root_While_FocusManager_Wraps()
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealFocus);
+            Button first, last;
+            var root = new TestRoot
+            {
+                Child = new StackPanel
+                {
+                    Children =
+                    {
+                        (first = new Button { Name = "Button1" }),
+                        (last = new Button { Name = "Button2" }),
+                    }
+                }
+            };
+            root[KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Continue;
+            var focusManager = (FocusManager)root.FocusManager;
+
+            Assert.Null(KeyboardNavigationHandler.GetNext(last, NavigationDirection.Next));
+            Assert.Null(KeyboardNavigationHandler.GetNext(first, NavigationDirection.Previous));
+            Assert.Same(first, FindNext(focusManager, last));
+            Assert.Same(last, FindPrevious(focusManager, first));
+        }
+
+        [Fact]
+        public void Tab_Honors_GetNextTabStopOverride()
+        {
+            Button current, target;
+
+            var top = new StackPanel
+            {
+                [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
+                Children =
+                {
+                    (target = new Button { Name = "Target" }),
+                    new Button { Name = "Skipped" },
+                }
+            };
+            top.Children.Insert(1, current = new TabStopOverrideButton { NextTabStop = target });
+
+            Assert.Same(target, KeyboardNavigationHandler.GetNext(current, NavigationDirection.Next));
+        }
+
+        [Fact]
+        public void Tab_Honors_GetFirstFocusableElementOverride_When_Entering_Container()
+        {
+            Button before, target;
+            var container = new FirstFocusableOverridePanel
+            {
+                Children =
+                {
+                    new Button { Name = "Skipped" },
+                    (target = new Button { Name = "Target" }),
+                }
+            };
+            container.FirstFocusable = target;
+
+            var top = new StackPanel
+            {
+                [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
+                Children =
+                {
+                    (before = new Button { Name = "Before" }),
+                    container,
+                }
+            };
+
+            Assert.Same(target, KeyboardNavigationHandler.GetNext(before, NavigationDirection.Next));
+        }
+
+        private static FocusManager CreateCycleRoot(Control child)
+        {
+            var root = new TestRoot { Child = child };
+            root[KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle;
+            return (FocusManager)root.FocusManager;
+        }
+
+        private static IInputElement? FindNext(FocusManager focusManager, IInputElement? focused) =>
+            focusManager.FindNextElement(
+                NavigationDirection.Next,
+                new FindNextElementOptions { FocusedElement = focused });
+
+        private static IInputElement? FindPrevious(FocusManager focusManager, IInputElement? focused) =>
+            focusManager.FindNextElement(
+                NavigationDirection.Previous,
+                new FindNextElementOptions { FocusedElement = focused });
+
+        private class TabStopOverrideButton : Button
+        {
+            public InputElement? NextTabStop { get; set; }
+
+            protected internal override InputElement? GetNextTabStopOverride() => NextTabStop;
+        }
+
+        private class FirstFocusableOverridePanel : StackPanel
+        {
+            public InputElement? FirstFocusable { get; set; }
+
+            protected internal override InputElement? GetFirstFocusableElementOverride() => FirstFocusable;
+        }
     }
 }
