@@ -59,6 +59,12 @@ namespace Avalonia.Skia.RenderTests
         private const string Cff2Asset =
             "resm:Avalonia.Skia.RenderTests.Assets.AdobeVFPrototype-Subset.otf?assembly=Avalonia.Skia.RenderTests";
 
+        // Synthetic non-CID CFF font with operator-level fixtures. Its 'C' is one cubic,
+        // (100,0) (200,200) (300,200) (400,0), whose control points reach y = 200 while the curve
+        // itself peaks at y = 150, so the control box and the tight box differ.
+        private const string CffOpsAsset =
+            "resm:Avalonia.Skia.RenderTests.Assets.CffOpsTest.otf?assembly=Avalonia.Skia.RenderTests";
+
         public GlyphOutlineRenderTests()
             : base(@"Media\GlyphOutline")
         {
@@ -192,6 +198,41 @@ namespace Avalonia.Skia.RenderTests
 
             var glyph = gt.CharacterToGlyphMap['H'];
             Assert.NotEqual(gt.GetGlyphOutline(glyph)!.Bounds, black.GetGlyphOutline(glyph)!.Bounds);
+        }
+
+        [Fact]
+        public void Cff_Ink_Box_Is_The_Control_Box_When_The_Outline_Is_Built_First()
+        {
+            var gt = LoadGlyphTypeface(CffOpsAsset);
+            var glyph = gt.CharacterToGlyphMap['C'];
+
+            Assert.NotNull(gt.GetGlyphOutline(glyph));
+
+            AssertCurveGlyphControlBox(gt, glyph);
+        }
+
+        [Fact]
+        public void Cff_Ink_Box_Is_The_Control_Box_When_The_Metrics_Are_Read_First()
+        {
+            var gt = LoadGlyphTypeface(CffOpsAsset);
+            var glyph = gt.CharacterToGlyphMap['C'];
+
+            AssertCurveGlyphControlBox(gt, glyph);
+
+            Assert.NotNull(gt.GetGlyphOutline(glyph));
+
+            AssertCurveGlyphControlBox(gt, glyph);
+        }
+
+        // The metrics ink box is the control-point box regardless of which path filled the cache
+        // entry: 100 0 rmoveto 100 200 100 0 100 -200 rrcurveto spans x 100..400 and y 0..200.
+        private static void AssertCurveGlyphControlBox(GlyphTypeface gt, ushort glyph)
+        {
+            Assert.True(gt.TryGetGlyphMetrics(glyph, out var metrics));
+            Assert.Equal(100, metrics.XBearing);
+            Assert.Equal(200, metrics.YBearing);
+            Assert.Equal(300, metrics.Width);
+            Assert.Equal(200, metrics.Height);
         }
 
         [Fact]
