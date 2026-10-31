@@ -33,9 +33,6 @@ namespace Avalonia.Media.Fonts.Tables.Colr
         private readonly int _numLayerV1Records;
         private readonly int _numClips;
 
-        private readonly uint _varIndexMapOffset;
-        private readonly uint _itemVariationStoreOffset;
-
         // Cached variation tables (loaded during construction). These are the shared parsers under
         // Tables.Variation — the same ItemVariationStore HVAR / VVAR / MVAR use — which apply
         // region scaling against the instance's coords (the COLR-local copies did not).
@@ -55,8 +52,6 @@ namespace Avalonia.Media.Fonts.Tables.Colr
             int numBaseGlyphV1Records = 0,
             int numLayerV1Records = 0,
             int numClips = 0,
-            uint varIndexMapOffset = 0,
-            uint itemVariationStoreOffset = 0,
             Variation.DeltaSetIndexMap? deltaSetIndexMap = null,
             Variation.ItemVariationStore? itemVariationStore = null)
         {
@@ -72,8 +67,6 @@ namespace Avalonia.Media.Fonts.Tables.Colr
             _numBaseGlyphV1Records = numBaseGlyphV1Records;
             _numLayerV1Records = numLayerV1Records;
             _numClips = numClips;
-            _varIndexMapOffset = varIndexMapOffset;
-            _itemVariationStoreOffset = itemVariationStoreOffset;
             _deltaSetIndexMap = deltaSetIndexMap;
             _itemVariationStore = itemVariationStore;
         }
@@ -237,8 +230,6 @@ namespace Avalonia.Media.Fonts.Tables.Colr
                 numBaseGlyphV1Records,
                 numLayerV1Records,
                 numClips,
-                varIndexMapOffset,
-                itemVariationStoreOffset,
                 deltaSetIndexMap,
                 itemVariationStore);
 
