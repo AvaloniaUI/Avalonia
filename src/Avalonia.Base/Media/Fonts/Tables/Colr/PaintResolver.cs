@@ -44,9 +44,14 @@ namespace Avalonia.Media.Fonts.Tables.Colr
 
                 // Format 3: VarSolid
                 case SolidVar varSolid:
-                    return new ResolvedSolid(
-                        context.ApplyAlphaDelta(varSolid.Color, varSolid.VarIndexBase, 0)
-                    );
+                    {
+                        // Alpha delta is F2DOT14 (base+0), added to the paint alpha before it scales
+                        // the palette alpha.
+                        var alpha = Math.Clamp(varSolid.Alpha + context.GetF2Dot14Delta(varSolid.VarIndexBase, 0), 0.0, 1.0);
+                        var color = varSolid.PaletteColor;
+
+                        return new ResolvedSolid(Color.FromArgb((byte)(color.A * alpha), color.R, color.G, color.B));
+                    }
 
                 // Format 4: LinearGradient
                 case LinearGradient linearGrad:
