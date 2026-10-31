@@ -11,8 +11,7 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
 {
     /// <summary>
     /// On a truncated composite glyph, both <see cref="GlyfTable.TryBuildGlyphGeometry"/> and
-    /// <see cref="GlyfTable.TryGetCompositeComponents"/> return <c>false</c> without throwing — the
-    /// latter previously lacked the catch the former has.
+    /// <see cref="GlyfTable.TryGetCompositeComponents"/> return <c>false</c> without throwing.
     /// </summary>
     public class GlyfCompositeCharacterizationTests
     {
@@ -21,7 +20,7 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
         {
             var glyf = LoadGlyfWithTruncatedComposite();
 
-            // Glyph 2 is a composite carrying only its 10-byte header — no component records — so
+            // Glyph 2 is a composite carrying only its 10-byte header (no component records), so
             // CompositeGlyph.Create over-reads when it parses the first component.
 
             // The geometry build wraps parsing in a catch-all: it returns false, never throwing.
@@ -31,8 +30,8 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
             Assert.Null(buildException);
             Assert.False(built);
 
-            // The dependency-recording path now has the same catch as the build path, so the over-read
-            // is contained — it returns false rather than throwing out of the table API.
+            // The dependency-recording path catches the over-read like the build path: it returns false
+            // rather than throwing out of the table API.
             var gotComponents = true;
             var componentsException = Record.Exception(() => gotComponents = glyf.TryGetCompositeComponents(2, out _));
             Assert.Null(componentsException);
@@ -43,7 +42,7 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
         {
             // A 3-glyph TrueType font grafted onto Inter (which supplies the other required tables).
             // Glyph 2's loca range is a valid 10-byte slice, but the bytes are a composite header
-            // with no following component — enough to reach CompositeGlyph.Create and over-read.
+            // with no following component, enough to reach CompositeGlyph.Create and over-read.
             var font = SyntheticFont.FromAsset(SyntheticFont.Assets.InterRegular)
                 .Replace("maxp", BuildMaxp(numGlyphs: 3))
                 .Replace("head", BuildHead())
@@ -99,7 +98,7 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
 
         private static byte[] BuildCompositeHeaderOnly()
             => new BigEndianBuffer()
-                .Int16(-1)                                 // numberOfContours < 0 → composite
+                .Int16(-1)                                 // numberOfContours < 0: composite
                 .Int16(0).Int16(0).Int16(100).Int16(100)   // bbox; no component records follow
                 .ToArray();
 

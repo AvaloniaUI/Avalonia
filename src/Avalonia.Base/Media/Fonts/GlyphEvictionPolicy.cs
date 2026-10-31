@@ -7,8 +7,8 @@ namespace Avalonia.Media.Fonts
     /// replace the default <see cref="ClockEvictionPolicy"/> if measurement warrants it.
     /// </summary>
     /// <remarks>
-    /// <see cref="OnAccessed"/> is on the hot read path and is invoked <em>without</em> the cache lock —
-    /// an implementation must keep it cheap and self-thread-safe (the CLOCK default only writes a
+    /// <see cref="OnAccessed"/> is on the hot read path and is invoked <em>without</em> the cache lock,
+    /// so an implementation must keep it cheap and self-thread-safe (the CLOCK default only writes a
     /// <see cref="Volatile"/> flag). <see cref="OnAdded"/>, <see cref="OnRemoved"/> and
     /// <see cref="SelectVictim"/> are always called under the cache's eviction lock.
     /// </remarks>
@@ -24,7 +24,7 @@ namespace Avalonia.Media.Fonts
         void OnRemoved(GlyphCacheEntry entry);
 
         /// <summary>
-        /// Returns the next entry to evict — one with <see cref="GlyphCacheEntry.PinCount"/> zero — or
+        /// Returns the next entry to evict (one with <see cref="GlyphCacheEntry.PinCount"/> zero), or
         /// <c>null</c> if every entry is currently pinned and nothing can be freed.
         /// </summary>
         GlyphCacheEntry? SelectVictim();

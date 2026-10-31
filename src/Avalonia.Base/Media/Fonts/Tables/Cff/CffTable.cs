@@ -7,7 +7,7 @@ using Avalonia.Platform;
 namespace Avalonia.Media.Fonts.Tables.Cff
 {
     /// <summary>
-    /// Reader for the <c>CFF </c> table — PostScript / Type 2 glyph outlines, the <c>.otf</c> flavour
+    /// Reader for the <c>CFF </c> table: PostScript / Type 2 glyph outlines, the <c>.otf</c> flavour
     /// and the counterpart to <see cref="Glyf.GlyfTable"/>'s TrueType <c>glyf</c> outlines. Parses the
     /// header, the Name / Top DICT / String / Global Subr / CharStrings INDEXes and the Private DICT,
     /// then interprets a glyph's Type 2 charstring on demand via <see cref="Type2CharStringInterpreter"/>.
@@ -77,7 +77,7 @@ namespace Avalonia.Media.Fonts.Tables.Cff
             {
                 int headerSize = data.Span[2];
 
-                // Header → Name INDEX → Top DICT INDEX → String INDEX → Global Subr INDEX.
+                // Header -> Name INDEX -> Top DICT INDEX -> String INDEX -> Global Subr INDEX.
                 var nameIndex = CffIndex.Read(data, headerSize);
                 var topDictIndex = CffIndex.Read(data, nameIndex.EndOffset);
                 var stringIndex = CffIndex.Read(data, topDictIndex.EndOffset);

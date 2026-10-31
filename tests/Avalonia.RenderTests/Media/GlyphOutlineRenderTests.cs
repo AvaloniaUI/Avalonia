@@ -105,7 +105,7 @@ namespace Avalonia.Skia.RenderTests
             // 'O' from a CFF (PostScript / Type 2) font: a donut whose hole exercises non-zero
             // winding, built from cubic curves decoded by the Type 2 charstring interpreter. This is
             // the PostScript counterpart to the glyf render tests, proving GetGlyphOutline returns
-            // real geometry for OTF/CFF fonts (previously null) through the full Skia pipeline.
+            // real geometry for OTF/CFF fonts through the full Skia pipeline.
             await RenderToFile(BuildTarget(LoadGlyphTypeface(CffAsset), 'O'));
             CompareImages();
         }

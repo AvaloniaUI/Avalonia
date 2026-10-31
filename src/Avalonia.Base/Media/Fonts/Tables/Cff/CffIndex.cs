@@ -6,7 +6,7 @@ namespace Avalonia.Media.Fonts.Tables.Cff
     /// <summary>
     /// A CFF / CFF2 INDEX: a count-prefixed array of variable-length byte entries addressed by a
     /// trailing offset array. Used for the Name, Top DICT, String, Global/Local Subr and CharStrings
-    /// INDEXes. This is a lightweight view over the table memory — offsets are read on demand, so no
+    /// INDEXes. This is a lightweight view over the table memory: offsets are read on demand, so no
     /// per-entry allocation occurs (mirrors the <c>GlyfTable</c> / <c>LocaTable</c> style).
     /// </summary>
     internal readonly struct CffIndex

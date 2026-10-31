@@ -6,7 +6,7 @@ namespace Avalonia.Media
     public enum GlyphOutlineType
     {
         /// <summary>
-        /// The font has no vector outlines this typeface can produce — e.g. a bitmap-strike or
+        /// The font has no vector outlines this typeface can produce, e.g. a bitmap-strike or
         /// SVG-only font. <see cref="GlyphTypeface.GetGlyphOutline(ushort)"/> returns <c>null</c>.
         /// </summary>
         None,
@@ -15,7 +15,7 @@ namespace Avalonia.Media
         TrueType,
 
         /// <summary>
-        /// PostScript / Type 2 cubic outlines (the <c>CFF </c> table — the <c>.otf</c> flavour).
+        /// PostScript / Type 2 cubic outlines (the <c>CFF </c> table, the <c>.otf</c> flavour).
         /// </summary>
         Cff,
 

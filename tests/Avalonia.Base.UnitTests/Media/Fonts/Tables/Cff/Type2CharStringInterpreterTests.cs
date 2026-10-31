@@ -9,7 +9,7 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables.Cff
 {
     /// <summary>
     /// Exercises the Type 2 charstring interpreter on hand-built charstrings via a recording geometry
-    /// context, asserting the exact emitted path. No font or platform dependency — each test isolates
+    /// context, asserting the exact emitted path. No font or platform dependency; each test isolates
     /// one operator's math (the curve families and width / hint handling are the usual correctness traps).
     /// </summary>
     public class Type2CharStringInterpreterTests
@@ -172,10 +172,10 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables.Cff
         {
             // A pyramid of global subrs: subr i (i >= 1) calls subr i-1 ten times, subr 0 returns.
             // The call *nesting* equals the pyramid height (within MaxDepth), but the total
-            // operation count is ~10^(levels-1) — so this fans out enormous work without deep
+            // operation count is ~10^(levels-1), so this fans out enormous work without deep
             // recursion, the exact shape MaxDepth alone does not stop. The op budget must throw
-            // (→ blank glyph via the per-glyph try/catch) instead of running to completion.
-            const int levels = 9;     // subrs 0..8 → nesting depth 9, below MaxDepth (10)
+            // (a blank glyph via the per-glyph try/catch) instead of running to completion.
+            const int levels = 9;     // subrs 0..8: nesting depth 9, below MaxDepth (10)
             const int fanOut = 10;    // 10^8 operations if it ran unbounded
             const int bias = 107;     // Bias(9)
 

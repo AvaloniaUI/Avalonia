@@ -5,7 +5,7 @@ namespace Avalonia.Media.Fonts
 {
     /// <summary>
     /// An <see cref="IGeometryContext"/> that accumulates the min/max of every point it is handed
-    /// instead of building geometry — the shared bounds-only interpreter sink for the outline tables
+    /// instead of building geometry: the shared bounds-only interpreter sink for the outline tables
     /// (CFF / CFF2 charstrings and <c>glyf</c> contours). Off-curve (control) points are included, so
     /// the result is the control-point bounding box, matching the semantics of the <c>glyf</c> header
     /// box. Lets a glyph's bounds be computed without a render backend.

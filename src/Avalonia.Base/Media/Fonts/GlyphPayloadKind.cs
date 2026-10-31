@@ -17,12 +17,12 @@ namespace Avalonia.Media.Fonts
         CompositeOutline,
 
         /// <summary>
-        /// A COLR color glyph (Part 14): a drawing recording whose payload <em>references</em> its layer
+        /// A COLR color glyph: a drawing recording whose payload <em>references</em> its layer
         /// glyphs' outlines. Such referencing payloads pin their <see cref="GlyphCacheEntry.Dependencies"/>.
         /// </summary>
         ColorDrawing,
 
-        /// <summary>A bitmap-strike glyph (<c>sbix</c> / <c>CBDT</c>, future): a pixel payload.</summary>
+        /// <summary>A bitmap-strike glyph (<c>sbix</c> / <c>CBDT</c>): a pixel payload.</summary>
         Bitmap
     }
 }

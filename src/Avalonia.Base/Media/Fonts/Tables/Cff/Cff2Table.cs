@@ -7,7 +7,7 @@ using Avalonia.Platform;
 namespace Avalonia.Media.Fonts.Tables.Cff
 {
     /// <summary>
-    /// Reader for the <c>CFF2</c> table — the variation-aware evolution of CFF. Unlike CFF it has no
+    /// Reader for the <c>CFF2</c> table, the variation-aware evolution of CFF. Unlike CFF it has no
     /// Name / String / Encoding / charset structures and its Top DICT is a single fixed-length DICT
     /// (not an INDEX); its INDEXes use 32-bit counts. Charstrings are Type 2 without
     /// <c>endchar</c> / width / <c>seac</c>, and add the <c>vsindex</c> / <c>blend</c> operators that

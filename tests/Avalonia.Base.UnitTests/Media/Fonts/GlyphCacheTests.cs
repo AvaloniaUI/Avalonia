@@ -7,7 +7,7 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
 {
     /// <summary>
     /// Unit tests for the unified, bounded glyph cache: each entry holds a cheap, retained ink box and
-    /// a heavy, lazily-built, evictable geometry. Exercised in isolation — geometry payloads are plain
+    /// a heavy, lazily-built, evictable geometry. Exercised in isolation: geometry payloads are plain
     /// objects, so no font, geometry backend, or render interface is needed.
     /// </summary>
     public class GlyphCacheTests
@@ -126,7 +126,7 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
             // Age both, then access only 'a'.
             a.Referenced = 0;
             b.Referenced = 0;
-            cache.GetOrBuildGeometry(a, _ => Built(1)); // hit → re-references 'a'
+            cache.GetOrBuildGeometry(a, _ => Built(1)); // hit -> re-references 'a'
 
             BuildGeometry(cache, 3, cost: 1); // forces one eviction
 
@@ -146,7 +146,7 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
             cache.GetOrBuildGeometry(composite, _ =>
                 Built(1, kind: GlyphPayloadKind.CompositeOutline, dependencies: new ushort[] { 10 }));
 
-            // Age the component, then access the composite — recency must propagate to the component.
+            // Age the component, then access the composite; recency must propagate to the component.
             component.Referenced = 0;
             cache.GetOrBuildGeometry(composite, _ => Built(1)); // hit
 
@@ -162,7 +162,7 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
             cache.GetOrBuildGeometry(component, _ => Built(1));
 
             // A color drawing references its component, so the component is pinned while the drawing is
-            // live — even under pressure the component outlives the drawing.
+            // live: even under pressure the component outlives the drawing.
             var drawing = cache.GetEntry(21, retainBounds: false);
             cache.GetOrBuildGeometry(drawing, _ =>
                 Built(1, kind: GlyphPayloadKind.ColorDrawing, dependencies: new ushort[] { 20 }));

@@ -1992,8 +1992,8 @@ namespace Avalonia.Media
 
         /// <summary>
         /// Returns the control-point ink box for a CFF / CFF2 glyph from the unified glyph cache. The
-        /// box is set lazily — by this metrics path (interpreting the charstring) or by the geometry
-        /// build (accumulated from the emitted points), whichever happens first — then kept, so repeated
+        /// box is set lazily, by this metrics path (interpreting the charstring) or by the geometry
+        /// build (accumulated from the emitted points), whichever happens first, then kept, so repeated
         /// reads are an O(1) cache hit. Returns <c>false</c> for an out-of-range glyph.
         /// </summary>
         /// <remarks>
@@ -2111,9 +2111,10 @@ namespace Avalonia.Media
             return (IGeometryImpl?)cache.GetOrBuildGeometry(entry, _buildGlyphGeometry ??= BuildGlyphGeometryEntry);
         }
 
-        // Rough estimate of the bytes an outline payload retains — the native path verbs / points plus
-        // the managed platform geometry wrapper — used as the cache eviction
-        // weight. Calibrated against the churn benchmark, not an exact accounting.
+        // Estimated bytes an outline payload retains, used as the cache eviction weight: a fixed share
+        // for the managed platform geometry wrapper and the native path header, plus a per-segment
+        // share for the native path's verb and points (a cubic stores three two-float points). An
+        // estimate, not a measurement of native memory.
         private const int OutlineBaseCost = 96;
         private const int OutlineSegmentCost = 32;
 

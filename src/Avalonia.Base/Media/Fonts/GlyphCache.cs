@@ -39,8 +39,8 @@ namespace Avalonia.Media.Fonts
     /// <remarks>
     /// <para>
     /// Bounds reads and built-geometry hits are lock-free; the geometry build / eviction take a lock.
-    /// Composite components are kept at least as recent as their composites via recency propagation;
-    /// referencing payloads (color drawings) additionally pin their dependencies.
+    /// A hit on a composite also marks its cached direct components referenced; referencing payloads
+    /// (color drawings) additionally pin their dependencies.
     /// </para>
     /// <para>
     /// Payloads must be immutable, non-disposable managed objects: hits are handed out lock-free and
@@ -52,7 +52,11 @@ namespace Avalonia.Media.Fonts
     /// </remarks>
     internal sealed class GlyphCache
     {
-        /// <summary>Default per-typeface geometry budget. Calibrated against the churn benchmark.</summary>
+        /// <summary>
+        /// Default per-typeface geometry budget, in estimated bytes. At the outline cost estimate a
+        /// glyph of about 30 segments costs about 1 KB, so this keeps a few thousand outlines per
+        /// typeface.
+        /// </summary>
         public const int DefaultBudgetBytes = 4 * 1024 * 1024;
 
         private static readonly Func<ushort, bool, GlyphCacheEntry> s_createEntry =
@@ -148,8 +152,10 @@ namespace Avalonia.Media.Fonts
             }
         }
 
-        // Keep a composite's cached components at least as recently used as the composite, so a
-        // component's geometry is never evicted before a composite that depends on it.
+        // Mark a composite's cached direct components referenced on every hit of the composite, so
+        // CLOCK gives them the same second chance. This approximates keeping a component at least as
+        // recent as its composites; it does not guarantee eviction order, and components of
+        // components are not reached.
         private void PropagateRecency(GlyphCacheEntry entry)
         {
             var deps = entry.Dependencies;
@@ -211,7 +217,7 @@ namespace Avalonia.Media.Fonts
 
                 if (victim is null)
                 {
-                    break;   // everything pinned — stay over budget until a dependent frees
+                    break;   // everything pinned: stay over budget until a dependent frees
                 }
 
                 _totalCost -= victim.Cost;

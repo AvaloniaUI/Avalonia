@@ -14,8 +14,8 @@ namespace Avalonia.Base.UnitTests.Media
     /// <summary>
     /// Skia-free tests for CFF / CFF2 control-point ink bounds. <see cref="GlyphTypeface.TryGetGlyphBounds"/>
     /// and the <see cref="GlyphMetrics"/> ink box are computed by interpreting the charstring into a
-    /// bounds-accumulating sink, so — unlike <c>GetGlyphOutline().Bounds</c>, which needs a render
-    /// interface for the geometry — they run with no platform backend registered.
+    /// bounds-accumulating sink, so (unlike <c>GetGlyphOutline().Bounds</c>, which needs a render
+    /// interface for the geometry) they run with no platform backend registered.
     /// </summary>
     /// <remarks>
     /// Ground truth is fontTools' <c>ControlBoundsPen</c> (the box over every on- and off-curve point),
@@ -291,7 +291,7 @@ namespace Avalonia.Base.UnitTests.Media
             var bounds = BoundsOf(gt, ch);
 
             // An inked glyph reports a non-zero ink box, and Width/Height are exactly the
-            // control-bounds extents — TryGetGlyphMetrics and TryGetGlyphBounds share one path.
+            // control-bounds extents: TryGetGlyphMetrics and TryGetGlyphBounds share one path.
             Assert.True(metrics.Width > 0);
             Assert.True(metrics.Height > 0);
             Assert.Equal(bounds.Width, metrics.Width);

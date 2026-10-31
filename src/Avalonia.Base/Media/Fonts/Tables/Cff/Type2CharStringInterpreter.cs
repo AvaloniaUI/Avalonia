@@ -19,11 +19,11 @@ namespace Avalonia.Media.Fonts.Tables.Cff
 
         // Total-operation budget across the whole charstring (shared through the recursive
         // Execute calls). MaxDepth bounds call *nesting*, but each level can fan out to
-        // thousands of callsubr/callgsubr ops, so depth alone allows ~fanout^MaxDepth executions
-        // — an effectively unbounded CPU loop on a hostile font that throws no exception. This is
+        // thousands of callsubr/callgsubr ops, so depth alone allows ~fanout^MaxDepth executions:
+        // an effectively unbounded CPU loop on a hostile font that throws no exception. This is
         // a DoS backstop, not a spec limit: it sits far above any legitimate glyph (the most
         // detailed real glyphs interpret well under a million ops) and a charstring that exceeds
-        // it throws, caught by the per-glyph try/catch → blank glyph.
+        // it throws, caught by the per-glyph try/catch, which yields a blank glyph.
         private const int MaxOperations = 10_000_000;
 
         private readonly IGeometryContext _context;
@@ -264,7 +264,7 @@ namespace Avalonia.Media.Fonts.Tables.Cff
                         _depth--;
                         return;
 
-                    case 15: // vsindex (CFF2) — select the active ItemVariationData for blends
+                    case 15: // vsindex (CFF2): select the active ItemVariationData for blends
                         _vsindex = (int)_stack[--_sp];
                         _blendScalersValid = false;
                         break;
@@ -273,7 +273,7 @@ namespace Avalonia.Media.Fonts.Tables.Cff
                         Blend();
                         break;
 
-                    case 12: // escape — two-byte operator
+                    case 12: // escape: two-byte operator
                     {
                         byte b1 = code[i];
                         i++;
@@ -846,7 +846,7 @@ namespace Avalonia.Media.Fonts.Tables.Cff
         }
 
         // CFF2 blend: the stack holds n default values, then n*k deltas (k = the region count for the
-        // current vsindex; value-major — all k deltas for value 0, then value 1, ...), then the count n
+        // current vsindex; value-major: all k deltas for value 0, then value 1, ...), then the count n
         // on top. Each default is replaced in place by default + sum_j(delta_j * scaler_j); the deltas
         // and the count are dropped, leaving the n blended values for the following operator.
         private void Blend()

@@ -7,7 +7,7 @@ namespace Avalonia.Media.Fonts.Tables.Cff
 {
     /// <summary>
     /// A parsed CFF / CFF2 DICT: a sequence of operands followed by an operator, decoded into an
-    /// operator → operand-array map. Used for the Top DICT, Private DICT and (CID) Font DICTs.
+    /// operator -> operand-array map. Used for the Top DICT, Private DICT and (CID) Font DICTs.
     /// DICTs are parsed once at table-load time, so a small dictionary allocation is acceptable here.
     /// </summary>
     internal sealed class CffDict
