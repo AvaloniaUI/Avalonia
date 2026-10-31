@@ -1339,9 +1339,12 @@ namespace Avalonia.Media
                 hasVertical = _vmTable.TryGetMetrics(glyph, out vMetric);
             }
 
-            short xMin = 0, yMin = 0, xMax = 0, yMax = 0;
-            var hasBounds = _glyfTable != null
-                && _glyfTable.TryGetGlyphBounds(glyph, out xMin, out yMin, out xMax, out yMax);
+            // The header box is placed where GetGlyphOutline places the outline. GlyphBounds
+            // computes the ink extent (clamped to non-negative) the same way as the batch path
+            // below, so a malformed header with xMax < xMin does not wrap when narrowed to the
+            // ushort Width/Height.
+            GlyphBounds box = default;
+            var hasBounds = _glyfTable != null && _glyfTable.TryGetGlyphBounds(glyph, _hmTable, out box);
 
             if (!hasHorizontal && !hasVertical && !hasBounds)
             {
@@ -1405,11 +1408,6 @@ namespace Avalonia.Media
                     advanceHeight = ApplyAdvanceDelta(metricsHeight, heightDelta);
                 }
             }
-
-            // Funnel the raw header values through GlyphBounds so the ink extent is computed
-            // (and clamped to non-negative) the same way as the batch path below — a malformed
-            // header with xMax < xMin must not wrap when narrowed to the ushort Width/Height.
-            var box = new GlyphBounds(xMin, yMin, xMax, yMax);
 
             metrics = new GlyphMetrics
             {
@@ -1515,12 +1513,12 @@ namespace Avalonia.Media
             if (_glyfTable != null)
             {
                 // Read all bounding boxes in one batch, so the glyf and loca spans are fetched once
-                // for the whole run rather than per glyph.
+                // for the whole run rather than per glyph, placed like the single-glyph path.
                 Span<GlyphBounds> bounds = glyphIndices.Length <= 256
                     ? stackalloc GlyphBounds[glyphIndices.Length]
                     : new GlyphBounds[glyphIndices.Length];
 
-                _glyfTable.GetGlyphBounds(glyphIndices, bounds);
+                _glyfTable.GetGlyphBounds(glyphIndices, bounds, _hmTable);
 
                 for (int i = 0; i < glyphIndices.Length; i++)
                 {
@@ -1563,8 +1561,11 @@ namespace Avalonia.Media
         /// Reads ink bounding boxes for a batch of glyphs from the font's <c>glyf</c> table.
         /// </summary>
         /// <remarks>
-        /// Allocation-free hot path for glyph ink-bounds computation: the <c>glyf</c> and
-        /// <c>loca</c> spans are fetched once for the whole batch. Use this rather than
+        /// Hot path for glyph ink-bounds computation: the <c>glyf</c> and <c>loca</c> spans are
+        /// fetched once for the whole batch. Each box is placed where <see cref="GetGlyphOutline"/>
+        /// places the outline at the default instance, with its left phantom point on the origin;
+        /// a simple glyph only adds an hmtx read for that, a composite also resolves its
+        /// USE_MY_METRICS chain. Use this rather than
         /// <see cref="TryGetGlyphMetrics(ReadOnlySpan{ushort}, Span{GlyphMetrics})"/> when
         /// only bounds are needed and advances are already known (e.g. from shaping).
         /// </remarks>
@@ -1584,7 +1585,7 @@ namespace Avalonia.Media
                 return false;
             }
 
-            _glyfTable.GetGlyphBounds(glyphIndices, bounds);
+            _glyfTable.GetGlyphBounds(glyphIndices, bounds, _hmTable);
 
             return true;
         }

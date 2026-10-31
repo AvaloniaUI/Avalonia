@@ -3,6 +3,7 @@ using System.Buffers;
 using System.Buffers.Binary;
 using Avalonia.Platform;
 using Avalonia.Logging;
+using Avalonia.Media.Fonts.Tables.Metrics;
 using Avalonia.Media.Fonts.Tables.Variation;
 
 namespace Avalonia.Media.Fonts.Tables.Glyf
@@ -155,18 +156,72 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
         }
 
         /// <summary>
-        /// Reads bounding boxes for a batch of glyphs into <paramref name="bounds"/>.
+        /// Reads a glyph's bounding box from its 'glyf' header, placed where the outline is placed
+        /// at the default instance.
+        /// </summary>
+        /// <remarks>
+        /// With <paramref name="hmtx"/> the box moves by minus the glyph's left phantom point x,
+        /// <c>xMin - lsb</c>, as the outline does; see <see cref="PlaceByLeftPhantom"/>. Returns
+        /// <see langword="true"/> with the zero box for an empty glyph, <see langword="false"/>
+        /// when the glyph index is out of range or the header is truncated.
+        /// </remarks>
+        /// <param name="glyphIndex">The zero-based glyph index.</param>
+        /// <param name="hmtx">The font's hmtx table; <c>null</c> leaves the box as stored.</param>
+        /// <param name="bounds">The placed header box.</param>
+        public bool TryGetGlyphBounds(int glyphIndex, HorizontalMetricsTable? hmtx, out GlyphBounds bounds)
+        {
+            bounds = default;
+
+            if (!TryGetGlyphData(glyphIndex, out var data))
+            {
+                return false;
+            }
+
+            if (data.IsEmpty)
+            {
+                return true;
+            }
+
+            var span = data.Span;
+
+            if (span.Length < 10)
+            {
+                return false;
+            }
+
+            bounds = new GlyphBounds(
+                BinaryPrimitives.ReadInt16BigEndian(span.Slice(2)),
+                BinaryPrimitives.ReadInt16BigEndian(span.Slice(4)),
+                BinaryPrimitives.ReadInt16BigEndian(span.Slice(6)),
+                BinaryPrimitives.ReadInt16BigEndian(span.Slice(8)));
+
+            if (hmtx is not null)
+            {
+                var isComposite = BinaryPrimitives.ReadInt16BigEndian(span) < 0;
+
+                bounds = PlaceByLeftPhantom(glyphIndex, isComposite, bounds, hmtx);
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Reads bounding boxes for a batch of glyphs into <paramref name="bounds"/>, placed where
+        /// the outlines are placed at the default instance.
         /// </summary>
         /// <remarks>
         /// The hot path for ink-bounds computation. The <c>glyf</c> and <c>loca</c> spans are
         /// fetched once for the whole batch (not per glyph), and offsets and headers are read
-        /// directly — no per-glyph <see cref="ReadOnlyMemory{T}.Span"/> conversion, no
-        /// intermediate slices, no nested call chain. Out-of-range, empty, or malformed
-        /// glyphs are written as the default (zero) box.
+        /// directly, with no per-glyph <see cref="ReadOnlyMemory{T}.Span"/> conversion. With
+        /// <paramref name="hmtx"/> each box moves by minus its left phantom point x; a simple glyph
+        /// only adds its hmtx entry to that, while a composite also resolves its USE_MY_METRICS
+        /// chain (see <see cref="PlaceByLeftPhantom"/>). Out-of-range, empty, or malformed glyphs
+        /// are written as the default (zero) box.
         /// </remarks>
         /// <param name="glyphIndices">The glyph indices to read.</param>
         /// <param name="bounds">Output; must be at least as long as <paramref name="glyphIndices"/>.</param>
-        public void GetGlyphBounds(ReadOnlySpan<ushort> glyphIndices, Span<GlyphBounds> bounds)
+        /// <param name="hmtx">The font's hmtx table; <c>null</c> leaves the boxes as stored.</param>
+        public void GetGlyphBounds(ReadOnlySpan<ushort> glyphIndices, Span<GlyphBounds> bounds, HorizontalMetricsTable? hmtx)
         {
             var glyf = _glyfData.Span;
             var loca = _locaTable.RawData;
@@ -213,12 +268,70 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
                     continue;
                 }
 
-                bounds[i] = new GlyphBounds(
+                var box = new GlyphBounds(
                     BinaryPrimitives.ReadInt16BigEndian(glyf.Slice(start + 2)),
                     BinaryPrimitives.ReadInt16BigEndian(glyf.Slice(start + 4)),
                     BinaryPrimitives.ReadInt16BigEndian(glyf.Slice(start + 6)),
                     BinaryPrimitives.ReadInt16BigEndian(glyf.Slice(start + 8)));
+
+                if (hmtx is not null)
+                {
+                    var isComposite = BinaryPrimitives.ReadInt16BigEndian(glyf.Slice(start)) < 0;
+
+                    box = PlaceByLeftPhantom(gid, isComposite, box, hmtx);
+                }
+
+                bounds[i] = box;
             }
+        }
+
+        /// <summary>
+        /// Moves a glyph header box by minus the glyph's left phantom point x at the default
+        /// instance, <c>xMin - lsb</c>, which is how GlyphTypeface.GetGlyphOutline places the
+        /// outline.
+        /// </summary>
+        /// <remarks>
+        /// A simple glyph, or a composite without a USE_MY_METRICS component, supplies its own xMin
+        /// and lsb, so its box lands at x = lsb from the header already read and one hmtx entry. A
+        /// composite resolves its USE_MY_METRICS chain first, whose last glyph supplies both. A box
+        /// whose left phantom point cannot be resolved (no hmtx entry, a malformed or cyclic chain)
+        /// stays as stored, as the outline does.
+        /// </remarks>
+        private GlyphBounds PlaceByLeftPhantom(int glyphIndex, bool isComposite, GlyphBounds box, HorizontalMetricsTable hmtx)
+        {
+            var metricsGlyph = glyphIndex;
+            var metricsXMin = box.XMin;
+
+            if (isComposite)
+            {
+                if (!TryGetPhantomDeltas(glyphIndex, null, default, out metricsGlyph, default, default))
+                {
+                    return box;
+                }
+
+                if (metricsGlyph != glyphIndex && !TryGetGlyphBounds(metricsGlyph, out metricsXMin, out _, out _, out _))
+                {
+                    return box;
+                }
+            }
+
+            if (!hmtx.TryGetMetrics((ushort)metricsGlyph, out var metric))
+            {
+                return box;
+            }
+
+            var shift = metric.LeftSideBearing - metricsXMin;
+
+            if (shift == 0)
+            {
+                return box;
+            }
+
+            return new GlyphBounds(
+                (short)Math.Clamp(box.XMin + shift, short.MinValue, short.MaxValue),
+                box.YMin,
+                (short)Math.Clamp(box.XMax + shift, short.MinValue, short.MaxValue),
+                box.YMax);
         }
 
         /// <summary>
