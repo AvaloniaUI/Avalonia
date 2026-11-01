@@ -332,9 +332,9 @@ namespace Avalonia.Media
                         {
                             remainingRunCount = Math.Max(0, second.Count - 1);
 
-                            var run = second[0];
+                            removedRun = second[0];
 
-                            if (run is ShapedTextRun shapedRun)
+                            if (removedRun is ShapedTextRun shapedRun)
                             {
                                 var measureWidth = Width - shapedSymbol.Size.Width;
 
@@ -358,7 +358,7 @@ namespace Avalonia.Media
                         }
 
                         var runCount = remainingRunCount;
-                        if (removedRun != null)
+                        if (first?.Count > 0 || removedRun != null)
                         {
                             runCount++;
                         }
@@ -370,10 +370,18 @@ namespace Avalonia.Media
                         var result = new TextRun[runCount];
                         var index = 0;
 
-                        if (removedRun != null)
+                        // Append symbol
+                        if (first?.Count > 0)
                         {
-                            // Append symbol
-                            result[index++] = new CollapseSymbolRun([.. first ?? [], removedRun], shapedSymbol);
+                            if (removedRun != null)
+                            {
+                                first.Add(removedRun);
+                            }
+                            result[index++] = new CollapseSymbolRun([..first], shapedSymbol);
+                        }
+                        else if (removedRun != null)
+                        {
+                            result[index++] = new CollapseSymbolRun([removedRun], shapedSymbol);
                         }
 
                         // Append trimmed run if any

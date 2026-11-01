@@ -440,10 +440,10 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 // ctor in Collapse() hardcodes LeftToRight, so the symbol run
                 // has IsLeftToRight == true.
                 var ellipsisRun = collapsed.TextRuns
-                    .OfType<ShapedTextRun>()
-                    .FirstOrDefault(r => r.Text.ToString().Contains("…"));
+                    .OfType<CollapseSymbolRun>().Single();
                 Assert.NotNull(ellipsisRun);
-                Assert.False(ellipsisRun!.ShapedBuffer.IsLeftToRight);
+                var shapedRun = Assert.IsType<ShapedTextRun>(ellipsisRun.Symbol);
+                Assert.False(shapedRun.ShapedBuffer.IsLeftToRight);
             }
         }
 

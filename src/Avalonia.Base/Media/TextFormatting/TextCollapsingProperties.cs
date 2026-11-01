@@ -58,15 +58,15 @@ namespace Avalonia.Media.TextFormatting
         /// <returns>List of remaining runs.</returns>
         public static TextRun[] CreateCollapsedRuns(TextLine textLine, int collapsedLength, DrawableTextRun? collapseSymbol) => CreateCollapsedRunsImpl(textLine, collapsedLength, collapseSymbol);
 
-        private static TextRun[] CreateCollapsedRunsImpl(TextLine textLine, int collapsedLength, TextRun? collabseSymbol)
+        private static TextRun[] CreateCollapsedRunsImpl(TextLine textLine, int collapsedLength, TextRun? collapseSymbol)
         {
             if (collapsedLength <= 0)
             {
-                return collabseSymbol switch
+                return collapseSymbol switch
                 {
                     DrawableTextRun drawable => [new CollapseSymbolRun(textLine.TextRuns, drawable)],
                     null => [],
-                    _ => [collabseSymbol], // legacy behaviour
+                    _ => [collapseSymbol], // legacy behaviour
                 };
             }
 
@@ -89,11 +89,11 @@ namespace Avalonia.Media.TextFormatting
 
                 (preSplitRuns, postSplitRuns) = TextFormatterImpl.SplitTextRuns(textRuns, collapsedLength, objectPool);
 
-                return collabseSymbol switch
+                return collapseSymbol switch
                 {
                     DrawableTextRun drawable => [.. preSplitRuns!, new CollapseSymbolRun([.. postSplitRuns ?? []], drawable)],
                     null => [.. preSplitRuns!],
-                    _ => [.. preSplitRuns!, collabseSymbol],  // legacy behaviour
+                    _ => [.. preSplitRuns!, collapseSymbol],  // legacy behaviour
                 };
             }
             finally
