@@ -824,14 +824,27 @@ namespace Avalonia.Media.TextFormatting
                     var outputIndex = 0;
                     for (int inputIndex = 0; inputIndex < line.TextRuns.Count && !foundEnd; inputIndex++)
                     {
-                        var startDelta = overrideSpan.Start - charIndex;
+                        if (overrideSpan.Start + overrideSpan.Length < charIndex)
+                        {
+                            break;
+                        }
+
                         var run = line.TextRuns[inputIndex];
 
+                        if (run is CollapseSymbolRun collapseSymbolRun)
+                        {
+                            charIndex += collapseSymbolRun.CollapsedLength;
+                            outputIndex++;
+                            continue;
+                        }
                         if (run is not ShapedTextRun shapedRun)
                         {
                             charIndex += run.Length;
+                            outputIndex++;
                             continue;
                         }
+
+                        var startDelta = overrideSpan.Start - charIndex;
 
                         ShapedTextRun? sliceResult = null;
 
@@ -859,7 +872,7 @@ namespace Avalonia.Media.TextFormatting
                         var endDelta = (overrideSpan.Start + overrideSpan.Length) - (charIndex + run.Length);
                         if (!foundEnd && endDelta <= 0) // does override end with the current run or a subsequent line?
                         {
-                            if (endDelta < 0)
+                            if (endDelta < 0 && endDelta != -shapedRun.Length)
                             {
                                 // split the run, assign the override properties to the LEFT-hand side
                                 var (left, right) = shapedRun.Split(shapedRun.Length + endDelta);

@@ -1,4 +1,6 @@
-﻿namespace Avalonia.Media.TextFormatting
+﻿using System;
+
+namespace Avalonia.Media.TextFormatting
 {
     /// <summary>
     /// Properties of text collapsing.
@@ -37,24 +39,35 @@
         /// Iterate the source line's runs via
         /// <c>LogicalTextRunEnumerator</c>, not <see cref="TextLine.TextRuns"/>
         /// (which is post-bidi visual order). Use
-        /// <see cref="CreateCollapsedRuns"/> when an implementation only
+        /// <see cref="CreateCollapsedRuns(TextLine, int, DrawableTextRun?)"/> when an implementation only
         /// needs the standard "logical prefix + symbol" shape.
         /// </para>
         /// </remarks>
         public abstract TextRun[]? Collapse(TextLine textLine);
+
+        /// <inheritdoc cref="CreateCollapsedRuns(TextLine, int, DrawableTextRun?)"/>
+        [Obsolete("Use the new overload demanding DrawableTextRun.")]
+        public static TextRun[] CreateCollapsedRuns(TextLine textLine, int collapsedLength, TextRun shapedSymbol) => CreateCollapsedRunsImpl(textLine, collapsedLength, shapedSymbol);
 
         /// <summary>
         /// Creates a list of runs for given collapsed length which includes specified symbol at the end.
         /// </summary>
         /// <param name="textLine">The text line.</param>
         /// <param name="collapsedLength">The collapsed length.</param>
-        /// <param name="shapedSymbol">The symbol.</param>
+        /// <param name="collapseSymbol">The symbol used to indicate that characters have been removed.</param>
         /// <returns>List of remaining runs.</returns>
-        public static TextRun[] CreateCollapsedRuns(TextLine textLine, int collapsedLength, TextRun shapedSymbol)
+        public static TextRun[] CreateCollapsedRuns(TextLine textLine, int collapsedLength, DrawableTextRun? collapseSymbol) => CreateCollapsedRunsImpl(textLine, collapsedLength, collapseSymbol);
+
+        private static TextRun[] CreateCollapsedRunsImpl(TextLine textLine, int collapsedLength, TextRun? collabseSymbol)
         {
             if (collapsedLength <= 0)
             {
-                return [shapedSymbol];
+                return collabseSymbol switch
+                {
+                    DrawableTextRun drawable => [new CollapseSymbolRun(textLine.TextRuns, drawable)],
+                    null => [],
+                    _ => [collabseSymbol], // legacy behaviour
+                };
             }
 
             var objectPool = FormattingObjectPool.Instance;
@@ -68,28 +81,20 @@
             {
                 var textRunEnumerator = new LogicalTextRunEnumerator(textLine);
 
-                var textRunsLength = 0;
-
+                textRuns.EnsureCapacity(textRunEnumerator.Count);
                 while (textRunEnumerator.MoveNext(out var textRun))
                 {
-                    if (textRunsLength >= collapsedLength)
-                    {
-                        break;
-                    }
-
-                    textRunsLength += textRun.Length;
-
                     textRuns.Add(textRun);
                 }
 
                 (preSplitRuns, postSplitRuns) = TextFormatterImpl.SplitTextRuns(textRuns, collapsedLength, objectPool);
 
-                var collapsedRuns = new TextRun[preSplitRuns!.Count + 1];
-
-                preSplitRuns.CopyTo(collapsedRuns);
-                collapsedRuns[collapsedRuns.Length - 1] = shapedSymbol;
-
-                return collapsedRuns;
+                return collabseSymbol switch
+                {
+                    DrawableTextRun drawable => [.. preSplitRuns!, new CollapseSymbolRun([.. postSplitRuns ?? []], drawable)],
+                    null => [.. preSplitRuns!],
+                    _ => [.. preSplitRuns!, collabseSymbol],  // legacy behaviour
+                };
             }
             finally
             {
