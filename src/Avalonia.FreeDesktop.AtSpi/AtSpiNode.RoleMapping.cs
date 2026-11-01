@@ -1,5 +1,6 @@
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
+using Avalonia.Controls.Primitives;
 
 namespace Avalonia.FreeDesktop.AtSpi
 {
@@ -48,7 +49,10 @@ namespace Avalonia.FreeDesktop.AtSpi
                 AutomationControlType.DataItem => AtSpiRole.TableCell,
                 AutomationControlType.Document => AtSpiRole.Document,
                 AutomationControlType.SplitButton => AtSpiRole.PushButton,
-                AutomationControlType.Window => AtSpiRole.Frame,
+                // A frame has a title bar and border; a popup is a window without them.
+                AutomationControlType.Window => peer is ControlAutomationPeer { Owner: PopupRoot }
+                    ? AtSpiRole.Window
+                    : AtSpiRole.Frame,
                 AutomationControlType.Pane => AtSpiRole.Panel,
                 AutomationControlType.Header => AtSpiRole.Header,
                 AutomationControlType.HeaderItem => AtSpiRole.ColumnHeader,

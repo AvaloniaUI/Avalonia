@@ -21,10 +21,10 @@
 
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
-      <StaticResource x:Key="ScrollViewerScrollBarsSeparatorBackground" ResourceKey="ControlFillColorTransparent" />
+      <StaticResource x:Key="ScrollViewerScrollBarsSeparatorBackground" ResourceKey="ControlFillColorTransparentBrush" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
-      <StaticResource x:Key="ScrollViewerScrollBarsSeparatorBackground" ResourceKey="ControlFillColorTransparent" />
+      <StaticResource x:Key="ScrollViewerScrollBarsSeparatorBackground" ResourceKey="ControlFillColorTransparentBrush" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 

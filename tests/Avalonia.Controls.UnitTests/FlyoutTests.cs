@@ -11,6 +11,7 @@ using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
+using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 
@@ -573,6 +574,121 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Flyout_With_Pointer_Placement_Resizes_When_Content_Grows()
+        {
+            using (CreateServicesWithFocus())
+            {
+                var flyoutContent = new Button { Width = 100, Height = 20 };
+                var flyout = new Flyout { Content = flyoutContent };
+                var target = new Border { Width = 200, Height = 200, ContextFlyout = flyout };
+
+                var window = PreparedWindow(target);
+                window.Show();
+
+                new MouseTestHelper().Click(target, MouseButton.Right);
+
+                Assert.True(flyout.IsOpen);
+                var host = Assert.IsAssignableFrom<Control>(flyout.Popup.Host);
+
+                flyoutContent.Height = 80;
+                host.UpdateLayout();
+
+                Assert.True(host.DesiredSize.Height >= 80);
+                Assert.Equal(host.DesiredSize, host.Bounds.Size);
+            }
+        }
+
+        [Fact]
+        public void Flyout_With_Pointer_Placement_Keeps_Position_When_Content_Grows_After_Pointer_Moves()
+        {
+            using (CreateServicesWithFocus())
+            {
+                var flyoutContent = new Button { Width = 100, Height = 20 };
+                var flyout = new Flyout { Content = flyoutContent };
+                var target = new Border { Width = 200, Height = 200, ContextFlyout = flyout };
+
+                var window = PreparedWindow(target);
+                window.Show();
+
+                var mouse = new MouseDevice();
+                MovePointer(window, mouse, new Point(30, 40));
+                new MouseTestHelper().Click(target, MouseButton.Right);
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.AfterRender, TestContext.Current.CancellationToken);
+
+                Assert.True(flyout.IsOpen);
+                var host = Assert.IsAssignableFrom<Control>(flyout.Popup.Host);
+                Assert.Equal(new Point(30, 40), GetPopupPosition(host));
+
+                MovePointer(window, mouse, new Point(120, 50));
+                flyoutContent.Height = 80;
+                host.UpdateLayout();
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.AfterRender, TestContext.Current.CancellationToken);
+
+                Assert.Equal(new Point(30, 40), GetPopupPosition(host));
+                Assert.Equal(host.DesiredSize, host.Bounds.Size);
+            }
+        }
+
+        [Fact]
+        public void Flyout_With_Pointer_Placement_Keeps_Anchor_When_Offset_Changes_After_Pointer_Moves()
+        {
+            using (CreateServicesWithFocus())
+            {
+                var flyout = new Flyout { Content = new Button { Width = 100, Height = 20 } };
+                var target = new Border { Width = 200, Height = 200, ContextFlyout = flyout };
+
+                var window = PreparedWindow(target);
+                window.Show();
+
+                var mouse = new MouseDevice();
+                MovePointer(window, mouse, new Point(30, 40));
+                new MouseTestHelper().Click(target, MouseButton.Right);
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.AfterRender, TestContext.Current.CancellationToken);
+
+                Assert.True(flyout.IsOpen);
+                var host = Assert.IsAssignableFrom<Control>(flyout.Popup.Host);
+
+                MovePointer(window, mouse, new Point(120, 50));
+                flyout.Popup.HorizontalOffset = 5;
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.AfterRender, TestContext.Current.CancellationToken);
+
+                Assert.Equal(new Point(35, 40), GetPopupPosition(host));
+            }
+        }
+
+        [Fact]
+        public void Flyout_With_Pointer_Placement_Opens_At_New_Pointer_After_Reopen()
+        {
+            using (CreateServicesWithFocus())
+            {
+                var flyout = new Flyout { Content = new Button { Width = 100, Height = 20 } };
+                var target = new Border { Width = 200, Height = 200, ContextFlyout = flyout };
+
+                var window = PreparedWindow(target);
+                window.Show();
+
+                var mouse = new MouseDevice();
+                MovePointer(window, mouse, new Point(30, 40));
+                new MouseTestHelper().Click(target, MouseButton.Right);
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.AfterRender, TestContext.Current.CancellationToken);
+
+                Assert.True(flyout.IsOpen);
+                Assert.Equal(new Point(30, 40), GetPopupPosition(Assert.IsAssignableFrom<Control>(flyout.Popup.Host)));
+
+                flyout.Hide();
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.AfterRender, TestContext.Current.CancellationToken);
+                Assert.False(flyout.IsOpen);
+
+                MovePointer(window, mouse, new Point(120, 50));
+                new MouseTestHelper().Click(target, MouseButton.Right);
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.AfterRender, TestContext.Current.CancellationToken);
+
+                Assert.True(flyout.IsOpen);
+                Assert.Equal(new Point(120, 50), GetPopupPosition(Assert.IsAssignableFrom<Control>(flyout.Popup.Host)));
+            }
+        }
+
+        [Fact]
         public void Should_Reset_Popup_Parent_On_Target_Detached()
         {
             using (CreateServicesWithFocus())
@@ -910,6 +1026,16 @@ namespace Avalonia.Controls.UnitTests
             w.ApplyTemplate();
             return w;
         }
+
+        private static void MovePointer(Window window, MouseDevice mouse, Point position)
+        {
+            window.PlatformImpl?.Input!(new RawPointerEventArgs(
+                mouse, 0, window.InputRoot, RawPointerEventType.Move, position, RawInputModifiers.None));
+        }
+
+        private static Point GetPopupPosition(Control host) => host is PopupRoot popupRoot
+            ? popupRoot.PlatformImpl!.Position.ToPoint(1)
+            : new Point(Canvas.GetLeft(host), Canvas.GetTop(host));
 
         private static PointerPressedEventArgs CreatePointerPressedEventArgs(Window source, Point p)
         {

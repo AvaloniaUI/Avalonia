@@ -16,10 +16,10 @@
 
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
-      <StaticResource x:Key="CarouselPageBackground" ResourceKey="SolidBackgroundFillColorBase" />
+      <StaticResource x:Key="CarouselPageBackground" ResourceKey="SolidBackgroundFillColorBaseBrush" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
-      <StaticResource x:Key="CarouselPageBackground" ResourceKey="SolidBackgroundFillColorBase" />
+      <StaticResource x:Key="CarouselPageBackground" ResourceKey="SolidBackgroundFillColorBaseBrush" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 
