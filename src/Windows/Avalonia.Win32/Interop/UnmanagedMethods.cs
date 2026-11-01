@@ -1469,6 +1469,9 @@ namespace Avalonia.Win32.Interop
         [DllImport("user32")]
         public static extern IntPtr GetMessageExtraInfo();
 
+        [DllImport("user32")]
+        public static extern short GetKeyState(VirtualKeyStates nVirtKey);
+
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode, EntryPoint = "RegisterClassExW")]
         public static extern ushort RegisterClassEx(ref WNDCLASSEX lpwcx);
 
