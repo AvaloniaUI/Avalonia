@@ -865,7 +865,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 else
                 {
                     // In this case, we need to emit our own delegate type.
-                    string delegateTypeName = context.Configuration.IdentifierGenerator.GenerateIdentifierPart();
+                    string delegateTypeName = context.Configuration.IdentifierGenerator.CreateIdentifierFromPrefix("");
                     specificDelegateType = newDelegateTypeBuilder = context.DeclaringType.DefineDelegateSubType(
                         delegateTypeName,
                         XamlVisibility.Private,
