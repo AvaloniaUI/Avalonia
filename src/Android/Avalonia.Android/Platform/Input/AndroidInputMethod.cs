@@ -212,9 +212,6 @@ namespace Avalonia.Android.Platform.Input
                     (outAttrs.InputType & InputTypes.MaskClass) == InputTypes.ClassText)
                 {
                     outAttrs.InputType |= InputTypes.TextFlagNoSuggestions;
-
-                    if ((outAttrs.InputType & InputTypes.MaskVariation) == InputTypes.TextVariationNormal)
-                        outAttrs.InputType |= InputTypes.TextVariationVisiblePassword;
                 }
 
                 if (options.IsSensitive)
