@@ -5,6 +5,7 @@ using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Platform;
 using Avalonia.Threading;
 using Avalonia.Win32.Automation;
 using Xunit;
@@ -101,6 +102,35 @@ public class AutomationNodeTests
             () => Task.Run(() => ((UIA.IToggleProvider)node).Toggle(), TestContext.Current.CancellationToken));
 
         Assert.Equal(UIA.UiaCoreProviderApi.UIA_E_ELEMENTNOTENABLED, exception.HResult);
+    }
+
+    [Fact]
+    public async Task Root_Overrides_NativeControlHost_Window_With_Interop_Node()
+    {
+        var host = new NativeControlHost();
+        var window = new Window { Content = host };
+
+        try
+        {
+            window.Show();
+            await window.WhenLoadedAsync();
+
+            var root = Assert.IsType<RootAutomationNode>(
+                AutomationNode.GetOrCreate(ControlAutomationPeer.CreatePeerForElement(window)));
+            var windowHandle = Assert.IsAssignableFrom<IPlatformHandle>(window.TryGetPlatformHandle()).Handle;
+            var holder = UnmanagedMethods.GetWindow(windowHandle, UnmanagedMethods.GW_CHILD);
+            Assert.NotEqual(IntPtr.Zero, holder);
+
+            var provider = await Task.Run(
+                () => root.GetOverrideProviderForHwnd(holder),
+                TestContext.Current.CancellationToken);
+
+            Assert.IsType<InteropAutomationNode>(provider);
+        }
+        finally
+        {
+            window.Close();
+        }
     }
 
     private static async Task<AutomationNode> CreateMenuItemNodeAsync(bool isChecked)
