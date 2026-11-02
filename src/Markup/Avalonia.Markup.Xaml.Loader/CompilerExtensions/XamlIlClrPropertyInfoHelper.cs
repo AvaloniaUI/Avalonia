@@ -6,6 +6,7 @@ using XamlX.Ast;
 using XamlX.TypeSystem;
 using XamlX.IL;
 using XamlX.Emit;
+using XamlX.Transform;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 {
@@ -36,8 +37,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             if (_boxedTrue is null || _boxedFalse is null)
             {
                 var wellKnownTypes = context.Configuration.WellKnownTypes;
-                _boxedTrue = _builder.DefineField(wellKnownTypes.Object, "BooleanBox!True", XamlVisibility.Private, true);
-                _boxedFalse = _builder.DefineField(wellKnownTypes.Object, "BooleanBox!False", XamlVisibility.Private, true);
+                _boxedTrue = _builder.DefineField(wellKnownTypes.Object,
+                    context.Configuration.IdentifierGenerator.CreateIdentifierFromPreferredName("BooleanBox!True", 0),
+                    XamlVisibility.Private, true);
+                _boxedFalse = _builder.DefineField(wellKnownTypes.Object,
+                    context.Configuration.IdentifierGenerator.CreateIdentifierFromPreferredName("BooleanBox!False", 0),
+                    XamlVisibility.Private, true);
 
                 var cctor = _builder.DefineConstructor(true);
                 cctor.Generator
@@ -148,9 +153,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 if (GetCachedPropertyInfoMethod(_fields, key, property, out var lst) is { } cached)
                     return cached;
 
-                var name = lst.Count == 0 ? key : key + "_" + context.Configuration.IdentifierGenerator.GenerateIdentifierPart();
+                var name = context.Configuration.IdentifierGenerator.CreateIdentifierFromPreferredName(key, lst.Count);
                 
-                var field = _builder.DefineField(types.IPropertyInfo, name + "!Field", XamlVisibility.Private, true);
+                var field = _builder.DefineField(types.IPropertyInfo, name.AppendSuffix("!Field"), XamlVisibility.Private, true);
 
                 void Load(IXamlMethod m, IXamlILEmitter cg, bool passThis)
                 {
@@ -173,7 +178,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 var getter = property.Getter == null ?
                     null :
                     _builder.DefineMethod(types.XamlIlTypes.Object,
-                        new[] {types.XamlIlTypes.Object}, name + "!Getter", XamlVisibility.Private, true, false);
+                        new[] {types.XamlIlTypes.Object}, name.AppendSuffix("!Getter"), XamlVisibility.Private, true, false);
                 if (getter != null)
                 {
                     Load(property.Getter!, getter.Generator, !property.Getter!.IsStatic);
@@ -199,7 +204,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     null :
                     _builder.DefineMethod(types.XamlIlTypes.Void,
                         new[] {types.XamlIlTypes.Object, types.XamlIlTypes.Object},
-                        name + "!Setter", XamlVisibility.Private, true, false);
+                        name.AppendSuffix("!Setter"), XamlVisibility.Private, true, false);
                 if (setter != null)
                 {
                     Load(property.Setter!, setter.Generator, !property.Setter!.IsStatic);
@@ -217,7 +222,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 }
 
                 var get = _builder.DefineMethod(types.IPropertyInfo, Array.Empty<IXamlType>(),
-                    name + "!Property", XamlVisibility.Public, true, false);
+                    name.AppendSuffix("!Property"), XamlVisibility.Public, true, false);
 
 
                 var ctor = types.ClrPropertyInfo.Constructors.First(c =>
@@ -275,15 +280,14 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 var funcType = context.Configuration.WellKnownTypes.GetFuncOfT(2).MakeGenericType(sourceType, valueType);
                 var actionType = context.Configuration.WellKnownTypes.GetActionOfT(2).MakeGenericType(sourceType, valueType);
 
-                var name = lst.Count == 0
-                    ? key + "!Typed"
-                    : key + "!Typed_" + context.Configuration.IdentifierGenerator.GenerateIdentifierPart();
+                var name = context.Configuration.IdentifierGenerator.CreateIdentifierFromPreferredName(
+                    key + "!Typed", lst.Count);
 
-                var field = _builder.DefineField(typedPropertyInfoType, name + "!Field", XamlVisibility.Private, true);
+                var field = _builder.DefineField(typedPropertyInfoType, name.AppendSuffix("!Field"), XamlVisibility.Private, true);
 
                 var getter = property.Getter == null
                     ? null
-                    : _builder.DefineMethod(valueType, new[] { sourceType }, name + "!Getter", XamlVisibility.Private, true, false);
+                    : _builder.DefineMethod(valueType, new[] { sourceType }, name.AppendSuffix("!Getter"), XamlVisibility.Private, true, false);
                 if (getter != null)
                 {
                     if (!property.Getter!.IsStatic)
@@ -293,7 +297,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
                 var setter = property.Setter == null
                     ? null
-                    : _builder.DefineMethod(types.XamlIlTypes.Void, new[] { sourceType, valueType }, name + "!Setter", XamlVisibility.Private, true, false);
+                    : _builder.DefineMethod(types.XamlIlTypes.Void, new[] { sourceType, valueType }, name.AppendSuffix("!Setter"), XamlVisibility.Private, true, false);
                 if (setter != null)
                 {
                     if (!property.Setter!.IsStatic)
@@ -303,7 +307,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 }
 
                 var get = _builder.DefineMethod(typedPropertyInfoType, Array.Empty<IXamlType>(),
-                    name + "!Property", XamlVisibility.Public, true, false);
+                    name.AppendSuffix("!Property"), XamlVisibility.Public, true, false);
 
                 var ctor = typedClrPropertyInfoType.Constructors.First(c =>
                     c.Parameters.Count == 3 && !c.IsStatic);
