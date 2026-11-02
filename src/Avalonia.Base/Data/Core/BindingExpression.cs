@@ -525,6 +525,16 @@ internal class BindingExpression : UntypedBindingExpressionBase, IDescription, I
         if (e.Property != TargetProperty)
             return;
 
+        // Don't write a value that this binding has just published back to the source: the
+        // converter may not round-trip it (#22673). A value changed by the target, e.g. through
+        // coercion, differs from the published value and is still written back.
+        if (IsPublishingValue &&
+            TryGetTarget(out var target) &&
+            TypeUtilities.IdentityEquals(target.GetValue(e.Property), GetValue(), TargetType))
+        {
+            return;
+        }
+
         if (_uncommon?._delay is not { Ticks: > 0 } delay)
         {
             // The value must be read from the target object instead of using the value from the event
