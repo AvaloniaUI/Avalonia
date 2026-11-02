@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Emit;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers;
 using XamlX.Ast;
 using XamlX.TypeSystem;
@@ -110,31 +111,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             return null;
         }
 
-        /// <summary>
-        /// Emits a delegate which invokes a property accessor, or a null reference if the property
-        /// has no such accessor.
-        /// </summary>
-        /// <param name="context">The emit context.</param>
-        /// <param name="emitter">The emitter to write to.</param>
-        /// <param name="method">The accessor to wrap, or null if the property has no accessor.</param>
-        /// <param name="del">The delegate type to construct.</param>
-        static void EmitFunc(
-            XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context,
-            IXamlILEmitter emitter,
-            IXamlMethod? method,
-            IXamlType del)
+        private static void EmitFunctionPointer(IXamlILEmitter emitter, IXamlMethod? method)
         {
             if (method == null)
-                emitter.Ldnull();
+                emitter.Ldc_I4(0).Emit(OpCodes.Conv_I);
             else
-            {
-                emitter
-                    .Ldnull()
-                    .Ldftn(method)
-                    .Newobj(del.Constructors.First(c =>
-                        c.Parameters.Count == 2 &&
-                        c.Parameters[0].Equals(context.Configuration.WellKnownTypes.Object)));
-            }
+                emitter.Ldftn(method);
         }
 
         public IXamlType Emit(
@@ -225,25 +207,16 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     name.AppendSuffix("!Property"), XamlVisibility.Public, true, false);
 
 
-                var ctor = types.ClrPropertyInfo.Constructors.First(c =>
-                    c.Parameters.Count == 4 && c.IsStatic == false);
-                
-                var cacheMiss = get.Generator.DefineLabel();
+                var factory = types.CompiledPropertyInfoFactory.GetMethod(m =>
+                    m.Name == "GetProperty" && m.IsGenericMethod).MakeGenericMethod([property.PropertyType]);
                 get.Generator
-                    .Ldsfld(field)
-                    .Brfalse(cacheMiss)
-                    .Ldsfld(field)
-                    .Ret()
-                    .MarkLabel(cacheMiss)
+                    .Emit(OpCodes.Ldsflda, field)
                     .Ldstr(property.Name);
 
-                EmitFunc(context, get.Generator, getter, ctor.Parameters[1]);
-                EmitFunc(context, get.Generator, setter, ctor.Parameters[2]);
+                EmitFunctionPointer(get.Generator, getter);
+                EmitFunctionPointer(get.Generator, setter);
                 get.Generator
-                    .Ldtype(property.PropertyType)
-                    .Newobj(ctor)
-                    .Stsfld(field)
-                    .Ldsfld(field)
+                    .EmitCall(factory)
                     .Ret();
 
                 lst.Add((property, get));
@@ -274,12 +247,6 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 if (GetCachedPropertyInfoMethod(_typedFields, key, property, out var lst) is { } cached)
                     return cached;
 
-                // Only construct the generic types on a cache miss: they're not needed when an
-                // existing property info method is reused.
-                var typedClrPropertyInfoType = types.ClrPropertyInfoT.MakeGenericType(sourceType, valueType);
-                var funcType = context.Configuration.WellKnownTypes.GetFuncOfT(2).MakeGenericType(sourceType, valueType);
-                var actionType = context.Configuration.WellKnownTypes.GetActionOfT(2).MakeGenericType(sourceType, valueType);
-
                 var name = context.Configuration.IdentifierGenerator.CreateIdentifierFromPreferredName(
                     key + "!Typed", lst.Count);
 
@@ -309,24 +276,16 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 var get = _builder.DefineMethod(typedPropertyInfoType, Array.Empty<IXamlType>(),
                     name.AppendSuffix("!Property"), XamlVisibility.Public, true, false);
 
-                var ctor = typedClrPropertyInfoType.Constructors.First(c =>
-                    c.Parameters.Count == 3 && !c.IsStatic);
-
-                var cacheMiss = get.Generator.DefineLabel();
+                var factory = types.CompiledPropertyInfoFactory.GetMethod(m =>
+                    m.Name == "GetTypedProperty" && m.IsGenericMethod).MakeGenericMethod([sourceType, valueType]);
                 get.Generator
-                    .Ldsfld(field)
-                    .Brfalse(cacheMiss)
-                    .Ldsfld(field)
-                    .Ret()
-                    .MarkLabel(cacheMiss)
+                    .Emit(OpCodes.Ldsflda, field)
                     .Ldstr(property.Name);
 
-                EmitFunc(context, get.Generator, getter, funcType);
-                EmitFunc(context, get.Generator, setter, actionType);
+                EmitFunctionPointer(get.Generator, getter);
+                EmitFunctionPointer(get.Generator, setter);
                 get.Generator
-                    .Newobj(ctor)
-                    .Stsfld(field)
-                    .Ldsfld(field)
+                    .EmitCall(factory)
                     .Ret();
 
                 lst.Add((property, get));
