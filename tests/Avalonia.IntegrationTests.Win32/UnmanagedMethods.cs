@@ -16,6 +16,9 @@ internal static partial class UnmanagedMethods
     [LibraryImport("user32.dll")]
     public static partial int GetSystemMetrics(int nIndex);
 
+    [LibraryImport("user32.dll")]
+    public static partial IntPtr GetWindow(IntPtr hwnd, uint uCmd);
+
     public struct RECT
     {
         public int left;
@@ -25,4 +28,5 @@ internal static partial class UnmanagedMethods
     }
 
     public const int SM_CMONITORS = 80;
+    public const uint GW_CHILD = 5;
 }

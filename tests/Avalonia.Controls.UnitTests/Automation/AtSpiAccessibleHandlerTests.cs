@@ -1,11 +1,14 @@
+using System;
 using System.Globalization;
 using System.Threading.Tasks;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
+using Avalonia.Controls.Automation.Peers;
 using Avalonia.Controls.Primitives;
 using Avalonia.FreeDesktop.AtSpi;
 using Avalonia.FreeDesktop.AtSpi.DBusXml;
 using Avalonia.FreeDesktop.AtSpi.Handlers;
+using Avalonia.Platform;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -203,6 +206,20 @@ namespace Avalonia.Controls.UnitTests.Automation
             Assert.Equal(0u, (await handler.GetStateAsync())[0] & active);
             window.PlatformImpl!.Activated!();
             Assert.Equal(active, (await handler.GetStateAsync())[0] & active);
+        }
+
+        [Fact]
+        public async Task NativeControlHost_Interop_Peer_Is_Not_Exposed()
+        {
+            var host = new NativeControlHost { NativeControlHandle = new PlatformHandle(new IntPtr(1), "Test") };
+            var peer = ControlAutomationPeer.CreatePeerForElement(host);
+            var interop = Assert.IsType<InteropAutomationPeer>(Assert.Single(peer.GetChildren()));
+            await using var server = new AtSpiServer();
+            var node = server.GetOrCreateNode(peer);
+            node.Attach(null);
+
+            Assert.Empty(node.EnsureChildren());
+            Assert.Null(server.TryGetNode(interop));
         }
 
         private static AtSpiAccessibleHandler CreateHandler(Control control, AtSpiServer server)

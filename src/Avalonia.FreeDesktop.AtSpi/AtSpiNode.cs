@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
+using Avalonia.Controls.Automation.Peers;
 using Avalonia.DBus;
 using Avalonia.FreeDesktop.AtSpi.DBusXml;
 using Avalonia.FreeDesktop.AtSpi.Handlers;
@@ -335,6 +336,9 @@ namespace Avalonia.FreeDesktop.AtSpi
             var newChildren = new List<AtSpiNode>(childPeers.Count);
             foreach (var childPeer in childPeers)
             {
+                if (childPeer is InteropAutomationPeer)
+                    continue;
+
                 var childNode = Server.GetOrCreateNode(childPeer);
                 if (Server.AttachNode(childNode, this))
                     newChildren.Add(childNode);
