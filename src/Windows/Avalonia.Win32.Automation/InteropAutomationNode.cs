@@ -35,16 +35,7 @@ internal partial class InteropAutomationNode : AutomationNode, IRawElementProvid
         return result;
     }
 
-    internal static IntPtr GetHostedWindow(IntPtr handle)
-    {
-        var root = GetAncestor(handle, GA_ROOT);
-        var hwnd = handle;
-
-        while (GetAncestor(hwnd, GA_PARENT) is var parent && parent != IntPtr.Zero && parent != root)
-            hwnd = parent;
-
-        return hwnd;
-    }
+    internal static IntPtr GetHostedWindow(IntPtr handle) => GetAncestor(handle, GA_PARENT);
 
     public override IRawElementProviderFragment? Navigate(NavigateDirection direction)
     {
@@ -56,7 +47,6 @@ internal partial class InteropAutomationNode : AutomationNode, IRawElementProvid
     public IRawElementProviderSimple[]? GetEmbeddedFragmentRoots() => null;
 
     private const uint GA_PARENT = 1;
-    private const uint GA_ROOT = 2;
 
     [LibraryImport("user32.dll")]
     private static partial IntPtr GetAncestor(IntPtr hwnd, uint flags);

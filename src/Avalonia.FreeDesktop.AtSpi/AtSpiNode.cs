@@ -227,6 +227,9 @@ namespace Avalonia.FreeDesktop.AtSpi
         {
             foreach (var peer in peers)
             {
+                if (peer is InteropAutomationPeer)
+                    continue;
+
                 if (peer.GetProvider<ISelectionItemProvider>() is not null)
                     result.Add(peer);
                 else
