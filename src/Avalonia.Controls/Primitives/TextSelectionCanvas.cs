@@ -161,7 +161,7 @@ namespace Avalonia.Controls.Primitives
                 _textBox.SetCurrentValue(TextBox.SelectionStartProperty, caretIndex);
                 _textBox.SetCurrentValue(TextBox.SelectionEndProperty, caretIndex);
 
-                var caretBound = _presenter.GetCursorRectangle();
+                var caretBound = _presenter.CursorRectangle;
                 _caretHandle.SetTopLeft(ToLayer(caretBound.BottomLeft));
             }
         }
@@ -265,7 +265,7 @@ namespace Avalonia.Controls.Primitives
             if (_presenter == null)
                 return default;
 
-            var caretBounds = _presenter.GetCursorRectangle();
+            var caretBounds = _presenter.CursorRectangle;
             var searchOffset = caretBounds.Height / 2;
             var indicator = handle.IndicatorPosition;
             return indicator.WithY(indicator.Y - searchOffset);
@@ -338,7 +338,7 @@ namespace Avalonia.Controls.Primitives
                 }
 
                 presenter.MoveCaretToTextPosition(position);
-                var caretBound = presenter.GetCursorRectangle();
+                var caretBound = presenter.CursorRectangle;
                 handle.SetTopLeft(ToLayer(handle.SelectionHandleType == SelectionHandleType.Start ? caretBound.BottomLeft : caretBound.BottomLeft));
 
                 MoveHandlesToSelection();

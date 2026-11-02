@@ -13,12 +13,29 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
         public readonly ReadOnlySpan<char> _text;
         private LineBreakState _state;
+        private readonly int _limit;
+        private bool _afterSpace;
 
-        public LineBreakEnumerator(ReadOnlySpan<char> text)
+        public LineBreakEnumerator(ReadOnlySpan<char> text) : this(text, int.MaxValue)
+        {
+        }
+
+        /// <param name="text">The text to enumerate.</param>
+        /// <param name="limit">
+        /// The text index from which no further break opportunity is searched for. Whitespace and the
+        /// break that ends it are still resolved, as whitespace hangs on the line however long it is.
+        /// </param>
+        internal LineBreakEnumerator(ReadOnlySpan<char> text, int limit)
         {
             _text = text;
+            _limit = limit;
             _state = new LineBreakState();
         }
+
+        /// <summary>
+        /// Gets whether enumeration stopped at the limit before reaching a break opportunity or the end of the text.
+        /// </summary>
+        internal bool LimitReached { get; private set; }
 
         public bool MoveNext([NotNullWhen(true)] out LineBreak lineBreak)
         {
@@ -39,6 +56,21 @@ namespace Avalonia.Media.TextFormatting.Unicode
             while (result == null)
             {
                 _state.Read(_text);
+
+                if (_limit != int.MaxValue)
+                {
+                    var current = _state.Current;
+
+                    if (current.Start >= _limit && !current.EndOfText && !_afterSpace
+                        && current.LineBreakClass != LineBreakClass.Space)
+                    {
+                        LimitReached = true;
+
+                        return false;
+                    }
+
+                    _afterSpace = current.LineBreakClass == LineBreakClass.Space;
+                }
 
                 result = ExecuteRules(_text, ref _state);
             }

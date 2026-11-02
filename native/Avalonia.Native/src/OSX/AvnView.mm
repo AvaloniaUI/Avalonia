@@ -70,7 +70,7 @@
     [self updateLayer];
 }
 
--(AvnView*)  initWithParent: (TopLevelImpl*) parent
+-(AvnView*)  initWithParent: (const ComPtr<TopLevelImpl>&) parent
 {
     self = [super init];
     [self setWantsLayer:YES];
@@ -1181,9 +1181,9 @@ static bool KeyboardInputSourceComposes(NSString* sourceId)
     {
         for (int i = 0; i < childCount; ++i)
         {
-            IAvnAutomationPeer* child;
+            ComPtr<IAvnAutomationPeer> child;
 
-            if (childPeers->Get(i, &child) == S_OK)
+            if (childPeers->Get(i, child) == S_OK)
             {
                 id element = [AvnAccessibilityElement acquire:child];
                 [_accessibilityChildren addObject:element];

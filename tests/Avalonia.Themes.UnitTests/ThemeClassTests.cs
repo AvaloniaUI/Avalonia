@@ -1,6 +1,7 @@
 using System;
 using System.Reflection;
 using Avalonia.Themes.Fluent;
+using Avalonia.Themes.Fluent2;
 using Avalonia.Themes.Simple;
 using Avalonia.Themes.UnitTests.Utilities;
 using Xunit;
@@ -9,10 +10,12 @@ namespace Avalonia.Themes.UnitTests;
 
 [Trait("Category", "FluentTheme")]
 public class FluentThemeClassTests() : ThemeClassTests(typeof(FluentTheme));
+[Trait("Category", "Fluent2Theme")]
+public class Fluent2ThemeClassTests() : ThemeClassTests(typeof(Fluent2Theme), "axaml");
 [Trait("Category", "SimpleTheme")]
 public class SimpleThemeClassTests() : ThemeClassTests(typeof(SimpleTheme));
 
-public abstract class ThemeClassTests(Type typeEntryPoint) : ThemeTestBase(typeEntryPoint)
+public abstract class ThemeClassTests(Type typeEntryPoint, string extension = "xaml") : ThemeTestBase(typeEntryPoint)
 {
     [Fact]
     public void Should_Have_ServiceProvider_Ctor()
@@ -33,7 +36,7 @@ public abstract class ThemeClassTests(Type typeEntryPoint) : ThemeTestBase(typeE
     [Fact]
     public void Should_Be_Reachable_With_Avares_Loader()
     {
-        var theme = CallTryLoad($"{EntryPointClass.Name}.xaml");
+        var theme = CallTryLoad($"{EntryPointClass.Name}.{extension}");
         Assert.NotNull(theme);
         Assert.IsType(EntryPointClass, theme);
     }

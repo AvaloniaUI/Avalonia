@@ -216,6 +216,16 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <summary>
+        /// Gets or sets the variable-font axis values (e.g. <c>wght=700</c>).
+        /// <c>null</c> means the font's design defaults.
+        /// </summary>
+        public FontVariationSettings? FontVariations
+        {
+            get => TextElement.GetFontVariations(this);
+            set => TextElement.SetFontVariations(this, value);
+        }
+
+        /// <summary>
         /// Gets or sets a brush used to paint the text.
         /// </summary>
         public IBrush? Foreground
@@ -287,6 +297,22 @@ namespace Avalonia.Controls.Presenters
         {
             get => GetValue(CaretIndexProperty);
             set => SetValue(CaretIndexProperty, value);
+        }
+
+        /// <summary>
+        /// Gets the caret rectangle relative to this presenter.
+        /// </summary>
+        /// <remarks>
+        /// The rectangle has zero width. Its X/Y position and height describe the caret location
+        /// within the presenter's text layout coordinates.
+        /// </remarks>
+        public Rect CursorRectangle
+        {
+            get
+            {
+                EnsureCaretBounds();
+                return _caretBounds;
+            }
         }
 
         public char PasswordChar
@@ -563,7 +589,7 @@ namespace Avalonia.Controls.Presenters
             var caretIndex = CaretIndex;
             var preeditText = PreeditText;
             var text = GetCombinedText(Text, caretIndex, preeditText);
-            var typeface = new Typeface(FontFamily, FontStyle, FontWeight, FontStretch);
+            var typeface = new Typeface(FontFamily, FontStyle, FontWeight, FontStretch, FontVariations);
             var selectionStart = SelectionStart;
             var selectionEnd = SelectionEnd;
             var start = Math.Min(selectionStart, selectionEnd);
@@ -999,12 +1025,6 @@ namespace Avalonia.Controls.Presenters
             }
         }
 
-        internal Rect GetCursorRectangle()
-        {
-            EnsureCaretBounds();
-
-            return _caretBounds;
-        }
 
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
@@ -1111,6 +1131,7 @@ namespace Avalonia.Controls.Presenters
                 case nameof(FontWeight):
                 case nameof(FontFamily):
                 case nameof(FontStretch):
+                case nameof(FontVariations):
                 case nameof(Text):
                 case nameof(LetterSpacing):
                 case nameof(PasswordChar):
