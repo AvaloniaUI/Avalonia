@@ -8,7 +8,9 @@ using Avalonia.Android.Automation;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
+using Avalonia.Controls;
 using Avalonia.Controls.Automation.Peers;
+using Avalonia.Controls.Primitives;
 using Java.Lang;
 
 namespace Avalonia.Android
@@ -44,6 +46,34 @@ namespace Avalonia.Android
                 AutomationControlType.TreeItem,
                 AutomationControlType.Window,
             };
+
+        private static readonly Dictionary<Type, string?> s_roles = new Dictionary<Type, string?>()
+        {
+            { typeof(Button), Class.FromType(typeof(global::Android.Widget.Button)).Name },
+            { typeof(CalendarDatePicker), Class.FromType(typeof(global::Android.Widget.DatePicker)).Name },
+            { typeof(CheckBox), Class.FromType(typeof(global::Android.Widget.CheckBox)).Name },
+            { typeof(ComboBox), Class.FromType(typeof(global::Android.Widget.Spinner)).Name },
+            { typeof(CommandBarButton), Class.FromType(typeof(global::Android.Widget.Button)).Name },
+            { typeof(CommandBarToggleButton), Class.FromType(typeof(global::Android.Widget.ToggleButton)).Name },
+            { typeof(DatePicker), Class.FromType(typeof(global::Android.Widget.DatePicker)).Name },
+            { typeof(DropDownButton), Class.FromType(typeof(global::Android.Widget.Button)).Name },
+            { typeof(HyperlinkButton), Class.FromType(typeof(global::Android.Widget.Button)).Name },
+            { typeof(Image), Class.FromType(typeof(global::Android.Widget.ImageView)).Name },
+            { typeof(ListBox), Class.FromType(typeof(global::Android.Widget.ListView)).Name },
+            { typeof(NumericUpDown), Class.FromType(typeof(global::Android.Widget.NumberPicker)).Name },
+            { typeof(ProgressBar), Class.FromType(typeof(global::Android.Widget.ProgressBar)).Name },
+            { typeof(RadioButton), Class.FromType(typeof(global::Android.Widget.RadioButton)).Name },
+            { typeof(RepeatButton), Class.FromType(typeof(global::Android.Widget.Button)).Name },
+            { typeof(ScrollViewer), Class.FromType(typeof(global::Android.Widget.ScrollView)).Name },
+            { typeof(Slider), Class.FromType(typeof(global::Android.Widget.SeekBar)).Name },
+            { typeof(SplitButton), Class.FromType(typeof(global::Android.Widget.Button)).Name },
+            { typeof(TabControl), Class.FromType(typeof(global::Android.Widget.TabWidget)).Name },
+            { typeof(TextBox), Class.FromType(typeof(global::Android.Widget.EditText)).Name },
+            { typeof(TimePicker), Class.FromType(typeof(global::Android.Widget.TimePicker)).Name },
+            { typeof(ToggleButton), Class.FromType(typeof(global::Android.Widget.ToggleButton)).Name },
+            { typeof(ToggleSplitButton), Class.FromType(typeof(global::Android.Widget.ToggleButton)).Name },
+            { typeof(ToggleSwitch), Class.FromType(typeof(global::Android.Widget.Switch)).Name },
+        };
 
         private readonly Dictionary<int, AutomationPeer> _peers;
         private readonly Dictionary<AutomationPeer, int> _peerIds;
@@ -184,7 +214,7 @@ namespace Avalonia.Android
                 }
 
                 int virtualViewId;
-                if (peer.GetParent() is AutomationPeer parent && 
+                if (peer.GetParent() is AutomationPeer parent &&
                     !s_containerTypes.Contains(parent.GetAutomationControlType()))
                 {
                     GetOrCreateNodeInfoProvidersFromPeer(parent, out virtualViewId);
@@ -258,6 +288,25 @@ namespace Avalonia.Android
             }
         }
 
+        private static string? GetClassName(AutomationPeer peer)
+        {
+
+            if (peer is ControlAutomationPeer controlPeer)
+            {
+                if (AutomationProperties.GetClassNameOverride(controlPeer.Owner) is string classNameOverride)
+                {
+                    return classNameOverride;
+                }
+
+                Type controlType = controlPeer.Owner.GetType();
+                if (s_roles.TryGetValue(controlType, out string? role))
+                {
+                    return role;
+                }
+            }
+            return peer.GetClassName();
+        }
+
         protected override void OnPopulateNodeForVirtualView(int virtualViewId, AccessibilityNodeInfoCompat? nodeInfo)
         {
             if (nodeInfo is null)
@@ -298,7 +347,7 @@ namespace Avalonia.Android
             }
 
             // UI debug metadata
-            nodeInfo.ClassName = peer.GetClassName();
+            nodeInfo.ClassName = GetClassName(peer);
             var automationId = peer.GetAutomationId();
             nodeInfo.UniqueId = automationId;
             nodeInfo.ViewIdResourceName = automationId;
