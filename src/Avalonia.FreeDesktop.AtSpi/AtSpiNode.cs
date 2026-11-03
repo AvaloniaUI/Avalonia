@@ -182,7 +182,7 @@ namespace Avalonia.FreeDesktop.AtSpi
             }
 
             if (this is RootAtSpiNode { WindowImpl.Handle: { HandleDescriptor: "XID" } handle })
-                attrs["window-handle"] = handle.Handle.ToInt64().ToString(CultureInfo.InvariantCulture);
+                attrs["avalonia-window-handle"] = handle.Handle.ToInt64().ToString(CultureInfo.InvariantCulture);
 
             return attrs;
         }

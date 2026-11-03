@@ -102,7 +102,7 @@ namespace Avalonia.Controls.UnitTests.Automation
             Mock.Get(window.PlatformImpl!).Setup(x => x.Handle).Returns(new PlatformHandle(new IntPtr(42), "XID"));
             await using var server = new AtSpiServer();
 
-            Assert.Equal("42", (await CreateHandler(window, server).GetAttributesAsync())["window-handle"]);
+            Assert.Equal("42", (await CreateHandler(window, server).GetAttributesAsync())["avalonia-window-handle"]);
         }
 
         [Fact]
