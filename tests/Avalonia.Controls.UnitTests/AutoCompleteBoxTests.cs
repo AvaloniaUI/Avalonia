@@ -1252,6 +1252,46 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Focus_Landing_In_The_DropDown_Should_Stay_There()
+        {
+            using var app = UnitTestApplication.Start(TestServices.FocusableWindow);
+
+            var box = new AutoCompleteBox
+            {
+                ItemsSource = new[] { "apple", "apricot", "banana" },
+                FilterMode = AutoCompleteFilterMode.StartsWith,
+                Width = 200
+            };
+
+            var window = new Window { Content = box };
+            window.Show();
+            window.LayoutManager.ExecuteInitialLayoutPass();
+
+            box.Focus();
+            var textBox = box.GetVisualDescendants().OfType<TextBox>().First(t => t.Name == "PART_TextBox");
+            textBox.Text = "ap";
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+            Assert.True(box.IsDropDownOpen, "the drop-down did not open");
+
+            var popup = box.GetVisualDescendants().OfType<Popup>().First();
+            var item = popup.Child!.GetSelfAndVisualDescendants().OfType<ListBoxItem>().First();
+
+            // Focus arriving in the box selects its text, which is what must not happen for the drop-down.
+            textBox.SelectionStart = textBox.SelectionEnd = 0;
+
+            box.RaiseEvent(new FocusChangedEventArgs(InputElement.GotFocusEvent)
+            {
+                Source = box,
+                NewFocusedElement = item
+            });
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+            Assert.Equal(textBox.SelectionStart, textBox.SelectionEnd);
+            Assert.True(box.IsDropDownOpen, "focus landing in the drop-down closed it");
+        }
+
+        [Fact]
         public void Focus_Moving_Into_The_DropDown_Should_Not_Close_It()
         {
             using var app = UnitTestApplication.Start(TestServices.FocusableWindow);
