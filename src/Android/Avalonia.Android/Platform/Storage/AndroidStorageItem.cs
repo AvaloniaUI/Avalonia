@@ -83,6 +83,7 @@ internal abstract class AndroidStorageItem : IStorageBookmarkItem
                 if (columnIndex != -1)
                     return cursor.GetString(columnIndex);
             }
+            cursor?.Close();
         }
         catch (Exception ex)
         {
@@ -291,6 +292,7 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
                             .Log(this, "Directory LastModified metadata reader failed: '{Exception}'", ex);
                     }
                 }
+                cursor?.Close();
             }
         }
         catch (Exception ex)
@@ -343,6 +345,7 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
                     yield return isDirectory ? new AndroidStorageFolder(Activity, uri, false, this, root) :
                         new AndroidStorageFile(Activity, uri, this, root);
                 }
+            cursor?.Close();
         }
     }
 
@@ -436,6 +439,7 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
                         new AndroidStorageFile(Activity, uri, this, root);
                 }
             }
+            cursor?.Close();
         }
 
         return null;
@@ -582,6 +586,7 @@ internal sealed class AndroidStorageFile : AndroidStorageItem, IStorageBookmarkF
                         .Log(this, "File LastModified metadata reader failed: '{Exception}'", ex);
                 }
             }
+            cursor?.Close();
         }
         catch (UnsupportedOperationException)
         {
