@@ -4,6 +4,7 @@ using System.Linq;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
+using Avalonia.Controls.Automation.Peers;
 using Avalonia.Input;
 using CoreGraphics;
 using Foundation;
@@ -150,7 +151,8 @@ namespace Avalonia.iOS
             HashSet<AutomationPeer> retainedChildren = new();
             foreach (AutomationPeer child in _peer.GetChildren())
             {
-                if (child.IsOffscreen())
+                // The peer of a native control throws from almost every member: it must never be wrapped.
+                if (child is InteropAutomationPeer || child.IsOffscreen())
                 {
                     continue;
                 }
