@@ -43,7 +43,7 @@ namespace Avalonia.X11
         private XConfigureEvent? _configure;
         private PixelPoint? _configurePoint;
         // Serial of the last XConfigureWindow request whose size we applied to _realSize ourselves (see Resize).
-        // ConfigureNotify events generated before the server processed that request are stale and dropped.
+        // The size in ConfigureNotify events generated before the server processed that request is stale.
         private ulong _selfResizeRequestSerial;
         private bool _triggeredExpose;
         private IInputRoot? _inputRoot;
@@ -712,16 +712,15 @@ namespace Avalonia.X11
                         _configure = null;
                         _configurePoint = null;
 
-                        // Drop events the server generated before it processed our last self-applied resize
-                        // request. This has to be checked here rather than when the event is read: the event
-                        // may have been read and queued before Resize() ran (e.g. a pre-map move whose notify
-                        // was already in Xlib's queue). It describes geometry our request has superseded, and
-                        // whatever the WM does with the request (apply, constrain, or refuse via the ICCCM
-                        // synthetic notify) arrives with a newer serial and restates the full geometry.
-                        if ((ulong)cev.serial.ToInt64() < _selfResizeRequestSerial)
-                            return;
-
-                        var nsize = new PixelSize(cev.width, cev.height);
+                        // An event the server generated before it processed our last self-applied resize
+                        // request still carries the size that request has superseded. Applying it would revert
+                        // _realSize and report a bogus resize, which Window feeds back into Width/Height. This has
+                        // to be checked here rather than when the event is read: the event may have been read and
+                        // queued before Resize() ran (e.g. a pre-map move whose notify was already in Xlib's queue).
+                        // Only the size is stale: the request didn't touch the position, and a later notify is not
+                        // guaranteed (a no-op resize produces none), so the position is still applied.
+                        var staleSize = (ulong)cev.serial.ToInt64() < _selfResizeRequestSerial;
+                        var nsize = staleSize ? _realSize : new PixelSize(cev.width, cev.height);
                         var changedSize = _realSize != nsize;
                         var changedPos = _position == null || npos != _position;
                         _realSize = nsize;
