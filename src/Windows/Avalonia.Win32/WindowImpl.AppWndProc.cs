@@ -237,8 +237,15 @@ namespace Avalonia.Win32
                     break;
 
                 case WindowsMessage.WM_SYSCOMMAND:
-                    // Disable system handling of Alt/F10 menu keys.
-                    if (GetSysCommand(wParam) == SysCommands.SC_KEYMENU && HighWord(ToInt32(lParam)) <= 0)
+                    // Disable system handling of Alt/F10 menu keys, but let Alt+Space open the system menu.
+                    if (GetSysCommand(wParam) == SysCommands.SC_KEYMENU && HighWord(ToInt32(lParam)) <= 0 && ToInt32(lParam) != ' ')
+                        return IntPtr.Zero;
+                    break;
+
+                case WindowsMessage.WM_SYSCHAR:
+                    // DefWindowProc turns WM_SYSCHAR into SC_KEYMENU (e.g. Alt+Space opens the system menu),
+                    // so skip it when the preceding WM_SYSKEYDOWN was handled.
+                    if (_ignoreWmChar)
                         return IntPtr.Zero;
                     break;
 
@@ -287,6 +294,12 @@ namespace Avalonia.Win32
                         shouldTakeFocus = ShouldTakeFocusOnClick;
                         if (ShouldIgnoreTouchEmulatedMessage())
                         {
+                            if (message == WindowsMessage.WM_LBUTTONDOWN && _pendingDrag is { } pendingDrag)
+                            {
+                                _pendingDrag = null;
+                                Dispatcher.UIThread.Post(pendingDrag, DispatcherPriority.Send);
+                            }
+
                             break;
                         }
 
@@ -574,6 +587,10 @@ namespace Avalonia.Win32
                         {
                             break;
                         }
+                        if (message is WindowsMessage.WM_POINTERUP or WindowsMessage.WM_NCPOINTERUP)
+                        {
+                            _pendingDrag = null;
+                        }
                         GetDevicePointerInfo(wParam, out var device, out var info, out var point, out var modifiers, ref timestamp);
                         var eventType = GetEventType(message, info);
 
@@ -599,6 +616,7 @@ namespace Avalonia.Win32
                         {
                             break;
                         }
+                        _pendingDrag = null;
                         GetDevicePointerInfo(wParam, out var device, out var info, out var point, out var modifiers, ref timestamp);
                         var eventType = device is TouchDevice ? RawPointerEventType.TouchCancel : RawPointerEventType.CancelCapture;
                         e = CreatePointerArgs(device, timestamp, eventType, point, modifiers, info.pointerId);
@@ -963,7 +981,7 @@ namespace Avalonia.Win32
             {
                 Input(e);
 
-                if (message == WindowsMessage.WM_KEYDOWN)
+                if (message is WindowsMessage.WM_KEYDOWN or WindowsMessage.WM_SYSKEYDOWN)
                 {
                     if (e is RawKeyEventArgs args && args.Key == Key.ImeProcessed)
                     {
@@ -971,10 +989,10 @@ namespace Avalonia.Win32
                     }
                     else
                     {
-                        // Handling a WM_KEYDOWN message should cause the subsequent WM_CHAR message to
-                        // be ignored. This should be safe to do as WM_CHAR should only be produced in
-                        // response to the call to TranslateMessage/DispatchMessage after a WM_KEYDOWN
-                        // is handled.
+                        // Handling a WM_KEYDOWN/WM_SYSKEYDOWN message should cause the subsequent
+                        // WM_CHAR/WM_SYSCHAR message to be ignored. This should be safe to do as these
+                        // should only be produced in response to the call to TranslateMessage/DispatchMessage
+                        // after a WM_KEYDOWN/WM_SYSKEYDOWN is handled.
                         _ignoreWmChar = e.Handled;
                     }
                 }
@@ -984,7 +1002,13 @@ namespace Avalonia.Win32
                     s_intermediatePointsPooledList.Dispose();
                 }
 
-                if (e.Handled)
+                // A drag waiting on the emulated mouse button needs the default handling that produces it.
+                var awaitingDragMessage = _dragRequestedFromPointer
+                    && message is WindowsMessage.WM_POINTERDOWN or WindowsMessage.WM_NCPOINTERDOWN;
+
+                _dragRequestedFromPointer = false;
+
+                if (e.Handled && !awaitingDragMessage)
                 {
                     return IntPtr.Zero;
                 }

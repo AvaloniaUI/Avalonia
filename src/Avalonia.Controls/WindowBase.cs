@@ -305,6 +305,12 @@ namespace Avalonia.Controls
         protected override void ArrangeCore(Rect finalRect)
         {
             var constraint = ArrangeSetBounds(finalRect.Size);
+
+            // Setting the bounds may have resulted in a different size than requested, invalidating our measure:
+            // measure again so that the content isn't arranged with a size it wasn't measured with.
+            if (!IsMeasureValid)
+                Measure(PreviousMeasure ?? finalRect.Size);
+
             var arrangeSize = ArrangeOverride(constraint);
             Bounds = new Rect(finalRect.Position, arrangeSize);
         }

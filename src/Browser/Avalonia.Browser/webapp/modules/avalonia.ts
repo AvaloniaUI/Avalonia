@@ -1,4 +1,5 @@
 import { InputHelper } from "./avalonia/input";
+import { InputQueue } from "./avalonia/inputQueue";
 import { AvaloniaDOM } from "./avalonia/dom";
 import { Caniuse } from "./avalonia/caniuse";
 import { StreamHelper } from "./avalonia/stream";
@@ -7,6 +8,7 @@ import { NavigationHelper } from "./avalonia/navigationHelper";
 import { GeneralHelpers } from "./avalonia/generalHelpers";
 import { TimerHelper } from "./avalonia/timer";
 import { SingleThreadedDispatcherHelper } from "./avalonia/singleThreadedDispatcher";
+import { MultiThreadedDispatcherHelper } from "./avalonia/multiThreadedDispatcher";
 import { CanvasSurface } from "./avalonia/rendering/canvasSurface";
 import { WebRenderTargetRegistry } from "./avalonia/rendering/webRenderTargetRegistry";
 import { WebRenderTarget } from "./avalonia/rendering/webRenderTarget";
@@ -32,6 +34,7 @@ async function registerServiceWorker(path: string, scope: string | undefined) {
 export {
     Caniuse,
     InputHelper,
+    InputQueue,
     AvaloniaDOM,
     StreamHelper,
     NativeControlHost,
@@ -40,6 +43,7 @@ export {
     ScreenHelper,
     TimerHelper,
     SingleThreadedDispatcherHelper,
+    MultiThreadedDispatcherHelper,
     WebRenderTarget,
     CanvasSurface,
     WebRenderTargetRegistry,

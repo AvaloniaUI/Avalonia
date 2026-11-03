@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -50,14 +49,6 @@ public partial class Dispatcher : IDispatcher
         }
 
         IsSta = _thread.GetApartmentState() == ApartmentState.STA;
-
-        if (impl is null)
-        {
-            var st = Stopwatch.StartNew();
-            _timeProvider = () => st.ElapsedMilliseconds;
-        }
-        else
-            _timeProvider = () => impl.Now;
 
         _impl = null!; // Set by ReplaceImplementation
         ReplaceImplementation(impl);
@@ -132,8 +123,10 @@ public partial class Dispatcher : IDispatcher
         if (impl?.CurrentThreadIsLoopThread == false)
             throw new InvalidOperationException("IDispatcherImpl belongs to a different thread");
         
+        long? now = null;
         if (_impl != null!) // Null in ctor
         {
+            now = Now;
             _impl.Timer -= OnOSTimer;
             _impl.Signaled -= Signaled;
             if (_backgroundProcessingImpl != null)
@@ -149,6 +142,7 @@ public partial class Dispatcher : IDispatcher
         else
             impl = new ManagedDispatcherImpl(null);
         _impl = impl;
+        _clockOffset = now is { } n ? n - impl.Now : 0;
         
         impl.Timer += OnOSTimer;
         impl.Signaled += Signaled;

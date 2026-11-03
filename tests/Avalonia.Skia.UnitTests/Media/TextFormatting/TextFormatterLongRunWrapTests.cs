@@ -1,0 +1,131 @@
+#nullable enable
+
+using System.Collections.Generic;
+using System.Linq;
+using Avalonia.Media;
+using Avalonia.Media.TextFormatting;
+using Xunit;
+
+namespace Avalonia.Skia.UnitTests.Media.TextFormatting
+{
+    public class TextFormatterLongRunWrapTests
+    {
+        private const double ParagraphWidth = 200;
+
+        [Fact]
+        public void WrapWithOverflow_Breaks_A_Word_Without_Nearby_Opportunity_At_The_Fitting_Length()
+        {
+            using (TextFormatterTests.Start())
+            {
+                var text = "ab " + new string('x', 20_000) + " cd";
+
+                var overflow = WrapAll(text, TextWrapping.WrapWithOverflow);
+                var wrap = WrapAll(text, TextWrapping.Wrap);
+
+                Assert.Equal(text.Length, overflow.Sum());
+
+                // Once the end of the word is within reach it overflows like any short word.
+                var start = 0;
+                var index = 0;
+
+                while (start + 8_000 < text.Length - 3)
+                {
+                    Assert.Equal(wrap[index], overflow[index]);
+
+                    start += wrap[index++];
+                }
+
+                Assert.True(index > 100);
+            }
+        }
+
+        [Fact]
+        public void WrapWithOverflow_Still_Overflows_A_Short_Word()
+        {
+            using (TextFormatterTests.Start())
+            {
+                var word = new string('x', 100);
+                var text = "ab " + word + " cd";
+
+                var lengths = WrapAll(text, TextWrapping.WrapWithOverflow, width: 40);
+
+                Assert.Equal(text.Length, lengths.Sum());
+                Assert.Contains(lengths, length => length >= word.Length);
+            }
+        }
+
+        [Fact]
+        public void Wrap_Honors_A_Required_Break_Inside_A_Long_Run()
+        {
+            using (TextFormatterTests.Start())
+            {
+                var text = new string('x', 20_000) + "\n" + new string('y', 20_000);
+
+                var lengths = WrapAll(text, TextWrapping.Wrap);
+
+                Assert.Equal(text.Length, lengths.Sum());
+
+                var newline = 0;
+
+                foreach (var length in lengths)
+                {
+                    newline += length;
+
+                    if (newline == 20_001)
+                    {
+                        return;
+                    }
+                }
+
+                Assert.Fail("No line ends right after the required break.");
+            }
+        }
+
+        [Theory]
+        [InlineData(TextWrapping.Wrap)]
+        [InlineData(TextWrapping.WrapWithOverflow)]
+        public void Trailing_Whitespace_Longer_Than_The_Lookahead_Hangs_On_The_Line(TextWrapping wrapping)
+        {
+            using (TextFormatterTests.Start())
+            {
+                var text = "abc" + new string(' ', 10_000) + "def";
+
+                var lengths = WrapAll(text, wrapping);
+
+                Assert.Equal(new[] { 10_003, 3 }, lengths);
+            }
+        }
+
+        private static GenericTextParagraphProperties CreateParagraph(TextWrapping wrapping,
+            out GenericTextRunProperties runProperties)
+        {
+            runProperties = new GenericTextRunProperties(Typeface.Default, 12, foregroundBrush: Brushes.Black);
+
+            return new GenericTextParagraphProperties(runProperties, textWrapping: wrapping);
+        }
+
+        private static List<int> WrapAll(string text, TextWrapping wrapping, double width = ParagraphWidth)
+        {
+            var properties = CreateParagraph(wrapping, out var runProperties);
+            var source = new SingleBufferTextSource(text, runProperties);
+            var formatter = new TextFormatterImpl();
+            var lengths = new List<int>();
+            var position = 0;
+            TextLineBreak? previous = null;
+
+            while (position < text.Length)
+            {
+                using var line = formatter.FormatLine(source, position, width, properties, previous);
+
+                Assert.NotNull(line);
+                Assert.True(line!.Length > 0);
+
+                lengths.Add(line.Length);
+                position += line.Length;
+                previous = line.TextLineBreak;
+            }
+
+            return lengths;
+        }
+    }
+}

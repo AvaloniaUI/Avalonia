@@ -15,6 +15,18 @@ export class Caniuse {
         return regex1.test(userAgent) || regex2.test(userAgent.substr(0, 4));
     }
 
+    // macOS, iOS and iPadOS, where Command is the shortcut modifier.
+    public static isApplePlatform(): boolean {
+        const platform: string | undefined = (globalThis.navigator as any)?.userAgentData?.platform;
+        if (platform) {
+            return platform === "macOS" || platform === "iOS";
+        }
+
+        // navigator.platform is deprecated, but it's the only option in browsers without User-Agent Client Hints (Safari, Firefox).
+        // iPadOS reports "MacIntel" by default.
+        return /^(Mac|iPhone|iPad|iPod)/.test(globalThis.navigator?.platform ?? "");
+    }
+
     public static isTv(): boolean {
         return navigator.userAgent.includes("SmartTV");
     }

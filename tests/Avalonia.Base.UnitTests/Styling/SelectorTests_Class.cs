@@ -5,10 +5,11 @@ using Avalonia.Controls;
 using Avalonia.Styling;
 using Moq;
 using Xunit;
+using Avalonia.UnitTests;
 
 namespace Avalonia.Base.UnitTests.Styling
 {
-    public class SelectorTests_Class
+    public class SelectorTests_Class : ScopedTestBase
     {
         [Fact]
         public void Class_Selector_Should_Have_Correct_String_Representation()
@@ -24,6 +25,15 @@ namespace Avalonia.Base.UnitTests.Styling
             var target = default(Selector).Class(":foo");
 
             Assert.Equal(":foo", target.ToString());
+        }
+
+        [Fact]
+        public void Class_Selector_With_Soft_Hyphen_Before_Colon_Should_Have_Correct_String_Representation()
+        {
+            // Culture-sensitive comparisons ignore the soft hyphen, so they see this class as starting with ':'.
+            var target = default(Selector).Class("\u00AD:foo");
+
+            Assert.Equal(".\u00AD:foo", target.ToString());
         }
 
         [Fact]

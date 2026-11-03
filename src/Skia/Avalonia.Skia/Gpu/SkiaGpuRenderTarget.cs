@@ -45,7 +45,7 @@ namespace Avalonia.Skia
         }
         
         public PlatformRenderTargetState PlatformRenderTargetState => _renderTarget.State;
-        public RenderTargetProperties Properties { get; }
+        public RenderTargetProperties Properties => _renderTarget.Properties;
 
 
     }
