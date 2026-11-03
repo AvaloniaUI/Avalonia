@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Avalonia.Base.UnitTests.Rendering
 {
-    public class DiagnosticTextRendererTests : TestWithServicesBase
+    public class DiagnosticTextRendererTests : ScopedTestBase
     {
         private const double EmSize = 12.0;
 

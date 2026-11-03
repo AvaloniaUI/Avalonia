@@ -136,7 +136,7 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
 
         public ValueTask<AtSpiAttributeSet> GetAttributesAsync()
         {
-            return ValueTask.FromResult(AtSpiNode.GetAttributes(node.Peer));
+            return ValueTask.FromResult(node.GetAttributes());
         }
 
         public ValueTask<AtSpiObjectReference> GetApplicationAsync()

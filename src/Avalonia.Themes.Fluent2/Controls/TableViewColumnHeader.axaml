@@ -1,0 +1,76 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    x:ClassModifier="internal">
+
+  <Design.PreviewWith>
+    <Border Margin="20" BorderThickness="1" BorderBrush="LightGray">
+      <TableViewColumnHeader Content="Header" />
+    </Border>
+  </Design.PreviewWith>
+
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Default">
+      <SolidColorBrush x:Key="TableViewHeaderSeparatorFill" Color="{StaticResource SystemBaseLowColor}" />
+      <StaticResource x:Key="TableViewHeaderSeparatorPointerOverFill" ResourceKey="AccentFillColorDefaultBrush" />
+    </ResourceDictionary>
+    <ResourceDictionary x:Key="Dark">
+      <SolidColorBrush x:Key="TableViewHeaderSeparatorFill" Color="{StaticResource SystemBaseLowColor}" />
+      <StaticResource x:Key="TableViewHeaderSeparatorPointerOverFill" ResourceKey="AccentFillColorDefaultBrush" />
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
+
+
+  <ControlTheme x:Key="{x:Type TableViewColumnHeader}" TargetType="TableViewColumnHeader" BasedOn="{StaticResource DefaultTableViewColumnHeaderTheme}"/>
+
+  <ControlTheme x:Key="DefaultTableViewColumnHeaderTheme" TargetType="TableViewColumnHeader">
+    <Setter Property="FontWeight" Value="{DynamicResource TableViewHeaderFontWeight}" />
+    <Setter Property="FontSize" Value="{DynamicResource TableViewHeaderFontSize}"/>
+    <Setter Property="Padding" Value="{DynamicResource TableViewHeaderCellPadding}" />
+    <Setter Property="HorizontalContentAlignment" Value="Left" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="ClipToBounds" Value="False" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Panel>
+          <ContentPresenter Name="PART_ContentPresenter"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            Content="{TemplateBinding Content}"
+                            Padding="{TemplateBinding Padding}"
+                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" />
+          <Thumb Name="PART_Resizer"
+                 Theme="{StaticResource TableViewColumnHeaderResizerTemplate}"
+                 Width="{DynamicResource TableViewResizeGripperWidth}"
+                 HorizontalAlignment="Right"
+                 Cursor="SizeWestEast"
+                 IsEnabled="{Binding RelativeSource={RelativeSource TemplatedParent},
+                 Path=Column?.CanUserEffectivelyResize, FallbackValue=False}">
+          </Thumb>
+        </Panel>
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+
+  <ControlTheme x:Key="TableViewColumnHeaderResizerTemplate" TargetType="Thumb">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Background="Transparent">
+          <Rectangle Width="1"
+                     Name="ResizerRectangle"
+                     Fill="{DynamicResource TableViewHeaderSeparatorFill}"
+                     HorizontalAlignment="Right" />
+        </Border>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^:pointerover /template/ Rectangle#ResizerRectangle">
+      <Setter Property="Fill" Value="{DynamicResource TableViewHeaderSeparatorPointerOverFill}" />
+    </Style>
+    <Style Selector="^:pressed /template/ Rectangle#ResizerRectangle">
+      <Setter Property="Fill" Value="{DynamicResource TableViewHeaderSeparatorPointerOverFill}" />
+    </Style>
+  </ControlTheme>
+</ResourceDictionary>

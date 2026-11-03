@@ -382,7 +382,12 @@ namespace Avalonia.Layout
             }
 
             foreach (var i in _toArrangeAfterMeasure)
-                InvalidateArrange(i);
+            {
+                // A control can move to another top level during the pass, and that top level arranges it itself.
+                if (i.GetLayoutRoot() == _owner)
+                    InvalidateArrange(i);
+            }
+
             _toArrangeAfterMeasure.Clear();
         }
 

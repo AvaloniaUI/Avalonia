@@ -241,6 +241,7 @@ namespace Avalonia.Controls
         private bool _displayDateIsChanging;
         private bool _isTapRangeSelectionActive;
         private DateTime? _tapRangeStart;
+        private double _wheelDelta;
 
         internal CalendarDayButton? FocusButton { get; set; }
         internal CalendarButton? FocusCalendarButton { get; set; }
@@ -1761,9 +1762,21 @@ namespace Avalonia.Controls
             {
                 CalendarExtensions.GetMetaKeyState(e.KeyModifiers, out bool ctrl, out bool shift);
 
+                // Touchpads send many small deltas, so only step once they add up to a whole notch.
+                _wheelDelta += e.Delta.Y;
+
+                if (Math.Abs(_wheelDelta) < 1)
+                {
+                    e.Handled = true;
+                    return;
+                }
+
+                var up = _wheelDelta > 0;
+                _wheelDelta = 0;
+
                 if (!ctrl)
                 {
-                    if (e.Delta.Y > 0)
+                    if (up)
                     {
                         ProcessPageUpKey(false);
                     }
@@ -1774,7 +1787,7 @@ namespace Avalonia.Controls
                 }
                 else
                 {
-                    if (e.Delta.Y > 0)
+                    if (up)
                     {
                         ProcessDownKey(ctrl, shift);
                     }

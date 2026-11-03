@@ -59,6 +59,9 @@ internal static partial class AvaloniaModule
     [JSImport("Caniuse.isMobile", AvaloniaModule.MainModuleName)]
     public static partial bool IsMobile();
 
+    [JSImport("Caniuse.isApplePlatform", AvaloniaModule.MainModuleName)]
+    public static partial bool IsApplePlatform();
+
     [JSImport("Caniuse.isTv", AvaloniaModule.MainModuleName)]
     public static partial bool IsTv();
 

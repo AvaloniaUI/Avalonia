@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Avalonia.Base.UnitTests.Input
 {
-    public class KeyboardDeviceTests
+    public class KeyboardDeviceTests : ScopedTestBase
     {
         [Fact]
         public void Keypresses_Should_Be_Sent_To_Root_If_No_Focused_Element()

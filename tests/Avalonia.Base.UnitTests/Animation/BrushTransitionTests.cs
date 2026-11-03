@@ -3,10 +3,11 @@ using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Xunit;
+using Avalonia.UnitTests;
 
 namespace Avalonia.Base.UnitTests.Animation
 {
-    public class BrushTransitionTests
+    public class BrushTransitionTests : ScopedTestBase
     {
         [Fact]
         public void SolidColorBrush_Opacity_IsInteroplated()

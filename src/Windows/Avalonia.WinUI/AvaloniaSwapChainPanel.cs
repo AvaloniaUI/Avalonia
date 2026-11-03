@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using global::Avalonia;
 using global::Avalonia.Controls.Embedding;
@@ -9,7 +8,7 @@ using global::Avalonia.Input.Raw;
 using global::Avalonia.Logging;
 using global::Avalonia.Platform;
 using global::Avalonia.Win32;
-using global::Avalonia.Win32.OpenGl.Angle;
+using global::Avalonia.Win32.DirectX;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
@@ -26,7 +25,7 @@ namespace Avalonia.WinUI;
 
 public partial class AvaloniaSwapChainPanel : SwapChainPanel
 {
-    private SwapChainGlSurface? _glSurface;
+    private SwapChainPanelHost? _host;
     private SwapChainTopLevelImpl? _topLevelImpl;
     private EmbeddableControlRoot? _root;
     private AvControl? _content;
@@ -153,15 +152,14 @@ public partial class AvaloniaSwapChainPanel : SwapChainPanel
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
-        if (_glSurface is not null)
+        if (_host is not null)
             return;
 
         UpdateCachedSize();
 
-        // Create the GL surface — swap chain creation is deferred to CreateGlRenderTarget
-        // where we have the actual rendering context's D3D device
-        _glSurface = new SwapChainGlSurface(GetPixelSize, GetScaling, OnSwapChainCreated);
-        _topLevelImpl = new SwapChainTopLevelImpl(_glSurface)
+        // The swap chain itself is created by the render target on the render thread
+        _host = new SwapChainPanelHost(this, GetPixelSize, GetScaling);
+        _topLevelImpl = new SwapChainTopLevelImpl(new CompositionSwapchainSurface(_host))
         {
             ClientSize = new AvSize(ActualWidth, ActualHeight),
             RenderScaling = CompositionScaleX
@@ -186,39 +184,6 @@ public partial class AvaloniaSwapChainPanel : SwapChainPanel
         s_panelsByImpl[_topLevelImpl] = this;
     }
 
-    private unsafe void OnSwapChainCreated(IntPtr swapChainPtr)
-    {
-        // Called from the render thread when the swap chain is first created.
-        // Set it on the panel via ISwapChainPanelNative COM interop.
-        DispatcherQueue.TryEnqueue(() =>
-        {
-            var panelUnknown = Marshal.GetIUnknownForObject(this);
-            try
-            {
-                var iid = new Guid("63aad0b8-7c24-40ff-85a8-640d944cc325");
-                Marshal.QueryInterface(panelUnknown, in iid, out var nativePtr);
-                if (nativePtr != IntPtr.Zero)
-                {
-                    try
-                    {
-                        var vtable = *(IntPtr**)nativePtr;
-                        var setSwapChain = (delegate* unmanaged[Stdcall]<IntPtr, IntPtr, int>)vtable[3];
-                        var hr = setSwapChain(nativePtr, swapChainPtr);
-                        Marshal.ThrowExceptionForHR(hr);
-                    }
-                    finally
-                    {
-                        Marshal.Release(nativePtr);
-                    }
-                }
-            }
-            finally
-            {
-                Marshal.Release(panelUnknown);
-            }
-        });
-    }
-
     private void OnUnloaded(object sender, RoutedEventArgs e)
     {
         if (_topLevelImpl is not null)
@@ -227,8 +192,8 @@ public partial class AvaloniaSwapChainPanel : SwapChainPanel
         _root?.Dispose();
         _root = null;
         _topLevelImpl = null;
-        _glSurface?.DisposeSwapChain();
-        _glSurface = null;
+        _host?.Dispose();
+        _host = null;
         _mouseDevice.Dispose();
         _touchDevice.Dispose();
         _penDevice.Dispose();

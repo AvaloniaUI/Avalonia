@@ -1,4 +1,8 @@
-﻿using Avalonia.Controls;
+﻿using System;
+using Avalonia.Controls;
+using Avalonia.Media;
+using Avalonia.Styling;
+using ControlCatalog.Models;
 using MiniMvvm;
 
 namespace ControlCatalog.ViewModels
@@ -16,6 +20,35 @@ namespace ControlCatalog.ViewModels
             };
 
             WindowState = WindowState.Normal;
+
+            WindowDecorationsOptions = [.. Enum.GetValues<WindowDecorations>()];
+
+            CurrentWindowDecorations = WindowDecorations.Full;
+
+            CatalogThemes = [.. Enum.GetValues<CatalogTheme>()];
+
+            WindowTransparencyLevels = new[]{
+                WindowTransparencyLevel.None,
+                WindowTransparencyLevel.Transparent,
+                WindowTransparencyLevel.Blur,
+                WindowTransparencyLevel.AcrylicBlur,
+                WindowTransparencyLevel.Mica
+            };
+
+            CurrentWindowTransparencyLevel = WindowTransparencyLevel.None;
+
+            FlowDirections = [.. Enum.GetValues<FlowDirection>()];
+
+            CurrentFlowDirection = FlowDirection.LeftToRight;
+
+            ThemeVariants = new[]
+            {
+                ThemeVariant.Default,
+                ThemeVariant.Light,
+                ThemeVariant.Dark
+            };
+
+            CurrentThemeVariant = ThemeVariant.Default;
         }
 
         public WindowState WindowState
@@ -24,34 +57,40 @@ namespace ControlCatalog.ViewModels
             set => RaiseAndSetIfChanged(ref field, value);
         }
 
-        public int SelectedDecorationIndex
+        public FlowDirection CurrentFlowDirection
+        {
+            get;
+            set => RaiseAndSetIfChanged(ref field, value);
+        }
+        public ThemeVariant[] ThemeVariants { get; }
+        public WindowDecorations CurrentWindowDecorations
         {
             get;
             set => RaiseAndSetIfChanged(ref field, value);
         }
 
-        public int SelectedThemeVariantIndex
+        public CatalogTheme CurrentCatalogTheme
         {
             get;
             set => RaiseAndSetIfChanged(ref field, value);
         }
 
-        public int SelectedTransparencyLevelIndex
+        public WindowTransparencyLevel CurrentWindowTransparencyLevel
         {
             get;
             set => RaiseAndSetIfChanged(ref field, value);
         }
 
-        public int SelectedFlowDirectionIndex
+        public ThemeVariant CurrentThemeVariant
         {
             get;
             set => RaiseAndSetIfChanged(ref field, value);
         }
 
-        public WindowState[] WindowStates
-        {
-            get;
-            set => RaiseAndSetIfChanged(ref field, value);
-        }
+        public FlowDirection[] FlowDirections { get; }
+        public WindowTransparencyLevel[] WindowTransparencyLevels { get; }
+        public WindowDecorations[] WindowDecorationsOptions { get; }
+        public WindowState[] WindowStates { get; }
+        public CatalogTheme[] CatalogThemes { get; }
     }
 }
