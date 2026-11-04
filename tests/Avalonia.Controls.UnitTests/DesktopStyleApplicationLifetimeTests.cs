@@ -422,7 +422,6 @@ namespace Avalonia.Controls.UnitTests
                 windowB.Show();
 
                 lifetimeEvents.Raise(x => x.ShutdownRequested += null, request);
-                request.EndDeferralRequest();
 
                 Assert.False(request.Cancel);
                 Assert.Empty(replies);
@@ -467,8 +466,6 @@ namespace Avalonia.Controls.UnitTests
                 window.Show();
 
                 lifetimeEvents.Raise(x => x.ShutdownRequested += null, request);
-                request.CancelDeferrals();
-                request.EndDeferralRequest();
 
                 Assert.True(request.Cancel);
                 Assert.Empty(replies);
@@ -486,8 +483,119 @@ namespace Avalonia.Controls.UnitTests
         {
             var request = new ShutdownRequestedEventArgs();
 
+            Assert.False(request.CanDefer);
             Assert.Throws<InvalidOperationException>(() => request.GetDeferral());
             Assert.False(request.Cancel);
+        }
+
+        [Fact]
+        public void Shutdown_Request_Should_Not_Reenter_While_Deferral_Is_Pending()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            using (var lifetime = new ClassicDesktopStyleApplicationLifetime())
+            {
+                var lifetimeEvents = new Mock<IPlatformLifetimeEventsImpl>();
+                AvaloniaLocator.CurrentMutable.Bind<IPlatformLifetimeEventsImpl>().ToConstant(lifetimeEvents.Object);
+                Setup(lifetime);
+
+                var window = new Window();
+                var replies = new List<bool>();
+                var shutdownRequested = 0;
+                var exited = 0;
+                ShutdownRequestedDeferral? deferral = null;
+                var request = new ShutdownRequestedEventArgs(replies.Add);
+
+                lifetime.ShutdownRequested += (_, e) =>
+                {
+                    ++shutdownRequested;
+                    deferral = e.GetDeferral();
+                };
+                lifetime.Exit += (_, _) => ++exited;
+                window.Show();
+
+                lifetimeEvents.Raise(x => x.ShutdownRequested += null, request);
+
+                Assert.False(lifetime.TryShutdown());
+                window.Close();
+
+                Assert.Equal(1, shutdownRequested);
+                Assert.Equal(0, exited);
+                Assert.Empty(replies);
+
+                deferral!.Complete();
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+                Assert.Equal(1, shutdownRequested);
+                Assert.Equal(1, exited);
+                Assert.Equal(new[] { true }, replies);
+            }
+        }
+
+        [Fact]
+        public void Explicit_Shutdown_Should_Cancel_Pending_Native_Request()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            using (var lifetime = new ClassicDesktopStyleApplicationLifetime())
+            {
+                var lifetimeEvents = new Mock<IPlatformLifetimeEventsImpl>();
+                AvaloniaLocator.CurrentMutable.Bind<IPlatformLifetimeEventsImpl>().ToConstant(lifetimeEvents.Object);
+                Setup(lifetime);
+
+                var replies = new List<bool>();
+                var request = new ShutdownRequestedEventArgs(replies.Add);
+                ShutdownRequestedDeferral? deferral = null;
+                var exited = 0;
+                lifetime.ShutdownRequested += (_, e) => deferral = e.GetDeferral();
+                lifetime.Exit += (_, _) => ++exited;
+
+                lifetimeEvents.Raise(x => x.ShutdownRequested += null, request);
+                lifetime.Shutdown();
+
+                Assert.Equal(new[] { false }, replies);
+                Assert.Equal(1, exited);
+
+                deferral!.Complete();
+
+                Assert.Equal(new[] { false }, replies);
+                Assert.Equal(1, exited);
+            }
+        }
+
+        [Fact]
+        public void Shutdown_Request_Should_Not_Acquire_Deferrals_During_Window_Teardown()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            using (var lifetime = new ClassicDesktopStyleApplicationLifetime())
+            {
+                var lifetimeEvents = new Mock<IPlatformLifetimeEventsImpl>();
+                AvaloniaLocator.CurrentMutable.Bind<IPlatformLifetimeEventsImpl>().ToConstant(lifetimeEvents.Object);
+                Setup(lifetime);
+
+                var window = new Window();
+                var replies = new List<bool>();
+                var request = new ShutdownRequestedEventArgs(replies.Add);
+                InvalidOperationException? deferralError = null;
+
+                lifetime.ShutdownRequested += (_, _) => { };
+                window.Closing += (_, _) =>
+                {
+                    try
+                    {
+                        request.GetDeferral();
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        deferralError = ex;
+                    }
+                };
+                window.Show();
+
+                lifetimeEvents.Raise(x => x.ShutdownRequested += null, request);
+
+                Assert.NotNull(deferralError);
+                Assert.Empty(replies);
+                Assert.Empty(lifetime.Windows);
+            }
         }
 
         [Theory]
@@ -516,6 +624,7 @@ namespace Avalonia.Controls.UnitTests
                     replies.Add(shouldTerminate);
                 });
 
+                Assert.True(request.CanDefer);
                 lifetime.ShutdownRequested += (_, e) =>
                 {
                     events.Add("ShutdownRequested");
@@ -530,9 +639,7 @@ namespace Avalonia.Controls.UnitTests
                 window.Closed += (_, _) => events.Add("Closed");
                 lifetime.Exit += (_, _) => events.Add("Exit");
                 window.Show();
-
                 lifetimeEvents.Raise(x => x.ShutdownRequested += null, request);
-                request.EndDeferralRequest();
                 Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
 
                 Assert.Equal(new[] { "ShutdownRequested" }, events);
@@ -622,7 +729,6 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(new[] { "FirstHandler", "SecondHandler" }, events);
                 Assert.Equal(new[] { window }, lifetime.Windows);
 
-                request.EndDeferralRequest();
                 Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
 
                 Assert.Equal(new[] { "FirstHandler", "SecondHandler", "Closing", "Closed", "Exit", "Reply" }, events);

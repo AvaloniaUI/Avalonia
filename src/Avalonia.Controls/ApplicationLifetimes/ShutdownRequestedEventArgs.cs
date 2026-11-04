@@ -30,10 +30,19 @@ namespace Avalonia.Controls.ApplicationLifetimes
         }
 
         /// <summary>
+        /// Gets a value indicating whether this shutdown request supports deferrals.
+        /// </summary>
+        /// <remarks>
+        /// Deferrals are currently supported only for native macOS shutdown requests when the native library
+        /// supports deferred termination.
+        /// </remarks>
+        public bool CanDefer => _canDefer;
+
+        /// <summary>
         /// Gets a deferral for asynchronous work before the application shuts down.
         /// </summary>
         /// <remarks>
-        /// Deferrals are supported only for native macOS shutdown requests. Call this method while handling
+        /// Check <see cref="CanDefer"/> before calling this method. Call it while handling
         /// <see cref="IClassicDesktopStyleApplicationLifetime.ShutdownRequested"/> and complete the returned
         /// deferral when the work is finished. If any deferral cancels shutdown, the application remains open.
         /// </remarks>
