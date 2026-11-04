@@ -60,6 +60,9 @@ public class TableViewRowAutomationPeer : ListItemAutomationPeer
 
     private void AppendCellName(TableViewCell cell, StringBuilder builder)
     {
+        if (AutomationProperties.GetAccessibilityView(cell) == AccessibilityView.Raw)
+            return;
+
         var name = AutomationProperties.GetName(cell);
         if (!string.IsNullOrWhiteSpace(name))
         {

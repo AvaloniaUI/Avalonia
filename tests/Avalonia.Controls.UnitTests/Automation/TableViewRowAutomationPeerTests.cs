@@ -130,6 +130,41 @@ public sealed class TableViewRowAutomationPeerTests : ScopedTestBase
     }
 
     [Fact]
+    public void Raw_Cell_With_An_Explicit_Automation_Name_Is_Excluded()
+    {
+        using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+        var target = CreateTarget();
+        target.Columns.Add(new TableViewColumn { Binding = new Binding("Name") });
+        target.Columns.Add(new TableViewColumn { Binding = new Binding("Severity") });
+        target.ItemsSource = new[] { new Row("boot.log", "Warning") };
+        Prepare(target);
+
+        var row = (TableViewRow)target.GetRealizedContainers().Single();
+        var rawCell = Assert.IsType<TableViewCell>(row.CellsPresenter!.Children[1]);
+        AutomationProperties.SetAccessibilityView(rawCell, AccessibilityView.Raw);
+        AutomationProperties.SetName(rawCell, "Raw cell name");
+
+        Assert.Equal("boot.log", ControlAutomationPeer.CreatePeerForElement(row).GetName());
+    }
+
+    [Fact]
+    public void Raw_Cell_With_Ordinary_Content_Is_Excluded()
+    {
+        using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+        var target = CreateTarget();
+        target.Columns.Add(new TableViewColumn { Binding = new Binding("Name") });
+        target.Columns.Add(new TableViewColumn { Binding = new Binding("Severity") });
+        target.ItemsSource = new[] { new Row("boot.log", "Warning") };
+        Prepare(target);
+
+        var row = (TableViewRow)target.GetRealizedContainers().Single();
+        var rawCell = Assert.IsType<TableViewCell>(row.CellsPresenter!.Children[1]);
+        AutomationProperties.SetAccessibilityView(rawCell, AccessibilityView.Raw);
+
+        Assert.Equal("boot.log", ControlAutomationPeer.CreatePeerForElement(row).GetName());
+    }
+
+    [Fact]
     public void A_Row_Without_Realized_Cells_Uses_The_Inherited_Name()
     {
         using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
