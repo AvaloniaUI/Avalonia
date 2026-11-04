@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Android;
 using Android.App;
 using Android.Content;
+using Android.Database;
 using Android.Provider;
 using Android.Webkit;
 using Avalonia.Logging;
@@ -76,14 +77,13 @@ internal abstract class AndroidStorageItem : IStorageBookmarkItem
         try
         {
             var projection = new[] { column };
-            using var cursor = context.ContentResolver!.Query(contentUri, projection, selection, selectionArgs, null);
-            if (cursor?.MoveToFirst() == true)
+            using var cursor = new DisposableClosable<ICursor>(context.ContentResolver!.Query(contentUri, projection, selection, selectionArgs, null));
+            if (cursor?.Instance?.MoveToFirst() == true)
             {
-                var columnIndex = cursor.GetColumnIndex(column);
+                var columnIndex = cursor.Instance.GetColumnIndex(column);
                 if (columnIndex != -1)
-                    return cursor.GetString(columnIndex);
+                    return cursor.Instance.GetString(columnIndex);
             }
-            cursor?.Close();
         }
         catch (Exception ex)
         {
@@ -181,7 +181,7 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
         var treeUri = GetTreeUri().treeUri;
         var mimeType = MimeTypeMap.Singleton?.GetMimeTypeFromExtension(MimeTypeMap.GetFileExtensionFromUrl(name)) ?? "application/octet-stream";
         var newFile = DocumentsContract.CreateDocument(Activity.ContentResolver!, treeUri!, mimeType, name);
-        if(newFile == null)
+        if (newFile == null)
         {
             return null;
         }
@@ -273,16 +273,16 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
                 {
                     Document.ColumnLastModified
                 };
-                using var cursor = Activity.ContentResolver!.Query(queryUri, projection, null, null, null);
+                using var cursor = new DisposableClosable<ICursor>(Activity.ContentResolver!.Query(queryUri, projection, null, null, null));
 
-                if (cursor?.MoveToFirst() == true)
+                if (cursor?.Instance?.MoveToFirst() == true)
                 {
                     try
                     {
-                        var columnIndex = cursor.GetColumnIndex(Document.ColumnLastModified);
+                        var columnIndex = cursor.Instance.GetColumnIndex(Document.ColumnLastModified);
                         if (columnIndex != -1)
                         {
-                            var longValue = cursor.GetLong(columnIndex);
+                            var longValue = cursor.Instance.GetLong(columnIndex);
                             dateModified = longValue > 0 ? DateTimeOffset.FromUnixTimeMilliseconds(longValue) : null;
                         }
                     }
@@ -292,7 +292,6 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
                             .Log(this, "Directory LastModified metadata reader failed: '{Exception}'", ex);
                     }
                 }
-                cursor?.Close();
             }
         }
         catch (Exception ex)
@@ -327,13 +326,13 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
         };
         if (childrenUri != null)
         {
-            using var cursor = contentResolver.Query(childrenUri, projection, null, null, null);
+            using var cursor = new DisposableClosable<ICursor>(contentResolver.Query(childrenUri, projection, null, null, null));
 
             if (cursor != null)
-                while (cursor.MoveToNext())
+                while (cursor.Instance?.MoveToNext() == true)
                 {
-                    var mime = cursor.GetString(1);
-                    var id = cursor.GetString(0);
+                    var mime = cursor.Instance.GetString(1);
+                    var id = cursor.Instance.GetString(0);
 
                     bool isDirectory = mime == Document.MimeTypeDir;
                     var uri = BuildDocumentUriUsingTree(root, id);
@@ -345,7 +344,6 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
                     yield return isDirectory ? new AndroidStorageFolder(Activity, uri, false, this, root) :
                         new AndroidStorageFile(Activity, uri, this, root);
                 }
-            cursor?.Close();
         }
     }
 
@@ -409,15 +407,15 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
 
         if (childrenUri != null)
         {
-            using var cursor = contentResolver.Query(childrenUri, projection, null, null, null);
-            if (cursor != null)
+            using var cursor = new DisposableClosable<ICursor>(contentResolver.Query(childrenUri, projection, null, null, null));
+            if (cursor.Instance != null)
             {
-                while (cursor.MoveToNext())
+                while (cursor.Instance.MoveToNext())
                 {
-                    var id = cursor.GetString(0);
-                    var mime = cursor.GetString(1);
+                    var id = cursor.Instance.GetString(0);
+                    var mime = cursor.Instance.GetString(1);
 
-                    var fileName = cursor.GetString(2);
+                    var fileName = cursor.Instance.GetString(2);
                     if (fileName != name)
                     {
                         continue;
@@ -439,7 +437,6 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
                         new AndroidStorageFile(Activity, uri, this, root);
                 }
             }
-            cursor?.Close();
         }
 
         return null;
@@ -553,16 +550,16 @@ internal sealed class AndroidStorageFile : AndroidStorageItem, IStorageBookmarkF
             {
                 Document.ColumnSize, Document.ColumnLastModified
             };
-            using var cursor = Activity.ContentResolver!.Query(Uri, projection, null, null, null);
+            using var cursor = new DisposableClosable<ICursor>(Activity.ContentResolver!.Query(Uri, projection, null, null, null));
 
-            if (cursor?.MoveToFirst() == true)
+            if (cursor?.Instance?.MoveToFirst() == true)
             {
                 try
                 {
-                    var columnIndex = cursor.GetColumnIndex(Document.ColumnSize);
+                    var columnIndex = cursor.Instance.GetColumnIndex(Document.ColumnSize);
                     if (columnIndex != -1)
                     {
-                        size = (ulong)cursor.GetLong(columnIndex);
+                        size = (ulong)cursor.Instance.GetLong(columnIndex);
                     }
                 }
                 catch (Exception ex)
@@ -573,10 +570,10 @@ internal sealed class AndroidStorageFile : AndroidStorageItem, IStorageBookmarkF
 
                 try
                 {
-                    var columnIndex = cursor.GetColumnIndex(Document.ColumnLastModified);
+                    var columnIndex = cursor.Instance.GetColumnIndex(Document.ColumnLastModified);
                     if (columnIndex != -1)
                     {
-                        var longValue = cursor.GetLong(columnIndex);
+                        var longValue = cursor.Instance.GetLong(columnIndex);
                         dateModified = longValue > 0 ? DateTimeOffset.FromUnixTimeMilliseconds(longValue) : null;
                     }
                 }
@@ -586,7 +583,6 @@ internal sealed class AndroidStorageFile : AndroidStorageItem, IStorageBookmarkF
                         .Log(this, "File LastModified metadata reader failed: '{Exception}'", ex);
                 }
             }
-            cursor?.Close();
         }
         catch (UnsupportedOperationException)
         {
