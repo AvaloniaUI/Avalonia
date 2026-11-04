@@ -34,6 +34,7 @@ namespace Avalonia.FreeDesktop.AtSpi
         private IDisposable? _cacheRegistration;
         private Task? _embedTask;
         private bool _isEmbedded;
+        private AtSpiObjectReference? _desktopReference;
 
         internal DBusConnection? A11yConnection => _a11yConnection;
         internal SynchronizationContext? SyncContext => _syncContext;
@@ -59,6 +60,7 @@ namespace Avalonia.FreeDesktop.AtSpi
             {
                 _embedTask = null;
                 _isEmbedded = false;
+                _desktopReference = null;
             }
 
             _syncContext = new AvaloniaSynchronizationContext(Dispatcher.UIThread, DispatcherPriority.Default);
@@ -140,9 +142,10 @@ namespace Avalonia.FreeDesktop.AtSpi
 
         private async Task EmbedAndAnnounceOnceAsync()
         {
+            AtSpiObjectReference? desktop;
             try
             {
-                await EmbedApplicationAsync();
+                desktop = await EmbedApplicationAsync();
             }
             catch (Exception e)
             {
@@ -158,6 +161,7 @@ namespace Avalonia.FreeDesktop.AtSpi
             lock (_embedSync)
             {
                 _isEmbedded = true;
+                _desktopReference = desktop;
                 _embedTask = null;
             }
 
@@ -213,6 +217,7 @@ namespace Avalonia.FreeDesktop.AtSpi
             lock (_embedSync)
             {
                 _isEmbedded = false;
+                _desktopReference = null;
                 _embedTask = null;
             }
 
@@ -260,6 +265,15 @@ namespace Avalonia.FreeDesktop.AtSpi
         internal AtSpiObjectReference GetNullReference()
         {
             return new AtSpiObjectReference(string.Empty, new DBusObjectPath(NullPath));
+        }
+
+        /// <summary>
+        /// The registry's desktop object returned by Embed, which is the application's parent.
+        /// </summary>
+        internal AtSpiObjectReference GetDesktopReference()
+        {
+            lock (_embedSync)
+                return _desktopReference ?? GetNullReference();
         }
 
         internal AtSpiObjectReference GetRootReference()
@@ -437,13 +451,13 @@ namespace Avalonia.FreeDesktop.AtSpi
             }
         }
 
-        private async Task EmbedApplicationAsync()
+        private async Task<AtSpiObjectReference?> EmbedApplicationAsync()
         {
             if (_a11yConnection is null)
-                return;
+                return null;
 
             var proxy = new OrgA11yAtspiSocketProxy(_a11yConnection, BusNameRegistry, new DBusObjectPath(RootPath));
-            await proxy.EmbedAsync(new AtSpiObjectReference(_uniqueName, new DBusObjectPath(RootPath)));
+            return await proxy.EmbedAsync(new AtSpiObjectReference(_uniqueName, new DBusObjectPath(RootPath)));
         }
 
         private static async Task InitializeRegistryTrackerAsync(AtSpiRegistryEventTracker tracker)
