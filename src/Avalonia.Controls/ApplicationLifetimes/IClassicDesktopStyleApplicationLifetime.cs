@@ -61,6 +61,7 @@ namespace Avalonia.Controls.ApplicationLifetimes
         /// This event provides a first-chance to cancel application shutdown; if shutdown is not canceled at this point the application
         /// will try to close each non-owned open window, invoking the <see cref="Window.Closing"/> event on each and allowing
         /// each window to cancel the shutdown of the application. Windows cannot however prevent OS shutdown.
+        /// On macOS, handlers can delay a native shutdown request with <see cref="ShutdownRequestedEventArgs.GetDeferral"/>.
         /// </remarks>
         event EventHandler<ShutdownRequestedEventArgs>? ShutdownRequested;
     }

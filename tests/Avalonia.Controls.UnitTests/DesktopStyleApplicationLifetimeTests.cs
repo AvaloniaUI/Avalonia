@@ -383,6 +383,255 @@ namespace Avalonia.Controls.UnitTests
         }
         
         [Fact]
+        public void Platform_Shutdown_Without_Deferrals_Should_Close_Windows_Once()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            using (var lifetime = new ClassicDesktopStyleApplicationLifetime())
+            {
+                var lifetimeEvents = new Mock<IPlatformLifetimeEventsImpl>();
+                AvaloniaLocator.CurrentMutable.Bind<IPlatformLifetimeEventsImpl>().ToConstant(lifetimeEvents.Object);
+                Setup(lifetime);
+
+                var windowA = new Window();
+                var windowB = new Window();
+                var closingA = 0;
+                var closingB = 0;
+                var closedA = 0;
+                var closedB = 0;
+                var shutdownRequested = 0;
+                var exited = 0;
+                var replies = new List<bool>();
+                var request = new ShutdownRequestedEventArgs(replies.Add);
+
+                windowA.Closing += (_, _) => ++closingA;
+                windowB.Closing += (_, _) => ++closingB;
+                windowA.Closed += (_, _) => ++closedA;
+                windowB.Closed += (_, _) => ++closedB;
+                lifetime.Exit += (_, _) => ++exited;
+                lifetime.ShutdownRequested += (_, e) =>
+                {
+                    ++shutdownRequested;
+                    Assert.Same(request, e);
+                    Assert.Equal(new[] { windowA, windowB }, lifetime.Windows);
+                    Assert.Equal(0, closingA + closingB);
+                    Assert.Equal(0, closedA + closedB);
+                    Assert.Equal(0, exited);
+                };
+
+                windowA.Show();
+                windowB.Show();
+
+                lifetimeEvents.Raise(x => x.ShutdownRequested += null, request);
+                request.EndDeferralRequest();
+
+                Assert.False(request.Cancel);
+                Assert.Empty(replies);
+                Assert.Empty(lifetime.Windows);
+                Assert.False(windowA.IsVisible);
+                Assert.False(windowB.IsVisible);
+                Assert.Equal(1, closingA);
+                Assert.Equal(1, closingB);
+                Assert.Equal(1, closedA);
+                Assert.Equal(1, closedB);
+                Assert.Equal(1, shutdownRequested);
+                Assert.Equal(1, exited);
+            }
+        }
+
+        [Fact]
+        public void Platform_Shutdown_Without_Deferrals_Should_Respect_Window_Cancellation()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            using (var lifetime = new ClassicDesktopStyleApplicationLifetime())
+            {
+                var lifetimeEvents = new Mock<IPlatformLifetimeEventsImpl>();
+                AvaloniaLocator.CurrentMutable.Bind<IPlatformLifetimeEventsImpl>().ToConstant(lifetimeEvents.Object);
+                Setup(lifetime);
+
+                var window = new Window();
+                var closing = 0;
+                var closed = 0;
+                var shutdownRequested = 0;
+                var exited = 0;
+                var replies = new List<bool>();
+                var request = new ShutdownRequestedEventArgs(replies.Add);
+
+                window.Closing += (_, e) =>
+                {
+                    ++closing;
+                    e.Cancel = true;
+                };
+                window.Closed += (_, _) => ++closed;
+                lifetime.ShutdownRequested += (_, _) => ++shutdownRequested;
+                lifetime.Exit += (_, _) => ++exited;
+                window.Show();
+
+                lifetimeEvents.Raise(x => x.ShutdownRequested += null, request);
+                request.CancelDeferrals();
+                request.EndDeferralRequest();
+
+                Assert.True(request.Cancel);
+                Assert.Empty(replies);
+                Assert.Equal(new[] { window }, lifetime.Windows);
+                Assert.True(window.IsVisible);
+                Assert.Equal(1, closing);
+                Assert.Equal(0, closed);
+                Assert.Equal(1, shutdownRequested);
+                Assert.Equal(0, exited);
+            }
+        }
+
+        [Fact]
+        public void Non_Native_Shutdown_Request_Should_Reject_Deferrals()
+        {
+            var request = new ShutdownRequestedEventArgs();
+
+            Assert.Throws<InvalidOperationException>(() => request.GetDeferral());
+            Assert.False(request.Cancel);
+        }
+
+        [Theory]
+        [InlineData(false, false, false)]
+        [InlineData(true, false, false)]
+        [InlineData(false, true, false)]
+        [InlineData(false, false, true)]
+        public void Deferred_Shutdown_Should_Wait_For_All_Deferrals_And_Reply_Once(
+            bool cancelFirst, bool cancelSecond, bool cancelWindow)
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            using (var lifetime = new ClassicDesktopStyleApplicationLifetime())
+            {
+                var lifetimeEvents = new Mock<IPlatformLifetimeEventsImpl>();
+                AvaloniaLocator.CurrentMutable.Bind<IPlatformLifetimeEventsImpl>().ToConstant(lifetimeEvents.Object);
+                Setup(lifetime);
+
+                var window = new Window();
+                var events = new List<string>();
+                var replies = new List<bool>();
+                ShutdownRequestedDeferral? first = null;
+                ShutdownRequestedDeferral? second = null;
+                var request = new ShutdownRequestedEventArgs(shouldTerminate =>
+                {
+                    events.Add("Reply");
+                    replies.Add(shouldTerminate);
+                });
+
+                lifetime.ShutdownRequested += (_, e) =>
+                {
+                    events.Add("ShutdownRequested");
+                    first = e.GetDeferral();
+                    second = e.GetDeferral();
+                };
+                window.Closing += (_, e) =>
+                {
+                    events.Add("Closing");
+                    e.Cancel = cancelWindow;
+                };
+                window.Closed += (_, _) => events.Add("Closed");
+                lifetime.Exit += (_, _) => events.Add("Exit");
+                window.Show();
+
+                lifetimeEvents.Raise(x => x.ShutdownRequested += null, request);
+                request.EndDeferralRequest();
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+                Assert.Equal(new[] { "ShutdownRequested" }, events);
+                Assert.Equal(new[] { window }, lifetime.Windows);
+                Assert.True(window.IsVisible);
+                Assert.Empty(replies);
+                Assert.Throws<InvalidOperationException>(() => request.GetDeferral());
+
+                first!.Complete(cancelFirst);
+                Assert.Throws<InvalidOperationException>(() => first.Complete(!cancelFirst));
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+                Assert.Equal(new[] { "ShutdownRequested" }, events);
+                Assert.Equal(new[] { window }, lifetime.Windows);
+                Assert.True(window.IsVisible);
+                Assert.Empty(replies);
+
+                second!.Complete(cancelSecond);
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+                var shouldTerminate = !cancelFirst && !cancelSecond && !cancelWindow;
+                Assert.Equal(new[] { shouldTerminate }, replies);
+                if (cancelFirst || cancelSecond)
+                {
+                    Assert.Equal(new[] { "ShutdownRequested", "Reply" }, events);
+                    Assert.Equal(new[] { window }, lifetime.Windows);
+                    Assert.True(window.IsVisible);
+                }
+                else if (cancelWindow)
+                {
+                    Assert.Equal(new[] { "ShutdownRequested", "Closing", "Reply" }, events);
+                    Assert.True(request.Cancel);
+                    Assert.Equal(new[] { window }, lifetime.Windows);
+                    Assert.True(window.IsVisible);
+                }
+                else
+                {
+                    Assert.Equal(new[] { "ShutdownRequested", "Closing", "Closed", "Exit", "Reply" }, events);
+                    Assert.Empty(lifetime.Windows);
+                    Assert.False(window.IsVisible);
+                }
+
+                Assert.Throws<InvalidOperationException>(() => second.Complete(!cancelSecond));
+                Assert.Equal(new[] { shouldTerminate }, replies);
+            }
+        }
+
+        [Fact]
+        public void Inline_Deferral_Completion_Should_Wait_For_All_Shutdown_Handlers()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            using (var lifetime = new ClassicDesktopStyleApplicationLifetime())
+            {
+                var lifetimeEvents = new Mock<IPlatformLifetimeEventsImpl>();
+                AvaloniaLocator.CurrentMutable.Bind<IPlatformLifetimeEventsImpl>().ToConstant(lifetimeEvents.Object);
+                Setup(lifetime);
+
+                var window = new Window();
+                var events = new List<string>();
+                var request = new ShutdownRequestedEventArgs(shouldTerminate =>
+                {
+                    Assert.True(shouldTerminate);
+                    events.Add("Reply");
+                });
+
+                lifetime.ShutdownRequested += (_, e) =>
+                {
+                    events.Add("FirstHandler");
+                    e.GetDeferral().Complete();
+                };
+                lifetime.ShutdownRequested += (_, e) =>
+                {
+                    events.Add("SecondHandler");
+                    e.GetDeferral().Complete();
+                    Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+                    Assert.Equal(new[] { "FirstHandler", "SecondHandler" }, events);
+                    Assert.Equal(new[] { window }, lifetime.Windows);
+                    Assert.True(window.IsVisible);
+                };
+                window.Closing += (_, _) => events.Add("Closing");
+                window.Closed += (_, _) => events.Add("Closed");
+                lifetime.Exit += (_, _) => events.Add("Exit");
+                window.Show();
+
+                lifetimeEvents.Raise(x => x.ShutdownRequested += null, request);
+
+                Assert.Equal(new[] { "FirstHandler", "SecondHandler" }, events);
+                Assert.Equal(new[] { window }, lifetime.Windows);
+
+                request.EndDeferralRequest();
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+                Assert.Equal(new[] { "FirstHandler", "SecondHandler", "Closing", "Closed", "Exit", "Reply" }, events);
+                Assert.Empty(lifetime.Windows);
+                Assert.False(window.IsVisible);
+            }
+        }
+
+        [Fact]
         public void MainWindow_Closed_Shutdown_Should_Be_Cancellable()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))

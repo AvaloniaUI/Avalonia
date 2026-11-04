@@ -178,14 +178,42 @@ namespace Avalonia.Controls.ApplicationLifetimes
             ShutdownRequestedEventArgs e,
             bool isProgrammatic,
             bool force = false,
-            int exitCode = 0)
+            int exitCode = 0,
+            bool shutdownRequestedAlreadyRaised = false)
         {
             if (!force)
             {
-                ShutdownRequested?.Invoke(this, e);
+                if (!shutdownRequestedAlreadyRaised)
+                {
+                    ShutdownRequested?.Invoke(this, e);
 
-                if (e.Cancel)
+                    if (e.Cancel)
+                        return false;
+
+                    if (e.HasDeferrals)
+                    {
+                        e.SetDeferralsCompletedCallback(cancelShutdown =>
+                            Dispatcher.UIThread.Post(() =>
+                            {
+                                var shouldTerminate = false;
+                                try
+                                {
+                                    shouldTerminate = !cancelShutdown
+                                        && DoShutdown(e, false, exitCode: exitCode, shutdownRequestedAlreadyRaised: true);
+                                }
+                                finally
+                                {
+                                    e.CompleteDeferredShutdown(shouldTerminate);
+                                }
+                            }));
+
+                        return false;
+                    }
+                }
+                else if (e.Cancel)
+                {
                     return false;
+                }
 
                 if (_isShuttingDown)
                     throw new InvalidOperationException("Application is already shutting down.");

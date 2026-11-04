@@ -19,6 +19,7 @@ namespace Avalonia.Native
         private readonly IAvaloniaNativeFactory _factory;
         private AvaloniaNativePlatformOptions? _options;
         private IPlatformGraphics? _platformGraphics;
+        private IAvnApplicationCommands2? _applicationCommands2;
         private int _isDisposed;
 
         [DllImport("libAvaloniaNative")]
@@ -103,7 +104,18 @@ namespace Avalonia.Native
                 _factory.MacOptions.SetDisableAppDelegate(macOpts.DisableAvaloniaAppDelegate ? 1 : 0);
 
             _factory.Initialize(new GCHandleDeallocator(), applicationPlatform, new AvnDispatcher());
-            
+
+            using (var commands = _factory.CreateApplicationCommands())
+            {
+                try
+                {
+                    _applicationCommands2 = commands.QueryInterface<IAvnApplicationCommands2>();
+                }
+                catch (COMException ex) when (ex.HResult == unchecked((int)0x80004002))
+                {
+                }
+            }
+
             if (_factory.MacOptions != null)
             {
                 _factory.MacOptions.SetShowInDock(macOpts.ShowInDock ? 1 : 0);
@@ -189,7 +201,19 @@ namespace Avalonia.Native
                 return;
 
             AppDomain.CurrentDomain.ProcessExit -= OnProcessExit;
+            _applicationCommands2?.Dispose();
+            _applicationCommands2 = null;
             _factory.Dispose();
+        }
+
+        internal bool SupportsDeferredShutdown => _applicationCommands2 is not null;
+
+        internal void ReplyToApplicationShouldTerminate(bool shouldTerminate)
+        {
+            if (_applicationCommands2 is not { } commands)
+                throw new InvalidOperationException("Deferred shutdown is not supported by the native library.");
+
+            commands.ReplyToApplicationShouldTerminate(shouldTerminate ? 1 : 0);
         }
 
         public ITrayIconImpl CreateTrayIcon()
