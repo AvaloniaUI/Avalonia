@@ -52,6 +52,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType ClrPropertyInfo { get; }
         public IXamlType IPropertyInfoT { get; }
         public IXamlType ClrPropertyInfoT { get; }
+        public IXamlType CompiledPropertyInfoFactory { get; }
         public IXamlType IPropertyAccessor { get; }
         public IXamlType PropertyInfoAccessorFactory { get; }
         public IXamlType CompiledBinding { get; }
@@ -252,6 +253,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             ClrPropertyInfo = typeSystem.GetType("Avalonia.Data.Core.ClrPropertyInfo");
             IPropertyInfoT = typeSystem.GetType("Avalonia.Data.Core.IPropertyInfo`2");
             ClrPropertyInfoT = typeSystem.GetType("Avalonia.Data.Core.ClrPropertyInfo`2");
+            CompiledPropertyInfoFactory = typeSystem.GetType("Avalonia.Data.Core.CompiledPropertyInfoFactory");
             IPropertyAccessor = typeSystem.GetType("Avalonia.Data.Core.Plugins.IPropertyAccessor");
             PropertyInfoAccessorFactory = typeSystem.GetType("Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings.PropertyInfoAccessorFactory");
             CompiledBinding = typeSystem.GetType("Avalonia.Data.CompiledBinding");
