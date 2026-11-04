@@ -5,7 +5,7 @@ using XamlX.Transform;
 
 namespace Avalonia.Build.Tasks
 {
-    public class DeterministicIdGenerator : IGeneratedIdentifierFactory
+    public class DeterministicIdGenerator : IXamlIdentifierGenerator
     {
         private readonly bool _compactNames;
         private long _nextId = 1;
@@ -14,21 +14,19 @@ namespace Avalonia.Build.Tasks
 
         public DeterministicIdGenerator(bool compactNames = false) => _compactNames = compactNames;
 
-        public string GenerateIdentifierPart() => _compactNames
-            ? NextCompactName()
-            : (_nextId++).ToString(CultureInfo.InvariantCulture);
+        private string NextReadableIdentifierPart() => (_nextId++).ToString(CultureInfo.InvariantCulture);
 
-        GeneratedIdentifier IGeneratedIdentifierFactory.CreateIdentifierFromPrefix(string prefix)
+        GeneratedIdentifier IXamlIdentifierGenerator.CreateIdentifierFromPrefix(string prefix)
             => _compactNames
                 ? new CompactGeneratedIdentifier(NextCompactName)
-                : new ReadableGeneratedIdentifier(prefix + GenerateIdentifierPart());
+                : new ReadableGeneratedIdentifier(prefix + NextReadableIdentifierPart());
 
-        GeneratedIdentifier IGeneratedIdentifierFactory.CreateIdentifierFromPreferredName(string name, int nameUseCount)
+        GeneratedIdentifier IXamlIdentifierGenerator.CreateIdentifierFromPreferredName(string name, int nameUseCount)
             => _compactNames
                 ? new CompactGeneratedIdentifier(NextCompactName)
                 : new ReadableGeneratedIdentifier(nameUseCount == 0
                     ? name
-                    : name + "_" + GenerateIdentifierPart());
+                    : name + "_" + NextReadableIdentifierPart());
 
         private string NextCompactName()
         {
