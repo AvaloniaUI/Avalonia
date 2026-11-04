@@ -504,25 +504,23 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             }
         }
 
-        private static void EmitPropertyCall(XamlIlEmitContext context, IXamlILEmitter codeGen, bool acceptsNull)
+        private static void EmitPropertyCall(XamlIlEmitContext context, IXamlILEmitter codeGen, IXamlType accessorFactoryType, bool acceptsNull)
         {
             // By default use the 2-argument overload of CompiledBindingPathBuilder.Property,
             // unless a "?." null conditional operator appears in the path, in which case use
             // the 3-parameter version with the `acceptsNull` parameter. This ensures we don't
             // get a missing method exception if we run against an old version of Avalonia.
-            var methodArgumentCount = 2;
+            var types = context.GetAvaloniaTypes();
+            var parameters = new List<IXamlType> { types.IPropertyInfo, accessorFactoryType };
 
             if (acceptsNull)
             {
-                methodArgumentCount = 3;
+                parameters.Add(context.Configuration.WellKnownTypes.Boolean);
                 codeGen.Ldc_I4(1);
             }
 
-            codeGen
-                .EmitCall(context.GetAvaloniaTypes()
-                    .CompiledBindingPathBuilder.GetMethod(m =>
-                        m.Name == "Property" &&
-                        m.Parameters.Count == methodArgumentCount));
+            codeGen.EmitCall(types.CompiledBindingPathBuilder.GetMethod(
+                new FindMethodMethodSignature("Property", types.CompiledBindingPathBuilder, parameters.ToArray())));
         }
 
         class ScopeRegistrationFinder : IXamlAstVisitor
@@ -763,10 +761,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             public void Emit(XamlIlEmitContext context, IXamlILEmitter codeGen)
             {
                 codeGen.Ldsfld(_field);
-                context.Configuration.GetExtra<XamlIlPropertyInfoAccessorFactoryEmitter>()
+                var accessorFactoryType = context.Configuration.GetExtra<XamlIlPropertyInfoAccessorFactoryEmitter>()
                     .EmitLoadAvaloniaPropertyAccessorFactory(context, codeGen);
 
-                EmitPropertyCall(context, codeGen, _acceptsNull);
+                EmitPropertyCall(context, codeGen, accessorFactoryType, _acceptsNull);
             }
 
             public IXamlType Type { get; }
@@ -814,10 +812,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 context.Configuration.GetExtra<XamlIlClrPropertyInfoEmitter>()
                     .Emit(context, codeGen, _property);
 
-                context.Configuration.GetExtra<XamlIlPropertyInfoAccessorFactoryEmitter>()
+                var accessorFactoryType = context.Configuration.GetExtra<XamlIlPropertyInfoAccessorFactoryEmitter>()
                     .EmitLoadInpcPropertyAccessorFactory(context, codeGen);
 
-                EmitPropertyCall(context, codeGen, _acceptsNull);
+                EmitPropertyCall(context, codeGen, accessorFactoryType, _acceptsNull);
             }
 
             public IXamlType Type => _property.PropertyType;
@@ -881,18 +879,22 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 // unless a "?." null conditional operator appears in the path, in which case use
                 // the 3-parameter version with the `acceptsNull` parameter. This ensures we don't
                 // get a missing method exception if we run against an old version of Avalonia.
-                var methodArgumentCount = 2;
+                var typeSystem = context.Configuration.TypeSystem;
+                var builderType = context.GetAvaloniaTypes().CompiledBindingPathBuilder;
+                var parameters = new List<IXamlType>
+                {
+                    typeSystem.GetType("System.RuntimeMethodHandle"),
+                    typeSystem.GetType("System.RuntimeTypeHandle")
+                };
 
                 if (_acceptsNull)
                 {
-                    methodArgumentCount = 3;
+                    parameters.Add(context.Configuration.WellKnownTypes.Boolean);
                     codeGen.Ldc_I4(1);
                 }
 
-                codeGen.EmitCall(context.GetAvaloniaTypes()
-                    .CompiledBindingPathBuilder.GetMethod(m => 
-                        m.Name == "Method" &&
-                        m.Parameters.Count == methodArgumentCount));
+                codeGen.EmitCall(builderType.GetMethod(
+                    new FindMethodMethodSignature("Method", builderType, parameters.ToArray())));
 
 
                 newDelegateTypeBuilder?.CreateType();
@@ -997,22 +999,22 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 context.Configuration.GetExtra<XamlIlClrPropertyInfoEmitter>()
                     .Emit(context, codeGen, _property, _values, _indexerKey);
 
+                IXamlType accessorFactoryType;
                 if (_isNotifyingCollection
                     &&
                     _values.Count == 1
                     && _values[0].Type.GetClrType().Equals(intType))
                 {
-                    context.Configuration.GetExtra<XamlIlPropertyInfoAccessorFactoryEmitter>()
+                    accessorFactoryType = context.Configuration.GetExtra<XamlIlPropertyInfoAccessorFactoryEmitter>()
                         .EmitLoadIndexerAccessorFactory(context, codeGen, _values[0]);
                 }
                 else
                 {
-                    context.Configuration.GetExtra<XamlIlPropertyInfoAccessorFactoryEmitter>()
+                    accessorFactoryType = context.Configuration.GetExtra<XamlIlPropertyInfoAccessorFactoryEmitter>()
                         .EmitLoadInpcPropertyAccessorFactory(context, codeGen);
                 }
 
-                codeGen.EmitCall(context.GetAvaloniaTypes()
-                    .CompiledBindingPathBuilder.GetMethod(m => m.Name == "Property"));
+                EmitPropertyCall(context, codeGen, accessorFactoryType, acceptsNull: false);
             }
 
             public IXamlType Type => _property.PropertyType;
