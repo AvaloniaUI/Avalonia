@@ -5,6 +5,7 @@ using Avalonia.Controls.Diagnostics;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Platform;
+using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Moq;
 using Xunit;
@@ -127,6 +128,54 @@ public class DeferredNativePopupTests : ScopedTestBase
     }
 
     [Fact]
+    public void Closing_Owner_Should_Force_Cancel_Pending_Popup_Even_When_Closing_Is_Cancelled()
+    {
+        using var app = CreateServices();
+        var window = PreparedWindow();
+        var target = new Popup { PlacementTarget = window };
+        Action? resume = null;
+        var closed = 0;
+        window.NativePopupShowRequested = (_, show) => resume = show;
+        target.Closing += (_, e) => e.Cancel = true;
+        target.Closed += (_, _) => ++closed;
+        target.Open();
+        var impl = Mock.Get(((PopupRoot)target.Host!).PlatformImpl!);
+
+        window.Close();
+        resume!();
+
+        Assert.False(target.IsOpen);
+        Assert.Null(target.Host);
+        Assert.Empty(window.OpenedPopups);
+        Assert.Equal(1, closed);
+        impl.Verify(x => x.Dispose(), Times.Once);
+        impl.Verify(x => x.Show(It.IsAny<bool>(), It.IsAny<bool>()), Times.Never);
+    }
+
+    [Fact]
+    public void Changing_TopLevel_Should_Force_Cancel_Pending_Popup()
+    {
+        using var app = CreateServices();
+        var oldWindow = PreparedWindow();
+        var newWindow = PreparedWindow();
+        var target = new Popup { PlacementTarget = oldWindow };
+        Action? resume = null;
+        oldWindow.NativePopupShowRequested = (_, show) => resume = show;
+        target.Closing += (_, e) => e.Cancel = true;
+        target.Open();
+        var impl = Mock.Get(((PopupRoot)target.Host!).PlatformImpl!);
+
+        target.PlacementTarget = newWindow;
+        resume!();
+
+        Assert.False(target.IsOpen);
+        Assert.Null(target.Host);
+        Assert.Empty(oldWindow.OpenedPopups);
+        impl.Verify(x => x.Dispose(), Times.Once);
+        impl.Verify(x => x.Show(It.IsAny<bool>(), It.IsAny<bool>()), Times.Never);
+    }
+
+    [Fact]
     public void Resume_Should_Be_Single_Use_Even_When_Show_Reenters()
     {
         using var app = CreateServices();
@@ -212,6 +261,35 @@ public class DeferredNativePopupTests : ScopedTestBase
     }
 
     [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Popup_Notification_Exception_Should_Not_Close_Already_Shown_Popup(bool throwFromOpened)
+    {
+        using var app = CreateServices();
+        var window = PreparedWindow();
+        var target = new Popup { PlacementTarget = window };
+        Action? resume = null;
+        var error = new InvalidOperationException("Notification failed");
+        window.NativePopupShowRequested = (_, show) => resume = show;
+        if (throwFromOpened)
+            target.Opened += (_, _) => throw error;
+        else
+            ((IPopupHostProvider)target).PopupHostChanged += host =>
+            {
+                if (host != null)
+                    throw error;
+            };
+        target.Open();
+
+        Assert.Same(error, Assert.Throws<InvalidOperationException>(() => resume!()));
+
+        Assert.True(target.IsOpen);
+        Assert.NotNull(target.Host);
+        Assert.Contains(target, window.OpenedPopups);
+        target.Close();
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public void Closing_During_Show_Or_Focus_Should_Not_Raise_Popup_Opened(bool duringFocus)
@@ -257,6 +335,47 @@ public class DeferredNativePopupTests : ScopedTestBase
         Assert.False(target.IsOpen);
     }
 
+    [Fact]
+    public void Closing_During_Disposal_Should_Be_Idempotent_And_Reopen_After_Cleanup()
+    {
+        using var app = CreateServices();
+        var window = PreparedWindow();
+        var target = new Popup { PlacementTarget = window };
+        var continuations = new List<Action>();
+        var roots = new List<PopupRoot>();
+        window.NativePopupShowRequested = (root, show) =>
+        {
+            roots.Add(root);
+            continuations.Add(show);
+        };
+        var closed = 0;
+        var hosts = new List<IPopupHost?>();
+        target.Closed += (_, _) => ++closed;
+        ((IPopupHostProvider)target).PopupHostChanged += hosts.Add;
+        target.Open();
+        var firstImpl = Mock.Get(roots[0].PlatformImpl!);
+        roots[0].Closed += (_, _) =>
+        {
+            target.Close();
+            target.Open();
+        };
+
+        target.Close();
+
+        Assert.Equal(1, closed);
+        Assert.Equal(2, roots.Count);
+        Assert.Same(roots[1], target.Host);
+        Assert.True(target.IsOpen);
+        Assert.Equal(new IPopupHost?[] { null }, hosts);
+        continuations[0]();
+        firstImpl.Verify(x => x.Show(It.IsAny<bool>(), It.IsAny<bool>()), Times.Never);
+        firstImpl.Verify(x => x.Dispose(), Times.Once);
+        continuations[1]();
+        Assert.Same(roots[1], target.Host);
+        target.Close();
+        Assert.Equal(2, closed);
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -271,6 +390,9 @@ public class DeferredNativePopupTests : ScopedTestBase
         var nested = new Popup { PlacementTarget = deeperTarget, IsLightDismissEnabled = lightDismiss };
         var roots = new List<PopupRoot>();
         Action? resumeNested = null;
+        var nestedClosed = 0;
+        nested.Closing += (_, e) => e.Cancel = true;
+        nested.Closed += (_, _) => ++nestedClosed;
         window.NativePopupShowRequested = (root, show) =>
         {
             roots.Add(root);
@@ -299,10 +421,12 @@ public class DeferredNativePopupTests : ScopedTestBase
 
         Assert.False(nested.IsOpen);
         Assert.False(middle.IsOpen);
+        Assert.Equal(1, nestedClosed);
         Assert.Empty(middle.OpenedPopups);
         Assert.Empty(parent.OpenedPopups);
         Assert.Empty(window.OpenedPopups);
         impl.Verify(x => x.Show(It.IsAny<bool>(), It.IsAny<bool>()), Times.Never);
+        impl.Verify(x => x.Dispose(), Times.Once);
     }
 
     [Fact]
@@ -370,6 +494,93 @@ public class DeferredNativePopupTests : ScopedTestBase
         Assert.False(target.IsOpen);
         Assert.Null(target.Host);
         Assert.Empty(window.OpenedPopups);
+    }
+
+    [Fact]
+    public void Property_Based_Open_Should_Wait_For_Property_Notifications_Before_Preparation()
+    {
+        using var app = CreateServices();
+        var window = PreparedWindow();
+        var target = new Popup { PlacementTarget = window };
+        var prepared = 0;
+        window.NativePopupShowRequested = (_, _) => ++prepared;
+        target.PropertyChanged += (_, e) =>
+        {
+            if (e.Property == Popup.IsOpenProperty && target.IsOpen)
+                target.IsOpen = false;
+        };
+
+        target.IsOpen = true;
+        Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+        Assert.Equal(0, prepared);
+        Assert.False(target.IsOpen);
+        Assert.Null(target.Host);
+        Assert.Empty(window.OpenedPopups);
+    }
+
+    [Fact]
+    public void Property_Based_Open_Should_Request_Preparation_After_Property_Notifications()
+    {
+        using var app = CreateServices();
+        var window = PreparedWindow();
+        var target = new Popup { PlacementTarget = window };
+        Action? resume = null;
+        var prepared = 0;
+        window.NativePopupShowRequested = (_, show) =>
+        {
+            ++prepared;
+            resume = show;
+        };
+
+        target.IsOpen = true;
+
+        Assert.True(target.IsOpen);
+        Assert.Equal(0, prepared);
+        Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+        Assert.Equal(1, prepared);
+        resume!();
+        Assert.True(target.IsOpen);
+        target.Close();
+    }
+
+    [Fact]
+    public void Pending_Native_Open_Should_Clear_Previous_Overlay_Mode()
+    {
+        using var app = CreateServices();
+        var window = PreparedWindow();
+        var target = new Popup { PlacementTarget = window, ShouldUseOverlayLayer = true };
+        target.Open();
+        Assert.True(target.IsUsingOverlayLayer);
+        target.Close();
+        target.ShouldUseOverlayLayer = false;
+        Action? resume = null;
+        window.NativePopupShowRequested = (_, show) => resume = show;
+
+        target.Open();
+
+        Assert.False(target.IsUsingOverlayLayer);
+        resume!();
+        target.Close();
+    }
+
+    [Fact]
+    public void Pending_Light_Dismiss_Should_Ignore_Owner_Deactivation_Until_Resume()
+    {
+        using var app = CreateServices();
+        var window = PreparedWindow();
+        var target = new Popup { PlacementTarget = window, IsLightDismissEnabled = true };
+        Action? resume = null;
+        window.NativePopupShowRequested = (_, show) => resume = show;
+        target.Open();
+        Mock.Get(window.PlatformImpl!).Object.LostFocus?.Invoke();
+        Assert.True(target.IsOpen);
+
+        resume!();
+        Mock.Get(window.PlatformImpl!).Object.LostFocus?.Invoke();
+
+        Assert.False(target.IsOpen);
     }
 
     [Fact]

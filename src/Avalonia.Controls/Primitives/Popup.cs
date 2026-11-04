@@ -152,6 +152,8 @@ namespace Avalonia.Controls.Primitives
         private bool _isOpenRequested;
         private bool _ignoreIsOpenChanged;
         private bool _isUsingOverlayLayer;
+        private bool _isClosing;
+        private bool _openRequestedWhileClosing;
         private PopupOpenState? _openState;
         private Point? _pointerPosition;
         private Action<IPopupHost?>? _popupHostChangedHandler;
@@ -429,6 +431,14 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public void Open()
         {
+            if (_isClosing)
+            {
+                _openRequestedWhileClosing |= _openState is null;
+                return;
+            }
+
+            var openedByProperty = IsOpen;
+
             // Popup is currently open
             if (_openState != null)
             {
@@ -454,6 +464,10 @@ namespace Avalonia.Controls.Primitives
             _isOpenRequested = false;
 
             var popupHost = OverlayPopupHost.CreatePopupHost(placementTarget, DependencyResolver, ShouldUseOverlayLayer);
+            var gateOwner = topLevel;
+            while (gateOwner is PopupRoot ancestor)
+                gateOwner = ancestor.ParentTopLevel;
+            var gate = popupHost is PopupRoot ? gateOwner.NativePopupShowRequested : null;
             var handlerCleanup = new CompositeDisposable(7);
 
             UpdateHostSizing(popupHost, topLevel, placementTarget);
@@ -560,11 +574,6 @@ namespace Avalonia.Controls.Primitives
                 state.popupHost.Dispose();
             });
 
-            var gateOwner = topLevel;
-            while (gateOwner is PopupRoot ancestor)
-                gateOwner = ancestor.ParentTopLevel;
-            var gate = popupHost is PopupRoot ? gateOwner.NativePopupShowRequested : null;
-
             void RegisterLightDismiss()
             {
                 if (!IsLightDismissEnabled)
@@ -588,7 +597,8 @@ namespace Avalonia.Controls.Primitives
                 RegisterLightDismiss();
 
             var openState = _openState =
-                new PopupOpenState(placementTarget, topLevel, popupHost, cleanupPopup, FindParentPopup(placementTarget));
+                new PopupOpenState(placementTarget, topLevel, popupHost, cleanupPopup,
+                    FindParentPopup(placementTarget), gate != null);
 
             if (_openState.ParentPopup is { } parentPopup)
                 parentPopup.AddOpenedPopup(this);
@@ -596,8 +606,21 @@ namespace Avalonia.Controls.Primitives
                 topLevel.AddOpenedPopup(this);
 
             WindowManagerAddShadowHintChanged(popupHost, WindowManagerAddShadowHint);
+            if (gate != null)
+            {
+                try
+                {
+                    IsUsingOverlayLayer = popupHost is OverlayPopupHost;
+                }
+                catch
+                {
+                    CloseCore(ignoreCancel: true);
+                    throw;
+                }
+            }
 
             var completed = false;
+            var popupNotificationThrew = false;
 
             bool IsCurrent() => _openState == openState && !openState.IsDisposed;
 
@@ -608,6 +631,7 @@ namespace Avalonia.Controls.Primitives
                     return;
 
                 completed = true;
+                openState.IsPending = false;
                 try
                 {
                     if (gate != null)
@@ -632,16 +656,35 @@ namespace Avalonia.Controls.Primitives
                         SetCurrentValue(IsOpenProperty, true);
                     if (!IsCurrent())
                         return;
-
-                    Opened?.Invoke(this, EventArgs.Empty);
-                    if (IsCurrent())
-                        _popupHostChangedHandler?.Invoke(Host);
                 }
                 catch
                 {
-                    if (gate != null && IsCurrent())
+                    if (gate != null && !popupNotificationThrew && IsCurrent())
                         CloseCore(ignoreCancel: true);
                     throw;
+                }
+
+                try
+                {
+                    Opened?.Invoke(this, EventArgs.Empty);
+                }
+                catch
+                {
+                    popupNotificationThrew = true;
+                    throw;
+                }
+
+                if (IsCurrent())
+                {
+                    try
+                    {
+                        _popupHostChangedHandler?.Invoke(Host);
+                    }
+                    catch
+                    {
+                        popupNotificationThrew = true;
+                        throw;
+                    }
                 }
             }
 
@@ -658,11 +701,31 @@ namespace Avalonia.Controls.Primitives
                     if (!IsCurrent())
                         return;
 
-                    gate((PopupRoot)popupHost, CompleteOpen);
+                    void RequestNativePreparation()
+                    {
+                        if (!IsCurrent())
+                            return;
+
+                        try
+                        {
+                            gate((PopupRoot)popupHost, CompleteOpen);
+                        }
+                        catch
+                        {
+                            if (!popupNotificationThrew && IsCurrent())
+                                CloseCore(ignoreCancel: true);
+                            throw;
+                        }
+                    }
+
+                    if (openedByProperty)
+                        Dispatcher.Post(RequestNativePreparation);
+                    else
+                        RequestNativePreparation();
                 }
                 catch
                 {
-                    if (IsCurrent())
+                    if (!popupNotificationThrew && IsCurrent())
                         CloseCore(ignoreCancel: true);
                     throw;
                 }
@@ -722,7 +785,7 @@ namespace Avalonia.Controls.Primitives
         protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
             base.OnDetachedFromLogicalTree(e);
-            Close();
+            CloseCore(ignoreCancel: _openState?.IsPending == true);
         }
 
         /// <inheritdoc />
@@ -754,7 +817,7 @@ namespace Avalonia.Controls.Primitives
 
                         if (newTarget is null || TopLevel.GetTopLevel(newTarget) != _openState.TopLevel)
                         {
-                            Close();
+                            CloseCore(ignoreCancel: _openState.IsPending);
                             return;
                         }
 
@@ -909,49 +972,62 @@ namespace Avalonia.Controls.Primitives
 
         private void CloseCore(bool ignoreCancel = false)
         {
-            if (!ignoreCancel)
-            {
-                var closingArgs = new CancelEventArgs();
-                Closing?.Invoke(this, closingArgs);
-                if (closingArgs.Cancel)
-                    return;
-            }
+            if (_isClosing)
+                return;
 
-            _isOpenRequested = false;
-            if (_openState is null)
+            _isClosing = true;
+            try
             {
-                using (BeginIgnoringIsOpen())
+                if (!ignoreCancel)
                 {
-                    SetCurrentValue(IsOpenProperty, false);
+                    var closingArgs = new CancelEventArgs();
+                    Closing?.Invoke(this, closingArgs);
+                    if (closingArgs.Cancel)
+                        return;
                 }
 
-                return;
+                _isOpenRequested = false;
+                var openState = _openState;
+                if (openState is null)
+                {
+                    using (BeginIgnoringIsOpen())
+                        SetCurrentValue(IsOpenProperty, false);
+                    return;
+                }
+
+                if (openState.ParentPopup is { } parentPopup)
+                    parentPopup.RemoveOpenedPopup(this);
+                else
+                    openState.TopLevel.RemoveOpenedPopup(this);
+
+                _openState = null;
+                _pointerPosition = null;
+                openState.Dispose();
+
+                _popupHostChangedHandler?.Invoke(null);
+
+                using (BeginIgnoringIsOpen())
+                    SetCurrentValue(IsOpenProperty, false);
+
+                Closed?.Invoke(this, EventArgs.Empty);
             }
-
-            if (_openState.ParentPopup is { } parentPopup)
-                parentPopup.RemoveOpenedPopup(this);
-            else
-                _openState.TopLevel.RemoveOpenedPopup(this);
-
-            _openState.Dispose();
-            _openState = null;
-            _pointerPosition = null;
-
-            _popupHostChangedHandler?.Invoke(null);
-
-            using (BeginIgnoringIsOpen())
+            finally
             {
-                SetCurrentValue(IsOpenProperty, false);
+                _isClosing = false;
+                if (_openRequestedWhileClosing)
+                {
+                    _openRequestedWhileClosing = false;
+                    Open();
+                }
             }
-
-            Closed?.Invoke(this, EventArgs.Empty);
         }
 
         private void ListenForNonClientClick(RawInputEventArgs e)
         {
             var mouse = e as RawPointerEventArgs;
 
-            if (IsLightDismissEnabled && mouse?.Type == RawPointerEventType.NonClientLeftButtonDown)
+            if (IsLightDismissEnabled && _openState?.IsPending != true &&
+                mouse?.Type == RawPointerEventType.NonClientLeftButtonDown)
             {
                 CloseCore();
             }
@@ -976,7 +1052,7 @@ namespace Avalonia.Controls.Primitives
 
         private void TargetDetached(object? sender, VisualTreeAttachmentEventArgs e)
         {
-            Close();
+            CloseCore(ignoreCancel: _openState?.IsPending == true);
         }
 
         private static void PassThroughEvent(PointerPressedEventArgs e)
@@ -1071,7 +1147,7 @@ namespace Avalonia.Controls.Primitives
 
         private void WindowDeactivated(object? sender, EventArgs e)
         {
-            if (IsLightDismissEnabled)
+            if (IsLightDismissEnabled && _openState?.IsPending != true)
             {
                 Close();
             }
@@ -1079,7 +1155,7 @@ namespace Avalonia.Controls.Primitives
 
         private void WindowBaseDeactivated()
         {
-            if (IsLightDismissEnabled)
+            if (IsLightDismissEnabled && _openState?.IsPending != true)
             {
                 Close();
             }
@@ -1087,7 +1163,9 @@ namespace Avalonia.Controls.Primitives
 
         private void ParentClosed(object? sender, EventArgs e)
         {
-            if (IsLightDismissEnabled)
+            if (_openState?.IsPending == true)
+                CloseCore(ignoreCancel: true);
+            else if (IsLightDismissEnabled)
             {
                 Close();
             }
@@ -1095,7 +1173,7 @@ namespace Avalonia.Controls.Primitives
 
         private void TopLevelLostPlatformFocus()
         {
-            if (IsLightDismissEnabled)
+            if (IsLightDismissEnabled && _openState?.IsPending != true)
             {
                 Close();
             }
@@ -1109,7 +1187,7 @@ namespace Avalonia.Controls.Primitives
 
         private void WindowLostFocus()
         {
-            if (IsLightDismissEnabled)
+            if (IsLightDismissEnabled && _openState?.IsPending != true)
                 Close();
         }
 
@@ -1175,13 +1253,14 @@ namespace Avalonia.Controls.Primitives
             private Control _placementTarget;
 
             public PopupOpenState(Control placementTarget, TopLevel topLevel, IPopupHost popupHost, IDisposable cleanup,
-                Popup? parentPopup)
+                Popup? parentPopup, bool isPending)
             {
                 PlacementTarget = placementTarget;
                 TopLevel = topLevel;
                 ParentPopup = parentPopup;
                 PopupHost = popupHost;
                 _cleanup = cleanup;
+                IsPending = isPending;
             }
 
             public TopLevel TopLevel { get; }
@@ -1204,6 +1283,8 @@ namespace Avalonia.Controls.Primitives
             public IPopupHost PopupHost { get; }
 
             public bool IsDisposed { get; private set; }
+
+            public bool IsPending { get; set; }
 
             public void SetPresenterSubscription(IDisposable? presenterCleanup)
             {
