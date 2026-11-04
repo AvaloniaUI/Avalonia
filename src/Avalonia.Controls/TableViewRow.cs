@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Avalonia.Automation.Peers;
 using Avalonia.Collections;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Presenters;
@@ -17,6 +18,8 @@ public class TableViewRow : ListBoxItem
     private TableViewCellsPresenter? _cellsPresenter;
 
     internal AvaloniaList<TableViewColumn>? Columns { get; set; }
+
+    internal TableViewCellsPresenter? CellsPresenter => _cellsPresenter;
 
     /// <inheritdoc />
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -51,4 +54,8 @@ public class TableViewRow : ListBoxItem
 
     internal void RefreshCell(int columnIndex)
         => _cellsPresenter?.RefreshCell(columnIndex);
+
+    /// <inheritdoc />
+    protected override AutomationPeer OnCreateAutomationPeer()
+        => new TableViewRowAutomationPeer(this);
 }
