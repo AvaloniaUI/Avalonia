@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Linq;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
@@ -62,6 +63,57 @@ public sealed class TableViewRowAutomationPeerTests : ScopedTestBase
     }
 
     [Fact]
+    public void Content_Control_Cell_Uses_All_Visible_Non_Raw_Text()
+    {
+        using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+        var target = CreateTarget();
+        target.Columns.Add(new TableViewColumn
+        {
+            CellTemplate = new FuncDataTemplate<Row>((_, _) => new Button
+            {
+                Template = new FuncControlTemplate<Button>((_, scope) => new StackPanel
+                {
+                    Children =
+                    {
+                        new TextBlock
+                        {
+                            Text = "Raw text",
+                            [AutomationProperties.AccessibilityViewProperty] = AccessibilityView.Raw,
+                        },
+                        new TextBlock { Text = "Hidden text", IsVisible = false },
+                        new TextBlock { Text = "Part 1" },
+                        new TextBlock { Text = "Part 2" },
+                    },
+                }),
+            }),
+        });
+        target.ItemsSource = new[] { new Row("boot.log", "Warning") };
+        Prepare(target);
+
+        var row = (TableViewRow)target.GetRealizedContainers().Single();
+
+        Assert.Equal("Part 1 Part 2", ControlAutomationPeer.CreatePeerForElement(row).GetName());
+    }
+
+    [Fact]
+    public void AccessText_And_Content_Matching_The_Row_ToString_Are_Used()
+    {
+        using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+        var target = CreateTarget();
+        target.Columns.Add(new TableViewColumn
+        {
+            CellTemplate = new FuncDataTemplate<Row>((_, _) => new AccessText { Text = "_Open" }),
+        });
+        target.Columns.Add(new TableViewColumn { Binding = new Binding("Severity") });
+        target.ItemsSource = new[] { new Row("Open", "Warning") };
+        Prepare(target);
+
+        var row = (TableViewRow)target.GetRealizedContainers().Single();
+
+        Assert.Equal("Open Warning", ControlAutomationPeer.CreatePeerForElement(row).GetName());
+    }
+
+    [Fact]
     public void Explicit_Row_Automation_Name_Wins()
     {
         using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
@@ -96,6 +148,57 @@ public sealed class TableViewRowAutomationPeerTests : ScopedTestBase
         var row = (TableViewRow)target.GetRealizedContainers().Single();
 
         Assert.Equal("Accessible cell name", ControlAutomationPeer.CreatePeerForElement(row).GetName());
+    }
+
+    [Fact]
+    public void Cell_LabeledBy_Name_Is_Used()
+    {
+        using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+        var target = CreateTarget();
+        target.Columns.Add(new TableViewColumn { Binding = new Binding("Name") });
+        target.Columns.Add(new TableViewColumn { Binding = new Binding("Severity") });
+        target.ItemsSource = new[] { new Row("boot.log", "Warning") };
+        Prepare(target);
+
+        var row = (TableViewRow)target.GetRealizedContainers().Single();
+        var cell = Assert.IsType<TableViewCell>(row.CellsPresenter!.Children[0]);
+        AutomationProperties.SetLabeledBy(cell, new TextBlock { Text = "File name" });
+
+        Assert.Equal("File name Warning", ControlAutomationPeer.CreatePeerForElement(row).GetName());
+    }
+
+    [Fact]
+    public void Value_Provider_Cell_Contributes_Its_Value()
+    {
+        using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+        var target = CreateTarget();
+        target.Columns.Add(new TableViewColumn
+        {
+            CellTemplate = new FuncDataTemplate<Row>((_, _) => new TextBox { Text = "Editor value" }),
+        });
+        target.ItemsSource = new[] { new Row("boot.log", "Warning") };
+        Prepare(target);
+
+        var row = (TableViewRow)target.GetRealizedContainers().Single();
+
+        Assert.Equal("Editor value", ControlAutomationPeer.CreatePeerForElement(row).GetName());
+    }
+
+    [Fact]
+    public void Range_Value_Provider_Cell_Contributes_Its_Value()
+    {
+        using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+        var target = CreateTarget();
+        target.Columns.Add(new TableViewColumn
+        {
+            CellTemplate = new FuncDataTemplate<Row>((_, _) => new Slider { Value = 42 }),
+        });
+        target.ItemsSource = new[] { new Row("boot.log", "Warning") };
+        Prepare(target);
+
+        var row = (TableViewRow)target.GetRealizedContainers().Single();
+
+        Assert.Equal(42.ToString(CultureInfo.CurrentCulture), ControlAutomationPeer.CreatePeerForElement(row).GetName());
     }
 
     [Fact]
@@ -165,6 +268,37 @@ public sealed class TableViewRowAutomationPeerTests : ScopedTestBase
     }
 
     [Fact]
+    public void A_Row_With_Only_Raw_Cells_Does_Not_Fall_Back_To_The_Data_Item_Name()
+    {
+        using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+        var target = CreateTarget();
+        target.Columns.Add(new TableViewColumn { Binding = new Binding("Name") });
+        target.ItemsSource = new[] { new Row("boot.log", "Warning") };
+        Prepare(target);
+
+        var row = (TableViewRow)target.GetRealizedContainers().Single();
+        AutomationProperties.SetAccessibilityView(
+            Assert.IsType<TableViewCell>(row.CellsPresenter!.Children[0]),
+            AccessibilityView.Raw);
+
+        Assert.Equal(string.Empty, ControlAutomationPeer.CreatePeerForElement(row).GetName());
+    }
+
+    [Fact]
+    public void A_Row_With_Only_Hidden_Cells_Does_Not_Fall_Back_To_The_Data_Item_Name()
+    {
+        using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+        var target = CreateTarget();
+        target.Columns.Add(new TableViewColumn { Binding = new Binding("Name"), IsVisible = false });
+        target.ItemsSource = new[] { new Row("boot.log", "Warning") };
+        Prepare(target);
+
+        var row = (TableViewRow)target.GetRealizedContainers().Single();
+
+        Assert.Equal(string.Empty, ControlAutomationPeer.CreatePeerForElement(row).GetName());
+    }
+
+    [Fact]
     public void A_Row_Without_Realized_Cells_Uses_The_Inherited_Name()
     {
         using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
@@ -202,5 +336,7 @@ public sealed class TableViewRowAutomationPeerTests : ScopedTestBase
         public string Name { get; } = name;
 
         public string Severity { get; } = severity;
+
+        public override string ToString() => Name;
     }
 }

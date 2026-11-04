@@ -1,8 +1,11 @@
 using System;
+using System.Globalization;
 using System.Text;
 using Avalonia.Automation;
+using Avalonia.Automation.Provider;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Primitives;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Automation.Peers;
@@ -49,24 +52,37 @@ public class TableViewRowAutomationPeer : ListItemAutomationPeer
             return base.GetNameCore();
 
         var builder = new StringBuilder();
+        var hasVisibleCell = false;
         foreach (var child in presenter.Children)
         {
-            if (child is TableViewCell cell && cell.IsVisible)
-                AppendCellName(cell, builder);
+            if (child is not TableViewCell cell)
+                continue;
+
+            if (!cell.IsVisible || AutomationProperties.GetAccessibilityView(cell) == AccessibilityView.Raw)
+                continue;
+
+            hasVisibleCell = true;
+            AppendCellName(cell, builder);
         }
 
-        return builder.Length > 0 ? builder.ToString() : base.GetNameCore();
+        if (builder.Length > 0)
+            return builder.ToString();
+
+        return hasVisibleCell || presenter.Children.Count == 0 ? base.GetNameCore() : null;
     }
 
     private void AppendCellName(TableViewCell cell, StringBuilder builder)
     {
-        if (AutomationProperties.GetAccessibilityView(cell) == AccessibilityView.Raw)
-            return;
-
         var name = AutomationProperties.GetName(cell);
         if (!string.IsNullOrWhiteSpace(name))
         {
             AppendName(name, builder);
+            return;
+        }
+
+        if (AutomationProperties.GetLabeledBy(cell) is { } labeledBy)
+        {
+            AppendVisualName(labeledBy, builder, allowLabeledBy: false);
             return;
         }
 
@@ -84,7 +100,7 @@ public class TableViewRowAutomationPeer : ListItemAutomationPeer
         }
     }
 
-    private void AppendVisualName(Visual visual, StringBuilder builder)
+    private void AppendVisualName(Visual visual, StringBuilder builder, bool allowLabeledBy = true)
     {
         if (visual is Control control)
         {
@@ -101,19 +117,56 @@ public class TableViewRowAutomationPeer : ListItemAutomationPeer
                 return;
             }
 
-            if (control is TextBlock)
+            if (allowLabeledBy && AutomationProperties.GetLabeledBy(control) is { } labeledBy)
             {
-                AppendName(CreatePeerForElement(control).GetName(), builder);
+                var previousLength = builder.Length;
+                AppendVisualName(labeledBy, builder, allowLabeledBy: false);
+                if (builder.Length > previousLength)
+                    return;
+            }
+
+            if (control is AccessText accessText)
+            {
+                AppendName(AccessText.RemoveAccessKeyMarker(accessText.Inlines?.Text ?? accessText.Text), builder);
                 return;
             }
 
-            name = CreatePeerForElement(control).GetName();
-            if (!string.IsNullOrWhiteSpace(name) &&
-                !string.Equals(name, Owner.Content?.ToString(), StringComparison.Ordinal))
+            if (control is TextBlock textBlock)
             {
-                AppendName(name, builder);
+                AppendName(textBlock.Inlines?.Text ?? textBlock.Text, builder);
                 return;
             }
+
+            var peer = CreatePeerForElement(control);
+            if (peer.GetProvider<IValueProvider>() is { } valueProvider)
+            {
+                AppendName(valueProvider.Value, builder);
+                return;
+            }
+
+            if (peer.GetProvider<IRangeValueProvider>() is { } rangeValueProvider)
+            {
+                AppendName(rangeValueProvider.Value.ToString(CultureInfo.CurrentCulture), builder);
+                return;
+            }
+
+            if (control.VisualChildren.Count > 0)
+            {
+                foreach (var child in control.VisualChildren)
+                    AppendVisualName(child, builder);
+
+                return;
+            }
+
+            if (control is not ContentControl contentControl ||
+                !ReferenceEquals(contentControl.Content, Owner.Content) ||
+                contentControl.Content is string ||
+                contentControl.Content?.GetType().IsValueType == true)
+            {
+                AppendName(peer.GetName(), builder);
+            }
+
+            return;
         }
 
         foreach (var child in visual.VisualChildren)
