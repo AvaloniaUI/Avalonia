@@ -729,16 +729,30 @@ namespace Avalonia.Controls.Primitives
             else if (_pointerPosition is null && TopLevel.GetTopLevel(placementTarget) is { } topLevel)
                 _pointerPosition = topLevel.PointToClient(topLevel.LastPointerPosition ?? default);
 
+            var (scaleX, scaleY) = GetInheritedScale(placementTarget);
+
             popupHost.ConfigurePosition(new PopupPositionRequest(
                 placementTarget,
                 Placement,
-                new Point(HorizontalOffset, VerticalOffset),
+                new Point(HorizontalOffset * scaleX, VerticalOffset * scaleY),
                 PlacementAnchor,
                 PlacementGravity,
                 PlacementConstraintAdjustment,
                 PlacementRect ?? new Rect(default, placementTarget.Bounds.Size),
                 CustomPopupPlacementCallback,
                 _pointerPosition));
+        }
+
+        private (double ScaleX, double ScaleY) GetInheritedScale(Control placementTarget)
+        {
+            if (InheritsTransform &&
+                TopLevel.GetTopLevel(placementTarget) is { } topLevel &&
+                placementTarget.TransformToVisual(topLevel) is { } m)
+            {
+                return (Math.Sqrt(m.M11 * m.M11 + m.M12 * m.M12), Math.Sqrt(m.M21 * m.M21 + m.M22 * m.M22));
+            }
+
+            return (1.0, 1.0);
         }
 
         private void UpdateHostSizing(IPopupHost popupHost, TopLevel topLevel, Control placementTarget)
