@@ -1,4 +1,5 @@
-﻿using Avalonia.Media.TextFormatting.Unicode;
+﻿using System;
+using Avalonia.Media.TextFormatting.Unicode;
 
 namespace Avalonia.Media.TextFormatting
 {
@@ -24,6 +25,7 @@ namespace Avalonia.Media.TextFormatting
             var availableWidth = properties.Width - shapedSymbol.Size.Width;
 
             var collapsedLength = 0;
+            var trailingWhitespaceLength = 0;
 
             while (textRunsEnumerator.MoveNext(out var currentRun))
             {
@@ -76,14 +78,33 @@ namespace Avalonia.Media.TextFormatting
 
                                         measuredLength = currentBreakPosition;
                                     }
+                                    else if (!isWordEllipsis)
+                                    {
+                                        measuredLength -= GetTrailingWhitespaceLength(shapedRun.Text.Span.Slice(0, measuredLength));
+                                    }
                                 }
 
                                 collapsedLength += measuredLength;
+
+                                if (measuredLength == 0)
+                                {
+                                    collapsedLength -= trailingWhitespaceLength;
+                                }
 
                                 return TextCollapsingProperties.CreateCollapsedRuns(textLine, collapsedLength, shapedSymbol);
                             }
 
                             availableWidth -= textRunWidth;
+
+                            if (!isWordEllipsis)
+                            {
+                                var runText = shapedRun.Text.Span;
+                                var runTrailingWhitespaceLength = GetTrailingWhitespaceLength(runText);
+
+                                trailingWhitespaceLength = runTrailingWhitespaceLength == runText.Length ?
+                                    trailingWhitespaceLength + runTrailingWhitespaceLength :
+                                    runTrailingWhitespaceLength;
+                            }
 
                             break;
                         }
@@ -93,10 +114,11 @@ namespace Avalonia.Media.TextFormatting
                             //The whole run needs to fit into available space
                             if (drawableRun.Size.Width > availableWidth)
                             {
-                                return TextCollapsingProperties.CreateCollapsedRuns(textLine, collapsedLength, shapedSymbol);
+                                return TextCollapsingProperties.CreateCollapsedRuns(textLine, collapsedLength - trailingWhitespaceLength, shapedSymbol);
                             }
 
                             availableWidth -= drawableRun.Size.Width;
+                            trailingWhitespaceLength = 0;
 
                             break;
                         }
@@ -106,6 +128,18 @@ namespace Avalonia.Media.TextFormatting
             }
 
             return null;
+        }
+
+        private static int GetTrailingWhitespaceLength(ReadOnlySpan<char> text)
+        {
+            var length = 0;
+
+            while (length < text.Length && char.IsWhiteSpace(text[text.Length - 1 - length]))
+            {
+                length++;
+            }
+
+            return length;
         }
     }
 }
