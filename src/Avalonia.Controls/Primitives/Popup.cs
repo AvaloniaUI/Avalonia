@@ -560,8 +560,16 @@ namespace Avalonia.Controls.Primitives
                 state.popupHost.Dispose();
             });
 
-            if (IsLightDismissEnabled)
+            var gateOwner = topLevel;
+            while (gateOwner is PopupRoot ancestor)
+                gateOwner = ancestor.ParentTopLevel;
+            var gate = popupHost is PopupRoot ? gateOwner.NativePopupShowRequested : null;
+
+            void RegisterLightDismiss()
             {
+                if (!IsLightDismissEnabled)
+                    return;
+
                 var dismissLayer = LightDismissOverlayLayer.GetLightDismissOverlayLayer(placementTarget);
 
                 if (dismissLayer != null)
@@ -576,7 +584,11 @@ namespace Avalonia.Controls.Primitives
                 }
             }
 
-            _openState = new PopupOpenState(placementTarget, topLevel, popupHost, cleanupPopup, FindParentPopup(placementTarget));
+            if (gate == null)
+                RegisterLightDismiss();
+
+            var openState = _openState =
+                new PopupOpenState(placementTarget, topLevel, popupHost, cleanupPopup, FindParentPopup(placementTarget));
 
             if (_openState.ParentPopup is { } parentPopup)
                 parentPopup.AddOpenedPopup(this);
@@ -585,20 +597,78 @@ namespace Avalonia.Controls.Primitives
 
             WindowManagerAddShadowHintChanged(popupHost, WindowManagerAddShadowHint);
 
-            popupHost.Show();
-            IsUsingOverlayLayer = popupHost is OverlayPopupHost;
+            var completed = false;
 
-            if (TakesFocusFromNativeControl)
-                popupHost.TakeFocus();
+            bool IsCurrent() => _openState == openState && !openState.IsDisposed;
 
-            using (BeginIgnoringIsOpen())
+            void CompleteOpen()
             {
-                SetCurrentValue(IsOpenProperty, true);
+                VerifyAccess();
+                if (completed || !IsCurrent())
+                    return;
+
+                completed = true;
+                try
+                {
+                    if (gate != null)
+                        RegisterLightDismiss();
+                    if (!IsCurrent())
+                        return;
+
+                    popupHost.Show();
+                    if (!IsCurrent())
+                        return;
+
+                    IsUsingOverlayLayer = popupHost is OverlayPopupHost;
+                    if (!IsCurrent())
+                        return;
+
+                    if (TakesFocusFromNativeControl)
+                        popupHost.TakeFocus();
+                    if (!IsCurrent())
+                        return;
+
+                    using (BeginIgnoringIsOpen())
+                        SetCurrentValue(IsOpenProperty, true);
+                    if (!IsCurrent())
+                        return;
+
+                    Opened?.Invoke(this, EventArgs.Empty);
+                    if (IsCurrent())
+                        _popupHostChangedHandler?.Invoke(Host);
+                }
+                catch
+                {
+                    if (gate != null && IsCurrent())
+                        CloseCore(ignoreCancel: true);
+                    throw;
+                }
             }
 
-            Opened?.Invoke(this, EventArgs.Empty);
+            if (gate != null)
+            {
+                if (!IsCurrent())
+                    return;
 
-            _popupHostChangedHandler?.Invoke(Host);
+                try
+                {
+                    // IsOpen represents the request while native preparation is pending, so
+                    // setting it to false can cancel before Show/Opened/light dismissal.
+                    SetCurrentValue(IsOpenProperty, true);
+                    if (!IsCurrent())
+                        return;
+
+                    gate((PopupRoot)popupHost, CompleteOpen);
+                }
+                catch
+                {
+                    if (IsCurrent())
+                        CloseCore(ignoreCancel: true);
+                    throw;
+                }
+            }
+            else
+                CompleteOpen();
         }
 
         /// <summary>
@@ -837,13 +907,14 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        private void CloseCore()
+        private void CloseCore(bool ignoreCancel = false)
         {
-            var closingArgs = new CancelEventArgs();
-            Closing?.Invoke(this, closingArgs);
-            if (closingArgs.Cancel)
+            if (!ignoreCancel)
             {
-                return;
+                var closingArgs = new CancelEventArgs();
+                Closing?.Invoke(this, closingArgs);
+                if (closingArgs.Cancel)
+                    return;
             }
 
             _isOpenRequested = false;
@@ -1132,6 +1203,8 @@ namespace Avalonia.Controls.Primitives
 
             public IPopupHost PopupHost { get; }
 
+            public bool IsDisposed { get; private set; }
+
             public void SetPresenterSubscription(IDisposable? presenterCleanup)
             {
                 _presenterCleanup?.Dispose();
@@ -1141,6 +1214,7 @@ namespace Avalonia.Controls.Primitives
 
             public void Dispose()
             {
+                IsDisposed = true;
                 _presenterCleanup?.Dispose();
 
                 _cleanup.Dispose();
