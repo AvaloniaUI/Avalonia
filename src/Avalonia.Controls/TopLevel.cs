@@ -46,6 +46,12 @@ namespace Avalonia.Controls
         IThemeVariantRoot
     {
         /// <summary>
+        /// Defines the <see cref="UseOverlayPopups"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> UseOverlayPopupsProperty =
+            AvaloniaProperty.Register<TopLevel, bool>(nameof(UseOverlayPopups));
+
+        /// <summary>
         /// Defines the <see cref="ClientSize"/> property.
         /// </summary>
         public static readonly DirectProperty<TopLevel, Size> ClientSizeProperty =
@@ -343,6 +349,20 @@ namespace Avalonia.Controls
         /// Fired when the window is closed.
         /// </summary>
         public event EventHandler? Closed;
+
+        /// <summary>
+        /// Gets or sets whether popups targeting this top-level are shown in its overlay layer.
+        /// </summary>
+        /// <remarks>
+        /// Set this before opening popups. Overlay popups are confined to the client area;
+        /// if the target has no overlay layer, the platform popup implementation is used instead.
+        /// A popup can still explicitly request overlay hosting with <see cref="Popup.ShouldUseOverlayLayer"/>.
+        /// </remarks>
+        public bool UseOverlayPopups
+        {
+            get => GetValue(UseOverlayPopupsProperty);
+            set => SetValue(UseOverlayPopupsProperty, value);
+        }
 
         /// <summary>
         /// Gets or sets a method called when the TopLevel's scaling changes.
