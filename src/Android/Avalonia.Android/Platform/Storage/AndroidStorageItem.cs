@@ -78,7 +78,7 @@ internal abstract class AndroidStorageItem : IStorageBookmarkItem
         {
             var projection = new[] { column };
             using var cursor = new DisposableClosable<ICursor>(context.ContentResolver!.Query(contentUri, projection, selection, selectionArgs, null));
-            if (cursor?.Instance?.MoveToFirst() == true)
+            if (cursor.Instance?.MoveToFirst() == true)
             {
                 var columnIndex = cursor.Instance.GetColumnIndex(column);
                 if (columnIndex != -1)
@@ -275,7 +275,7 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
                 };
                 using var cursor = new DisposableClosable<ICursor>(Activity.ContentResolver!.Query(queryUri, projection, null, null, null));
 
-                if (cursor?.Instance?.MoveToFirst() == true)
+                if (cursor.Instance?.MoveToFirst() == true)
                 {
                     try
                     {
@@ -328,22 +328,21 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
         {
             using var cursor = new DisposableClosable<ICursor>(contentResolver.Query(childrenUri, projection, null, null, null));
 
-            if (cursor != null)
-                while (cursor.Instance?.MoveToNext() == true)
+            while (cursor.Instance?.MoveToNext() == true)
+            {
+                var mime = cursor.Instance.GetString(1);
+                var id = cursor.Instance.GetString(0);
+
+                bool isDirectory = mime == Document.MimeTypeDir;
+                var uri = BuildDocumentUriUsingTree(root, id);
+
+                if (uri == null)
                 {
-                    var mime = cursor.Instance.GetString(1);
-                    var id = cursor.Instance.GetString(0);
-
-                    bool isDirectory = mime == Document.MimeTypeDir;
-                    var uri = BuildDocumentUriUsingTree(root, id);
-
-                    if (uri == null)
-                    {
-                        continue;
-                    }
-                    yield return isDirectory ? new AndroidStorageFolder(Activity, uri, false, this, root) :
-                        new AndroidStorageFile(Activity, uri, this, root);
+                    continue;
                 }
+                yield return isDirectory ? new AndroidStorageFolder(Activity, uri, false, this, root) :
+                    new AndroidStorageFile(Activity, uri, this, root);
+            }
         }
     }
 
@@ -552,7 +551,7 @@ internal sealed class AndroidStorageFile : AndroidStorageItem, IStorageBookmarkF
             };
             using var cursor = new DisposableClosable<ICursor>(Activity.ContentResolver!.Query(Uri, projection, null, null, null));
 
-            if (cursor?.Instance?.MoveToFirst() == true)
+            if (cursor.Instance?.MoveToFirst() == true)
             {
                 try
                 {
