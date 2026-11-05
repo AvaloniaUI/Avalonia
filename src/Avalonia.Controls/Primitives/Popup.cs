@@ -729,7 +729,7 @@ namespace Avalonia.Controls.Primitives
             else if (_pointerPosition is null && TopLevel.GetTopLevel(placementTarget) is { } topLevel)
                 _pointerPosition = topLevel.PointToClient(topLevel.LastPointerPosition ?? default);
 
-            var (scaleX, scaleY) = GetInheritedScale(placementTarget);
+            TryGetInheritedScale(TopLevel.GetTopLevel(placementTarget), placementTarget, out var scaleX, out var scaleY);
 
             popupHost.ConfigurePosition(new PopupPositionRequest(
                 placementTarget,
@@ -743,28 +743,24 @@ namespace Avalonia.Controls.Primitives
                 _pointerPosition));
         }
 
-        private (double ScaleX, double ScaleY) GetInheritedScale(Control placementTarget)
+        private bool TryGetInheritedScale(TopLevel? topLevel, Control placementTarget, out double scaleX, out double scaleY)
         {
-            if (InheritsTransform &&
-                TopLevel.GetTopLevel(placementTarget) is { } topLevel &&
-                placementTarget.TransformToVisual(topLevel) is { } m)
+            if (InheritsTransform && topLevel is not null && placementTarget.TransformToVisual(topLevel) is { } m)
             {
-                return (Math.Sqrt(m.M11 * m.M11 + m.M12 * m.M12), Math.Sqrt(m.M21 * m.M21 + m.M22 * m.M22));
+                scaleX = Math.Sqrt(m.M11 * m.M11 + m.M12 * m.M12);
+                scaleY = Math.Sqrt(m.M21 * m.M21 + m.M22 * m.M22);
+                return true;
             }
 
-            return (1.0, 1.0);
+            scaleX = 1.0;
+            scaleY = 1.0;
+            return false;
         }
 
         private void UpdateHostSizing(IPopupHost popupHost, TopLevel topLevel, Control placementTarget)
         {
-            var scaleX = 1.0;
-            var scaleY = 1.0;
-
-            if (InheritsTransform && placementTarget.TransformToVisual(topLevel) is { } m)
+            if (TryGetInheritedScale(topLevel, placementTarget, out var scaleX, out var scaleY))
             {
-                scaleX = Math.Sqrt(m.M11 * m.M11 + m.M12 * m.M12);
-                scaleY = Math.Sqrt(m.M21 * m.M21 + m.M22 * m.M22);
-
                 // Ideally we'd only assign a ScaleTransform here when the scale != 1, but there's
                 // an issue with LayoutTransformControl in that it sets its LayoutTransform property
                 // with LocalValue priority in ArrangeOverride in certain cases when LayoutTransform
