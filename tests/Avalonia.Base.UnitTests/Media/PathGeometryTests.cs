@@ -4,7 +4,7 @@ using Xunit;
 
 namespace Avalonia.Base.UnitTests.Media;
 
-public class PathGeometryTests
+public class PathGeometryTests : ScopedTestBase
 {
     [Fact]
     public void PathGeometry_Triggers_Invalidation_On_Figures_Add()

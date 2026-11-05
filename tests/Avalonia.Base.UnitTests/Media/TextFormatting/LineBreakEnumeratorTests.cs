@@ -28,6 +28,60 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
         }
 
         [Fact]
+        public void Limit_Stops_Inside_A_Word_Without_Break_Opportunity()
+        {
+            var lineBreaker = new LineBreakEnumerator("xxxxxxxxxxxxxxxx", 4);
+
+            Assert.False(lineBreaker.MoveNext(out _));
+            Assert.True(lineBreaker.LimitReached);
+        }
+
+        [Fact]
+        public void Limit_Keeps_Opportunities_Before_It()
+        {
+            var lineBreaker = new LineBreakEnumerator("ab cd efghijkl", 8);
+
+            Assert.True(lineBreaker.MoveNext(out var lineBreak));
+            Assert.Equal(3, lineBreak.PositionWrap);
+
+            Assert.True(lineBreaker.MoveNext(out lineBreak));
+            Assert.Equal(6, lineBreak.PositionWrap);
+
+            Assert.False(lineBreaker.MoveNext(out _));
+            Assert.True(lineBreaker.LimitReached);
+        }
+
+        [Fact]
+        public void Limit_Inside_Whitespace_Still_Resolves_The_Break_After_It()
+        {
+            var lineBreaker = new LineBreakEnumerator("abc" + new string(' ', 10) + "defgh", 5);
+
+            Assert.True(lineBreaker.MoveNext(out var lineBreak));
+            Assert.Equal(3, lineBreak.PositionMeasure);
+            Assert.Equal(13, lineBreak.PositionWrap);
+
+            Assert.False(lineBreaker.MoveNext(out _));
+            Assert.True(lineBreaker.LimitReached);
+        }
+
+        [Fact]
+        public void Limit_Beyond_The_Text_Does_Not_Change_The_Result()
+        {
+            var text = "Hello World\r\nThis is a test.";
+            var expected = new LineBreakEnumerator(text);
+            var actual = new LineBreakEnumerator(text, text.Length + 100);
+
+            while (expected.MoveNext(out var expectedBreak))
+            {
+                Assert.True(actual.MoveNext(out var actualBreak));
+                Assert.Equal(expectedBreak, actualBreak);
+            }
+
+            Assert.False(actual.MoveNext(out _));
+            Assert.False(actual.LimitReached);
+        }
+
+        [Fact]
         public void BasicLatinTest()
         {
             var lineBreaker = new LineBreakEnumerator("Hello World\r\nThis is a test.");

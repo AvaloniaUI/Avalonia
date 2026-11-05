@@ -335,7 +335,7 @@ namespace Avalonia.Controls
             // Avoid handling Space if the button isn't focused: a child TextBox might need it for text input
             if (e.Key == Key.Space && IsFocused)
             {
-                if (ClickMode == ClickMode.Release)
+                if (ClickMode == ClickMode.Release && IsPressed)
                 {
                     OnClick();
                 }

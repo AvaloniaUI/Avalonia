@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Avalonia.Base.UnitTests.Media;
 
-public class DrawingGroupTests
+public class DrawingGroupTests : ScopedTestBase
 {
     [Fact]
     public void PushEffect_Should_Store_Provided_Bounds()

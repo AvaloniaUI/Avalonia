@@ -9,10 +9,10 @@ internal sealed class SimpleGeometryImpl(SKPath strokePath, SKPath? fillPath, Re
     : GeometryImpl
 {
     /// <inheritdoc />
-    public override SKPath StrokePath { get; } = strokePath;
+    public override SKPath StrokePath { get; } = CachePathBounds(strokePath);
 
     /// <inheritdoc />
-    public override SKPath? FillPath { get; } = fillPath;
+    public override SKPath? FillPath { get; } = CachePathBounds(fillPath);
 
     /// <inheritdoc />
     public override Rect Bounds { get; } = bounds ?? strokePath.TightBounds.ToAvaloniaRect();

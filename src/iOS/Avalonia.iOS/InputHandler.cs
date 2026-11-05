@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Avalonia.Collections.Pooled;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
@@ -23,6 +24,7 @@ internal sealed class InputHandler
     private readonly PenDevice _penDevice = new(releasePointerOnPenUp: true);
     private static long _nextTouchPointId = 1;
     private readonly Dictionary<UITouch, long> _knownTouches = new();
+    private int _resetCount;
     private Point? _cachedScrollLocation;
     
     #if !TVOS
@@ -47,8 +49,13 @@ internal sealed class InputHandler
 
     public void Handle(NSSet touches, UIEvent? evt)
     {
+        var resetCount = _resetCount;
         foreach (UITouch t in touches)
         {
+            // Stop once a handler removed the view, the remaining touches were cancelled.
+            if (resetCount != _resetCount)
+                break;
+
             if (t.Type == UITouchType.Indirect)
             {
                 // Ignore Indirect input, like remote controller trackpad.
@@ -59,14 +66,7 @@ internal sealed class InputHandler
             if (!_knownTouches.TryGetValue(t, out var id))
                 _knownTouches[t] = id = _nextTouchPointId++;
 
-            IInputDevice device = t.Type switch
-            {
-                UITouchType.Stylus => _penDevice,
-#pragma warning disable CA1416
-                UITouchType.IndirectPointer => _mouseDevice,
-#pragma warning restore CA1416
-                _ => _touchDevice
-            };
+            var device = GetDevice(t);
 
             var modifiers = RawInputModifiers.None;
             if (OperatingSystem.IsIOSVersionAtLeast(13, 4)
@@ -109,10 +109,11 @@ internal sealed class InputHandler
                 }) : null
             };
 
-            _tl.Input?.Invoke(ev);
-
+            // Forget it first, the handlers may remove the view.
             if (t.Phase is UITouchPhase.Cancelled or UITouchPhase.Ended)
                 _knownTouches.Remove(t);
+
+            _tl.Input?.Invoke(ev);
 
             RawPointerPoint ToPointerPoint(UITouch touch) => new()
             {
@@ -161,13 +162,33 @@ internal sealed class InputHandler
 #endif
     }
 
+    private IInputDevice GetDevice(UITouch touch) => touch.Type switch
+    {
+        UITouchType.Stylus => _penDevice,
+#pragma warning disable CA1416
+        UITouchType.IndirectPointer => _mouseDevice,
+#pragma warning restore CA1416
+        _ => _touchDevice
+    };
+
     /// <summary>
-    /// Forgets the touches in progress, for when the view leaves its window or is disposed:
+    /// Cancels the touches in progress, for when the view leaves its window or is disposed:
     /// UIKit doesn't report the end of those touches then.
     /// </summary>
     public void ResetTouches()
     {
+        _resetCount++;
+        // Copied, the handlers may remove the view again.
+        var touches = _knownTouches.ToList();
         _knownTouches.Clear();
+        foreach (var (touch, id) in touches)
+        {
+            var device = GetDevice(touch);
+            var type = device is TouchDevice ? RawPointerEventType.TouchCancel : RawPointerEventType.LeaveWindow;
+            _tl.Input?.Invoke(new RawTouchEventArgs(device, 0, Root, type,
+                new RawPointerPoint { Position = touch.LocationInView(_view).ToAvalonia() }, RawInputModifiers.None, id));
+        }
+
         UpdateTouchDisplayLink();
     }
 

@@ -62,6 +62,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 context));
             _screens = new AndroidScreens(context);
             _feedback = new AndroidPlatformFeedback(avaloniaView);
+            DragDrop = new AndroidDragDrop(this);
 
             if (context is Activity mainActivity)
             {
@@ -98,6 +99,8 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public View? View => _view;
 
+        public AndroidDragDrop DragDrop { get; }
+
         internal InvalidationAwareSurfaceView? InternalView => _view;
 
         public double DesktopScaling => RenderScaling;
@@ -120,7 +123,12 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public void SetCursor(ICursorImpl? cursor)
         {
-            //still not implemented
+            cursor ??= CursorImpl.DefaultCursor;
+
+            if (cursor is CursorImpl androidCursor)
+            {
+                ViewCompat.SetPointerIcon(_view, androidCursor.PointerIcon);
+            }
         }
 
         public void SetInputRoot(IInputRoot inputRoot)
@@ -133,6 +141,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             _systemNavigationManager.Dispose();
             _view?.Dispose();
             _view = null;
+            (DragDrop as IDisposable)?.Dispose();
         }
 
         protected void OnResized(Size size)

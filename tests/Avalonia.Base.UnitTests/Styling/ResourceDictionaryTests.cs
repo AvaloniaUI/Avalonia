@@ -2,10 +2,11 @@
 using Avalonia.Controls;
 using Moq;
 using Xunit;
+using Avalonia.UnitTests;
 
 namespace Avalonia.Base.UnitTests.Styling
 {
-    public class ResourceDictionaryTests
+    public class ResourceDictionaryTests : ScopedTestBase
     {
         [Fact]
         public void Cannot_Add_Null_Key()

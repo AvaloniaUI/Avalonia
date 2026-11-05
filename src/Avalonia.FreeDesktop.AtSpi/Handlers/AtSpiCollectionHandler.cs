@@ -225,7 +225,7 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
             if (ruleAttrs == null || ruleAttrs.Count == 0)
                 return true;
 
-            var nodeAttrs = AtSpiNode.GetAttributes(node.Peer);
+            var nodeAttrs = node.GetAttributes();
 
             return matchType switch
             {

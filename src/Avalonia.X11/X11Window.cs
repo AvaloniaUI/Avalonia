@@ -603,6 +603,12 @@ namespace Avalonia.X11
                 _mapped = true;
                 if (_useRenderWindow)
                     XMapWindow(_x11.Display, _renderHandle);
+                EnqueuePositionRefresh();
+            }
+            else if (ev.type == XEventName.ReparentNotify)
+            {
+                if (ev.ReparentEvent.window == _handle)
+                    EnqueuePositionRefresh();
             }
             else if (ev.type == XEventName.UnmapNotify)
                 _mapped = false;
@@ -1054,6 +1060,30 @@ namespace Avalonia.X11
                 drag.Location = drag.Location / RenderScaling;
             
             _rawEventGrouper?.HandleEvent(args);
+        }
+
+        // A position translated on ConfigureNotify can be stale if the window manager was reparenting
+        // the window at the time, and some window managers (e.g. openbox with an undecorated window)
+        // send no later ConfigureNotify to correct it. Translate it again once that has settled.
+        private void EnqueuePositionRefresh()
+        {
+            Dispatcher.UIThread.Post(() =>
+            {
+                if (_handle == IntPtr.Zero || _configure != null)
+                    return;
+
+                XTranslateCoordinates(_x11.Display, _handle, _x11.RootWindow,
+                    0, 0,
+                    out var tx, out var ty, out _);
+                var npos = new PixelPoint(tx, ty);
+                if (_position == npos)
+                    return;
+
+                _position = npos;
+                PositionChanged?.Invoke(npos);
+                UpdateScaling();
+                UpdateImePosition();
+            }, DispatcherPriority.Background);
         }
 
         private void MouseEvent(RawPointerEventType type, ref XEvent ev, XModifierMask mods)

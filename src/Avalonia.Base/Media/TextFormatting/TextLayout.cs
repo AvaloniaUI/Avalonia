@@ -427,7 +427,7 @@ namespace Avalonia.Media.TextFormatting
                 {
                     characterHit = currentLine.GetCharacterHitFromDistance(point.X);
 
-                    return GetHitTestResult(currentLine, characterHit, point);
+                    return GetHitTestResult(currentLine, characterHit, new Point(point.X - currentLine.Start, point.Y - currentY));
                 }
 
                 currentY += currentLine.Height;
@@ -440,7 +440,7 @@ namespace Avalonia.Media.TextFormatting
 
             characterHit = currentLine.GetCharacterHitFromDistance(point.X);
 
-            return GetHitTestResult(currentLine, characterHit, point);
+            return GetHitTestResult(currentLine, characterHit, new Point(point.X - currentLine.Start, point.Y - (currentY - currentLine.Height)));
         }
 
 
@@ -475,9 +475,17 @@ namespace Avalonia.Media.TextFormatting
             return _textLines.Length - 1;
         }
 
-        private TextHitTestResult GetHitTestResult(TextLine textLine, CharacterHit characterHit, Point point)
+        /// <summary>
+        /// Creates the <see cref="TextHitTestResult"/> for a point that hit the specified line.
+        /// </summary>
+        /// <param name="textLine">The line that was hit.</param>
+        /// <param name="characterHit">The character hit within the line.</param>
+        /// <param name="linePoint">
+        /// The point, relative to the top of <paramref name="textLine"/> and its <see cref="TextLine.Start"/>.
+        /// </param>
+        private TextHitTestResult GetHitTestResult(TextLine textLine, CharacterHit characterHit, Point linePoint)
         {
-            var (x, y) = point;
+            var (x, y) = linePoint;
 
             var isInside = x >= 0 && x <= textLine.Width && y >= 0 && y <= textLine.Height;
 
@@ -513,7 +521,7 @@ namespace Avalonia.Media.TextFormatting
             var textPosition = characterHit.FirstCharacterIndex + characterHit.TrailingLength;
 
             var isTrailing = lastTrailingIndex == textPosition && characterHit.TrailingLength > 0 ||
-                             y > Height;
+                             y > textLine.Height;
 
             if (textPosition == textLine.FirstTextSourceIndex + textLine.Length)
             {

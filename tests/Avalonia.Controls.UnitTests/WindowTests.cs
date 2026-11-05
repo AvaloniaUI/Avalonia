@@ -38,6 +38,24 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Setting_Title_With_An_Embedded_Null_Should_Strip_It()
+        {
+            var windowImpl = new Mock<IWindowImpl>();
+            windowImpl.Setup(r => r.RenderScaling).Returns(1.0);
+            windowImpl.Setup(r => r.Compositor).Returns(RendererMocks.CreateDummyCompositor());
+            var windowingPlatform = new MockWindowingPlatform(() => windowImpl.Object);
+
+            using (UnitTestApplication.Start(new TestServices(windowingPlatform: windowingPlatform)))
+            {
+                var target = new Window();
+
+                target.Title = "Hello\0World";
+
+                windowImpl.Verify(x => x.SetTitle("HelloWorld"));
+            }
+        }
+
+        [Fact]
         public void IsVisible_Should_Initially_Be_False()
         {
             using (UnitTestApplication.Start(TestServices.MockWindowingPlatform))

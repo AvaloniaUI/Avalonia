@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.JavaScript;
 using System.Threading;
 using Avalonia.Browser.Interop;
@@ -42,20 +43,16 @@ internal class BrowserWindowingPlatform : IWindowingPlatform
         set => s_globalThis = value;
     }
 
-    static bool DetectThreadSupport()
+    private static bool DetectThreadSupport()
     {
-        // .NET 11+ has the public RuntimeFeature.IsMultithreadingSupported (https://github.com/dotnet/runtime/issues/77541).
-        // Read it via reflection, as it's not in the reference assemblies of the TFMs we compile against.
-        var prop = typeof(System.Runtime.CompilerServices.RuntimeFeature).GetProperty("IsMultithreadingSupported",
-            BindingFlags.Static | BindingFlags.Public);
+#if NET11_0_OR_GREATER
+        return RuntimeFeature.IsMultithreadingSupported;
+#else
+        var prop = typeof(System.Threading.Thread).GetProperty("IsThreadStartSupported",
+            BindingFlags.Static | BindingFlags.NonPublic);
         if (prop != null && prop.GetValue(null) is bool value)
             return value;
-        // Older runtimes have the internal Thread.IsThreadStartSupported instead.
-        prop = typeof(System.Threading.Thread).GetProperty("IsThreadStartSupported",
-            BindingFlags.Static | BindingFlags.NonPublic);
-        if (prop != null && prop.GetValue(null) is bool legacyValue)
-            return legacyValue;
-        // No property is found, try to start a thread and get an exception in the face if threads aren't available.
+        // No property is found, try to start a thread and get an exception in the face if threads aren't available
         try
         {
 #pragma warning disable CA1416
@@ -67,7 +64,7 @@ internal class BrowserWindowingPlatform : IWindowingPlatform
         {
             return false;
         }
-
+#endif
     }
     
     private static KeyboardDevice? s_keyboard;

@@ -62,7 +62,8 @@ namespace Avalonia
                 })
                 .AfterApplicationSetup(_ =>
                 {
-                    var lt = ((IClassicDesktopStyleApplicationLifetime) builder.Instance!.ApplicationLifetime!);
+                    if (builder.Instance!.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime lt)
+                        throw new InvalidOperationException("Headless VNC requires the classic desktop application lifetime");
                     lt.Startup += async delegate
                     {
                         while (true)
