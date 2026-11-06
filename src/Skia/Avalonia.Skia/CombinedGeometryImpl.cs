@@ -11,8 +11,8 @@ namespace Avalonia.Skia
     {
         public CombinedGeometryImpl(SKPath? stroke, SKPath? fill)
         {
-            StrokePath = stroke;
-            FillPath = fill;
+            StrokePath = CachePathBounds(stroke);
+            FillPath = CachePathBounds(fill);
 
             var bounds = stroke?.TightBounds ?? default;
 
