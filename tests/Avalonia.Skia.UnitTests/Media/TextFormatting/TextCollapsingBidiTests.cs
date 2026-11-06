@@ -517,6 +517,66 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        [Fact]
+        public void LeadingCharacterEllipsis_With_Mixed_Font_Runs_Preserves_Contiguous_Suffix()
+        {
+            // Reproduces AvaloniaUI/Avalonia#22646: with mixed FontFamily spans, LeadingCharacterEllipsis
+            // emits wrong characters right after the ellipsis. Root cause under investigation.
+            using (TextFormatterTests.Start())
+            {
+                const string normal = "DejaVu Sans";
+                const string alt = "Inter";
+                const string fullText = "Hello world Hello world Hello world Hello world Hello world Hello world Hello world ";
+
+                var normalProps = new GenericTextRunProperties(new Typeface(normal), 30);
+                var altProps = new GenericTextRunProperties(new Typeface(alt), 30);
+
+                var runs = new List<TextRun>
+                {
+                    new TextCharacters("Hel", normalProps)
+                };
+
+                for (var i = 0; i < 7; i++)
+                {
+                    runs.Add(new TextCharacters("lo wo", altProps));
+                    runs.Add(new TextCharacters(i < 6 ? "rld Hel" : "rld ", normalProps));
+                }
+
+                var paragraphProps = new GenericTextParagraphProperties(
+                    FlowDirection.LeftToRight, TextAlignment.Left, true, false,
+                    normalProps, TextWrapping.NoWrap, 0, 0, 0);
+
+                var failures = new List<string>();
+
+                for (var w = 60.0; w <= 273.0; w += 1.0)
+                {
+                    var textSource = new FixedRunsTextSource(runs);
+                    using var layout = new TextLayout(
+                        textSource,
+                        paragraphProps,
+                        TextTrimming.LeadingCharacterEllipsis,
+                        maxWidth: w);
+
+                    Assert.NotEmpty(layout.TextLines);
+                    var line = layout.TextLines[0];
+
+                    var visible = LogicalText(line);
+                    Assert.StartsWith("…", visible);
+                    var suffix = visible.Substring(1);
+
+                    if (!fullText.EndsWith(suffix))
+                    {
+                        failures.Add($"w={w:F0} renders '{visible}'");
+                    }
+                }
+
+                Assert.True(
+                    failures.Count == 0,
+                    $"Invariant violated for {failures.Count} widths. First violations:\n" +
+                    string.Join("\n", failures.Take(12)));
+            }
+        }
+
         private static TextLine BuildLine(string text, FlowDirection flow)
         {
             var props = new GenericTextRunProperties(Typeface.Default, 12, foregroundBrush: Brushes.Black);
@@ -587,6 +647,18 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     {
                         return run;
                     }
+
+                    if (textSourceIndex < pos + run.Length)
+                    {
+                        var skip = textSourceIndex - pos;
+                        if (run is TextCharacters tc)
+                        {
+                            return new TextCharacters(tc.Text.Slice(skip), tc.Properties);
+                        }
+
+                        return run;
+                    }
+
                     pos += run.Length;
                 }
                 return null;
