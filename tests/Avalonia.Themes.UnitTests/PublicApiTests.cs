@@ -24,8 +24,8 @@ public abstract class PublicApiTests(Type typeEntryPoint) : ThemeTestBase(typeEn
         // that were not marked as "internal" class modifier.
         // In our built-in themes it's expected that XAML files are internal, except theme entry point itself.
 
+        // A theme can have no such files at all, when every XAML file is merged into the entry point (MergeResourceInclude).
         var xamlMethods = FindXamlPopulateMethods().Concat(FindXamlBuildMethods()).ToArray();
-        Assert.NotEmpty(xamlMethods);
         var s = xamlMethods.Where(x => x.IsPublic).ToList();
         Assert.DoesNotContain(xamlMethods, m => m.IsPublic);
     }
