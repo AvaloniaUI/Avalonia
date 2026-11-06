@@ -142,12 +142,12 @@ namespace Avalonia.FreeDesktop.AtSpi
         }
 
         /// <summary>
-        /// Builds the AT-SPI object attributes reported for a peer.
+        /// Builds the AT-SPI object attributes reported for this node.
         /// </summary>
-        /// <param name="peer">The peer to read attributes from.</param>
         /// <returns>The attributes shared by Accessible.GetAttributes and Collection matching.</returns>
-        internal static AtSpiAttributeSet GetAttributes(AutomationPeer peer)
+        internal AtSpiAttributeSet GetAttributes()
         {
+            var peer = Peer;
             var attrs = new AtSpiAttributeSet { ["toolkit"] = "Avalonia" };
 
             var name = peer.GetName();
@@ -180,6 +180,9 @@ namespace Avalonia.FreeDesktop.AtSpi
                 if (size > 0)
                     attrs["setsize"] = size.ToString(CultureInfo.InvariantCulture);
             }
+
+            if (this is RootAtSpiNode { WindowImpl.Handle: { HandleDescriptor: "XID" } handle })
+                attrs["avalonia-window-handle"] = handle.Handle.ToInt64().ToString(CultureInfo.InvariantCulture);
 
             return attrs;
         }

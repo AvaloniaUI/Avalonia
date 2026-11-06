@@ -21,7 +21,7 @@ namespace ControlCatalog
         private FluentTheme? _fluentTheme;
         private Avalonia.Themes.Fluent2.Fluent2Theme? _fluent2Theme;
         private SimpleTheme? _simpleTheme;
-        private IStyle? _colorPickerFluent, _colorPickerSimple;
+        private IStyle? _colorPickerFluent, _colorPickerFluent2, _colorPickerSimple;
         private MainWindowViewModel _mainWindowViewModel = new MainWindowViewModel();
 
         public App()
@@ -39,6 +39,7 @@ namespace ControlCatalog
             _fluent2Theme = (Avalonia.Themes.Fluent2.Fluent2Theme)Resources["Fluent2Theme"]!;
             _simpleTheme = (SimpleTheme)Resources["SimpleTheme"]!;
             _colorPickerFluent = (IStyle)Resources["ColorPickerFluent"]!;
+            _colorPickerFluent2 = (IStyle)Resources["ColorPickerFluent2"]!;
             _colorPickerSimple = (IStyle)Resources["ColorPickerSimple"]!;
 
             SetCatalogThemes(CatalogTheme.Fluent2, skipWindowCreation: true);
@@ -149,7 +150,7 @@ namespace ControlCatalog
             else if (theme == CatalogTheme.Fluent2)
             {
                 app._themeStylesContainer[0] = app._fluent2Theme!;
-                app._themeStylesContainer[1] = app._colorPickerFluent!;
+                app._themeStylesContainer[1] = app._colorPickerFluent2!;
             }
             else if (theme == CatalogTheme.Simple)
             {
