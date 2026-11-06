@@ -150,6 +150,12 @@ namespace Avalonia.Browser
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; }
 
+        public PixelPoint Position { get; } = default;
+
+        public Action<PixelPoint>? PositionChanged { get; set; }
+        public Action? Deactivated { get; set; }
+        public Action? Activated { get; set; }
+
         public object? TryGetFeature(Type featureType)
         {
             if (featureType == typeof(IStorageProvider))
