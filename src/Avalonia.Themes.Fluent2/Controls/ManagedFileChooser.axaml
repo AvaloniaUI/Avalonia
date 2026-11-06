@@ -35,7 +35,7 @@
                         L 16,12 C 16,14 16,14 14,14
                         L 2,14 C 0,14 0,14 0,12 Z">
               <GeometryDrawing.Brush>
-                <LinearGradientBrush StartPoint="1,4" EndPoint="23,20">
+                <LinearGradientBrush x:Immutable="True" StartPoint="1,4" EndPoint="23,20">
                   <GradientStop Offset="0" Color="#FFFFC018"/>
                   <GradientStop Offset="1" Color="#FFDFA32D"/>
                 </LinearGradientBrush>
@@ -43,7 +43,7 @@
             </GeometryDrawing>
             <GeometryDrawing Geometry="M 0 4.5 L 8 4.5 L 8 9 L 0 9 Z">
               <GeometryDrawing.Brush>
-                <LinearGradientBrush StartPoint="0,4.5" EndPoint="0,5">
+                <LinearGradientBrush x:Immutable="True" StartPoint="0,4.5" EndPoint="0,5">
                   <GradientStop Offset="0" Color="#00D7A018"/>
                   <GradientStop Offset="1" Color="#7FD7A018"/>
                 </LinearGradientBrush>
@@ -53,7 +53,7 @@
                                                     L 16,11 C 16,13 16,13 14,13
                                                     L 2,13 C 0,13 0,13 0,11 Z">
               <GeometryDrawing.Brush>
-                <LinearGradientBrush StartPoint="1,6" EndPoint="23,19">
+                <LinearGradientBrush x:Immutable="True" StartPoint="1,6" EndPoint="23,19">
                   <GradientStop Offset="0" Color="#FFFFE69D"/>
                   <GradientStop Offset="1" Color="#FFFFC937"/>
                 </LinearGradientBrush>
@@ -73,7 +73,7 @@
             <GeometryDrawing Geometry="M 4 5 L 12 5 L 14.5 7.5 C 15,8 15,8 15,9 L 1 9 C 1,8 1,8 1.5 7.5 Z" Brush="#FFE1E3E6"/>
             <GeometryDrawing Geometry="M 12 5 L 14.5 7.5 C 15,8 15,8 15,9 L 10 9 L 10 5 Z">
               <GeometryDrawing.Brush>
-                <LinearGradientBrush StartPoint="12,5" EndPoint="11.5,5.5">
+                <LinearGradientBrush x:Immutable="True" StartPoint="12,5" EndPoint="11.5,5.5">
                   <GradientStop Offset="0" Color="#FFCDCFD1"/>
                   <GradientStop Offset="1" Color="#00CDCFD1"/>
                 </LinearGradientBrush>
@@ -81,7 +81,7 @@
             </GeometryDrawing>
             <GeometryDrawing Geometry="M 4 5 L 1.5 7.5 C 1,8 1,8 1,9 L 4 9 L 6 9 L 6 5 Z">
               <GeometryDrawing.Brush>
-                <LinearGradientBrush StartPoint="4,5" EndPoint="4.5,5.5">
+                <LinearGradientBrush x:Immutable="True" StartPoint="4,5" EndPoint="4.5,5.5">
                   <GradientStop Offset="0" Color="#FFCDCFD1"/>
                   <GradientStop Offset="1" Color="#00CDCFD1"/>
                 </LinearGradientBrush>
@@ -92,7 +92,7 @@
                                                     C 15,12 15,12 14,12 L 2 12
                                                     C 1,12 1,12 1,11 Z">
               <GeometryDrawing.Brush>
-                <LinearGradientBrush StartPoint="0,8" EndPoint="0,12">
+                <LinearGradientBrush x:Immutable="True" StartPoint="0,8" EndPoint="0,12">
                   <GradientStop Offset="0" Color="#FF737374"/>
                   <GradientStop Offset="1" Color="#FFA8A8A8"/>
                 </LinearGradientBrush>
@@ -103,7 +103,7 @@
                                                     C 14,11 14,11 13,11 L 3 11
                                                     C 2,11 2,11 2,10 Z">
               <GeometryDrawing.Brush>
-                <LinearGradientBrush StartPoint="0,8" EndPoint="0,11">
+                <LinearGradientBrush x:Immutable="True" StartPoint="0,8" EndPoint="0,11">
                   <GradientStop Offset="0" Color="#FF333333"/>
                   <GradientStop Offset="1" Color="#FF5A5A5A"/>
                 </LinearGradientBrush>
@@ -114,7 +114,7 @@
                 <EllipseGeometry Rect="2.5,8.5,2,2"/>
               </GeometryDrawing.Geometry>
               <GeometryDrawing.Brush>
-                <RadialGradientBrush GradientOrigin="3.5,9.5" Center="3.5,9.5">
+                <RadialGradientBrush x:Immutable="True" GradientOrigin="3.5,9.5" Center="3.5,9.5">
                   <GradientStop Offset="0.8" Color="#4001FF01"/>
                   <GradientStop Offset="1" Color="#0001FF01"/>
                 </RadialGradientBrush>
@@ -125,7 +125,7 @@
                 <EllipseGeometry Rect="3,9,1,1"/>
               </GeometryDrawing.Geometry>
               <GeometryDrawing.Brush>
-                <RadialGradientBrush GradientOrigin="3.5,9.5" Center="3.25,9.75">
+                <RadialGradientBrush x:Immutable="True" GradientOrigin="3.5,9.5" Center="3.25,9.75">
                   <GradientStop Offset="0" Color="#FFB6FFB6"/>
                   <GradientStop Offset="1" Color="#FF01FF01"/>
                 </RadialGradientBrush>

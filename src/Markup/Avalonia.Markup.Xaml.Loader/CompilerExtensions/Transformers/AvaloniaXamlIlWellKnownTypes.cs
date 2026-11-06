@@ -112,6 +112,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType IBrush { get; }
         public IXamlType ImmutableSolidColorBrush { get; }
         public IXamlConstructor ImmutableSolidColorBrushConstructorColor { get; }
+        public IXamlConstructor ImmutableSolidColorBrushConstructor { get; }
+        public IXamlType SolidColorBrush { get; }
+        public IXamlType Pen { get; }
         public IXamlType TypeUtilities { get; }
         public IXamlType TextDecorationCollection { get; }
         public IXamlType TextDecorations { get; }
@@ -128,6 +131,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlMethod ResourceDictionaryNotSharedDeferredAdd { get; }
         public IXamlMethod ResourceDictionaryEnsureCapacity { get; }
         public IXamlMethod ResourceDictionaryGetCount { get; }
+        public IXamlMethod ResourceDictionaryMakeReadOnly { get; }
         public IXamlType IThemeVariantProvider { get; }
         public IXamlType UriKind { get; }
         public IXamlConstructor UriConstructor { get; }
@@ -320,6 +324,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             IBrush = typeSystem.GetType("Avalonia.Media.IBrush");
             ImmutableSolidColorBrush = typeSystem.GetType("Avalonia.Media.Immutable.ImmutableSolidColorBrush");
             ImmutableSolidColorBrushConstructorColor = ImmutableSolidColorBrush.GetConstructor(new List<IXamlType> { UInt });
+            var immutableTransform = typeSystem.GetType("Avalonia.Media.Immutable.ImmutableTransform");
+            ImmutableSolidColorBrushConstructor = ImmutableSolidColorBrush.GetConstructor(
+                new List<IXamlType> { Color, XamlIlTypes.Double, immutableTransform, immutableTransform });
+            SolidColorBrush = typeSystem.GetType("Avalonia.Media.SolidColorBrush");
+            Pen = typeSystem.GetType("Avalonia.Media.Pen");
             TypeUtilities = typeSystem.GetType("Avalonia.Utilities.TypeUtilities");
             TextDecorationCollection = typeSystem.GetType("Avalonia.Media.TextDecorationCollection");
             TextDecorations = typeSystem.GetType("Avalonia.Media.TextDecorations");
@@ -339,6 +348,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
             ResourceDictionaryEnsureCapacity = ResourceDictionary.GetMethod("EnsureCapacity", XamlIlTypes.Void, true, XamlIlTypes.Int32);
             ResourceDictionaryGetCount = ResourceDictionary.GetMethod("get_Count", XamlIlTypes.Int32, true);
+            ResourceDictionaryMakeReadOnly = ResourceDictionary.GetMethod("MakeReadOnly", XamlIlTypes.Void, true);
             IThemeVariantProvider = typeSystem.GetType("Avalonia.Controls.IThemeVariantProvider");
             UriKind = typeSystem.GetType("System.UriKind");
             UriConstructor = Uri.GetConstructor(new List<IXamlType>() { typeSystem.WellKnownTypes.String, UriKind });
