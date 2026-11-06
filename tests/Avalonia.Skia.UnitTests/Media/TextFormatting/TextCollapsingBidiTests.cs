@@ -521,7 +521,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         public void LeadingCharacterEllipsis_With_Mixed_Font_Runs_Preserves_Contiguous_Suffix()
         {
             // Reproduces AvaloniaUI/Avalonia#22646: with mixed FontFamily spans, LeadingCharacterEllipsis
-            // emits wrong characters right after the ellipsis. Root cause under investigation.
+            // emits wrong characters right after the ellipsis because the backwards suffix walk did not stop
+            // after a partial run split, allowing narrower characters from earlier runs to fit into leftover width.
             using (TextFormatterTests.Start())
             {
                 const string normal = "DejaVu Sans";
