@@ -192,6 +192,7 @@ namespace Avalonia.X11
         public IntPtr ATOM_PAIR;
         public IntPtr MANAGER;
         public IntPtr _KDE_NET_WM_BLUR_BEHIND_REGION;
+        public IntPtr _GTK_WORKAREAS;
         public IntPtr INCR;
         public IntPtr _NET_WM_STATE_FOCUSED;
         public IntPtr AVALONIA_SAVE_TARGETS_PROPERTY_ATOM;
