@@ -1,3 +1,4 @@
+using Avalonia.Media.Fonts.Tables.Cff;
 using Avalonia.Platform;
 
 namespace Avalonia.Media.Fonts

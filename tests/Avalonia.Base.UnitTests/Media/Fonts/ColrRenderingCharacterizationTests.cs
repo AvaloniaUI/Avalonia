@@ -1,0 +1,241 @@
+using Avalonia.Media;
+using Avalonia.UnitTests;
+using Xunit;
+
+namespace Avalonia.Base.UnitTests.Media.Fonts
+{
+    /// <summary>
+    /// COLR v1 glyph bounds, computed without a render backend. A ClipList yields bounds directly;
+    /// the no-ClipList fallback unions the painted outlines' control-point extents, read via the
+    /// outline tables' bounds path (the <c>glyf</c> header / a <c>BoundsGeometryContext</c> interpret
+    /// pass) rather than by building geometry, so neither path needs a geometry backend.
+    /// </summary>
+    public class ColrRenderingCharacterizationTests
+    {
+        [Fact]
+        public void Clipped_V1_Glyph_Derives_Bounds_From_The_Clip_Box()
+        {
+            var plain = SyntheticFont.FromAsset(SyntheticFont.Assets.InterRegular).TryCreateGlyphTypeface();
+            Assert.NotNull(plain);
+            var outlineGlyph = plain!.CharacterToGlyphMap['A'];
+
+            // base 3 -> PaintGlyph(outline) -> PaintSolid, with a ClipList.
+            var clipped = ColrTestFont
+                .Graft(InterRegular(), BuildColrV1GlyphSolid(baseGlyph: 3, outlineGlyph, clip: (0, 0, 1000, 1000)))
+                .TryCreateGlyphTypeface()!
+                .GetGlyphDrawing(3);
+
+            Assert.NotNull(clipped);
+
+            // The clip box yields non-empty bounds without building any geometry, which also proves
+            // the paint resolved (bounds are only computed when the paint parses).
+            Assert.NotEqual(default, clipped!.Bounds);
+        }
+
+        [Fact]
+        public void Clipless_V1_Glyph_Derives_Bounds_From_The_Painted_Outline()
+        {
+            var plain = SyntheticFont.FromAsset(SyntheticFont.Assets.InterRegular).TryCreateGlyphTypeface();
+            Assert.NotNull(plain);
+            var outlineGlyph = plain!.CharacterToGlyphMap['A'];
+
+            // The referenced outline's control-point box (the glyf header for this static font),
+            // flipped from font space (Y-up) to drawing space (Y-down), what the fallback derives,
+            // with no render backend.
+            var header = new GlyphBounds[1];
+            Assert.True(plain.TryGetGlyphBounds(new[] { outlineGlyph }, header));
+            var box = header[0];
+            var expected = new Rect(box.XMin, box.YMin, box.Width, box.Height)
+                .TransformToAABB(Matrix.CreateScale(1, -1));
+
+            // The identical glyph WITHOUT a ClipList falls back to the painted outline's extent, read
+            // from the outline table's bounds path, no geometry built and no backend required.
+            var clipless = ColrTestFont
+                .Graft(InterRegular(), BuildColrV1GlyphSolid(baseGlyph: 3, outlineGlyph, clip: null))
+                .TryCreateGlyphTypeface()!
+                .GetGlyphDrawing(3);
+
+            Assert.NotNull(clipless);
+            Assert.NotEqual(default, clipless!.Bounds);
+            Assert.Equal(expected, clipless.Bounds);
+        }
+
+        [Fact]
+        public void Palette_Selection_Memoises_Per_Palette_And_Normalizes_Undefined_Indices()
+        {
+            var plain = SyntheticFont.FromAsset(SyntheticFont.Assets.InterRegular).TryCreateGlyphTypeface();
+            Assert.NotNull(plain);
+            var outlineGlyph = plain!.CharacterToGlyphMap['A'];
+
+            // Two palettes, one entry each: palette 0 red, palette 1 blue.
+            var typeface = ColrTestFont
+                .Graft(InterRegular(),
+                    BuildColrV1GlyphSolid(baseGlyph: 3, outlineGlyph, clip: (0, 0, 1000, 1000)),
+                    ColrTestFont.Cpal(new[] { Colors.Red }, new[] { Colors.Blue }))
+                .TryCreateGlyphTypeface();
+            Assert.NotNull(typeface);
+
+            var defaultPalette = typeface!.GetGlyphDrawing(3);
+            var palette0 = typeface.GetGlyphDrawing(3, new GlyphDrawingOptions { PaletteIndex = 0 });
+            var palette1 = typeface.GetGlyphDrawing(3, new GlyphDrawingOptions { PaletteIndex = 1 });
+            var undefined = typeface.GetGlyphDrawing(3, new GlyphDrawingOptions { PaletteIndex = 99 });
+
+            Assert.NotNull(defaultPalette);
+            Assert.NotNull(palette1);
+
+            // Explicit palette 0 and null options share the default palette's cached drawing; a
+            // different palette gets its own memoised drawing; an index the font does not define
+            // falls back to the default palette's entry instead of minting a junk one.
+            Assert.Same(defaultPalette, palette0);
+            Assert.NotSame(defaultPalette, palette1);
+            Assert.Same(palette1, typeface.GetGlyphDrawing(3, new GlyphDrawingOptions { PaletteIndex = 1 }));
+            Assert.Same(defaultPalette, undefined);
+        }
+
+        [Fact]
+        public void V1_Glyph_Whose_Root_Paint_Does_Not_Parse_Has_No_Drawing()
+        {
+            // Format 99 is not a paint format, so the glyph's paint graph cannot be built. Callers
+            // must see null and fall back to GetGlyphOutline instead of drawing nothing.
+            var colr = new ColrV1Builder().BaseGlyph(3, ColrPaint.Raw(99, 0, 0, 0)).Build();
+
+            var typeface = ColrTestFont.Graft(InterRegular(), colr).TryCreateGlyphTypeface()!;
+
+            Assert.Null(typeface.GetGlyphDrawing(3));
+        }
+
+        [Fact]
+        public void Nested_PaintGlyph_Bounds_Are_The_Intersection_Of_Both_Outlines()
+        {
+            var plain = InterRegular().TryCreateGlyphTypeface()!;
+            var outlineGlyph = plain.CharacterToGlyphMap['A'];
+            var header = new GlyphBounds[1];
+            Assert.True(plain.TryGetGlyphBounds(new[] { outlineGlyph }, header));
+            var box = new Rect(header[0].XMin, header[0].YMin, header[0].Width, header[0].Height);
+
+            // PaintGlyph(A) -> PaintTranslate(dx) -> PaintGlyph(A) -> PaintSolid: the inner glyph clip
+            // intersects the outer one, so only the overlap of the two boxes can be painted.
+            const short dx = 200;
+            var colr = new ColrV1Builder()
+                .BaseGlyph(3, ColrPaint.Glyph(outlineGlyph,
+                    ColrPaint.Translate(dx, 0, ColrPaint.Glyph(outlineGlyph, ColrPaint.Solid(0)))))
+                .Build();
+
+            var drawing = ColrTestFont.Graft(InterRegular(), colr).TryCreateGlyphTypeface()!.GetGlyphDrawing(3);
+
+            var overlap = new Rect(box.X + dx, box.Y, box.Width - dx, box.Height);
+            Assert.NotNull(drawing);
+            Assert.Equal(overlap.TransformToAABB(Matrix.CreateScale(1, -1)), drawing!.Bounds);
+        }
+
+        [Fact]
+        public void Drawing_Type_Tells_A_Paint_Graph_Glyph_From_A_Layered_Glyph()
+        {
+            var outlineGlyph = InterRegular().TryCreateGlyphTypeface()!.CharacterToGlyphMap['A'];
+
+            var v1 = ColrTestFont
+                .Graft(InterRegular(), BuildColrV1GlyphSolid(baseGlyph: 3, outlineGlyph, clip: null))
+                .TryCreateGlyphTypeface()!
+                .GetGlyphDrawing(3);
+
+            var v0 = ColrTestFont
+                .Graft(InterRegular(), BuildColrV0SingleLayer(baseGlyph: 3, outlineGlyph))
+                .TryCreateGlyphTypeface()!
+                .GetGlyphDrawing(3);
+
+            Assert.NotNull(v1);
+            Assert.NotNull(v0);
+            Assert.Equal(GlyphDrawingType.ColorPaintGraph, v1!.Type);
+            Assert.Equal(GlyphDrawingType.ColorLayers, v0!.Type);
+        }
+
+        private static SyntheticFont InterRegular() => SyntheticFont.FromAsset(SyntheticFont.Assets.InterRegular);
+
+        /// <summary>
+        /// Builds a COLR v0 table with one base glyph drawn as a single layer of
+        /// <paramref name="outlineGlyph"/> in palette entry 0.
+        /// </summary>
+        private static byte[] BuildColrV0SingleLayer(ushort baseGlyph, ushort outlineGlyph)
+        {
+            var colr = new BigEndianBuffer();
+
+            colr.UInt16(0);   // version
+            colr.UInt16(1);   // numBaseGlyphRecords
+            colr.UInt32(14);  // baseGlyphRecordsOffset
+            colr.UInt32(20);  // layerRecordsOffset
+            colr.UInt16(1);   // numLayerRecords
+
+            colr.UInt16(baseGlyph); // BaseGlyph record: glyphID, firstLayerIndex, numLayers
+            colr.UInt16(0);
+            colr.UInt16(1);
+
+            colr.UInt16(outlineGlyph); // Layer record: glyphID, paletteIndex
+            colr.UInt16(0);
+
+            return colr.ToArray();
+        }
+
+        /// <summary>
+        /// Builds a COLR v1 table: base glyph -> PaintGlyph(outlineGlyph) -> PaintSolid, with an
+        /// optional single-glyph ClipList. Offsets are constant because the layout is sequential.
+        /// </summary>
+        private static byte[] BuildColrV1GlyphSolid(
+            ushort baseGlyph,
+            ushort outlineGlyph,
+            (short XMin, short YMin, short XMax, short YMax)? clip)
+        {
+            var colr = new BigEndianBuffer();
+
+            // COLR header (v1).
+            colr.UInt16(1);   // version
+            colr.UInt16(0);   // numBaseGlyphRecords
+            colr.UInt32(0);   // baseGlyphRecordsOffset
+            colr.UInt32(0);   // layerRecordsOffset
+            colr.UInt16(0);   // numLayerRecords
+            var baseListOffsetPos = colr.ReserveOffset32(); // baseGlyphV1ListOffset @14
+            colr.UInt32(0);   // layerV1ListOffset @18
+            var clipListOffsetPos = colr.ReserveOffset32(); // clipListOffset @22
+            colr.UInt32(0);   // varIndexMapOffset @26
+            colr.UInt32(0);   // itemVariationStoreOffset @30
+
+            // BaseGlyphV1List: one record -> the PaintGlyph paint.
+            var baseListStart = colr.Position;
+            colr.PatchUInt32(baseListOffsetPos, (uint)baseListStart);
+            colr.UInt32(1);
+            colr.UInt16(baseGlyph);
+            var recordPaintOffsetPos = colr.ReserveOffset32(); // relative to baseListStart
+
+            // PaintGlyph (format 10): format(1) + Offset24 paintOffset + uint16 glyphID = 6 bytes.
+            // The sub-paint (PaintSolid) immediately follows, so the Offset24 is a constant 6.
+            colr.PatchUInt32(recordPaintOffsetPos, (uint)(colr.Position - baseListStart));
+            colr.UInt8(10);
+            colr.UInt24(6);            // sub-paint offset, relative to this PaintGlyph
+            colr.UInt16(outlineGlyph);
+
+            // PaintSolid (format 2): format(1) + uint16 paletteIndex + F2Dot14 alpha = 5 bytes.
+            colr.UInt8(2);
+            colr.UInt16(0);            // paletteIndex
+            colr.F2Dot14(1.0);         // alpha
+
+            if (clip is { } box)
+            {
+                // ClipList format 1: uint8 format + uint32 numClips + ClipRecord[1].
+                // ClipRecord: uint16 start + uint16 end + Offset24 clipBoxOffset (relative to ClipList).
+                // The ClipBox immediately follows the single 7-byte record, so its offset is 5 + 7 = 12.
+                var clipListStart = colr.Position;
+                colr.PatchUInt32(clipListOffsetPos, (uint)clipListStart);
+                colr.UInt8(1);
+                colr.UInt32(1);
+                colr.UInt16(baseGlyph);
+                colr.UInt16(baseGlyph);
+                colr.UInt24(12);       // clip-box offset, relative to ClipList start
+
+                // ClipBox format 1: uint8 format + 4 FWORDs.
+                colr.UInt8(1);
+                colr.Int16(box.XMin).Int16(box.YMin).Int16(box.XMax).Int16(box.YMax);
+            }
+
+            return colr.ToArray();
+        }
+    }
+}
