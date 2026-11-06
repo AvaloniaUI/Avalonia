@@ -1334,8 +1334,20 @@ namespace Avalonia.Win32.Interop
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool GetKeyboardState(byte* lpKeyState);
 
+        [DllImport("user32.dll", ExactSpelling = true)]
+        public static extern short GetKeyState(int nVirtKey);
+
+        [DllImport("user32.dll", ExactSpelling = true)]
+        public static extern short VkKeyScanExW(char ch, IntPtr dwhkl);
+
         [DllImport("user32.dll", EntryPoint = "MapVirtualKeyW")]
         public static extern uint MapVirtualKey(uint uCode, uint uMapType);
+
+        [DllImport("user32.dll", EntryPoint = "MapVirtualKeyExW")]
+        public static extern uint MapVirtualKeyEx(uint uCode, uint uMapType, IntPtr dwhkl);
+
+        [DllImport("user32.dll")]
+        public static extern int GetKeyboardLayoutList(int nBuff, IntPtr* lpList);
 
         [DllImport("user32.dll", EntryPoint = "GetMessageW", SetLastError = true)]
         public static extern int GetMessage(out MSG lpMsg, IntPtr hWnd, uint wMsgFilterMin, uint wMsgFilterMax);

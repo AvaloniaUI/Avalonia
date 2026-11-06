@@ -12,29 +12,46 @@ partial class WindowBaseImpl
     {
         // Key repeat state (managed on UI thread via DispatcherTimer)
         private DispatcherTimer? _keyRepeatTimer;
-        private Key _repeatKey;
-        private PhysicalKey _repeatPhysicalKey;
+        private WaylandKeyInfo? _repeatKey;
         private RawInputModifiers _repeatModifiers;
-        private string? _repeatKeySymbol;
         private int _keyRepeatDelay;
         private int _keyRepeatRate;
 
-        void IWSurfaceEventSink.OnKeyDown(ulong timestamp, Key key, RawInputModifiers modifiers,
-            PhysicalKey physicalKey, string? keySymbol)
+        void IWSurfaceEventSink.OnKeyDown(ulong timestamp, RawInputModifiers modifiers, WaylandKeyInfo key)
         {
             if (InputRoot is null)
                 return;
-            ScheduleInput(new RawKeyEventArgs(Keyboard, timestamp, InputRoot,
-                RawKeyEventType.KeyDown, key, modifiers, physicalKey, keySymbol));
+            ScheduleInput(CreateKeyEventArgs(timestamp, RawKeyEventType.KeyDown, modifiers, key));
         }
 
-        void IWSurfaceEventSink.OnKeyUp(ulong timestamp, Key key, RawInputModifiers modifiers, PhysicalKey physicalKey,
-            string? keySymbol)
+        void IWSurfaceEventSink.OnKeyUp(ulong timestamp, RawInputModifiers modifiers, WaylandKeyInfo key)
         {
             if (InputRoot is null)
                 return;
-            ScheduleInput(new RawKeyEventArgs(Keyboard, timestamp, InputRoot,
-                RawKeyEventType.KeyUp, key, modifiers, physicalKey, keySymbol));
+            ScheduleInput(CreateKeyEventArgs(timestamp, RawKeyEventType.KeyUp, modifiers, key));
+        }
+
+        void IWSurfaceEventSink.OnHeldKeyChanged(RawInputModifiers modifiers, WaylandKeyInfo key)
+        {
+            if (InputRoot is null)
+                return;
+            // Queued like the key down, so that the update can't overtake the key down that starts the repeat
+            ScheduleInput(new RawHeldKeyChangedEventArgs(Keyboard, InputRoot, modifiers, key));
+        }
+
+        private RawKeyEventArgs CreateKeyEventArgs(ulong timestamp, RawKeyEventType type,
+            RawInputModifiers modifiers, WaylandKeyInfo key, bool isRepeat = false)
+        {
+            var args = isRepeat ?
+                new RepeatedRawKeyEventArgs(Keyboard, timestamp, InputRoot!, type, key.Key, modifiers,
+                    key.PhysicalKey, key.KeySymbol) :
+                new RawKeyEventArgs(Keyboard, timestamp, InputRoot!, type, key.Key, modifiers,
+                    key.PhysicalKey, key.KeySymbol);
+            args.KeyText = key.KeyText;
+            args.KeyTextIgnoringModifiers = key.KeyTextIgnoringModifiers;
+            args.ConsumedModifiers = key.ConsumedModifiers;
+            args.PlatformKeyInfo = key.PlatformKeyInfo;
+            return args;
         }
 
         void IWSurfaceEventSink.OnKeyboardLeave()
@@ -62,13 +79,24 @@ partial class WindowBaseImpl
                 return true;
             }
 
-            if (args is RawKeyEventArgs keyArgs)
+            if (args is RawHeldKeyChangedEventArgs held)
+            {
+                if (_repeatKey?.PlatformKeyInfo.ScanCode == held.Key.PlatformKeyInfo.ScanCode)
+                {
+                    _repeatKey = held.Key;
+                    _repeatModifiers = held.Modifiers;
+                }
+                return true;
+            }
+
+            if (args is RawKeyEventArgs keyArgs and not RepeatedRawKeyEventArgs)
             {
                 if (keyArgs.Type == RawKeyEventType.KeyDown)
                 {
-                    StartKeyRepeat(keyArgs.Key, keyArgs.PhysicalKey, keyArgs.Modifiers, keyArgs.KeySymbol);
+                    StartKeyRepeat(keyArgs);
                 }
-                else if (keyArgs.Type == RawKeyEventType.KeyUp && _repeatKey == keyArgs.Key)
+                else if (keyArgs.Type == RawKeyEventType.KeyUp
+                         && _repeatKey?.PlatformKeyInfo.ScanCode == keyArgs.PlatformKeyInfo?.ScanCode)
                 {
                     StopKeyRepeat();
                 }
@@ -77,21 +105,23 @@ partial class WindowBaseImpl
             return false;
         }
 
-        private void StartKeyRepeat(Key key, PhysicalKey physicalKey, RawInputModifiers modifiers, string? keySymbol)
+        private void StartKeyRepeat(RawKeyEventArgs keyArgs)
         {
             StopKeyRepeat();
             if (_keyRepeatRate <= 0)
                 return;
 
             // Modifier keys don't repeat
-            if (key is Key.LeftShift or Key.RightShift or Key.LeftCtrl or Key.RightCtrl
+            if (keyArgs.Key is Key.LeftShift or Key.RightShift or Key.LeftCtrl or Key.RightCtrl
                 or Key.LeftAlt or Key.RightAlt or Key.LWin or Key.RWin)
                 return;
 
-            _repeatKey = key;
-            _repeatPhysicalKey = physicalKey;
-            _repeatModifiers = modifiers;
-            _repeatKeySymbol = keySymbol;
+            if (keyArgs.PlatformKeyInfo is not { } platformKeyInfo)
+                return;
+
+            _repeatKey = new WaylandKeyInfo(keyArgs.Key, keyArgs.PhysicalKey, keyArgs.KeySymbol, keyArgs.KeyText,
+                keyArgs.KeyTextIgnoringModifiers, keyArgs.ConsumedModifiers, platformKeyInfo);
+            _repeatModifiers = keyArgs.Modifiers;
 
             var intervalMs = Math.Max(1, 1000 / _keyRepeatRate);
             _keyRepeatTimer = new DispatcherTimer(
@@ -114,11 +144,12 @@ partial class WindowBaseImpl
                 _keyRepeatTimer.Tick -= OnKeyRepeatTick;
                 _keyRepeatTimer = null;
             }
+            _repeatKey = null;
         }
 
         private void OnKeyRepeatTick(object? sender, EventArgs e)
         {
-            if (InputRoot is null || _keyRepeatTimer == null)
+            if (InputRoot is null || _keyRepeatTimer == null || _repeatKey == null)
             {
                 StopKeyRepeat();
                 return;
@@ -130,10 +161,20 @@ partial class WindowBaseImpl
             if (_keyRepeatTimer.Interval != repeatInterval)
                 _keyRepeatTimer.Interval = repeatInterval;
 
-            Parent.Input?.Invoke(new RawKeyEventArgs(Keyboard, 0, InputRoot,
-                RawKeyEventType.KeyDown, _repeatKey, _repeatModifiers, _repeatPhysicalKey, _repeatKeySymbol));
+            DispatchInput(CreateKeyEventArgs(0, RawKeyEventType.KeyDown, _repeatModifiers, _repeatKey, true));
         }
     }
+
+    private class RepeatedRawKeyEventArgs(
+        IKeyboardDevice device,
+        ulong timestamp,
+        IInputRoot root,
+        RawKeyEventType type,
+        Key key,
+        RawInputModifiers modifiers,
+        PhysicalKey physicalKey,
+        string? keySymbol)
+        : RawKeyEventArgs(device, timestamp, root, type, key, modifiers, physicalKey, keySymbol);
 
     /// <summary>
     /// Internal event args for keyboard leave, routed through the event queue
@@ -141,4 +182,14 @@ partial class WindowBaseImpl
     /// </summary>
     private class RawKeyboardLeaveEventArgs(IInputDevice device, ulong timestamp, IInputRoot root)
         : RawInputEventArgs(device, timestamp, root);
+
+    /// <summary>
+    /// Internal event args for a modifier change while a key is held, routed through the event queue.
+    /// </summary>
+    private class RawHeldKeyChangedEventArgs(IInputDevice device, IInputRoot root, RawInputModifiers modifiers,
+        WaylandKeyInfo key) : RawInputEventArgs(device, 0, root)
+    {
+        public RawInputModifiers Modifiers { get; } = modifiers;
+        public WaylandKeyInfo Key { get; } = key;
+    }
 }

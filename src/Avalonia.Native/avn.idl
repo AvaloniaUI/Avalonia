@@ -526,6 +526,15 @@ enum AvnInputModifiers
     XButton2MouseButton = 256
 }
 
+struct AvnKeyEventInfo
+{
+    bool HasConsumedModifiers;
+    AvnInputModifiers ConsumedModifiers;
+    bool HasNativeKeyCode;
+    int NativeKeyCode;
+    u_int64_t NativeModifiers;
+}
+
 [class-enum]
 enum AvnDragDropEffects
 {
@@ -833,7 +842,8 @@ interface IAvnTopLevelEvents : IUnknown
                                     float yTilt
                                     );
     bool RawKeyEvent(AvnRawKeyEventType type, u_int64_t timeStamp, AvnInputModifiers modifiers,
-                          AvnKey key, AvnPhysicalKey physicalKey, [const] char* keySymbol);
+                          AvnKey key, AvnPhysicalKey physicalKey, [const] char* keySymbol,
+                          IAvnString* keyText, IAvnString* keyTextIgnoringModifiers, AvnKeyEventInfo info);
     bool RawTextInputEvent(u_int64_t timeStamp, [const] char* text);
     void ScalingChanged(double scaling);
     void RunRenderPriorityJobs();

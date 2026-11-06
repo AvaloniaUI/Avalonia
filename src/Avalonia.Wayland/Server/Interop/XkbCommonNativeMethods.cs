@@ -47,6 +47,14 @@ static unsafe class XkbCommonNativeMethods
         IntPtr state, uint key, byte* buffer, IntPtr size);
 
     [DllImport(LibXkbCommon)]
+    public static extern uint xkb_state_key_get_consumed_mods2(IntPtr state, uint key, int mode);
+
+    public const int XKB_CONSUMED_MODE_GTK = 1;
+
+    [DllImport(LibXkbCommon)]
+    public static extern int xkb_keysym_to_utf8(uint keysym, byte* buffer, IntPtr size);
+
+    [DllImport(LibXkbCommon)]
     public static extern int xkb_state_update_mask(
         IntPtr state,
         uint modsDepressed, uint modsLatched, uint modsLocked,

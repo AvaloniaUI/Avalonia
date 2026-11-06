@@ -1,0 +1,45 @@
+<ContentPage xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:pages="using:ControlCatalog.Pages"
+             x:Class="ControlCatalog.Pages.KeyEventsPage"
+             x:DataType="pages:KeyEventsPage"
+             Header="Key Events">
+  <DockPanel Margin="8">
+    <StackPanel DockPanel.Dock="Top" Spacing="8" Margin="0,0,0,8">
+      <TextBlock TextWrapping="Wrap">
+        Shows KeyDown and TextInput events with their text, consumed modifiers and platform key values. The Terminal
+        column shows what a terminal emulator sends for the key, in caret notation: ^C is Ctrl+C and ^[ is ESC.
+      </TextBlock>
+      <StackPanel Orientation="Horizontal" Spacing="16">
+        <Button Content="Clear" Click="OnClear" />
+        <CheckBox x:Name="OptionAsMeta" Content="Option as Meta" IsVisible="False" />
+        <TextBlock x:Name="PlatformFormat" VerticalAlignment="Center" Opacity="0.7" />
+      </StackPanel>
+      <Border x:Name="InputArea"
+              Focusable="True"
+              Height="48"
+              CornerRadius="4"
+              BorderThickness="1"
+              BorderBrush="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+              Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}">
+        <TextBlock Text="Click here and press keys" HorizontalAlignment="Center" VerticalAlignment="Center" />
+      </Border>
+    </StackPanel>
+    <TableView ItemsSource="{Binding Events}" CanUserResizeColumns="True"
+               FontFamily="Cascadia Mono, Consolas, Menlo, DejaVu Sans Mono, monospace" FontSize="12">
+      <TableView.Columns>
+        <TableViewColumn Header="Event" Binding="{Binding Event}" Width="*" />
+        <TableViewColumn Header="Key" Binding="{Binding Key}" Width="*" />
+        <TableViewColumn Header="PhysicalKey" Binding="{Binding PhysicalKey}" Width="*" />
+        <TableViewColumn Header="KeyModifiers" Binding="{Binding KeyModifiers}" Width="*" />
+        <TableViewColumn Header="KeySymbol" Binding="{Binding KeySymbol}" Width="*" />
+        <TableViewColumn Header="KeyText" Binding="{Binding KeyText}" Width="*" />
+        <TableViewColumn Header="KeyTextIgnoringModifiers" Binding="{Binding KeyTextIgnoringModifiers}" Width="1.5*" />
+        <TableViewColumn Header="ConsumedModifiers" Binding="{Binding ConsumedModifiers}" Width="1.2*" />
+        <TableViewColumn Header="ScanCode" Binding="{Binding ScanCode}" Width="*" />
+        <TableViewColumn Header="VirtualKey" Binding="{Binding VirtualKey}" Width="*" />
+        <TableViewColumn Header="Terminal" Binding="{Binding Terminal}" Width="*" />
+      </TableView.Columns>
+    </TableView>
+  </DockPanel>
+</ContentPage>
