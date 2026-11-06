@@ -45,6 +45,7 @@ namespace Avalonia.Win32
                                 {
                                     Activated?.Invoke();
                                     UpdateInputMethod(GetKeyboardLayout(0));
+                                    DirectX.DxgiConnection.FollowWindow(_hwnd, activated: true);
                                     break;
                                 }
 
@@ -798,6 +799,7 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_MOVE:
                     {
                         PositionChanged?.Invoke(Position);
+                        DirectX.DxgiConnection.FollowWindow(_hwnd, activated: false);
                         return IntPtr.Zero;
                     }
 
