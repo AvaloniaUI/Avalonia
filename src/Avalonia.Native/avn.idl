@@ -1243,7 +1243,8 @@ enum AvnShutdownReply
 {
     ShutdownReplyCancel,
     ShutdownReplyTerminateNow,
-    ShutdownReplyDeferToManagedLoop
+    ShutdownReplyDeferToManagedLoop,
+    ShutdownReplyDefer
 }
 
 [uuid(6575b5af-f27a-4609-866c-f1f014c20f79)]
@@ -1267,6 +1268,12 @@ interface IAvnApplicationCommands : IUnknown
     HRESULT HideApp();
     HRESULT ShowAll();
     HRESULT HideOthers();
+}
+
+[uuid(7d7a833e-5a0e-4e31-9c89-78a1c92f80f1)]
+interface IAvnApplicationCommands2 : IAvnApplicationCommands
+{
+    HRESULT ReplyToApplicationShouldTerminate(bool shouldTerminate);
 }
 
 [uuid(b87016f3-7eec-41de-b385-07844c268dc4)]

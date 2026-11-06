@@ -21,6 +21,8 @@ namespace Avalonia.Controls.ApplicationLifetimes
         private int _exitCode;
         private CancellationTokenSource? _cts;
         private bool _isShuttingDown;
+        private bool _isRaisingShutdownRequested;
+        private ShutdownRequestedEventArgs? _pendingShutdownRequest;
         private readonly AvaloniaList<Window> _windows = new();
         private CompositeDisposable? _globalEventsSubscriptions;
         private bool _beforeInitCalled;
@@ -55,7 +57,7 @@ namespace Avalonia.Controls.ApplicationLifetimes
             if (window == null)
                 return;
             
-            if (_isShuttingDown)
+            if (_isShuttingDown || _isRaisingShutdownRequested || _pendingShutdownRequest is not null)
                 return;
 
             if (ShutdownMode == ShutdownMode.OnLastWindowClose && _windows.Count == 0)
@@ -178,14 +180,81 @@ namespace Avalonia.Controls.ApplicationLifetimes
             ShutdownRequestedEventArgs e,
             bool isProgrammatic,
             bool force = false,
-            int exitCode = 0)
+            int exitCode = 0,
+            bool shutdownRequestedAlreadyRaised = false)
         {
+            if (_isRaisingShutdownRequested && !force)
+                return false;
+
+            if (_pendingShutdownRequest is not null)
+            {
+                if (!force)
+                    return false;
+
+                CancelPendingShutdownRequest();
+            }
+
             if (!force)
             {
-                ShutdownRequested?.Invoke(this, e);
+                if (!shutdownRequestedAlreadyRaised)
+                {
+                    _isRaisingShutdownRequested = true;
+                    try
+                    {
+                        ShutdownRequested?.Invoke(this, e);
+                    }
+                    catch
+                    {
+                        e.CancelDeferrals();
+                        throw;
+                    }
+                    finally
+                    {
+                        try
+                        {
+                            e.EndDeferralRequest();
+                        }
+                        finally
+                        {
+                            _isRaisingShutdownRequested = false;
+                        }
+                    }
 
-                if (e.Cancel)
+                    if (e.Cancel)
+                    {
+                        e.CancelDeferrals();
+                        return false;
+                    }
+
+                    if (e.HasDeferrals)
+                    {
+                        _pendingShutdownRequest = e;
+                        e.SetDeferralsCompletedCallback(cancelShutdown =>
+                            Dispatcher.UIThread.Post(() =>
+                            {
+                                if (!ReferenceEquals(_pendingShutdownRequest, e))
+                                    return;
+
+                                _pendingShutdownRequest = null;
+                                var shouldTerminate = false;
+                                try
+                                {
+                                    shouldTerminate = !cancelShutdown
+                                        && DoShutdown(e, false, exitCode: exitCode, shutdownRequestedAlreadyRaised: true);
+                                }
+                                finally
+                                {
+                                    e.CompleteDeferredShutdown(shouldTerminate);
+                                }
+                            }));
+
+                        return false;
+                    }
+                }
+                else if (e.Cancel)
+                {
                     return false;
+                }
 
                 if (_isShuttingDown)
                     throw new InvalidOperationException("Application is already shutting down.");
@@ -238,6 +307,18 @@ namespace Avalonia.Controls.ApplicationLifetimes
             }
 
             return true;
+        }
+
+        private void CancelPendingShutdownRequest()
+        {
+            var pendingRequest = _pendingShutdownRequest;
+            _pendingShutdownRequest = null;
+
+            if (pendingRequest is null)
+                return;
+
+            pendingRequest.CompleteDeferredShutdown(false);
+            pendingRequest.CancelDeferrals();
         }
         
         private void OnShutdownRequested(object? sender, ShutdownRequestedEventArgs e) => DoShutdown(e, false);
