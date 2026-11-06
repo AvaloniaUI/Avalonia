@@ -69,6 +69,7 @@ namespace Avalonia.X11
         private WindowActivationTrackingHelper? _activationTracker;
         private X11Window? _transientParent;
         private RawEventGrouper? _rawEventGrouper;
+        private readonly TitleBarDoubleClickHelper _titleBarDoubleClickHelper = new();
         private bool _useRenderWindow = false;
         private bool _useCompositorDrivenRenderWindowResize = false;
         private bool _usePositioningFlags = false;
@@ -1029,6 +1030,15 @@ namespace Avalonia.X11
                     var chromeRole = inputRoot.HitTestChromeElement(mouse.Position);
                     if (chromeRole is { } role)
                     {
+                        // Compare screen positions to exclude window drags.
+                        if (role == WindowDecorationsElementRole.TitleBar
+                            && _titleBarDoubleClickHelper.IsDoubleClick(mouse.Timestamp, PointToScreen(mouse.Position).ToPoint(RenderScaling)))
+                        {
+                            if (TitleBarDoubleClickHelper.GetStateAfterDoubleClick(WindowState, _canMaximize, _canResize) is { } newState)
+                                WindowState = newState;
+                            return;
+                        }
+
                         var moveResizeSide = role switch
                         {
                             WindowDecorationsElementRole.TitleBar => NetWmMoveResize._NET_WM_MOVERESIZE_MOVE,

@@ -26,6 +26,7 @@ internal partial class WindowImpl : WindowBaseImpl, IWindowImpl, IWaylandOptions
     private Size _maxAutoSizeHint;
     private WindowState _windowState;
     private bool _canResize = true;
+    private bool _canMaximize = true;
     private Size _restoreBounds;
     private Thickness _shadowExtents;
     private Size? _minSize;
@@ -285,7 +286,7 @@ internal partial class WindowImpl : WindowBaseImpl, IWindowImpl, IWaylandOptions
     public void ShowTaskbarIcon(bool value) { }
     public void CanResize(bool value) => _canResize = value;
     public void SetCanMinimize(bool value) { }
-    public void SetCanMaximize(bool value) { }
+    public void SetCanMaximize(bool value) => _canMaximize = value;
 
     public Func<WindowCloseReason, bool>? Closing { get; set; }
 
