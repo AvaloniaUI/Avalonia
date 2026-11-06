@@ -61,6 +61,7 @@
         <Property Name="Scaling" Type="double"/>
         <Property Name="Size" Type="Size" />
         <Property Name="TransparencyLevel" Type="CompositionTransparencyLevel" />
+        <Property Name="BackgroundColor" Type="Avalonia.Media.Color" />
         <Property Name="PlatformSpecificSceneInfo" Type="object?" />
     </Object>
     <KeyFrameAnimation Name="Scalar" Type="float"/>

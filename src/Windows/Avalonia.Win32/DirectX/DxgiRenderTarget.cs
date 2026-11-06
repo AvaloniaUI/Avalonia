@@ -23,7 +23,8 @@ namespace Avalonia.Win32.DirectX
         private readonly uint _flagsUsed;
 
         private IUnknown? _renderTexture;
-        private RECT _clientRect;
+        private PixelSize _bufferSize;
+        private uint? _backgroundApplied;
         private EglSurface? _surface;
 
         public DxgiRenderTarget(EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo window, EglContext context, DxgiConnection connection) : base(context)
@@ -57,6 +58,12 @@ namespace Avalonia.Win32.DirectX
             dxgiSwapChainDesc.BufferCount = 2U;
             dxgiSwapChainDesc.SwapEffect = DXGI_SWAP_EFFECT.DXGI_SWAP_EFFECT_FLIP_DISCARD;
 
+            // A buffer that does not match the window yet (after WM_SIZE, before the next present)
+            // is shown at the top left as it is, never stretched: stretching blurs and shifts the
+            // whole window for a frame while it is resized. The area it leaves uncovered shows
+            // the swap chain's background color.
+            dxgiSwapChainDesc.Scaling = DXGI_SCALING.DXGI_SCALING_NONE;
+
             // okay I know this looks bad, but we're hitting our render-calls by awaiting via dxgi 
             // this is done in the DxgiConnection itself 
             _flagsUsed = dxgiSwapChainDesc.Flags = (uint)(DXGI_SWAP_CHAIN_FLAG.DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING);
@@ -72,14 +79,12 @@ namespace Avalonia.Win32.DirectX
 
             _dxgiFactory.MakeWindowAssociation(window.Handle, (uint)(DXGI_MWA.DXGI_MWA_NO_ALT_ENTER | DXGI_MWA.DXGI_MWA_NO_PRINT_SCREEN));
 
-            GetClientRect(_window.Handle, out var pClientRect);
-            _clientRect = pClientRect;
+            _bufferSize = new PixelSize((int)dxgiSwapChainDesc.Width, (int)dxgiSwapChainDesc.Height);
         }
 
         /// <inheritdoc />
         public override IGlPlatformSurfaceRenderingSession BeginDrawCore(IRenderTarget.RenderTargetSceneInfo sceneInfo)
         {
-            // TODO: use expectedPixelSize
             if (_swapChain is null)
             {
                 throw new InvalidOperationException("No chain to draw on");
@@ -90,11 +95,17 @@ namespace Avalonia.Win32.DirectX
             var success = false;
             try
             {
-                GetClientRect(_window.Handle, out var pClientRect);
-                if (!RectsEqual(pClientRect, _clientRect))
+                ApplyBackground(sceneInfo.BackgroundColor);
+
+                // The buffer takes the size of the frame being drawn, not the window's current
+                // client size: while the window is resized it runs ahead of the frame, and a
+                // buffer larger than the frame would show an undrawn strip along its edges.
+                var size = sceneInfo.Size;
+                if (size.Width <= 0 || size.Height <= 0)
+                    size = _window.Size;
+                if (size != _bufferSize)
                 {
-                    // we gotta resize 
-                    _clientRect = pClientRect;
+                    _bufferSize = size;
 
                     if (_renderTexture is not null)
                     {
@@ -106,14 +117,12 @@ namespace Avalonia.Win32.DirectX
                     }
 
                     _swapChain.ResizeBuffers(2,
-                        (ushort)(pClientRect.right - pClientRect.left),
-                        (ushort)(pClientRect.bottom - pClientRect.top),
+                        (ushort)size.Width,
+                        (ushort)size.Height,
                         DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM,
                         (ushort)_flagsUsed
                         );
                 }
-
-                var size = _window.Size;
 
                 // Get swapchain texture here 
                 var texture = _renderTexture;
@@ -134,7 +143,7 @@ namespace Avalonia.Win32.DirectX
                         0, 0, size.Width, size.Height);
                 }
 
-                var res = base.BeginDraw(_surface, _window.Size, _window.Scaling, () =>
+                var res = base.BeginDraw(_surface, size, _window.Scaling, () =>
                 {
                     _swapChain.Present((ushort)0U, (ushort)0U);
                     transaction?.Dispose();
@@ -160,6 +169,23 @@ namespace Avalonia.Win32.DirectX
             }
         }
 
+        private void ApplyBackground(Avalonia.Media.Color background)
+        {
+            // A transparent color means the scene has no opaque background: black, the swap chain's default.
+            var argb = background.A == 0 ? 0xFF000000u : background.ToUInt32();
+            if (argb == _backgroundApplied)
+                return;
+            _backgroundApplied = argb;
+            var color = new DXGI_RGBA
+            {
+                r = ((argb >> 16) & 0xFF) / 255f,
+                g = ((argb >> 8) & 0xFF) / 255f,
+                b = (argb & 0xFF) / 255f,
+                a = 1f,
+            };
+            _swapChain!.SetBackgroundColor(&color);
+        }
+
         public override void Dispose()
         {
             base.Dispose();
@@ -169,14 +195,5 @@ namespace Avalonia.Win32.DirectX
             _surface?.Dispose();
             _renderTexture?.Dispose();
         }
-
-        internal static bool RectsEqual(in RECT l, in RECT r)
-        {
-            return (l.left == r.left)
-                && (l.top == r.top)
-                && (l.right == r.right)
-                && (l.bottom == r.bottom);
-        }
-
     }
 }
