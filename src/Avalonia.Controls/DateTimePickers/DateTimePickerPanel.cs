@@ -275,7 +275,9 @@ namespace Avalonia.Controls.Primitives
 
         public Size PageScrollSize => new Size(0, ItemHeight * 4);
 
-        public Size Extent => _extent;
+        // When not looping, pad the extent so the last item can be scrolled to the center of the viewport.
+        public Size Extent => ShouldLoop ? _extent :
+            new Size(_extent.Width, _extent.Height + Math.Max(Viewport.Height - ItemHeight, 0));
 
         public Size Viewport => Bounds.Size;
 
@@ -346,6 +348,14 @@ namespace Avalonia.Controls.Primitives
             }
 
             return finalSize;
+        }
+
+        protected override void OnSizeChanged(SizeChangedEventArgs e)
+        {
+            base.OnSizeChanged(e);
+
+            if (!ShouldLoop && e.HeightChanged)
+                RaiseScrollInvalidated(EventArgs.Empty);
         }
 
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -424,7 +434,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public void ScrollDown(int numItems = 1)
         {
-            var scrollHeight = Math.Max(Extent.Height - ItemHeight, 0);
+            var scrollHeight = Math.Max((_totalItems - 1) * ItemHeight, 0);
             var newY = Math.Min(Offset.Y + (numItems * ItemHeight), scrollHeight);
             Offset = new Vector(0, newY);
         }
