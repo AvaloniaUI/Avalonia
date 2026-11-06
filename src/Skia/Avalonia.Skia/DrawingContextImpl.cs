@@ -896,6 +896,8 @@ namespace Avalonia.Skia
 
         public object? GetFeature(Type t)
         {
+            if (t == typeof(IPartialPresentationFeature))
+                return (_session as ISkiaGpuRenderSessionWithPartialPresentation)?.PartialPresentation;
             if (t == typeof(ISkiaSharpApiLeaseFeature))
                 return new SkiaLeaseFeature(this);
             return null;
