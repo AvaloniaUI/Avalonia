@@ -82,6 +82,11 @@
                     textRuns.Add(textRun);
                 }
 
+                if (textRunsLength > collapsedLength && textRuns[textRuns.Count - 1] is ShapedTextRun splitRun)
+                {
+                    splitRun.AddRef();
+                }
+
                 (preSplitRuns, postSplitRuns) = TextFormatterImpl.SplitTextRuns(textRuns, collapsedLength, objectPool);
 
                 var collapsedRuns = new TextRun[preSplitRuns!.Count + 1];
