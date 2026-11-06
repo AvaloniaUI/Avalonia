@@ -1263,6 +1263,38 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        [Fact]
+        public void Script_Runs_Of_One_Font_Should_Each_Be_Shaped_With_Their_Own_Script()
+        {
+            using (Start())
+            {
+                // Noto Sans Tamil covers Latin too, so the whole line resolves to one typeface. The Tamil
+                // vowel sign O is split around its consonant only by the Tamil shaper.
+                const string tamil = "கொ";
+                var text = "Go " + tamil + " now";
+
+                var typeface = new Typeface("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#Noto Sans Tamil");
+                var defaultProperties = new GenericTextRunProperties(typeface);
+
+                using var textLine = new TextFormatterImpl().FormatLine(new SingleBufferTextSource(text, defaultProperties),
+                    0, double.PositiveInfinity, new GenericTextParagraphProperties(defaultProperties));
+
+                Assert.NotNull(textLine);
+
+                var lineGlyphs = string.Join(",", textLine.TextRuns.OfType<ShapedTextRun>()
+                    .SelectMany(x => x.ShapedBuffer)
+                    .Select(x => x.GlyphIndex));
+
+                using var tamilBuffer = TextShaper.Current.ShapeText(tamil.AsMemory(),
+                    new TextShaperOptions(typeface.GlyphTypeface, defaultProperties.FontRenderingEmSize));
+
+                var tamilGlyphs = string.Join(",", tamilBuffer.Select(x => x.GlyphIndex));
+
+                // Shaped on its own, the Tamil text gets the Tamil shaper. The line must hold the same glyphs.
+                Assert.Contains("," + tamilGlyphs + ",", "," + lineGlyphs + ",");
+            }
+        }
+
         private class CustomDrawableRun : DrawableTextRun
         {
             public CustomDrawableRun(Size size, double baseLine)
