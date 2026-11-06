@@ -258,39 +258,6 @@ namespace Avalonia.Input
                             Source = element
                         };
                         
-                        var currentHandler = element as Visual;
-                        while (currentHandler != null && !ev.Handled && keyInput.Type == RawKeyEventType.KeyDown)
-                        {
-                            var bindings = (currentHandler as IInputElement)?.KeyBindings;
-                            if (bindings != null)
-                            {
-                                KeyBinding[]? bindingsCopy = null;
-
-                                // Create a copy of the KeyBindings list if there's a binding which matches the event.
-                                // If we don't do this the foreach loop will throw an InvalidOperationException when the KeyBindings list is changed.
-                                // This can happen when a new view is loaded which adds its own KeyBindings to the handler.
-                                foreach (var binding in bindings)
-                                {
-                                    if (binding.Gesture?.Matches(ev) == true)
-                                    {
-                                        bindingsCopy = bindings.ToArray();
-                                        break;
-                                    }
-                                }
-
-                                if (bindingsCopy is object)
-                                {
-                                    foreach (var binding in bindingsCopy)
-                                    {
-                                        if (ev.Handled)
-                                            break;
-                                        binding.TryHandle(ev);
-                                    }
-                                }
-                            }
-                            currentHandler = currentHandler.VisualParent;
-                        }
-
                         element.RaiseEvent(ev);
                         e.Handled = ev.Handled;
                         break;
