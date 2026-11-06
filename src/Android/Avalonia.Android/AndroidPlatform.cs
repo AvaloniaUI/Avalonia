@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Avalonia.Android;
 using Avalonia.Android.Platform;
 using Avalonia.Android.Platform.Input;
@@ -77,6 +78,8 @@ namespace Avalonia.Android
 
         internal static Compositor? Compositor { get; private set; }
         internal static ChoreographerTimer? Timer { get; private set; }
+
+        public Lock SharedRenderLock { get; } = new Lock();
 
         public static void Initialize()
         {
