@@ -338,7 +338,6 @@ namespace Avalonia.Automation.Peers
         /// </remarks>
         public int GetHeadingLevel() => GetHeadingLevelCore();
 
-
         /// <summary>
         /// Gets the item type that is associated with this automation peer.
         /// </summary>

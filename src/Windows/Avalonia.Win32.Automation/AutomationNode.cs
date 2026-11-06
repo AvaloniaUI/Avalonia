@@ -34,6 +34,8 @@ namespace Avalonia.Win32.Automation
             { AutomationElementIdentifiers.LandmarkTypeProperty, UiaPropertyId.LandmarkType },
             { AutomationElementIdentifiers.HeadingLevelProperty, UiaPropertyId.HeadingLevel },
             { AutomationElementIdentifiers.ItemStatusProperty, UiaPropertyId.ItemStatus },
+            { AutomationElementIdentifiers.PositionInSetProperty, UiaPropertyId.PositionInSet },
+            { AutomationElementIdentifiers.SizeOfSetProperty, UiaPropertyId.SizeOfSet },
             { ExpandCollapsePatternIdentifiers.ExpandCollapseStateProperty, UiaPropertyId.ExpandCollapseExpandCollapseState },
             { RangeValuePatternIdentifiers.IsReadOnlyProperty, UiaPropertyId.RangeValueIsReadOnly},
             { RangeValuePatternIdentifiers.MaximumProperty, UiaPropertyId.RangeValueMaximum },
@@ -136,6 +138,19 @@ namespace Avalonia.Win32.Automation
                 UiaPropertyId.LiveSetting => InvokeSync(() => ToUiaLiveSetting(Peer.GetLiveSetting())),
                 UiaPropertyId.ProcessId => s_pid,
                 UiaPropertyId.RuntimeId => _runtimeId,
+                // UIA exposes these values as integer properties on the element's provider.
+                UiaPropertyId.PositionInSet => InvokeSync(() =>
+                {
+                    if (Peer is ControlAutomationPeer controlPeer)
+                        return (object?)AutomationProperties.GetPositionInSet(controlPeer.Owner);
+                    return (object?)null;
+                }),
+                UiaPropertyId.SizeOfSet => InvokeSync(() =>
+                {
+                    if (Peer is ControlAutomationPeer controlPeer)
+                        return (object?)AutomationProperties.GetSizeOfSet(controlPeer.Owner);
+                    return (object?)null;
+                }),
                 _ => null,
             };
 

@@ -54,5 +54,17 @@ namespace Avalonia.Automation
         /// by the <see cref="AutomationPeer.GetAutomationId"/> method.
         /// </summary>
         public static AutomationProperty AutomationIdProperty { get; } = new AutomationProperty();
+
+        /// <summary>
+        /// Identifies the position-in-set automation property, whose value is provided by
+        /// <see cref="AutomationProperties.PositionInSetProperty"/>.
+        /// </summary>
+        public static AutomationProperty PositionInSetProperty { get; } = new AutomationProperty();
+
+        /// <summary>
+        /// Identifies the size-of-set automation property, whose value is provided by
+        /// <see cref="AutomationProperties.SizeOfSetProperty"/>.
+        /// </summary>
+        public static AutomationProperty SizeOfSetProperty { get; } = new AutomationProperty();
     }
 }
