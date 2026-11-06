@@ -1,0 +1,21 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:RenderDemo.Controls"
+             x:Class="RenderDemo.Pages.DrawingRecordingPage">
+  <Grid ColumnDefinitions="*,*">
+    <DockPanel Grid.Column="0" Margin="8">
+      <TextBlock DockPanel.Dock="Top" TextWrapping="Wrap" FontWeight="SemiBold"
+                 Text="Immutable recording: recorded once, replayed 16x per frame with a transform" />
+      <TextBlock DockPanel.Dock="Top" Margin="0,4,0,8"
+                 Text="{Binding #Replay.RenderCount, StringFormat='Render calls: {0}'}" />
+      <controls:RecordingReplayControl x:Name="Replay" />
+    </DockPanel>
+    <DockPanel Grid.Column="1" Margin="8">
+      <TextBlock DockPanel.Dock="Top" TextWrapping="Wrap" FontWeight="SemiBold"
+                 Text="Compositor-bound recording: recorded once, brush and pen animate through change tracking" />
+      <TextBlock DockPanel.Dock="Top" Margin="0,4,0,8"
+                 Text="{Binding #Tracked.RenderCount, StringFormat='Render calls: {0}'}" />
+      <controls:TrackedRecordingControl x:Name="Tracked" />
+    </DockPanel>
+  </Grid>
+</UserControl>

@@ -1,4 +1,4 @@
-#nullable enable
+﻿#nullable enable
 
 using Avalonia.Collections;
 using Avalonia.Controls.Shapes;
@@ -191,6 +191,10 @@ public class ShapeTests : ScopedTestBase
         }
 
         protected override void PushTransformCore(Matrix matrix)
+        {
+        }
+
+        internal override void DrawRecordingCore(Rendering.Composition.DrawingRecording recording, Matrix transform)
         {
         }
 

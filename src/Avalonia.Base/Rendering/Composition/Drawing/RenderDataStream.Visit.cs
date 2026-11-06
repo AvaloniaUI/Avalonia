@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Buffers;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
@@ -92,6 +92,16 @@ internal partial class RenderDataStream
                     {
                         var p = reader.ReadPayload<DrawCustomPayload>();
                         visitor.OnDrawCustom((ICustomDrawOperation?)_resources[p.Operation]);
+                        break;
+                    }
+                    case RenderDataOpcode.DrawRecording:
+                    {
+                        var p = reader.ReadPayload<DrawRecordingPayload>();
+                        visitor.OnDrawRecording(
+                            (ServerCompositionRenderData?)_resources[p.ServerRenderData],
+                            (CompositionRenderData?)_resources[p.ClientRenderData],
+                            (_resources[p.Stream] as IRef<RecordedStream>)?.Item.Stream,
+                            p.Transform);
                         break;
                     }
                     case RenderDataOpcode.PushClip:
