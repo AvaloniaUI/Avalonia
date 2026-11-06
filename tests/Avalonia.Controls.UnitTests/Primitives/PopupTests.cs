@@ -1659,6 +1659,40 @@ namespace Avalonia.Controls.UnitTests.Primitives
             }
         }
 
+        [Theory]
+        [InlineData(true, 20, 30)]
+        [InlineData(false, 10, 10)]
+        public void InheritsTransform_Should_Scale_The_Offset_With_The_Placement_Target(bool inheritsTransform, double expectedX, double expectedY)
+        {
+            using (CreateServices())
+            {
+                var placementTarget = new Border
+                {
+                    Width = 100,
+                    Height = 20,
+                    RenderTransform = new ScaleTransform(2, 3),
+                };
+                Point? offset = null;
+                var target = new Popup
+                {
+                    PlacementTarget = placementTarget,
+                    InheritsTransform = inheritsTransform,
+                    Placement = PlacementMode.Custom,
+                    HorizontalOffset = 10,
+                    VerticalOffset = 10,
+                    Child = new Border { Width = 50, Height = 50 },
+                    CustomPopupPlacementCallback = parameters => offset = parameters.Offset,
+                };
+                var window = PreparedWindow(new Panel { Children = { placementTarget, target } });
+
+                window.LayoutManager.ExecuteInitialLayoutPass();
+                target.Open();
+                window.LayoutManager.ExecuteLayoutPass();
+
+                Assert.Equal(new Point(expectedX, expectedY), offset);
+            }
+        }
+
         private IDisposable CreateServices()
         {
             return UnitTestApplication.Start(TestServices.StyledWindow.With(
