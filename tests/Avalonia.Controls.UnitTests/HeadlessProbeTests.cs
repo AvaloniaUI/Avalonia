@@ -100,6 +100,129 @@ public class HeadlessProbeTests : ScopedTestBase
     }
 
     [Fact]
+    public void Popup_Uses_Window_Overlay_Preference_Independently()
+    {
+        using var app = HeadlessUnitTestApplication.Start();
+
+        var overlayPopup = new Popup { Placement = PlacementMode.Pointer };
+        var nativePopup = new Popup { Placement = PlacementMode.Pointer };
+        var overlayWindow = new Window
+        {
+            Width = 400,
+            Height = 300,
+            UseOverlayPopups = true,
+            Content = new Panel { Children = { overlayPopup } }
+        };
+        var nativeWindow = new Window
+        {
+            Width = 400,
+            Height = 300,
+            Content = new Panel { Children = { nativePopup } }
+        };
+        overlayWindow.Show();
+        nativeWindow.Show();
+        app.RunJobs();
+
+        overlayPopup.Open();
+        nativePopup.Open();
+        app.RunJobs();
+
+        Assert.IsType<OverlayPopupHost>(overlayPopup.Host);
+        Assert.IsType<PopupRoot>(nativePopup.Host);
+    }
+
+    [Fact]
+    public void Popup_Explicit_Overlay_Request_Takes_Precedence_Over_Window_Preference()
+    {
+        using var app = HeadlessUnitTestApplication.Start();
+
+        var popup = new Popup
+        {
+            Placement = PlacementMode.Pointer,
+            ShouldUseOverlayLayer = true
+        };
+        var window = new Window
+        {
+            Width = 400,
+            Height = 300,
+            Content = new Panel { Children = { popup } }
+        };
+        window.Show();
+        app.RunJobs();
+
+        popup.Open();
+        app.RunJobs();
+
+        Assert.IsType<OverlayPopupHost>(popup.Host);
+    }
+
+    [Fact]
+    public void Nested_Popup_Uses_Owning_Window_Overlay_Preference()
+    {
+        using var app = HeadlessUnitTestApplication.Start();
+
+        var nestedTarget = new Button();
+        var nestedPopup = new Popup { Placement = PlacementMode.Pointer, PlacementTarget = nestedTarget };
+        var outerPopup = new Popup
+        {
+            Placement = PlacementMode.Pointer,
+            Child = new Panel { Children = { nestedTarget, nestedPopup } }
+        };
+        var window = new Window
+        {
+            Width = 400,
+            Height = 300,
+            Content = new Panel { Children = { outerPopup } }
+        };
+        window.Show();
+        app.RunJobs();
+
+        outerPopup.Open();
+        app.RunJobs();
+        var popupRoot = Assert.IsType<PopupRoot>(outerPopup.Host);
+        var layerManager = Assert.Single(popupRoot.GetVisualDescendants().OfType<VisualLayerManager>());
+        layerManager.EnablePopupOverlayLayer = true;
+
+        window.UseOverlayPopups = true;
+        nestedPopup.Open();
+        app.RunJobs();
+
+        Assert.IsType<OverlayPopupHost>(nestedPopup.Host);
+    }
+
+    [Fact]
+    public void Nested_Popup_Falls_Back_To_Native_When_Owning_Window_Overlay_Layer_Is_Unavailable()
+    {
+        using var app = HeadlessUnitTestApplication.Start();
+
+        var nestedTarget = new Button();
+        var nestedPopup = new Popup { Placement = PlacementMode.Pointer, PlacementTarget = nestedTarget };
+        var outerPopup = new Popup
+        {
+            Placement = PlacementMode.Pointer,
+            Child = new Panel { Children = { nestedTarget, nestedPopup } }
+        };
+        var window = new Window
+        {
+            Width = 400,
+            Height = 300,
+            Content = new Panel { Children = { outerPopup } }
+        };
+        window.Show();
+        app.RunJobs();
+
+        outerPopup.Open();
+        app.RunJobs();
+        Assert.IsType<PopupRoot>(outerPopup.Host);
+
+        window.UseOverlayPopups = true;
+        nestedPopup.Open();
+        app.RunJobs();
+
+        Assert.IsType<PopupRoot>(nestedPopup.Host);
+    }
+
+    [Fact]
     public void Overlay_Popup_Requires_An_Applied_Window_Template()
     {
         using var app = HeadlessUnitTestApplication.Start(new AvaloniaHeadlessPlatformOptions { OverlayPopups = true });
