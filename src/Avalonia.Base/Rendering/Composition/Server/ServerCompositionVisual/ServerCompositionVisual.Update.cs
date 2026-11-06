@@ -89,6 +89,11 @@ internal partial class ServerCompositionVisual
                 _dirtyRegionDisableCount++;
             }
 
+            // Nothing under an invisible node is rendered, so changes there must not produce dirty regions.
+            // Children are still visited so that their bounds stay up to date.
+            if (!node.Visible)
+                _dirtyRegionDisableCount++;
+
             // If a node in the sub-graph of this node is dirty for render and we haven't collected the bbox of one of pNode's
             // ascendants as dirty region, then we need to maintain the transform and clip stack so that we have a world transform
             // when we need to collect the bbox of the descendant node that is dirty for render.  If something has changed
@@ -165,6 +170,9 @@ internal partial class ServerCompositionVisual
                 _dirtyRegionDisableCount--;
                 AddToDirtyRegion(node._transformedSubTreeBounds);
             }
+
+            if (!node.Visible)
+                _dirtyRegionDisableCount--;
 
             node._isDirtyForRender = false;
             node._isDirtyForRenderInSubgraph = false;
