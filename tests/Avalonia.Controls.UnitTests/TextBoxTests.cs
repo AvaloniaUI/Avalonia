@@ -838,6 +838,9 @@ namespace Avalonia.Controls.UnitTests
         [InlineData("abc", "ddd", 3, 0, 2, true, "ddc")]
         [InlineData("abc", "dddd", 4, 1, 3, true, "addd")]
         [InlineData("abc", "ddddd", 5, 3, 3, true, "abcdd")]
+        [InlineData("abc", "\U0001F600", 4, 3, 3, false, "abc")]
+        [InlineData("abc", "d\U0001F600", 5, 3, 3, true, "abcd")]
+        [InlineData("abc", "d\U0001F1EF\U0001F1F5", 6, 3, 3, false, "abcd")]
         public async Task MaxLength_Works_Properly(
             string initalText,
             string textInput,
