@@ -12,6 +12,7 @@
   <Import Project="..\..\build\NullableEnable.props" />
   <ItemGroup>
     <EmbeddedResource Include="..\Avalonia.RenderTests\**\*.ttf" />
+    <EmbeddedResource Include="..\Avalonia.RenderTests\**\*.otf" />
     <EmbeddedResource Remove="..\Avalonia.RenderTests\Assets\NotoColorEmoji.ttf" />
   </ItemGroup>
   <ItemGroup>
