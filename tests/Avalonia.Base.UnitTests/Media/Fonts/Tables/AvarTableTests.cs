@@ -141,6 +141,57 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
             Assert.Equal(coordinate, table!.Remap(axisIndex, coordinate));
         }
 
+        [Theory]
+        [InlineData(0f, 0f)]          // the plateau at 0 contains the default, which stays put
+        [InlineData(-0.5f, -0.75f)]   // inside the first segment
+        [InlineData(0.5f, 0.5f)]
+        public void Unmap_Keeps_The_Default_On_A_Plateau_Through_Zero(float mapped, float expected)
+        {
+            // The spec allows equal toCoordinates: -0.5 .. 0 all map to 0.
+            var table = LoadWithWeightMap((-1, -1), (-0.5, 0), (0, 0), (1, 1));
+
+            Assert.Equal(expected, table.Unmap(1, mapped), 1e-4f);
+        }
+
+        [Fact]
+        public void Unmap_Picks_The_Plateau_Input_Closest_To_The_Default()
+        {
+            // -0.5 .. -0.25 all map to -0.5; -0.25 moves least from the default.
+            var table = LoadWithWeightMap((-1, -1), (-0.5, -0.5), (-0.25, -0.5), (0, 0), (1, 1));
+
+            Assert.Equal(-0.25f, table.Unmap(1, -0.5f), 1e-4f);
+        }
+
+        private static AvarTable LoadWithWeightMap(params (double From, double To)[] weightMap)
+        {
+            var typeface = SyntheticFont.FromAsset(SyntheticFont.Assets.InterVariable)
+                .Replace("avar", BuildInterAvar(weightMap))
+                .TryCreateGlyphTypeface();
+
+            Assert.NotNull(typeface);
+            Assert.True(AvarTable.TryLoad(typeface!, out var table));
+
+            return table!;
+        }
+
+        /// <summary>
+        /// Builds an avar table for Inter Variable's opsz (axis 0, identity) and wght (axis 1)
+        /// axes with <paramref name="weightMap"/> as the wght segment map.
+        /// </summary>
+        internal static byte[] BuildInterAvar(params (double From, double To)[] weightMap)
+        {
+            var avar = new BigEndianBuffer()
+                .UInt16(1)  // majorVersion
+                .UInt16(0)  // minorVersion
+                .UInt16(0)  // reserved
+                .UInt16(2); // axisCount
+
+            WriteSegmentMap(avar, (-1, -1), (0, 0), (1, 1));
+            WriteSegmentMap(avar, weightMap);
+
+            return avar.ToArray();
+        }
+
         private static void WriteSegmentMap(BigEndianBuffer buffer, params (double From, double To)[] entries)
         {
             buffer.UInt16(entries.Length);

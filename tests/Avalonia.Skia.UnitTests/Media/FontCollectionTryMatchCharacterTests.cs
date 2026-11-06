@@ -394,6 +394,73 @@ namespace Avalonia.Skia.UnitTests.Media
             Assert.Equal(secondFace.ToFontCollectionKey(), secondResult.ToFontCollectionKey());
         }
 
+        // A variable fallback face resolves the requested key the way a family lookup does, and the
+        // result is what the returned typeface resolves through: a later family lookup must not find
+        // the default instance cached under the requested key.
+        [Theory]
+        [InlineData(null)]             // cache sweep
+        [InlineData("Inter Variable")] // requested family
+        public void Variable_Fallback_Resolves_Bold_Along_The_Weight_Axis(string? familyName)
+        {
+            using var app = StartApp();
+
+            var collection = BuildCollection("InterVariable.ttf");
+            var root = GetFace(collection, "Inter Variable", FontStyle.Normal, FontWeight.Normal);
+
+            Assert.True(collection.TryMatchCharacter(
+                'A', FontStyle.Normal, FontWeight.Bold, FontStretch.Normal, familyName, null, out var match));
+
+            Assert.Equal("Inter Variable", FamilyOf(match));
+
+            var bold = GetFace(collection, "Inter Variable", FontStyle.Normal, FontWeight.Bold);
+
+            Assert.Same(root.WithVariations(FontVariationSettings.Parse("wght=700")), bold);
+            Assert.Equal(FontSimulations.None, bold.FontSimulations);
+            Assert.Equal(FontWeight.Bold, bold.Weight);
+        }
+
+        [Fact]
+        public void Variable_Fallback_Without_A_Slant_Axis_Simulates_Oblique_Over_The_Upright_Face()
+        {
+            using var app = StartApp();
+
+            var collection = BuildCollection("InterVariable.ttf");
+
+            Assert.True(collection.TryMatchCharacter(
+                'A', FontStyle.Italic, FontWeight.Normal, FontStretch.Normal, null, null, out _));
+
+            var italic = GetFace(collection, "Inter Variable", FontStyle.Italic, FontWeight.Normal);
+
+            Assert.Equal(FontSimulations.Oblique, italic.FontSimulations);
+            Assert.True(italic.VariationPosition.IsDefault);
+            Assert.Same(italic, GetFace(collection, "Inter Variable", FontStyle.Italic, FontWeight.Normal));
+        }
+
+        [Fact]
+        public void Static_Fallback_Still_Prefers_A_Real_Face()
+        {
+            using var app = StartApp();
+
+            var collection = BuildCollection("Inter-Regular.ttf", "Inter-Bold.ttf");
+            var realBold = GetFace(collection, "Inter", FontStyle.Normal, FontWeight.Bold);
+
+            Assert.True(collection.TryMatchCharacter(
+                'A', FontStyle.Normal, FontWeight.Bold, FontStretch.Normal, null, null, out var match));
+
+            Assert.Equal("Inter", FamilyOf(match));
+            Assert.Same(realBold, GetFace(collection, "Inter", FontStyle.Normal, FontWeight.Bold));
+            Assert.Equal(FontSimulations.None, realBold.FontSimulations);
+        }
+
+        private static GlyphTypeface GetFace(FontCollectionBase collection, string familyName, FontStyle style,
+            FontWeight weight)
+        {
+            Assert.True(collection.TryGetGlyphTypeface(familyName, style, weight, FontStretch.Normal,
+                out var glyphTypeface));
+
+            return glyphTypeface!;
+        }
+
         private static IDisposable StartApp() =>
             UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl()));
 
