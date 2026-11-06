@@ -4,6 +4,7 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls.Chrome;
 using Avalonia.Controls.Platform;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Markup.Xaml.Templates;
 using Avalonia.Media;
@@ -1135,6 +1136,35 @@ namespace Avalonia.Controls.UnitTests
                 }
             }
 
+            [Fact]
+            public void Size_Set_During_Initial_Layout_Pass_Should_Be_Kept()
+            {
+                using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+                var child = new Border();
+                var target = new GrowsWhenTemplatedWindow { Width = 300, Height = 200, Content = child };
+
+                Show(target);
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+                Assert.Equal(302, target.Width);
+                Assert.Equal(202, target.Height);
+                Assert.Equal(new Size(302, 202), target.ClientSize);
+                Assert.Equal(new Rect(0, 0, 302, 202), child.Bounds);
+                Mock.Get(target.PlatformImpl!).Verify(x => x.Resize(new Size(302, 202), WindowResizeReason.Layout));
+            }
+
+            private class GrowsWhenTemplatedWindow : Window
+            {
+                protected override Type StyleKeyOverride => typeof(Window);
+
+                protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+                {
+                    base.OnApplyTemplate(e);
+                    Width += 2;
+                    Height += 2;
+                }
+            }
 
             [Fact]
             public void User_Resize_Of_Window_Width_Should_Reset_SizeToContent()
