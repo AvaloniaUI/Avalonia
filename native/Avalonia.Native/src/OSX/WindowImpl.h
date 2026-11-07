@@ -8,6 +8,9 @@
 
 #import "WindowBaseImpl.h"
 #include "IWindowStateChanged.h"
+
+@class AvnTrafficLightFrameObserver;
+
 class WindowImpl : public virtual WindowBaseImpl, public virtual MicroComImpl<IAvnWindow>, public IWindowStateChanged
 {
 public:
@@ -68,6 +71,12 @@ BEGIN_INTERFACE_MAP()
 
     virtual HRESULT GetWindowZOrder (long* zOrder) override;
 
+    virtual HRESULT SetTrafficLightPosition (AvnPoint position, bool useCustomLayout) override;
+
+    virtual HRESULT GetTrafficLightSize (AvnSize* ret) override;
+
+    virtual AvnFlowDirection GetTitlebarFlowDirection () override;
+
     void EnterFullScreenMode ();
 
     void ExitFullScreenMode ();
@@ -88,11 +97,53 @@ BEGIN_INTERFACE_MAP()
 
     bool IsTransitioningWindowState() { return _transitioningWindowState; }
 
+    void UpdateTrafficLightLayout();
+
+    void InvalidateTrafficLightLayout();
+
 protected:
     virtual NSWindowStyleMask CalculateStyleMask() override;
     virtual void UpdateAppearance() override;
 
 private:
+    enum class TrafficLightState
+    {
+        // No custom position is requested. AppKit owns the buttons.
+        System,
+        // A custom position is requested, but AppKit owns the buttons in the current window state.
+        Suspended,
+        // The buttons are at the custom position.
+        Custom
+    };
+
+    struct TrafficLightViews
+    {
+        NSView* Container;
+        NSView* Titlebar;
+        NSButton* Close;
+        NSButton* Miniaturize;
+        NSButton* Zoom;
+    };
+
+    // Button origins are relative to the group's bottom-left corner in titlebar coordinates.
+    struct TrafficLightGroup
+    {
+        NSSize Size;
+        NSPoint CloseOrigin;
+        NSPoint MiniaturizeOrigin;
+        NSPoint ZoomOrigin;
+    };
+
+    void TransitionTrafficLightState(TrafficLightState state);
+    TrafficLightState ResolveRequestedTrafficLightState();
+    bool CanCustomizeTrafficLightLayout();
+    TrafficLightGroup MeasureTrafficLightGroup(const TrafficLightViews& views);
+    AvnSize CalculateTrafficLightSize();
+    void ApplyCustomTrafficLightLayout(const TrafficLightViews& views);
+    void RestoreSystemTrafficLightLayout(const TrafficLightViews& views);
+    bool TryGetTrafficLightViews(TrafficLightViews* views);
+    void UpdateTrafficLightTrackingAreas(const TrafficLightViews& views);
+
     void ZOrderChildWindows();
     void OnInitialiseNSWindow();
     NSString *_lastTitle;
@@ -109,6 +160,13 @@ private:
     bool _transitioningWindowState;
     bool _isClientAreaExtended;
     bool _isModal;
+    TrafficLightState _trafficLightState;
+    bool _isUpdatingTrafficLightLayout;
+    // Only meaningful while the state isn't System.
+    AvnPoint _trafficLightPosition;
+    AvnSize _trafficLightSize;
+    TrafficLightGroup _trafficLightGroup;
+    AvnTrafficLightFrameObserver* _trafficLightFrameObserver;
 };
 
 #endif //AVALONIA_NATIVE_OSX_WINDOWIMPL_H

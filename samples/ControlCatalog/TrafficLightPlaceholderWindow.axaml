@@ -1,0 +1,126 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="ControlCatalog.TrafficLightPlaceholderWindow"
+        x:CompileBindings="True"
+        Title="Traffic Light Placeholder"
+        Width="640" Height="540"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaTitleBarHeightHint="{Binding #TitleBarHeight.Value}">
+  <DockPanel>
+
+    <Grid DockPanel.Dock="Top"
+          Height="{Binding #TitleBarHeight.Value}"
+          ColumnDefinitions="Auto,*"
+          Background="#20808080"
+          WindowDecorationProperties.ElementRole="TitleBar">
+
+      <!-- Without an explicit size, the placeholder fits the native buttons and reserves their space,
+           so the title follows it. -->
+      <Border x:Name="TrafficLightHost"
+              VerticalAlignment="Top"
+              Background="#33007AFF"
+              MacOSProperties.IsTrafficLightHost="True"
+              IsVisible="{Binding #ShowPlaceholder.IsChecked}" />
+
+      <TextBlock Grid.Column="1"
+                 Text="Traffic Light Placeholder"
+                 Margin="12,0"
+                 VerticalAlignment="Center" />
+
+    </Grid>
+
+    <StackPanel Margin="16" Spacing="16">
+
+      <TextBlock TextWrapping="Wrap"
+                 Text="The window buttons are placed in the blue placeholder, a control marked with MacOSProperties.IsTrafficLightHost. The placeholder takes part in layout, so the title follows it." />
+
+      <Grid ColumnDefinitions="Auto,*,48"
+            RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto"
+            ColumnSpacing="12"
+            RowSpacing="8">
+
+        <TextBlock Text="Title bar height"
+                   VerticalAlignment="Center" />
+        <Slider x:Name="TitleBarHeight"
+                Grid.Row="0" Grid.Column="1"
+                Minimum="28" Maximum="96" Value="52"
+                TickFrequency="1" IsSnapToTickEnabled="True" />
+        <TextBlock Grid.Row="0" Grid.Column="2"
+                   Text="{Binding #TitleBarHeight.Value, StringFormat=F0}"
+                   VerticalAlignment="Center" />
+
+        <TextBlock Grid.Row="1" Grid.Column="0"
+                   Text="Placeholder size"
+                   VerticalAlignment="Center" />
+        <StackPanel Grid.Row="1" Grid.Column="1"
+                    Orientation="Horizontal"
+                    Spacing="16">
+          <RadioButton GroupName="PlaceholderSize"
+                       Content="Fit to buttons"
+                       IsChecked="True" />
+          <RadioButton x:Name="CustomSize"
+                       GroupName="PlaceholderSize"
+                       Content="Custom" />
+        </StackPanel>
+
+        <TextBlock Grid.Row="2" Grid.Column="0"
+                   Text="Width"
+                   VerticalAlignment="Center" />
+        <Slider x:Name="PlaceholderWidth"
+                Grid.Row="2" Grid.Column="1"
+                Minimum="0" Maximum="200" Value="120"
+                TickFrequency="1" IsSnapToTickEnabled="True"
+                IsEnabled="{Binding #CustomSize.IsChecked}" />
+        <TextBlock Grid.Row="2" Grid.Column="2"
+                   Text="{Binding #PlaceholderWidth.Value, StringFormat=F0}"
+                   VerticalAlignment="Center" />
+
+        <TextBlock Grid.Row="3" Grid.Column="0"
+                   Text="Height"
+                   VerticalAlignment="Center" />
+        <Slider x:Name="PlaceholderHeight"
+                Grid.Row="3" Grid.Column="1"
+                Minimum="0" Maximum="96" Value="40"
+                TickFrequency="1" IsSnapToTickEnabled="True"
+                IsEnabled="{Binding #CustomSize.IsChecked}" />
+        <TextBlock Grid.Row="3" Grid.Column="2"
+                   Text="{Binding #PlaceholderHeight.Value, StringFormat=F0}"
+                   VerticalAlignment="Center" />
+
+        <TextBlock Grid.Row="4" Grid.Column="0"
+                   Text="Horizontal offset"
+                   VerticalAlignment="Center" />
+        <Slider x:Name="HorizontalOffset"
+                Grid.Row="4" Grid.Column="1"
+                Minimum="0" Maximum="200" Value="12"
+                TickFrequency="1" IsSnapToTickEnabled="True" />
+        <TextBlock Grid.Row="4" Grid.Column="2"
+                   Text="{Binding #HorizontalOffset.Value, StringFormat=F0}"
+                   VerticalAlignment="Center" />
+
+        <TextBlock Grid.Row="5" Grid.Column="0"
+                   Text="Vertical offset"
+                   VerticalAlignment="Center" />
+        <Slider x:Name="VerticalOffset"
+                Grid.Row="5" Grid.Column="1"
+                Minimum="0" Maximum="80" Value="18"
+                TickFrequency="1" IsSnapToTickEnabled="True" />
+        <TextBlock Grid.Row="5" Grid.Column="2"
+                   Text="{Binding #VerticalOffset.Value, StringFormat=F0}"
+                   VerticalAlignment="Center" />
+
+      </Grid>
+
+      <CheckBox x:Name="ShowPlaceholder"
+                Content="Show placeholder (hiding it restores the system layout)"
+                IsChecked="True" />
+
+      <StackPanel Spacing="4">
+        <TextBlock Text="{Binding $parent[Window].(MacOSProperties.TrafficLightSize), StringFormat='Traffic light size: {0}'}" />
+        <TextBlock Text="{Binding #TrafficLightHost.Bounds, StringFormat='Placeholder bounds: {0}'}" />
+      </StackPanel>
+
+    </StackPanel>
+
+  </DockPanel>
+</Window>

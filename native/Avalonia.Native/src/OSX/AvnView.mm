@@ -134,6 +134,18 @@
     return true;
 }
 
+- (void)layout
+{
+    [super layout];
+
+    // Runs after AppKit has laid out the titlebar and before the window is displayed.
+    auto window = _parent.tryGetWithCast<WindowImpl>();
+    if (window != nullptr)
+    {
+        window->UpdateTrafficLightLayout();
+    }
+}
+
 -(void)setFrameSize:(NSSize)newSize
 {
     [super setFrameSize:newSize];
