@@ -154,7 +154,7 @@ export class AvaloniaDOM {
         const left = parseFloat(getComputedStyle(globalThis.document.documentElement).getPropertyValue("--av-sal"));
         const right = parseFloat(getComputedStyle(globalThis.document.documentElement).getPropertyValue("--av-sar"));
 
-        return [left, top, bottom, right];
+        return [left, top, right, bottom];
     }
 
     public static getDarkMode(globalThis: Window): number[] {
