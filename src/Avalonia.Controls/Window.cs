@@ -1037,6 +1037,15 @@ namespace Avalonia.Controls
                 // this will call ArrangeSetBounds
                 LayoutManager.ExecuteInitialLayoutPass();
 
+                // Width and Height may have been changed during the initial layout pass (e.g. in OnApplyTemplate).
+                minMax = new MinMax(this);
+                if (!double.IsNaN(Width))
+                    initialSize = initialSize.WithWidth(MathUtilities.Clamp(Width, minMax.MinWidth, minMax.MaxWidth));
+                if (!double.IsNaN(Height))
+                    initialSize = initialSize.WithHeight(MathUtilities.Clamp(Height, minMax.MinHeight, minMax.MaxHeight));
+                clientSizeChanged |= initialSize != ClientSize;
+                ClientSize = initialSize;
+
                 if (SizeToContent.HasFlag(SizeToContent.Width))
                 {
                     initialSize = initialSize.WithWidth(MathUtilities.Clamp(_arrangeBounds.Width, minMax.MinWidth, minMax.MaxWidth));
