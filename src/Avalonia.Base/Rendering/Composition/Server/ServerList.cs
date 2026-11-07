@@ -18,10 +18,20 @@ namespace Avalonia.Rendering.Composition.Server
             {
                 List.Clear();
                 var count = reader.Read<int>();
-                for (var c = 0; c < count; c++) 
+                for (var c = 0; c < count; c++)
                     List.Add(reader.ReadObject<T>());
+                OnListReplaced();
             }
             base.DeserializeChangesCore(reader, committedAt);
+        }
+
+        /// <summary>
+        /// Invoked when the list was replaced wholesale during deserialization. Overridden by the visual
+        /// children collection to flag structural change for retained-backdrop invalidation, so an incremental
+        /// rewrite of this class must still notify on every child mutation (see ServerCompositionVisualCollection).
+        /// </summary>
+        protected virtual void OnListReplaced()
+        {
         }
 
         public List<T>.Enumerator GetEnumerator() => List.GetEnumerator();

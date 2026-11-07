@@ -31,6 +31,16 @@ public static class EffectExtensions
     }
 
     /// <summary>
+    /// The radius, in DIPs, from which a backdrop effect samples its input: the largest component of the
+    /// effect's output padding.
+    /// </summary>
+    internal static double GetBackdropSamplingRadius(this IEffect? effect)
+    {
+        var padding = effect.GetEffectOutputPadding();
+        return Math.Max(Math.Max(padding.Left, padding.Top), Math.Max(padding.Right, padding.Bottom));
+    }
+
+    /// <summary>
     /// Converts a effect to an immutable effect.
     /// </summary>
     /// <param name="effect">The effect.</param>

@@ -18,7 +18,8 @@ namespace Avalonia.Skia
     /// </summary>
     internal partial class DrawingContextImpl : IDrawingContextImpl,
         IDrawingContextWithAcrylicLikeSupport,
-        IDrawingContextImplWithEffects
+        IDrawingContextImplWithEffects,
+        IDrawingContextImplWithBackdropSupport
     {
         private IDisposable?[]? _disposables;
         // TODO: Get rid of this value, it's currently used to calculate intermediate sizes for tile brushes
@@ -43,6 +44,10 @@ namespace Avalonia.Skia
         private readonly ISkiaGpuRenderSession? _session;
         private bool _leased;
         private bool _useOpacitySaveLayer;
+        // Nesting depth of active intermediate save-layers (Effect/OpacityMask/PushLayer/opacity save-layer)
+        // that redirect drawing to an offscreen. Gates IsBackdropSamplingSafe. Plain clip/transform saves
+        // do NOT count.
+        private int _intermediateLayerDepth;
 
         /// <summary>
         /// Context create info.
@@ -701,12 +706,14 @@ namespace Avalonia.Skia
         {
             CheckLease();
             Canvas.SaveLayer(bounds.ToSKRect(), null!);
+            _intermediateLayerDepth++;
         }
 
         public void PopLayer()
         {
             CheckLease();
             RestoreCanvas();
+            _intermediateLayerDepth--;
         }
 
         /// <inheritdoc />
@@ -733,6 +740,8 @@ namespace Avalonia.Skia
                 {
                     Canvas.SaveLayer(new SKPaint { ColorF = new SKColorF(0, 0, 0, (float)opacity) });
                 }
+
+                _intermediateLayerDepth++;
             }
             else
             {
@@ -750,6 +759,7 @@ namespace Avalonia.Skia
             if (useOpacitySaveLayer)
             {
                 RestoreCanvas();
+                _intermediateLayerDepth--;
             }
 
             _currentOpacity = _opacityStack.Pop();
@@ -839,6 +849,7 @@ namespace Avalonia.Skia
             var paint = SKPaintCache.Shared.Get();
 
             Canvas.SaveLayer(bounds.ToSKRect(), paint);
+            _intermediateLayerDepth++;
             _maskStack.Push((Canvas.TotalMatrix, CreatePaint(paint, mask, bounds)));
         }
 
@@ -865,6 +876,7 @@ namespace Avalonia.Skia
             RestoreCanvas();
 
             RestoreCanvas();
+            _intermediateLayerDepth--;
         }
 
         /// <inheritdoc />
