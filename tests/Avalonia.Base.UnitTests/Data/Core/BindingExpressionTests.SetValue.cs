@@ -112,6 +112,48 @@ public abstract partial class BindingExpressionTests
     }
 
     [Fact]
+    public void TwoWay_Binding_Should_Not_Write_Source_Value_Back_To_Source_With_Non_Reversible_Converter()
+    {
+        var data = new ViewModel { StringValue = "foo" };
+        var converter = new EqualsParameterConverter();
+        var target = CreateTargetWithSource(
+            data,
+            o => o.StringValue,
+            converter: converter,
+            converterParameter: "foo",
+            mode: BindingMode.TwoWay,
+            targetProperty: TargetClass.BoolProperty);
+
+        Assert.True(target.Bool);
+
+        data.StringValue = "bar";
+
+        Assert.False(target.Bool);
+        Assert.Equal("bar", data.StringValue);
+        Assert.Equal(0, converter.ConvertBackCount);
+
+        GC.KeepAlive(data);
+    }
+
+    [Fact]
+    public void TwoWay_Binding_Should_Write_Coerced_Value_Back_To_Source()
+    {
+        var data = new ViewModel { IntValue = 5 };
+        var target = CreateTargetWithSource(
+            data,
+            o => o.IntValue,
+            mode: BindingMode.TwoWay,
+            targetProperty: CoercedIntProperty);
+
+        data.IntValue = 15;
+
+        Assert.Equal(10, target.GetValue(CoercedIntProperty));
+        Assert.Equal(10, data.IntValue);
+
+        GC.KeepAlive(data);
+    }
+
+    [Fact]
     public void Setter_Should_Convert_Double_To_String()
     {
         var data = new ViewModel { StringValue = $"{5.6}" };
@@ -213,6 +255,25 @@ public abstract partial class BindingExpressionTests
         }
 
         public int Lives { get; private set; } = 9;
+    }
+
+    private static readonly StyledProperty<int> CoercedIntProperty =
+        AvaloniaProperty.Register<TargetClass, int>("CoercedInt", coerce: (_, value) => Math.Min(value, 10));
+
+    private class EqualsParameterConverter : IValueConverter
+    {
+        public int ConvertBackCount { get; private set; }
+
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        {
+            return Equals(value, parameter);
+        }
+
+        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        {
+            ++ConvertBackCount;
+            return value is true ? parameter : null;
+        }
     }
 
     private class CaseConverter : IValueConverter
