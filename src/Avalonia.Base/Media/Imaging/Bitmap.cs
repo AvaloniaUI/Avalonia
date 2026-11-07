@@ -186,13 +186,16 @@ namespace Avalonia.Media.Imaging
         [Obsolete($"Use the overload accepting {nameof(BitmapEncoderOptions)} instead.")]
         public void Save(Stream stream, int? quality = null)
         {
-            PlatformImpl.Item.Save(stream, PngBitmapEncoderOptions.Default);
+            Save(stream, PngBitmapEncoderOptions.Default);
         }
 
         /// <inheritdoc />
         public void Save(Stream stream, BitmapEncoderOptions options)
         {
             PlatformImpl.Item.Save(stream, options);
+
+            // Keep the bitmap alive until the native encoder has read its pixels.
+            GC.KeepAlive(this);
         }
 
         public virtual PixelFormat? Format => (PlatformImpl.Item as IReadableBitmapImpl)?.Format;
