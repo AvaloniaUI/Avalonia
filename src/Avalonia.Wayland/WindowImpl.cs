@@ -23,6 +23,7 @@ internal partial class WindowImpl : WindowBaseImpl, IWindowImpl, IWaylandOptions
     private WXdgTopLevelProxy? _surfaceProxy;
     private WaylandTextInputMethod? _textInputMethod;
     private bool _isActivated;
+    private bool _isShown;
     private Size _maxAutoSizeHint;
     private WindowState _windowState;
     private bool _canResize = true;
@@ -187,7 +188,22 @@ internal partial class WindowImpl : WindowBaseImpl, IWindowImpl, IWaylandOptions
             CurrentSink = new Sink(this, true);
         }
 
+        _isShown = true;
+        if (activate)
+            Activate();
         Client.AnyThreadWakeupRenderLoop();
+    }
+
+    public override void Activate()
+    {
+        if (!IsDisposed && _isShown)
+            _handle?.Activate?.Invoke();
+    }
+
+    public override void Hide()
+    {
+        _isShown = false;
+        base.Hide();
     }
 
     public override Size MaxAutoSizeHint => _maxAutoSizeHint;

@@ -301,6 +301,8 @@ class WSurface : IPersistentWaylandObject, IWSurface, IWaylandFramebufferSurface
         _frameCallback = WlSurface!.Frame(new FrameListener(this));
     }
 
+    public virtual void OnBufferCommitted(WlSurface surface) { }
+
     class FrameListener(WSurface p) : WlCallback.Listener
     {
         protected override void Done(WlCallback eventSender, uint callbackData)
@@ -617,6 +619,7 @@ class WXdgShellSurface : WSurface, IWXdgShellSurface
 
 class WXdgTopLevel : WXdgShellSurface, IWXdgTopLevel
 {
+    internal WaylandActivation.Target ActivationTarget { get; }
     protected TaskCompletionSource<XdgConfigureBatch> BasicInitCompletedTcs { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private XdgToplevel? _xdgTopLevel;
     public Task<XdgConfigureBatch> BasicInitCompleted => BasicInitCompletedTcs.Task;
@@ -644,6 +647,15 @@ class WXdgTopLevel : WXdgShellSurface, IWXdgTopLevel
     public WXdgTopLevel(WaylandWorker worker, WXdgTopLevelEventSinkProxy eventSink) : base(worker, eventSink)
     {
         _topLevelEventSink = eventSink;
+        ActivationTarget = new WaylandActivation.Target(
+            () => WlSurface != null && _xdgTopLevel != null ? Connection : null,
+            token => Globals!.XdgActivation!.Activate(token, WlSurface!));
+    }
+
+    public override void OnBufferCommitted(WlSurface surface)
+    {
+        if (ReferenceEquals(surface, WlSurface))
+            Worker.Activation.BufferCommitted(ActivationTarget, Connection);
     }
 
     public override void OnConnected(WaylandConnection connection, WaylandGlobals globals)
@@ -849,6 +861,7 @@ class WXdgTopLevel : WXdgShellSurface, IWXdgTopLevel
     public override void OnDisconnected()
     {
         EventSink.OnKeyboardLeave();
+        Worker.Activation.SurfaceDisconnected(ActivationTarget);
         foreach (var ex in _activeExports.ToList())
             ex.Dispose();
         _activeExports.Clear();

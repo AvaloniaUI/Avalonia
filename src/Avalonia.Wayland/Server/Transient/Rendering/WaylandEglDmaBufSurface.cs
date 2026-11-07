@@ -80,11 +80,13 @@ internal class WaylandEglDmaBufSurface : EglGlPlatformImageSurfaceBase, IPlatfor
                 // commit BEFORE binding the buffer, then commit explicitly
                 // after attach + damage. The base WSurface no longer
                 // issues the commit itself.
+                var surface = _parent._surface.WlSurface!;
                 _parent._surface.OnBeforeNewBufferAttached(sceneInfo);
                 _parent._surface.WlSurface!.Attach(capturedSlot.WlBuffer!, 0, 0);
                 _parent._surface.WlSurface.DamageBuffer(0, 0, size.Width, size.Height);
                 capturedSlot.Busy = true;
                 _parent._surface.WlSurface.Commit();
+                _parent._surface.OnBufferCommitted(surface);
             });
         }
 

@@ -96,11 +96,13 @@ class WaylandFramebuffer(IWaylandFramebufferSurface surface) : IFramebufferPlatf
                         // buffer, then commit explicitly after attach +
                         // damage. The base WSurface no longer issues the
                         // commit itself.
+                        var surface = _p._surface.WlSurface!;
                         _p._surface.OnBeforeNewBufferAttached(sceneInfo);
                         _p._surface.WlSurface!.Attach(buffer, 0, 0);
                         // TODO: Support "damage" regions
                         _p._surface.WlSurface.DamageBuffer(0, 0, size.Width, size.Height);
                         _p._surface.WlSurface.Commit();
+                        _p._surface.OnBufferCommitted(surface);
 
                         // Surfaces that allocate buffers outside the throttled render loop must
                         // flush the buffer's fd immediately: libwayland-client caps the number of

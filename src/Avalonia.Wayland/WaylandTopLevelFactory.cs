@@ -30,7 +30,7 @@ class WaylandTopLevelFactory : IWindowingPlatform
         // and there is no Wayland-native systray protocol. If the watcher
         // service is not on the bus we return null and the framework falls
         // back to its own no-op handling.
-        var dbusTrayIcon = new DBusTrayIconImpl();
+        var dbusTrayIcon = new DBusTrayIconImpl(_client.ProvideActivationToken);
         if (!dbusTrayIcon.IsActive)
         {
             dbusTrayIcon.Dispose();
