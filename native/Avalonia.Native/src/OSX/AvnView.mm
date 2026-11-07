@@ -169,14 +169,6 @@
         return;
     }
 
-    parent->TopLevelEvents->RunRenderPriorityJobs();
-
-    parent = _parent.tryGet();
-    if (parent == nullptr)
-    {
-        return;
-    }
-
     parent->TopLevelEvents->Paint();
 }
 

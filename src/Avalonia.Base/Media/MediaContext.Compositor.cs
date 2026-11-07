@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Avalonia.Layout;
 using Avalonia.Platform;
 using Avalonia.Rendering.Composition;
 using Avalonia.Rendering.Composition.Transport;
@@ -116,11 +117,54 @@ partial class MediaContext
     /// <summary>
     /// This method handles synchronous rendering of a surface when requested by the OS (typically during the resize)
     /// </summary>
-    // TODO: do we need to execute a render pass here too?
-    // We've previously tried that and it made the resize experience worse
-    public void ImmediateRenderRequested(CompositionTarget target, bool catchExceptions)
+    /// <param name="target">The composition target to render.</param>
+    /// <param name="catchExceptions">Catch exceptions thrown by the compositor during the render.</param>
+    /// <param name="flushRenderPass">
+    /// Run the pending render pass (animations and layout) before the commit instead of waiting for the dispatcher,
+    /// with dispatcher processing disabled.
+    /// It's opt-in, since running that on every paint made the resize slower on some platforms (e. g. browser).
+    /// </param>
+    public void ImmediateRenderRequested(CompositionTarget target, bool catchExceptions, bool flushRenderPass)
     {
-        SyncCommit(target.Compositor, true, catchExceptions);
+        if (!flushRenderPass || _nextRenderOp == null || IsInsideRenderOrLayout())
+        {
+            SyncCommit(target.Compositor, true, catchExceptions);
+            return;
+        }
+
+        // The pass runs right here, so the queued one is no longer needed
+        _nextRenderOp.Abort();
+        _nextRenderOp = null;
+
+        using (_dispatcher.DisableProcessing())
+        {
+            _isRendering = true;
+            try
+            {
+                PulseAndFireInvokeOnRenderCallbacks(!_animationsAreWaitingForComposition);
+            }
+            finally
+            {
+                _isRendering = false;
+            }
+
+            SyncCommit(target.Compositor, true, catchExceptions);
+        }
+
+        // CompositionBatchFinished schedules the next pass for animations and other compositors
+        _animationsAreWaitingForComposition = _pendingCompositionBatches.Count > 0;
+        if (!_animationsAreWaitingForComposition && (_requestedCommits.Count > 0 || _clock.HasSubscriptions))
+            ScheduleRender(false);
+    }
+
+    private bool IsInsideRenderOrLayout()
+    {
+        if (_isRendering)
+            return true;
+        foreach (var topLevel in _topLevels.Values)
+            if (topLevel.LayoutManager is IBringIntoViewLayoutManager { IsInLayoutPass: true })
+                return true;
+        return false;
     }
 
 
