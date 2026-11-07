@@ -85,18 +85,21 @@ partial class MediaContext
     /// Executes a synchronous commit when we need to wait for composition jobs to be done
     /// Is used in resize and TopLevel destruction scenarios
     /// </summary>
-    private void SyncCommit(Compositor compositor, bool waitFullRender, bool catchExceptions)
+    private void SyncCommit(CompositionTarget target, bool waitFullRender, bool catchExceptions)
     {
         // Unit tests are assuming that they can call any API without setting up platforms
         if (AvaloniaLocator.Current.GetService<IPlatformRenderInterface>() == null)
             return;
 
         using var _ = NonPumpingLockHelper.Use();
-        SyncWaitCompositorBatch(compositor, CommitCompositor(compositor), waitFullRender, catchExceptions);
+        var compositor = target.Compositor;
+        SyncWaitCompositorBatch(compositor, CommitCompositor(compositor), waitFullRender, catchExceptions, target);
     }
 
+    // When the UI thread renders the batch itself, it only draws renderTarget (or nothing if it's null):
+    // drawing other windows there could block it on their swapchains
     private void SyncWaitCompositorBatch(Compositor compositor, CompositionBatch batch,
-        bool waitFullRender, bool catchExceptions)
+        bool waitFullRender, bool catchExceptions, CompositionTarget? renderTarget)
     {
         using var _ = NonPumpingLockHelper.Use();
         if (compositor is
@@ -109,7 +112,7 @@ partial class MediaContext
         }
         else
         {
-            compositor.Server.Render(catchExceptions);
+            compositor.Server.Render(renderTarget?.Server, catchExceptions);
         }
     }
     
@@ -120,7 +123,7 @@ partial class MediaContext
     // We've previously tried that and it made the resize experience worse
     public void ImmediateRenderRequested(CompositionTarget target, bool catchExceptions)
     {
-        SyncCommit(target.Compositor, true, catchExceptions);
+        SyncCommit(target, true, catchExceptions);
     }
 
 
@@ -132,13 +135,10 @@ partial class MediaContext
     {
         using var _ = NonPumpingLockHelper.Use();
         
-        // TODO: We are sending a dispose command outside of the normal commit cycle and we might
-        // want to ask the compositor to skip any actual rendering and return the control ASAP
-        // Not sure if we should do that for background thread rendering since it might affect the animation
-        // smoothness of other windows
-        
+        // The dispose command is sent outside of the normal commit cycle and only needs to be applied,
+        // so nothing is drawn if the UI thread processes it
         var oobBatch = compositionTarget.Compositor.OobDispose(compositionTarget);
-        SyncWaitCompositorBatch(compositionTarget.Compositor, oobBatch, false, true);
+        SyncWaitCompositorBatch(compositionTarget.Compositor, oobBatch, false, true, null);
     }
     
     /// <summary>

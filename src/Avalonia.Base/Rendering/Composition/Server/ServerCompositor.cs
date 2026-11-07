@@ -34,7 +34,7 @@ namespace Avalonia.Rendering.Composition.Server
         public CompositorPools Pools { get; } = new();
         private readonly object _lock = new object();
         private Thread? _safeThread;
-        private bool _uiThreadIsInsideRender;
+        private volatile bool _uiThreadIsInsideRender;
         public PlatformRenderInterfaceContextManager RenderInterface { get; }
         internal static readonly object RenderThreadDisposeStartMarker = new();
         internal static readonly object RenderThreadJobsStartMarker = new();
@@ -182,10 +182,28 @@ namespace Avalonia.Rendering.Composition.Server
             _reusableToNotifyRenderedList.Clear();
         }
 
-        bool IRenderLoopTask.Render() => ExecuteRender(true);
-        public void Render(bool catchExceptions) => ExecuteRender(catchExceptions);
+        bool IRenderLoopTask.Render()
+        {
+            // Monitor isn't fair: the render loop could keep re-taking the lock between frames
+            // while a synchronous render on the UI thread waits for it, so let the UI thread go first
+            if (_uiThreadIsInsideRender)
+                return true;
+            return ExecuteRender(true, true, null);
+        }
+
+        /// <summary>
+        /// Applies pending batches and draws every active target
+        /// </summary>
+        public void Render(bool catchExceptions) => ExecuteRender(catchExceptions, true, null);
+
+        /// <summary>
+        /// Applies pending batches but draws only <paramref name="target"/>, or no target when it's null.
+        /// Other targets are drawn on the next render loop tick.
+        /// </summary>
+        public void Render(ServerCompositionTarget? target, bool catchExceptions) =>
+            ExecuteRender(catchExceptions, false, target);
         
-        private bool ExecuteRender(bool catchExceptions)
+        private bool ExecuteRender(bool catchExceptions, bool allTargets, ServerCompositionTarget? onlyTarget)
         {
             if (Dispatcher.UIThread.CheckAccess())
             {
@@ -195,7 +213,7 @@ namespace Avalonia.Rendering.Composition.Server
                 try
                 {
                     using (Dispatcher.UIThread.DisableProcessing()) 
-                        return RenderReentrancySafe(catchExceptions);
+                        return RenderReentrancySafe(catchExceptions, allTargets, onlyTarget);
                 }
                 finally
                 {
@@ -203,10 +221,10 @@ namespace Avalonia.Rendering.Composition.Server
                 }
             }
             else
-                return RenderReentrancySafe(catchExceptions);
+                return RenderReentrancySafe(catchExceptions, allTargets, onlyTarget);
         }
         
-        private bool RenderReentrancySafe(bool catchExceptions)
+        private bool RenderReentrancySafe(bool catchExceptions, bool allTargets, ServerCompositionTarget? onlyTarget)
         {
             lock (_lock)
             {
@@ -215,7 +233,7 @@ namespace Avalonia.Rendering.Composition.Server
                     try
                     {
                         _safeThread = Thread.CurrentThread;
-                        return RenderCore(catchExceptions);
+                        return RenderCore(catchExceptions, allTargets, onlyTarget);
                     }
                     finally
                     {
@@ -248,7 +266,7 @@ namespace Avalonia.Rendering.Composition.Server
             return Stopwatch.GetElapsedTime(compositorGlobalPassesStarted);
         }
         
-        private bool RenderCore(bool catchExceptions)
+        private bool RenderCore(bool catchExceptions, bool allTargets, ServerCompositionTarget? onlyTarget)
         {
             UpdateServerTime();
             
@@ -264,7 +282,8 @@ namespace Avalonia.Rendering.Composition.Server
                 foreach (var t in _activeTargets)
                 {
                     t.Update(compositorGlobalPassesElapsed);
-                    t.Render();
+                    if (allTargets || t == onlyTarget)
+                        t.Render();
                 }
 
                 VisualReadbackUpdatePass();
