@@ -9,6 +9,7 @@ using Avalonia.Data.Core.ExpressionNodes;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Logging;
+using Avalonia.LogicalTree;
 using Avalonia.Threading;
 using Avalonia.Utilities;
 
@@ -531,6 +532,17 @@ internal class BindingExpression : UntypedBindingExpressionBase, IDescription, I
         if (IsPublishingValue &&
             TryGetTarget(out var target) &&
             TypeUtilities.IdentityEquals(target.GetValue(e.Property), GetValue(), TargetType))
+        {
+            return;
+        }
+
+        // Do not write a just-published value back to the source in TwoWay bindings
+        // If the target Visual has already been detached from the logical tree. (#22673)
+        // Restriction is applied to Visual (Control, etc.), not to any ILogical.
+        if (IsPublishingValue &&
+            sender is Visual targetVisual &&
+            targetVisual.GetLogicalParent() == null &&
+            GetValue() == AvaloniaProperty.UnsetValue)
         {
             return;
         }
