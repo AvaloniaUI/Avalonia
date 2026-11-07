@@ -784,6 +784,32 @@ namespace Avalonia.Controls
             base.OnMeasureInvalidated();
         }
 
+        private void ApplyInlineStyles()
+        {
+            if (!HasComplexContent)
+            {
+                return;
+            }
+
+            foreach (var inline in Inlines)
+            {
+                ApplyInlineStyles(inline);
+            }
+        }
+
+        private static void ApplyInlineStyles(Inline inline)
+        {
+            inline.ApplyStyling();
+
+            if (inline is Documents.Span span)
+            {
+                foreach (var child in span.Inlines)
+                {
+                    ApplyInlineStyles(child);
+                }
+            }
+        }
+
         /// <summary>
         /// Builds the text runs for <see cref="Inlines"/> unless they are already in sync with the
         /// content. The runs are derived from the content alone, so only a content change discards
@@ -801,6 +827,8 @@ namespace Avalonia.Controls
             {
                 return;
             }
+
+            ApplyInlineStyles();
 
             var textRuns = new List<TextRun>();
 
@@ -854,7 +882,8 @@ namespace Avalonia.Controls
                 //Force arrange so text will be properly aligned.
                 InvalidateArrange();
             }
-           
+
+            ApplyInlineStyles();
             EnsureTextRuns();
 
             if (MeasureEmbeddedControls(deflatedSize))
