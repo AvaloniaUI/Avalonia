@@ -63,7 +63,11 @@ namespace Avalonia.Android
                 {
                     time = _lastTime;
                 }
-                _tick?.Invoke(TimeSpan.FromTicks(time / 100));
+
+                lock (AndroidPlatform.Instance.SharedRenderLock)
+                {
+                    _tick?.Invoke(TimeSpan.FromTicks(time / 100));
+                }
             }
         }
 
