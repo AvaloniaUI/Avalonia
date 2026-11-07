@@ -252,8 +252,15 @@ internal abstract partial class WindowBaseImpl : IWindowBaseImpl
             if (HandleDragDropPostDispatch(args))
                 return;
 
-            if (!args.Handled && args is RawKeyEventArgs { KeySymbol: { } text, Type: RawKeyEventType.KeyDown })
-                Parent.Input?.Invoke(new RawTextInputEventArgs(Keyboard, args.Timestamp, InputRoot, text));
+            DispatchTextInputIfUnhandled(args);
+        }
+
+        // Shared with the key repeat timer, so a repeated key types text the way the first press does.
+        private void DispatchTextInputIfUnhandled(RawInputEventArgs args)
+        {
+            if (InputRoot is { } inputRoot && !args.Handled
+                && args is RawKeyEventArgs { KeySymbol: { } text, Type: RawKeyEventType.KeyDown })
+                Parent.Input?.Invoke(new RawTextInputEventArgs(Keyboard, args.Timestamp, inputRoot, text));
         }
 
         /// <summary>
