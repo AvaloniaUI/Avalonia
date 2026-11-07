@@ -12,6 +12,60 @@ public sealed class CompositionDrawingSurface : CompositionSurface, IDisposable
     {
     }
 
+    private CompositionDrawingSurface(Compositor compositor, ServerCompositionDrawingSurface server)
+        : base(compositor, server)
+    {
+    }
+
+    /// <summary>
+    /// Creates a proxy surface sharing the server-side surface with this one, but bound to
+    /// <paramref name="compositor"/> and usable from that compositor's thread
+    /// </summary>
+    /// <remarks>
+    /// This method can only be called from the thread of the compositor this surface belongs to.
+    /// The server-side surface is kept alive until this surface and all of its proxies are disposed,
+    /// so the returned proxy must be disposed too.
+    /// The target compositor must share the server-side compositor with this surface's compositor,
+    /// see <see cref="CompositorController"/>.
+    /// </remarks>
+    /// <param name="compositor">The compositor the proxy is created for</param>
+    /// <returns>A proxy surface bound to <paramref name="compositor"/></returns>
+    /// <exception cref="ObjectDisposedException">This surface is already disposed</exception>
+    /// <exception cref="InvalidOperationException">
+    /// The target compositor is the compositor of this surface or doesn't share its server-side compositor
+    /// </exception>
+    public CompositionDrawingSurface CreateProxyForCompositor(Compositor compositor)
+    {
+        Compositor.Dispatcher.VerifyAccess();
+        if (IsDisposed)
+            throw new ObjectDisposedException(nameof(CompositionDrawingSurface));
+        if (compositor == Compositor)
+            throw new InvalidOperationException("The surface already belongs to the target compositor");
+        if (compositor.Server != Compositor.Server)
+            throw new InvalidOperationException(
+                "The target compositor is attached to a different server-side compositor");
+        Server.AddRef();
+        return new CompositionDrawingSurface(compositor, Server);
+    }
+
+    private CompositionImportedGpuImage VerifyOwnership(ICompositionImportedGpuImage image)
+    {
+        var img = (CompositionImportedGpuImage)image;
+        if (img.Compositor != Compositor)
+            throw new InvalidOperationException(
+                "The image was imported with an interop context belonging to a different Compositor");
+        return img;
+    }
+
+    private CompositionImportedGpuSemaphore VerifyOwnership(ICompositionImportedGpuSemaphore semaphore)
+    {
+        var sem = (CompositionImportedGpuSemaphore)semaphore;
+        if (sem.Compositor != Compositor)
+            throw new InvalidOperationException(
+                "The semaphore was imported with an interop context belonging to a different Compositor");
+        return sem;
+    }
+
     /// <summary>
     /// Updates the surface contents using an imported memory image using a keyed mutex as the means of synchronization
     /// </summary>
@@ -21,7 +75,7 @@ public sealed class CompositionDrawingSurface : CompositionSurface, IDisposable
     /// <returns>A task that completes when update operation is completed and user code is free to destroy or dispose the image</returns>
     public Task UpdateWithKeyedMutexAsync(ICompositionImportedGpuImage image, uint acquireIndex, uint releaseIndex)
     {
-        var img = (CompositionImportedGpuImage)image;
+        var img = VerifyOwnership(image);
         return Compositor.InvokeServerJobAsync(() => Server.UpdateWithKeyedMutex(img, acquireIndex, releaseIndex));
     }
 
@@ -36,9 +90,9 @@ public sealed class CompositionDrawingSurface : CompositionSurface, IDisposable
         ICompositionImportedGpuSemaphore waitForSemaphore,
         ICompositionImportedGpuSemaphore signalSemaphore)
     {
-        var img = (CompositionImportedGpuImage)image;
-        var wait = (CompositionImportedGpuSemaphore)waitForSemaphore;
-        var signal = (CompositionImportedGpuSemaphore)signalSemaphore;
+        var img = VerifyOwnership(image);
+        var wait = VerifyOwnership(waitForSemaphore);
+        var signal = VerifyOwnership(signalSemaphore);
         return Compositor.InvokeServerJobAsync(() => Server.UpdateWithSemaphores(img, wait, signal));
     }
 
@@ -55,9 +109,9 @@ public sealed class CompositionDrawingSurface : CompositionSurface, IDisposable
         ICompositionImportedGpuSemaphore waitForSemaphore, ulong waitForValue,
         ICompositionImportedGpuSemaphore signalSemaphore, ulong signalValue)
     {
-        var img = (CompositionImportedGpuImage)image;
-        var wait = (CompositionImportedGpuSemaphore)waitForSemaphore;
-        var signal = (CompositionImportedGpuSemaphore)signalSemaphore;
+        var img = VerifyOwnership(image);
+        var wait = VerifyOwnership(waitForSemaphore);
+        var signal = VerifyOwnership(signalSemaphore);
         return Compositor.InvokeServerJobAsync(() => Server.UpdateWithTimelineSemaphores(img, wait, waitForValue, signal, signalValue));
     }
 
@@ -69,7 +123,7 @@ public sealed class CompositionDrawingSurface : CompositionSurface, IDisposable
     /// <returns>A task that completes when update operation is completed and user code is free to destroy or dispose the image</returns>
     public Task UpdateAsync(ICompositionImportedGpuImage image)
     {
-        var img = (CompositionImportedGpuImage)image;
+        var img = VerifyOwnership(image);
         return Compositor.InvokeServerJobAsync(() => Server.UpdateWithAutomaticSync(img));
     }
 
