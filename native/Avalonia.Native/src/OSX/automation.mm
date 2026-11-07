@@ -9,7 +9,6 @@
 @implementation AvnAccessibilityElement
 {
     ComPtr<IAvnAutomationPeer> _peer;
-    ComPtr<AvnAutomationNode> _node;
     NSMutableArray* _children;
     NSArray<NSString*>* _attributeNames;
 }
@@ -18,12 +17,57 @@
 {
     if (peer == nullptr)
         return nil;
-    
+
+    // AppKit holds elements given to clients weakly, so they must be reachable from a children array.
+    auto instance = peer->GetNode().dynamicCast<AvnAutomationNode>();
+
+    if ((instance == nullptr || instance->GetOwner() == nil) && !peer->IsInteropPeer() && !peer->IsRootProvider())
+        [[self parentOfPeer:peer] accessibilityChildren];
+
+    return [self acquireChild:peer];
+}
+
++ (id)parentOfPeer:(const ComPtr<IAvnAutomationPeer>&)peer
+{
+    auto parentPeer = peer->GetParent();
+
+    if (parentPeer == nullptr)
+        return nil;
+
+    // When the parent is a root provider, return the AvnView (content view)
+    // rather than the AvnWindow. macOS accessibility requires that the parent
+    // chain is consistent with the children chain: AvnView exposes these
+    // elements as its accessibilityChildren, so the elements must report
+    // AvnView as their accessibilityParent.  A mismatch causes macOS to be
+    // unable to resolve AXUIElementRefs back to the correct object, which
+    // makes setter calls like AXUIElementSetAttributeValue silently land on
+    // AvnView instead of the target AvnAccessibilityElement.
+    if (parentPeer->IsRootProvider())
+    {
+        auto window = parentPeer->RootProvider_GetWindow();
+        if (window != nullptr)
+        {
+            auto topLevel = window.dynamicCast<TopLevelImpl>();
+            if (topLevel != nullptr)
+                return topLevel->GetNSView();
+        }
+    }
+
+    return [AvnAccessibilityElement acquire:parentPeer];
+}
+
++ (NSAccessibilityElement *)acquireChild:(const ComPtr<IAvnAutomationPeer>&)peer
+{
+    if (peer == nullptr)
+        return nil;
+
     auto instance = peer->GetNode().dynamicCast<AvnAutomationNode>();
     
-    if (instance != nullptr)
-        return instance->GetOwner();
-    
+    id owner = instance != nullptr ? instance->GetOwner() : nil;
+
+    if (owner != nil)
+        return owner;
+
     if (peer->IsInteropPeer())
     {
         auto view = (__bridge NSAccessibilityElement*)peer->InteropPeer_GetNativeControlHandle();
@@ -54,8 +98,7 @@
 {
     self = [super init];
     _peer = peer;
-    _node = comnew<AvnAutomationNode>(self);
-    _peer->SetNode(_node);
+    AvnAutomationNode::Bind(_peer, self);
     return self;
 }
 
@@ -335,31 +378,8 @@
 
 - (id)accessibilityParent
 {
-    auto parentPeer = _peer->GetParent();
-
-    if (parentPeer == nullptr)
-        return [NSApplication sharedApplication];
-
-    // When the parent is a root provider, return the AvnView (content view)
-    // rather than the AvnWindow. macOS accessibility requires that the parent
-    // chain is consistent with the children chain: AvnView exposes these
-    // elements as its accessibilityChildren, so the elements must report
-    // AvnView as their accessibilityParent.  A mismatch causes macOS to be
-    // unable to resolve AXUIElementRefs back to the correct object, which
-    // makes setter calls like AXUIElementSetAttributeValue silently land on
-    // AvnView instead of the target AvnAccessibilityElement.
-    if (parentPeer->IsRootProvider())
-    {
-        auto window = parentPeer->RootProvider_GetWindow();
-        if (window != nullptr)
-        {
-            auto topLevel = window.dynamicCast<TopLevelImpl>();
-            if (topLevel != nullptr)
-                return topLevel->GetNSView();
-        }
-    }
-
-    return [AvnAccessibilityElement acquire:parentPeer];
+    id parent = [AvnAccessibilityElement parentOfPeer:_peer];
+    return parent != nil ? parent : [NSApplication sharedApplication];
 }
 
 - (id)accessibilityTopLevelUIElement
@@ -686,7 +706,7 @@
             
             if (childPeers->Get(i, child) == S_OK)
             {
-                id element = [AvnAccessibilityElement acquire:child];
+                id element = [AvnAccessibilityElement acquireChild:child];
                 [_children addObject:element];
             }
         }

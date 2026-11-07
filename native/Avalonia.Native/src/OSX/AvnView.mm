@@ -1185,7 +1185,7 @@ static bool KeyboardInputSourceComposes(NSString* sourceId)
 
             if (childPeers->Get(i, child) == S_OK)
             {
-                id element = [AvnAccessibilityElement acquire:child];
+                id element = [AvnAccessibilityElement acquireChild:child];
                 [_accessibilityChildren addObject:element];
             }
         }
