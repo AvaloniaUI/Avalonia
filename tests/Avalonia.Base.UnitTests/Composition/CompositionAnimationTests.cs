@@ -241,4 +241,60 @@ public class CompositionAnimationTests : ScopedTestBase
         Assert.Equal(50, visual.Server.RotationAngle);
         Assert.Equal(5, visual.Server.Opacity);
     }
+
+    [Fact]
+    public void KeyFrameAnimation_Writes_First_Frame_When_Expression_Reads_It_First()
+    {
+        using var services = new CompositorTestServices();
+        var source = new Border { Width = 10, Height = 10 };
+        var reader = new Border { Width = 10, Height = 10 };
+
+        services.TopLevel.Content = new StackPanel { Children = { source, reader } };
+        services.RunJobs();
+
+        var sourceVisual = ElementComposition.GetElementVisual(source)!;
+        var readerVisual = ElementComposition.GetElementVisual(reader)!;
+        var compositor = sourceVisual.Compositor;
+
+        var opposite = compositor.CreateExpressionAnimation("1 - Source.Opacity");
+        opposite.SetReferenceParameter("Source", sourceVisual);
+        readerVisual.StartAnimation("Opacity", opposite);
+        services.RunJobs();
+
+        var fadeIn = compositor.CreateScalarKeyFrameAnimation();
+        fadeIn.InsertKeyFrame(0f, 0f);
+        fadeIn.InsertKeyFrame(1f, 1f);
+        fadeIn.Duration = TimeSpan.FromSeconds(1000);
+        sourceVisual.StartAnimation("Opacity", fadeIn);
+        services.RunJobs();
+
+        Assert.Equal(0, sourceVisual.Server.Opacity, 0.01);
+        Assert.Equal(1, readerVisual.Server.Opacity, 0.01);
+    }
+
+    [Fact]
+    public void KeyFrameAnimation_Writes_First_Frame_When_Expression_On_Same_Visual_Reads_It_First()
+    {
+        using var services = new CompositorTestServices();
+        var border = new Border { Width = 10, Height = 10 };
+
+        services.TopLevel.Content = border;
+        services.RunJobs();
+
+        var visual = ElementComposition.GetElementVisual(border)!;
+        var compositor = visual.Compositor;
+
+        visual.StartAnimation("Opacity", compositor.CreateExpressionAnimation("this.Target.RotationAngle * 0.01"));
+        services.RunJobs();
+
+        var turn = compositor.CreateScalarKeyFrameAnimation();
+        turn.InsertKeyFrame(0f, 100f);
+        turn.InsertKeyFrame(1f, 0f);
+        turn.Duration = TimeSpan.FromSeconds(1000);
+        visual.StartAnimation("RotationAngle", turn);
+        services.RunJobs();
+
+        Assert.Equal(100, visual.Server.RotationAngle, 0.5);
+        Assert.Equal(1, visual.Server.Opacity, 0.01);
+    }
 }
