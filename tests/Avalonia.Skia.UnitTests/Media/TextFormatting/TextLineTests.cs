@@ -2657,12 +2657,206 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        [Fact]
+        public void GetCharacterHitFromDistance_Should_Not_Look_Up_Every_Run_It_Passes()
+        {
+            using (Start())
+            {
+                AssertIndexedRunLookupsDoNotQuadruple((textLine, runCount) =>
+                {
+                    var runWidth = textLine.WidthIncludingTrailingWhitespace / runCount;
+
+                    var characterHit = textLine.GetCharacterHitFromDistance(textLine.WidthIncludingTrailingWhitespace - runWidth / 4);
+
+                    Assert.Equal(runCount - 1, characterHit.FirstCharacterIndex);
+                    Assert.Equal(1, characterHit.TrailingLength);
+                });
+            }
+        }
+
+        [Fact]
+        public void GetDistanceFromCharacterHit_Should_Not_Rescan_Runs_For_Every_Run_It_Passes()
+        {
+            using (Start())
+            {
+                AssertIndexedRunLookupsDoNotQuadruple((textLine, runCount) =>
+                {
+                    var runWidth = textLine.WidthIncludingTrailingWhitespace / runCount;
+
+                    var distance = textLine.GetDistanceFromCharacterHit(new CharacterHit(runCount - 1));
+
+                    Assert.Equal((runCount - 1) * runWidth, distance, 5);
+                });
+            }
+        }
+
+        [Fact]
+        public void GetTextBounds_Should_Not_Rescan_Runs_For_Every_Run_It_Passes()
+        {
+            using (Start())
+            {
+                AssertIndexedRunLookupsDoNotQuadruple((textLine, runCount) =>
+                {
+                    var runWidth = textLine.WidthIncludingTrailingWhitespace / runCount;
+
+                    var bounds = Assert.Single(textLine.GetTextBounds(runCount - 2, 1));
+
+                    Assert.Equal((runCount - 2) * runWidth, bounds.Rectangle.Left, 5);
+                    Assert.Equal(runWidth, bounds.Rectangle.Width, 5);
+                });
+            }
+        }
+
+        [Fact]
+        public void GetTextBounds_Should_Not_Sum_Run_Widths_For_Every_Bounds()
+        {
+            using (Start())
+            {
+                var sizeReads = CountSizeReads(250);
+                var doubledSizeReads = CountSizeReads(500);
+
+                Assert.InRange(doubledSizeReads, sizeReads, sizeReads * 3);
+            }
+
+            static int CountSizeReads(int runCount)
+            {
+                var runs = Enumerable.Range(0, runCount).Select(_ => new CountingDrawableRun()).ToArray();
+                var textLine = FormatRuns(FlowDirection.RightToLeft, runs);
+                var runWidth = runs[0].Size.Width;
+                var readsBefore = runs.Sum(x => x.SizeReads);
+
+                var bounds = Assert.Single(textLine.GetTextBounds(0, runCount));
+
+                Assert.Equal(runCount * runWidth, bounds.Rectangle.Width);
+
+                for (var i = 0; i < runCount; i++)
+                {
+                    Assert.Equal(i * runWidth, bounds.TextRunBounds[i].Rectangle.Left);
+                    Assert.Equal(runCount - 1 - i, bounds.TextRunBounds[i].TextSourceCharacterIndex);
+                }
+
+                return runs.Sum(x => x.SizeReads) - readsBefore;
+            }
+        }
+
+        [Theory]
+        [InlineData(FlowDirection.LeftToRight)]
+        [InlineData(FlowDirection.RightToLeft)]
+        public void GetTextBounds_Of_Alternating_Directions_Should_Match_The_Bounds_Of_Each_Character(FlowDirection flowDirection)
+        {
+            using (Start())
+            {
+                const int runCount = 40;
+
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+                var runs = Enumerable.Range(0, runCount)
+                    .Select(i => (TextRun)new TextCharacters(i % 2 == 0 ? "a" : "א", defaultProperties))
+                    .ToArray();
+                var textLine = FormatRuns(flowDirection, runs);
+
+                var runBounds = textLine.GetTextBounds(0, runCount)
+                    .SelectMany(x => x.TextRunBounds)
+                    .ToDictionary(x => x.TextSourceCharacterIndex);
+
+                Assert.Equal(runCount, runBounds.Count);
+
+                for (var i = 0; i < runCount; i++)
+                {
+                    var characterBounds = Assert.Single(textLine.GetTextBounds(i, 1));
+
+                    Assert.Equal(characterBounds.Rectangle.Left, runBounds[i].Rectangle.Left, 5);
+                    Assert.Equal(characterBounds.Rectangle.Width, runBounds[i].Rectangle.Width, 5);
+                }
+            }
+        }
+
+        private static void AssertIndexedRunLookupsDoNotQuadruple(Action<TextLine, int> hitTest)
+        {
+            var lookups = CountLookups(250);
+            var doubledLookups = CountLookups(500);
+
+            Assert.InRange(doubledLookups, lookups, lookups * 3);
+
+            int CountLookups(int runCount)
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+                var runs = Enumerable.Range(0, runCount)
+                    .Select(_ => (TextRun)new TextCharacters("a", defaultProperties))
+                    .ToArray();
+                var textLine = FormatRuns(FlowDirection.LeftToRight, runs);
+                var indexedTextRuns = new CountingIndexedTextRuns(textLine._indexedTextRuns!);
+
+                textLine._indexedTextRuns = indexedTextRuns;
+
+                hitTest(textLine, runCount);
+
+                return indexedTextRuns.Lookups;
+            }
+        }
+
+        private static TextLineImpl FormatRuns(FlowDirection flowDirection, IReadOnlyList<TextRun> runs)
+        {
+            var paragraphProperties = new GenericTextParagraphProperties(flowDirection, TextAlignment.Left, true, false,
+                new GenericTextRunProperties(Typeface.Default), TextWrapping.NoWrap, 0, 0, 0);
+
+            var textLine = new TextFormatterImpl().FormatLine(new FixedRunsTextSource(runs), 0, double.PositiveInfinity,
+                paragraphProperties);
+
+            Assert.NotNull(textLine);
+            Assert.Equal(runs.Count, textLine.TextRuns.Count);
+
+            return (TextLineImpl)textLine;
+        }
+
         public static string ExtractTextFromRuns(TextLine textLine)
         {
             // Only extract text for ShapedTextRun instances.
             return string.Concat(textLine.TextRuns
                 .OfType<ShapedTextRun>()
                 .Select(r => r.Text.ToString()));
+        }
+
+        private class CountingDrawableRun : CustomDrawableRun
+        {
+            public int SizeReads { get; private set; }
+
+            public override Size Size
+            {
+                get
+                {
+                    SizeReads++;
+
+                    return base.Size;
+                }
+            }
+        }
+
+        private class CountingIndexedTextRuns : IReadOnlyList<IndexedTextRun>
+        {
+            private readonly IReadOnlyList<IndexedTextRun> _indexedTextRuns;
+
+            public CountingIndexedTextRuns(IReadOnlyList<IndexedTextRun> indexedTextRuns)
+            {
+                _indexedTextRuns = indexedTextRuns;
+            }
+
+            public int Lookups { get; private set; }
+
+            public int Count => _indexedTextRuns.Count;
+
+            public IndexedTextRun this[int index]
+            {
+                get
+                {
+                    Lookups++;
+
+                    return _indexedTextRuns[index];
+                }
+            }
+
+            public IEnumerator<IndexedTextRun> GetEnumerator() => _indexedTextRuns.GetEnumerator();
+
+            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
         }
 
         private class FixedRunsTextSource : ITextSource
