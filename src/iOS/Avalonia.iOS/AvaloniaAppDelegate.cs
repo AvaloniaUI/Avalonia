@@ -59,7 +59,7 @@ namespace Avalonia.iOS
         }
 
         [Export("application:didFinishLaunchingWithOptions:")]
-        public bool FinishedLaunching(UIApplication application, NSDictionary? launchOptions)
+        public virtual bool FinishedLaunching(UIApplication application, NSDictionary? launchOptions)
         {
             var builder = CreateAppBuilder();
             builder = CustomizeAppBuilder(builder);
