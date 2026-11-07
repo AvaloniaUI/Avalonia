@@ -251,8 +251,19 @@ namespace Avalonia
         public AvaloniaObject? TemplatedParent
         {
             get => _templatedParent;
-            internal set => SetAndRaise(TemplatedParentProperty, ref _templatedParent, value);
+            internal set
+            {
+                if (!ReferenceEquals(_templatedParent, value))
+                    IsSetterTemplateChild = false;
+                SetAndRaise(TemplatedParentProperty, ref _templatedParent, value);
+            }
         }
+
+        /// <summary>
+        /// Gets or sets whether template ownership belongs to a property setter rather than
+        /// the control template, and must survive replacement of the control template.
+        /// </summary>
+        internal bool IsSetterTemplateChild { get; set; }
 
         /// <summary>
         /// Gets or sets the theme to be applied to the element.
@@ -344,6 +355,58 @@ namespace Avalonia
 
         internal static ControlTheme InvalidTheme
             => s_invalidTheme ??= new();
+
+        /// <summary>
+        /// Sets the TemplatedParent property for the created template children.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="templatedParent">The templated parent to apply.</param>
+        internal static void ApplyTemplatedParent(StyledElement control, AvaloniaObject? templatedParent)
+        {
+            control.VerifyAccess();
+            if (ReferenceEquals(control.TemplatedParent, templatedParent))
+                return;
+
+            var children = new PooledInlineList<StyledElement>();
+            try
+            {
+                ApplyTemplatedParent(control, templatedParent, ref children);
+            }
+            finally
+            {
+                children.Dispose();
+            }
+        }
+
+        // The caller owns the captured list and must dispose it after use.
+        internal static void ApplyTemplatedParent(
+            StyledElement control,
+            AvaloniaObject? templatedParent,
+            ref PooledInlineList<StyledElement> children)
+        {
+            Debug.Assert(children.Count == 0);
+
+            // Capture the original subtree before template bindings can introduce user content.
+            CollectTemplateChildren(control, ref children);
+
+            // Assign ancestors first so restyling each child sees the complete parent chain.
+            foreach (var child in children)
+                child.TemplatedParent = templatedParent;
+
+            static void CollectTemplateChildren(StyledElement control, ref PooledInlineList<StyledElement> children)
+            {
+                children.Add(control);
+
+                var logicalChildren = control.LogicalChildren;
+                var count = logicalChildren.Count;
+
+                for (var i = 0; i < count; i++)
+                {
+                    if (logicalChildren[i] is StyledElement child && child.TemplatedParent is null)
+                        CollectTemplateChildren(child, ref children);
+                }
+            }
+        }
 
         /// <inheritdoc/>
         public virtual void BeginInit()
@@ -608,7 +671,28 @@ namespace Avalonia
         {
             base.OnPropertyChanged(change);
 
-            if (change.Property == ThemeProperty)
+            if (change.Property == TemplatedParentProperty &&
+                (_stylesApplied || _templatedParentThemeApplied))
+            {
+                var values = GetValueStore();
+                values.BeginStyling();
+                try
+                {
+                    // The parent theme can still be applied when ordinary styles are invalidated.
+                    OnTemplatedParentControlThemeChanged();
+
+                    if (_stylesApplied)
+                    {
+                        InvalidateStyles(recurse: false);
+                        ApplyStyling();
+                    }
+                }
+                finally
+                {
+                    values.EndStyling();
+                }
+            }
+            else if (change.Property == ThemeProperty)
             {
                 OnControlThemeChanged();
             }

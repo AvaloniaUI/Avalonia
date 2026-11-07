@@ -86,6 +86,14 @@ namespace Avalonia.Controls
             }
 
             base.OnOpening(args);
+
+            // The presenter is reused between opens, but its content may have changed.
+            // Apply ownership to new content separately, without revisiting content
+            // already initialized by template bindings.
+            if (!args.Cancel && Popup.TemplatedParent is { } owner &&
+                ReferenceEquals(Popup.Child?.TemplatedParent, owner) &&
+                Content is StyledElement { TemplatedParent: null } content)
+                StyledElement.ApplyTemplatedParent(content, owner);
         }
     }
 }
