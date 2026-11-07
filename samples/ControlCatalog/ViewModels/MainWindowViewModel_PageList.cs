@@ -6,6 +6,7 @@ using Avalonia.Media;
 using ControlCatalog.Controls;
 using ControlCatalog.Models;
 using ControlCatalog.Pages;
+using ControlCatalog.Pages.Composition;
 
 namespace ControlCatalog.ViewModels;
 
@@ -84,7 +85,7 @@ partial class MainWindowViewModel
         {
             s.Add<AcrylicPage>("Acrylic", Icons.Blur, "Translucent acrylic window materials");
             s.Add<BitmapCachePage>("BitmapCache", Icons.Lightning, "Cache visuals as bitmaps for performance");
-            s.Add<CompositionPage>("Composition", Icons.Layers, "Composition-layer animations and effects");
+            s.Add<CompositionHomePage>("Composition", Icons.Layers, "Composition-layer animations and effects");
             s.Add<CustomDrawing>("Custom Drawing", Icons.Brush, "Render custom geometry in code");
             s.Add<ImagePage>("Image", Icons.Image, "Display bitmaps with different stretch modes");
             s.Add<OpenGlPage>("OpenGL", Icons.Cube3D, "Embed custom OpenGL rendering");
