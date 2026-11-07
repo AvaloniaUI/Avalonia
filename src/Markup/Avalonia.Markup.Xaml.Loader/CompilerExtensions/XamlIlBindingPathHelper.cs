@@ -193,6 +193,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     case BindingExpressionGrammar.PropertyNameNode propName:
                         {
                             IXamlType targetType = targetTypeResolver();
+
+                            // Nullable<T> defines only Value and HasValue: look anything else up on T, as C# does.
+                            if (targetType.IsNullable() && !HasMember(targetType, propName.PropertyName))
+                                targetType = targetType.GenericArguments[0];
+
                             var avaloniaPropertyFieldNameMaybe = propName.PropertyName + "Property";
                             var avaloniaPropertyFieldMaybe = targetType.GetAllFields().FirstOrDefault(f =>
                                 f.IsStatic && f.IsPublic && f.Name == avaloniaPropertyFieldNameMaybe);
@@ -397,6 +402,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 return TypeReferenceResolver.ResolveType(context, $"{ns}:{name}", false,
                     lineInfo, true).GetClrType();
             }
+
+            static bool HasMember(IXamlType type, string name) =>
+                type.GetAllFields().Any(f => f.IsStatic && f.IsPublic && f.Name == name + "Property")
+                || GetAllDefinedProperties(type).Any(p => p.Name == name)
+                || GetAllDefinedMethods(type).Any(m => m.Name == name);
 
             static IEnumerable<IXamlProperty> GetAllDefinedProperties(IXamlType type)
             {

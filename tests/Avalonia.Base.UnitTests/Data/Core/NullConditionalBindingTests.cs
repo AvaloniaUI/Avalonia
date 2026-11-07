@@ -412,9 +412,91 @@ public class NullConditionalBindingTests
         Assert.Empty(log.Messages);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Should_Not_Report_Error_With_Null_Conditional_Operator_For_Nullable_Struct(bool compileBindings)
+    {
+        using var app = Start();
+        using var log = TestLogger.Create();
+        var xaml = $$$"""
+            <Window xmlns='https://github.com/avaloniaui'
+                    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                    xmlns:local='using:Avalonia.Base.UnitTests.Data.Core'
+                    x:DataType='local:NullConditionalBindingTests+First'
+                    x:CompileBindings='{{{compileBindings}}}'>
+                <local:ErrorCollectingTextBox Text='{Binding NullableSecond?.Final}'/>
+            </Window>
+            """;
+        var data = new First { NullableSecond = null };
+        var window = CreateTarget(xaml, data);
+        var textBox = Assert.IsType<ErrorCollectingTextBox>(window.Content);
+
+        Assert.Null(textBox.Text);
+        Assert.Null(textBox.Error);
+        Assert.Equal(BindingValueType.Value, textBox.ErrorState);
+        Assert.Empty(log.Messages);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Should_Read_Property_With_Null_Conditional_Operator_For_Nullable_Struct(bool compileBindings)
+    {
+        using var app = Start();
+        using var log = TestLogger.Create();
+        var xaml = $$$"""
+            <Window xmlns='https://github.com/avaloniaui'
+                    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                    xmlns:local='using:Avalonia.Base.UnitTests.Data.Core'
+                    x:DataType='local:NullConditionalBindingTests+First'
+                    x:CompileBindings='{{{compileBindings}}}'>
+                <local:ErrorCollectingTextBox Text='{Binding NullableSecond?.Final}'/>
+            </Window>
+            """;
+        var data = new First { NullableSecond = new NullableSecondValue { Final = "foo" } };
+        var window = CreateTarget(xaml, data);
+        var textBox = Assert.IsType<ErrorCollectingTextBox>(window.Content);
+
+        Assert.Equal("foo", textBox.Text);
+        Assert.Null(textBox.Error);
+        Assert.Equal(BindingValueType.Value, textBox.ErrorState);
+        Assert.Empty(log.Messages);
+    }
+
+    [Fact]
+    public void Should_Access_Value_Of_Nullable_Struct()
+    {
+        // Only compiled bindings: boxing erases Nullable<T>, so reflection bindings never see
+        // Value or HasValue.
+        using var app = Start();
+        using var log = TestLogger.Create();
+        var xaml = """
+            <Window xmlns='https://github.com/avaloniaui'
+                    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                    xmlns:local='using:Avalonia.Base.UnitTests.Data.Core'
+                    x:DataType='local:NullConditionalBindingTests+First'
+                    x:CompileBindings='True'>
+                <local:ErrorCollectingTextBox Text='{Binding NullableSecond.Value.Final}'/>
+            </Window>
+            """;
+        var data = new First { NullableSecond = new NullableSecondValue { Final = "foo" } };
+        var window = CreateTarget(xaml, data);
+        var textBox = Assert.IsType<ErrorCollectingTextBox>(window.Content);
+
+        Assert.Equal("foo", textBox.Text);
+        Assert.Null(textBox.Error);
+        Assert.Empty(log.Messages);
+    }
+
     private static IDisposable Start()
     {
         return UnitTestApplication.Start(TestServices.StyledWindow);
+    }
+
+    public struct NullableSecondValue
+    {
+        public string? Final { get; set; }
     }
 
     public class First : StyledElement
@@ -423,6 +505,8 @@ public class NullConditionalBindingTests
             AvaloniaProperty.Register<First, Second?>(nameof(StyledSecond));
 
         public Second? Second { get; set; }
+
+        public NullableSecondValue? NullableSecond { get; set; }
 
         public Second? StyledSecond
         {
