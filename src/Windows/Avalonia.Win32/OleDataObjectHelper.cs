@@ -12,6 +12,7 @@ using Avalonia.Platform;
 using Avalonia.Platform.Storage;
 using Avalonia.Platform.Storage.FileIO;
 using Avalonia.Utilities;
+using Avalonia.Win32.Interop;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 using FORMATETC = Avalonia.Win32.Interop.UnmanagedMethods.FORMATETC;
 using STGMEDIUM = Avalonia.Win32.Interop.UnmanagedMethods.STGMEDIUM;
@@ -117,59 +118,36 @@ internal static class OleDataObjectHelper
 
             bitmapInfoHeader.Init();
 
-            IntPtr destHdc = IntPtr.Zero, compatDc = IntPtr.Zero, section = IntPtr.Zero, sourceHdc = IntPtr.Zero, srcCompatHdc = IntPtr.Zero;
+            using var screenDc = GdiDC.Get();
+            if (screenDc.IsInvalid)
+                return null;
 
-            try
-            {
-                destHdc = GetDC(IntPtr.Zero);
-                if (destHdc == IntPtr.Zero)
-                    return null;
+            using var destDc = GdiDC.CreateCompatible(screenDc);
+            if (destDc.IsInvalid)
+                return null;
 
-                compatDc = CreateCompatibleDC(destHdc);
-                if (compatDc == IntPtr.Zero)
-                    return null;
+            using var sourceDc = GdiDC.CreateCompatible(screenDc);
+            if (sourceDc.IsInvalid)
+                return null;
 
-                section = CreateDIBSection(compatDc, ref bitmapInfoHeader, 0, out var lbBits, IntPtr.Zero, 0);
-                if (section == IntPtr.Zero)
-                    return null;
+            using var section = new GdiObject(
+                CreateDIBSection(destDc, ref bitmapInfoHeader, 0, out var lbBits, IntPtr.Zero, 0));
+            if (section.IsInvalid)
+                return null;
 
-                SelectObject(compatDc, section);
-                sourceHdc = GetDC(IntPtr.Zero);
-                if (sourceHdc == IntPtr.Zero)
-                    return null;
+            using var selectedSection = destDc.Select(section);
+            // The source bitmap belongs to the STGMEDIUM, so it is only selected here, never deleted.
+            using var selectedSource = sourceDc.Select(bitmapHandle);
 
-                srcCompatHdc = CreateCompatibleDC(sourceHdc);
-                if (srcCompatHdc == IntPtr.Zero)
-                    return null;
+            if (StretchBlt(destDc, 0, bitmapInfoHeader.biHeight, bitmapInfoHeader.biWidth, -bitmapInfoHeader.biHeight, sourceDc, 0, 0, bitmap.bmWidth, bitmap.bmHeight, SRCCOPY) == 0)
+                return null;
 
-                SelectObject(srcCompatHdc, bitmapHandle);
-
-                if (StretchBlt(compatDc, 0, bitmapInfoHeader.biHeight, bitmapInfoHeader.biWidth, -bitmapInfoHeader.biHeight, srcCompatHdc, 0, 0, bitmap.bmWidth, bitmap.bmHeight, SRCCOPY) != 0)
-                    return new Bitmap(Platform.PixelFormats.Bgra8888,
-                        Platform.AlphaFormat.Opaque,
-                        lbBits,
-                        new PixelSize(bitmapInfoHeader.biWidth, bitmapInfoHeader.biHeight),
-                        new Vector(96, 96),
-                        bitmapInfoHeader.biWidth * 4);
-            }
-            finally
-            {
-                if (sourceHdc != IntPtr.Zero)
-                    ReleaseDC(IntPtr.Zero, sourceHdc);
-
-                if (srcCompatHdc != IntPtr.Zero)
-                    ReleaseDC(IntPtr.Zero, srcCompatHdc);
-
-                if (compatDc != IntPtr.Zero)
-                    ReleaseDC(IntPtr.Zero, compatDc);
-
-                if (destHdc != IntPtr.Zero)
-                    ReleaseDC(IntPtr.Zero, destHdc);
-
-                if (section != IntPtr.Zero)
-                    DeleteObject(section);
-            }
-            return null;
+            return new Bitmap(Platform.PixelFormats.Bgra8888,
+                Platform.AlphaFormat.Opaque,
+                lbBits,
+                new PixelSize(bitmapInfoHeader.biWidth, bitmapInfoHeader.biHeight),
+                new Vector(96, 96),
+                bitmapInfoHeader.biWidth * 4);
         }
     }
 
@@ -207,56 +185,45 @@ internal static class OleDataObjectHelper
 
                     destHeader.Init();
 
-                    IntPtr hdc = IntPtr.Zero, compatDc = IntPtr.Zero, section = IntPtr.Zero;
-                    try
-                    {
-                        hdc = GetDC(IntPtr.Zero);
-                        if (hdc == IntPtr.Zero)
-                            return null;
+                    using var screenDc = GdiDC.Get();
+                    if (screenDc.IsInvalid)
+                        return null;
 
-                        compatDc = CreateCompatibleDC(hdc);
-                        if (compatDc == IntPtr.Zero)
-                            return null;
+                    using var destDc = GdiDC.CreateCompatible(screenDc);
+                    if (destDc.IsInvalid)
+                        return null;
 
-                        section = CreateDIBSection(compatDc, ref destHeader, 0, out var lbBits, IntPtr.Zero, 0);
-                        if (section == IntPtr.Zero)
-                            return null;
+                    using var section = new GdiObject(
+                        CreateDIBSection(destDc, ref destHeader, 0, out var lbBits, IntPtr.Zero, 0));
+                    if (section.IsInvalid)
+                        return null;
 
-                        var extraSourceHeaderSize = GetExtraHeaderSize(sourceHeader);
+                    var extraSourceHeaderSize = GetExtraHeaderSize(sourceHeader);
 
-                        SelectObject(compatDc, section);
-                        if (StretchDIBits(compatDc,
-                                0,
-                                sourceHeader.biHeight - 1,
-                                sourceHeader.biWidth,
-                                -sourceHeader.biHeight,
-                                0,
-                                0,
-                                destHeader.biWidth,
-                                destHeader.biHeight,
-                                (IntPtr)(ptr + (sourceHeader.biSize + extraSourceHeaderSize)),
-                                (IntPtr)ptr,
-                                0,
-                                SRCCOPY
-                                ) != 0)
-                            return new Bitmap(Platform.PixelFormats.Bgra8888,
-                                Platform.AlphaFormat.Opaque,
-                                lbBits,
-                                new PixelSize(destHeader.biWidth, destHeader.biHeight),
-                                new Vector(96, 96),
-                                destHeader.biWidth * 4);
-                    }
-                    finally
-                    {
-                        if (section != IntPtr.Zero)
-                            DeleteObject(section);
+                    using var selectedSection = destDc.Select(section);
 
-                        if (compatDc != IntPtr.Zero)
-                            ReleaseDC(IntPtr.Zero, compatDc);
+                    if (StretchDIBits(destDc,
+                            0,
+                            sourceHeader.biHeight - 1,
+                            sourceHeader.biWidth,
+                            -sourceHeader.biHeight,
+                            0,
+                            0,
+                            destHeader.biWidth,
+                            destHeader.biHeight,
+                            (IntPtr)(ptr + (sourceHeader.biSize + extraSourceHeaderSize)),
+                            (IntPtr)ptr,
+                            0,
+                            SRCCOPY
+                            ) == 0)
+                        return null;
 
-                        if (hdc != IntPtr.Zero)
-                            ReleaseDC(IntPtr.Zero, hdc);
-                    }
+                    return new Bitmap(Platform.PixelFormats.Bgra8888,
+                        Platform.AlphaFormat.Opaque,
+                        lbBits,
+                        new PixelSize(destHeader.biWidth, destHeader.biHeight),
+                        new Vector(96, 96),
+                        destHeader.biWidth * 4);
                 }
             }
             else
@@ -531,76 +498,63 @@ internal static class OleDataObjectHelper
                 {
                     bitmap.CopyPixels(new PixelRect(pixelSize), (IntPtr)bytes, buffer.Length, stride);
 
-                    IntPtr hdc = IntPtr.Zero, compatDc = IntPtr.Zero, desDc = IntPtr.Zero, hbitmap = IntPtr.Zero, section = IntPtr.Zero;
-                    try
+                    using var screenDc = GdiDC.Get();
+                    if (screenDc.IsInvalid)
+                        return DV_E_FORMATETC;
+
+                    using var sourceDc = GdiDC.CreateCompatible(screenDc);
+                    if (sourceDc.IsInvalid)
+                        return DV_E_FORMATETC;
+
+                    using var destDc = GdiDC.CreateCompatible(screenDc);
+                    if (destDc.IsInvalid)
+                        return DV_E_FORMATETC;
+
+                    var bitmapInfoHeader = new BITMAPV5HEADER()
                     {
-                        hdc = GetDC(IntPtr.Zero);
-                        if (hdc == IntPtr.Zero)
-                            return DV_E_FORMATETC;
+                        bV5Width = pixelSize.Width,
+                        bV5Height = -pixelSize.Height,
+                        bV5Planes = 1,
+                        bV5BitCount = (ushort)bpp,
+                        bV5Compression = BitmapCompressionMode.BI_BITFIELDS,
+                        bV5SizeImage = (uint)buffer.Length,
+                        bV5RedMask = GetRedMask(bitmap),
+                        bV5BlueMask = GetBlueMask(bitmap),
+                        bV5GreenMask = GetGreenMask(bitmap),
+                        bV5AlphaMask = GetAlphaMask(bitmap),
+                        bV5CSType = BitmapColorSpace.LCS_sRGB,
+                        bV5Intent = BitmapIntent.LCS_GM_ABS_COLORIMETRIC,
+                    };
 
-                        compatDc = CreateCompatibleDC(hdc);
-                        if (compatDc == IntPtr.Zero)
-                            return DV_E_FORMATETC;
+                    bitmapInfoHeader.Init();
 
-                        desDc = CreateCompatibleDC(hdc);
-                        if (desDc == IntPtr.Zero)
-                            return DV_E_FORMATETC;
+                    using var section = new GdiObject(
+                        CreateDIBSection(sourceDc, bitmapInfoHeader, 0, out var lbBits, IntPtr.Zero, 0));
+                    if (section.IsInvalid)
+                        return DV_E_FORMATETC;
 
-                        var bitmapInfoHeader = new BITMAPV5HEADER()
-                        {
-                            bV5Width = pixelSize.Width,
-                            bV5Height = -pixelSize.Height,
-                            bV5Planes = 1,
-                            bV5BitCount = (ushort)bpp,
-                            bV5Compression = BitmapCompressionMode.BI_BITFIELDS,
-                            bV5SizeImage = (uint)buffer.Length,
-                            bV5RedMask = GetRedMask(bitmap),
-                            bV5BlueMask = GetBlueMask(bitmap),
-                            bV5GreenMask = GetGreenMask(bitmap),
-                            bV5AlphaMask = GetAlphaMask(bitmap),
-                            bV5CSType = BitmapColorSpace.LCS_sRGB,
-                            bV5Intent = BitmapIntent.LCS_GM_ABS_COLORIMETRIC,
-                        };
+                    Marshal.Copy(buffer, 0, lbBits, buffer.Length);
 
-                        bitmapInfoHeader.Init();
+                    // A bitmap compatible with a new memory DC is monochrome, so use the screen DC.
+                    var hbitmap = CreateCompatibleBitmap(screenDc, pixelSize.Width, pixelSize.Height);
+                    if (hbitmap == IntPtr.Zero)
+                        return DV_E_FORMATETC;
 
-                        section = CreateDIBSection(compatDc, bitmapInfoHeader, 0, out var lbBits, IntPtr.Zero, 0);
-                        if (section == IntPtr.Zero)
-                            return DV_E_FORMATETC;
+                    bool copied;
+                    using (sourceDc.Select(section))
+                    using (destDc.Select(hbitmap))
+                        copied = BitBlt(destDc, 0, 0, pixelSize.Width, pixelSize.Height, sourceDc, 0, 0, SRCCOPY);
 
-                        SelectObject(compatDc, section);
-
-                        Marshal.Copy(buffer, 0, lbBits, buffer.Length);
-
-                        hbitmap = CreateCompatibleBitmap(desDc, pixelSize.Width, pixelSize.Height);
-
-                        SelectObject(desDc, hbitmap);
-
-                        if (!BitBlt(desDc, 0, 0, pixelSize.Width, pixelSize.Height, compatDc, 0, 0, SRCCOPY))
-                        {
-                            return DV_E_FORMATETC;
-                        }
-
-                        hGlobalBitmap = hbitmap;
-
-                        GdiFlush();
-
-                        return (uint)HRESULT.S_OK;
-                    }
-                    finally
+                    if (!copied)
                     {
-                        SelectObject(compatDc, IntPtr.Zero);
-                        SelectObject(desDc, IntPtr.Zero);
-
-                        if (desDc != IntPtr.Zero)
-                            ReleaseDC(IntPtr.Zero, desDc);
-
-                        if (compatDc != IntPtr.Zero)
-                            ReleaseDC(IntPtr.Zero, compatDc);
-
-                        if (hdc != IntPtr.Zero)
-                            ReleaseDC(IntPtr.Zero, hdc);
+                        DeleteObject(hbitmap);
+                        return DV_E_FORMATETC;
                     }
+
+                    GdiFlush();
+
+                    hGlobalBitmap = hbitmap;
+                    return (uint)HRESULT.S_OK;
                 }
             }
         }
