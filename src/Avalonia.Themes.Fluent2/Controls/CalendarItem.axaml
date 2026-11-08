@@ -89,9 +89,10 @@
           <Grid VerticalAlignment="Stretch"
                 HorizontalAlignment="Stretch"
                 RowDefinitions="Auto,Auto,*"
+                ColumnDefinitions="Auto, *" 
                 MinWidth="294"
                 Grid.IsSharedSizeScope="True">
-            <Grid ColumnDefinitions="*,Auto,Auto">
+            <Grid Grid.ColumnSpan="2" ColumnDefinitions="*,Auto,Auto">
               <Button Name="PART_HeaderButton"
                       Theme="{StaticResource FluentCalendarButton}"
                       Foreground="{TemplateBinding Foreground}"
@@ -129,9 +130,10 @@
                           VerticalAlignment="Center" />
               </Button>
             </Grid>
-            <Border Grid.Row="1" Height="1" Background="{TemplateBinding BorderBrush}" />
+            <Border Grid.Column="1" Grid.Row="1" Height="1" Background="{TemplateBinding BorderBrush}" />
             <Grid Name="PART_ElementWeekNumberLabels"
                   Grid.Row="2"
+                  Grid.Column="0"
                   Margin="2,2,2,0"
                   MinWidth="38"
                   IsVisible="False">
@@ -154,6 +156,7 @@
             </Grid>
             <Grid Name="PART_MonthView"
                   Grid.Row="2"
+                  Grid.Column="1"
                   IsVisible="False"
                   MinHeight="290">
               <Grid.RowDefinitions>
