@@ -169,10 +169,11 @@ internal static class OleDataObjectHelper
             if (formatEtc.cfFormat == (ushort)ClipboardFormat.CF_DIB)
             {
                 var data = ReadBytesFromHGlobal(hGlobal);
+                if (!TryGetDibPixelDataOffset(data, out var sourceHeader, out var pixelDataOffset))
+                    return null;
+
                 fixed (byte* ptr = data)
                 {
-                    var sourceHeader = Marshal.PtrToStructure<BITMAPINFOHEADER>((IntPtr)ptr);
-
                     var destHeader = new BITMAPINFOHEADER()
                     {
                         biWidth = sourceHeader.biWidth,
@@ -198,8 +199,6 @@ internal static class OleDataObjectHelper
                     if (section.IsInvalid)
                         return null;
 
-                    var extraSourceHeaderSize = GetExtraHeaderSize(sourceHeader);
-
                     using var selectedSection = destDc.Select(section);
 
                     if (StretchDIBits(destDc,
@@ -211,7 +210,7 @@ internal static class OleDataObjectHelper
                             0,
                             destHeader.biWidth,
                             destHeader.biHeight,
-                            (IntPtr)(ptr + (sourceHeader.biSize + extraSourceHeaderSize)),
+                            (IntPtr)(ptr + pixelDataOffset),
                             (IntPtr)ptr,
                             0,
                             SRCCOPY
@@ -241,6 +240,52 @@ internal static class OleDataObjectHelper
             return ReadBytesFromHGlobal(hGlobal);
 
         return null;
+    }
+
+    /// <summary>
+    /// Checks that a packed CF_DIB has a supported format and that its header, color table and pixels
+    /// fit in <paramref name="data"/>.
+    /// </summary>
+    internal static unsafe bool TryGetDibPixelDataOffset(ReadOnlySpan<byte> data, out BITMAPINFOHEADER header,
+        out int pixelDataOffset)
+    {
+        header = default;
+        pixelDataOffset = 0;
+
+        if (data.Length < sizeof(BITMAPINFOHEADER))
+            return false;
+
+        header = MemoryMarshal.Read<BITMAPINFOHEADER>(data);
+
+        if (header.biSize < sizeof(BITMAPINFOHEADER) || header.biSize > data.Length)
+            return false;
+
+        if (header.biWidth <= 0 || header.biHeight <= 0 || header.biPlanes != 1)
+            return false;
+
+        var isSupported = header.biCompression switch
+        {
+            BitmapCompressionMode.BI_RGB => header.biBitCount is 1 or 4 or 8 or 16 or 24 or 32,
+            BitmapCompressionMode.BI_BITFIELDS => header.biBitCount is 16 or 32,
+            _ => false
+        };
+        if (!isSupported)
+            return false;
+
+        if (header.biBitCount <= 8 && header.biClrUsed > 1u << header.biBitCount)
+            return false;
+
+        // The 32 bpp copy that we create must fit in an int.
+        if ((long)header.biWidth * 4 * header.biHeight > int.MaxValue)
+            return false;
+
+        var stride = ((long)header.biWidth * header.biBitCount + 31) / 32 * 4;
+        var offset = (long)header.biSize + GetExtraHeaderSize(header);
+        if (offset + stride * header.biHeight > data.Length)
+            return false;
+
+        pixelDataOffset = (int)offset;
+        return true;
     }
 
     private static int GetExtraHeaderSize(in BITMAPINFOHEADER header)
