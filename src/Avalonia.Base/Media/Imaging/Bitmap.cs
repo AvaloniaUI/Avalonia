@@ -330,7 +330,7 @@ namespace Avalonia.Media.Imaging
             {
                 using (var fb = readable.Lock())
                 {
-                    CopyPixelsCore(new PixelRect(fb.Size), buffer.Address, buffer.RowBytes * buffer.Size.Height, fb.RowBytes, fb);
+                    CopyPixelsCore(new PixelRect(fb.Size), buffer.Address, buffer.RowBytes * buffer.Size.Height, buffer.RowBytes, fb);
                 }
             }
         }
