@@ -183,6 +183,7 @@
                   Background="Transparent"
                   MinHeight="290"
                   Grid.Row="2"
+                  Grid.ColumnSpan="2"
                   IsVisible="False">
               <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
