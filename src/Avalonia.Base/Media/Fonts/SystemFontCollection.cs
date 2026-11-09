@@ -52,14 +52,16 @@ namespace Avalonia.Media.Fonts
                 return false;
             }
 
-            // The font manager didn't return a perfect match either. Find the nearest match ourselves.
-            if (key != platformTypeface.ToFontCollectionKey() &&
+            // The font manager didn't return a perfect match either. Find the nearest match ourselves,
+            // unless the platform typeface already provides synthetic bold or oblique simulations.
+            if (platformTypeface.FontSimulations == FontSimulations.None &&
+                key != platformTypeface.ToFontCollectionKey() &&
                 TryGetGlyphTypeface(familyName, key, allowNearestMatch: true, out glyphTypeface))
             {
                 return true;
             }
 
-            glyphTypeface = GlyphTypeface.TryCreate(platformTypeface);
+            glyphTypeface = GlyphTypeface.TryCreate(platformTypeface, platformTypeface.FontSimulations);
             if (glyphTypeface is null)
             {
                 return false;
@@ -119,7 +121,7 @@ namespace Avalonia.Media.Fonts
                 return false;
             }
 
-            var platformKey = new FontCollectionKey(platformTypeface.Style, platformTypeface.Weight, platformTypeface.Stretch);
+            var platformKey = platformTypeface.ToFontCollectionKey();
 
             // Check cache first to avoid creating a duplicate GlyphTypeface.
             if (_glyphTypefaceCache.TryGetValue(platformTypeface.FamilyName, out var glyphTypefaces) &&
@@ -130,7 +132,7 @@ namespace Avalonia.Media.Fonts
                 return true;
             }
 
-            glyphTypeface = GlyphTypeface.TryCreate(platformTypeface);
+            glyphTypeface = GlyphTypeface.TryCreate(platformTypeface, platformTypeface.FontSimulations);
 
             if (glyphTypeface is null)
             {
@@ -141,6 +143,12 @@ namespace Avalonia.Media.Fonts
             // Tier C without re-invoking the platform.
             TryAddGlyphTypeface(platformTypeface.FamilyName, platformKey, glyphTypeface);
             TryAddGlyphTypeface(glyphTypeface, platformKey);
+
+            if (key != platformKey)
+            {
+                TryAddGlyphTypeface(platformTypeface.FamilyName, key, glyphTypeface);
+                TryAddGlyphTypeface(glyphTypeface, key);
+            }
 
             return true;
         }

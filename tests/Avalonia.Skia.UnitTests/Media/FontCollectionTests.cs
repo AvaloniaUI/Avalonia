@@ -279,6 +279,135 @@ namespace Avalonia.Skia.UnitTests.Media
             }
         }
 
+        [Fact]
+        public void Should_Not_Synthesize_From_Stream_When_Platform_Provides_Simulations()
+        {
+            var fontManager = new SimulatedPlatformFontManagerImpl();
+
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: fontManager)))
+            {
+                var fontCollection = new TestSystemFontCollection(fontManager);
+
+                Assert.True(fontCollection.TryGetGlyphTypeface(
+                    "SimulatedFont", FontStyle.Normal, FontWeight.Bold, FontStretch.Normal, out var glyphTypeface));
+
+                Assert.Equal(FontSimulations.Bold, glyphTypeface.FontSimulations);
+                Assert.Equal(FontWeight.Bold, glyphTypeface.Weight);
+                Assert.Equal(0, fontManager.StreamTypefaceCreations);
+            }
+        }
+
+        [Fact]
+        public void Mac_System_Font_Synthetic_Bold_Does_Not_Synthesize_From_Stream()
+        {
+            if (!OperatingSystem.IsMacOS())
+            {
+                return;
+            }
+
+            var fontManager = new TrackingFontManagerImpl(new FontManagerImpl());
+
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: fontManager)))
+            {
+                var fontCollection = new TestSystemFontCollection(fontManager);
+
+                Assert.True(fontCollection.TryGetGlyphTypeface(
+                    "Apple Color Emoji", FontStyle.Normal, FontWeight.Bold, FontStretch.Normal, out var emojiBold));
+
+                Assert.Equal(FontSimulations.Bold, emojiBold.FontSimulations);
+                Assert.Equal(FontWeight.Bold, emojiBold.Weight);
+                Assert.Equal(0, fontManager.StreamTypefaceCreations);
+            }
+        }
+
+        private sealed class SimulatedPlatformFontManagerImpl : IFontManagerImpl
+        {
+            private const string BackingFontUri =
+                "resm:Avalonia.Skia.UnitTests.Assets.NotoMono-Regular.ttf?assembly=Avalonia.Skia.UnitTests";
+
+            private readonly IFontManagerImpl _inner = new FontManagerImpl();
+
+            public int StreamTypefaceCreations { get; private set; }
+
+            public string GetDefaultFontFamilyName() => _inner.GetDefaultFontFamilyName();
+
+            public string[] GetInstalledFontFamilyNames(bool checkForUpdates = false)
+                => Array.Empty<string>();
+
+            public bool TryCreateGlyphTypeface(string familyName, FontStyle style, FontWeight weight,
+                FontStretch stretch, [NotNullWhen(true)] out IPlatformTypeface? platformTypeface)
+            {
+                if (string.Equals(familyName, "SimulatedFont", StringComparison.OrdinalIgnoreCase))
+                {
+                    using var stream = OpenBackingFont();
+
+                    // Simulate platform font manager returning a face with FontSimulations.Bold
+                    return _inner.TryCreateGlyphTypeface(stream, FontSimulations.Bold, out platformTypeface);
+                }
+
+                platformTypeface = null;
+
+                return false;
+            }
+
+            private static Stream OpenBackingFont()
+            {
+                var assetLoader = AvaloniaLocator.Current.GetRequiredService<IAssetLoader>();
+
+                return assetLoader.Open(new Uri(BackingFontUri, UriKind.Absolute));
+            }
+
+            public bool TryCreateGlyphTypeface(Stream stream, FontSimulations fontSimulations,
+                [NotNullWhen(true)] out IPlatformTypeface? platformTypeface)
+            {
+                StreamTypefaceCreations++;
+
+                return _inner.TryCreateGlyphTypeface(stream, fontSimulations, out platformTypeface);
+            }
+
+            public bool TryGetFamilyTypefaces(string familyName,
+                [NotNullWhen(true)] out IReadOnlyList<Typeface>? familyTypefaces)
+                => _inner.TryGetFamilyTypefaces(familyName, out familyTypefaces);
+
+            public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight,
+                FontStretch fontStretch, string? familyName, CultureInfo? culture,
+                [NotNullWhen(true)] out IPlatformTypeface? platformTypeface)
+                => _inner.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, familyName,
+                    culture, out platformTypeface);
+        }
+
+        private sealed class TrackingFontManagerImpl(IFontManagerImpl inner) : IFontManagerImpl
+        {
+            public int StreamTypefaceCreations { get; private set; }
+
+            public string GetDefaultFontFamilyName() => inner.GetDefaultFontFamilyName();
+
+            public string[] GetInstalledFontFamilyNames(bool checkForUpdates = false)
+                => inner.GetInstalledFontFamilyNames(checkForUpdates);
+
+            public bool TryCreateGlyphTypeface(string familyName, FontStyle style, FontWeight weight,
+                FontStretch stretch, [NotNullWhen(true)] out IPlatformTypeface? platformTypeface)
+                => inner.TryCreateGlyphTypeface(familyName, style, weight, stretch, out platformTypeface);
+
+            public bool TryCreateGlyphTypeface(Stream stream, FontSimulations fontSimulations,
+                [NotNullWhen(true)] out IPlatformTypeface? platformTypeface)
+            {
+                StreamTypefaceCreations++;
+
+                return inner.TryCreateGlyphTypeface(stream, fontSimulations, out platformTypeface);
+            }
+
+            public bool TryGetFamilyTypefaces(string familyName,
+                [NotNullWhen(true)] out IReadOnlyList<Typeface>? familyTypefaces)
+                => inner.TryGetFamilyTypefaces(familyName, out familyTypefaces);
+
+            public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight,
+                FontStretch fontStretch, string? familyName, CultureInfo? culture,
+                [NotNullWhen(true)] out IPlatformTypeface? platformTypeface)
+                => inner.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, familyName,
+                    culture, out platformTypeface);
+        }
+
         /// <summary>
         /// Font manager whose <c>MyAlias</c> family resolves through the platform but is absent from
         /// the installed family list, the shape of a platform alias (for instance Android's

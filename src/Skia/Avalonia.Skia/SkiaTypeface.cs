@@ -57,11 +57,19 @@ namespace Avalonia.Skia
         {
             try
             {
-                var asset = SKTypeface.OpenStream();
+                using var asset = SKTypeface.OpenStream();
+                if (asset is null)
+                {
+                    stream = null;
+
+                    return false;
+                }
+
                 var size = asset.Length;
                 var buffer = new byte[size];
 
                 asset.Read(buffer, size);
+                GC.KeepAlive(asset);
 
                 stream = new MemoryStream(buffer);
 

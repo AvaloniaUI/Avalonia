@@ -56,7 +56,10 @@ namespace Avalonia.Media.Fonts
                 throw new ArgumentNullException(nameof(platformTypeface));
             }
 
-            return new FontCollectionKey(platformTypeface.Style, platformTypeface.Weight, platformTypeface.Stretch)
+            var style = (platformTypeface.FontSimulations & FontSimulations.Oblique) != 0 ? FontStyle.Italic : platformTypeface.Style;
+            var weight = (platformTypeface.FontSimulations & FontSimulations.Bold) != 0 ? FontWeight.Bold : platformTypeface.Weight;
+
+            return new FontCollectionKey(style, weight, platformTypeface.Stretch)
             {
                 Variation = platformTypeface.VariationPosition
             };

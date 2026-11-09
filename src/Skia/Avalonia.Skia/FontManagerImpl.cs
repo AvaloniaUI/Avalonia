@@ -33,6 +33,23 @@ namespace Avalonia.Skia
 
         [ThreadStatic] private static string[]? t_languageTagBuffer;
 
+        private static FontSimulations GetFontSimulations(SKTypeface skTypeface, FontStyle style, FontWeight weight)
+        {
+            var fontSimulations = FontSimulations.None;
+
+            if ((int)weight >= 600 && !skTypeface.IsBold)
+            {
+                fontSimulations |= FontSimulations.Bold;
+            }
+
+            if (style != FontStyle.Normal && !skTypeface.IsItalic)
+            {
+                fontSimulations |= FontSimulations.Oblique;
+            }
+
+            return fontSimulations;
+        }
+
         public bool TryMatchCharacter(
             int codepoint,
             FontStyle fontStyle,
@@ -49,7 +66,9 @@ namespace Avalonia.Skia
                 return false;
             }
 
-            platformTypeface = new SkiaTypeface(skTypeface, FontSimulations.None);
+            var fontSimulations = GetFontSimulations(skTypeface, fontStyle, fontWeight);
+
+            platformTypeface = new SkiaTypeface(skTypeface, fontSimulations);
 
             return true;
 
@@ -109,17 +128,7 @@ namespace Avalonia.Skia
                 return false;
             }
 
-            var fontSimulations = FontSimulations.None;
-
-            if ((int)weight >= 600 && !skTypeface.IsBold)
-            {
-                fontSimulations |= FontSimulations.Bold;
-            }
-
-            if (style == FontStyle.Italic && !skTypeface.IsItalic)
-            {
-                fontSimulations |= FontSimulations.Oblique;
-            }
+            var fontSimulations = GetFontSimulations(skTypeface, style, weight);
 
             platformTypeface = new SkiaTypeface(skTypeface, fontSimulations);
 
