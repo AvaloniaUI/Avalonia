@@ -44,6 +44,22 @@ namespace Avalonia.Controls.UnitTests
 
 
         [Fact]
+        public void IsActive_Should_Be_True_When_Activated_Is_Raised()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var impl = CreateMockWindowBaseImpl(true);
+                var target = new TestWindowBase(impl.Object);
+                bool? isActive = null;
+                target.Activated += (s, e) => isActive = target.IsActive;
+
+                impl.Object.Activated!();
+
+                Assert.True(isActive);
+            }
+        }
+
+        [Fact]
         public void Impl_Deactivate_Should_Call_Raise_Deativated_Event()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
