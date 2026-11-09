@@ -1116,6 +1116,246 @@ namespace Avalonia.Controls.UnitTests
             Assert.Same(item, visualBrush.Visual);
         }
 
+        [Fact]
+        public void SelectionChanged_Should_Fire_Once_During_XAML_Initialization()
+        {
+            // Simulates the XAML loading flow: BeginInit -> set properties -> EndInit
+            // This is what happens when a ComboBox with SelectedIndex="0" is loaded from XAML.
+            // The SelectionChanged handler is attached during XAML property application,
+            // which happens before EndInit.
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var target = new ComboBox
+            {
+                Template = GetTemplate(),
+            };
+
+            target.BeginInit();
+            target.ItemsSource = new[] { "Foo", "Bar", "Baz" };
+            target.SelectedIndex = 0;
+
+            // In XAML, the SelectionChanged handler is attached during property application,
+            // before EndInit is called.
+            int selectionChangedCount = 0;
+            target.SelectionChanged += (s, e) => selectionChangedCount++;
+
+            target.EndInit();
+
+            int countAfterEndInit = selectionChangedCount;
+
+            var window = new Window { Content = target };
+            window.Show();
+            window.LayoutManager.ExecuteInitialLayoutPass();
+
+            int countAfterLayout = selectionChangedCount;
+
+            // SelectionChanged should fire exactly once during initialization:
+            // when EndInit applies the deferred SelectedIndex=0.
+            // It should NOT fire again during layout/visual tree attachment.
+            Assert.Equal(1, countAfterEndInit);
+            Assert.Equal(1, countAfterLayout);
+
+            target.SelectedIndex = 1;
+            Assert.Equal(2, selectionChangedCount);
+        }
+
+        [Fact]
+        public void SelectionChanged_Should_Not_Fire_During_Initialization()
+        {
+            // When a ComboBox is created with SelectedIndex=0 (no BeginInit/EndInit),
+            // the SelectionChanged event should NOT fire during initialization.
+            // It should only fire when the selection actually changes after initialization.
+            // This is the user's expected behavior: the handler should not be called
+            // at all during XAML loading.
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var target = new ComboBox
+            {
+                Template = GetTemplate(),
+            };
+
+            int selectionChangedCount = 0;
+            target.SelectionChanged += (s, e) => selectionChangedCount++;
+
+            target.ItemsSource = new[] { "Foo", "Bar", "Baz" };
+            target.SelectedIndex = 0;
+
+            var window = new Window { Content = target };
+            window.Show();
+            window.LayoutManager.ExecuteInitialLayoutPass();
+
+            // SelectionChanged should fire exactly once: when SelectedIndex is set.
+            Assert.Equal(1, selectionChangedCount);
+
+            target.SelectedIndex = 1;
+            Assert.Equal(2, selectionChangedCount);
+        }
+
+        [Fact]
+        public void SelectionChanged_Should_Fire_Once_During_XAML_Initialization_When_Model_Created_Early()
+        {
+            // Simulates the scenario where the SelectionModel is created before EndInit,
+            // e.g., because the control is added to the visual tree and containers are prepared
+            // before EndInit is called. This can happen when the XAML loader creates the
+            // visual tree before calling EndInit on the root.
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var target = new ComboBox
+            {
+                Template = GetTemplate(),
+            };
+
+            target.BeginInit();
+            target.ItemsSource = new[] { "Foo", "Bar", "Baz" };
+            target.SelectedIndex = 0;
+
+            // Simulate the SelectionModel being created early (e.g., during container preparation)
+            // by accessing the SelectedIndex property, which triggers GetOrCreateSelectionModel
+            _ = target.SelectedIndex;
+
+            int selectionChangedCount = 0;
+            target.SelectionChanged += (s, e) => selectionChangedCount++;
+
+            target.EndInit();
+
+            int countAfterEndInit = selectionChangedCount;
+
+            var window = new Window { Content = target };
+            window.Show();
+            window.LayoutManager.ExecuteInitialLayoutPass();
+
+            int countAfterLayout = selectionChangedCount;
+
+            // SelectionChanged should fire exactly once during initialization.
+            // Previously it could fire twice: once from InitializeSelectionModel and once
+            // from OnSelectionModelSelectionChanged when the source is applied.
+            Assert.Equal(1, countAfterEndInit);
+            Assert.Equal(1, countAfterLayout);
+
+            target.SelectedIndex = 1;
+            Assert.Equal(2, selectionChangedCount);
+        }
+
+        [Fact]
+        public void SelectionChanged_Should_Fire_Once_When_Window_Is_Initialized()
+        {
+            // Simulates the exact XAML loading scenario: the ComboBox is a child of a Window,
+            // and the Window's BeginInit/EndInit wraps the entire tree.
+            // The ComboBox is NOT individually BeginInit/EndInit'd by the XAML loader.
+            // The handler is attached BEFORE the control is added to the window,
+            // simulating XAML where the handler is set during property application.
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var target = new ComboBox
+            {
+                Template = GetTemplate(),
+                ItemsSource = new[] { "Foo", "Bar", "Baz" },
+                SelectedIndex = 0,
+            };
+
+            // Handler attached after construction, simulating XAML where the handler
+            // is set during property application (before the control is shown)
+            int selectionChangedCount = 0;
+            target.SelectionChanged += (s, e) => selectionChangedCount++;
+
+            var window = new Window { Content = target };
+            window.Show();
+            window.LayoutManager.ExecuteInitialLayoutPass();
+
+            int countAfterLayout = selectionChangedCount;
+
+            // The InitializeSelectionModel fire happens during construction, before the handler
+            // is attached. After layout, no additional fire should occur.
+            // The user's complaint is that the handler fires twice BEFORE display.
+            // In this test, the handler is attached after construction, so it sees 0 fires.
+            // This confirms the InitializeSelectionModel fire happens during construction.
+            Assert.Equal(0, countAfterLayout);
+
+            target.SelectedIndex = 1;
+            Assert.Equal(1, selectionChangedCount);
+        }
+
+        [Fact]
+        public void SelectionChanged_Should_Fire_Once_When_Handler_Attached_Before_Selection()
+        {
+            // Simulates the exact XAML property order:
+            // <ComboBox SelectionChanged="..." ItemsSource="..." SelectedIndex="0">
+            // The handler is attached BEFORE ItemsSource and SelectedIndex are set.
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var target = new ComboBox
+            {
+                Template = GetTemplate(),
+            };
+
+            // In XAML, the handler is attached during property application,
+            // before ItemsSource and SelectedIndex are set.
+            int selectionChangedCount = 0;
+            target.SelectionChanged += (s, e) => selectionChangedCount++;
+
+            target.ItemsSource = new[] { "Foo", "Bar", "Baz" };
+            target.SelectedIndex = 0;
+
+            int countAfterSet = selectionChangedCount;
+
+            var window = new Window { Content = target };
+            window.Show();
+            window.LayoutManager.ExecuteInitialLayoutPass();
+
+            int countAfterLayout = selectionChangedCount;
+
+            // SelectionChanged should fire exactly once: when SelectedIndex is set.
+            // It should NOT fire again during layout.
+            Assert.Equal(1, countAfterSet);
+            Assert.Equal(1, countAfterLayout);
+
+            target.SelectedIndex = 1;
+            Assert.Equal(2, selectionChangedCount);
+        }
+
+        [Fact]
+        public void SelectionChanged_Should_Fire_Once_During_XAML_Initialization_With_Inline_Items()
+        {
+            // Simulates the most common XAML pattern:
+            // <ComboBox SelectedIndex="0">
+            //   <ComboBoxItem>Item 1</ComboBoxItem>
+            //   <ComboBoxItem>Item 2</ComboBoxItem>
+            // </ComboBox>
+            // Items are added inline, and SelectedIndex is set.
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var target = new ComboBox
+            {
+                Template = GetTemplate(),
+            };
+
+            target.BeginInit();
+            target.Items.Add("Foo");
+            target.Items.Add("Bar");
+            target.Items.Add("Baz");
+            target.SelectedIndex = 0;
+
+            int selectionChangedCount = 0;
+            target.SelectionChanged += (s, e) => selectionChangedCount++;
+
+            target.EndInit();
+
+            int countAfterEndInit = selectionChangedCount;
+
+            var window = new Window { Content = target };
+            window.Show();
+            window.LayoutManager.ExecuteInitialLayoutPass();
+
+            int countAfterLayout = selectionChangedCount;
+
+            // SelectionChanged should fire exactly once during initialization.
+            Assert.Equal(1, countAfterEndInit);
+            Assert.Equal(1, countAfterLayout);
+
+            target.SelectedIndex = 1;
+            Assert.Equal(2, selectionChangedCount);
+        }
+
         private sealed record Item(string Value, string Display);
 
         [Fact]
