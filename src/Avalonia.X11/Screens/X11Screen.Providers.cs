@@ -55,22 +55,33 @@ internal partial class X11Screens
 
             if (!hasEDID)
                 return null;
-            XRRGetOutputProperty(x11.Display, rrOutput, x11.Atoms.EDID, 0, EDIDStructureLength, false, false,
-                AnyPropertyType, out IntPtr actualType, out int actualFormat, out int bytesAfter, out _,
+
+            XRRGetOutputProperty(x11.Display, rrOutput, x11.Atoms.EDID, IntPtr.Zero, (IntPtr)EDIDStructureLength, false,
+                false, AnyPropertyType, out IntPtr actualType, out int actualFormat, out IntPtr itemCount, out _,
                 out IntPtr prop);
-            if (actualType != x11.Atoms.INTEGER)
-                return null;
-            if (actualFormat != 8) // Expecting an byte array
+            if (prop == IntPtr.Zero)
                 return null;
 
-            var edid = new byte[bytesAfter];
-            Marshal.Copy(prop, edid, 0, bytesAfter);
-            XFree(prop);
-            XFree(new IntPtr(properties));
-            if (edid.Length < 22)
+            byte[] edid;
+            try
+            {
+                if (actualType != x11.Atoms.INTEGER)
+                    return null;
+                if (actualFormat != 8) // Expecting an byte array
+                    return null;
+
+                edid = new byte[(int)Math.Min((long)itemCount, EDIDStructureLength * 4)];
+                Marshal.Copy(prop, edid, 0, edid.Length);
+            }
+            finally
+            {
+                XFree(prop);
+            }
+
+            if (edid.Length < 23)
                 return null;
-            var width = edid[21]; // 0x15 1 Max. Horizontal Image Size cm. 
-            var height = edid[22]; // 0x16 1 Max. Vertical Image Size cm. 
+            var width = edid[21]; // 0x15 1 Max. Horizontal Image Size cm.
+            var height = edid[22]; // 0x16 1 Max. Vertical Image Size cm.
             if (width == 0 && height == 0)
                 return null;
             return new Size(width * 10, height * 10);

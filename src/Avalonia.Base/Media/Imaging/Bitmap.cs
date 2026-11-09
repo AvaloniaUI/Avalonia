@@ -166,8 +166,8 @@ namespace Avalonia.Media.Imaging
         /// </summary>
         /// <param name="stream">The stream.</param>
         /// <param name="quality">
-        /// The optional quality for compression. 
-        /// The quality value is interpreted from 0 - 100. If quality is null the default quality 
+        /// The optional quality for compression.
+        /// The quality value is interpreted from 0 - 100. If quality is null the default quality
         /// setting is applied.
         /// </param>
         public void Save(Stream stream, int? quality = null)
@@ -225,10 +225,10 @@ namespace Avalonia.Media.Imaging
                 || Format != readable.Format
             )
                 throw new NotSupportedException("CopyPixels is not supported for this bitmap type");
-            
+
             if (_isTranscoded)
                 throw new NotSupportedException("CopyPixels is not supported for transcoded bitmaps");
-            
+
             using (var fb = readable.Lock())
                 CopyPixelsCore(sourceRect, buffer, bufferSize, stride, fb);
         }
@@ -239,8 +239,18 @@ namespace Avalonia.Media.Imaging
         /// <param name="buffer">The target buffer.</param>
         /// <param name="alphaFormat">The alpha format.</param>
         /// <exception cref="NotSupportedException"></exception>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// The buffer is smaller than the bitmap, or its rows are too short for its pixel format.
+        /// </exception>
         public void CopyPixels(ILockedFramebuffer buffer, AlphaFormat alphaFormat)
         {
+            var size = PixelSize;
+            if (buffer.Size.Width < size.Width || buffer.Size.Height < size.Height)
+                throw new ArgumentOutOfRangeException(nameof(buffer), "The buffer is smaller than the bitmap.");
+
+            if (buffer.RowBytes < ((long)size.Width * buffer.Format.BitsPerPixel + 7) / 8)
+                throw new ArgumentOutOfRangeException(nameof(buffer), "The buffer row size is too small.");
+
             if (PlatformImpl.Item is not IReadableBitmapWithAlphaImpl readable || readable.Format == null || readable.AlphaFormat == null)
             {
                 throw new NotSupportedException("CopyPixels is not supported for this bitmap type");
@@ -255,7 +265,7 @@ namespace Avalonia.Media.Imaging
                         fb.Size,
                         fb.RowBytes,
                         fb.Format,
-                        readable.AlphaFormat.Value, 
+                        readable.AlphaFormat.Value,
                         buffer.Address, 
                         buffer.RowBytes,
                         buffer.Format,
@@ -266,7 +276,7 @@ namespace Avalonia.Media.Imaging
             {
                 using (var fb = readable.Lock())
                 {
-                    CopyPixelsCore(new PixelRect(fb.Size), buffer.Address, buffer.RowBytes * buffer.Size.Height, fb.RowBytes, fb);
+                    CopyPixelsCore(new PixelRect(fb.Size), buffer.Address, buffer.RowBytes * buffer.Size.Height, buffer.RowBytes, fb);
                 }
             }
         }
