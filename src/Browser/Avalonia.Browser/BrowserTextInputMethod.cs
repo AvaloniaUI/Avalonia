@@ -100,7 +100,7 @@ internal class BrowserTextInputMethod(
         InputHelper.SetSurroundingText(_inputElement, "", 0, 0);
     }
 
-    public void OnBeforeInput(string inputType, int start, int end)
+    public void OnBeforeInput(string inputType, int start, int end, ulong timestamp, string? text)
     {
         if (inputType != "deleteByComposition")
         {
@@ -119,6 +119,14 @@ internal class BrowserTextInputMethod(
         if (start != -1 && end != -1 && _client != null)
         {
             _client.Selection = new TextSelection(start, end);
+        }
+
+        if ((inputType == "insertText" || inputType == "insertReplacementText")
+            && !string.IsNullOrEmpty(text)
+            && !IsComposing
+            && _client != null)
+        {
+            _inputHandler.RawTextEvent(timestamp, text);
         }
     }
 
