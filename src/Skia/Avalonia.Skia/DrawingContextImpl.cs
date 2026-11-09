@@ -663,12 +663,12 @@ namespace Avalonia.Skia
             // Get a round rect from the cache.
             var roundRect = SKRoundRectCache.Shared.Get();
 
-            roundRect.SetRectRadii(rc,
-                new[]
-                {
-                    clip.RadiiTopLeft.ToSKPoint(), clip.RadiiTopRight.ToSKPoint(),
-                    clip.RadiiBottomRight.ToSKPoint(), clip.RadiiBottomLeft.ToSKPoint(),
-                });
+            Span<SKPoint> radii = stackalloc SKPoint[4]
+            {
+                clip.RadiiTopLeft.ToSKPoint(), clip.RadiiTopRight.ToSKPoint(),
+                clip.RadiiBottomRight.ToSKPoint(), clip.RadiiBottomLeft.ToSKPoint(),
+            };
+            roundRect.SetRectRadii(rc, radii);
 
             Canvas.ClipRoundRect(roundRect, antialias:true);
 

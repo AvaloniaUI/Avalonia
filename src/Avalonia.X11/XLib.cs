@@ -693,7 +693,7 @@ namespace Avalonia.X11
         public static extern IntPtr* XRRListOutputProperties(IntPtr dpy, IntPtr output, out int count);
 
         [DllImport(libX11Randr)]
-        public static extern int XRRGetOutputProperty(IntPtr dpy, IntPtr output, IntPtr atom, int offset, int length, bool _delete, bool pending, IntPtr req_type, out IntPtr actual_type, out int actual_format, out int nitems, out long bytes_after, out IntPtr prop);
+        public static extern int XRRGetOutputProperty(IntPtr dpy, IntPtr output, IntPtr atom, IntPtr offset, IntPtr length, bool _delete, bool pending, IntPtr req_type, out IntPtr actual_type, out int actual_format, out IntPtr nitems, out IntPtr bytes_after, out IntPtr prop);
             
         [DllImport(libX11Randr)]
         public static extern void XRRSelectInput(IntPtr dpy, IntPtr window, RandrEventMask mask);

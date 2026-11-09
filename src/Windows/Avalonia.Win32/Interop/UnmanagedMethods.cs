@@ -1805,6 +1805,8 @@ namespace Avalonia.Win32.Interop
         [DllImport("gdi32.dll", SetLastError = true)]
         public static extern IntPtr CreateCompatibleDC(IntPtr hdc);
         [DllImport("gdi32.dll")]
+        public static extern bool DeleteDC(IntPtr hdc);
+        [DllImport("gdi32.dll")]
         public static extern IntPtr SelectObject(IntPtr hdc, IntPtr hObject);
 
         [DllImport("gdi32.dll")]
