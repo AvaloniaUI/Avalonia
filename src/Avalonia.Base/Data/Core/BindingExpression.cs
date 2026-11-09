@@ -526,25 +526,26 @@ internal class BindingExpression : UntypedBindingExpressionBase, IDescription, I
         if (e.Property != TargetProperty)
             return;
 
-        // Don't write a value that this binding has just published back to the source: the
-        // converter may not round-trip it (#22673). A value changed by the target, e.g. through
-        // coercion, differs from the published value and is still written back.
         if (IsPublishingValue &&
-            TryGetTarget(out var target) &&
-            TypeUtilities.IdentityEquals(target.GetValue(e.Property), GetValue(), TargetType))
+            TryGetTarget(out var target))
         {
-            return;
-        }
+            // Don't write a value that this binding has just published back to the source: the
+            // converter may not round-trip it (#22673). A value changed by the target, e.g. through
+            // coercion, differs from the published value and is still written back.
+            if (TypeUtilities.IdentityEquals(target.GetValue(e.Property), GetValue(), TargetType))
+            {
+                return;
+            }
 
-        // Do not write a just-published value back to the source in TwoWay bindings
-        // If the target Visual has already been detached from the logical tree. (#22673)
-        // Restriction is applied to Visual (Control, etc.), not to any ILogical.
-        if (IsPublishingValue &&
-            sender is Visual targetVisual &&
-            targetVisual.GetLogicalParent() == null &&
-            GetValue() == AvaloniaProperty.UnsetValue)
-        {
-            return;
+            // Do not write a just-published value back to the source in TwoWay bindings
+            // If the target Visual has already been detached from the logical tree. (#22673)
+            // Restriction is applied to Visual (Control, etc.), not to any ILogical.
+            if (target is Visual targetVisual &&
+               (targetVisual.GetLogicalParent() == null) &&
+               GetValue() == AvaloniaProperty.UnsetValue)
+            {
+                return;
+            }
         }
 
         if (_uncommon?._delay is not { Ticks: > 0 } delay)
