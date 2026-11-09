@@ -482,6 +482,175 @@ namespace Avalonia.Skia.UnitTests.Media
             }
         }
 
+        [Theory]
+        [InlineData(FontStyle.Normal, 600, FontSimulations.Bold, 700)]
+        [InlineData(FontStyle.Normal, 700, FontSimulations.Bold, 700)]
+        [InlineData(FontStyle.Normal, 800, FontSimulations.Bold, 800)]
+        [InlineData(FontStyle.Italic, 400, FontSimulations.Oblique, 400)]
+        [InlineData(FontStyle.Italic, 700, FontSimulations.Bold | FontSimulations.Oblique, 700)]
+        public void Should_Use_A_Face_The_Platform_Simulated_Itself(FontStyle style, int weight,
+            FontSimulations expectedSimulations, int expectedWeight)
+        {
+            var fontManager = new InstalledFamilyFontManagerImpl(NotoMonoRegularUri,
+                matching: PlatformMatching.SimulatedFace);
+
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: fontManager)))
+            {
+                var fontCollection = new TestSystemFontCollection(fontManager);
+
+                Assert.True(fontCollection.TryGetGlyphTypeface(
+                    "Noto Mono", FontStyle.Normal, FontWeight.Normal, FontStretch.Normal, out _));
+
+                Assert.True(fontCollection.TryGetGlyphTypeface(
+                    "Noto Mono", style, (FontWeight)weight, FontStretch.Normal, out var glyphTypeface));
+
+                Assert.Equal(0, fontManager.StreamTypefaceCreations);
+
+                // The platform already applied these simulations, so they are reported, not applied again.
+                Assert.Equal(expectedSimulations, glyphTypeface.FontSimulations);
+                Assert.Equal((FontWeight)expectedWeight, glyphTypeface.Weight);
+                Assert.Equal(style, glyphTypeface.Style);
+            }
+        }
+
+        [Fact]
+        public void Should_Simulate_Bold_On_The_Real_Bold_Face_For_A_Heavier_Request()
+        {
+            var fontManager = new InstalledFamilyFontManagerImpl(InterRegularUri, InterBoldUri);
+
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: fontManager)))
+            {
+                var fontCollection = new TestSystemFontCollection(fontManager);
+
+                Assert.True(fontCollection.TryGetGlyphTypeface(
+                    "Inter", FontStyle.Normal, FontWeight.Normal, FontStretch.Normal, out _));
+
+                Assert.True(fontCollection.TryGetGlyphTypeface(
+                    "Inter", FontStyle.Normal, FontWeight.ExtraBold, FontStretch.Normal, out var glyphTypeface));
+
+                Assert.Equal(0, fontManager.StreamTypefaceCreations);
+
+                Assert.Equal(FontSimulations.Bold, glyphTypeface.FontSimulations);
+                Assert.Equal(FontWeight.ExtraBold, glyphTypeface.Weight);
+                Assert.True(((SkiaTypeface)glyphTypeface.PlatformTypeface).SKTypeface.IsBold);
+            }
+        }
+
+        [Fact]
+        public void Should_Accept_An_Oblique_Face_For_An_Italic_Request()
+        {
+            var fontManager = new InstalledFamilyFontManagerImpl(NotoMonoRegularUri,
+                matching: PlatformMatching.ObliqueFace);
+
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: fontManager)))
+            {
+                var fontCollection = new TestSystemFontCollection(fontManager);
+
+                Assert.True(fontCollection.TryGetGlyphTypeface(
+                    "Noto Mono", FontStyle.Normal, FontWeight.Normal, FontStretch.Normal, out _));
+
+                Assert.True(fontCollection.TryGetGlyphTypeface(
+                    "Noto Mono", FontStyle.Italic, FontWeight.Normal, FontStretch.Normal, out var glyphTypeface));
+
+                Assert.Equal(0, fontManager.StreamTypefaceCreations);
+
+                // A slanted face already satisfies a slanted request; slanting it again would double the slant.
+                Assert.Equal(FontSimulations.None, glyphTypeface.FontSimulations);
+                Assert.Equal(FontStyle.Italic, glyphTypeface.PlatformTypeface.Style);
+            }
+        }
+
+        [Fact]
+        public void Should_Create_A_Synthetic_Face_From_The_Platform_Typeface_It_Already_Holds()
+        {
+            var fontManager = new InstalledFamilyFontManagerImpl(NotoMonoRegularUri);
+
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: fontManager)))
+            {
+                var fontCollection = new TestSystemFontCollection(fontManager);
+
+                Assert.True(fontCollection.TryGetGlyphTypeface(
+                    "Noto Mono", FontStyle.Normal, FontWeight.Normal, FontStretch.Normal, out var regular));
+
+                Assert.True(fontCollection.TryCreateSyntheticGlyphTypeface(
+                    regular, FontStyle.Normal, FontWeight.Black, FontStretch.Normal, out var synthetic));
+
+                Assert.Equal(0, fontManager.StreamTypefaceCreations);
+
+                Assert.Equal(FontSimulations.Bold, synthetic.FontSimulations);
+                Assert.Equal(FontWeight.Black, synthetic.Weight);
+                Assert.Same(((SkiaTypeface)regular.PlatformTypeface).SKTypeface,
+                    ((SkiaTypeface)synthetic.PlatformTypeface).SKTypeface);
+            }
+        }
+
+        [Fact]
+        public void Should_Keep_The_Source_Simulations_In_A_Synthetic_Face()
+        {
+            var fontManager = new InstalledFamilyFontManagerImpl(NotoMonoRegularUri);
+
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: fontManager)))
+            {
+                var fontCollection = new TestSystemFontCollection(fontManager);
+
+                Assert.True(fontCollection.TryGetGlyphTypeface(
+                    "Noto Mono", FontStyle.Normal, FontWeight.Bold, FontStretch.Normal, out var bold));
+
+                Assert.Equal(FontSimulations.Bold, bold.FontSimulations);
+
+                Assert.True(fontCollection.TryCreateSyntheticGlyphTypeface(
+                    bold, FontStyle.Italic, FontWeight.Bold, FontStretch.Normal, out var boldItalic));
+
+                Assert.Equal(0, fontManager.StreamTypefaceCreations);
+                Assert.Equal(FontSimulations.Bold | FontSimulations.Oblique, boldItalic.FontSimulations);
+                Assert.Equal(FontSimulations.Bold | FontSimulations.Oblique, boldItalic.PlatformTypeface.FontSimulations);
+            }
+        }
+
+        [Fact]
+        public void Should_Synthesize_From_A_Stream_When_The_Platform_Typeface_Cannot_Simulate()
+        {
+            var fontManager = new InstalledFamilyFontManagerImpl(NotoMonoRegularUri, supportsSimulation: false);
+
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: fontManager)))
+            {
+                var fontCollection = new TestSystemFontCollection(fontManager);
+
+                Assert.True(fontCollection.TryGetGlyphTypeface(
+                    "Noto Mono", FontStyle.Normal, FontWeight.Normal, FontStretch.Normal, out var regular));
+
+                Assert.True(fontCollection.TryCreateSyntheticGlyphTypeface(
+                    regular, FontStyle.Normal, FontWeight.Black, FontStretch.Normal, out var synthetic));
+
+                Assert.Equal(1, fontManager.StreamTypefaceCreations);
+                Assert.Equal(FontSimulations.Bold, synthetic.FontSimulations);
+            }
+        }
+
+        [Fact]
+        public void Disposing_A_Synthetic_Face_Should_Keep_Its_Source_Usable()
+        {
+            var fontManager = new InstalledFamilyFontManagerImpl(NotoMonoRegularUri);
+
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: fontManager)))
+            {
+                var fontCollection = new TestSystemFontCollection(fontManager);
+
+                Assert.True(fontCollection.TryGetGlyphTypeface(
+                    "Noto Mono", FontStyle.Normal, FontWeight.Normal, FontStretch.Normal, out var regular));
+
+                Assert.True(fontCollection.TryCreateSyntheticGlyphTypeface(
+                    regular, FontStyle.Normal, FontWeight.Black, FontStretch.Normal, out var synthetic));
+
+                synthetic.Dispose();
+
+                var source = ((SkiaTypeface)regular.PlatformTypeface).SKTypeface;
+
+                Assert.NotEqual(IntPtr.Zero, source.Handle);
+                Assert.True(source.ContainsGlyph('A'));
+            }
+        }
+
         private const string NotoMonoRegularUri =
             "resm:Avalonia.Skia.UnitTests.Assets.NotoMono-Regular.ttf?assembly=Avalonia.Skia.UnitTests";
 
@@ -491,24 +660,49 @@ namespace Avalonia.Skia.UnitTests.Media
         private const string InterBoldUri =
             "resm:Avalonia.Skia.UnitTests.Assets.Inter-Bold.ttf?assembly=Avalonia.Skia.UnitTests";
 
+        /// <summary>How the platform answers a request for a face the family does not have.</summary>
+        private enum PlatformMatching
+        {
+            /// <summary>The nearest face as designed, as CoreText and fontconfig return it.</summary>
+            NearestFace,
+
+            /// <summary>The nearest face with the missing bold or slant simulated inside the matched
+            /// typeface, which then reports the simulated weight and an oblique slant, as DirectWrite
+            /// returns it.</summary>
+            SimulatedFace,
+
+            /// <summary>A designed oblique face for any slanted request, as for a family whose only
+            /// slanted face is oblique.</summary>
+            ObliqueFace
+        }
+
         /// <summary>
-        /// Font manager with a single installed family backed by embedded fonts, the shape of a
-        /// platform font manager that matches a missing face to the nearest one it has and simulates
-        /// the difference (CoreText and fontconfig do this for a family without a bold or italic
-        /// face). Only the platform match itself is replaced: the matched <see cref="SKTypeface"/> is
-        /// wrapped the way <see cref="FontManagerImpl"/> wraps the typeface its platform matched.
+        /// Font manager with a single installed family backed by embedded fonts. Only the platform
+        /// match itself is replaced: the matched <see cref="SKTypeface"/> is wrapped the way
+        /// <see cref="FontManagerImpl"/> wraps the typeface its platform matched.
         /// </summary>
         private sealed class InstalledFamilyFontManagerImpl : IFontManagerImpl
         {
             private readonly IFontManagerImpl _inner = new FontManagerImpl();
             private readonly string _regularUri;
             private readonly string? _boldUri;
+            private readonly PlatformMatching _matching;
+            private readonly bool _supportsSimulation;
             private string? _familyName;
 
-            public InstalledFamilyFontManagerImpl(string regularUri, string? boldUri = null)
+            /// <param name="regularUri">The regular face of the family.</param>
+            /// <param name="boldUri">The bold face of the family, if it has one.</param>
+            /// <param name="matching">How a request for a missing face is answered.</param>
+            /// <param name="supportsSimulation">When false, every platform typeface is handed out
+            /// behind a wrapper that cannot create simulated variants, the shape of a backend without
+            /// that support.</param>
+            public InstalledFamilyFontManagerImpl(string regularUri, string? boldUri = null,
+                PlatformMatching matching = PlatformMatching.NearestFace, bool supportsSimulation = true)
             {
                 _regularUri = regularUri;
                 _boldUri = boldUri;
+                _matching = matching;
+                _supportsSimulation = supportsSimulation;
             }
 
             /// <summary>Number of typefaces created from a stream. The platform matches above never
@@ -546,10 +740,47 @@ namespace Avalonia.Skia.UnitTests.Media
 
                 var skTypeface = LoadTypeface(_boldUri is not null && weight >= FontWeight.SemiBold ? _boldUri : _regularUri);
 
-                platformTypeface = FontManagerImpl.CreatePlatformTypeface(skTypeface, style, weight, stretch);
+                // The weight and style the matched typeface reports, which differ from the design
+                // values of the font file when the platform simulated the face.
+                var faceWeight = (FontWeight)skTypeface.FontWeight;
+                var faceStyle = skTypeface.FontStyle.Slant.ToAvalonia();
+
+                switch (_matching)
+                {
+                    case PlatformMatching.SimulatedFace:
+                        if (weight >= FontWeight.SemiBold && faceWeight < FontWeight.SemiBold)
+                        {
+                            faceWeight = FontWeight.Bold;
+                        }
+
+                        if (style != FontStyle.Normal && faceStyle == FontStyle.Normal)
+                        {
+                            faceStyle = FontStyle.Oblique;
+                        }
+
+                        break;
+                    case PlatformMatching.ObliqueFace when style != FontStyle.Normal:
+                        faceStyle = FontStyle.Oblique;
+                        break;
+                }
+
+                if (faceWeight != (FontWeight)skTypeface.FontWeight || faceStyle != skTypeface.FontStyle.Slant.ToAvalonia())
+                {
+                    // FontManagerImpl sees a face that is already bold or slanted and keeps it as it is.
+                    platformTypeface = new ReportedPlatformTypeface(new SkiaTypeface(skTypeface, FontSimulations.None),
+                        faceStyle, faceWeight);
+
+                    return true;
+                }
+
+                platformTypeface = Wrap(FontManagerImpl.CreatePlatformTypeface(skTypeface, style, weight, stretch));
 
                 return true;
             }
+
+            private IPlatformTypeface Wrap(IPlatformTypeface platformTypeface) => _supportsSimulation ?
+                platformTypeface :
+                new ReportedPlatformTypeface(platformTypeface, platformTypeface.Style, platformTypeface.Weight);
 
             public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight,
                 FontStretch fontStretch, string? familyName, CultureInfo? culture,
@@ -576,7 +807,14 @@ namespace Avalonia.Skia.UnitTests.Media
             {
                 StreamTypefaceCreations++;
 
-                return _inner.TryCreateGlyphTypeface(stream, fontSimulations, out platformTypeface);
+                if (!_inner.TryCreateGlyphTypeface(stream, fontSimulations, out platformTypeface))
+                {
+                    return false;
+                }
+
+                platformTypeface = Wrap(platformTypeface);
+
+                return true;
             }
 
             public bool TryGetFamilyTypefaces(string familyName,
@@ -611,6 +849,38 @@ namespace Avalonia.Skia.UnitTests.Media
                 return SKTypeface.FromData(data) ??
                        throw new InvalidOperationException($"Could not load the test font {uri}.");
             }
+        }
+
+        /// <summary>
+        /// Platform typeface that reports the given style and weight for an inner typeface and
+        /// exposes nothing beyond <see cref="IPlatformTypeface"/>.
+        /// </summary>
+        private sealed class ReportedPlatformTypeface : IPlatformTypeface
+        {
+            private readonly IPlatformTypeface _inner;
+
+            public ReportedPlatformTypeface(IPlatformTypeface inner, FontStyle style, FontWeight weight)
+            {
+                _inner = inner;
+                Style = style;
+                Weight = weight;
+            }
+
+            public string FamilyName => _inner.FamilyName;
+
+            public FontWeight Weight { get; }
+
+            public FontStyle Style { get; }
+
+            public FontStretch Stretch => _inner.Stretch;
+
+            public FontSimulations FontSimulations => _inner.FontSimulations;
+
+            public bool TryGetTable(OpenTypeTag tag, out ReadOnlyMemory<byte> table) => _inner.TryGetTable(tag, out table);
+
+            public bool TryGetStream([NotNullWhen(true)] out Stream? stream) => _inner.TryGetStream(out stream);
+
+            public void Dispose() => _inner.Dispose();
         }
     }
 }
