@@ -81,6 +81,26 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
             Assert.False(actual.LimitReached);
         }
 
+        [Theory]
+        [InlineData("漢字", "ひ", new[] { 1, 2 })]
+        [InlineData("漢字", "、", new[] { 1 })]
+        [InlineData("漢字", "ぁ", new[] { 1 })]
+        [InlineData("foo Hello", "W", new[] { 4 })]
+        [InlineData("foo ", "W", new[] { 4 })]
+        [InlineData("a", "́", new int[0])]
+        public void Following_Codepoint_Decides_The_Break_At_The_End(string text, string following, int[] expected)
+        {
+            var lineBreaker = new LineBreakEnumerator(text, Codepoint.ReadAt(following, 0, out _), int.MaxValue);
+            var actual = new List<int>();
+
+            while (lineBreaker.MoveNext(out var lineBreak))
+            {
+                actual.Add(lineBreak.PositionWrap);
+            }
+
+            Assert.Equal(expected, actual);
+        }
+
         [Fact]
         public void BasicLatinTest()
         {

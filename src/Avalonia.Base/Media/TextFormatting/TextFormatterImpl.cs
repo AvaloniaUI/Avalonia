@@ -881,12 +881,20 @@ namespace Avalonia.Media.TextFormatting
         /// Enumerating the whole run would scan all remaining text for every line of a long unbroken run.
         /// </summary>
         /// <param name="text">The text of the run.</param>
+        /// <param name="following">
+        /// The first code point of the next run, which decides whether the end of the run is an opportunity,
+        /// or <c>null</c> if the end of the run is the end of text.
+        /// </param>
         /// <param name="measuredLength">The number of characters of the run that fit the line.</param>
-        private static LineBreakEnumerator CreateLineBreakEnumerator(ReadOnlySpan<char> text, int measuredLength)
+        private static LineBreakEnumerator CreateLineBreakEnumerator(ReadOnlySpan<char> text, Codepoint? following,
+            int measuredLength)
         {
             var limit = (long)Math.Max(measuredLength, 0) + MaxBreakLookahead;
+            var textLimit = limit < text.Length ? (int)limit : int.MaxValue;
 
-            return new LineBreakEnumerator(text, limit < text.Length ? (int)limit : int.MaxValue);
+            return following is { } codepoint
+                ? new LineBreakEnumerator(text, codepoint, textLimit)
+                : new LineBreakEnumerator(text, textLimit);
         }
 
         /// <summary>
@@ -965,8 +973,22 @@ namespace Avalonia.Media.TextFormatting
                 {
                     case ShapedTextRun:
                         {
+                            // Shaping splits runs at every script change, which in Japanese text happens
+                            // between nearly every Han and kana character. With the next run's first code
+                            // point as context, a break at the end of the run is a real opportunity rather
+                            // than the end of text.
+                            Codepoint? following = null;
+
+                            if (index < runCount - 1 && textRuns[index + 1] is ShapedTextRun nextRun &&
+                                !nextRun.Text.IsEmpty)
+                            {
+                                following = Codepoint.ReadAt(nextRun.Text.Span, 0, out _);
+                            }
+
+                            var endIsOpportunity = following.HasValue;
+
                             var lineBreaker = CreateLineBreakEnumerator(
-                                currentRun.Text.Span, measuredLength - currentLength);
+                                currentRun.Text.Span, following, measuredLength - currentLength);
 
                             while (lineBreaker.MoveNext(out var lineBreak))
                             {
@@ -997,7 +1019,7 @@ namespace Avalonia.Media.TextFormatting
                                         //Find next possible wrap position (overflow)
                                         if (index < runCount - 1)
                                         {
-                                            if (lineBreak.PositionWrap != currentRunLength)
+                                            if (endIsOpportunity || lineBreak.PositionWrap != currentRunLength)
                                             {
                                                 //We already found the next possible wrap position.
                                                 breakFound = true;
@@ -1052,7 +1074,8 @@ namespace Avalonia.Media.TextFormatting
                                     break;
                                 }
 
-                                if (lineBreak.PositionMeasure != lineBreak.PositionWrap || lineBreak.PositionWrap != currentRunLength)
+                                if (endIsOpportunity || lineBreak.PositionMeasure != lineBreak.PositionWrap ||
+                                    lineBreak.PositionWrap != currentRunLength)
                                 {
                                     lastWrapPosition = currentLength + lineBreak.PositionWrap;
                                 }

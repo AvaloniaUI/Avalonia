@@ -32,6 +32,23 @@ namespace Avalonia.Media.TextFormatting.Unicode
             _state = new LineBreakState();
         }
 
+        /// <param name="text">The text to enumerate.</param>
+        /// <param name="following">
+        /// The code point that continues <paramref name="text"/>, such as the first one of the next text run.
+        /// The end of <paramref name="text"/> is then a break opportunity only if the rules allow a break
+        /// before <paramref name="following"/>, instead of the break that always ends the text.
+        /// </param>
+        /// <param name="limit">
+        /// The text index from which no further break opportunity is searched for. Whitespace and the
+        /// break that ends it are still resolved, as whitespace hangs on the line however long it is.
+        /// </param>
+        internal LineBreakEnumerator(ReadOnlySpan<char> text, Codepoint following, int limit)
+        {
+            _text = text;
+            _limit = limit;
+            _state = new LineBreakState(following);
+        }
+
         /// <summary>
         /// Gets whether enumeration stopped at the limit before reaching a break opportunity or the end of the text.
         /// </summary>
@@ -56,6 +73,12 @@ namespace Avalonia.Media.TextFormatting.Unicode
             while (result == null)
             {
                 _state.Read(_text);
+
+                if (_state.Current.Start >= _text.Length)
+                {
+                    // The following code point only serves as context.
+                    return false;
+                }
 
                 if (_limit != int.MaxValue)
                 {
@@ -1552,8 +1575,21 @@ namespace Avalonia.Media.TextFormatting.Unicode
             private BreakUnit _previous;
             private LineBreakClass _previousClass;
 
-            public LineBreakState()
+            private readonly Codepoint _following;
+            private readonly bool _hasFollowing;
+
+            public LineBreakState() : this(default, false)
             {
+            }
+
+            public LineBreakState(Codepoint following) : this(following, true)
+            {
+            }
+
+            private LineBreakState(Codepoint following, bool hasFollowing)
+            {
+                _following = following;
+                _hasFollowing = hasFollowing;
                 _hasNext = false;
                 _next = default;
                 _nextClass = LineBreakClass.Unknown;
@@ -1692,7 +1728,21 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
             public BreakUnit Peek(ReadOnlySpan<char> text)
             {
-                return PeekAt(text, Position);
+                if (!_hasFollowing)
+                {
+                    return PeekAt(text, Position);
+                }
+
+                if (Position < text.Length)
+                {
+                    // The text continues, so its last character is not followed by the end of text.
+                    return PeekAt(text, Position) with { EndOfText = false };
+                }
+
+                return new BreakUnit(_following, text.Length, _following.Value > 0xFFFF ? 2 : 1)
+                {
+                    EndOfText = true
+                };
             }
 
             public BreakUnit Read(ReadOnlySpan<char> text)
