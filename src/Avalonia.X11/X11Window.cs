@@ -1570,8 +1570,8 @@ namespace Avalonia.X11
             var appId = Environment.GetEnvironmentVariable("RESOURCE_NAME") 
                         ?? Process.GetCurrentProcess().ProcessName;
             
-            var encodedAppId = Encoding.ASCII.GetBytes(appId);
-            var encodedWmClass = Encoding.ASCII.GetBytes(wmClass ?? appId);
+            var encodedAppId = Encoding.ASCII.GetBytes(appId + '\0');
+            var encodedWmClass = Encoding.ASCII.GetBytes((wmClass ?? appId) + '\0');
 
             var hint = XAllocClassHint();
             fixed(byte* pAppId = encodedAppId)
