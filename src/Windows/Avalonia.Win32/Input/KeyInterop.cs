@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
@@ -527,12 +528,12 @@ namespace Avalonia.Win32.Input
         /// </summary>
         /// <param name="virtualKey">The Windows virtual-key.</param>
         /// <param name="keyData">The key data (in the same format as lParam for WM_KEYDOWN).</param>
-        /// <param name="text">The unfiltered text of the key, or null for none or for a dead key.</param>
+        /// <param name="text">The unfiltered text of the key, or its dead character, or null for none.</param>
         /// <returns>A key symbol, or null if none matched.</returns>
         internal static string? GetKeySymbol(int virtualKey, int keyData, out string? text)
         {
             var length = TranslateKey(virtualKey, keyData, out var buffer);
-            text = length > 0 ? buffer : null;
+            text = buffer;
 
             return length switch
             {
@@ -542,6 +543,43 @@ namespace Avalonia.Win32.Input
                 2 when buffer![0] == buffer[1] => buffer.Substring(0, 1), // dead key second press repeats symbol
                 _ => buffer
             };
+        }
+
+        /// <summary>
+        /// Ends a pending dead key by translating a space.
+        /// </summary>
+        /// <remarks>
+        /// The dead-key state is shared by all windows and processes of the session, so a dead key pressed in another
+        /// window would otherwise combine with the next key typed into this one.
+        /// </remarks>
+        internal static unsafe void EndPendingDeadKey(IntPtr layout)
+        {
+            const int bufferSize = 8;
+            var keyStates = stackalloc byte[256];
+            var buffer = stackalloc char[bufferSize];
+            new Span<byte>(keyStates, 256).Clear();
+            ToUnicodeEx((uint)VK_SPACE, MapVirtualKeyEx((uint)VK_SPACE, 0, layout), keyStates, buffer, bufferSize, 0,
+                layout);
+        }
+
+        /// <summary>
+        /// Gets whether a character is a C0 control character or DEL.
+        /// </summary>
+        internal static bool IsControlChar(char c) => c < 0x20 || c == 0x7F;
+
+        /// <summary>
+        /// Gets whether a text is non-empty and contains no control characters.
+        /// </summary>
+        internal static bool IsPrintable([NotNullWhen(true)] string? text)
+        {
+            if (string.IsNullOrEmpty(text))
+                return false;
+            foreach (var c in text)
+            {
+                if (IsControlChar(c))
+                    return false;
+            }
+            return true;
         }
 
         /// <summary>

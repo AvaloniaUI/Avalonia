@@ -31,10 +31,10 @@ public static class KnownPlatformKeyInfoFormats
 /// Platform-specific data of a key event, for code that knows the platform, for example terminal emulators that
 /// encode keys the way a native terminal does. Each value is null when the platform doesn't provide it.
 /// </summary>
-public sealed class PlatformKeyInfo
+public readonly record struct PlatformKeyInfo
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="PlatformKeyInfo"/> class.
+    /// Initializes a new instance of the <see cref="PlatformKeyInfo"/> struct.
     /// </summary>
     /// <param name="format">The platform that produced the values, usually one of
     /// <see cref="KnownPlatformKeyInfoFormats"/>.</param>
@@ -44,7 +44,8 @@ public sealed class PlatformKeyInfo
     }
 
     /// <summary>
-    /// Gets the platform that produced the values, usually one of <see cref="KnownPlatformKeyInfoFormats"/>.
+    /// Gets the platform that produced the values, usually one of <see cref="KnownPlatformKeyInfoFormats"/>. It is
+    /// null only for a default instance.
     /// </summary>
     public string Format { get; }
 

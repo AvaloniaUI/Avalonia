@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Threading;
+using System.Threading.Tasks;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Logging;
@@ -35,15 +36,11 @@ namespace Avalonia.Win32.Input
             fixed (IntPtr* p = layouts)
                 count = GetKeyboardLayoutList(count, p);
 
-            new Thread(() =>
+            Task.Run(() =>
             {
                 for (var i = 0; i < count; i++)
                     _ = Get(layouts[i]);
-            })
-            {
-                IsBackground = true,
-                Name = "Keyboard layout tables"
-            }.Start();
+            });
         }
 
         /// <summary>
@@ -101,21 +98,13 @@ namespace Avalonia.Win32.Input
         private string? GetLevel(int virtualKey, int state)
         {
             var text = GetEntry(virtualKey, state);
-            return text is not null && IsPrintable(text) ?
+            return KeyInterop.IsPrintable(text) ?
                 text :
                 GetEntry(virtualKey, state & ~(Control | Alt));
         }
 
         private string? GetEntry(int virtualKey, int state)
             => virtualKey is > 0 and < 256 ? _entries[virtualKey * StateCount + state] : null;
-
-        private static bool IsPrintable(string text)
-        {
-            foreach (var c in text)
-                if (c < 0x20 || c == 0x7F)
-                    return false;
-            return true;
-        }
 
         private unsafe void Build(IntPtr layout)
         {
@@ -128,13 +117,8 @@ namespace Avalonia.Win32.Input
             var keyStates = stackalloc byte[256];
             var buffer = stackalloc char[bufferSize];
 
-            if (changesState)
-            {
-                // A pending dead key would combine with the first entries
-                new Span<byte>(keyStates, 256).Clear();
-                ToUnicodeEx((uint)VK_SPACE, MapVirtualKeyEx((uint)VK_SPACE, 0, layout), keyStates, buffer,
-                    bufferSize, 0, layout);
-            }
+            // A pending dead key would combine with every entry
+            KeyInterop.EndPendingDeadKey(layout);
 
             for (var vk = 1; vk < 256; vk++)
             {

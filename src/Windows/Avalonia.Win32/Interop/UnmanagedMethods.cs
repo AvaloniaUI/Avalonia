@@ -1337,9 +1337,6 @@ namespace Avalonia.Win32.Interop
         [DllImport("user32.dll", ExactSpelling = true)]
         public static extern short GetKeyState(int nVirtKey);
 
-        [DllImport("user32.dll", ExactSpelling = true)]
-        public static extern short VkKeyScanExW(char ch, IntPtr dwhkl);
-
         [DllImport("user32.dll", EntryPoint = "MapVirtualKeyW")]
         public static extern uint MapVirtualKey(uint uCode, uint uMapType);
 

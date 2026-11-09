@@ -31,7 +31,7 @@ namespace Avalonia.Base.UnitTests.Input
             Assert.Equal("\x1a", received.KeyText);
             Assert.Equal("z", received.KeyTextIgnoringModifiers);
             Assert.Equal(KeyModifiers.Shift, received.ConsumedModifiers);
-            Assert.Same(platformKeyInfo, received.PlatformKeyInfo);
+            Assert.Equal(platformKeyInfo, received.PlatformKeyInfo);
         }
 
         [Fact]
@@ -52,9 +52,10 @@ namespace Avalonia.Base.UnitTests.Input
             var received = Send(RawKeyEventType.KeyDown, Key.A, RawInputModifiers.None, PhysicalKey.A, "a",
                 e => e.PlatformKeyInfo = new PlatformKeyInfo(KnownPlatformKeyInfoFormats.MacOS) { ScanCode = 0, VirtualKey = 0 });
 
-            Assert.Equal(0u, received.PlatformKeyInfo!.ScanCode);
-            Assert.Equal(0u, received.PlatformKeyInfo.VirtualKey);
-            Assert.Null(received.PlatformKeyInfo.Modifiers);
+            var info = Assert.NotNull(received.PlatformKeyInfo);
+            Assert.Equal(0u, info.ScanCode);
+            Assert.Equal(0u, info.VirtualKey);
+            Assert.Null(info.Modifiers);
         }
 
         private static KeyEventArgs Send(RawKeyEventType type, Key key, RawInputModifiers modifiers,

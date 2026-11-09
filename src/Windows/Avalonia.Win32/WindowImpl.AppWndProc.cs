@@ -50,7 +50,6 @@ namespace Avalonia.Win32
 
                             case WindowActivate.WA_INACTIVE:
                                 {
-                                    _deadCharPending = false;
                                     Deactivated?.Invoke();
                                     break;
                                 }
@@ -274,7 +273,7 @@ namespace Avalonia.Win32
                         }
 
                         // Ignore control chars and chars that were handled in WM_KEYDOWN.
-                        if (ToInt32(wParam) >= 32 && !_ignoreWmChar)
+                        if (!KeyInterop.IsControlChar((char)ToInt32(wParam)) && !_ignoreWmChar)
                         {
                             var text = new string((char)ToInt32(wParam), 1);
 
@@ -884,8 +883,14 @@ namespace Avalonia.Win32
                         break;
                     }
 
-                case WindowsMessage.WM_KILLFOCUS:
+                case WindowsMessage.WM_SETFOCUS:
+                    // A pending dead key can come from another window or process, where this window never saw its
+                    // WM_DEADCHAR. Ending it keeps _deadCharPending in sync with the kernel.
+                    KeyInterop.EndPendingDeadKey(GetKeyboardLayout(0));
                     _deadCharPending = false;
+                    break;
+
+                case WindowsMessage.WM_KILLFOCUS:
                     if (Imm32InputMethod.Current.IsComposing)
                     {
                         _killFocusRequested = true;
@@ -1555,7 +1560,7 @@ namespace Avalonia.Win32
             {
                 // No ToUnicodeEx call during WM_SYSKEYDOWN: it breaks the keyboard state.
                 keySymbol = KeyInterop.GetKeySymbolFromVirtualKey(virtualKey);
-                keyTextIgnoringModifiers = IsPrintable(keyText) ?
+                keyTextIgnoringModifiers = KeyInterop.IsPrintable(keyText) ?
                     keyText :
                     KeyInterop.GetTextIgnoringControlAndAlt(virtualKey);
             }
@@ -1569,7 +1574,7 @@ namespace Avalonia.Win32
                 // another ToUnicodeEx call. At most one call per key event keeps the dead-key state intact
                 // on Windows versions that ignore the "do not change keyboard state" flag.
                 keySymbol = deadChar ?? KeyInterop.FilterKeySymbol(keyText);
-                keyTextIgnoringModifiers = IsPrintable(keyText) ?
+                keyTextIgnoringModifiers = KeyInterop.IsPrintable(keyText) ?
                     keyText :
                     KeyInterop.GetTextIgnoringControlAndAlt(virtualKey);
             }
@@ -1579,13 +1584,16 @@ namespace Avalonia.Win32
             if (deadChar != null)
                 keyTextIgnoringModifiers = deadChar;
 
-            // A key that uses a pending dead key is masked, so that it can't match any gesture.
-            // Ctrl chords that produce control chars leave the dead key pending.
-            if (IsPrintable(keyText))
+            // A key that produces text uses a pending dead key. If that text is printable, the key is masked, so that
+            // it can't match any gesture. Keys like Enter produce the dead char and a control char, and stay unmasked.
+            // Ctrl chords that produce only control chars leave the dead key pending.
+            if (keyText != null)
             {
-                if (_deadCharPending && !isSystemKey)
+                var isPrintable = KeyInterop.IsPrintable(keyText);
+                if (_deadCharPending && isPrintable && !isSystemKey)
                     key = Key.DeadCharProcessed;
-                _deadCharPending = false;
+                if (isPrintable || !isControlOrAlt)
+                    _deadCharPending = false;
             }
 
             return new RawKeyEventArgs(
@@ -1654,24 +1662,12 @@ namespace Avalonia.Win32
             var filtered = new System.Text.StringBuilder(text.Length);
             foreach (var c in text)
             {
-                if (c >= 32 && c != 0x7F)
+                if (!KeyInterop.IsControlChar(c))
                     filtered.Append(c);
             }
 
             if (filtered.Length > 0)
                 Input(new RawTextInputEventArgs(WindowsKeyboardDevice.Instance, timestamp, Owner, filtered.ToString()));
-        }
-
-        private static bool IsPrintable([NotNullWhen(true)] string? text)
-        {
-            if (string.IsNullOrEmpty(text))
-                return false;
-            foreach (var c in text)
-            {
-                if (c < 32 || c == 0x7F)
-                    return false;
-            }
-            return true;
         }
 
         private RawKeyEventArgs? TryCreateRawKeyEventArgs(RawKeyEventType eventType, ulong timestamp, IntPtr wParam, IntPtr lParam, bool useKeySymbol)
