@@ -507,6 +507,15 @@ namespace Avalonia.Media.Fonts
                 return false;
             }
 
+            // A simulated variant is a second view of the source's own typeface, so it keeps the
+            // source's simulations: a Bold Italic made from a simulated Bold stays bold.
+            var simulator = glyphTypeface.PlatformTypeface as IPlatformTypefaceSimulator;
+
+            if (simulator is not null)
+            {
+                fontSimulations |= glyphTypeface.PlatformTypeface.FontSimulations;
+            }
+
             // A synthetic for this key may already be cached under the source family, reached
             // through another of its names or by another thread. Building a second one copies the
             // whole font file through TryGetStream, then loses the slot below to the instance
@@ -521,6 +530,21 @@ namespace Avalonia.Media.Fonts
                 return true;
             }
 
+            if (simulator is not null &&
+                simulator.TryCreateSimulatedTypeface(fontSimulations, style, weight, stretch, out var simulatedTypeface))
+            {
+                syntheticGlyphTypeface = GlyphTypeface.TryCreate(simulatedTypeface, fontSimulations);
+
+                if (syntheticGlyphTypeface is null)
+                    return false;
+
+                AddSyntheticGlyphTypeface(glyphTypeface, key, syntheticGlyphTypeface);
+
+                return true;
+            }
+
+            // Without a variant from the platform typeface, the synthetic face is built from a copy
+            // of the whole font file.
             if (glyphTypeface.PlatformTypeface.TryGetStream(out var stream))
             {
                 using (stream)
@@ -531,16 +555,7 @@ namespace Avalonia.Media.Fonts
                         if (syntheticGlyphTypeface is null)
                             return false;
 
-                        //Add the TypographicFamilyName to the cache
-                        if (!string.IsNullOrEmpty(glyphTypeface.TypographicFamilyName))
-                        {
-                            TryAddGlyphTypeface(glyphTypeface.TypographicFamilyName, key, syntheticGlyphTypeface);
-                        }
-
-                        foreach (var kvp in glyphTypeface.FamilyNames)
-                        {
-                            TryAddGlyphTypeface(kvp.Value, key, syntheticGlyphTypeface);
-                        }
+                        AddSyntheticGlyphTypeface(glyphTypeface, key, syntheticGlyphTypeface);
 
                         return true;
                     }
@@ -550,6 +565,20 @@ namespace Avalonia.Media.Fonts
             }
 
             return false;
+        }
+
+        private void AddSyntheticGlyphTypeface(GlyphTypeface source, FontCollectionKey key, GlyphTypeface synthetic)
+        {
+            //Add the TypographicFamilyName to the cache
+            if (!string.IsNullOrEmpty(source.TypographicFamilyName))
+            {
+                TryAddGlyphTypeface(source.TypographicFamilyName, key, synthetic);
+            }
+
+            foreach (var kvp in source.FamilyNames)
+            {
+                TryAddGlyphTypeface(kvp.Value, key, synthetic);
+            }
         }
 
         public IEnumerator<FontFamily> GetEnumerator() => ((IEnumerable<FontFamily>)_fontFamilies).GetEnumerator();

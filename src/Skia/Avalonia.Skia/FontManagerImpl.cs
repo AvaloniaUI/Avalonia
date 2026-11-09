@@ -122,19 +122,93 @@ namespace Avalonia.Skia
         internal static SkiaTypeface CreatePlatformTypeface(SKTypeface skTypeface, FontStyle style, FontWeight weight,
             FontStretch stretch)
         {
+            return CreatePlatformTypeface(skTypeface, skTypeface.FontStyle.Slant.ToAvalonia(),
+                (FontWeight)skTypeface.FontWeight, (FontStretch)skTypeface.FontWidth, GetPlatformSimulations(skTypeface),
+                style, weight, stretch);
+        }
+
+        /// <param name="skTypeface">The typeface the platform matched.</param>
+        /// <param name="faceStyle">The style the matched typeface reports.</param>
+        /// <param name="faceWeight">The weight the matched typeface reports.</param>
+        /// <param name="faceStretch">The stretch the matched typeface reports.</param>
+        /// <param name="platformSimulations">The simulations the platform applied inside the matched typeface.</param>
+        /// <param name="style">The requested style.</param>
+        /// <param name="weight">The requested weight.</param>
+        /// <param name="stretch">The requested stretch.</param>
+        internal static SkiaTypeface CreatePlatformTypeface(SKTypeface skTypeface, FontStyle faceStyle,
+            FontWeight faceWeight, FontStretch faceStretch, FontSimulations platformSimulations, FontStyle style,
+            FontWeight weight, FontStretch stretch)
+        {
             var fontSimulations = FontSimulations.None;
 
-            if ((int)weight >= 600 && !skTypeface.IsBold)
+            // A face the platform already emboldened is not emboldened a second time, while a face
+            // designed lighter than the request is, a real Bold face for ExtraBold included.
+            if (weight >= FontWeight.SemiBold && faceWeight < weight && (platformSimulations & FontSimulations.Bold) == 0)
             {
                 fontSimulations |= FontSimulations.Bold;
             }
 
-            if (style != FontStyle.Normal && !skTypeface.IsItalic)
+            // Any slanted face, italic or oblique, satisfies a slanted request.
+            if (style != FontStyle.Normal && faceStyle == FontStyle.Normal)
             {
                 fontSimulations |= FontSimulations.Oblique;
             }
 
-            return new SkiaTypeface(skTypeface, fontSimulations, style, weight, stretch);
+            var allSimulations = fontSimulations | platformSimulations;
+
+            // A simulated face stands for the requested one, so it reports the requested values and
+            // a font collection recognizes it as the face it asked for.
+            var reportedWeight = (allSimulations & FontSimulations.Bold) != 0 ? weight : faceWeight;
+            var reportedStyle = (allSimulations & FontSimulations.Oblique) != 0 ||
+                                style != FontStyle.Normal && faceStyle != FontStyle.Normal ?
+                style :
+                faceStyle;
+            var reportedStretch = allSimulations != FontSimulations.None ? stretch : faceStretch;
+
+            return new SkiaTypeface(skTypeface, fontSimulations, platformSimulations, reportedStyle, reportedWeight,
+                reportedStretch);
+        }
+
+        /// <summary>
+        /// Gets the simulations a platform applied inside a typeface it matched, such as a DirectWrite
+        /// face that reports Bold or an oblique slant for a font file designed regular and upright.
+        /// </summary>
+        private static FontSimulations GetPlatformSimulations(SKTypeface skTypeface)
+        {
+            const uint os2Tag = 0x4F532F32;
+            const ushort fsSelectionItalic = 1 << 0;
+            const ushort fsSelectionBold = 1 << 5;
+            const ushort fsSelectionOblique = 1 << 9;
+
+            if (!skTypeface.TryGetTableData(os2Tag, out var os2) || os2 is null || os2.Length < 64)
+            {
+                return FontSimulations.None;
+            }
+
+            var weightClass = (os2[4] << 8) | os2[5];
+            var fsSelection = (ushort)((os2[62] << 8) | os2[63]);
+
+            // Some fonts store the weight class on the legacy 1-9 scale.
+            if (weightClass is > 0 and < 10)
+            {
+                weightClass *= 100;
+            }
+
+            var platformSimulations = FontSimulations.None;
+
+            if (skTypeface.FontWeight >= (int)FontWeight.SemiBold && weightClass < (int)FontWeight.SemiBold &&
+                (fsSelection & fsSelectionBold) == 0)
+            {
+                platformSimulations |= FontSimulations.Bold;
+            }
+
+            if (skTypeface.FontStyle.Slant != SKFontStyleSlant.Upright &&
+                (fsSelection & (fsSelectionItalic | fsSelectionOblique)) == 0)
+            {
+                platformSimulations |= FontSimulations.Oblique;
+            }
+
+            return platformSimulations;
         }
 
         public bool TryCreateGlyphTypeface(Stream stream, FontSimulations fontSimulations, [NotNullWhen(true)] out IPlatformTypeface? platformTypeface)

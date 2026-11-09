@@ -20,9 +20,9 @@ namespace Avalonia.Media
         /// Gets the designed weight of the font represented by the <see cref="IPlatformTypeface"/> object.
         /// </summary>
         /// <remarks>
-        /// A typeface the platform font manager matched to a request it can only satisfy with
-        /// <see cref="FontSimulations"/> reports the requested weight, style and stretch instead,
-        /// since it stands for the requested face.
+        /// A typeface the platform font manager matched to a request it satisfies with
+        /// <see cref="FontSimulations"/> stands for the requested face, so it reports the requested
+        /// weight when it simulates bold and the requested style when it simulates a slant.
         /// </remarks>
         FontWeight Weight { get; }
 

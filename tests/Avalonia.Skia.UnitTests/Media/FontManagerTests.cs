@@ -328,7 +328,8 @@ namespace Avalonia.Skia.UnitTests.Media
                     Assert.True(FontManager.Current.TryGetGlyphTypeface(new Typeface("Noto Mono", FontStyle.Normal, FontWeight.Normal),
                        out var regularTypeface));
 
-                    Assert.NotEqual(((SkiaTypeface)regularTypeface.PlatformTypeface).SKTypeface, ((SkiaTypeface)italicBoldTypeface.PlatformTypeface).SKTypeface);
+                    // The synthetic face is a simulated view of the regular face, not a second copy of the font.
+                    Assert.Same(((SkiaTypeface)regularTypeface.PlatformTypeface).SKTypeface, ((SkiaTypeface)italicBoldTypeface.PlatformTypeface).SKTypeface);
                 }
             }
         }
@@ -537,7 +538,8 @@ namespace Avalonia.Skia.UnitTests.Media
                 {
                     Assert.True(FontManager.Current.TryMatchCharacter('こ', FontStyle.Italic, FontWeight.Normal, FontStretch.Normal, null, null, out var italicTypeface));
 
-                    Assert.Equal(FontSimulations.None, italicTypeface.GlyphTypeface.FontSimulations);
+                    // Yu Gothic UI has no italic face; DirectWrite answers with a simulated oblique.
+                    Assert.Equal(FontSimulations.Oblique, italicTypeface.GlyphTypeface.FontSimulations);
 
                     Assert.Equal("Yu Gothic UI", italicTypeface.GlyphTypeface.FamilyName);
 

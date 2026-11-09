@@ -7,32 +7,44 @@ using SkiaSharp;
 
 namespace Avalonia.Skia
 {
-    internal class SkiaTypeface : IPlatformTypeface
+    internal class SkiaTypeface : IPlatformTypeface, IPlatformTypefaceSimulator
     {
+        private readonly FontSimulations _platformSimulations;
+        private readonly bool _ownsTypeface;
+
         public SkiaTypeface(SKTypeface typeface, FontSimulations fontSimulations)
+            : this(typeface ?? throw new ArgumentNullException(nameof(typeface)), fontSimulations,
+                FontSimulations.None, typeface.FontStyle.Slant.ToAvalonia(), (FontWeight)typeface.FontWeight,
+                (FontStretch)typeface.FontWidth)
         {
-            SKTypeface = typeface ?? throw new ArgumentNullException(nameof(typeface));
-            FontSimulations = fontSimulations;
-            Weight = (FontWeight)typeface.FontWeight;
-            Style = typeface.FontStyle.Slant.ToAvalonia();
-            Stretch = (FontStretch)typeface.FontWidth;
         }
 
         /// <summary>
-        /// Creates a typeface for a face the platform matched to a request. When the match needs
-        /// simulations it stands for the requested face, so it reports the requested style, weight
-        /// and stretch instead of the design values of the matched face. A font collection then
-        /// recognizes it as the face it asked for instead of synthesizing that face again.
+        /// Creates a typeface that reports the given style, weight and stretch.
         /// </summary>
-        public SkiaTypeface(SKTypeface typeface, FontSimulations fontSimulations, FontStyle style, FontWeight weight,
-            FontStretch stretch) : this(typeface, fontSimulations)
+        /// <param name="typeface">The Skia typeface.</param>
+        /// <param name="fontSimulations">The simulations applied when the typeface is drawn.</param>
+        /// <param name="platformSimulations">
+        /// The simulations the platform already applied inside <paramref name="typeface"/>. They are
+        /// reported in <see cref="FontSimulations"/> but never applied a second time.
+        /// </param>
+        /// <param name="style">The reported style.</param>
+        /// <param name="weight">The reported weight.</param>
+        /// <param name="stretch">The reported stretch.</param>
+        /// <param name="ownsTypeface">
+        /// Whether disposing this instance disposes <paramref name="typeface"/>. A simulated variant
+        /// shares the typeface of its source and leaves it to the source.
+        /// </param>
+        public SkiaTypeface(SKTypeface typeface, FontSimulations fontSimulations, FontSimulations platformSimulations,
+            FontStyle style, FontWeight weight, FontStretch stretch, bool ownsTypeface = true)
         {
-            if (fontSimulations != FontSimulations.None)
-            {
-                Style = style;
-                Weight = weight;
-                Stretch = stretch;
-            }
+            SKTypeface = typeface ?? throw new ArgumentNullException(nameof(typeface));
+            FontSimulations = fontSimulations | platformSimulations;
+            _platformSimulations = platformSimulations;
+            _ownsTypeface = ownsTypeface;
+            Weight = weight;
+            Style = style;
+            Stretch = stretch;
         }
 
         public SKTypeface SKTypeface { get; }
@@ -49,11 +61,23 @@ namespace Avalonia.Skia
 
         public SKFont CreateSKFont(float size)
         {
-            return new(SKTypeface, size, skewX: (FontSimulations & FontSimulations.Oblique) != 0 ? -0.3f : 0.0f)
+            var appliedSimulations = FontSimulations & ~_platformSimulations;
+
+            return new(SKTypeface, size, skewX: (appliedSimulations & FontSimulations.Oblique) != 0 ? -0.3f : 0.0f)
             {
                 LinearMetrics = true,
-                Embolden = (FontSimulations & FontSimulations.Bold) != 0
+                Embolden = (appliedSimulations & FontSimulations.Bold) != 0
             };
+        }
+
+        public bool TryCreateSimulatedTypeface(FontSimulations fontSimulations, FontStyle style, FontWeight weight,
+            FontStretch stretch, [NotNullWhen(true)] out IPlatformTypeface? typeface)
+        {
+            // The platform's own simulations are part of the Skia typeface and stay in every variant.
+            typeface = new SkiaTypeface(SKTypeface, fontSimulations & ~_platformSimulations, _platformSimulations,
+                style, weight, stretch, ownsTypeface: false);
+
+            return true;
         }
 
         public bool TryGetTable(OpenTypeTag tag, out ReadOnlyMemory<byte> table)
@@ -94,7 +118,10 @@ namespace Avalonia.Skia
 
         public void Dispose()
         {
-            SKTypeface.Dispose();
+            if (_ownsTypeface)
+            {
+                SKTypeface.Dispose();
+            }
         }
     }
 }

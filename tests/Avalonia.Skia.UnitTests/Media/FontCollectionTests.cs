@@ -21,19 +21,23 @@ namespace Avalonia.Skia.UnitTests.Media
           "resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests";
 
         [Win32Fact("Relies on some installed font family")]
-        public void Should_Cache_Nearest_Match()
+        public void Should_Cache_A_Heavier_Weight_Simulated_On_The_Heaviest_Face()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
             {
                 var fontCollection = new TestSystemFontCollection(FontManager.Current.PlatformImpl);
 
+                // Arial's heaviest face is Black, so ExtraBlack is Black with a bold simulation.
                 Assert.True(fontCollection.TryGetGlyphTypeface("Arial", FontStyle.Normal, FontWeight.ExtraBlack, FontStretch.Normal, out var glyphTypeface));
+
+                Assert.Equal(FontSimulations.Bold, glyphTypeface.FontSimulations);
+                Assert.Equal(FontWeight.ExtraBlack, glyphTypeface.Weight);
 
                 Assert.True(fontCollection.GlyphTypefaceCache.TryGetValue("Arial", out var glyphTypefaces));
 
-                Assert.Equal(2, glyphTypefaces.Count);
+                Assert.Single(glyphTypefaces);
 
-                Assert.True(glyphTypefaces.ContainsKey(new FontCollectionKey(FontStyle.Normal, FontWeight.Black, FontStretch.Normal)));
+                Assert.True(glyphTypefaces.ContainsKey(new FontCollectionKey(FontStyle.Normal, FontWeight.ExtraBlack, FontStretch.Normal)));
 
                 fontCollection.TryGetGlyphTypeface("Arial", FontStyle.Normal, FontWeight.ExtraBlack, FontStretch.Normal, out var otherGlyphTypeface);
 
@@ -744,6 +748,7 @@ namespace Avalonia.Skia.UnitTests.Media
                 // values of the font file when the platform simulated the face.
                 var faceWeight = (FontWeight)skTypeface.FontWeight;
                 var faceStyle = skTypeface.FontStyle.Slant.ToAvalonia();
+                var platformSimulations = FontSimulations.None;
 
                 switch (_matching)
                 {
@@ -751,11 +756,13 @@ namespace Avalonia.Skia.UnitTests.Media
                         if (weight >= FontWeight.SemiBold && faceWeight < FontWeight.SemiBold)
                         {
                             faceWeight = FontWeight.Bold;
+                            platformSimulations |= FontSimulations.Bold;
                         }
 
                         if (style != FontStyle.Normal && faceStyle == FontStyle.Normal)
                         {
                             faceStyle = FontStyle.Oblique;
+                            platformSimulations |= FontSimulations.Oblique;
                         }
 
                         break;
@@ -764,16 +771,8 @@ namespace Avalonia.Skia.UnitTests.Media
                         break;
                 }
 
-                if (faceWeight != (FontWeight)skTypeface.FontWeight || faceStyle != skTypeface.FontStyle.Slant.ToAvalonia())
-                {
-                    // FontManagerImpl sees a face that is already bold or slanted and keeps it as it is.
-                    platformTypeface = new ReportedPlatformTypeface(new SkiaTypeface(skTypeface, FontSimulations.None),
-                        faceStyle, faceWeight);
-
-                    return true;
-                }
-
-                platformTypeface = Wrap(FontManagerImpl.CreatePlatformTypeface(skTypeface, style, weight, stretch));
+                platformTypeface = Wrap(FontManagerImpl.CreatePlatformTypeface(skTypeface, faceStyle, faceWeight,
+                    (FontStretch)skTypeface.FontWidth, platformSimulations, style, weight, stretch));
 
                 return true;
             }
