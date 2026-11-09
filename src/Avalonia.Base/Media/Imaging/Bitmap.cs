@@ -297,8 +297,18 @@ namespace Avalonia.Media.Imaging
         /// </summary>
         /// <param name="buffer">The target buffer.</param>
         /// <exception cref="NotSupportedException"></exception>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// The buffer is smaller than the bitmap, or its rows are too short for its pixel format.
+        /// </exception>
         public void CopyPixels(ILockedFramebuffer buffer)
         {
+            var size = PixelSize;
+            if (buffer.Size.Width < size.Width || buffer.Size.Height < size.Height)
+                throw new ArgumentOutOfRangeException(nameof(buffer), "The buffer is smaller than the bitmap.");
+
+            if (buffer.RowBytes < ((long)size.Width * buffer.Format.BitsPerPixel + 7) / 8)
+                throw new ArgumentOutOfRangeException(nameof(buffer), "The buffer row size is too small.");
+
             if (PlatformImpl.Item is not IReadableBitmapImpl readable || readable.Format == null || readable.AlphaFormat == null)
             {
                 // Since we can't read pixels from the bitmap, we need to render it to a compatible bitmap and read pixels from it.
@@ -330,7 +340,7 @@ namespace Avalonia.Media.Imaging
             {
                 using (var fb = readable.Lock())
                 {
-                    CopyPixelsCore(new PixelRect(fb.Size), buffer.Address, buffer.RowBytes * buffer.Size.Height, fb.RowBytes, fb);
+                    CopyPixelsCore(new PixelRect(fb.Size), buffer.Address, buffer.RowBytes * buffer.Size.Height, buffer.RowBytes, fb);
                 }
             }
         }
