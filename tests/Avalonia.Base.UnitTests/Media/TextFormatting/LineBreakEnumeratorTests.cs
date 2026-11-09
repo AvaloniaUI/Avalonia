@@ -91,14 +91,39 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
         public void Following_Codepoint_Decides_The_Break_At_The_End(string text, string following, int[] expected)
         {
             var lineBreaker = new LineBreakEnumerator(text, Codepoint.ReadAt(following, 0, out _), int.MaxValue);
-            var actual = new List<int>();
+
+            Assert.Equal(expected, GetWrapPositions(ref lineBreaker));
+        }
+
+        [Theory]
+        [InlineData("a—b", 2)]
+        [InlineData("a——b", 2)]
+        [InlineData("a— —b", 3)]
+        [InlineData("〉 ぁx", 2)]
+        [InlineData("漢字ひらがな", 2)]
+        [InlineData("foo  bar", 4)]
+        [InlineData("Hello World", 5)]
+        public void Text_With_Following_Codepoint_Breaks_Like_The_Whole_Text(string text, int length)
+        {
+            var whole = new LineBreakEnumerator(text);
+            var expected = GetWrapPositions(ref whole).Where(position => position <= length).ToArray();
+
+            var split = new LineBreakEnumerator(text.AsSpan(0, length), Codepoint.ReadAt(text, length, out _),
+                int.MaxValue);
+
+            Assert.Equal(expected, GetWrapPositions(ref split));
+        }
+
+        private static int[] GetWrapPositions(ref LineBreakEnumerator lineBreaker)
+        {
+            var positions = new List<int>();
 
             while (lineBreaker.MoveNext(out var lineBreak))
             {
-                actual.Add(lineBreak.PositionWrap);
+                positions.Add(lineBreak.PositionWrap);
             }
 
-            Assert.Equal(expected, actual);
+            return positions.ToArray();
         }
 
         [Fact]

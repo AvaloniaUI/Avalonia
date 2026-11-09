@@ -1214,6 +1214,35 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        [Theory]
+        [InlineData(new[] { "foo ", " bar" }, 3)]
+        [InlineData(new[] { "a—", "b" }, 2)]
+        public void Should_Wrap_Text_Split_Across_Text_Characters_Like_Unsplit_Text(string[] parts, int fittingLength)
+        {
+            using (Start())
+            {
+                var defaultRunProperties = new GenericTextRunProperties(Typeface.Default);
+                var paragraphProperties = new GenericTextParagraphProperties(defaultRunProperties, textWrapping: TextWrapping.Wrap);
+
+                var text = string.Concat(parts);
+                var unsplitSource = new SingleBufferTextSource(text, defaultRunProperties);
+                var splitSource = new ListTextSource(parts.Select(part => new TextCharacters(part, defaultRunProperties)));
+
+                var unwrapped = TextFormatter.Current.FormatLine(unsplitSource, 0, double.PositiveInfinity, paragraphProperties);
+
+                Assert.NotNull(unwrapped);
+
+                var paragraphWidth = unwrapped.GetDistanceFromCharacterHit(new CharacterHit(fittingLength)) + 1;
+
+                var expected = TextFormatter.Current.FormatLine(unsplitSource, 0, paragraphWidth, paragraphProperties);
+                var actual = TextFormatter.Current.FormatLine(splitSource, 0, paragraphWidth, paragraphProperties);
+
+                Assert.NotNull(expected);
+                Assert.NotNull(actual);
+                Assert.Equal(expected.Length, actual.Length);
+            }
+        }
+
         [Fact]
         public void Should_MatchCharacter_For_Spacing_CombiningMark()
         {

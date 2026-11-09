@@ -25,11 +25,8 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// The text index from which no further break opportunity is searched for. Whitespace and the
         /// break that ends it are still resolved, as whitespace hangs on the line however long it is.
         /// </param>
-        internal LineBreakEnumerator(ReadOnlySpan<char> text, int limit)
+        internal LineBreakEnumerator(ReadOnlySpan<char> text, int limit) : this(text, null, limit)
         {
-            _text = text;
-            _limit = limit;
-            _state = new LineBreakState();
         }
 
         /// <param name="text">The text to enumerate.</param>
@@ -42,7 +39,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// The text index from which no further break opportunity is searched for. Whitespace and the
         /// break that ends it are still resolved, as whitespace hangs on the line however long it is.
         /// </param>
-        internal LineBreakEnumerator(ReadOnlySpan<char> text, Codepoint following, int limit)
+        internal LineBreakEnumerator(ReadOnlySpan<char> text, Codepoint? following, int limit)
         {
             _text = text;
             _limit = limit;
@@ -643,7 +640,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 case LineBreakClass.ClosePunctuation:
                 case LineBreakClass.CloseParenthesis:
                     {
-                        var classAfterSpaces = LineBreakState.ClassAfterSpaces(text, state.Current);
+                        var classAfterSpaces = state.ClassAfterSpaces(text, state.Current);
 
                         switch (classAfterSpaces)
                         {
@@ -669,7 +666,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
             // B2 SP* × B2
             if (state.LastBeforeWhitespace.LineBreakClass == LineBreakClass.BreakBoth)
             {
-                if (LineBreakState.ClassAfterSpaces(text, state.Current) == LineBreakClass.BreakBoth)
+                if (state.ClassAfterSpaces(text, state.Current) == LineBreakClass.BreakBoth)
                 {
                     return RuleResult.NoBreak;
                 }
@@ -1578,18 +1575,14 @@ namespace Avalonia.Media.TextFormatting.Unicode
             private readonly Codepoint _following;
             private readonly bool _hasFollowing;
 
-            public LineBreakState() : this(default, false)
+            public LineBreakState() : this(null)
             {
             }
 
-            public LineBreakState(Codepoint following) : this(following, true)
+            public LineBreakState(Codepoint? following)
             {
-            }
-
-            private LineBreakState(Codepoint following, bool hasFollowing)
-            {
-                _following = following;
-                _hasFollowing = hasFollowing;
+                _following = following.GetValueOrDefault();
+                _hasFollowing = following.HasValue;
                 _hasNext = false;
                 _next = default;
                 _nextClass = LineBreakClass.Unknown;
@@ -1790,23 +1783,29 @@ namespace Avalonia.Media.TextFormatting.Unicode
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            internal static LineBreakClass ClassAfterSpaces(ReadOnlySpan<char> text, BreakUnit current)
+            internal readonly LineBreakClass ClassAfterSpaces(ReadOnlySpan<char> text, BreakUnit current)
             {
                 var position = current.Start + current.Length;
 
                 if (position >= text.Length)
                 {
-                    return current.LineBreakClass;
+                    return _hasFollowing ? _following.LineBreakClass : current.LineBreakClass;
                 }
 
                 var enumerator = new CodepointEnumerator(text.Slice(position));
 
                 Codepoint cp;
 
-                while (enumerator.MoveNext(out cp) && cp.LineBreakClass == LineBreakClass.Space)
-                { }
+                while (enumerator.MoveNext(out cp))
+                {
+                    if (cp.LineBreakClass != LineBreakClass.Space)
+                    {
+                        return cp.LineBreakClass;
+                    }
+                }
 
-                return cp.LineBreakClass;
+                // The spaces reach the end of the text, so the class after them is the following code point's.
+                return _hasFollowing ? _following.LineBreakClass : cp.LineBreakClass;
             }
         }
 

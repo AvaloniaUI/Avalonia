@@ -885,17 +885,43 @@ namespace Avalonia.Media.TextFormatting
         /// The first code point of the next run, which decides whether the end of the run is an opportunity,
         /// or <c>null</c> if the end of the run is the end of text.
         /// </param>
-        /// <param name="measuredLength">The number of characters of the run that fit the line.</param>
+        /// <param name="measuredLength">
+        /// The number of characters of the run that fit the line. It is negative for a run past the fitting
+        /// length, which then has only what is left of the lookahead shared by all runs of the line.
+        /// </param>
         private static LineBreakEnumerator CreateLineBreakEnumerator(ReadOnlySpan<char> text, Codepoint? following,
             int measuredLength)
         {
-            var limit = (long)Math.Max(measuredLength, 0) + MaxBreakLookahead;
+            var limit = Math.Max((long)measuredLength + MaxBreakLookahead, 0);
             var textLimit = limit < text.Length ? (int)limit : int.MaxValue;
 
-            return following is { } codepoint
-                ? new LineBreakEnumerator(text, codepoint, textLimit)
-                : new LineBreakEnumerator(text, textLimit);
+            return new LineBreakEnumerator(text, following, textLimit);
         }
+
+        /// <summary>
+        /// Finds where the whitespace that ends the text starts, so whitespace continued from a previous run
+        /// is measured as hanging whitespace of the line.
+        /// </summary>
+        /// <returns>The index of the first trailing space, or the text length if the text does not end in a space.</returns>
+        private static int FindTrailingWhitespaceStart(ReadOnlySpan<char> text)
+        {
+            var position = text.Length;
+
+            while (position > 0)
+            {
+                var codepoint = Codepoint.ReadAt(text, position - 1, out var count);
+
+                if (codepoint.LineBreakClass != LineBreakClass.Space)
+                {
+                    break;
+                }
+
+                position -= count;
+            }
+
+            return position;
+        }
+
 
         /// <summary>
         /// Performs text wrapping returns a list of text lines.
@@ -959,6 +985,9 @@ namespace Avalonia.Media.TextFormatting
 
             var currentPosition = 0;
 
+            // Where the whitespace that ends the previous runs starts.
+            var whitespaceStart = 0;
+
             var wrappingMode = paragraphProperties.TextWrapping;
             var runCount = textRuns.Count;
 
@@ -992,8 +1021,12 @@ namespace Avalonia.Media.TextFormatting
 
                             while (lineBreaker.MoveNext(out var lineBreak))
                             {
-                                if (lineBreak.Required &&
-                                    currentLength + lineBreak.PositionMeasure <= measuredLength)
+                                // Whitespace from the start of the run continues the whitespace of the previous runs.
+                                var measurePosition = lineBreak.PositionMeasure == 0
+                                    ? whitespaceStart
+                                    : currentLength + lineBreak.PositionMeasure;
+
+                                if (lineBreak.Required && measurePosition <= measuredLength)
                                 {
                                     //Explicit break found
                                     breakFound = true;
@@ -1003,7 +1036,7 @@ namespace Avalonia.Media.TextFormatting
                                     break;
                                 }
 
-                                if (currentLength + lineBreak.PositionMeasure > measuredLength)
+                                if (measurePosition > measuredLength)
                                 {
                                     if (wrappingMode == TextWrapping.WrapWithOverflow)
                                     {
@@ -1095,6 +1128,21 @@ namespace Avalonia.Media.TextFormatting
 
                 if (!breakFound)
                 {
+                    if (currentRun is ShapedTextRun)
+                    {
+                        var trailingWhitespaceStart = FindTrailingWhitespaceStart(currentRun.Text.Span);
+
+                        // A run of only whitespace leaves the whitespace start of the previous runs in place.
+                        if (trailingWhitespaceStart > 0)
+                        {
+                            whitespaceStart = currentLength + trailingWhitespaceStart;
+                        }
+                    }
+                    else
+                    {
+                        whitespaceStart = currentLength + currentRunLength;
+                    }
+
                     currentLength += currentRunLength;
 
                     continue;
