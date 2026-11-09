@@ -18,6 +18,8 @@ namespace Avalonia.Media.TextFormatting
             if (properties.Width < shapedSymbol.GlyphRun.Bounds.Width)
             {
                 //Not enough space to fit in the symbol
+                shapedSymbol.Dispose();
+
                 return [];
             }
 
@@ -104,6 +106,8 @@ namespace Avalonia.Media.TextFormatting
 
                 collapsedLength += currentRun.Length;
             }
+
+            shapedSymbol.Dispose();
 
             return null;
         }

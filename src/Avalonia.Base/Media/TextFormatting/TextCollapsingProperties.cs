@@ -1,4 +1,6 @@
-﻿namespace Avalonia.Media.TextFormatting
+﻿using System.Collections.Generic;
+
+namespace Avalonia.Media.TextFormatting
 {
     /// <summary>
     /// Properties of text collapsing.
@@ -40,6 +42,15 @@
         /// <see cref="CreateCollapsedRuns"/> when an implementation only
         /// needs the standard "logical prefix + symbol" shape.
         /// </para>
+        /// <para>
+        /// The collapsed line owns every run in the returned array and disposes them with
+        /// itself, while the source line keeps owning its own runs. Never return a run taken
+        /// from <paramref name="textLine"/> directly, because both lines would then release it.
+        /// Custom implementations must build their result with <see cref="CreateCollapsedRuns"/>,
+        /// which gives the collapsed line its own references to the runs it shares with the
+        /// source line. The symbol from <see cref="TextFormatter.CreateSymbol"/> passes to the
+        /// collapsed line with the result; dispose it when the result does not contain it.
+        /// </para>
         /// </remarks>
         public abstract TextRun[]? Collapse(TextLine textLine);
 
@@ -48,8 +59,8 @@
         /// </summary>
         /// <param name="textLine">The text line.</param>
         /// <param name="collapsedLength">The collapsed length.</param>
-        /// <param name="shapedSymbol">The symbol.</param>
-        /// <returns>List of remaining runs.</returns>
+        /// <param name="shapedSymbol">The symbol. The returned runs take it over.</param>
+        /// <returns>List of remaining runs, owned by the collapsed line they are passed to.</returns>
         public static TextRun[] CreateCollapsedRuns(TextLine textLine, int collapsedLength, TextRun shapedSymbol)
         {
             if (collapsedLength <= 0)
@@ -79,10 +90,14 @@
 
                     textRunsLength += textRun.Length;
 
-                    textRuns.Add(textRun);
+                    textRuns.Add(AddRef(textRun));
                 }
 
+                // The split consumes the references taken above: the leading part moves into
+                // the result, the rest is not shown.
                 (preSplitRuns, postSplitRuns) = TextFormatterImpl.SplitTextRuns(textRuns, collapsedLength, objectPool);
+
+                Release(postSplitRuns);
 
                 var collapsedRuns = new TextRun[preSplitRuns!.Count + 1];
 
@@ -96,6 +111,51 @@
                 objectPool.TextRunLists.Return(ref textRuns);
                 objectPool.TextRunLists.Return(ref preSplitRuns);
                 objectPool.TextRunLists.Return(ref postSplitRuns);
+            }
+        }
+
+        /// <summary>
+        /// Rents a list of the runs of <paramref name="textLine"/> in logical order, holding
+        /// one reference to each shaped run. The caller passes each reference on to the
+        /// collapsed result or releases it.
+        /// </summary>
+        internal static FormattingObjectPool.RentedList<TextRun> RentLogicalRuns(TextLine textLine,
+            FormattingObjectPool objectPool)
+        {
+            var runs = objectPool.TextRunLists.Rent();
+            var enumerator = new LogicalTextRunEnumerator(textLine);
+
+            while (enumerator.MoveNext(out var run))
+            {
+                runs.Add(AddRef(run));
+            }
+
+            return runs;
+        }
+
+        /// <summary>
+        /// Takes an additional reference to <paramref name="run"/> when it is a shaped run.
+        /// </summary>
+        internal static TextRun AddRef(TextRun run) => run is ShapedTextRun shapedRun ? shapedRun.AddRef() : run;
+
+        /// <summary>
+        /// Releases the reference held to <paramref name="run"/> when it is a shaped run.
+        /// </summary>
+        internal static void Release(TextRun? run) => (run as ShapedTextRun)?.Dispose();
+
+        /// <summary>
+        /// Releases the references held to the shaped runs in <paramref name="runs"/>.
+        /// </summary>
+        internal static void Release(IReadOnlyList<TextRun>? runs)
+        {
+            if (runs is null)
+            {
+                return;
+            }
+
+            for (var i = 0; i < runs.Count; i++)
+            {
+                Release(runs[i]);
             }
         }
     }

@@ -54,6 +54,8 @@ namespace Avalonia.Media
             if (MathUtilities.LessThan(Width, shapedSymbol.Size.Width))
             {
                 // Nothing to collapse
+                shapedSymbol.Dispose();
+
                 return null;
             }
 
@@ -62,6 +64,8 @@ namespace Avalonia.Media
             if (MathUtilities.LessThanOrClose(totalWidth, Width))
             {
                 // Nothing to collapse
+                shapedSymbol.Dispose();
+
                 return null;
             }
 
@@ -170,6 +174,8 @@ namespace Avalonia.Media
                 if (segments.Count == 0)
                 {
                     // Nothing to collapse
+                    shapedSymbol.Dispose();
+
                     return null;
                 }
 
@@ -269,6 +275,9 @@ namespace Avalonia.Media
                                 var removeStart = segments[segStartIndex].Start;
                                 var removeLength = (segments[segEndIndex].Start + segments[segEndIndex].Length) - removeStart;
 
+                                // One reference per shaped run. The splits pass them on: first
+                                // and last move into the result, middle is released.
+                                FormattingObjectPool.RentedList<TextRun>? ownedRuns = RentLogicalRuns(textLine, objectPool);
                                 FormattingObjectPool.RentedList<TextRun>? first = null;
                                 FormattingObjectPool.RentedList<TextRun>? remainder = null;
                                 FormattingObjectPool.RentedList<TextRun>? middle = null;
@@ -276,15 +285,20 @@ namespace Avalonia.Media
 
                                 try
                                 {
-                                    (first, remainder) = TextFormatterImpl.SplitTextRuns(logicalRuns, removeStart, objectPool);
+                                    (first, remainder) = TextFormatterImpl.SplitTextRuns(ownedRuns, removeStart, objectPool);
 
                                     if (remainder == null)
                                     {
                                         // We reached the end
+                                        Release(first);
+                                        shapedSymbol.Dispose();
+
                                         return null;
                                     }
 
                                     (middle, last) = TextFormatterImpl.SplitTextRuns(remainder, removeLength, objectPool);
+
+                                    Release(middle);
 
                                     // Build resulting runs
                                     // first + shapedSymbol + last
@@ -314,6 +328,7 @@ namespace Avalonia.Media
                                 finally
                                 {
                                     // Return rented lists
+                                    objectPool.TextRunLists.Return(ref ownedRuns);
                                     objectPool.TextRunLists.Return(ref first);
                                     objectPool.TextRunLists.Return(ref remainder);
                                     objectPool.TextRunLists.Return(ref middle);
@@ -340,13 +355,18 @@ namespace Avalonia.Media
                         continue;
                     }
 
+                    // One reference per shaped run. The split passes them on: first is
+                    // released, second moves into the result apart from its trimmed head.
+                    FormattingObjectPool.RentedList<TextRun>? ownedRuns = RentLogicalRuns(textLine, objectPool);
                     FormattingObjectPool.RentedList<TextRun>? first = null;
                     FormattingObjectPool.RentedList<TextRun>? second = null;
 
                     try
                     {
                         // Split before current segment
-                        (first, second) = TextFormatterImpl.SplitTextRuns(logicalRuns, currentLength, objectPool);
+                        (first, second) = TextFormatterImpl.SplitTextRuns(ownedRuns, currentLength, objectPool);
+
+                        Release(first);
 
                         TextRun? trimmedRun = null;
                         var remainingRunCount = 0;
@@ -367,7 +387,13 @@ namespace Avalonia.Media
 
                                     if (splitAt > 0)
                                     {
-                                        (_, trimmedRun) = shapedRun.Split(splitAt);
+                                        ShapedTextRun? trimmedHead;
+
+                                        (trimmedHead, trimmedRun) = shapedRun.Split(splitAt);
+
+                                        // Only the trailing half survives next to the symbol.
+                                        trimmedHead?.Dispose();
+                                        shapedRun.Dispose();
                                     }
                                     else if (length > 0)
                                     {
@@ -375,7 +401,15 @@ namespace Avalonia.Media
                                         // use the run as-is. (Calling Split(0) throws.)
                                         trimmedRun = shapedRun;
                                     }
-                                    // else: length == 0 → nothing of this run survives; trimmedRun stays null.
+                                    else
+                                    {
+                                        // Nothing of this run survives.
+                                        shapedRun.Dispose();
+                                    }
+                                }
+                                else
+                                {
+                                    shapedRun.Dispose();
                                 }
                             }
                         }
@@ -411,12 +445,15 @@ namespace Avalonia.Media
                     finally
                     {
                         // Return rented lists
+                        objectPool.TextRunLists.Return(ref ownedRuns);
                         objectPool.TextRunLists.Return(ref first);
                         objectPool.TextRunLists.Return(ref second);
                     }
                 }
 
                 // No suitable segment found
+                shapedSymbol.Dispose();
+
                 return null;
             }
             finally

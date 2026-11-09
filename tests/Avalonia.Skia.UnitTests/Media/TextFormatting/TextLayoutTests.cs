@@ -636,6 +636,51 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         }
 
         [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Dispose_Releases_Runs_Of_Collapsed_Lines(bool truncateByMaxLines)
+        {
+            using (Start())
+            {
+                const string text = "AAAA BBBB CCCC DDDD EEEE FFFF";
+
+                // Alternating brushes keep every word in its own run, so the collapsed line
+                // reuses whole runs of the line it replaces.
+                var spans = new List<ValueSpan<TextRunProperties>>();
+
+                for (var i = 0; i < text.Length; i += 5)
+                {
+                    var brush = i % 10 == 0 ? Brushes.Red : Brushes.Blue;
+
+                    spans.Add(new ValueSpan<TextRunProperties>(i, 5,
+                        new GenericTextRunProperties(Typeface.Default, 12, foregroundBrush: brush)));
+                }
+
+                var width = new TextLayout(text, Typeface.Default, 12, Brushes.Black).Width;
+
+                var layout = truncateByMaxLines
+                    ? new TextLayout(text, Typeface.Default, 12, Brushes.Black,
+                        textWrapping: TextWrapping.Wrap, textTrimming: TextTrimming.CharacterEllipsis,
+                        maxWidth: width * 0.6, maxLines: 1, textStyleOverrides: spans)
+                    : new TextLayout(text, Typeface.Default, 12, Brushes.Black,
+                        textTrimming: TextTrimming.CharacterEllipsis,
+                        maxWidth: width * 0.6, textStyleOverrides: spans);
+
+                var collapsedLine = Assert.Single(layout.TextLines);
+
+                Assert.True(collapsedLine.HasCollapsed);
+
+                var shapedRuns = collapsedLine.TextRuns.OfType<ShapedTextRun>().ToList();
+
+                Assert.True(shapedRuns.Count > 2, "The collapsed line must reuse several runs.");
+
+                layout.Dispose();
+
+                Assert.All(shapedRuns, run => Assert.Equal(0, run.ShapedBuffer.Length));
+            }
+        }
+
+        [Theory]
         [MemberData(nameof(MaxLinesEllipsisData))]
         public void Should_Add_Ellipsis_When_MaxLines_Cuts_Short_Wrapped_Line(TextTrimming trimming)
         {
