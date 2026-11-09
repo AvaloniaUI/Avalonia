@@ -49,7 +49,7 @@ namespace Avalonia.Skia
                 return false;
             }
 
-            platformTypeface = new SkiaTypeface(skTypeface, FontSimulations.None);
+            platformTypeface = CreatePlatformTypeface(skTypeface, fontStyle, fontWeight, fontStretch);
 
             return true;
 
@@ -109,6 +109,19 @@ namespace Avalonia.Skia
                 return false;
             }
 
+            platformTypeface = CreatePlatformTypeface(skTypeface, style, weight, stretch);
+
+            return true;
+        }
+
+        /// <summary>
+        /// Wraps a typeface the platform matched to the requested style, weight and stretch. A bold
+        /// or slanted request the matched face cannot satisfy is simulated on that face when it is
+        /// drawn, without a copy of the font data.
+        /// </summary>
+        internal static SkiaTypeface CreatePlatformTypeface(SKTypeface skTypeface, FontStyle style, FontWeight weight,
+            FontStretch stretch)
+        {
             var fontSimulations = FontSimulations.None;
 
             if ((int)weight >= 600 && !skTypeface.IsBold)
@@ -116,14 +129,12 @@ namespace Avalonia.Skia
                 fontSimulations |= FontSimulations.Bold;
             }
 
-            if (style == FontStyle.Italic && !skTypeface.IsItalic)
+            if (style != FontStyle.Normal && !skTypeface.IsItalic)
             {
                 fontSimulations |= FontSimulations.Oblique;
             }
 
-            platformTypeface = new SkiaTypeface(skTypeface, fontSimulations);
-
-            return true;
+            return new SkiaTypeface(skTypeface, fontSimulations, style, weight, stretch);
         }
 
         public bool TryCreateGlyphTypeface(Stream stream, FontSimulations fontSimulations, [NotNullWhen(true)] out IPlatformTypeface? platformTypeface)

@@ -18,6 +18,23 @@ namespace Avalonia.Skia
             Stretch = (FontStretch)typeface.FontWidth;
         }
 
+        /// <summary>
+        /// Creates a typeface for a face the platform matched to a request. When the match needs
+        /// simulations it stands for the requested face, so it reports the requested style, weight
+        /// and stretch instead of the design values of the matched face. A font collection then
+        /// recognizes it as the face it asked for instead of synthesizing that face again.
+        /// </summary>
+        public SkiaTypeface(SKTypeface typeface, FontSimulations fontSimulations, FontStyle style, FontWeight weight,
+            FontStretch stretch) : this(typeface, fontSimulations)
+        {
+            if (fontSimulations != FontSimulations.None)
+            {
+                Style = style;
+                Weight = weight;
+                Stretch = stretch;
+            }
+        }
+
         public SKTypeface SKTypeface { get; }
 
         public FontSimulations FontSimulations { get; }

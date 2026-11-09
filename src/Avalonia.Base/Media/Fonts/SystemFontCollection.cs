@@ -59,7 +59,7 @@ namespace Avalonia.Media.Fonts
                 return true;
             }
 
-            glyphTypeface = GlyphTypeface.TryCreate(platformTypeface);
+            glyphTypeface = GlyphTypeface.TryCreate(platformTypeface, platformTypeface.FontSimulations);
             if (glyphTypeface is null)
             {
                 return false;
@@ -130,7 +130,7 @@ namespace Avalonia.Media.Fonts
                 return true;
             }
 
-            glyphTypeface = GlyphTypeface.TryCreate(platformTypeface);
+            glyphTypeface = GlyphTypeface.TryCreate(platformTypeface, platformTypeface.FontSimulations);
 
             if (glyphTypeface is null)
             {

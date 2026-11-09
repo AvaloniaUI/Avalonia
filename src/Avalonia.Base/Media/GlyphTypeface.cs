@@ -274,11 +274,19 @@ namespace Avalonia.Media
 
             var fontWeight = GetFontWeight(_hasOs2Table ? _os2Table : null, headTable);
 
-            Weight = (fontSimulations & FontSimulations.Bold) != 0 ? FontWeight.Bold : fontWeight;
+            // A platform typeface that simulates a missing face reports the weight and style it was
+            // requested with, which can be heavier than Bold or Oblique rather than Italic. One created
+            // from a font stream reports the design values, so a simulation reports at least Bold
+            // and a slanted style.
+            Weight = (fontSimulations & FontSimulations.Bold) != 0 ?
+                (typeface.Weight > FontWeight.Bold ? typeface.Weight : FontWeight.Bold) :
+                fontWeight;
 
             var style = GetFontStyle(_hasOs2Table ? _os2Table : null, headTable, postTable);
 
-            Style = (fontSimulations & FontSimulations.Oblique) != 0 ? FontStyle.Italic : style;
+            Style = (fontSimulations & FontSimulations.Oblique) != 0 ?
+                (typeface.Style != FontStyle.Normal ? typeface.Style : FontStyle.Italic) :
+                style;
 
             var stretch = GetFontStretch(_hasOs2Table ? _os2Table : null);
 

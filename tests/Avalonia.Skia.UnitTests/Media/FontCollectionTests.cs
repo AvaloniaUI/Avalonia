@@ -546,19 +546,7 @@ namespace Avalonia.Skia.UnitTests.Media
 
                 var skTypeface = LoadTypeface(_boldUri is not null && weight >= FontWeight.SemiBold ? _boldUri : _regularUri);
 
-                var fontSimulations = FontSimulations.None;
-
-                if ((int)weight >= 600 && !skTypeface.IsBold)
-                {
-                    fontSimulations |= FontSimulations.Bold;
-                }
-
-                if (style == FontStyle.Italic && !skTypeface.IsItalic)
-                {
-                    fontSimulations |= FontSimulations.Oblique;
-                }
-
-                platformTypeface = new SkiaTypeface(skTypeface, fontSimulations);
+                platformTypeface = FontManagerImpl.CreatePlatformTypeface(skTypeface, style, weight, stretch);
 
                 return true;
             }
@@ -578,7 +566,7 @@ namespace Avalonia.Skia.UnitTests.Media
                     return false;
                 }
 
-                platformTypeface = new SkiaTypeface(skTypeface, FontSimulations.None);
+                platformTypeface = FontManagerImpl.CreatePlatformTypeface(skTypeface, fontStyle, fontWeight, fontStretch);
 
                 return true;
             }
