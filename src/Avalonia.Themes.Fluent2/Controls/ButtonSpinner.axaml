@@ -38,13 +38,13 @@
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
       <StaticResource x:Key="SpinnerPopupBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
-      <StaticResource x:Key="SpinnerPopupBorderBrush" ResourceKey="SurfaceStrokeColorFlyout" />
-      <StaticResource x:Key="SpinnerPopupSpinButtonBackground" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="SpinnerPopupBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
+      <StaticResource x:Key="SpinnerPopupSpinButtonBackground" ResourceKey="SubtleFillColorTransparentBrush" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
       <StaticResource x:Key="SpinnerPopupBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
-      <StaticResource x:Key="SpinnerPopupBorderBrush" ResourceKey="SurfaceStrokeColorFlyout" />
-      <StaticResource x:Key="SpinnerPopupSpinButtonBackground" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="SpinnerPopupBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
+      <StaticResource x:Key="SpinnerPopupSpinButtonBackground" ResourceKey="SubtleFillColorTransparentBrush" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 

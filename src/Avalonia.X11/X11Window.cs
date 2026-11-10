@@ -42,6 +42,9 @@ namespace Avalonia.X11
         private readonly X11Info _x11;
         private XConfigureEvent? _configure;
         private PixelPoint? _configurePoint;
+        // Serial of the last XConfigureWindow request whose size we applied to _realSize ourselves (see Resize).
+        // The size in ConfigureNotify events generated before the server processed that request is stale.
+        private ulong _selfResizeRequestSerial;
         private bool _triggeredExpose;
         private IInputRoot? _inputRoot;
         private readonly MouseDevice _mouse;
@@ -708,8 +711,16 @@ namespace Avalonia.X11
                         var npos = _configurePoint.Value;
                         _configure = null;
                         _configurePoint = null;
-                        
-                        var nsize = new PixelSize(cev.width, cev.height);
+
+                        // An event the server generated before it processed our last self-applied resize
+                        // request still carries the size that request has superseded. Applying it would revert
+                        // _realSize and report a bogus resize, which Window feeds back into Width/Height. This has
+                        // to be checked here rather than when the event is read: the event may have been read and
+                        // queued before Resize() ran (e.g. a pre-map move whose notify was already in Xlib's queue).
+                        // Only the size is stale: the request didn't touch the position, and a later notify is not
+                        // guaranteed (a no-op resize produces none), so the position is still applied.
+                        var staleSize = (ulong)cev.serial.ToInt64() < _selfResizeRequestSerial;
+                        var nsize = staleSize ? _realSize : new PixelSize(cev.width, cev.height);
                         var changedSize = _realSize != nsize;
                         var changedPos = _position == null || npos != _position;
                         _realSize = nsize;
@@ -1380,6 +1391,7 @@ namespace Avalonia.X11
 
             var pixelSize = ToPixelSize(clientSize);
             UpdateSizeHints(pixelSize);
+            var resizeRequestSerial = (ulong)XNextRequest(_x11.Display).ToInt64();
             XConfigureResizeWindow(_x11.Display, _handle, pixelSize);
             if (_useRenderWindow && !_useCompositorDrivenRenderWindowResize)
                 XConfigureResizeWindow(_x11.Display, _renderHandle, pixelSize);
@@ -1388,6 +1400,7 @@ namespace Avalonia.X11
             if (force || !_wasMappedAtLeastOnce || (_overrideRedirect && needImmediatePopupResize))
             {
                 _realSize = pixelSize;
+                _selfResizeRequestSerial = resizeRequestSerial;
                 Resized?.Invoke(ClientSize, reason);
             }
         }
@@ -1570,8 +1583,8 @@ namespace Avalonia.X11
             var appId = Environment.GetEnvironmentVariable("RESOURCE_NAME") 
                         ?? Process.GetCurrentProcess().ProcessName;
             
-            var encodedAppId = Encoding.ASCII.GetBytes(appId);
-            var encodedWmClass = Encoding.ASCII.GetBytes(wmClass ?? appId);
+            var encodedAppId = Encoding.ASCII.GetBytes(appId + '\0');
+            var encodedWmClass = Encoding.ASCII.GetBytes((wmClass ?? appId) + '\0');
 
             var hint = XAllocClassHint();
             fixed(byte* pAppId = encodedAppId)

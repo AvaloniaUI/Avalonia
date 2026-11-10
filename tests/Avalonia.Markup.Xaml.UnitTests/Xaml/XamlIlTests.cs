@@ -154,6 +154,13 @@ namespace Avalonia.Markup.Xaml.UnitTests
         }
 
         [Fact]
+        public void XClass_With_DllImport_Should_Be_Compiled()
+        {
+            var precompiled = new XamlIlClassWithDllImport();
+            Assert.Equal(Brushes.Red, precompiled.Background);
+        }
+
+        [Fact]
         public void Attached_Properties_From_Static_Types_Should_Work_In_Style_Setters_Bug_2561()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))

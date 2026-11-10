@@ -480,7 +480,8 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
             if (positionRequest.Placement == PlacementMode.Pointer)
             {
                 // We need a better way for tracking the last pointer position
-                var position = topLevel.PointToClient(topLevel.LastPointerPosition ?? default);
+                var position = positionRequest.PointerPosition
+                    ?? topLevel.PointToClient(topLevel.LastPointerPosition ?? default);
 
                 positionerParameters.AnchorRectangle = new Rect(position, new Size(1, 1));
                 positionerParameters.Anchor = PopupAnchor.TopLeft;

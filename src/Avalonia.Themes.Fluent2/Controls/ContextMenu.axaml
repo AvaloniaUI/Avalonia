@@ -30,9 +30,6 @@
     </Border>
   </Design.PreviewWith>
 
-  <!--  Added missing resource  -->
-  <Thickness x:Key="MenuFlyoutScrollerMargin">0,2,0,2</Thickness>
-
   <ControlTheme x:Key="{x:Type ContextMenu}" TargetType="ContextMenu" BasedOn="{StaticResource DefaultContextMenuTheme}"/>
 
   <ControlTheme x:Key="DefaultContextMenuTheme" TargetType="ContextMenu">

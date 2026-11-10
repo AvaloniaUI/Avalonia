@@ -27,7 +27,7 @@ namespace Avalonia.Automation.Peers
             EnsureEnabled();
 
             if (TryGetSelectableDate(out var calendar, out var date))
-                calendar.SelectedDate = date;
+                calendar.SetCurrentValue(Calendar.SelectedDateProperty, date);
         }
 
         void ISelectionItemProvider.AddToSelection()
@@ -41,7 +41,7 @@ namespace Avalonia.Automation.Peers
             }
 
             if (calendar.SelectionMode == CalendarSelectionMode.SingleDate)
-                calendar.SelectedDate = date;
+                calendar.SetCurrentValue(Calendar.SelectedDateProperty, date);
             else
                 calendar.SelectedDates.Add(date);
         }

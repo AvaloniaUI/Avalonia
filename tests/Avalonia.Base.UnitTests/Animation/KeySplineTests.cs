@@ -5,10 +5,11 @@ using Avalonia.Controls.Shapes;
 using Avalonia.Media;
 using Avalonia.Styling;
 using Xunit;
+using Avalonia.UnitTests;
 
 namespace Avalonia.Base.UnitTests.Animation
 {
-    public class KeySplineTests
+    public class KeySplineTests : ScopedTestBase
     {
         [Theory]
         [InlineData("1,2 3,4")]
