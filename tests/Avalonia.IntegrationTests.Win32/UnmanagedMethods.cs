@@ -41,6 +41,9 @@ internal static partial class UnmanagedMethods
     [LibraryImport("user32.dll")]
     public static partial IntPtr GetKeyboardLayout(uint idThread);
 
+    [LibraryImport("user32.dll")]
+    public static partial int GetKeyboardLayoutList(int nBuff, IntPtr[]? lpList);
+
     public const uint KEYEVENTF_KEYUP = 0x2;
     public const uint KLF_ACTIVATE = 0x1;
     public const uint KLF_NOTELLSHELL = 0x80;

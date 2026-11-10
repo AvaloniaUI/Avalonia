@@ -4,6 +4,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.IntegrationTests.Win32.Infrastructure;
 using Avalonia.Media;
 using Xunit;
 using static Avalonia.IntegrationTests.Win32.UnmanagedMethods;
@@ -16,6 +17,7 @@ namespace Avalonia.IntegrationTests.Win32;
 /// </summary>
 public sealed class KeyboardInputTests : IDisposable
 {
+    private const string GermanLayout = "00000407";
     private const byte VK_RETURN = 0x0D, VK_MENU = 0x12, VK_E = 0x45, VK_NUMPAD0 = 0x60, VK_OEM_5 = 0xDC;
     private const byte ScanReturn = 0x1C, ScanMenu = 0x38, ScanE = 0x12, ScanOem5 = 0x29;
     private static readonly byte[] s_numpadScanCodes = [0x52, 0x4F, 0x50, 0x51, 0x4B, 0x4C, 0x4D, 0x47, 0x48, 0x49];
@@ -56,7 +58,7 @@ public sealed class KeyboardInputTests : IDisposable
         Assert.Equal("", first.Text.ToString());
     }
 
-    [Fact]
+    [KeyboardLayoutFact(GermanLayout)]
     public async Task Dead_Key_Combines_Within_Window()
     {
         UseGermanLayout();
@@ -71,7 +73,7 @@ public sealed class KeyboardInputTests : IDisposable
         Assert.Equal(Key.DeadCharProcessed, log.LastKeyDown?.Key);
     }
 
-    [Fact]
+    [KeyboardLayoutFact(GermanLayout)]
     public async Task Dead_Key_Pressed_Twice_Reports_Dead_Char_As_Alternate_Key_Text()
     {
         UseGermanLayout();
@@ -86,7 +88,7 @@ public sealed class KeyboardInputTests : IDisposable
         Assert.Equal("^", log.LastKeyDown?.AlternateKeyText);
     }
 
-    [Fact]
+    [KeyboardLayoutFact(GermanLayout)]
     public async Task Enter_Ends_Dead_Key()
     {
         UseGermanLayout();
@@ -101,7 +103,7 @@ public sealed class KeyboardInputTests : IDisposable
         Assert.Equal(Key.E, log.LastKeyDown?.Key);
     }
 
-    [Fact]
+    [KeyboardLayoutFact(GermanLayout)]
     public async Task Dead_Key_Does_Not_Cross_Focus_Change()
     {
         UseGermanLayout();
@@ -124,7 +126,7 @@ public sealed class KeyboardInputTests : IDisposable
     private void UseGermanLayout()
     {
         _previousLayout = GetKeyboardLayout(0);
-        Assert.NotEqual(IntPtr.Zero, LoadKeyboardLayout("00000407", KLF_ACTIVATE | KLF_NOTELLSHELL));
+        Assert.NotEqual(IntPtr.Zero, LoadKeyboardLayout(GermanLayout, KLF_ACTIVATE | KLF_NOTELLSHELL));
     }
 
     private async Task<KeyLog> CreateWindowAsync(int x)
