@@ -18,7 +18,7 @@ public class TimePickerAutomationPeer : ControlAutomationPeer, IValueProvider
     public void SetValue(string? value)
     {
         if (TimeSpan.TryParse(value, out var result))
-            Owner.SelectedTime = result;
+            Owner.SetCurrentValue(TimePicker.SelectedTimeProperty, result);
     }
 
     protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.Custom;

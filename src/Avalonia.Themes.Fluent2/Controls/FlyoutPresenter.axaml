@@ -13,11 +13,11 @@
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
       <StaticResource x:Key="FlyoutPresenterBackground" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
-      <StaticResource x:Key="FlyoutThemeBorderBrush" ResourceKey="SurfaceStrokeColorFlyout" />
+      <StaticResource x:Key="FlyoutThemeBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
       <StaticResource x:Key="FlyoutPresenterBackground" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
-      <StaticResource x:Key="FlyoutThemeBorderBrush" ResourceKey="SurfaceStrokeColorFlyout" />
+      <StaticResource x:Key="FlyoutThemeBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 

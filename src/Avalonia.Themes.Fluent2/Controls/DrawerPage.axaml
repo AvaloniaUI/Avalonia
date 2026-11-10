@@ -30,15 +30,15 @@
 
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
-      <StaticResource x:Key="DrawerPageContentBackground" ResourceKey="LayerFillColorDefault" />
-      <StaticResource x:Key="DrawerPageContentGridBorderBrush" ResourceKey="CardStrokeColorDefault" />
-      <StaticResource x:Key="DrawerPageExpandedPaneBackground" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="DrawerPageContentBackground" ResourceKey="LayerFillColorDefaultBrush" />
+      <StaticResource x:Key="DrawerPageContentGridBorderBrush" ResourceKey="CardStrokeColorDefaultBrush" />
+      <StaticResource x:Key="DrawerPageExpandedPaneBackground" ResourceKey="SubtleFillColorTransparentBrush" />
       <StaticResource x:Key="DrawerPageDefaultPaneBackground" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
-      <StaticResource x:Key="DrawerPageContentBackground" ResourceKey="LayerFillColorDefault" />
-      <StaticResource x:Key="DrawerPageContentGridBorderBrush" ResourceKey="CardStrokeColorDefault" />
-      <StaticResource x:Key="DrawerPageExpandedPaneBackground" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="DrawerPageContentBackground" ResourceKey="LayerFillColorDefaultBrush" />
+      <StaticResource x:Key="DrawerPageContentGridBorderBrush" ResourceKey="CardStrokeColorDefaultBrush" />
+      <StaticResource x:Key="DrawerPageExpandedPaneBackground" ResourceKey="SubtleFillColorTransparentBrush" />
       <StaticResource x:Key="DrawerPageDefaultPaneBackground" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>

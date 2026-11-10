@@ -4,18 +4,18 @@
                     x:ClassModifier="internal">
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
-      <StaticResource x:Key="NavigationBarBackground" ResourceKey="ControlFillColorTransparent" />
-      <StaticResource x:Key="NavigationBarBorderBrush" ResourceKey="ControlFillColorTransparent" />
-      <StaticResource x:Key="NavigationBarForeground" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="NavigationBarBackground" ResourceKey="ControlFillColorTransparentBrush" />
+      <StaticResource x:Key="NavigationBarBorderBrush" ResourceKey="ControlFillColorTransparentBrush" />
+      <StaticResource x:Key="NavigationBarForeground" ResourceKey="TextFillColorPrimaryBrush" />
       <LinearGradientBrush x:Key="NavigationBarShadowBackground" StartPoint="0%,0%" EndPoint="0%,100%">
         <GradientStop Color="#0C000000" Offset="0" />
         <GradientStop Color="#00000000" Offset="1" />
       </LinearGradientBrush>
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
-      <StaticResource x:Key="NavigationBarBackground" ResourceKey="ControlFillColorTransparent" />
-      <StaticResource x:Key="NavigationBarBorderBrush" ResourceKey="ControlFillColorTransparent" />
-      <StaticResource x:Key="NavigationBarForeground" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="NavigationBarBackground" ResourceKey="ControlFillColorTransparentBrush" />
+      <StaticResource x:Key="NavigationBarBorderBrush" ResourceKey="ControlFillColorTransparentBrush" />
+      <StaticResource x:Key="NavigationBarForeground" ResourceKey="TextFillColorPrimaryBrush" />
       <LinearGradientBrush x:Key="NavigationBarShadowBackground" StartPoint="0%,0%" EndPoint="0%,100%">
         <GradientStop Color="#0C000000" Offset="0" />
         <GradientStop Color="#00000000" Offset="1" />

@@ -4,10 +4,11 @@ using System.Linq;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
 using Xunit;
+using Avalonia.UnitTests;
 
 namespace Avalonia.Base.UnitTests.Interactivity
 {
-    public class InteractiveTests
+    public class InteractiveTests : ScopedTestBase
     {
         [Fact]
         public void Direct_Event_Should_Go_Straight_To_Source()

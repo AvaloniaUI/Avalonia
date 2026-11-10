@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Avalonia.Base.UnitTests
 {
-    public class AvaloniaObjectTests_Coercion
+    public class AvaloniaObjectTests_Coercion : ScopedTestBase
     {
         [Fact]
         public void Coerces_Set_Value()

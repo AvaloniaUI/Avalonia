@@ -66,19 +66,43 @@
               <Grid RowDefinitions="Auto,Auto">
 
                 <Grid.Resources>
+                  <ResourceDictionary>
+                    <ResourceDictionary.ThemeDictionaries>
+                      <ResourceDictionary x:Key="Default">
+                        <SolidColorBrush x:Key="ColorViewContentBackgroundBrush" Color="Transparent" />
+                        <SolidColorBrush x:Key="ColorViewContentBorderBrush" Color="Transparent" />
+                        <SolidColorBrush x:Key="ColorViewTabBackgroundBrush" Color="Transparent" />
+                        <SolidColorBrush x:Key="ColorViewTabBorderBrush" Color="Transparent" />
+                      </ResourceDictionary>
+                      <ResourceDictionary x:Key="Dark">
+                        <SolidColorBrush x:Key="ColorViewContentBackgroundBrush" Color="Transparent" />
+                        <SolidColorBrush x:Key="ColorViewContentBorderBrush" Color="Transparent" />
+                        <SolidColorBrush x:Key="ColorViewTabBackgroundBrush" Color="Transparent" />
+                        <SolidColorBrush x:Key="ColorViewTabBorderBrush" Color="Transparent" />
+                      </ResourceDictionary>
+                    </ResourceDictionary.ThemeDictionaries>
+                  </ResourceDictionary>
                   <!-- This radius must follow OverlayCornerRadius -->
                   <CornerRadius x:Key="ColorViewTabBackgroundCornerRadius">0,0,0,0</CornerRadius>
                 </Grid.Resources>
 
                 <!-- Backgrounds -->
-                <!-- TODO: Background="{DynamicResource ColorViewTabBackgroundBrush}" -->
+                <!--
+                  Note: The ContentBackgroundBorder changes the CornerRadius binding from ColorView.
+                  In ColorView just bind to the control's CornerRadius directly; however, here the control's CornerRadius
+                  needs to instead apply to the DropDownButton. The CornerRadius we must actually use is the same
+                  as the Flyout hosting the picker.
+
+                  This is a point of deviation from the base ColorView ControlTheme (where otherwise they are the same).
+                  If ever the ControlThemes are re-unified in the future this will have to be adjusted again.
+                -->
                 <Border x:Name="TabBackgroundBorder"
                         Grid.Row="0"
                         Grid.RowSpan="2"
                         Height="48"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Top"
-                        Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
+                        Background="{DynamicResource ColorViewTabBackgroundBrush}"
                         BorderBrush="{DynamicResource ColorViewTabBorderBrush}"
                         CornerRadius="{DynamicResource ColorViewTabBackgroundCornerRadius}" />
                 <Border x:Name="ContentBackgroundBorder"
@@ -87,7 +111,7 @@
                         Margin="0,48,0,0"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch"
-                        CornerRadius="{TemplateBinding CornerRadius, Converter={StaticResource BottomCornerRadiusFilterConverter}}"
+                        CornerRadius="{Binding $parent[FlyoutPresenter].CornerRadius, Converter={StaticResource BottomCornerRadiusFilterConverter}}"
                         Background="{DynamicResource ColorViewContentBackgroundBrush}"
                         BorderBrush="{DynamicResource ColorViewContentBorderBrush}"
                         BorderThickness="0,1,0,0" />
@@ -232,6 +256,7 @@
                         <!-- Content RGB/HSV names are hard-coded and considered universal -->
                         <!-- RadioButtons are styled to look like a 'SegmentedControl' or 'ButtonGroup' -->
                         <Grid ColumnDefinitions="1*,1*"
+                              Height="{Binding ElementName=PART_HexTextBox, Path=Bounds.Height}"
                               IsVisible="{TemplateBinding IsColorModelVisible}">
                           <RadioButton x:Name="RgbRadioButton"
                                        Theme="{StaticResource ColorViewColorModelRadioButtonTheme}"
@@ -239,7 +264,10 @@
                                        Content="RGB"
                                        CornerRadius="0,0,0,0"
                                        BorderThickness="1,1,0,1"
-                                       Height="{Binding ElementName=PART_HexTextBox, Path=Bounds.Height}"
+                                       HorizontalAlignment="Stretch"
+                                       HorizontalContentAlignment="Center"
+                                       VerticalAlignment="Stretch"
+                                       VerticalContentAlignment="Center"
                                        IsChecked="{TemplateBinding ColorModel, Converter={StaticResource EnumToBoolConverter}, ConverterParameter={x:Static controls:ColorModel.Rgba}, Mode=TwoWay}" />
                           <RadioButton x:Name="HsvRadioButton"
                                        Theme="{StaticResource ColorViewColorModelRadioButtonTheme}"
@@ -247,7 +275,10 @@
                                        Content="HSV"
                                        CornerRadius="0,0,0,0"
                                        BorderThickness="0,1,1,1"
-                                       Height="{Binding ElementName=PART_HexTextBox, Path=Bounds.Height}"
+                                       HorizontalAlignment="Stretch"
+                                       HorizontalContentAlignment="Center"
+                                       VerticalAlignment="Stretch"
+                                       VerticalContentAlignment="Center"
                                        IsChecked="{TemplateBinding ColorModel, Converter={StaticResource EnumToBoolConverter}, ConverterParameter={x:Static controls:ColorModel.Hsva}, Mode=TwoWay}" />
                         </Grid>
                         <Grid x:Name="HexInputGrid"
@@ -316,6 +347,7 @@
                                      CornerRadius="0,0,0,0"
                                      Margin="0,0,12,0"
                                      VerticalAlignment="Center"
+                                     VerticalContentAlignment="Center"
                                      NumberFormat="{StaticResource ColorViewComponentNumberFormat}"
                                      Minimum="{Binding Minimum, ElementName=Component1Slider}"
                                      Maximum="{Binding Maximum, ElementName=Component1Slider}"
@@ -367,6 +399,7 @@
                                      CornerRadius="0,0,0,0"
                                      Margin="0,0,12,0"
                                      VerticalAlignment="Center"
+                                     VerticalContentAlignment="Center"
                                      NumberFormat="{StaticResource ColorViewComponentNumberFormat}"
                                      Minimum="{Binding Minimum, ElementName=Component2Slider}"
                                      Maximum="{Binding Maximum, ElementName=Component2Slider}"
@@ -418,6 +451,7 @@
                                      CornerRadius="0,0,0,0"
                                      Margin="0,0,12,0"
                                      VerticalAlignment="Center"
+                                     VerticalContentAlignment="Center"
                                      NumberFormat="{StaticResource ColorViewComponentNumberFormat}"
                                      Minimum="{Binding Minimum, ElementName=Component3Slider}"
                                      Maximum="{Binding Maximum, ElementName=Component3Slider}"
@@ -472,6 +506,7 @@
                                      CornerRadius="0,0,0,0"
                                      Margin="0,0,12,0"
                                      VerticalAlignment="Center"
+                                     VerticalContentAlignment="Center"
                                      NumberFormat="{StaticResource ColorViewComponentNumberFormat}"
                                      Minimum="{Binding Minimum, ElementName=AlphaComponentSlider}"
                                      Maximum="{Binding Maximum, ElementName=AlphaComponentSlider}"
