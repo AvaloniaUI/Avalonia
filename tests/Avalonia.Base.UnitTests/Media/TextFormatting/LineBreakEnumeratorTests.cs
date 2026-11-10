@@ -90,28 +90,38 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
         [InlineData("a", "́", new int[0])]
         public void Following_Codepoint_Decides_The_Break_At_The_End(string text, string following, int[] expected)
         {
-            var lineBreaker = new LineBreakEnumerator(text, Codepoint.ReadAt(following, 0, out _), int.MaxValue);
+            var lineBreaker = new LineBreakEnumerator(text, null, Codepoint.ReadAt(following, 0, out _), int.MaxValue);
 
             Assert.Equal(expected, GetWrapPositions(ref lineBreaker));
         }
 
         [Theory]
-        [InlineData("a—b", 2)]
-        [InlineData("a——b", 2)]
-        [InlineData("a— —b", 3)]
-        [InlineData("〉 ぁx", 2)]
-        [InlineData("漢字ひらがな", 2)]
-        [InlineData("foo  bar", 4)]
-        [InlineData("Hello World", 5)]
-        public void Text_With_Following_Codepoint_Breaks_Like_The_Whole_Text(string text, int length)
+        [InlineData("a—b", 0, 2)]
+        [InlineData("a——b", 0, 2)]
+        [InlineData("a— —b", 0, 3)]
+        [InlineData("〉 ぁx", 0, 2)]
+        [InlineData("漢字ひらがな", 0, 2)]
+        [InlineData("foo  bar", 0, 4)]
+        [InlineData("Hello World", 0, 5)]
+        [InlineData("foo 1)$xyz bar", 5, 6)]
+        [InlineData("foo 1)$xyz bar", 5, 10)]
+        [InlineData("אב-x", 2, 3)]
+        [InlineData("ab-x", 2, 3)]
+        [InlineData("漢字ひらがな", 2, 4)]
+        public void Text_With_Neighboring_Codepoints_Breaks_Like_The_Whole_Text(string text, int start, int end)
         {
             var whole = new LineBreakEnumerator(text);
-            var expected = GetWrapPositions(ref whole).Where(position => position <= length).ToArray();
+            var expected = GetWrapPositions(ref whole)
+                .Where(position => position > start && position <= end)
+                .Select(position => position - start)
+                .ToArray();
 
-            var split = new LineBreakEnumerator(text.AsSpan(0, length), Codepoint.ReadAt(text, length, out _),
-                int.MaxValue);
+            Codepoint? preceding = start > 0 ? Codepoint.ReadAt(text, start - 1, out _) : null;
+            Codepoint? following = end < text.Length ? Codepoint.ReadAt(text, end, out _) : null;
 
-            Assert.Equal(expected, GetWrapPositions(ref split));
+            var part = new LineBreakEnumerator(text.AsSpan(start, end - start), preceding, following, int.MaxValue);
+
+            Assert.Equal(expected, GetWrapPositions(ref part));
         }
 
         private static int[] GetWrapPositions(ref LineBreakEnumerator lineBreaker)

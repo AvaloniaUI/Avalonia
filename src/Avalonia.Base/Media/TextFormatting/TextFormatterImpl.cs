@@ -881,6 +881,10 @@ namespace Avalonia.Media.TextFormatting
         /// Enumerating the whole run would scan all remaining text for every line of a long unbroken run.
         /// </summary>
         /// <param name="text">The text of the run.</param>
+        /// <param name="preceding">
+        /// The last code point of the previous run, which the rules see before the first character of the run,
+        /// or <c>null</c> if the run starts the text.
+        /// </param>
         /// <param name="following">
         /// The first code point of the next run, which decides whether the end of the run is an opportunity,
         /// or <c>null</c> if the end of the run is the end of text.
@@ -889,13 +893,13 @@ namespace Avalonia.Media.TextFormatting
         /// The number of characters of the run that fit the line. It is negative for a run past the fitting
         /// length, which then has only what is left of the lookahead shared by all runs of the line.
         /// </param>
-        private static LineBreakEnumerator CreateLineBreakEnumerator(ReadOnlySpan<char> text, Codepoint? following,
-            int measuredLength)
+        private static LineBreakEnumerator CreateLineBreakEnumerator(ReadOnlySpan<char> text, Codepoint? preceding,
+            Codepoint? following, int measuredLength)
         {
             var limit = Math.Max((long)measuredLength + MaxBreakLookahead, 0);
             var textLimit = limit < text.Length ? (int)limit : int.MaxValue;
 
-            return new LineBreakEnumerator(text, following, textLimit);
+            return new LineBreakEnumerator(text, preceding, following, textLimit);
         }
 
         /// <summary>
@@ -1003,10 +1007,19 @@ namespace Avalonia.Media.TextFormatting
                     case ShapedTextRun:
                         {
                             // Shaping splits runs at every script change, which in Japanese text happens
-                            // between nearly every Han and kana character. With the next run's first code
-                            // point as context, a break at the end of the run is a real opportunity rather
-                            // than the end of text.
+                            // between nearly every Han and kana character. With the neighboring runs' code
+                            // points as context, a break at the end of the run is a real opportunity rather
+                            // than the end of text, decided by the characters on both sides.
+                            Codepoint? preceding = null;
                             Codepoint? following = null;
+
+                            if (index > 0 && textRuns[index - 1] is ShapedTextRun previousRun &&
+                                !previousRun.Text.IsEmpty)
+                            {
+                                var previousText = previousRun.Text.Span;
+
+                                preceding = Codepoint.ReadAt(previousText, previousText.Length - 1, out _);
+                            }
 
                             if (index < runCount - 1 && textRuns[index + 1] is ShapedTextRun nextRun &&
                                 !nextRun.Text.IsEmpty)
@@ -1017,7 +1030,7 @@ namespace Avalonia.Media.TextFormatting
                             var endIsOpportunity = following.HasValue;
 
                             var lineBreaker = CreateLineBreakEnumerator(
-                                currentRun.Text.Span, following, measuredLength - currentLength);
+                                currentRun.Text.Span, preceding, following, measuredLength - currentLength);
 
                             while (lineBreaker.MoveNext(out var lineBreak))
                             {
