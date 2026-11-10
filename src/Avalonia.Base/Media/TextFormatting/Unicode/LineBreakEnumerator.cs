@@ -25,15 +25,15 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// The text index from which no further break opportunity is searched for. Whitespace and the
         /// break that ends it are still resolved, as whitespace hangs on the line however long it is.
         /// </param>
-        internal LineBreakEnumerator(ReadOnlySpan<char> text, int limit) : this(text, null, null, limit)
+        internal LineBreakEnumerator(ReadOnlySpan<char> text, int limit) : this(text, default, null, limit)
         {
         }
 
         /// <param name="text">The text to enumerate.</param>
         /// <param name="preceding">
-        /// The code point that <paramref name="text"/> continues, such as the last one of the previous text run.
-        /// The rules see it as the character before the first one of <paramref name="text"/>. The break before
-        /// the first character is not reported, as it belongs to the preceding text.
+        /// The <see cref="EndContext"/> of the enumerator of the text that <paramref name="text"/> continues, such
+        /// as the previous text run. The rules see its characters before the first one of <paramref name="text"/>.
+        /// The break before the first character is not reported, as it belongs to the preceding text.
         /// </param>
         /// <param name="following">
         /// The code point that continues <paramref name="text"/>, such as the first one of the next text run.
@@ -44,7 +44,8 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// The text index from which no further break opportunity is searched for. Whitespace and the
         /// break that ends it are still resolved, as whitespace hangs on the line however long it is.
         /// </param>
-        internal LineBreakEnumerator(ReadOnlySpan<char> text, Codepoint? preceding, Codepoint? following, int limit)
+        internal LineBreakEnumerator(ReadOnlySpan<char> text, LineBreakContext preceding, Codepoint? following,
+            int limit)
         {
             _text = text;
             _limit = limit;
@@ -52,47 +53,15 @@ namespace Avalonia.Media.TextFormatting.Unicode
         }
 
         /// <summary>
-        /// Gets the code point whose line break class the end of the text has, to pass as the preceding code point
-        /// of the text that continues it. Combining marks and ZWJ at the end take the class of their base (LB9).
-        /// </summary>
-        /// <param name="text">The text, which must not be empty.</param>
-        /// <returns>
-        /// The base of the trailing combining marks, or the last code point if there are none. A combining mark
-        /// is returned when it has no base, which the enumerator then treats as AL (LB10).
-        /// </returns>
-        internal static Codepoint GetPrecedingCodepoint(ReadOnlySpan<char> text)
-        {
-            var position = text.Length;
-            var last = Codepoint.ReadAt(text, position - 1, out var count);
-            var codepoint = last;
-
-            while (true)
-            {
-                var lineBreakClass = new BreakUnit(codepoint, 0, count).LineBreakClass;
-
-                if (lineBreakClass is not (LineBreakClass.CombiningMark or LineBreakClass.ZWJ))
-                {
-                    var isBase = !IsBreakClass(lineBreakClass) && lineBreakClass != LineBreakClass.Space &&
-                                 lineBreakClass != LineBreakClass.ZWSpace;
-
-                    return isBase ? codepoint : last;
-                }
-
-                position -= count;
-
-                if (position == 0)
-                {
-                    return last;
-                }
-
-                codepoint = Codepoint.ReadAt(text, position - 1, out count);
-            }
-        }
-
-        /// <summary>
         /// Gets whether enumeration stopped at the limit before reaching a break opportunity or the end of the text.
         /// </summary>
         internal bool LimitReached { get; private set; }
+
+        /// <summary>
+        /// Gets the state at the end of the text, once enumeration has reached the following code point.
+        /// Pass it to the enumerator of the text that continues this one.
+        /// </summary>
+        internal LineBreakContext EndContext { get; private set; }
 
         public bool MoveNext([NotNullWhen(true)] out LineBreak lineBreak)
         {
@@ -112,13 +81,15 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
             while (result == null)
             {
-                _state.Read(_text);
-
-                if (_state.Current.Start >= _text.Length)
+                if (_state.HasFollowing && _state.Position >= _text.Length)
                 {
                     // The following code point only serves as context.
+                    EndContext = _state.GetEndContext(_text);
+
                     return false;
                 }
+
+                _state.Read(_text);
 
                 if (_limit != int.MaxValue)
                 {
@@ -1521,7 +1492,41 @@ namespace Avalonia.Media.TextFormatting.Unicode
             MustBreak
         }
 
-        private readonly struct BreakUnit
+        /// <summary>
+        /// The line break state at the end of a text, which lets the enumerator of the text that continues it see
+        /// the characters before its first one: the last unit and the one before it, and the last units before the
+        /// trailing whitespace and spaces. Their positions are relative to the start of the continuing text.
+        /// </summary>
+        internal readonly struct LineBreakContext
+        {
+            internal LineBreakContext(BreakUnit last, BreakUnit beforeLast, BreakUnit lastBeforeWhitespace,
+                BreakUnit beforeLastBeforeWhitespace, BreakUnit lastBeforeSpace)
+            {
+                Last = last;
+                BeforeLast = beforeLast;
+                LastBeforeWhitespace = lastBeforeWhitespace;
+                BeforeLastBeforeWhitespace = beforeLastBeforeWhitespace;
+                LastBeforeSpace = lastBeforeSpace;
+                HasValue = true;
+            }
+
+            /// <summary>
+            /// Gets whether the context holds the end of a text, rather than being the start of text.
+            /// </summary>
+            internal bool HasValue { get; }
+
+            internal BreakUnit Last { get; }
+
+            internal BreakUnit BeforeLast { get; }
+
+            internal BreakUnit LastBeforeWhitespace { get; }
+
+            internal BreakUnit BeforeLastBeforeWhitespace { get; }
+
+            internal BreakUnit LastBeforeSpace { get; }
+        }
+
+        internal readonly struct BreakUnit
         {
             public BreakUnit()
             {
@@ -1535,6 +1540,23 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 Length = other.Length;
                 LineBreakClass = lineBreakClass;
                 EndOfText = other.EndOfText;
+            }
+
+            private BreakUnit(BreakUnit other, int start) : this(other, other.LineBreakClass)
+            {
+                Start = start;
+                StartOfText = other.StartOfText;
+                Ignored = other.Ignored;
+                Inherited = other.Inherited;
+            }
+
+            /// <summary>
+            /// Moves the unit by <paramref name="offset"/>, such as onto the positions of a continuing text.
+            /// The start-of-text sentinel keeps its place, as it marks where context ends rather than a character.
+            /// </summary>
+            public BreakUnit Offset(int offset)
+            {
+                return StartOfText && Length == 0 ? this : new BreakUnit(this, Start + offset);
             }
 
             public BreakUnit(Codepoint codepoint, int start, int length)
@@ -1615,17 +1637,17 @@ namespace Avalonia.Media.TextFormatting.Unicode
             private BreakUnit _previous;
             private LineBreakClass _previousClass;
 
-            private readonly BreakUnit _preceding;
-            private readonly bool _hasPreceding;
+            private readonly LineBreakContext _preceding;
             private readonly Codepoint _following;
             private readonly bool _hasFollowing;
 
-            public LineBreakState() : this(null, null)
+            public LineBreakState() : this(default, null)
             {
             }
 
-            public LineBreakState(Codepoint? preceding, Codepoint? following)
+            public LineBreakState(LineBreakContext preceding, Codepoint? following)
             {
+                _preceding = preceding;
                 _following = following.GetValueOrDefault();
                 _hasFollowing = following.HasValue;
                 _hasNext = false;
@@ -1638,37 +1660,34 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 LastBeforeSpace = s_sot;
                 LastBeforeWhitespace = s_sot;
 
-                _preceding = s_sot;
-                _hasPreceding = false;
-
-                if (preceding is { } codepoint)
+                if (preceding.HasValue)
                 {
-                    // The first Read moves this unit to Previous. It starts the text, so looking further back
-                    // finds the start of text rather than an index before 0.
-                    var count = codepoint.Value > 0xFFFF ? 2 : 1;
-                    var unit = new BreakUnit(codepoint, -count, count) { StartOfText = true };
-
-                    // A combining mark or ZWJ without a base is treated as AL (LB10).
-                    if (unit.LineBreakClass is LineBreakClass.CombiningMark or LineBreakClass.ZWJ)
-                    {
-                        unit = unit with { LineBreakClass = LineBreakClass.Alphabetic };
-                    }
-
-                    _preceding = unit;
-                    _hasPreceding = true;
-
-                    Current = unit;
-
-                    if (!codepoint.IsWhiteSpace)
-                    {
-                        LastBeforeWhitespace = unit;
-                    }
-
-                    if (unit.LineBreakClass != LineBreakClass.Space)
-                    {
-                        LastBeforeSpace = unit;
-                    }
+                    // The first Read moves the last unit of the preceding text to Previous, as if the
+                    // enumeration had continued from it.
+                    _previous = preceding.BeforeLast;
+                    _previousClass = preceding.BeforeLast.LineBreakClass;
+                    Current = preceding.Last;
+                    LastBeforeWhitespace = preceding.LastBeforeWhitespace;
+                    LastBeforeSpace = preceding.LastBeforeSpace;
                 }
+            }
+
+            public readonly bool HasFollowing => _hasFollowing;
+
+            /// <summary>
+            /// Captures the state after the last unit of the text, with positions relative to the continuing text.
+            /// </summary>
+            public LineBreakContext GetEndContext(ReadOnlySpan<char> text)
+            {
+                var offset = -text.Length;
+                var lastBeforeWhitespace = LastBeforeWhitespace;
+
+                return new LineBreakContext(
+                    Current.Offset(offset),
+                    Previous.Offset(offset),
+                    lastBeforeWhitespace.Offset(offset),
+                    Before(text, lastBeforeWhitespace).Offset(offset),
+                    LastBeforeSpace.Offset(offset));
             }
 
             public BreakUnit Current { get; set; }
@@ -1736,10 +1755,25 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
             public readonly BreakUnit Before(ReadOnlySpan<char> text, BreakUnit current)
             {
-                // The first unit of the text follows the preceding code point, if there is one.
-                if (_hasPreceding && current.Start == 0 && current.Length > 0)
+                // Before the first unit of the text come the units of the preceding text, as far as they were kept.
+                if (_preceding.HasValue && current.Start <= 0 && current.Length > 0)
                 {
-                    return _preceding;
+                    if (current.Start == 0)
+                    {
+                        return _preceding.Last;
+                    }
+
+                    if (current.Start == _preceding.Last.Start)
+                    {
+                        return _preceding.BeforeLast;
+                    }
+
+                    if (current.Start == _preceding.LastBeforeWhitespace.Start)
+                    {
+                        return _preceding.BeforeLastBeforeWhitespace;
+                    }
+
+                    return s_sot;
                 }
 
                 if (current.StartOfText)

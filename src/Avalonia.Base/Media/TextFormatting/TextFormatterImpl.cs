@@ -882,8 +882,8 @@ namespace Avalonia.Media.TextFormatting
         /// </summary>
         /// <param name="text">The text of the run.</param>
         /// <param name="preceding">
-        /// The last code point of the previous run, which the rules see before the first character of the run,
-        /// or <c>null</c> if the run starts the text.
+        /// The end context of the previous run's enumerator, which the rules see before the first character of
+        /// the run, or <c>default</c> if the run starts the text.
         /// </param>
         /// <param name="following">
         /// The first code point of the next run, which decides whether the end of the run is an opportunity,
@@ -893,8 +893,8 @@ namespace Avalonia.Media.TextFormatting
         /// The number of characters of the run that fit the line. It is negative for a run past the fitting
         /// length, which then has only what is left of the lookahead shared by all runs of the line.
         /// </param>
-        private static LineBreakEnumerator CreateLineBreakEnumerator(ReadOnlySpan<char> text, Codepoint? preceding,
-            Codepoint? following, int measuredLength)
+        private static LineBreakEnumerator CreateLineBreakEnumerator(ReadOnlySpan<char> text,
+            LineBreakEnumerator.LineBreakContext preceding, Codepoint? following, int measuredLength)
         {
             var limit = Math.Max((long)measuredLength + MaxBreakLookahead, 0);
             var textLimit = limit < text.Length ? (int)limit : int.MaxValue;
@@ -989,8 +989,9 @@ namespace Avalonia.Media.TextFormatting
 
             var currentPosition = 0;
 
-            // Where the whitespace that ends the previous runs starts.
+            // Where the whitespace that ends the previous runs starts, and the line break state they end with.
             var whitespaceStart = 0;
+            var precedingContext = default(LineBreakEnumerator.LineBreakContext);
 
             var wrappingMode = paragraphProperties.TextWrapping;
             var runCount = textRuns.Count;
@@ -1007,17 +1008,11 @@ namespace Avalonia.Media.TextFormatting
                     case ShapedTextRun:
                         {
                             // Shaping splits runs at every script change, which in Japanese text happens
-                            // between nearly every Han and kana character. With the neighboring runs' code
-                            // points as context, a break at the end of the run is a real opportunity rather
-                            // than the end of text, decided by the characters on both sides.
-                            Codepoint? preceding = null;
+                            // between nearly every Han and kana character. The enumeration continues from the
+                            // state the previous run ended with, and sees the next run's first code point, so a
+                            // break at the end of the run is a real opportunity rather than the end of text,
+                            // decided by the characters on both sides.
                             Codepoint? following = null;
-
-                            if (index > 0 && textRuns[index - 1] is ShapedTextRun previousRun &&
-                                !previousRun.Text.IsEmpty)
-                            {
-                                preceding = LineBreakEnumerator.GetPrecedingCodepoint(previousRun.Text.Span);
-                            }
 
                             if (index < runCount - 1 && textRuns[index + 1] is ShapedTextRun nextRun &&
                                 !nextRun.Text.IsEmpty)
@@ -1028,7 +1023,7 @@ namespace Avalonia.Media.TextFormatting
                             var endIsOpportunity = following.HasValue;
 
                             var lineBreaker = CreateLineBreakEnumerator(
-                                currentRun.Text.Span, preceding, following, measuredLength - currentLength);
+                                currentRun.Text.Span, precedingContext, following, measuredLength - currentLength);
 
                             while (lineBreaker.MoveNext(out var lineBreak))
                             {
@@ -1132,6 +1127,16 @@ namespace Avalonia.Media.TextFormatting
 
                                 breakFound = true;
                             }
+
+                            // Empty unless the enumeration reached the next run's first code point.
+                            precedingContext = lineBreaker.EndContext;
+
+                            break;
+                        }
+
+                    default:
+                        {
+                            precedingContext = default;
 
                             break;
                         }

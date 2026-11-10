@@ -90,41 +90,53 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
         [InlineData("a", "́", new int[0])]
         public void Following_Codepoint_Decides_The_Break_At_The_End(string text, string following, int[] expected)
         {
-            var lineBreaker = new LineBreakEnumerator(text, null, Codepoint.ReadAt(following, 0, out _), int.MaxValue);
+            var lineBreaker = new LineBreakEnumerator(text, default, Codepoint.ReadAt(following, 0, out _),
+                int.MaxValue);
 
             Assert.Equal(expected, GetWrapPositions(ref lineBreaker));
         }
 
         [Theory]
-        [InlineData("a—b", 0, 2)]
-        [InlineData("a——b", 0, 2)]
-        [InlineData("a— —b", 0, 3)]
-        [InlineData("〉 ぁx", 0, 2)]
-        [InlineData("漢字ひらがな", 0, 2)]
-        [InlineData("foo  bar", 0, 4)]
-        [InlineData("Hello World", 0, 5)]
-        [InlineData("foo 1)$xyz bar", 5, 6)]
-        [InlineData("foo 1)$xyz bar", 5, 10)]
-        [InlineData("אב-x", 2, 3)]
-        [InlineData("ab-x", 2, 3)]
-        [InlineData("c אְ-x yz", 4, 5)]
-        [InlineData("foo x“ abc", 5, 7)]
-        [InlineData("foo 1̃)$xyz bar", 6, 7)]
-        [InlineData("漢字ひらがな", 2, 4)]
-        public void Text_With_Neighboring_Codepoints_Breaks_Like_The_Whole_Text(string text, int start, int end)
+        [InlineData("a—b", new[] { 2 })]
+        [InlineData("a——b", new[] { 2 })]
+        [InlineData("a— —b", new[] { 3 })]
+        [InlineData("a— —b c", new[] { 3 })]
+        [InlineData("a—  —b c", new[] { 2, 3 })]
+        [InlineData("〉 ぁx", new[] { 2 })]
+        [InlineData("漢字ひらがな", new[] { 2, 4 })]
+        [InlineData("foo  bar", new[] { 4 })]
+        [InlineData("Hello World", new[] { 5 })]
+        [InlineData("foo 1)$xyz bar", new[] { 5, 6 })]
+        [InlineData("x 1.)$z y", new[] { 4 })]
+        [InlineData("x 1.)$z y", new[] { 3, 4 })]
+        [InlineData("אב-x", new[] { 2, 3 })]
+        [InlineData("ab-x", new[] { 2, 3 })]
+        [InlineData("c אְ-x yz", new[] { 4, 5 })]
+        [InlineData("foo x“ abc", new[] { 5, 7 })]
+        [InlineData("foo 1̃)$xyz bar", new[] { 6, 7 })]
+        public void Split_Text_Breaks_Like_The_Whole_Text(string text, int[] splits)
         {
             var whole = new LineBreakEnumerator(text);
-            var expected = GetWrapPositions(ref whole)
-                .Where(position => position > start && position <= end)
-                .Select(position => position - start)
-                .ToArray();
+            var expected = GetWrapPositions(ref whole);
 
-            Codepoint? preceding = start > 0 ? LineBreakEnumerator.GetPrecedingCodepoint(text.AsSpan(0, start)) : null;
-            Codepoint? following = end < text.Length ? Codepoint.ReadAt(text, end, out _) : null;
+            var actual = new List<int>();
+            var context = default(LineBreakEnumerator.LineBreakContext);
+            var start = 0;
 
-            var part = new LineBreakEnumerator(text.AsSpan(start, end - start), preceding, following, int.MaxValue);
+            for (var i = 0; i <= splits.Length; i++)
+            {
+                var end = i < splits.Length ? splits[i] : text.Length;
+                Codepoint? following = end < text.Length ? Codepoint.ReadAt(text, end, out _) : null;
 
-            Assert.Equal(expected, GetWrapPositions(ref part));
+                var part = new LineBreakEnumerator(text.AsSpan(start, end - start), context, following, int.MaxValue);
+
+                actual.AddRange(GetWrapPositions(ref part).Select(position => start + position));
+
+                context = part.EndContext;
+                start = end;
+            }
+
+            Assert.Equal(expected, actual.ToArray());
         }
 
         private static int[] GetWrapPositions(ref LineBreakEnumerator lineBreaker)
