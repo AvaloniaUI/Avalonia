@@ -52,6 +52,44 @@ namespace Avalonia.Media.TextFormatting.Unicode
         }
 
         /// <summary>
+        /// Gets the code point whose line break class the end of the text has, to pass as the preceding code point
+        /// of the text that continues it. Combining marks and ZWJ at the end take the class of their base (LB9).
+        /// </summary>
+        /// <param name="text">The text, which must not be empty.</param>
+        /// <returns>
+        /// The base of the trailing combining marks, or the last code point if there are none. A combining mark
+        /// is returned when it has no base, which the enumerator then treats as AL (LB10).
+        /// </returns>
+        internal static Codepoint GetPrecedingCodepoint(ReadOnlySpan<char> text)
+        {
+            var position = text.Length;
+            var last = Codepoint.ReadAt(text, position - 1, out var count);
+            var codepoint = last;
+
+            while (true)
+            {
+                var lineBreakClass = new BreakUnit(codepoint, 0, count).LineBreakClass;
+
+                if (lineBreakClass is not (LineBreakClass.CombiningMark or LineBreakClass.ZWJ))
+                {
+                    var isBase = !IsBreakClass(lineBreakClass) && lineBreakClass != LineBreakClass.Space &&
+                                 lineBreakClass != LineBreakClass.ZWSpace;
+
+                    return isBase ? codepoint : last;
+                }
+
+                position -= count;
+
+                if (position == 0)
+                {
+                    return last;
+                }
+
+                codepoint = Codepoint.ReadAt(text, position - 1, out count);
+            }
+        }
+
+        /// <summary>
         /// Gets whether enumeration stopped at the limit before reaching a break opportunity or the end of the text.
         /// </summary>
         internal bool LimitReached { get; private set; }
@@ -529,7 +567,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
             if (state.LastBeforeWhitespace.Codepoint.GeneralCategory == GeneralCategory.InitialPunctuation &&
                 state.LastBeforeWhitespace.LineBreakClass == LineBreakClass.Quotation)
             {
-                if (IsStartLike(LineBreakState.Before(text, state.LastBeforeWhitespace)))
+                if (IsStartLike(state.Before(text, state.LastBeforeWhitespace)))
                 {
                     return RuleResult.NoBreak;
                 }
@@ -765,7 +803,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         private static RuleResult LB20a(ReadOnlySpan<char> text, ref LineBreakState state)
         {
             var current = state.Current.Inherited ? state.LastBeforeWhitespace : state.Current;
-            var previous = state.Current.Inherited ? LineBreakState.Before(text, current) : state.Previous;
+            var previous = state.Current.Inherited ? state.Before(text, current) : state.Previous;
 
             // (sot | BK | CR | LF | NL | SP | ZW | CB | GL)(HY | HH) × (AL | HL)
             if (IsMatch(previous) && state.NextClass is LineBreakClass.Alphabetic or LineBreakClass.HebrewLetter)
@@ -993,7 +1031,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                                         case LineBreakClass.BreakSymbols:
                                         case LineBreakClass.InfixNumeric:
                                             {
-                                                if (LineBreakState.Before(text, state.Previous).LineBreakClass == LineBreakClass.Numeric)
+                                                if (state.Before(text, state.Previous).LineBreakClass == LineBreakClass.Numeric)
                                                 {
                                                     return RuleResult.NoBreak;
                                                 }
@@ -1317,7 +1355,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         private static RuleResult LB28a(ReadOnlySpan<char> text, ref LineBreakState state)
         {
             var current = state.Current.Inherited ? state.LastBeforeWhitespace : state.Current;
-            var previous = state.Current.Inherited ? LineBreakState.Before(text, current) : state.Previous;
+            var previous = state.Current.Inherited ? state.Before(text, current) : state.Previous;
 
             // [28.11] AP × (AK | DottedCircle | AS)
             if ((current.LineBreakClass == LineBreakClass.AksaraPrebase) && isMatch(state.Next(text)))
@@ -1577,6 +1615,8 @@ namespace Avalonia.Media.TextFormatting.Unicode
             private BreakUnit _previous;
             private LineBreakClass _previousClass;
 
+            private readonly BreakUnit _preceding;
+            private readonly bool _hasPreceding;
             private readonly Codepoint _following;
             private readonly bool _hasFollowing;
 
@@ -1598,12 +1638,24 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 LastBeforeSpace = s_sot;
                 LastBeforeWhitespace = s_sot;
 
+                _preceding = s_sot;
+                _hasPreceding = false;
+
                 if (preceding is { } codepoint)
                 {
-                    // The first Read moves this unit to Previous. Like the first unit of a text it starts the
-                    // text, so looking further back finds the start of text rather than an index before 0.
+                    // The first Read moves this unit to Previous. It starts the text, so looking further back
+                    // finds the start of text rather than an index before 0.
                     var count = codepoint.Value > 0xFFFF ? 2 : 1;
                     var unit = new BreakUnit(codepoint, -count, count) { StartOfText = true };
+
+                    // A combining mark or ZWJ without a base is treated as AL (LB10).
+                    if (unit.LineBreakClass is LineBreakClass.CombiningMark or LineBreakClass.ZWJ)
+                    {
+                        unit = unit with { LineBreakClass = LineBreakClass.Alphabetic };
+                    }
+
+                    _preceding = unit;
+                    _hasPreceding = true;
 
                     Current = unit;
 
@@ -1682,8 +1734,14 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 return PeekAt(text, current.Start + current.Length);
             }
 
-            public static BreakUnit Before(ReadOnlySpan<char> text, BreakUnit current)
+            public readonly BreakUnit Before(ReadOnlySpan<char> text, BreakUnit current)
             {
+                // The first unit of the text follows the preceding code point, if there is one.
+                if (_hasPreceding && current.Start == 0 && current.Length > 0)
+                {
+                    return _preceding;
+                }
+
                 if (current.StartOfText)
                 {
                     return s_sot;

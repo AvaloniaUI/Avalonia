@@ -107,6 +107,9 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
         [InlineData("foo 1)$xyz bar", 5, 10)]
         [InlineData("אב-x", 2, 3)]
         [InlineData("ab-x", 2, 3)]
+        [InlineData("c אְ-x yz", 4, 5)]
+        [InlineData("foo x“ abc", 5, 7)]
+        [InlineData("foo 1̃)$xyz bar", 6, 7)]
         [InlineData("漢字ひらがな", 2, 4)]
         public void Text_With_Neighboring_Codepoints_Breaks_Like_The_Whole_Text(string text, int start, int end)
         {
@@ -116,7 +119,7 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
                 .Select(position => position - start)
                 .ToArray();
 
-            Codepoint? preceding = start > 0 ? Codepoint.ReadAt(text, start - 1, out _) : null;
+            Codepoint? preceding = start > 0 ? LineBreakEnumerator.GetPrecedingCodepoint(text.AsSpan(0, start)) : null;
             Codepoint? following = end < text.Length ? Codepoint.ReadAt(text, end, out _) : null;
 
             var part = new LineBreakEnumerator(text.AsSpan(start, end - start), preceding, following, int.MaxValue);

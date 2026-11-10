@@ -1016,9 +1016,7 @@ namespace Avalonia.Media.TextFormatting
                             if (index > 0 && textRuns[index - 1] is ShapedTextRun previousRun &&
                                 !previousRun.Text.IsEmpty)
                             {
-                                var previousText = previousRun.Text.Span;
-
-                                preceding = Codepoint.ReadAt(previousText, previousText.Length - 1, out _);
+                                preceding = LineBreakEnumerator.GetPrecedingCodepoint(previousRun.Text.Span);
                             }
 
                             if (index < runCount - 1 && textRuns[index + 1] is ShapedTextRun nextRun &&

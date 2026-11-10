@@ -1217,8 +1217,9 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         [Theory]
         [InlineData(new[] { "foo ", " bar" }, 3)]
         [InlineData(new[] { "foo 1", ")", "$xyz bar" }, 6)]
-        [InlineData(new[] { "c אב", "-", "x yz" }, 5)]
         [InlineData(new[] { "c ab", "-", "x yz" }, 5)]
+        [InlineData(new[] { "foo 1̃", ")", "$xyz bar" }, 7)]
+        [InlineData(new[] { "foo x", "“ ", "abc" }, 7)]
         [InlineData(new[] { "a—", "b" }, 2)]
         public void Should_Wrap_Text_Split_Across_Text_Characters_Like_Unsplit_Text(string[] parts, int fittingLength)
         {
