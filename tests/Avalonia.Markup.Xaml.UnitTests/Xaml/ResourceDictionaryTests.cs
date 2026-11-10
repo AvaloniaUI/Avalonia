@@ -299,6 +299,26 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
         [Fact]
+        public void Enum_Resource_With_Surrounding_Whitespace_Should_Be_Parsed()
+        {
+            using (StyledWindow())
+            {
+                var xaml = @"
+<ResourceDictionary xmlns='https://github.com/avaloniaui'
+                    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <FontWeight x:Key='TitleWeight'>
+        Bold
+    </FontWeight>
+    <HorizontalAlignment x:Key='TitleAlignment'>			Center		</HorizontalAlignment>
+</ResourceDictionary>";
+                var resources = (ResourceDictionary)AvaloniaRuntimeXamlLoader.Load(xaml);
+
+                Assert.Equal(FontWeight.Bold, resources["TitleWeight"]);
+                Assert.Equal(Avalonia.Layout.HorizontalAlignment.Center, resources["TitleAlignment"]);
+            }
+        }
+
+        [Fact]
         public void Closest_Resource_Should_Be_Referenced()
         {
             using (StyledWindow())
