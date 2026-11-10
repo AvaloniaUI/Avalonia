@@ -160,7 +160,18 @@ namespace Avalonia.Media.Fonts.Tables
                 return false;
             }
 
-            var binaryReader = new BigEndianBinaryReader(table.Span);
+            return TryLoad(table.Span, out os2Table);
+        }
+
+        /// <summary>
+        /// Parses the content of an OS/2 table.
+        /// </summary>
+        /// <param name="data">The table data.</param>
+        /// <param name="os2Table">The parsed table.</param>
+        /// <returns><c>true</c> if the table was parsed; otherwise, <c>false</c>.</returns>
+        internal static bool TryLoad(ReadOnlySpan<byte> data, out OS2Table os2Table)
+        {
+            var binaryReader = new BigEndianBinaryReader(data);
 
             os2Table = Load(ref binaryReader);
 
