@@ -22,8 +22,9 @@ namespace Avalonia.Media.Fonts
         /// <param name="glyphTypeface">The GlyphTypeface instance to extract the key fields from. Cannot be null.</param>
         /// <returns>
         /// A FontCollectionKey representing the style, weight, stretch, and active variation
-        /// point of the specified glyph typeface. For default-instance typefaces and static
-        /// fonts the <c>Variation</c> field is <c>default(NormalizedVariationPosition)</c>.
+        /// point of the specified glyph typeface. For a face that is not a variation of another
+        /// one, a named instance the platform applied included, and for static fonts the
+        /// <c>Variation</c> field is <c>default(NormalizedVariationPosition)</c>.
         /// </returns>
         /// <exception cref="ArgumentNullException">Thrown if glyphTypeface is null.</exception>
         public static FontCollectionKey ToFontCollectionKey(this GlyphTypeface glyphTypeface)
@@ -35,7 +36,9 @@ namespace Avalonia.Media.Fonts
 
             return new FontCollectionKey(glyphTypeface.Style, glyphTypeface.Weight, glyphTypeface.Stretch)
             {
-                Variation = glyphTypeface.VariationPosition
+                // A named instance the platform applied is a face of its family like a static
+                // one, keyed by the weight, style and stretch it reports.
+                Variation = glyphTypeface.IsVariation ? glyphTypeface.VariationPosition : default
             };
         }
 

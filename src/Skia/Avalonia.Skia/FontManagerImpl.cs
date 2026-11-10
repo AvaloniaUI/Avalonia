@@ -208,7 +208,7 @@ namespace Avalonia.Skia
             var reportedStyle = (allSimulations & FontSimulations.Oblique) != 0 ? style : faceStyle;
 
             return new SkiaTypeface(skTypeface, fontSimulations, platformSimulations, reportedStyle, reportedWeight,
-                faceStretch);
+                faceStretch, mayBeNamedInstance: true);
         }
 
         /// <summary>
