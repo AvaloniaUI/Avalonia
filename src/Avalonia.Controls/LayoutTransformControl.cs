@@ -28,10 +28,13 @@ namespace Avalonia.Controls
                 .AddClassHandler<LayoutTransformControl>((x, e) => x.OnLayoutTransformChanged(e));
 
             ChildProperty.Changed
-                .AddClassHandler<LayoutTransformControl>((x, _) => x.OnChildChanged());
+                .AddClassHandler<LayoutTransformControl>((x, e) => x.OnChildChanged(e));
 
             UseRenderTransformProperty.Changed
                 .AddClassHandler<LayoutTransformControl>((x, e) => x.OnUseRenderTransformPropertyChanged(e));
+
+            LayoutTransformScaleProperty.Changed
+                .AddClassHandler<LayoutTransformControl>((x, _) => x.ApplyLayoutTransformScale());
         }
 
         /// <summary>
@@ -194,14 +197,17 @@ namespace Avalonia.Controls
             }
         }
 
-        private void OnChildChanged()
+        private void OnChildChanged(AvaloniaPropertyChangedEventArgs e)
         {
+            (e.OldValue as Control)?.ClearValue(LayoutTransformScaleProperty);
+
             if (null != TransformRoot)
             {
                 TransformRoot.RenderTransform = _matrixTransform;
                 TransformRoot.RenderTransformOrigin = new RelativePoint(0, 0, RelativeUnit.Absolute);
             }
 
+            ApplyLayoutTransformScale();
             ApplyLayoutTransform();
         }
 
@@ -286,9 +292,31 @@ namespace Avalonia.Controls
 
             _transformation = matrix;
             _matrixTransform.Matrix = matrix;
+            ApplyLayoutTransformScale();
 
             // New transform means re-layout is necessary
             InvalidateMeasure();
+        }
+
+        /// <summary>
+        /// Makes layout rounding in the content round to device pixels when the transform is a uniform scale.
+        /// </summary>
+        private void ApplyLayoutTransformScale()
+        {
+            if (TransformRoot is not { } child)
+                return;
+
+            var scale = Math.Abs(_transformation.M11);
+
+            if (scale > 0 && scale != 1 &&
+                _transformation.M12 == 0 && _transformation.M21 == 0 && Math.Abs(_transformation.M22) == scale)
+            {
+                child.SetValue(LayoutTransformScaleProperty, GetValue(LayoutTransformScaleProperty) * scale);
+            }
+            else
+            {
+                child.ClearValue(LayoutTransformScaleProperty);
+            }
         }
 
         /// <summary>

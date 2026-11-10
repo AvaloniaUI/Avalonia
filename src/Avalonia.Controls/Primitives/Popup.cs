@@ -462,6 +462,10 @@ namespace Avalonia.Controls.Primitives
             popupHost.SetChild(Child);
             ((ISetLogicalParent)popupHost).SetParent(this);
 
+            // The host is not under the placement target's layout transforms: with InheritsTransform
+            // its template applies their scale, so it must not also inherit it from the popup.
+            ((AvaloniaObject)popupHost).SetValue(LayoutTransformScaleProperty, 1.0);
+
             if (InheritsTransform)
             {
                 TransformTrackingHelper.Track(placementTarget, true, PlacementTargetTransformChanged)
