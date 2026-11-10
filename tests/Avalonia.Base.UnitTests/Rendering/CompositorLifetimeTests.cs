@@ -1,6 +1,9 @@
-﻿using Avalonia.Controls;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Rendering.Composition;
+using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Xunit;
@@ -80,5 +83,50 @@ public class CompositorLifetimeTests : CompositorTestsBase
         Assert.False(services.Renderer.HasPendingUpdateForUnitTests(services.Canvas));
         services.AssertHitTest(35, 55, null, kept);
         services.AssertHitTest(105, 55, null);
+    }
+
+    [Fact]
+    public void Visuals_Replaced_While_No_Frame_Renders_Are_Not_Kept_By_Compositor()
+    {
+        using var services = new CompositorTestServices(new Size(200, 200), useMediaContextScheduler: true);
+        var canvas = new Canvas();
+        services.TopLevel.Content = canvas;
+        services.RunJobs();
+
+        Border ReplaceRow()
+        {
+            var row = new Border { Background = Brushes.Red, Width = 20, Height = 10, Child = new Border() };
+            canvas.Children.Clear();
+            canvas.Children.Add(row);
+            Dispatcher.UIThread.RunJobs();
+            return row;
+        }
+
+        // The render loop doesn't tick from here on, so the batch committed for the first row is never
+        // processed and nothing is committed after it.
+        var committedRow = ReplaceRow();
+        var committedVisual = ElementComposition.GetElementVisual(committedRow)!;
+
+        var replacedVisuals = new List<CompositionVisual>();
+        var row = ReplaceRow();
+        for (var i = 0; i < 100; i++)
+        {
+            replacedVisuals.Add(ElementComposition.GetElementVisual(row)!);
+            replacedVisuals.Add(ElementComposition.GetElementVisual(row.Child!)!);
+            row = ReplaceRow();
+        }
+
+        Assert.Equal(0, replacedVisuals.Count(services.Compositor.UnitTestIsRegisteredForSerialization));
+
+        // A visual that reached the render thread still has to send its removal
+        Assert.True(services.Compositor.UnitTestIsRegisteredForSerialization(committedVisual));
+        Assert.True(services.Compositor.UnitTestIsRegisteredForSerialization(
+            ElementComposition.GetElementVisual(row)!));
+
+        services.RunJobs();
+        services.RunJobs();
+
+        Assert.False(services.Compositor.UnitTestIsRegisteredForSerialization(committedVisual));
+        services.AssertHitTest(5, 5, null, row);
     }
 }
