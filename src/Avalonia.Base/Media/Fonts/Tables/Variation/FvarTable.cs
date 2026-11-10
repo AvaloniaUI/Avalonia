@@ -87,31 +87,33 @@ namespace Avalonia.Media.Fonts.Tables.Variation
         {
             axisTags = default;
 
-            return false;
-        }
-
-        /// <summary>
-        /// Loads the fvar table from <paramref name="glyphTypeface"/>, resolving axis and
-        /// instance names via <paramref name="nameTable"/> when available.
-        /// </summary>
-        /// <returns>
-        /// <c>true</c> when the font carries an fvar table that we recognize and could
-        /// parse; <c>false</c> for static fonts, for an unrecognized version, or for a
-        /// malformed table.
-        /// </returns>
-        public static bool TryLoad(
-            GlyphTypeface glyphTypeface,
-            NameTable? nameTable,
-            [NotNullWhen(true)] out FvarTable? fvarTable)
-        {
-            fvarTable = null;
-
-            if (!glyphTypeface.PlatformTypeface.TryGetTable(Tag, out var data))
+            if (!TryReadHeader(data, out var header))
             {
                 return false;
             }
 
-            var span = data.Span;
+            var reader = new BigEndianBinaryReader(data);
+            var builder = ImmutableArray.CreateBuilder<OpenTypeTag>(header.AxisCount);
+
+            for (var i = 0; i < header.AxisCount; i++)
+            {
+                reader.Seek(header.AxesArrayOffset + i * header.AxisSize);
+
+                builder.Add(new OpenTypeTag(reader.ReadUInt32()));
+            }
+
+            axisTags = builder.MoveToImmutable();
+
+            return true;
+        }
+
+        private readonly record struct Header(int AxesArrayOffset, int AxisCount, int AxisSize, int InstanceCount,
+            int InstanceSize);
+
+        private static bool TryReadHeader(ReadOnlySpan<byte> span, out Header header)
+        {
+            header = default;
+
             if (span.Length < 16)
             {
                 return false;
@@ -155,6 +157,49 @@ namespace Avalonia.Media.Fonts.Tables.Variation
             {
                 return false;
             }
+
+            header = new Header(axesArrayOffset, axisCount, axisSize, instanceCount, instanceSize);
+
+            return true;
+        }
+
+        /// <summary>
+        /// Loads the fvar table from <paramref name="glyphTypeface"/>, resolving axis and
+        /// instance names via <paramref name="nameTable"/> when available.
+        /// </summary>
+        /// <returns>
+        /// <c>true</c> when the font carries an fvar table that we recognize and could
+        /// parse; <c>false</c> for static fonts, for an unrecognized version, or for a
+        /// malformed table.
+        /// </returns>
+        public static bool TryLoad(
+            GlyphTypeface glyphTypeface,
+            NameTable? nameTable,
+            [NotNullWhen(true)] out FvarTable? fvarTable)
+        {
+            fvarTable = null;
+
+            if (!glyphTypeface.PlatformTypeface.TryGetTable(Tag, out var data))
+            {
+                return false;
+            }
+
+            var span = data.Span;
+
+            if (!TryReadHeader(span, out var header))
+            {
+                return false;
+            }
+
+            var reader = new BigEndianBinaryReader(span);
+
+            var axesArrayOffset = header.AxesArrayOffset;
+            var axisCount = header.AxisCount;
+            var axisSize = header.AxisSize;
+            var instanceCount = header.InstanceCount;
+            var instanceSize = header.InstanceSize;
+            var minimumInstanceSize = 4 + axisCount * 4;
+            var axesEnd = axesArrayOffset + axisCount * axisSize;
 
             // English (US) — matches GlyphTypeface's existing FamilyName / TypographicFamilyName
             // resolution. Localization across all platform name records is a follow-up.

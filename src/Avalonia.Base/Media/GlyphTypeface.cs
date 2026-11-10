@@ -275,11 +275,12 @@ namespace Avalonia.Media
             var fontWeight = GetFontWeight(_hasOs2Table ? _os2Table : null, headTable);
 
             // A platform typeface that simulates a missing face reports the weight and style it was
-            // requested with, which can be heavier than Bold or Oblique rather than Italic. One created
-            // from a font stream reports the design values, so a simulation reports at least Bold
-            // and a slanted style.
+            // requested with, which can be SemiBold, heavier than Bold, or Oblique rather than Italic.
+            // Reporting that weight keeps a face simulated for SemiBold apart from the Bold one. One
+            // created from a font stream reports the design values, so a simulation reports Bold and
+            // a slanted style.
             Weight = (fontSimulations & FontSimulations.Bold) != 0 ?
-                (typeface.Weight > FontWeight.Bold ? typeface.Weight : FontWeight.Bold) :
+                (typeface.Weight >= FontWeight.SemiBold ? typeface.Weight : FontWeight.Bold) :
                 fontWeight;
 
             var style = GetFontStyle(_hasOs2Table ? _os2Table : null, headTable, postTable);

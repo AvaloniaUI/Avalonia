@@ -517,12 +517,25 @@ namespace Avalonia.Media.Fonts
             }
 
             // A simulated variant is a second view of the source's own typeface, so it keeps the
-            // source's simulations: a Bold Italic made from a simulated Bold stays bold.
+            // source's simulations the request still needs: a Bold Italic made from a simulated Bold
+            // stays bold, while an upright Black made from a simulated Bold Italic drops the slant.
             var simulator = glyphTypeface.PlatformTypeface as IPlatformTypefaceSimulator;
 
             if (simulator is not null)
             {
-                fontSimulations |= glyphTypeface.PlatformTypeface.FontSimulations;
+                var requested = FontSimulations.None;
+
+                if (weight >= FontWeight.SemiBold)
+                {
+                    requested |= FontSimulations.Bold;
+                }
+
+                if (style != FontStyle.Normal)
+                {
+                    requested |= FontSimulations.Oblique;
+                }
+
+                fontSimulations |= glyphTypeface.PlatformTypeface.FontSimulations & requested;
             }
 
             // A synthetic for this key may already be cached under the source family, reached
@@ -591,11 +604,6 @@ namespace Avalonia.Media.Fonts
             return false;
         }
 
-        private static readonly OpenTypeTag[] s_colorGlyphTableTags =
-        {
-            OpenTypeTag.Parse("COLR"), OpenTypeTag.Parse("sbix"), OpenTypeTag.Parse("CBDT"), OpenTypeTag.Parse("SVG ")
-        };
-
         /// <summary>
         /// Gets whether the face draws its glyphs from a colour table: COLR layers, sbix or CBDT
         /// bitmaps, or SVG documents.
@@ -607,7 +615,7 @@ namespace Avalonia.Media.Fonts
         /// </remarks>
         private static bool IsColorFont(IPlatformTypeface platformTypeface)
         {
-            foreach (var tag in s_colorGlyphTableTags)
+            foreach (var tag in ColorGlyphTables.Tags)
             {
                 if (platformTypeface.TryGetTable(tag, out var table) && !table.IsEmpty)
                 {

@@ -3,6 +3,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using Avalonia.Media;
 using Avalonia.Media.Fonts;
+using Avalonia.Media.Fonts.Tables;
+using Avalonia.Media.Fonts.Tables.Variation;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -73,14 +75,15 @@ namespace Avalonia.Skia
         public bool TryCreateSimulatedTypeface(FontSimulations fontSimulations, FontStyle style, FontWeight weight,
             FontStretch stretch, [NotNullWhen(true)] out IPlatformTypeface? typeface)
         {
-            if (IsColorFont(SKTypeface))
+            // The platform's own simulations are part of the Skia typeface, so a variant without one
+            // of them cannot be drawn from it.
+            if ((_platformSimulations & ~fontSimulations) != 0 || IsColorFont(SKTypeface))
             {
                 typeface = null;
 
                 return false;
             }
 
-            // The platform's own simulations are part of the Skia typeface and stay in every variant.
             typeface = new SkiaTypeface(SKTypeface, fontSimulations & ~_platformSimulations, _platformSimulations,
                 style, weight, stretch, ownsTypeface: false);
 
@@ -137,20 +140,31 @@ namespace Avalonia.Skia
         /// </remarks>
         internal static bool IsColorFont(SKTypeface typeface)
         {
-            const uint colrTag = 0x434F4C52;
-            const uint sbixTag = 0x73626978;
-            const uint cbdtTag = 0x43424454;
-            const uint svgTag = 0x53564720;
+            ReadTableDirectory(typeface, out var isColorFont, out _);
+
+            return isColorFont;
+        }
+
+        /// <summary>
+        /// Reads the table directory of a typeface once for whether it is a colour font face, as
+        /// <see cref="IsColorFont"/> decides it, and whether it has an fvar table.
+        /// </summary>
+        internal static void ReadTableDirectory(SKTypeface typeface, out bool isColorFont, out bool hasFvar)
+        {
+            isColorFont = false;
+            hasFvar = false;
 
             foreach (var tag in typeface.GetTableTags())
             {
-                if (tag is colrTag or sbixTag or cbdtTag or svgTag)
+                if (ColorGlyphTables.Contains(tag))
                 {
-                    return true;
+                    isColorFont = true;
+                }
+                else if (tag == FvarTable.Tag)
+                {
+                    hasFvar = true;
                 }
             }
-
-            return false;
         }
 
         public void Dispose()
