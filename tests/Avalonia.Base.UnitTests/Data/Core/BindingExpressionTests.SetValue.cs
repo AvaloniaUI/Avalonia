@@ -136,6 +136,30 @@ public abstract partial class BindingExpressionTests
     }
 
     [Fact]
+    public void TwoWay_Binding_Should_Not_Write_Default_Value_Back_To_Source_When_Converter_Returns_UnsetValue()
+    {
+        var data = new ViewModel { StringValue = "foo" };
+        var converter = new EqualsParameterConverter { UnsetForNull = true };
+        var target = CreateTargetWithSource(
+            data,
+            o => o.StringValue,
+            converter: converter,
+            converterParameter: "foo",
+            mode: BindingMode.TwoWay,
+            targetProperty: TargetClass.BoolProperty);
+
+        Assert.True(target.Bool);
+
+        data.StringValue = null;
+
+        Assert.False(target.Bool);
+        Assert.Null(data.StringValue);
+        Assert.Equal(0, converter.ConvertBackCount);
+
+        GC.KeepAlive(data);
+    }
+
+    [Fact]
     public void TwoWay_Binding_Should_Write_Coerced_Value_Back_To_Source()
     {
         var data = new ViewModel { IntValue = 5 };
@@ -263,9 +287,12 @@ public abstract partial class BindingExpressionTests
     private class EqualsParameterConverter : IValueConverter
     {
         public int ConvertBackCount { get; private set; }
+        public bool UnsetForNull { get; init; }
 
         public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
+            if (value is null && UnsetForNull)
+                return AvaloniaProperty.UnsetValue;
             return Equals(value, parameter);
         }
 
