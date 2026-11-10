@@ -14,12 +14,12 @@ namespace Avalonia.Generators.Tests;
 public class XamlXNameResolverTests
 {
     [Theory]
-    [InlineData(View.NamedControl)]
-    [InlineData(View.XNamedControl)]
-    [InlineData(View.AttachedProps)]
+    [InlineData(Views.View.NamedControl)]
+    [InlineData(Views.View.XNamedControl)]
+    [InlineData(Views.View.AttachedProps)]
     public async Task Should_Resolve_Types_From_Avalonia_Markup_File_With_Named_Control(string resource)
     {
-        var xaml = await View.Load(resource);
+        var xaml = await Views.View.Load(resource);
         var controls = ResolveNames(xaml);
 
         Assert.NotEmpty(controls);
@@ -29,11 +29,11 @@ public class XamlXNameResolverTests
     }
 
     [Theory]
-    [InlineData(View.NamedControls)]
-    [InlineData(View.XNamedControls)]
+    [InlineData(Views.View.NamedControls)]
+    [InlineData(Views.View.XNamedControls)]
     public async Task Should_Resolve_Types_From_Avalonia_Markup_File_With_Named_Controls(string resource)
     {
-        var xaml = await View.Load(resource);
+        var xaml = await Views.View.Load(resource);
         var controls = ResolveNames(xaml);
 
         Assert.NotEmpty(controls);
@@ -49,7 +49,7 @@ public class XamlXNameResolverTests
     [Fact]
     public async Task Should_Resolve_Types_From_Avalonia_Markup_File_With_Custom_Controls()
     {
-        var xaml = await View.Load(View.CustomControls);
+        var xaml = await Views.View.Load(Views.View.CustomControls);
         var controls = ResolveNames(xaml);
 
         Assert.NotEmpty(controls);
@@ -65,7 +65,7 @@ public class XamlXNameResolverTests
     [Fact]
     public async Task Should_Resolve_Types_From_Avalonia_Markup_File_When_Types_Contains_Generic_Arguments()
     {
-        var xaml = await View.Load(View.ViewWithGenericBaseView);
+        var xaml = await Views.View.Load(Views.View.ViewWithGenericBaseView);
         var controls = ResolveNames(xaml);
         Assert.Equal(2, controls.Count);
         
@@ -82,7 +82,7 @@ public class XamlXNameResolverTests
     [Fact]
     public async Task Should_Not_Resolve_Named_Controls_From_Avalonia_Markup_File_Without_Named_Controls()
     {
-        var xaml = await View.Load(View.NoNamedControls);
+        var xaml = await Views.View.Load(Views.View.NoNamedControls);
         var controls = ResolveNames(xaml);
 
         Assert.Empty(controls);
@@ -91,7 +91,7 @@ public class XamlXNameResolverTests
     [Fact]
     public async Task Should_Not_Resolve_Elements_From_DataTemplates()
     {
-        var xaml = await View.Load(View.DataTemplates);
+        var xaml = await Views.View.Load(Views.View.DataTemplates);
         var controls = ResolveNames(xaml);
 
         Assert.NotEmpty(controls);
@@ -105,7 +105,7 @@ public class XamlXNameResolverTests
     [Fact]
     public async Task Should_Resolve_Names_From_Complex_Views()
     {
-        var xaml = await View.Load(View.SignUpView);
+        var xaml = await Views.View.Load(Views.View.SignUpView);
         var controls = ResolveNames(xaml);
 
         Assert.NotEmpty(controls);

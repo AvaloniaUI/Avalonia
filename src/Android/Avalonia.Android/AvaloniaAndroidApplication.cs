@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Android.Runtime;
 
 namespace Avalonia.Android
 {
     internal interface IAndroidApplication
     {
+        internal static Type? WindowActivityType { get; set; }
         ApplicationLifetime? Lifetime { get; set; }
     }
 
@@ -41,5 +38,14 @@ namespace Avalonia.Android
 
         protected virtual AppBuilder CreateAppBuilder() => AppBuilder.Configure<TApp>().UseAndroid();
         protected virtual AppBuilder CustomizeAppBuilder(AppBuilder builder) => builder;
+
+        public void RegisterWindowActivityType(Type? type)
+        {
+            if(type != null && !type.IsAssignableTo(typeof(AvaloniaActivity)))
+            {
+                throw new ArgumentException($"Activity Type {type} must be a {typeof(AvaloniaActivity)}");
+            }
+            IAndroidApplication.WindowActivityType = type;
+        }
     }
 }

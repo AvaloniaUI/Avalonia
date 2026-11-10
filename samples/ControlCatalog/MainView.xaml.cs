@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
-using Avalonia.Styling;
 using ControlCatalog.ViewModels;
 
 namespace ControlCatalog

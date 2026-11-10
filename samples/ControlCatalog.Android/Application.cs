@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Android.App;
+﻿using Android.App;
 using Android.Runtime;
 using Avalonia;
 using Avalonia.Android;
@@ -15,12 +10,13 @@ namespace ControlCatalog.Android
     {
         protected Application(nint javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
         {
+            RegisterWindowActivityType(typeof(WindowActivity));
         }
-
 
         protected override AppBuilder CustomizeAppBuilder(AppBuilder builder)
         {
             return base.CustomizeAppBuilder(builder)
+                 .UseScenes()
                  .AfterSetup(_ =>
                  {
                      Pages.EmbedSample.Implementation = new EmbedSampleAndroid();

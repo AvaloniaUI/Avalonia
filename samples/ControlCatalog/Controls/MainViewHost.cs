@@ -7,14 +7,7 @@ namespace ControlCatalog.Controls
 {
     internal class MainViewHost : PageNavigationHost
     {
-        private MainWindowViewModel _viewModel;
-
         protected override Type StyleKeyOverride => typeof(PageNavigationHost);
-
-        public MainViewHost(MainWindowViewModel mainWindowViewModel)
-        {
-            _viewModel = mainWindowViewModel;
-        }
 
         private void SettingsViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
@@ -23,10 +16,10 @@ namespace ControlCatalog.Controls
 
         private void ApplySettings()
         {
-            if (TopLevel.GetTopLevel(this) is { } topLevel)
+            if (TopLevel.GetTopLevel(this) is { } topLevel && DataContext is MainWindowViewModel viewmodel)
             {
-                App.ApplyTopLevelTransparency(topLevel, _viewModel.SettingsViewModel.CurrentWindowTransparencyLevel);
-                App.Current?.RequestedThemeVariant = _viewModel.SettingsViewModel.CurrentThemeVariant;
+                App.ApplyTopLevelTransparency(topLevel, viewmodel.SettingsViewModel.CurrentWindowTransparencyLevel);
+                App.Current?.RequestedThemeVariant = viewmodel.SettingsViewModel.CurrentThemeVariant;
             }
         }
 
@@ -40,7 +33,11 @@ namespace ControlCatalog.Controls
             base.OnAttachedToVisualTree(e);
 
             (App.Current as App)?.ThemeUpdated += MainViewHost_ThemeUpdated;
-            _viewModel.SettingsViewModel.PropertyChanged += SettingsViewModel_PropertyChanged;
+
+            if(DataContext is MainWindowViewModel viewmodel)
+            {
+                viewmodel.SettingsViewModel.PropertyChanged += SettingsViewModel_PropertyChanged;
+            }
 
             RecreatePage();
             ApplySettings();
@@ -51,14 +48,17 @@ namespace ControlCatalog.Controls
             base.OnDetachedFromVisualTree(e);
 
             (App.Current as App)?.ThemeUpdated -= MainViewHost_ThemeUpdated;
-            _viewModel.SettingsViewModel.PropertyChanged -= SettingsViewModel_PropertyChanged;
+            if (DataContext is MainWindowViewModel viewmodel)
+            {
+                viewmodel.SettingsViewModel.PropertyChanged -= SettingsViewModel_PropertyChanged;
+            }
         }
 
         private void RecreatePage()
         {
             Page = new MainView()
             {
-                DataContext = _viewModel
+                DataContext = DataContext
             };
         }
     }

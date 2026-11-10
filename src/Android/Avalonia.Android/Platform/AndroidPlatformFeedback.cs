@@ -5,12 +5,13 @@ using Avalonia.Controls;
 
 namespace Avalonia.Android.Platform
 {
-    internal class AndroidPlatformFeedback(View view) : IPlatformFeedback
+    internal class AndroidPlatformFeedback(IAvaloniaView avaloniaView) : IPlatformFeedback
     {
         public bool Perform(FeedbackAction feedback, FeedbackType type)
         {
             var playSound = type != FeedbackType.Haptic;
             var vibrate = type != FeedbackType.Sound;
+            var view = avaloniaView.View;
 
             if (feedback == FeedbackAction.Click)
             {

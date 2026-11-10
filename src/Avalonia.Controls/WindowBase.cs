@@ -324,7 +324,7 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Handles a window position change notification from 
-        /// <see cref="IWindowBaseImpl.PositionChanged"/>.
+        /// <see cref="ITopLevelImpl.PositionChanged"/>.
         /// </summary>
         /// <param name="pos">The window position.</param>
         private void HandlePositionChanged(PixelPoint pos)
@@ -333,7 +333,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Handles an activated notification from <see cref="IWindowBaseImpl.Activated"/>.
+        /// Handles an activated notification from <see cref="ITopLevelImpl.Activated"/>.
         /// </summary>
         private void HandleActivated()
         {
@@ -350,7 +350,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Handles a deactivated notification from <see cref="IWindowBaseImpl.Deactivated"/>.
+        /// Handles a deactivated notification from <see cref="ITopLevelImpl.Deactivated"/>.
         /// </summary>
         private void HandleDeactivated()
         {

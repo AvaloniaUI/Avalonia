@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Android.App;
 using Android.Content;
+using Android.Content.Res;
 using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.OS;
@@ -9,6 +10,7 @@ using Android.Runtime;
 using Android.Views;
 using AndroidX.AppCompat.App;
 using AndroidX.Core.View;
+using AndroidX.Window.Layout;
 using Avalonia.Android.Platform.Input;
 using Avalonia.Android.Platform.Specific.Helpers;
 using Avalonia.Android.Platform.Storage;
@@ -30,10 +32,10 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 {
     class TopLevelImpl : ITopLevelImpl, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfoWithWaitPolicy
     {
-        private readonly Context _context;
+        private readonly Activity _activity;
         private readonly AndroidKeyboardEventsHelper<TopLevelImpl> _keyboardHelper;
         private readonly AndroidMotionEventsHelper _pointerHelper;
-        private readonly AndroidInputMethod<AvaloniaView> _textInputMethod;
+        private readonly AndroidInputMethod<IAvaloniaView> _textInputMethod;
         private readonly INativeControlHostImpl _nativeControlHost;
         private readonly IStorageProvider? _storageProvider;
         private readonly AndroidSystemNavigationManagerImpl _systemNavigationManager;
@@ -44,42 +46,60 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         private readonly AndroidPlatformFeedback _feedback;
         private SurfaceViewImpl? _view;
         private WindowTransparencyLevel _transparencyLevel;
+        private PixelPoint _position;
+        private Size? _frameSize;
 
-        public TopLevelImpl(AvaloniaView avaloniaView, bool placeOnTop = false)
+        public TopLevelImpl(IAvaloniaView avaloniaView, bool placeOnTop = false)
         {
-            if (avaloniaView.Context is not { } context)
+            if (avaloniaView.Context is not Activity activity)
             {
                 throw new ArgumentException("AvaloniaView.Context must not be null");
             }
 
-            _context = context;
-            _view = new SurfaceViewImpl(context, this, placeOnTop);
-            _textInputMethod = new AndroidInputMethod<AvaloniaView>(avaloniaView);
+            _activity = activity;
+
+            _view = new SurfaceViewImpl(activity, this, placeOnTop);
+            _textInputMethod = new AndroidInputMethod<IAvaloniaView>(avaloniaView);
             _keyboardHelper = new AndroidKeyboardEventsHelper<TopLevelImpl>(this);
             _pointerHelper = new AndroidMotionEventsHelper(this);
             _clipboard = new Clipboard(new ClipboardImpl(
-                context.GetSystemService(Context.ClipboardService).JavaCast<ClipboardManager>(),
-                context));
-            _screens = new AndroidScreens(context);
+                activity.GetSystemService(Context.ClipboardService).JavaCast<ClipboardManager>(),
+                activity));
+            _screens = new AndroidScreens(activity);
             _feedback = new AndroidPlatformFeedback(avaloniaView);
             DragDrop = new AndroidDragDrop(this);
 
-            if (context is Activity mainActivity)
-            {
-                _insetsManager = new AndroidInsetsManager(mainActivity, this);
-                _storageProvider = new AndroidStorageProvider(mainActivity);
-                _launcher = new AndroidLauncher(mainActivity);
-            }
+            _insetsManager = new AndroidInsetsManager(activity, this);
+            _storageProvider = new AndroidStorageProvider(activity);
+            _launcher = new AndroidLauncher(activity);
 
             _nativeControlHost = new AndroidNativeControlHostImpl(avaloniaView);
             _transparencyLevel = WindowTransparencyLevel.None;
 
-            _systemNavigationManager = new AndroidSystemNavigationManagerImpl(context as IActivityNavigationService);
+            _systemNavigationManager = new AndroidSystemNavigationManagerImpl(activity as IActivityNavigationService);
 
             var gl = new EglGlPlatformSurface(this);
             var framebuffer = new FramebufferManager(this);
             Surfaces = [gl, framebuffer, _view];
             Handle = new AndroidViewControlHandle(_view);
+
+            if (_activity is IAvaloniaActivity avaloniaActivity)
+            {
+                avaloniaActivity.Activated += AvaloniaActivity_Activated;
+                avaloniaActivity.Deactivated += AvaloniaActivity_Deactivated;
+            }
+
+            OnConfigurationChanged(_view.Context?.Resources?.Configuration);
+        }
+
+        private void AvaloniaActivity_Deactivated(object? sender, Controls.ApplicationLifetimes.ActivatedEventArgs e)
+        {
+            Deactivated?.Invoke();
+        }
+
+        private void AvaloniaActivity_Activated(object? sender, Controls.ApplicationLifetimes.ActivatedEventArgs e)
+        {
+            Activated?.Invoke();
         }
 
         public IInputRoot? InputRoot { get; private set; }
@@ -97,7 +117,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public Action<double>? ScalingChanged { get; set; }
 
-        public View? View => _view;
+        public global::Android.Views.View? View => _view;
 
         public AndroidDragDrop DragDrop { get; }
 
@@ -142,6 +162,12 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             _view?.Dispose();
             _view = null;
             (DragDrop as IDisposable)?.Dispose();
+
+            if (_activity is IAvaloniaActivity avaloniaActivity)
+            {
+                avaloniaActivity.Activated -= AvaloniaActivity_Activated;
+                avaloniaActivity.Deactivated -= AvaloniaActivity_Deactivated;
+            }
         }
 
         protected void OnResized(Size size)
@@ -224,6 +250,37 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 _tl.Compositor.RequestCompositionUpdate(drawingFinished.Run);
                 base.SurfaceRedrawNeededAsync(holder, drawingFinished);
             }
+
+            protected override void OnConfigurationChanged(Configuration? newConfig)
+            {
+                base.OnConfigurationChanged(newConfig);
+
+                _tl.OnConfigurationChanged(newConfig);
+            }
+        }
+
+        private void OnConfigurationChanged(Configuration? newConfig)
+        {
+            if (_activity is Activity activity)
+            {
+                var metricsCalc = WindowMetricsCalculator.Companion.OrCreate;
+                var windowMetrics = metricsCalc.ComputeCurrentWindowMetrics(activity);
+                var windowBounds = windowMetrics.Bounds;
+                var bounds = new PixelRect(new PixelPoint(windowBounds.Left, windowBounds.Top), new PixelPoint(windowBounds.Right, windowBounds.Bottom));
+
+                var oldPosiiton = _position;
+                _position = bounds.Position;
+                _frameSize = bounds.Size.ToSize(RenderScaling);
+
+                var display = _view?.Display;
+
+                var positionChanged = oldPosiiton != _position;
+
+                if (positionChanged)
+                {
+                    PositionChanged?.Invoke(_position);
+                }
+            }
         }
 
         public IPopupImpl? CreatePopup() => null;
@@ -256,7 +313,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 };
             }
 
-            if (_context is AppCompatActivity activity)
+            if (_activity is AppCompatActivity activity)
             {
                 var nightMode = themeVariant == PlatformThemeVariant.Dark ?
                     AppCompatDelegate.ModeNightYes :
@@ -278,6 +335,15 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         internal AndroidInsetsManager? InsetsManager => _insetsManager;
         internal AndroidKeyboardEventsHelper<TopLevelImpl> KeyboardHelper => _keyboardHelper;
         internal AndroidMotionEventsHelper PointerHelper => _pointerHelper;
+        internal Activity Activity => _activity;
+
+        public Size? FrameSize => _frameSize;
+
+        public PixelPoint Position => _position;
+
+        public Action<PixelPoint>? PositionChanged { get; set; }
+        public Action? Deactivated { get; set; }
+        public Action? Activated { get; set; }
 
         public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevels)
         {
@@ -379,10 +445,11 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 return _screens;
             }
 
-            if(featureType == typeof(IPlatformFeedback))
+            if (featureType == typeof(IPlatformFeedback))
             {
                 return _feedback;
             }
+
             return null;
         }
 

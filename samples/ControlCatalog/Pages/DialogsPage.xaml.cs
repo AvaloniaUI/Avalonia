@@ -324,6 +324,18 @@ namespace ControlCatalog.Pages
                 }
             };
 
+            Scene.Click += async delegate
+            {
+                var scene = new SampleScene()
+                {
+                    InitialPosition = new Point(200, 200),
+                    Width = 640,
+                    Height = 480
+                };
+
+                await scene.ShowAsync();
+            };
+
             LaunchFile.Click += async delegate
             {
                 var statusBlock = LaunchStatus;

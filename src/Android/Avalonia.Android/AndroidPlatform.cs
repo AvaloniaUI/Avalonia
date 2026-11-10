@@ -5,6 +5,8 @@ using Avalonia.Android;
 using Avalonia.Android.Platform;
 using Avalonia.Android.Platform.Input;
 using Avalonia.Android.Platform.Vulkan;
+using Avalonia.Android.Scene;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
@@ -94,6 +96,7 @@ namespace Avalonia.Android
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
                 .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new Dictionary<Key, string>() { }))
                 .Bind<IPlatformDragSource>().ToConstant(new AndroidDragSource())
+                .Bind<ISceneManager>().ToConstant(new SceneManager(global::Android.App.Application.Context))
                 .Bind<IActivatableLifetime>().ToConstant(new AndroidActivatableLifetime());
 
             var graphics = InitializeGraphics(Options);

@@ -4,6 +4,7 @@ using Avalonia.Animation.Easings;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Styling;
+using Avalonia.VisualTree;
 using MiniMvvm;
 
 namespace SafeAreaDemo.ViewModels
@@ -13,9 +14,12 @@ namespace SafeAreaDemo.ViewModels
         private bool _useSafeArea = true;
         private bool _displayEdgeToEdge;
         private IInsetsManager? _insetsManager;
+        private IInsetsWithCaptionManager? _captionManager;
         private bool _hideSystemBars;
         private bool _autoSafeAreaPadding;
         private IInputPane? _inputPane;
+        private bool _extendClientIntoCaption;
+        public event EventHandler? SafeAreaChanged;
 
         public InputPaneState InputPaneState
         {
@@ -51,6 +55,9 @@ namespace SafeAreaDemo.ViewModels
             }
         }
 
+        public Thickness CaptionPadding { get; set; } = default;
+        public double CaptionHeight { get; set; } = default;
+
         public bool UseSafeArea
         {
             get => _useSafeArea;
@@ -81,6 +88,23 @@ namespace SafeAreaDemo.ViewModels
                 RaiseSafeAreaChanged();
             }
         }
+
+        public bool ExtendClientIntoCaption
+        {
+            get => _extendClientIntoCaption && HasCaptionBar;
+            set
+            {
+                _extendClientIntoCaption = value;
+                if (_captionManager != null)
+                {
+                    _captionManager.ExtendClientIntoCaption = value;
+                }
+                this.RaisePropertyChanged();
+                RaiseSafeAreaChanged();
+            }
+        }
+
+        public bool HasCaptionBar => _captionManager != null && _captionManager.IsCaptionBarVisible;
 
         public bool HideSystemBars
         {
@@ -125,6 +149,8 @@ namespace SafeAreaDemo.ViewModels
 
             _autoSafeAreaPadding = mainView.GetValue(TopLevel.AutoSafeAreaPaddingProperty);
             _insetsManager = InsetsManager;
+            _captionManager = InsetsManager as IInsetsWithCaptionManager;
+
 
             if (_insetsManager != null)
             {
@@ -134,11 +160,19 @@ namespace SafeAreaDemo.ViewModels
                 _hideSystemBars = !(_insetsManager.IsSystemBarVisible ?? false);
             }
 
+            if (_captionManager != null)
+            {
+                CaptionPadding = _captionManager.CaptionBarPadding;
+                CaptionHeight = _captionManager.CaptionBarHeight;
+                _extendClientIntoCaption = _captionManager.ExtendClientIntoCaption;
+            }
+
             _inputPane = inputPane;
             if (_inputPane != null)
             {
                 _inputPane.StateChanged += InputPaneOnStateChanged;
             }
+
             RaiseKeyboardChanged();
         }
 
@@ -151,6 +185,11 @@ namespace SafeAreaDemo.ViewModels
 
         private void InsetsManager_SafeAreaChanged(object? sender, SafeAreaChangedArgs e)
         {
+            if (_captionManager != null)
+            {
+                CaptionPadding = _captionManager.CaptionBarPadding;
+                CaptionHeight = _captionManager.CaptionBarHeight;
+            }
             RaiseSafeAreaChanged();
         }
 
@@ -159,6 +198,10 @@ namespace SafeAreaDemo.ViewModels
             this.RaisePropertyChanged(nameof(SafeAreaPadding));
             this.RaisePropertyChanged(nameof(ViewPadding));
             this.RaisePropertyChanged(nameof(InputPaneMarkerMargin));
+            this.RaisePropertyChanged(nameof(HasCaptionBar));
+            this.RaisePropertyChanged(nameof(CaptionHeight));
+            this.RaisePropertyChanged(nameof(CaptionPadding));
+            SafeAreaChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private void RaiseKeyboardChanged()

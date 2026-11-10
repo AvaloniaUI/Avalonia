@@ -246,6 +246,11 @@ namespace Avalonia.iOS
             public IPlatformHandle? Handle { get; }
             public Size ClientSize => new Size(_view.Bounds.Width, _view.Bounds.Height);
             public Size? FrameSize => null;
+            public PixelPoint Position { get; } = default;
+
+            public Action<PixelPoint>? PositionChanged { get; set; }
+            public Action? Deactivated { get; set; }
+            public Action? Activated { get; set; }
             public double RenderScaling => _view.ContentScaleFactor;
             public IPlatformRenderSurface[] Surfaces { get; set; } = [];
             public Action<RawInputEventArgs>? Input { get; set; }

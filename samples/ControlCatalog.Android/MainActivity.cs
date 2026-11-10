@@ -10,10 +10,10 @@ using static Android.Content.Intent;
 
 namespace ControlCatalog.Android
 {
-    [Activity(Label = "ControlCatalog.Android", Theme = "@style/MyTheme.NoActionBar", Icon = "@drawable/icon", MainLauncher = true, Exported = true, ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize | ConfigChanges.UiMode)]
+    [Activity(Label = "ControlCatalog.Android", Theme = "@style/MyTheme.NoActionBar", Icon = "@drawable/icon", Exported = true, ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize | ConfigChanges.UiMode | ConfigChanges.SmallestScreenSize)]
     // CategoryLeanbackLauncher is required for Android TV.
     [IntentFilter(new[] { ActionView }, Categories = new[] { CategoryDefault, CategoryLeanbackLauncher })]
-    public class MainActivity : AvaloniaMainActivity
+    public class MainActivity : AvaloniaActivity
     {
     }
 
@@ -30,5 +30,12 @@ namespace ControlCatalog.Android
             base.OnCreate(savedInstanceState);
             Finish();
         }
+    }
+
+    [Activity(Theme = "@style/MyTheme.NoActionBar", Icon = "@drawable/icon", ResizeableActivity = true,
+    ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize | ConfigChanges.UiMode | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize)]
+    public class WindowActivity : AvaloniaActivity
+    {
+
     }
 }

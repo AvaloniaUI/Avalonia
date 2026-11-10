@@ -37,7 +37,7 @@ namespace Avalonia.Android.Platform.Input
     }
 
     internal class AndroidInputMethod<TView> : ITextInputMethodImpl, IAndroidInputMethod
-        where TView : View, IInitEditorInfo
+        where TView : IAvaloniaView
     {
         private readonly TView _host;
         private readonly InputMethodManager _imm;
@@ -50,11 +50,11 @@ namespace Avalonia.Android.Platform.Input
             _imm = host.Context?.GetSystemService(Context.InputMethodService).JavaCast<InputMethodManager>()
                    ?? throw new InvalidOperationException("Context.InputMethodService is expected to be not null.");
 
-            _host.Focusable = true;
-            _host.FocusableInTouchMode = true;
+            _host.View.Focusable = true;
+            _host.View.FocusableInTouchMode = true;
         }
 
-        public View View => _host;
+        public View View => _host.View;
 
         [MemberNotNullWhen(true, nameof(Client))]
         [MemberNotNullWhen(true, nameof(_client))]
@@ -82,11 +82,11 @@ namespace Avalonia.Android.Platform.Input
 
             if (IsActive)
             {
-                _host.RequestFocus();
+                _host.View.RequestFocus();
 
                 _imm.RestartInput(View);
 
-                _imm.ShowSoftInput(_host, ShowFlags.Implicit);
+                _imm.ShowSoftInput(_host.View, ShowFlags.Implicit);
 
                 _inputConnection?.UpdateState();
 
@@ -98,7 +98,7 @@ namespace Avalonia.Android.Platform.Input
             {
                 _imm.RestartInput(View);
                 _inputConnection = null;
-                _imm.HideSoftInputFromWindow(_host.WindowToken, HideSoftInputFlags.ImplicitOnly);
+                _imm.HideSoftInputFromWindow(_host.View.WindowToken, HideSoftInputFlags.ImplicitOnly);
             }
         }
 
@@ -106,7 +106,7 @@ namespace Avalonia.Android.Platform.Input
         {
             if(IsActive)
             {
-                _imm.ShowSoftInput(_host, ShowFlags.Implicit);
+                _imm.ShowSoftInput(_host.View, ShowFlags.Implicit);
             }
         }
 
@@ -132,7 +132,7 @@ namespace Avalonia.Android.Platform.Input
 
             var composition = _inputConnection.EditBuffer.HasComposition ? _inputConnection.EditBuffer.Composition!.Value : new TextSelection(-1,-1);
 
-            _imm.UpdateSelection(_host, selection.Start, selection.End, composition.Start, composition.End);
+            _imm.UpdateSelection(_host.View, selection.Start, selection.End, composition.Start, composition.End);
 
             _inputConnection.IsInUpdate = false;
         }

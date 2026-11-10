@@ -39,6 +39,20 @@ namespace Avalonia.Controls.Platform
         event EventHandler<SafeAreaChangedArgs>? SafeAreaChanged;
     }
 
+    [NotClientImplementable]
+    public interface IInsetsWithCaptionManager : IInsetsManager
+    {
+        bool IsCaptionBarVisible { get; }
+
+        bool ExtendClientIntoCaption { get; set; }
+
+        double CaptionBarHeight { get; }
+
+        Thickness CaptionBarPadding { get; }
+
+        void SetClientBoundsInCaption(Rect rect);
+    }
+
     [PrivateApi]
     public abstract class InsetsManagerBase : IInsetsManager
     {

@@ -268,7 +268,7 @@ namespace Avalonia.Win32
             }
         }
 
-        Size? IWindowBaseImpl.FrameSize => FrameSize;
+        Size? ITopLevelImpl.FrameSize => FrameSize;
 
         public Size FrameSize
         {

@@ -43,7 +43,8 @@ namespace Avalonia
         private static bool IsRunningOnDesktop(Context context) =>
             context.PackageManager is { } packageManager &&
             (packageManager.HasSystemFeature("org.chromium.arc") ||
-             packageManager.HasSystemFeature("org.chromium.arc.device_management"));
+             packageManager.HasSystemFeature("org.chromium.arc.device_management")) ||
+            context.Resources?.Configuration?.UiMode.HasFlag(global::Android.Content.Res.UiMode.TypeDesk) == true;
 
         private static bool IsRunningOnTv(Context context) => 
             context.PackageManager?.HasSystemFeature(PackageManager.FeatureLeanback) == true;

@@ -33,6 +33,12 @@
     <ProjectReference Include="..\MiniMvvm\MiniMvvm.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Update="SampleScene.axaml.cs">
+      <DependentUpon>SampleScene.axaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
   <Import Project="..\..\build\BuildTargets.targets" />
   <Import Project="..\..\build\SourceGenerators.props" />
 </Project>

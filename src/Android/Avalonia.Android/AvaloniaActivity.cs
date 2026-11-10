@@ -7,12 +7,11 @@ using Android.Content.PM;
 using Android.OS;
 using Android.Runtime;
 using Android.Views;
-using Android.Window;
 using AndroidX.AppCompat.App;
 using Avalonia.Android.Platform;
 using Avalonia.Android.Platform.Storage;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Platform;
+using Avalonia.Controls.Platform;
 
 namespace Avalonia.Android;
 
@@ -23,6 +22,7 @@ namespace Avalonia.Android;
 public class AvaloniaActivity : AppCompatActivity, IAvaloniaActivity
 {
     private EventHandler<ActivatedEventArgs>? _onActivated, _onDeactivated;
+    internal event EventHandler? Closed;
     private GlobalLayoutListener? _listener;
     private object? _content;
     private bool _contentViewSet;
@@ -112,7 +112,9 @@ public class AvaloniaActivity : AppCompatActivity, IAvaloniaActivity
 
     protected override void OnCreate(Bundle? savedInstanceState)
     {
-        InitializeAvaloniaView(_content);
+        var initialContent = _content;
+
+        InitializeAvaloniaView(initialContent);
 
         base.OnCreate(savedInstanceState);
 
@@ -125,6 +127,13 @@ public class AvaloniaActivity : AppCompatActivity, IAvaloniaActivity
         HandleIntent(Intent);
     }
 
+    protected override void OnSaveInstanceState(Bundle outState)
+    {
+        base.OnSaveInstanceState(outState);
+
+        outState.PutParcelable("config", Resources?.Configuration);
+    }
+
     protected override void OnNewIntent(Intent? intent)
     {
         base.OnNewIntent(intent);
@@ -132,9 +141,20 @@ public class AvaloniaActivity : AppCompatActivity, IAvaloniaActivity
         HandleIntent(intent);
     }
 
+    public override void OnWindowFocusChanged(bool hasFocus)
+    {
+        if (hasFocus)
+        {
+            _onActivated?.Invoke(this, new ActivatedEventArgs(ActivationKind.Background));
+        }
+        else
+        {
+            _onDeactivated?.Invoke(this, new ActivatedEventArgs(ActivationKind.Background));
+        }
+    }
+
     protected override void OnStop()
     {
-        _onDeactivated?.Invoke(this, new ActivatedEventArgs(ActivationKind.Background));
 
         if (OperatingSystem.IsAndroidVersionAtLeast(33))
         {
@@ -146,8 +166,6 @@ public class AvaloniaActivity : AppCompatActivity, IAvaloniaActivity
 
     protected override void OnStart()
     {
-        _onActivated?.Invoke(this, new ActivatedEventArgs(ActivationKind.Background));
-
         if (OperatingSystem.IsAndroidVersionAtLeast(33))
         {
             _currentBackPressedCallback = new BackPressedCallback(this);
@@ -183,6 +201,8 @@ public class AvaloniaActivity : AppCompatActivity, IAvaloniaActivity
             _view = null;
         }
 
+        Closed?.Invoke(this, EventArgs.Empty);
+
         base.OnDestroy();
     }
 
@@ -210,7 +230,9 @@ public class AvaloniaActivity : AppCompatActivity, IAvaloniaActivity
                 "Avalonia Application was not initialized. Make sure you have created AvaloniaMainActivity.");
         }
 
-        _view = new AvaloniaView(this) { Content = initialContent };
+        _view = new AvaloniaView(this);
+
+        Content = initialContent;
     }
 
     private void HandleIntent(Intent? intent)

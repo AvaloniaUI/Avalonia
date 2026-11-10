@@ -13,11 +13,10 @@ using Avalonia.Controls;
 using Avalonia.Controls.Embedding;
 using Avalonia.Controls.Platform;
 using Avalonia.Platform;
-using Avalonia.Rendering;
 
 namespace Avalonia.Android
 {
-    public partial class AvaloniaView : FrameLayout
+    public partial class AvaloniaView : FrameLayout, IAvaloniaView
     {
         private EmbeddableControlRoot? _root;
         private readonly ViewImpl _view;
@@ -30,7 +29,7 @@ namespace Avalonia.Android
         {
             _view = new ViewImpl(this);
 
-            AddView(_view.View);
+            base.AddView(_view.View);
 
             _root = new EmbeddableControlRoot(_view);
             _root.Prepare();
@@ -73,6 +72,10 @@ namespace Avalonia.Android
             set => _root?.Content = value;
         }
 
+        public ViewGroup View => this;
+
+        TopLevelImpl IAvaloniaView.TopLevelImpl => TopLevelImpl;
+
         internal new void Dispose()
         {
             OnVisibilityChanged(false);
@@ -95,7 +98,7 @@ namespace Avalonia.Android
             OnVisibilityChanged(isVisible);
         }
 
-        protected override void OnVisibilityChanged(View changedView, [GeneratedEnum] ViewStates visibility)
+        protected override void OnVisibilityChanged(global::Android.Views.View changedView, [GeneratedEnum] ViewStates visibility)
         {
             base.OnVisibilityChanged(changedView, visibility);
             OnVisibilityChanged(visibility == ViewStates.Visible);
@@ -140,7 +143,7 @@ namespace Avalonia.Android
 
         class ViewImpl : TopLevelImpl
         {
-            public ViewImpl(AvaloniaView avaloniaView) : base(avaloniaView)
+            public ViewImpl(IAvaloniaView avaloniaView) : base(avaloniaView)
             {
                 View!.FocusChange += ViewImpl_FocusChange;
             }

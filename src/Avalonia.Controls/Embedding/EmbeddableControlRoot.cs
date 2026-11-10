@@ -1,7 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
 using Avalonia.Automation.Peers;
-using Avalonia.Controls.Automation;
 using Avalonia.Controls.Automation.Peers;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;

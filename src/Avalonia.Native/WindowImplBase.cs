@@ -16,18 +16,24 @@ namespace Avalonia.Native
 
         public new IAvnWindowBase? Native => _handle?.Native as IAvnWindowBase;
 
-        public PixelPoint Position
+        PixelPoint ITopLevelImpl.Position => Position;
+        Size? ITopLevelImpl.FrameSize => FrameSize;
+        Action? ITopLevelImpl.Activated { get => Activated; set => Activated = value; }
+        Action? ITopLevelImpl.Deactivated { get => Deactivated; set => Deactivated = value; }
+        Action<PixelPoint>? ITopLevelImpl.PositionChanged { get => PositionChanged; set => PositionChanged = value; }
+
+        public new PixelPoint Position
         {
             get => Native?.Position.ToAvaloniaPixelPoint() ?? default;
             set => Native?.SetPosition(value.ToAvnPoint());
         }
 
-        public Action? Deactivated { get; set; }
-        public Action? Activated { get; set; }
+        public new Action? Deactivated { get; set; }
+        public new Action? Activated { get; set; }
 
-        public Action<PixelPoint>? PositionChanged { get; set; }
+        public new Action<PixelPoint>? PositionChanged { get; set; }
 
-        public Size? FrameSize
+        public new Size? FrameSize
         {
             get
             {

@@ -22,7 +22,6 @@ namespace ControlCatalog
         private Avalonia.Themes.Fluent2.Fluent2Theme? _fluent2Theme;
         private SimpleTheme? _simpleTheme;
         private IStyle? _colorPickerFluent, _colorPickerFluent2, _colorPickerSimple;
-        private MainWindowViewModel _mainWindowViewModel = new MainWindowViewModel();
 
         public App()
         {
@@ -49,15 +48,15 @@ namespace ControlCatalog
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktopLifetime)
             {
-                desktopLifetime.MainWindow = new MainWindow { DataContext = _mainWindowViewModel };
+                desktopLifetime.MainWindow = new MainWindow { DataContext = MainWindowViewModel };
             }
             else if (ApplicationLifetime is IActivityApplicationLifetime singleViewFactoryApplicationLifetime)
             {
-                singleViewFactoryApplicationLifetime.MainViewFactory = () => new MainViewHost(_mainWindowViewModel);
+                singleViewFactoryApplicationLifetime.MainViewFactory = () => new MainViewHost() { DataContext = MainWindowViewModel };
             }
             else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewLifetime)
             {
-                singleViewLifetime.MainView = new MainViewHost(_mainWindowViewModel);
+                singleViewLifetime.MainView = new MainViewHost() { DataContext = MainWindowViewModel };
             }
 
             if (this.TryGetFeature<IActivatableLifetime>() is { } activatableApplicationLifetime)
@@ -107,6 +106,8 @@ namespace ControlCatalog
 
         private CatalogTheme _prevTheme;
         public static CatalogTheme CurrentTheme => ((App)Current!)._prevTheme;
+
+        internal MainWindowViewModel MainWindowViewModel { get; set; } = new MainWindowViewModel();
 
         public event EventHandler? ThemeUpdated;
 
@@ -176,7 +177,7 @@ namespace ControlCatalog
                     {
                         var newWindow = new MainWindow()
                         {
-                            DataContext = app._mainWindowViewModel
+                            DataContext = app.MainWindowViewModel
                         };
                         desktopLifetime.MainWindow = newWindow;
                         newWindow.Show();

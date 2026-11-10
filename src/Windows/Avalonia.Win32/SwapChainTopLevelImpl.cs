@@ -85,6 +85,14 @@ internal class SwapChainTopLevelImpl : ITopLevelImpl
 
     public PixelPoint PointToScreen(Point point) => PixelPoint.FromPoint(point, _scaling);
 
+    public Size? FrameSize => null;
+
+    public PixelPoint Position { get; } = default;
+
+    public Action<PixelPoint>? PositionChanged { get; set; }
+    public Action? Deactivated { get; set; }
+    public Action? Activated { get; set; }
+
     /// <summary>
     /// Raised when Avalonia requests a cursor change. The host is responsible
     /// for translating the (host-supplied) <see cref="ICursorImpl"/> into a

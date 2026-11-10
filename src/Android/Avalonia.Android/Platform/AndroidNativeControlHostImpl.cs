@@ -11,9 +11,9 @@ namespace Avalonia.Android.Platform
 {
     internal class AndroidNativeControlHostImpl : INativeControlHostImpl
     {
-        private readonly AvaloniaView _avaloniaView;
+        private readonly IAvaloniaView _avaloniaView;
 
-        public AndroidNativeControlHostImpl(AvaloniaView avaloniaView)
+        public AndroidNativeControlHostImpl(IAvaloniaView avaloniaView)
         {
             _avaloniaView = avaloniaView;
         }
@@ -25,7 +25,7 @@ namespace Avalonia.Android.Platform
 
         public INativeControlHostControlTopLevelAttachment CreateNewAttachment(Func<IPlatformHandle, IPlatformHandle> create)
         {
-            var parent = new AndroidViewControlHandle(_avaloniaView);
+            var parent = new AndroidViewControlHandle(_avaloniaView.View);
             AndroidNativeControlAttachment? attachment = null;
             try
             {
@@ -94,11 +94,11 @@ namespace Avalonia.Android.Platform
                     _attachedTo = (AndroidNativeControlHostImpl?)value;
                     if (_attachedTo == null)
                     {
-                        oldAttachedTo?._avaloniaView.RemoveView(_view);
+                        oldAttachedTo?._avaloniaView.View.RemoveView(_view);
                     }
                     else
                     {
-                        _attachedTo._avaloniaView.AddView(_view);
+                        _attachedTo._avaloniaView.View.AddView(_view);
                     }
                 }
             }

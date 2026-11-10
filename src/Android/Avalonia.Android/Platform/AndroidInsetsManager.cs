@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Android.App;
 using Android.OS;
 using Android.Views;
@@ -15,7 +16,7 @@ using AndroidWindow = Android.Views.Window;
 
 namespace Avalonia.Android.Platform
 {
-    internal sealed class AndroidInsetsManager : WindowInsetsAnimationCompat.Callback, IInsetsManager, IOnApplyWindowInsetsListener, ViewTreeObserver.IOnGlobalLayoutListener, IInputPane
+    internal sealed class AndroidInsetsManager : WindowInsetsAnimationCompat.Callback, IInsetsWithCaptionManager, IOnApplyWindowInsetsListener, ViewTreeObserver.IOnGlobalLayoutListener, IInputPane
     {
         private readonly Activity _activity;
         private readonly TopLevelImpl _topLevel;
@@ -28,11 +29,12 @@ namespace Avalonia.Android.Platform
         private Rect _previousRect;
         private Insets? _previousImeInset;
         private bool _displayEdgeToEdgePreference;
+        private bool _extendClientIntoCaption;
         private readonly bool _usesLegacyLayouts;
         private readonly bool _isDisplayEdgeToEdgeForced;
 
-        private AndroidWindow Window => _activity.Window ?? throw new InvalidOperationException("Activity.Window must be set."); 
-        
+        private AndroidWindow Window => _activity.Window ?? throw new InvalidOperationException("Activity.Window must be set.");
+
         public event EventHandler<SafeAreaChangedArgs>? SafeAreaChanged;
         public event EventHandler<InputPaneStateEventArgs>? StateChanged;
 
@@ -59,7 +61,7 @@ namespace Avalonia.Android.Platform
             {
                 _displayEdgeToEdgePreference = value;
 
-               UpdateDisplayEdgeToEgdeState();
+                UpdateDisplayEdgeToEgdeState();
             }
         }
 
@@ -173,7 +175,7 @@ namespace Avalonia.Android.Platform
             State = insets is not null && insets.IsVisible(WindowInsetsCompat.Type.Ime()) ? InputPaneState.Open : InputPaneState.Closed;
 
             // Workaround for weird inset values for android 11
-            if(Build.VERSION.SdkInt == BuildVersionCodes.R)
+            if (Build.VERSION.SdkInt == BuildVersionCodes.R)
             {
                 var imeInset = insets?.GetInsets(WindowInsetsCompat.Type.Ime());
                 _previousImeInset ??= imeInset;
@@ -196,7 +198,7 @@ namespace Avalonia.Android.Platform
         {
             Dispatcher.UIThread.Send(_ => SafeAreaChanged?.Invoke(this, new SafeAreaChangedArgs(safeAreaPadding)));
         }
-        
+
         private void NotifyStateChanged(InputPaneState newState, Rect? startRect, Rect endRect, TimeSpan animationDuration, IEasing? easing)
         {
             Dispatcher.UIThread.Send(_ => StateChanged?.Invoke(this, new InputPaneStateEventArgs(newState, startRect, endRect, animationDuration, easing)));
@@ -244,8 +246,30 @@ namespace Avalonia.Android.Platform
                     value = _isDefaultSystemBarLightTheme.Value ? Controls.Platform.SystemBarTheme.Light : Controls.Platform.SystemBarTheme.Dark;
                 }
 
-                compat.AppearanceLightStatusBars = value == Controls.Platform.SystemBarTheme.Light;
-                compat.AppearanceLightNavigationBars = value == Controls.Platform.SystemBarTheme.Light;
+                var isLight = value == Controls.Platform.SystemBarTheme.Light;
+
+                if (OperatingSystem.IsAndroidVersionAtLeast(35))
+                {
+                    var allFlags = WindowInsetsControllerAppearance.LightStatusBars
+                        | WindowInsetsControllerAppearance.LightCaptionBars
+                        | WindowInsetsControllerAppearance.TransparentCaptionBarBackground
+                        | WindowInsetsControllerAppearance.LightNavigationBars;
+
+                    // Clear all flags first, then set the ones we want to keep
+                    Window?.InsetsController?.SetSystemBarsAppearance(0, (int)allFlags);
+
+                    // Set the flags we want to keep. If the caption bar is visible, we want to use LightCaptionBars instead of LightStatusBars
+                    var flags = IsCaptionBarVisible == true ? (_extendClientIntoCaption ? WindowInsetsControllerAppearance.TransparentCaptionBarBackground : WindowInsetsControllerAppearance.LightCaptionBars) :
+                     WindowInsetsControllerAppearance.LightStatusBars
+                        | WindowInsetsControllerAppearance.LightNavigationBars;
+
+                    Window?.InsetsController?.SetSystemBarsAppearance((int)(isLight ? flags : 0), (int)flags);
+                }
+                else
+                {
+                    compat.AppearanceLightStatusBars = isLight;
+                    compat.AppearanceLightNavigationBars = isLight;
+                }
             }
         }
 
@@ -280,6 +304,20 @@ namespace Avalonia.Android.Platform
                         compat.SystemBarsBehavior = WindowInsetsControllerCompat.BehaviorShowTransientBarsBySwipe;
                     }
                 }
+            }
+        }
+
+        public bool IsCaptionBarVisible
+        {
+            get
+            {
+                if (_activity.Window == null)
+                {
+                    return false;
+                }
+                var compat = ViewCompat.GetRootWindowInsets(_activity.Window.DecorView);
+
+                return compat?.IsVisible(WindowInsetsCompat.Type.CaptionBar()) == true;
             }
         }
 
@@ -325,11 +363,90 @@ namespace Avalonia.Android.Platform
 
         public bool DisplaysEdgeToEdge => _displaysEdgeToEdge;
 
+        public bool ExtendClientIntoCaption
+        {
+            get
+            {
+                if (OperatingSystem.IsAndroidVersionAtLeast(35))
+                {
+                    var appearance = Window?.InsetsController?.SystemBarsAppearance ?? 0;
+
+                    return (appearance & (int)WindowInsetsControllerAppearance.TransparentCaptionBarBackground) != 0;
+                }
+
+                return false;
+            }
+            set
+            {
+                _extendClientIntoCaption = value;
+
+                if (OperatingSystem.IsAndroidVersionAtLeast(35) && IsCaptionBarVisible)
+                {
+                    // Clear the caption bar styles
+                    Window?.InsetsController?.SetSystemBarsAppearance(0, (int)(WindowInsetsControllerAppearance.TransparentCaptionBarBackground | WindowInsetsControllerAppearance.LightCaptionBars));
+
+                    if (value)
+                    {
+                        Window?.InsetsController?.SetSystemBarsAppearance((int)(WindowInsetsControllerAppearance.TransparentCaptionBarBackground), (int)(WindowInsetsControllerAppearance.TransparentCaptionBarBackground));
+                    }
+                    else
+                    {
+                        // Restore the system bar theme to the previous value when we disable extending into the caption bar
+                        SystemBarTheme = _statusBarTheme;
+                    }
+                }
+
+                NotifySafeAreaChanged(SafeAreaPadding);
+            }
+        }
+
+        public double CaptionBarHeight
+        {
+            get
+            {
+                if (OperatingSystem.IsAndroidVersionAtLeast(35) && IsCaptionBarVisible)
+                {
+                    var insets = ViewCompat.GetRootWindowInsets(Window?.DecorView)?.ToWindowInsets();
+                    var rects = insets?.GetBoundingRects(WindowInsetsCompat.Type.CaptionBar());
+                    var avRect = rects?.Select(x => new Rect(x.Left, x.Top, x.Right - x.Left, x.Bottom - x.Top))?.ToList();
+                    if (avRect is { Count: > 0 })
+                    {
+                        return avRect[0].Height / _topLevel.RenderScaling;
+                    }
+                }
+                return 0;
+            }
+        }
+
+        public Thickness CaptionBarPadding
+        {
+            get
+            {
+                if (OperatingSystem.IsAndroidVersionAtLeast(35) && IsCaptionBarVisible)
+                {
+                    var insets = ViewCompat.GetRootWindowInsets(Window?.DecorView)?.ToWindowInsets();
+                    var rects = insets?.GetBoundingRects(WindowInsetsCompat.Type.CaptionBar());
+                    var avRect = rects?.Select(x => new Rect(x.Left, x.Top, x.Right - x.Left, x.Bottom - x.Top))?.ToList();
+
+                    if (avRect?.Count == 2)
+                    {
+                        var iconRect = avRect[0];
+                        var buttonRect = avRect[1];
+                        var scaling = _topLevel.RenderScaling;
+
+                        return new Thickness(iconRect.Right / scaling, 0, buttonRect.Width / scaling, 0);
+                    }
+                }
+                return default;
+            }
+        }
+
         internal void ApplyStatusBarState()
         {
             IsSystemBarVisible = _systemUiVisibility;
             SystemBarTheme = _statusBarTheme;
             SystemBarColor = _systemBarColor;
+            ExtendClientIntoCaption = _extendClientIntoCaption;
         }
 
         public override WindowInsetsAnimationCompat.BoundsCompat? OnStart(WindowInsetsAnimationCompat? animation, WindowInsetsAnimationCompat.BoundsCompat? bounds)
@@ -360,6 +477,15 @@ namespace Avalonia.Android.Platform
         public override WindowInsetsCompat? OnProgress(WindowInsetsCompat? insets, IList<WindowInsetsAnimationCompat>? runningAnimations)
         {
             return insets;
+        }
+
+        public void SetClientBoundsInCaption(Rect rect)
+        {
+            if(OperatingSystem.IsAndroidVersionAtLeast(35) && IsCaptionBarVisible && ExtendClientIntoCaption)
+            {
+                rect = rect * _topLevel.RenderScaling;
+                _topLevel.View?.SystemGestureExclusionRects = new List<global::Android.Graphics.Rect>() { new global::Android.Graphics.Rect((int)rect.Left, (int)rect.Top, (int)rect.Right, (int)rect.Bottom) };
+            }
         }
     }
 

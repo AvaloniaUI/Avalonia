@@ -11,8 +11,27 @@
              TopLevel.AutoSafeAreaPadding="{Binding AutoSafeAreaPadding, Mode=TwoWay}">
   <Grid HorizontalAlignment="Stretch"
         VerticalAlignment="Stretch"
+        RowDefinitions="Auto,*"
         Bounds="{Binding CanvasSize, Mode=OneWayToSource}">
+    <Border Grid.Row="0"
+            BorderBrush="Green"
+            BorderThickness="1"
+            HorizontalAlignment="Stretch"
+            Padding="5"
+            IsVisible="{Binding ExtendClientIntoCaption}"
+            Height="{Binding CaptionHeight}"
+            Margin="{Binding CaptionPadding}">
+      <Grid HorizontalAlignment="Left"
+            Name="CaptionBar"
+            ColumnDefinitions="Auto,Auto" ColumnSpacing="20">
+        <TextBlock VerticalAlignment="Center">Caption</TextBlock>
+        <StackPanel Grid.Column="1">
+          <Button Padding="10">Caption Button</Button>
+        </StackPanel>
+      </Grid>
+    </Border>
     <Border BorderBrush="Red"
+            Grid.Row="1"
             Margin="{Binding ViewPadding}"
             BorderThickness="1">
       <Grid>
@@ -28,6 +47,7 @@
     </Border>
     <Border BorderBrush="LimeGreen"
             Margin="{Binding SafeAreaPadding}"
+            Grid.Row="1"
             BorderThickness="1">
       <Grid>
         <Label Margin="5"
@@ -53,6 +73,7 @@
                             VerticalAlignment="Center">
                   <Label HorizontalAlignment="Left">Options:</Label>
                   <CheckBox IsChecked="{Binding DisplayEdgeToEdge}">Display Edge To Edge</CheckBox>
+                  <CheckBox IsVisible="{Binding HasCaptionBar}" IsChecked="{Binding ExtendClientIntoCaption, Mode=TwoWay}">Extend Client into Caption</CheckBox>
                   <CheckBox IsChecked="{Binding UseSafeArea}" IsEnabled="{Binding !AutoSafeAreaPadding}">Use Safe Area</CheckBox>
                   <CheckBox IsChecked="{Binding AutoSafeAreaPadding}">Automatic Paddings</CheckBox>
                   <CheckBox IsChecked="{Binding HideSystemBars}">Hide System Bars</CheckBox>
@@ -71,6 +92,7 @@
       </Grid>
     </Border>
     <Button Margin="{Binding InputPaneMarkerMargin}"
+            Grid.Row="1"
             VerticalAlignment="Bottom"
             Content="X">
       <Button.Transitions>
