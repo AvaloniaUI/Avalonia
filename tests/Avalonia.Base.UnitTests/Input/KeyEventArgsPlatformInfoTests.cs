@@ -23,13 +23,13 @@ namespace Avalonia.Base.UnitTests.Input
             var received = Send(type, Key.Z, RawInputModifiers.Control, PhysicalKey.Z, null, e =>
             {
                 e.KeyText = "\x1a";
-                e.KeyTextIgnoringModifiers = "z";
+                e.AlternateKeyText = "z";
                 e.ConsumedModifiers = RawInputModifiers.Shift;
                 e.PlatformKeyInfo = platformKeyInfo;
             });
 
             Assert.Equal("\x1a", received.KeyText);
-            Assert.Equal("z", received.KeyTextIgnoringModifiers);
+            Assert.Equal("z", received.AlternateKeyText);
             Assert.Equal(KeyModifiers.Shift, received.ConsumedModifiers);
             Assert.Equal(platformKeyInfo, received.PlatformKeyInfo);
         }

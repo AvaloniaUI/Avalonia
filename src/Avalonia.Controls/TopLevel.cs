@@ -316,7 +316,7 @@ namespace Avalonia.Controls
                             KeyDeviceType = rawKeyEventArgs.KeyDeviceType,
                             KeySymbol = rawKeyEventArgs.KeySymbol,
                             KeyText = rawKeyEventArgs.KeyText,
-                            KeyTextIgnoringModifiers = rawKeyEventArgs.KeyTextIgnoringModifiers,
+                            AlternateKeyText = rawKeyEventArgs.AlternateKeyText,
                             ConsumedModifiers = (KeyModifiers?)rawKeyEventArgs.ConsumedModifiers,
                             PlatformKeyInfo = rawKeyEventArgs.PlatformKeyInfo
                         };

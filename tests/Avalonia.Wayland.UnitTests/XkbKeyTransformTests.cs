@@ -74,7 +74,7 @@ public class XkbKeyTransformTests : IDisposable
         return XkbKeyTransform.ModifiersFromXkbMask(_keymap.GetConsumedModifiers(evdev) & mods);
     }
 
-    private (Key key, string? keySymbol, string? keyText, string? textIgnoringModifiers) Resolve(uint evdev, uint mods,
+    private (Key key, string? keySymbol, string? keyText, string? alternateKeyText) Resolve(uint evdev, uint mods,
         uint group = 0)
     {
         if (_keymap is null)
@@ -88,36 +88,36 @@ public class XkbKeyTransformTests : IDisposable
     [Fact]
     public void Ctrl_Letter_Gives_Control_Char_And_Plain_Letter()
     {
-        var (key, keySymbol, keyText, textIgnoringModifiers) = Resolve(KeyA, Control);
+        var (key, keySymbol, keyText, alternateKeyText) = Resolve(KeyA, Control);
         Assert.Equal(Key.A, key);
         Assert.Null(keySymbol);
         Assert.Equal("\x01", keyText);
-        Assert.Equal("a", textIgnoringModifiers);
+        Assert.Equal("a", alternateKeyText);
     }
 
     [Fact]
     public void Shifted_Punctuation_Keeps_Shift_Level()
     {
-        var (_, _, keyText, textIgnoringModifiers) = Resolve(Key1, Shift | Control);
+        var (_, _, keyText, alternateKeyText) = Resolve(Key1, Shift | Control);
         Assert.Equal("!", keyText);
-        Assert.Equal("!", textIgnoringModifiers);
+        Assert.Equal("!", alternateKeyText);
     }
 
     [Fact]
     public void Level3_Is_Kept()
     {
-        var (_, _, keyText, textIgnoringModifiers) = Resolve(KeyA, Mod5);
+        var (_, _, keyText, alternateKeyText) = Resolve(KeyA, Mod5);
         Assert.Equal("æ", keyText);
-        Assert.Equal("æ", textIgnoringModifiers);
+        Assert.Equal("æ", alternateKeyText);
     }
 
     [Fact]
     public void Ctrl_In_Non_Latin_Group_Uses_Latin_Fallback()
     {
-        var (key, _, keyText, textIgnoringModifiers) = Resolve(KeyZ, Control, 1);
+        var (key, _, keyText, alternateKeyText) = Resolve(KeyZ, Control, 1);
         Assert.Equal(Key.Z, key);
         Assert.Equal("\x1a", keyText);
-        Assert.Equal("я", textIgnoringModifiers);
+        Assert.Equal("я", alternateKeyText);
     }
 
     [Fact]
@@ -142,7 +142,7 @@ public class XkbKeyTransformTests : IDisposable
     public void Level_Selected_By_Ctrl_Is_Reflected()
     {
         // Documented limitation: the text follows the level that Ctrl selects
-        var (_, _, _, textIgnoringModifiers) = Resolve(KeyLeftBrace, Control);
-        Assert.Equal("{", textIgnoringModifiers);
+        var (_, _, _, alternateKeyText) = Resolve(KeyLeftBrace, Control);
+        Assert.Equal("{", alternateKeyText);
     }
 }

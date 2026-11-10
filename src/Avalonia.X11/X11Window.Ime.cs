@@ -110,7 +110,7 @@ namespace Avalonia.X11
                     keySymbol);
 
             if (forwardedKey.Type == RawKeyEventType.KeyDown && _x11.HasXkb)
-                args.KeyTextIgnoringModifiers = GetKeysymTextXkb(x11Key);
+                args.AlternateKeyText = GetKeysymTextXkb(x11Key);
             args.PlatformKeyInfo = new PlatformKeyInfo(KnownPlatformKeyInfoFormats.X11)
             {
                 VirtualKey = x11Key != 0 ? (uint)x11Key : null
@@ -144,9 +144,9 @@ namespace Avalonia.X11
                     FilterControlChars(keyText))
                 {
                     KeyText = keyText,
-                    KeyTextIgnoringModifiers = _x11.HasXkb ?
+                    AlternateKeyText = _x11.HasXkb ?
                         GetKeysymTextXkb(x11Key) :
-                        LookupStringIgnoringModifiersXCore(ev.KeyEvent),
+                        LookupAlternateKeyTextXCore(ev.KeyEvent),
                     ConsumedModifiers = GetConsumedModifiers(ref ev.KeyEvent)
                 };
             }
@@ -315,7 +315,7 @@ namespace Avalonia.X11
             return (x11Key, key, symbol);
         }
 
-        private static unsafe string? LookupStringIgnoringModifiersXCore(XKeyEvent keyEvent)
+        private static unsafe string? LookupAlternateKeyTextXCore(XKeyEvent keyEvent)
         {
             const int bufferSize = 16;
             var buffer = stackalloc byte[bufferSize];

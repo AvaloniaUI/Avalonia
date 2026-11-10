@@ -40,7 +40,7 @@ namespace ControlCatalog.Pages
                 KeyModifiers = e.KeyModifiers.ToString(),
                 KeySymbol = Escape(e.KeySymbol),
                 KeyText = Escape(e.KeyText),
-                KeyTextIgnoringModifiers = Escape(e.KeyTextIgnoringModifiers),
+                AlternateKeyText = Escape(e.AlternateKeyText),
                 ConsumedModifiers = e.ConsumedModifiers?.ToString() ?? "",
                 ScanCode = Hex(e.PlatformKeyInfo?.ScanCode),
                 VirtualKey = Hex(e.PlatformKeyInfo?.VirtualKey),
@@ -123,7 +123,7 @@ namespace ControlCatalog.Pages
         public string KeyModifiers { get; init; } = "";
         public string KeySymbol { get; init; } = "";
         public string KeyText { get; init; } = "";
-        public string KeyTextIgnoringModifiers { get; init; } = "";
+        public string AlternateKeyText { get; init; } = "";
         public string ConsumedModifiers { get; init; } = "";
         public string ScanCode { get; init; } = "";
         public string VirtualKey { get; init; } = "";

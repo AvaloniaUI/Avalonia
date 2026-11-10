@@ -843,7 +843,7 @@ interface IAvnTopLevelEvents : IUnknown
                                     );
     bool RawKeyEvent(AvnRawKeyEventType type, u_int64_t timeStamp, AvnInputModifiers modifiers,
                           AvnKey key, AvnPhysicalKey physicalKey, [const] char* keySymbol,
-                          IAvnString* keyText, IAvnString* keyTextIgnoringModifiers, AvnKeyEventInfo info);
+                          IAvnString* keyText, IAvnString* alternateKeyText, AvnKeyEventInfo info);
     bool RawTextInputEvent(u_int64_t timeStamp, [const] char* text);
     void ScalingChanged(double scaling);
     void RunRenderPriorityJobs();

@@ -256,7 +256,7 @@ namespace Avalonia.Input
                             KeySymbol = keyInput.KeySymbol,
                             KeyDeviceType = keyInput.KeyDeviceType,
                             KeyText = keyInput.KeyText,
-                            KeyTextIgnoringModifiers = keyInput.KeyTextIgnoringModifiers,
+                            AlternateKeyText = keyInput.AlternateKeyText,
                             ConsumedModifiers = keyInput.ConsumedModifiers?.ToKeyModifiers(),
                             PlatformKeyInfo = keyInput.PlatformKeyInfo,
                             Source = element

@@ -34,7 +34,7 @@
         <TableViewColumn Header="KeyModifiers" Binding="{Binding KeyModifiers}" Width="*" />
         <TableViewColumn Header="KeySymbol" Binding="{Binding KeySymbol}" Width="*" />
         <TableViewColumn Header="KeyText" Binding="{Binding KeyText}" Width="*" />
-        <TableViewColumn Header="KeyTextIgnoringModifiers" Binding="{Binding KeyTextIgnoringModifiers}" Width="1.5*" />
+        <TableViewColumn Header="AlternateKeyText" Binding="{Binding AlternateKeyText}" Width="1.5*" />
         <TableViewColumn Header="ConsumedModifiers" Binding="{Binding ConsumedModifiers}" Width="1.2*" />
         <TableViewColumn Header="ScanCode" Binding="{Binding ScanCode}" Width="*" />
         <TableViewColumn Header="VirtualKey" Binding="{Binding VirtualKey}" Width="*" />

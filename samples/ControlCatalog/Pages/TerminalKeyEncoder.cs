@@ -6,7 +6,7 @@ namespace ControlCatalog.Pages
 {
     /// <summary>
     /// Turns key presses into the bytes that a terminal emulator sends to the program, the way xterm-like terminals
-    /// do. It shows how <see cref="KeyEventArgs.KeyText"/>, <see cref="KeyEventArgs.KeyTextIgnoringModifiers"/> and
+    /// do. It shows how <see cref="KeyEventArgs.KeyText"/>, <see cref="KeyEventArgs.AlternateKeyText"/> and
     /// <see cref="KeyEventArgs.ConsumedModifiers"/> are used.
     /// </summary>
     /// <remarks>
@@ -56,7 +56,7 @@ namespace ControlCatalog.Pages
 
             // On macOS Option types characters, unless it is used as Meta
             if (alt && altIsMeta)
-                return IsPrintable(e.KeyTextIgnoringModifiers) ? Bytes(Esc + e.KeyTextIgnoringModifiers) : Array.Empty<byte>();
+                return IsPrintable(e.AlternateKeyText) ? Bytes(Esc + e.AlternateKeyText) : Array.Empty<byte>();
 
             return null;
         }
@@ -117,7 +117,7 @@ namespace ControlCatalog.Pages
                 return text;
 
             // 2. The caret-notation transform (XkbToControl) of the char without Ctrl
-            if (e.KeyTextIgnoringModifiers is { Length: 1 } symbol && ToControl(symbol[0]) is { } c)
+            if (e.AlternateKeyText is { Length: 1 } symbol && ToControl(symbol[0]) is { } c)
                 return c.ToString();
 
             // 3. The Latin fallback of Key, for layouts without Latin letters

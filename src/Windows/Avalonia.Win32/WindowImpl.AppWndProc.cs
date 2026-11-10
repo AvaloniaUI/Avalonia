@@ -1555,18 +1555,18 @@ namespace Avalonia.Win32
             var isControlOrAlt = GetKeyState((int)VirtualKeyStates.VK_CONTROL) < 0
                                  || GetKeyState((int)VirtualKeyStates.VK_MENU) < 0;
 
-            string? keySymbol, keyTextIgnoringModifiers;
+            string? keySymbol, alternateKeyText;
             if (isSystemKey)
             {
                 // No ToUnicodeEx call during WM_SYSKEYDOWN: it breaks the keyboard state.
                 keySymbol = KeyInterop.GetKeySymbolFromVirtualKey(virtualKey);
-                keyTextIgnoringModifiers = KeyInterop.IsPrintable(keyText) ?
+                alternateKeyText = KeyInterop.IsPrintable(keyText) ?
                     keyText :
                     KeyInterop.GetTextIgnoringControlAndAlt(virtualKey);
             }
             else if (!isControlOrAlt)
             {
-                keySymbol = KeyInterop.GetKeySymbol(virtualKey, keyData, out keyTextIgnoringModifiers);
+                keySymbol = KeyInterop.GetKeySymbol(virtualKey, keyData, out alternateKeyText);
             }
             else
             {
@@ -1574,7 +1574,7 @@ namespace Avalonia.Win32
                 // another ToUnicodeEx call. At most one call per key event keeps the dead-key state intact
                 // on Windows versions that ignore the "do not change keyboard state" flag.
                 keySymbol = deadChar ?? KeyInterop.FilterKeySymbol(keyText);
-                keyTextIgnoringModifiers = KeyInterop.IsPrintable(keyText) ?
+                alternateKeyText = KeyInterop.IsPrintable(keyText) ?
                     keyText :
                     KeyInterop.GetTextIgnoringControlAndAlt(virtualKey);
             }
@@ -1582,7 +1582,7 @@ namespace Avalonia.Win32
             // A dead key produces no text by itself, and the translation above sees the dead state that
             // TranslateMessage already set, so it reports the char twice
             if (deadChar != null)
-                keyTextIgnoringModifiers = deadChar;
+                alternateKeyText = deadChar;
 
             // A key that produces text uses a pending dead key. If that text is printable, the key is masked, so that
             // it can't match any gesture. Keys like Enter produce the dead char and a control char, and stay unmasked.
@@ -1607,7 +1607,7 @@ namespace Avalonia.Win32
                 keySymbol)
             {
                 KeyText = keyText,
-                KeyTextIgnoringModifiers = keyTextIgnoringModifiers,
+                AlternateKeyText = alternateKeyText,
                 ConsumedModifiers = KeyInterop.GetConsumedModifiers(virtualKey, WindowsKeyboardDevice.Instance.Modifiers),
                 PlatformKeyInfo = KeyInterop.GetPlatformKeyInfo(virtualKey, keyData)
             };

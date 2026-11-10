@@ -48,7 +48,7 @@ partial class WindowBaseImpl
                 new RawKeyEventArgs(Keyboard, timestamp, InputRoot!, type, key.Key, modifiers,
                     key.PhysicalKey, key.KeySymbol);
             args.KeyText = key.KeyText;
-            args.KeyTextIgnoringModifiers = key.KeyTextIgnoringModifiers;
+            args.AlternateKeyText = key.AlternateKeyText;
             args.ConsumedModifiers = key.ConsumedModifiers;
             args.PlatformKeyInfo = key.PlatformKeyInfo;
             return args;
@@ -120,7 +120,7 @@ partial class WindowBaseImpl
                 return;
 
             _repeatKey = new WaylandKeyInfo(keyArgs.Key, keyArgs.PhysicalKey, keyArgs.KeySymbol, keyArgs.KeyText,
-                keyArgs.KeyTextIgnoringModifiers, keyArgs.ConsumedModifiers, platformKeyInfo);
+                keyArgs.AlternateKeyText, keyArgs.ConsumedModifiers, platformKeyInfo);
             _repeatModifiers = keyArgs.Modifiers;
 
             var intervalMs = Math.Max(1, 1000 / _keyRepeatRate);

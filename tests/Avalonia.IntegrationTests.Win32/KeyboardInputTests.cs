@@ -72,7 +72,7 @@ public sealed class KeyboardInputTests : IDisposable
     }
 
     [Fact]
-    public async Task Dead_Key_Pressed_Twice_Reports_Dead_Char_As_Text_Ignoring_Modifiers()
+    public async Task Dead_Key_Pressed_Twice_Reports_Dead_Char_As_Alternate_Key_Text()
     {
         UseGermanLayout();
         var log = await CreateWindowAsync(100);
@@ -83,7 +83,7 @@ public sealed class KeyboardInputTests : IDisposable
 
         await WaitForAsync(() => log.Text.Length > 0);
         Assert.Equal("^^", log.LastKeyDown?.KeyText);
-        Assert.Equal("^", log.LastKeyDown?.KeyTextIgnoringModifiers);
+        Assert.Equal("^", log.LastKeyDown?.AlternateKeyText);
     }
 
     [Fact]

@@ -199,7 +199,7 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
         AvnPhysicalKey physicalKey,
         string keySymbol,
         IAvnString? keyText,
-        IAvnString? keyTextIgnoringModifiers,
+        IAvnString? alternateKeyText,
         AvnKeyEventInfo info)
     {
         if (_inputRoot is null)
@@ -223,7 +223,7 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
             keySymbol)
         {
             KeyText = keyText?.String,
-            KeyTextIgnoringModifiers = keyTextIgnoringModifiers?.String,
+            AlternateKeyText = alternateKeyText?.String,
             ConsumedModifiers = info.HasConsumedModifiers.FromComBool() ?
                 (RawInputModifiers)info.ConsumedModifiers :
                 null,
@@ -473,10 +473,10 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
         }
 
         int IAvnTopLevelEvents.RawKeyEvent(AvnRawKeyEventType type, ulong timeStamp, AvnInputModifiers modifiers, AvnKey key, AvnPhysicalKey physicalKey, string keySymbol,
-            IAvnString? keyText, IAvnString? keyTextIgnoringModifiers, AvnKeyEventInfo info)
+            IAvnString? keyText, IAvnString? alternateKeyText, AvnKeyEventInfo info)
         {
             return _parent.RawKeyEvent(type, timeStamp, modifiers, key, physicalKey, keySymbol,
-                keyText, keyTextIgnoringModifiers, info).AsComBool();
+                keyText, alternateKeyText, info).AsComBool();
         }
 
         int IAvnTopLevelEvents.RawTextInputEvent(ulong timeStamp, string text)

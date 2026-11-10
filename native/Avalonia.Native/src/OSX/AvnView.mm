@@ -808,10 +808,10 @@ static bool KeyboardInputSourceComposes(NSString* sourceId)
     if ([characters length] != 0)
         keyText = CreateAvnString(characters);
     // Option counts as Alt here, so a terminal can use it as a Meta key
-    auto symbolIgnoringModifiers = KeySymbolFromScanCode(scanCode, [event modifierFlags] & ~NSEventModifierFlagOption, true);
-    ComPtr<IAvnString> keyTextIgnoringModifiers;
-    if (symbolIgnoringModifiers != nullptr)
-        keyTextIgnoringModifiers = CreateAvnString(symbolIgnoringModifiers);
+    auto alternateSymbol = KeySymbolFromScanCode(scanCode, [event modifierFlags] & ~NSEventModifierFlagOption, true);
+    ComPtr<IAvnString> alternateKeyText;
+    if (alternateSymbol != nullptr)
+        alternateKeyText = CreateAvnString(alternateSymbol);
 
     AvnKeyEventInfo info = {};
     info.HasConsumedModifiers = ConsumedModifiersFromScanCode(scanCode, [event modifierFlags], &info.ConsumedModifiers);
@@ -820,7 +820,7 @@ static bool KeyboardInputSourceComposes(NSString* sourceId)
     info.NativeModifiers = [event modifierFlags];
 
     auto handled = parent->TopLevelEvents->RawKeyEvent(KeyDown, timestamp, modifiers, key, physicalKey, keySymbolUtf8,
-                                                       keyText, keyTextIgnoringModifiers, info);
+                                                       keyText, alternateKeyText, info);
 
     if(handled)
     {

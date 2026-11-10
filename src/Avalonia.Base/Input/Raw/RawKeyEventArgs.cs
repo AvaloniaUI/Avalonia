@@ -45,7 +45,7 @@ namespace Avalonia.Input.Raw
 
         public string? KeyText { get; set; }
 
-        public string? KeyTextIgnoringModifiers { get; set; }
+        public string? AlternateKeyText { get; set; }
 
         public RawInputModifiers? ConsumedModifiers { get; set; }
 

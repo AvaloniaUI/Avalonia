@@ -104,13 +104,14 @@ public class KeyEventArgs : RoutedEventArgs, IKeyModifiersEventArgs
     /// </para>
     /// <para>It is only set for <see cref="InputElement.KeyDownEvent"/>.</para>
     /// </remarks>
-    /// <seealso cref="KeyTextIgnoringModifiers"/>
+    /// <seealso cref="AlternateKeyText"/>
     public string? KeyText { get; init; }
 
     /// <summary>
     /// <para>
-    /// Gets the text of the key with Ctrl, Alt and Meta ignored and the other modifiers applied, or null if the key
-    /// has no text. Like <c>NSEvent.charactersIgnoringModifiers</c> on macOS, the value keeps Shift.
+    /// Gets an alternate text of the key, for chords where <see cref="KeyText"/> is not the key's character: the
+    /// text with Ctrl, Alt and Meta ignored and the other modifiers applied, or null if the key has no text. Like
+    /// <c>NSEvent.charactersIgnoringModifiers</c> on macOS, the value keeps Shift.
     /// </para>
     /// <para>
     /// For example, Ctrl+Z produces <c>"z"</c>, Ctrl+Shift+2 on a US layout produces <c>"@"</c>, Ctrl+Я on a
@@ -139,7 +140,7 @@ public class KeyEventArgs : RoutedEventArgs, IKeyModifiersEventArgs
     /// </para>
     /// </remarks>
     /// <seealso cref="KeyText"/>
-    public string? KeyTextIgnoringModifiers { get; init; }
+    public string? AlternateKeyText { get; init; }
 
     /// <summary>
     /// <para>

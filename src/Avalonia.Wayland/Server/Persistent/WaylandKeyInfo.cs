@@ -11,6 +11,6 @@ internal sealed record WaylandKeyInfo(
     PhysicalKey PhysicalKey,
     string? KeySymbol,
     string? KeyText,
-    string? KeyTextIgnoringModifiers,
+    string? AlternateKeyText,
     RawInputModifiers? ConsumedModifiers,
     PlatformKeyInfo PlatformKeyInfo);
