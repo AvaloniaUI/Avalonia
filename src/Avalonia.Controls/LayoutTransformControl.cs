@@ -252,7 +252,7 @@ namespace Avalonia.Controls
 
         private Size RoundLayoutSizeUp(Size size)
         {
-            return UseLayoutRounding ? LayoutHelper.RoundLayoutSizeUp(size, LayoutHelper.GetLayoutScale(this)) : size;
+            return UseLayoutRounding ? LayoutHelper.RoundLayoutSizeUp(size, LayoutHelper.GetLayoutScale(TransformRoot!)) : size;
         }
 
         /// <summary>
