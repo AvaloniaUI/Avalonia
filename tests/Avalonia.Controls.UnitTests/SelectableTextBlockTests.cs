@@ -475,6 +475,37 @@ namespace Avalonia.Controls.UnitTests
             Assert.True(target.DesiredSize.Width > 0, $"DesiredSize was {target.DesiredSize}");
         }
 
+        [Fact]
+        public void Double_Click_Selects_Word_With_Combining_Characters()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var target = new SelectableTextBlock
+                {
+                    Width = 300,
+                    Text = "Hello مرحبًا World"
+                };
+
+                var root = new TestRoot(target)
+                {
+                    ClientSize = new Size(400, 100)
+                };
+
+                root.Measure(root.ClientSize);
+                root.Arrange(new Rect(root.ClientSize));
+                root.ExecuteInitialLayoutPass();
+
+                var charBounds = target.TextLayout.HitTestTextPosition(9); // inside "مرحبًا"
+                var clickPoint = target.TranslatePoint(charBounds.Center, root)!.Value;
+
+                var mouse = new MouseTestHelper();
+                mouse.DoubleClick(target, position: clickPoint);
+
+                Assert.Equal(6, target.SelectionStart);
+                Assert.Equal(12, target.SelectionEnd);
+            }
+        }
+
         private class TestTopLevel(ITopLevelImpl impl) : TopLevel(impl);
     }
 }

@@ -387,6 +387,212 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Control_Backspace_Should_Remove_Word_With_Combining_Characters()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                TextBox textBox = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "First مرحبًا Third",
+                    CaretIndex = 12, // end of "مرحبًا"
+                };
+
+                textBox.ApplyTemplate();
+
+                // Delete entire word "مرحبًا"
+                RaiseKeyEvent(textBox, Key.Back, KeyModifiers.Control);
+                Assert.Equal("First Third", textBox.Text);
+            }
+        }
+
+        [Fact]
+        public void Control_Left_Right_Should_Navigate_Words_With_Combining_Characters()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                TextBox textBox = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "First مرحبًا Third",
+                    CaretIndex = 12, // end of "مرحبًا"
+                };
+
+                textBox.ApplyTemplate();
+
+                // Move left by word: should jump across "مرحبًا" to index 6 (start of the word)
+                RaiseKeyEvent(textBox, Key.Left, KeyModifiers.Control);
+                Assert.Equal(6, textBox.CaretIndex);
+
+                // Move right by word: should jump to index 12 (end of the word)
+                RaiseKeyEvent(textBox, Key.Right, KeyModifiers.Control);
+                Assert.Equal(12, textBox.CaretIndex);
+            }
+        }
+
+        [Fact]
+        public void Double_Click_Selects_Word_With_Combining_Characters()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "Hello مرحبًا World",
+                    Width = 300,
+                    Height = 40
+                };
+
+                var root = new TestRoot
+                {
+                    Child = target
+                };
+
+                target.ApplyTemplate();
+                root.LayoutManager.ExecuteInitialLayoutPass();
+
+                var textPresenter = target.FindDescendantOfType<TextPresenter>()!;
+                var charBounds = textPresenter.TextLayout.HitTestTextPosition(9); // inside "مرحبًا"
+                var clickPoint = target.TranslatePoint(charBounds.Center, root)!.Value;
+
+                var mouse = new MouseTestHelper();
+                mouse.DoubleClick(target, position: clickPoint);
+
+                Assert.Equal(6, target.SelectionStart);
+                Assert.Equal(12, target.SelectionEnd);
+            }
+        }
+
+        [Fact]
+        public void Control_Delete_Should_Remove_Word_With_Combining_Characters()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                TextBox textBox = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "First مرحبًا Third",
+                    CaretIndex = 6, // start of "مرحبًا"
+                };
+
+                textBox.ApplyTemplate();
+
+                // Delete entire word "مرحبًا"
+                RaiseKeyEvent(textBox, Key.Delete, KeyModifiers.Control);
+                Assert.Equal("First Third", textBox.Text);
+            }
+        }
+
+        [Theory]
+        [InlineData("Hello مرحبًا World", 8, 6, 12)] // Arabic with Tanween at end
+        [InlineData("Hello اضطُررت World", 9, 6, 13)] // Arabic with Dammah in middle
+        [InlineData("Hello شكراً World", 8, 6, 11)] // Arabic with Tanween
+        [InlineData("Hello re\u0301sume\u0301 World", 8, 6, 14)] // Latin with combining acute accents
+        [InlineData("Hello हिंदी World", 8, 6, 11)] // Devanagari with combining marks
+        [InlineData("Hello שָׁלוֹם World", 8, 6, 13)] // Hebrew with Niqqud
+        public void Double_Click_Selects_Whole_Word_With_Combining_Characters_Multilingual(
+            string text, int clickOffset, int expectedStart, int expectedEnd)
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = text,
+                    Width = 400,
+                    Height = 40
+                };
+
+                var root = new TestRoot
+                {
+                    Child = target
+                };
+
+                target.ApplyTemplate();
+                root.LayoutManager.ExecuteInitialLayoutPass();
+
+                var textPresenter = target.FindDescendantOfType<TextPresenter>()!;
+                var charBounds = textPresenter.TextLayout.HitTestTextPosition(clickOffset);
+                var clickPoint = target.TranslatePoint(charBounds.Center, root)!.Value;
+
+                var mouse = new MouseTestHelper();
+                mouse.DoubleClick(target, position: clickPoint);
+
+                Assert.Equal(expectedStart, target.SelectionStart);
+                Assert.Equal(expectedEnd, target.SelectionEnd);
+            }
+        }
+
+        [Theory]
+        [InlineData("مرحبًا")]
+        [InlineData("شكراً")]
+        [InlineData("اضطُررت")]
+        [InlineData("re\u0301sume\u0301")]
+        [InlineData("हिंदी")]
+        [InlineData("שָׁלוֹם")]
+        public void Control_Backspace_And_Delete_On_Standalone_Word_With_Combining_Characters(string word)
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                // Test Ctrl+Backspace from end of word
+                var tbBack = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = word,
+                    CaretIndex = word.Length,
+                };
+                tbBack.ApplyTemplate();
+                RaiseKeyEvent(tbBack, Key.Back, KeyModifiers.Control);
+                Assert.Equal(string.Empty, tbBack.Text);
+
+                // Test Ctrl+Delete from start of word
+                var tbDel = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = word,
+                    CaretIndex = 0,
+                };
+                tbDel.ApplyTemplate();
+                RaiseKeyEvent(tbDel, Key.Delete, KeyModifiers.Control);
+                Assert.Equal(string.Empty, tbDel.Text);
+            }
+        }
+
+        [Fact]
+        public void Double_Click_Word_With_Adjacent_Punctuation()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "(مرحبًا)!",
+                    Width = 300,
+                    Height = 40
+                };
+
+                var root = new TestRoot
+                {
+                    Child = target
+                };
+
+                target.ApplyTemplate();
+                root.LayoutManager.ExecuteInitialLayoutPass();
+
+                var textPresenter = target.FindDescendantOfType<TextPresenter>()!;
+                var charBounds = textPresenter.TextLayout.HitTestTextPosition(3); // inside "مرحبًا"
+                var clickPoint = target.TranslatePoint(charBounds.Center, root)!.Value;
+
+                var mouse = new MouseTestHelper();
+                mouse.DoubleClick(target, position: clickPoint);
+
+                // Should select "مرحبًا" (index 1 to 7) without '(' or ')'
+                Assert.Equal(1, target.SelectionStart);
+                Assert.Equal(7, target.SelectionEnd);
+            }
+        }
+
+        [Fact]
         public void Setting_SelectionStart_To_SelectionEnd_Sets_CaretPosition_To_SelectionStart()
         {
             using (UnitTestApplication.Start(Services))

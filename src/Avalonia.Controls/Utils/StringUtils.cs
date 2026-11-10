@@ -1,18 +1,10 @@
 using System;
-using System.Globalization;
 using Avalonia.Media.TextFormatting.Unicode;
 
 namespace Avalonia.Controls.Utils
 {
     internal static class StringUtils
     {
-        private enum CharClass
-        {
-            CharClassUnknown,
-            CharClassWhitespace,
-            CharClassAlphaNumeric,
-        }
-
         public static bool IsEol(char c)
         {
             return c == '\r' || c == '\n';
@@ -20,109 +12,75 @@ namespace Avalonia.Controls.Utils
 
         public static bool IsStartOfWord(string text, int index)
         {
-            if (index >= text.Length)
+            if (string.IsNullOrEmpty(text) || index < 0 || index >= text.Length)
             {
                 return false;
             }
 
-            var codepoint = new Codepoint(text[index]);
-
-            // A 'word' starts with an AlphaNumeric or some punctuation symbols immediately
-            // preceeded by lwsp.
-            if (index > 0)
+            if (char.IsWhiteSpace(text[index]))
             {
-                var previousCodepoint = new Codepoint(text[index - 1]);
+                return false;
+            }
 
-                if (!previousCodepoint.IsWhiteSpace)
+            var lineStart = LineBegin(text, index);
+            var lineEnd = LineEnd(text, index);
+            var lineSpan = text.AsSpan(lineStart, lineEnd - lineStart);
+            var relIndex = index - lineStart;
+
+            var enumerator = new WordBreakEnumerator(lineSpan);
+            while (enumerator.MoveNext(out var segment))
+            {
+                if (segment.Offset == relIndex)
                 {
-                    return false;
+                    return !IsWhitespace(lineSpan.Slice(segment.Offset, segment.Length));
                 }
 
-                if (previousCodepoint.IsBreakChar)
+                if (segment.Offset > relIndex)
                 {
-                    return true;
+                    break;
                 }
             }
 
-            switch (codepoint.GeneralCategory)
-            {
-                case GeneralCategory.LowercaseLetter:
-                case GeneralCategory.TitlecaseLetter:
-                case GeneralCategory.UppercaseLetter:
-                case GeneralCategory.DecimalNumber:
-                case GeneralCategory.LetterNumber:
-                case GeneralCategory.OtherNumber:
-                case GeneralCategory.DashPunctuation:
-                case GeneralCategory.InitialPunctuation:
-                case GeneralCategory.OpenPunctuation:
-                case GeneralCategory.CurrencySymbol:
-                case GeneralCategory.MathSymbol:
-                    return true;
-
-                // TODO: How do you do this in .NET?
-                // case UnicodeCategory.OtherPunctuation:
-                //    // words cannot start with '.', but they can start with '&' or '*' (for example)
-                //    return g_unichar_break_type(buffer->text[index]) == G_UNICODE_BREAK_ALPHABETIC;
-                default:
-                    return false;
-            }
+            return false;
         }
 
         public static bool IsEndOfWord(string text, int index)
         {
-            if (index >= text.Length)
+            if (string.IsNullOrEmpty(text) || index >= text.Length)
             {
                 return true;
             }
 
-            var codepoint = new Codepoint(text[index]);
-
-            if (!codepoint.IsWhiteSpace)
+            if (index <= 0)
             {
                 return false;
             }
-            // A 'word' starts with an AlphaNumeric or some punctuation symbols immediately
-            // preceeded by lwsp.
-            if (index > 0)
-            {
-                if (index + 1 < text.Length)
-                {
-                    var nextCodePoint = new Codepoint(text[index + 1]);
 
-                    if (nextCodePoint.IsBreakChar)
-                    {
-                        return true;
-                    }
-                }
-                else
-                {
-                    return true;
-                }
-               
+            if (char.IsWhiteSpace(text[index]))
+            {
+                return true;
             }
 
-            switch (codepoint.GeneralCategory)
-            {
-                case GeneralCategory.LowercaseLetter:
-                case GeneralCategory.TitlecaseLetter:
-                case GeneralCategory.UppercaseLetter:
-                case GeneralCategory.DecimalNumber:
-                case GeneralCategory.LetterNumber:
-                case GeneralCategory.OtherNumber:
-                case GeneralCategory.DashPunctuation:
-                case GeneralCategory.InitialPunctuation:
-                case GeneralCategory.OpenPunctuation:
-                case GeneralCategory.CurrencySymbol:
-                case GeneralCategory.MathSymbol:
-                    return false;
+            var lineStart = LineBegin(text, index);
+            var lineEnd = LineEnd(text, index);
+            var lineSpan = text.AsSpan(lineStart, lineEnd - lineStart);
+            var relIndex = index - lineStart;
 
-                // TODO: How do you do this in .NET?
-                // case UnicodeCategory.OtherPunctuation:
-                //    // words cannot start with '.', but they can start with '&' or '*' (for example)
-                //    return g_unichar_break_type(buffer->text[index]) == G_UNICODE_BREAK_ALPHABETIC;
-                default:
-                    return true;
+            var enumerator = new WordBreakEnumerator(lineSpan);
+            while (enumerator.MoveNext(out var segment))
+            {
+                if (segment.Offset + segment.Length == relIndex)
+                {
+                    return !IsWhitespace(lineSpan.Slice(segment.Offset, segment.Length));
+                }
+
+                if (segment.Offset >= relIndex)
+                {
+                    break;
+                }
             }
+
+            return false;
         }
 
         public static int PreviousWord(string text, int cursor)
@@ -132,14 +90,10 @@ namespace Avalonia.Controls.Utils
                 return 0;
             }
 
-            cursor = Math.Min(cursor, text.Length);
+            cursor = Math.Clamp(cursor, 0, text.Length);
 
-            int begin;
-            int i;
+            var lf = LineBegin(text, cursor) - 1;
             int cr;
-            int lf;
-
-            lf = LineBegin(text, cursor) - 1;
 
             if (lf > 0 && text[lf] == '\n' && text[lf - 1] == '\r')
             {
@@ -150,46 +104,80 @@ namespace Avalonia.Controls.Utils
                 cr = lf;
             }
 
-            // if the cursor is at the beginning of the line, return the end of the prev line
+            // If cursor is at the beginning of the line, return the end of the previous line
             if (cursor - 1 == lf)
             {
-                return (cr > 0) ? cr : 0;
+                return cr > 0 ? cr : 0;
             }
 
-            CharClass cc = GetCharClass(text[cursor - 1]);
-            begin = lf + 1;
-            i = cursor;
+            var lineStart = lf + 1;
+            var lineEnd = LineEnd(text, cursor);
+            var lineSpan = text.AsSpan(lineStart, lineEnd - lineStart);
+            var relCursor = cursor - lineStart;
 
-            // skip over the word, punctuation, or run of whitespace
-            while (i > begin && GetCharClass(text[i - 1]) == cc)
+            if (relCursor <= 0)
             {
-                i--;
+                return lineStart;
             }
 
-            // if the cursor was at whitespace, skip back a word too
-            if (cc == CharClass.CharClassWhitespace && i > begin)
+            var enumerator = new WordBreakEnumerator(lineSpan);
+
+            int lastWordStart = -1;
+            int prevWordStart = -1;
+            bool lastWasWs = false;
+
+            while (enumerator.MoveNext(out var segment))
             {
-                cc = GetCharClass(text[i - 1]);
-                while (i > begin && GetCharClass(text[i - 1]) == cc)
+                var sStart = segment.Offset;
+                var sEnd = segment.Offset + segment.Length;
+
+                if (sStart >= relCursor)
                 {
-                    i--;
+                    break;
+                }
+
+                if (IsWhitespace(lineSpan.Slice(sStart, segment.Length)))
+                {
+                    lastWasWs = true;
+                }
+                else
+                {
+                    prevWordStart = lastWordStart;
+                    lastWordStart = sStart;
+                    lastWasWs = false;
                 }
             }
 
-            return i;
+            if (lastWasWs)
+            {
+                // The position immediately before relCursor is in whitespace.
+                // Skip the whitespace run and move to the start of the preceding word.
+                return lineStart + (lastWordStart >= 0 ? lastWordStart : 0);
+            }
+
+            if (lastWordStart >= 0)
+            {
+                return lineStart + lastWordStart;
+            }
+
+            return lineStart;
         }
 
         public static int NextWord(string text, int cursor)
         {
-            int i, lf, cr;
+            if (string.IsNullOrEmpty(text))
+            {
+                return 0;
+            }
 
-            cr = LineEnd(text, cursor);
+            var cr = LineEnd(text, cursor);
 
             if (cursor >= text.Length)
             {
                 return cursor;
             }
 
+            int lf;
             if (cr < text.Length && text[cr] == '\r' && cr + 1 < text.Length && text[cr + 1] == '\n')
             {
                 lf = cr + 1;
@@ -199,7 +187,7 @@ namespace Avalonia.Controls.Utils
                 lf = cr;
             }
 
-            // if the cursor is at the end of the line, return the starting offset of the next line
+            // If cursor is at the end of the line, return the starting offset of the next line
             if (cursor == cr || cursor == lf)
             {
                 if (lf < text.Length)
@@ -210,44 +198,55 @@ namespace Avalonia.Controls.Utils
                 return cursor;
             }
 
-            i = cursor;
+            var lineStart = LineBegin(text, cursor);
+            var lineSpan = text.AsSpan(lineStart, cr - lineStart);
+            var relCursor = cursor - lineStart;
 
-            // skip any whitespace after the word/punct
-            while (i < cr && char.IsWhiteSpace(text[i]))
+            var enumerator = new WordBreakEnumerator(lineSpan);
+
+            while (enumerator.MoveNext(out var segment))
             {
-                i++;
+                var sStart = segment.Offset;
+                var sEnd = segment.Offset + segment.Length;
+
+                if (sEnd <= relCursor)
+                {
+                    continue;
+                }
+
+                if (IsWhitespace(lineSpan.Slice(sStart, segment.Length)))
+                {
+                    // relCursor is in or at the start of whitespace.
+                    // Skip whitespace and skip the following word.
+                    while (enumerator.MoveNext(out var nextSeg))
+                    {
+                        if (!IsWhitespace(lineSpan.Slice(nextSeg.Offset, nextSeg.Length)))
+                        {
+                            return lineStart + nextSeg.Offset + nextSeg.Length;
+                        }
+                    }
+
+                    return cr;
+                }
+
+                // relCursor is in or at the start of a non-whitespace segment
+                return lineStart + sEnd;
             }
 
-            if (i >= cr)
-            {
-                return i;
-            }
-
-            var cc = GetCharClass(text[i]);
-
-            // skip over the word, punctuation, or run of whitespace
-            while (i < cr && GetCharClass(text[i]) == cc)
-            {
-                i++;
-            }
-
-            return i;
+            return cr;
         }
 
-        private static CharClass GetCharClass(char c)
+        private static bool IsWhitespace(ReadOnlySpan<char> span)
         {
-            if (char.IsWhiteSpace(c))
+            for (int i = 0; i < span.Length; i++)
             {
-                return CharClass.CharClassWhitespace;
+                if (!char.IsWhiteSpace(span[i]))
+                {
+                    return false;
+                }
             }
-            else if (char.IsLetterOrDigit(c))
-            {
-                return CharClass.CharClassAlphaNumeric;
-            }
-            else
-            {
-                return CharClass.CharClassUnknown;
-            }
+
+            return true;
         }
 
         private static int LineBegin(string text, int pos)
