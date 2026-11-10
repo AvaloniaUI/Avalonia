@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using Avalonia.Media;
+using Avalonia.Media.Fonts.Tables;
 using Avalonia.Platform;
 using SkiaSharp;
 
@@ -182,18 +183,14 @@ namespace Avalonia.Skia
         /// </summary>
         private static FontSimulations GetPlatformSimulations(SKTypeface skTypeface)
         {
-            const uint os2Tag = 0x4F532F32;
-            const ushort fsSelectionItalic = 1 << 0;
-            const ushort fsSelectionBold = 1 << 5;
-            const ushort fsSelectionOblique = 1 << 9;
-
-            if (!skTypeface.TryGetTableData(os2Tag, out var os2) || os2 is null || os2.Length < 64)
+            if (!skTypeface.TryGetTableData(OS2Table.Tag, out var os2) || os2 is null ||
+                !OS2Table.TryLoad(os2, out var table))
             {
                 return FontSimulations.None;
             }
 
-            var weightClass = (os2[4] << 8) | os2[5];
-            var fsSelection = (ushort)((os2[62] << 8) | os2[63]);
+            int weightClass = table.WeightClass;
+            var fsSelection = table.Selection;
 
             // Some fonts store the weight class on the legacy 1-9 scale.
             if (weightClass is > 0 and < 10)
@@ -204,13 +201,13 @@ namespace Avalonia.Skia
             var platformSimulations = FontSimulations.None;
 
             if (skTypeface.FontWeight >= (int)FontWeight.SemiBold && weightClass < (int)FontWeight.SemiBold &&
-                (fsSelection & fsSelectionBold) == 0)
+                (fsSelection & OS2Table.FontSelectionFlags.BOLD) == 0)
             {
                 platformSimulations |= FontSimulations.Bold;
             }
 
             if (skTypeface.FontStyle.Slant != SKFontStyleSlant.Upright &&
-                (fsSelection & (fsSelectionItalic | fsSelectionOblique)) == 0)
+                (fsSelection & (OS2Table.FontSelectionFlags.ITALIC | OS2Table.FontSelectionFlags.OBLIQUE)) == 0)
             {
                 platformSimulations |= FontSimulations.Oblique;
             }
