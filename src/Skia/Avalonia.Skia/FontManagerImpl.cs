@@ -117,7 +117,7 @@ namespace Avalonia.Skia
         /// <summary>
         /// Wraps a typeface the platform matched to the requested style, weight and stretch. A bold
         /// or slanted request the matched face cannot satisfy is simulated on that face when it is
-        /// drawn, without a copy of the font data.
+        /// drawn, without a copy of the font data, unless the face is a colour font face.
         /// </summary>
         internal static SkiaTypeface CreatePlatformTypeface(SKTypeface skTypeface, FontStyle style, FontWeight weight,
             FontStretch stretch)
@@ -152,6 +152,13 @@ namespace Avalonia.Skia
             if (style != FontStyle.Normal && faceStyle == FontStyle.Normal)
             {
                 fontSimulations |= FontSimulations.Oblique;
+            }
+
+            // A colour font face answers a bold or slanted request as designed, so it reports its
+            // own weight and style. Simulations the platform applied itself are kept as they are.
+            if (fontSimulations != FontSimulations.None && SkiaTypeface.IsColorFont(skTypeface))
+            {
+                fontSimulations = FontSimulations.None;
             }
 
             var allSimulations = fontSimulations | platformSimulations;
@@ -217,6 +224,11 @@ namespace Avalonia.Skia
 
             if (skTypeface != null)
             {
+                if (fontSimulations != FontSimulations.None && SkiaTypeface.IsColorFont(skTypeface))
+                {
+                    fontSimulations = FontSimulations.None;
+                }
+
                 platformTypeface = new SkiaTypeface(skTypeface, fontSimulations);
 
                 return true;

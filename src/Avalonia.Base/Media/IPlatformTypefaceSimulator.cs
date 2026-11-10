@@ -10,9 +10,10 @@ namespace Avalonia.Media
     /// <remarks>
     /// A font collection that needs a synthetic bold or oblique face asks the platform typeface it
     /// already holds for a simulated variant. The variant shares the font data of its source, so no
-    /// copy of the font file is made. When the platform typeface does not implement this interface,
-    /// or it returns <c>false</c>, the collection creates the synthetic face from the font stream
-    /// returned by <see cref="IPlatformTypeface.TryGetStream"/>.
+    /// copy of the font file is made. When this method returns <c>false</c>, the collection uses the
+    /// source face without the simulations. Only when the platform typeface does not implement this
+    /// interface does the collection create the synthetic face from the font stream returned by
+    /// <see cref="IPlatformTypeface.TryGetStream"/>.
     /// </remarks>
     [Unstable]
     public interface IPlatformTypefaceSimulator
@@ -31,7 +32,11 @@ namespace Avalonia.Media
         /// this typeface and does not own it, so it must not be used after this typeface is
         /// disposed.
         /// </param>
-        /// <returns><c>true</c> if the variant could be created; otherwise, <c>false</c>.</returns>
+        /// <returns>
+        /// <c>true</c> if the variant could be created; <c>false</c> if the face takes none of the
+        /// simulations, such as a colour font face, whose glyphs are artwork that is neither emboldened
+        /// nor slanted.
+        /// </returns>
         bool TryCreateSimulatedTypeface(FontSimulations fontSimulations, FontStyle style, FontWeight weight,
             FontStretch stretch, [NotNullWhen(true)] out IPlatformTypeface? typeface);
     }

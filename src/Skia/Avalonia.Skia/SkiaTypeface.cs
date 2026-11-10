@@ -73,6 +73,13 @@ namespace Avalonia.Skia
         public bool TryCreateSimulatedTypeface(FontSimulations fontSimulations, FontStyle style, FontWeight weight,
             FontStretch stretch, [NotNullWhen(true)] out IPlatformTypeface? typeface)
         {
+            if (IsColorFont(SKTypeface))
+            {
+                typeface = null;
+
+                return false;
+            }
+
             // The platform's own simulations are part of the Skia typeface and stay in every variant.
             typeface = new SkiaTypeface(SKTypeface, fontSimulations & ~_platformSimulations, _platformSimulations,
                 style, weight, stretch, ownsTypeface: false);
@@ -114,6 +121,36 @@ namespace Avalonia.Skia
 
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Gets whether a typeface draws its glyphs from a colour table: COLR layers, sbix or CBDT
+        /// bitmaps, or SVG documents. A colour glyph is fixed artwork that emboldening or slanting
+        /// only distorts, so a colour font face is never simulated.
+        /// </summary>
+        /// <remarks>
+        /// SVG counts even where Skia draws the monochrome outlines such a font carries as a fallback,
+        /// so the face looks the same in a bold or italic run whichever of its tables a backend draws.
+        /// The check is per face because simulations are; a COLR or SVG font also has outlines, so
+        /// the presence of outlines does not tell a colour glyph apart. Only the table directory is
+        /// read, since a bitmap table of a colour emoji font is large.
+        /// </remarks>
+        internal static bool IsColorFont(SKTypeface typeface)
+        {
+            const uint colrTag = 0x434F4C52;
+            const uint sbixTag = 0x73626978;
+            const uint cbdtTag = 0x43424454;
+            const uint svgTag = 0x53564720;
+
+            foreach (var tag in typeface.GetTableTags())
+            {
+                if (tag is colrTag or sbixTag or cbdtTag or svgTag)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public void Dispose()

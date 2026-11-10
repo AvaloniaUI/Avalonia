@@ -370,7 +370,11 @@ namespace Avalonia.Media.Fonts
             // The platform's character match, biased by the family already resolved, yields that family
             // at the requested key when it has that face (MatchCharacter covers the codepoint, so no
             // extra coverage check is needed). Accept it only when it is the exact key and can shape.
+            // A face already cached under the requested key is the answer chosen for that key, such as
+            // a colour font face that answers a bold request as designed, so the platform would only
+            // return it again.
             if (glyphTypeface.ToFontCollectionKey() != key &&
+                !IsCachedUnderKey(glyphTypeface, key) &&
                 TryMatchCharacterFromPlatform(codepoint, key, glyphTypeface.FamilyName, culture, out var exact) &&
                 exact.ToFontCollectionKey() == key &&
                 CanShape(exact, shapingScript))
@@ -380,6 +384,11 @@ namespace Avalonia.Media.Fonts
 
             return glyphTypeface;
         }
+
+        private bool IsCachedUnderKey(GlyphTypeface glyphTypeface, FontCollectionKey key)
+            => _glyphTypefaceCache.TryGetValue(glyphTypeface.FamilyName, out var glyphTypefaces) &&
+               glyphTypefaces.TryGetValue(key, out var cached) &&
+               ReferenceEquals(cached, glyphTypeface);
 
         /// <summary>
         /// Picks a variant of the family that both is close to the requested key and actually maps
@@ -530,9 +539,17 @@ namespace Avalonia.Media.Fonts
                 return true;
             }
 
-            if (simulator is not null &&
-                simulator.TryCreateSimulatedTypeface(fontSimulations, style, weight, stretch, out var simulatedTypeface))
+            if (simulator is not null)
             {
+                // The platform typeface decides which simulations its face takes. A variant it refuses,
+                // such as a bold or oblique colour font face, is not built from a copy of the font file
+                // either: the caller uses the source face as it is.
+                if (!simulator.TryCreateSimulatedTypeface(fontSimulations, style, weight, stretch,
+                        out var simulatedTypeface))
+                {
+                    return false;
+                }
+
                 syntheticGlyphTypeface = GlyphTypeface.TryCreate(simulatedTypeface, fontSimulations);
 
                 if (syntheticGlyphTypeface is null)
@@ -541,6 +558,13 @@ namespace Avalonia.Media.Fonts
                 AddSyntheticGlyphTypeface(glyphTypeface, key, syntheticGlyphTypeface);
 
                 return true;
+            }
+
+            // A colour glyph is fixed artwork that emboldening or slanting only distorts, so a colour
+            // font face is used as designed.
+            if (IsColorFont(glyphTypeface.PlatformTypeface))
+            {
+                return false;
             }
 
             // Without a variant from the platform typeface, the synthetic face is built from a copy
@@ -561,6 +585,33 @@ namespace Avalonia.Media.Fonts
                     }
 
                     return false;
+                }
+            }
+
+            return false;
+        }
+
+        private static readonly OpenTypeTag[] s_colorGlyphTableTags =
+        {
+            OpenTypeTag.Parse("COLR"), OpenTypeTag.Parse("sbix"), OpenTypeTag.Parse("CBDT"), OpenTypeTag.Parse("SVG ")
+        };
+
+        /// <summary>
+        /// Gets whether the face draws its glyphs from a colour table: COLR layers, sbix or CBDT
+        /// bitmaps, or SVG documents.
+        /// </summary>
+        /// <remarks>
+        /// Only asked of a platform typeface that does not implement
+        /// <see cref="IPlatformTypefaceSimulator"/>, which decides for itself. Reading a table can copy
+        /// it, and a bitmap table of a colour emoji font is large.
+        /// </remarks>
+        private static bool IsColorFont(IPlatformTypeface platformTypeface)
+        {
+            foreach (var tag in s_colorGlyphTableTags)
+            {
+                if (platformTypeface.TryGetTable(tag, out var table) && !table.IsEmpty)
+                {
+                    return true;
                 }
             }
 
