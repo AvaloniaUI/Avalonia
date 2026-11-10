@@ -306,11 +306,7 @@ partial class Build : NukeBuild
         .DependsOn(Compile)
         .Executes(() =>
         {
-            // Lets the keyboard tests load the layouts that they need
-            RunCoreTest("Avalonia.IntegrationTests.Win32", (project, tfm) =>
-                DotNetRun(c => ApplySetting(c, project, tfm)
-                    .SetProcessEnvironmentVariables(EnvironmentInfo.Variables.ToDictionary())
-                    .SetProcessEnvironmentVariable("AVALONIA_CI_RUN", "1")));
+            RunCoreTest("Avalonia.IntegrationTests.Win32");
         });
 
 
