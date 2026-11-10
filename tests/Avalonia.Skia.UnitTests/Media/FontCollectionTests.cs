@@ -6,8 +6,10 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using Avalonia.Media;
 using Avalonia.Media.Fonts;
+using Avalonia.Media.TextFormatting;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
 using SkiaSharp;
@@ -655,6 +657,222 @@ namespace Avalonia.Skia.UnitTests.Media
             }
         }
 
+        [Theory]
+        [InlineData(FontStyle.Normal, 700, false)]
+        [InlineData(FontStyle.Italic, 400, false)]
+        [InlineData(FontStyle.Italic, 700, false)]
+        [InlineData(FontStyle.Normal, 700, true)]
+        [InlineData(FontStyle.Italic, 400, true)]
+        [InlineData(FontStyle.Italic, 700, true)]
+        public void Should_Not_Simulate_A_Colour_Font_Face(FontStyle style, int weight, bool regularFirst)
+        {
+            var fontManager = new InstalledFamilyFontManagerImpl(EmojiUri);
+
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: fontManager)))
+            {
+                var fontCollection = new TestSystemFontCollection(fontManager);
+
+                if (regularFirst)
+                {
+                    Assert.True(fontCollection.TryGetGlyphTypeface(
+                        EmojiFamily, FontStyle.Normal, FontWeight.Normal, FontStretch.Normal, out _));
+                }
+
+                Assert.True(fontCollection.TryGetGlyphTypeface(
+                    EmojiFamily, style, (FontWeight)weight, FontStretch.Normal, out var glyphTypeface));
+
+                Assert.Equal(0, fontManager.StreamTypefaceCreations);
+
+                // A colour glyph is fixed artwork: emboldening or slanting it only distorts it.
+                Assert.Equal(FontSimulations.None, glyphTypeface.FontSimulations);
+                Assert.Equal(FontSimulations.None, glyphTypeface.PlatformTypeface.FontSimulations);
+                Assert.Equal(FontWeight.Normal, glyphTypeface.Weight);
+                Assert.Equal(FontStyle.Normal, glyphTypeface.Style);
+
+                Assert.True(fontCollection.GlyphTypefaceCache.TryGetValue(EmojiFamily, out var glyphTypefaces));
+                Assert.True(glyphTypefaces.TryGetValue(
+                    new FontCollectionKey(style, (FontWeight)weight, FontStretch.Normal), out var cached));
+                Assert.Same(glyphTypeface, cached);
+            }
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void Should_Not_Synthesize_A_Colour_Font_Face(bool supportsSimulation)
+        {
+            var fontManager = new InstalledFamilyFontManagerImpl(EmojiUri, supportsSimulation: supportsSimulation);
+
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: fontManager)))
+            {
+                var fontCollection = new TestSystemFontCollection(fontManager);
+
+                Assert.True(fontCollection.TryGetGlyphTypeface(
+                    EmojiFamily, FontStyle.Normal, FontWeight.Normal, FontStretch.Normal, out var regular));
+
+                Assert.False(fontCollection.TryCreateSyntheticGlyphTypeface(
+                    regular, FontStyle.Italic, FontWeight.Bold, FontStretch.Normal, out _));
+
+                Assert.Equal(0, fontManager.StreamTypefaceCreations);
+            }
+        }
+
+        [Fact]
+        public void Should_Answer_A_Repeated_Colour_Font_Face_Request_From_The_Cache()
+        {
+            var fontManager = new InstalledFamilyFontManagerImpl(EmojiUri);
+
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: fontManager)))
+            {
+                var fontCollection = new TestSystemFontCollection(fontManager);
+
+                Assert.True(fontCollection.TryGetGlyphTypeface(
+                    EmojiFamily, FontStyle.Italic, FontWeight.Bold, FontStretch.Normal, out var first));
+
+                var familyMatches = fontManager.FamilyMatches;
+
+                Assert.True(fontCollection.TryGetGlyphTypeface(
+                    EmojiFamily, FontStyle.Italic, FontWeight.Bold, FontStretch.Normal, out var second));
+
+                Assert.Same(first, second);
+                Assert.Equal(familyMatches, fontManager.FamilyMatches);
+                Assert.Equal(0, fontManager.StreamTypefaceCreations);
+            }
+        }
+
+        [Theory]
+        [InlineData(FontStyle.Normal, 700)]
+        [InlineData(FontStyle.Italic, 400)]
+        [InlineData(FontStyle.Italic, 700)]
+        public void Should_Not_Simulate_A_Colour_Font_Face_For_A_Character_Fallback(FontStyle style, int weight)
+        {
+            var fontManager = new InstalledFamilyFontManagerImpl(NotoMonoRegularUri,
+                fallbackUris: new[] { NotoSansJpUri, EmojiUri });
+
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: fontManager)))
+            {
+                var fontCollection = new TestSystemFontCollection(fontManager);
+
+                Assert.True(fontCollection.TryMatchCharacter(EmojiCodepoint, style, (FontWeight)weight,
+                    FontStretch.Normal, null, null, out var match));
+
+                Assert.True(fontCollection.TryGetGlyphTypeface(match.FontFamily.Name, match.Style, match.Weight,
+                    match.Stretch, out var glyphTypeface));
+
+                Assert.Equal(EmojiFamily, glyphTypeface.FamilyName);
+                Assert.Equal(FontSimulations.None, glyphTypeface.FontSimulations);
+                Assert.Equal(FontSimulations.None, glyphTypeface.PlatformTypeface.FontSimulations);
+                Assert.Equal(0, fontManager.StreamTypefaceCreations);
+            }
+        }
+
+        [Fact]
+        public void Should_Answer_A_Repeated_Colour_Font_Character_Fallback_From_The_Cache()
+        {
+            var fontManager = new InstalledFamilyFontManagerImpl(NotoMonoRegularUri,
+                fallbackUris: new[] { NotoSansJpUri, EmojiUri });
+
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: fontManager)))
+            {
+                var fontCollection = new TestSystemFontCollection(fontManager);
+
+                Assert.True(fontCollection.TryMatchCharacter(EmojiCodepoint, FontStyle.Italic, FontWeight.Bold,
+                    FontStretch.Normal, null, null, out var first));
+
+                Assert.True(fontCollection.TryGetGlyphTypeface(first.FontFamily.Name, first.Style, first.Weight,
+                    first.Stretch, out var firstGlyphTypeface));
+
+                var characterMatches = fontManager.CharacterMatches;
+                var familyMatches = fontManager.FamilyMatches;
+
+                Assert.True(fontCollection.TryMatchCharacter(EmojiCodepoint, FontStyle.Italic, FontWeight.Bold,
+                    FontStretch.Normal, null, null, out var second));
+
+                Assert.True(fontCollection.TryGetGlyphTypeface(second.FontFamily.Name, second.Style, second.Weight,
+                    second.Stretch, out var secondGlyphTypeface));
+
+                Assert.Same(firstGlyphTypeface, secondGlyphTypeface);
+                Assert.Equal(characterMatches, fontManager.CharacterMatches);
+                Assert.Equal(familyMatches, fontManager.FamilyMatches);
+                Assert.Equal(0, fontManager.StreamTypefaceCreations);
+            }
+        }
+
+        [Theory]
+        [InlineData(FontStyle.Normal, 700, FontSimulations.Bold)]
+        [InlineData(FontStyle.Italic, 400, FontSimulations.Oblique)]
+        [InlineData(FontStyle.Italic, 700, FontSimulations.Bold | FontSimulations.Oblique)]
+        public void Should_Simulate_A_Cjk_Character_Fallback(FontStyle style, int weight,
+            FontSimulations expectedSimulations)
+        {
+            var fontManager = new InstalledFamilyFontManagerImpl(NotoMonoRegularUri,
+                fallbackUris: new[] { NotoSansJpUri, EmojiUri });
+
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: fontManager)))
+            {
+                var fontCollection = new TestSystemFontCollection(fontManager);
+
+                Assert.True(fontCollection.TryMatchCharacter(CjkCodepoint, style, (FontWeight)weight,
+                    FontStretch.Normal, null, null, out var match));
+
+                Assert.True(fontCollection.TryGetGlyphTypeface(match.FontFamily.Name, match.Style, match.Weight,
+                    match.Stretch, out var glyphTypeface));
+
+                Assert.Equal(CjkFamily, glyphTypeface.FamilyName);
+                Assert.Equal(expectedSimulations, glyphTypeface.FontSimulations);
+                Assert.Equal(0, fontManager.StreamTypefaceCreations);
+            }
+        }
+
+        [Theory]
+        [InlineData(FontStyle.Normal, 700, FontSimulations.Bold)]
+        [InlineData(FontStyle.Italic, 400, FontSimulations.Oblique)]
+        public void TextLayout_Should_Simulate_A_Cjk_Fallback_Run_But_Not_A_Colour_Emoji_Run(FontStyle style,
+            int weight, FontSimulations expectedSimulations)
+        {
+            var fontManager = new InstalledFamilyFontManagerImpl(NotoMonoRegularUri,
+                fallbackUris: new[] { NotoSansJpUri, EmojiUri });
+
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: fontManager)))
+            {
+                var text = "Bold " + char.ConvertFromUtf32(CjkCodepoint) + " " + char.ConvertFromUtf32(EmojiCodepoint);
+
+                var layout = new TextLayout(text, new Typeface("Noto Mono", style, (FontWeight)weight), 12,
+                    Brushes.Black);
+
+                var simulationsByFamily = new Dictionary<string, FontSimulations>();
+
+                foreach (var textRun in layout.TextLines.Single().TextRuns.OfType<ShapedTextRun>())
+                {
+                    var glyphTypeface = textRun.ShapedBuffer.GlyphTypeface;
+
+                    simulationsByFamily[glyphTypeface.FamilyName] = glyphTypeface.FontSimulations;
+                }
+
+                Assert.Equal(expectedSimulations, simulationsByFamily["Noto Mono"]);
+                Assert.Equal(expectedSimulations, simulationsByFamily[CjkFamily]);
+                Assert.Equal(FontSimulations.None, simulationsByFamily[EmojiFamily]);
+            }
+        }
+
+        // U+1F600, covered only by the colour font.
+        private const int EmojiCodepoint = 0x1F600;
+
+        // U+4E2D, covered only by the CJK font.
+        private const int CjkCodepoint = 0x4E2D;
+
+        private const string EmojiFamily = "Twitter Color Emoji";
+
+        private const string CjkFamily = "Noto Sans JP";
+
+        // Its glyphs are SVG documents in the SVG table, with monochrome outlines for renderers
+        // without SVG support.
+        private const string EmojiUri =
+            "resm:Avalonia.Skia.UnitTests.Assets.TwitterColorEmoji-SVGinOT.ttf?assembly=Avalonia.Skia.UnitTests";
+
+        private const string NotoSansJpUri =
+            "resm:Avalonia.Skia.UnitTests.Fonts.NotoSansJP-Subset.ttf?assembly=Avalonia.Skia.UnitTests";
+
         private const string NotoMonoRegularUri =
             "resm:Avalonia.Skia.UnitTests.Assets.NotoMono-Regular.ttf?assembly=Avalonia.Skia.UnitTests";
 
@@ -681,18 +899,21 @@ namespace Avalonia.Skia.UnitTests.Media
         }
 
         /// <summary>
-        /// Font manager with a single installed family backed by embedded fonts. Only the platform
-        /// match itself is replaced: the matched <see cref="SKTypeface"/> is wrapped the way
-        /// <see cref="FontManagerImpl"/> wraps the typeface its platform matched.
+        /// Font manager with one installed family, and optionally more single-face families for
+        /// character fallback, backed by embedded fonts. Only the platform match itself is replaced:
+        /// the matched <see cref="SKTypeface"/> is wrapped the way <see cref="FontManagerImpl"/> wraps
+        /// the typeface its platform matched.
         /// </summary>
         private sealed class InstalledFamilyFontManagerImpl : IFontManagerImpl
         {
             private readonly IFontManagerImpl _inner = new FontManagerImpl();
             private readonly string _regularUri;
             private readonly string? _boldUri;
+            private readonly string[] _fallbackUris;
             private readonly PlatformMatching _matching;
             private readonly bool _supportsSimulation;
             private string? _familyName;
+            private string[]? _fallbackFamilyNames;
 
             /// <param name="regularUri">The regular face of the family.</param>
             /// <param name="boldUri">The bold face of the family, if it has one.</param>
@@ -700,49 +921,70 @@ namespace Avalonia.Skia.UnitTests.Media
             /// <param name="supportsSimulation">When false, every platform typeface is handed out
             /// behind a wrapper that cannot create simulated variants, the shape of a backend without
             /// that support.</param>
+            /// <param name="fallbackUris">Further installed families of a single face each. Character
+            /// fallback tries the requested family first, then the family, then these in order.</param>
             public InstalledFamilyFontManagerImpl(string regularUri, string? boldUri = null,
-                PlatformMatching matching = PlatformMatching.NearestFace, bool supportsSimulation = true)
+                PlatformMatching matching = PlatformMatching.NearestFace, bool supportsSimulation = true,
+                string[]? fallbackUris = null)
             {
                 _regularUri = regularUri;
                 _boldUri = boldUri;
                 _matching = matching;
                 _supportsSimulation = supportsSimulation;
+                _fallbackUris = fallbackUris ?? Array.Empty<string>();
             }
 
             /// <summary>Number of typefaces created from a stream. The platform matches above never
             /// go through this overload, so every count is a synthesis that copied the font file.</summary>
             public int StreamTypefaceCreations { get; private set; }
 
-            private string FamilyName
-            {
-                get
-                {
-                    if (_familyName is null)
-                    {
-                        using var typeface = LoadTypeface(_regularUri);
+            /// <summary>Number of family matches asked of the platform.</summary>
+            public int FamilyMatches { get; private set; }
 
-                        _familyName = typeface.FamilyName;
-                    }
+            /// <summary>Number of character matches asked of the platform.</summary>
+            public int CharacterMatches { get; private set; }
 
-                    return _familyName;
-                }
-            }
+            private string FamilyName => _familyName ??= GetFamilyName(_regularUri);
+
+            private string[] FallbackFamilyNames => _fallbackFamilyNames ??= Array.ConvertAll(_fallbackUris, GetFamilyName);
 
             public string GetDefaultFontFamilyName() => FamilyName;
 
-            public string[] GetInstalledFontFamilyNames(bool checkForUpdates = false) => new[] { FamilyName };
+            public string[] GetInstalledFontFamilyNames(bool checkForUpdates = false)
+            {
+                var familyNames = new List<string> { FamilyName };
+
+                familyNames.AddRange(FallbackFamilyNames);
+
+                return familyNames.ToArray();
+            }
 
             public bool TryCreateGlyphTypeface(string familyName, FontStyle style, FontWeight weight,
                 FontStretch stretch, [NotNullWhen(true)] out IPlatformTypeface? platformTypeface)
             {
-                if (!string.Equals(familyName, FamilyName, StringComparison.OrdinalIgnoreCase))
-                {
-                    platformTypeface = null;
+                FamilyMatches++;
 
-                    return false;
+                string uri;
+
+                if (string.Equals(familyName, FamilyName, StringComparison.OrdinalIgnoreCase))
+                {
+                    uri = _boldUri is not null && weight >= FontWeight.SemiBold ? _boldUri : _regularUri;
+                }
+                else
+                {
+                    var index = IndexOfFallbackFamily(familyName);
+
+                    if (index < 0)
+                    {
+                        platformTypeface = null;
+
+                        return false;
+                    }
+
+                    uri = _fallbackUris[index];
                 }
 
-                var skTypeface = LoadTypeface(_boldUri is not null && weight >= FontWeight.SemiBold ? _boldUri : _regularUri);
+                var skTypeface = LoadTypeface(uri);
 
                 // The weight and style the matched typeface reports, which differ from the design
                 // values of the font file when the platform simulated the face.
@@ -785,20 +1027,38 @@ namespace Avalonia.Skia.UnitTests.Media
                 FontStretch fontStretch, string? familyName, CultureInfo? culture,
                 [NotNullWhen(true)] out IPlatformTypeface? platformTypeface)
             {
-                var skTypeface = LoadTypeface(_regularUri);
+                CharacterMatches++;
 
-                if (!skTypeface.ContainsGlyph(codepoint))
+                var uris = new List<string> { _regularUri };
+
+                uris.AddRange(_fallbackUris);
+
+                // Like a platform font manager, prefer the requested family when it covers the codepoint.
+                var requested = familyName is null ? -1 : IndexOfFallbackFamily(familyName);
+
+                if (requested >= 0)
                 {
-                    skTypeface.Dispose();
-
-                    platformTypeface = null;
-
-                    return false;
+                    uris.Insert(0, _fallbackUris[requested]);
                 }
 
-                platformTypeface = FontManagerImpl.CreatePlatformTypeface(skTypeface, fontStyle, fontWeight, fontStretch);
+                foreach (var uri in uris)
+                {
+                    var skTypeface = LoadTypeface(uri);
 
-                return true;
+                    if (skTypeface.ContainsGlyph(codepoint))
+                    {
+                        platformTypeface = FontManagerImpl.CreatePlatformTypeface(skTypeface, fontStyle, fontWeight,
+                            fontStretch);
+
+                        return true;
+                    }
+
+                    skTypeface.Dispose();
+                }
+
+                platformTypeface = null;
+
+                return false;
             }
 
             public bool TryCreateGlyphTypeface(Stream stream, FontSimulations fontSimulations,
@@ -821,6 +1081,13 @@ namespace Avalonia.Skia.UnitTests.Media
             {
                 familyTypefaces = null;
 
+                if (IndexOfFallbackFamily(familyName) >= 0)
+                {
+                    familyTypefaces = new List<Typeface> { new(familyName) };
+
+                    return true;
+                }
+
                 if (!string.Equals(familyName, FamilyName, StringComparison.OrdinalIgnoreCase))
                 {
                     return false;
@@ -836,6 +1103,16 @@ namespace Avalonia.Skia.UnitTests.Media
                 familyTypefaces = typefaces;
 
                 return true;
+            }
+
+            private int IndexOfFallbackFamily(string familyName) => Array.FindIndex(FallbackFamilyNames,
+                x => string.Equals(x, familyName, StringComparison.OrdinalIgnoreCase));
+
+            private static string GetFamilyName(string uri)
+            {
+                using var typeface = LoadTypeface(uri);
+
+                return typeface.FamilyName;
             }
 
             private static SKTypeface LoadTypeface(string uri)
