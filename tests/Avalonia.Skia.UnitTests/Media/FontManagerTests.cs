@@ -556,6 +556,174 @@ namespace Avalonia.Skia.UnitTests.Media
             }
         }
 
+        [Win32Theory("Windows specific font")]
+        [InlineData(FontWeight.SemiBold)]
+        [InlineData(FontWeight.Bold)]
+        public void Should_Not_Report_A_Simulation_For_A_Variable_Font_Instance(FontWeight weight)
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
+            {
+                using (AvaloniaLocator.EnterScope())
+                {
+                    // Bahnschrift is a variable font whose weight axis covers SemiBold and Bold, while
+                    // its OS/2 table holds the weight class of the default instance.
+                    Assert.True(FontManager.Current.TryGetGlyphTypeface(
+                        new Typeface("Bahnschrift", FontStyle.Normal, weight), out var glyphTypeface));
+
+                    Assert.Equal("Bahnschrift", glyphTypeface.FamilyName);
+                    Assert.Equal((int)weight, ((SkiaTypeface)glyphTypeface.PlatformTypeface).SKTypeface.FontWeight);
+
+                    Assert.Equal(FontSimulations.None, glyphTypeface.PlatformTypeface.FontSimulations);
+                    Assert.Equal(FontSimulations.None, glyphTypeface.FontSimulations);
+                }
+            }
+        }
+
+        [Win32Fact("Windows specific font")]
+        public void Should_Get_The_Bold_Instance_Of_A_Variable_Font_After_Its_SemiBold_Instance()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
+            {
+                using (AvaloniaLocator.EnterScope())
+                {
+                    Assert.True(FontManager.Current.TryGetGlyphTypeface(
+                        new Typeface("Bahnschrift", FontStyle.Normal, FontWeight.Normal), out _));
+
+                    Assert.True(FontManager.Current.TryGetGlyphTypeface(
+                        new Typeface("Bahnschrift", FontStyle.Normal, FontWeight.SemiBold), out var semiBold));
+
+                    Assert.True(FontManager.Current.TryGetGlyphTypeface(
+                        new Typeface("Bahnschrift", FontStyle.Normal, FontWeight.Bold), out var bold));
+
+                    Assert.Equal((int)FontWeight.SemiBold, ((SkiaTypeface)semiBold.PlatformTypeface).SKTypeface.FontWeight);
+                    Assert.Equal((int)FontWeight.Bold, ((SkiaTypeface)bold.PlatformTypeface).SKTypeface.FontWeight);
+                    Assert.NotSame(semiBold, bold);
+                }
+            }
+        }
+
+        [Win32Fact("Windows specific font")]
+        public void Should_Report_A_Platform_Oblique_For_A_Variable_Font_Without_A_Slant_Axis()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
+            {
+                using (AvaloniaLocator.EnterScope())
+                {
+                    // Bahnschrift varies weight and width only, so DirectWrite slants an italic
+                    // request inside the typeface.
+                    Assert.True(FontManager.Current.TryGetGlyphTypeface(
+                        new Typeface("Bahnschrift", FontStyle.Italic, FontWeight.Normal), out var italic));
+
+                    Assert.Equal(SKFontStyleSlant.Oblique,
+                        ((SkiaTypeface)italic.PlatformTypeface).SKTypeface.FontStyle.Slant);
+                    Assert.Equal(FontSimulations.Oblique, italic.PlatformTypeface.FontSimulations);
+                    Assert.Equal(FontSimulations.Oblique, italic.FontSimulations);
+                }
+            }
+        }
+
+        [LinuxFact("Linux specific font")]
+        public void Should_Report_A_Platform_Oblique_For_A_Face_Fontconfig_Slanted()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
+            {
+                using (AvaloniaLocator.EnterScope())
+                {
+                    Assert.True(FontManager.Current.TryGetGlyphTypeface(
+                        new Typeface("DejaVu Sans", FontStyle.Italic, FontWeight.Normal), out var italic));
+
+                    var skTypeface = ((SkiaTypeface)italic.PlatformTypeface).SKTypeface;
+
+                    // An installed DejaVu Sans Oblique face is slanted by design.
+                    Assert.SkipWhen(skTypeface.PostScriptName != "DejaVuSans",
+                        "DejaVu Sans has an installed oblique face");
+
+                    // fontconfig answers an italic request on an upright-only family with the
+                    // upright face slanted inside the typeface.
+                    Assert.Equal(SKFontStyleSlant.Oblique, skTypeface.FontStyle.Slant);
+                    Assert.Equal(FontSimulations.Oblique, italic.PlatformTypeface.FontSimulations);
+                    Assert.Equal(FontSimulations.Oblique, italic.FontSimulations);
+                }
+            }
+        }
+
+        [MacOSFact("macOS specific font")]
+        public void Should_Not_Report_A_Platform_Simulation_For_A_Face_Whose_Traits_Disagree_With_Its_OS2_Table()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
+            {
+                using (AvaloniaLocator.EnterScope())
+                {
+                    // Apple Chancery is designed italic, while its OS/2 table sets neither the italic
+                    // nor the oblique bit. CoreText takes the slant from the face's traits and never
+                    // simulates inside a typeface.
+                    Assert.True(FontManager.Current.TryGetGlyphTypeface(
+                        new Typeface("Apple Chancery", FontStyle.Italic, FontWeight.Normal), out var italic));
+
+                    Assert.Equal("Apple Chancery", italic.FamilyName);
+                    Assert.Equal(SKFontStyleSlant.Italic,
+                        ((SkiaTypeface)italic.PlatformTypeface).SKTypeface.FontStyle.Slant);
+                    Assert.Equal(FontSimulations.None, italic.PlatformTypeface.FontSimulations);
+                    Assert.Equal(FontSimulations.None, italic.FontSimulations);
+                }
+            }
+        }
+
+        [Win32Fact("Windows specific font")]
+        public void Should_Get_An_Upright_SemiBold_Font_After_Matching_A_Simulated_Italic_Font()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
+            {
+                using (AvaloniaLocator.EnterScope())
+                {
+                    // Tahoma has a regular and a bold face only; DirectWrite answers an italic
+                    // request with the regular face slanted inside the typeface.
+                    Assert.True(FontManager.Current.TryGetGlyphTypeface(
+                        new Typeface("Tahoma", FontStyle.Italic, FontWeight.Normal), out var italic));
+
+                    Assert.Equal(FontSimulations.Oblique, italic.FontSimulations);
+
+                    Assert.True(FontManager.Current.TryGetGlyphTypeface(
+                        new Typeface("Tahoma", FontStyle.Normal, FontWeight.SemiBold), out var semiBold));
+
+                    Assert.Equal("Tahoma", semiBold.FamilyName);
+                    Assert.Equal(FontStyle.Normal, semiBold.Style);
+                    Assert.Equal(FontSimulations.None, semiBold.FontSimulations & FontSimulations.Oblique);
+                    Assert.Equal(SKFontStyleSlant.Upright,
+                        ((SkiaTypeface)semiBold.PlatformTypeface).SKTypeface.FontStyle.Slant);
+                }
+            }
+        }
+
+        [Win32Theory("Windows specific font")]
+        [InlineData(FontStyle.Normal, FontWeight.Bold)]
+        [InlineData(FontStyle.Italic, FontWeight.Normal)]
+        [InlineData(FontStyle.Italic, FontWeight.Bold)]
+        public void Should_Not_Simulate_A_Colour_Emoji_Character_Fallback(FontStyle style, FontWeight weight)
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
+            {
+                using (AvaloniaLocator.EnterScope())
+                {
+                    const int grinningFace = 0x1F600;
+
+                    Assert.True(FontManager.Current.TryMatchCharacter(grinningFace, style, weight, FontStretch.Normal,
+                        null, null, out var match));
+
+                    var glyphTypeface = match.GlyphTypeface;
+                    var skTypeface = ((SkiaTypeface)glyphTypeface.PlatformTypeface).SKTypeface;
+
+                    Assert.Equal("Segoe UI Emoji", glyphTypeface.FamilyName);
+
+                    // Segoe UI Emoji has a single regular face, so any other weight or slant the
+                    // typeface reports is a simulation applied to the colour glyphs.
+                    Assert.Equal(FontSimulations.None, glyphTypeface.FontSimulations);
+                    Assert.Equal((int)FontWeight.Normal, skTypeface.FontWeight);
+                    Assert.Equal(SKFontStyleSlant.Upright, skTypeface.FontStyle.Slant);
+                }
+            }
+        }
+
         [Fact]
         public void Should_Fallback_When_Font_Family_Is_Empty()
         {

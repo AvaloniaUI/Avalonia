@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 
 using System;
 using System.Collections.Generic;
@@ -121,11 +121,11 @@ namespace Avalonia.Skia
         /// drawn, without a copy of the font data, unless the face is a colour font face.
         /// </summary>
         internal static SkiaTypeface CreatePlatformTypeface(SKTypeface skTypeface, FontStyle style, FontWeight weight,
-            FontStretch stretch)
+            FontStretch stretch, Func<string, SKFontStyle, SKTypeface?>? matchFamily = null)
         {
             return CreatePlatformTypeface(skTypeface, skTypeface.FontStyle.Slant.ToAvalonia(),
                 (FontWeight)skTypeface.FontWeight, (FontStretch)skTypeface.FontWidth, GetPlatformSimulations(skTypeface),
-                style, weight, stretch);
+                style, weight, stretch, SkiaTypeface.IsColorFont(skTypeface));
         }
 
         /// <param name="skTypeface">The typeface the platform matched.</param>
@@ -136,9 +136,10 @@ namespace Avalonia.Skia
         /// <param name="style">The requested style.</param>
         /// <param name="weight">The requested weight.</param>
         /// <param name="stretch">The requested stretch.</param>
+        /// <param name="isColorFont">Whether the matched typeface draws its glyphs from a colour table.</param>
         internal static SkiaTypeface CreatePlatformTypeface(SKTypeface skTypeface, FontStyle faceStyle,
             FontWeight faceWeight, FontStretch faceStretch, FontSimulations platformSimulations, FontStyle style,
-            FontWeight weight, FontStretch stretch)
+            FontWeight weight, FontStretch stretch, bool isColorFont)
         {
             var fontSimulations = FontSimulations.None;
 
@@ -189,9 +190,23 @@ namespace Avalonia.Skia
                 return FontSimulations.None;
             }
 
-            int weightClass = table.WeightClass;
-            var fsSelection = table.Selection;
+            return GetPlatformSimulations(skTypeface.FontWeight, skTypeface.FontStyle.Slant, table.WeightClass,
+                table.Selection, isVariable: false, hasSlantAxis: false);
+        }
 
+        /// <summary>
+        /// Gets the simulations a platform applied inside a typeface from what the typeface reports
+        /// and what its font file declares.
+        /// </summary>
+        /// <param name="reportedWeight">The weight the typeface reports.</param>
+        /// <param name="reportedSlant">The slant the typeface reports.</param>
+        /// <param name="weightClass">The usWeightClass of the OS/2 table.</param>
+        /// <param name="fsSelection">The fsSelection flags of the OS/2 table.</param>
+        /// <param name="isVariable">Whether the font has an fvar table.</param>
+        /// <param name="hasSlantAxis">Whether the fvar table declares a slnt or ital axis.</param>
+        internal static FontSimulations GetPlatformSimulations(int reportedWeight, SKFontStyleSlant reportedSlant,
+            int weightClass, OS2Table.FontSelectionFlags fsSelection, bool isVariable, bool hasSlantAxis)
+        {
             // Some fonts store the weight class on the legacy 1-9 scale.
             if (weightClass is > 0 and < 10)
             {
@@ -200,19 +215,35 @@ namespace Avalonia.Skia
 
             var platformSimulations = FontSimulations.None;
 
-            if (skTypeface.FontWeight >= (int)FontWeight.SemiBold && weightClass < (int)FontWeight.SemiBold &&
+            if (reportedWeight >= (int)FontWeight.SemiBold && weightClass < (int)FontWeight.SemiBold &&
                 (fsSelection & OS2Table.FontSelectionFlags.BOLD) == 0)
             {
                 platformSimulations |= FontSimulations.Bold;
             }
 
-            if (skTypeface.FontStyle.Slant != SKFontStyleSlant.Upright &&
+            if (reportedSlant != SKFontStyleSlant.Upright &&
                 (fsSelection & (OS2Table.FontSelectionFlags.ITALIC | OS2Table.FontSelectionFlags.OBLIQUE)) == 0)
             {
                 platformSimulations |= FontSimulations.Oblique;
             }
 
             return platformSimulations;
+        }
+
+        /// <summary>
+        /// Replaces a colour font face matched to a bold or slanted request with the regular upright
+        /// face of its family.
+        /// </summary>
+        /// <param name="skTypeface">The typeface the platform matched. Disposed when it is replaced.</param>
+        /// <param name="isColorFont">Whether <paramref name="skTypeface"/> draws its glyphs from a colour table.</param>
+        /// <param name="style">The requested style.</param>
+        /// <param name="weight">The requested weight.</param>
+        /// <param name="stretch">The requested stretch.</param>
+        /// <param name="matchFamily">Matches a family name and style on the platform.</param>
+        internal static SKTypeface MatchRegularColourFace(SKTypeface skTypeface, bool isColorFont, FontStyle style,
+            FontWeight weight, FontStretch stretch, Func<string, SKFontStyle, SKTypeface?> matchFamily)
+        {
+            return skTypeface;
         }
 
         public bool TryCreateGlyphTypeface(Stream stream, FontSimulations fontSimulations, [NotNullWhen(true)] out IPlatformTypeface? platformTypeface)

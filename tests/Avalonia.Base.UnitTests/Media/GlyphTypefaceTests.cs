@@ -711,6 +711,20 @@ namespace Avalonia.Base.UnitTests.Media
         }
 
         [Fact]
+        public void Bold_Simulation_Should_Report_The_Platform_Weight_When_It_Is_SemiBold()
+        {
+            using var stream = new StandardAssetLoader().Open(new Uri(InterFontUri));
+
+            // A face simulated for a SemiBold request is registered under SemiBold, so a Bold
+            // request still asks for its own face.
+            var typeface = new GlyphTypeface(
+                new CustomPlatformTypeface(stream, weight: FontWeight.SemiBold, fontSimulations: FontSimulations.Bold),
+                FontSimulations.Bold);
+
+            Assert.Equal(FontWeight.SemiBold, typeface.Weight);
+        }
+
+        [Fact]
         public void Bold_Simulation_Should_Report_Bold_When_The_Platform_Reports_The_Design_Weight()
         {
             using var stream = new StandardAssetLoader().Open(new Uri(InterFontUri));

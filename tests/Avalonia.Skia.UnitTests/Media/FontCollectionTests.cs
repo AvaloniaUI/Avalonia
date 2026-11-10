@@ -489,7 +489,7 @@ namespace Avalonia.Skia.UnitTests.Media
         }
 
         [Theory]
-        [InlineData(FontStyle.Normal, 600, FontSimulations.Bold, 700)]
+        [InlineData(FontStyle.Normal, 600, FontSimulations.Bold, 600)]
         [InlineData(FontStyle.Normal, 700, FontSimulations.Bold, 700)]
         [InlineData(FontStyle.Normal, 800, FontSimulations.Bold, 800)]
         [InlineData(FontStyle.Italic, 400, FontSimulations.Oblique, 400)]
@@ -610,6 +610,219 @@ namespace Avalonia.Skia.UnitTests.Media
                 Assert.Equal(0, fontManager.StreamTypefaceCreations);
                 Assert.Equal(FontSimulations.Bold | FontSimulations.Oblique, boldItalic.FontSimulations);
                 Assert.Equal(FontSimulations.Bold | FontSimulations.Oblique, boldItalic.PlatformTypeface.FontSimulations);
+            }
+        }
+
+        [Fact]
+        public void Should_Keep_Only_The_Requested_Source_Simulations_In_A_Synthetic_Face()
+        {
+            var fontManager = new InstalledFamilyFontManagerImpl(NotoMonoRegularUri);
+
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: fontManager)))
+            {
+                var fontCollection = new TestSystemFontCollection(fontManager);
+
+                Assert.True(fontCollection.TryGetGlyphTypeface(
+                    "Noto Mono", FontStyle.Italic, FontWeight.Bold, FontStretch.Normal, out var boldItalic));
+
+                Assert.Equal(FontSimulations.Bold | FontSimulations.Oblique, boldItalic.FontSimulations);
+
+                Assert.True(fontCollection.TryCreateSyntheticGlyphTypeface(
+                    boldItalic, FontStyle.Normal, FontWeight.Black, FontStretch.Normal, out var black));
+
+                Assert.Equal(0, fontManager.StreamTypefaceCreations);
+                Assert.Equal(FontSimulations.Bold, black.FontSimulations);
+                Assert.Equal(FontSimulations.Bold, black.PlatformTypeface.FontSimulations);
+                Assert.Equal(FontStyle.Normal, black.Style);
+            }
+        }
+
+        [Fact]
+        public void Should_Not_Create_An_Upright_Variant_Of_A_Face_The_Platform_Slanted()
+        {
+            var fontManager = new InstalledFamilyFontManagerImpl(NotoMonoRegularUri,
+                matching: PlatformMatching.SimulatedFace);
+
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: fontManager)))
+            {
+                var fontCollection = new TestSystemFontCollection(fontManager);
+
+                Assert.True(fontCollection.TryGetGlyphTypeface(
+                    "Noto Mono", FontStyle.Italic, FontWeight.Normal, FontStretch.Normal, out var italic));
+
+                Assert.Equal(FontSimulations.Oblique, italic.PlatformTypeface.FontSimulations);
+
+                // The slant is part of the platform's typeface, so no variant of it is upright.
+                Assert.False(fontCollection.TryCreateSyntheticGlyphTypeface(
+                    italic, FontStyle.Normal, FontWeight.Bold, FontStretch.Normal, out _));
+
+                Assert.Equal(0, fontManager.StreamTypefaceCreations);
+            }
+        }
+
+        [Fact]
+        public void Should_Use_The_Platform_Face_For_An_Inexact_Match_After_Caching_A_Slanted_Face()
+        {
+            var fontManager = new InstalledFamilyFontManagerImpl(InterRegularUri, InterBoldUri,
+                matching: PlatformMatching.SimulatedFace);
+
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: fontManager)))
+            {
+                var fontCollection = new TestSystemFontCollection(fontManager);
+
+                Assert.True(fontCollection.TryGetGlyphTypeface(
+                    "Inter", FontStyle.Italic, FontWeight.Normal, FontStretch.Normal, out var italic));
+
+                Assert.Equal(FontSimulations.Oblique, italic.FontSimulations);
+
+                // The platform answers SemiBold with the real Bold face, which is not the requested key.
+                Assert.True(fontCollection.TryGetGlyphTypeface(
+                    "Inter", FontStyle.Normal, FontWeight.SemiBold, FontStretch.Normal, out var semiBold));
+
+                Assert.Equal(FontStyle.Normal, semiBold.Style);
+                Assert.Equal(FontSimulations.None, semiBold.FontSimulations);
+                Assert.True(((SkiaTypeface)semiBold.PlatformTypeface).SKTypeface.IsBold);
+                Assert.Equal(0, fontManager.StreamTypefaceCreations);
+
+                Assert.True(fontCollection.TryGetGlyphTypeface(
+                    "Inter", FontStyle.Normal, FontWeight.Bold, FontStretch.Normal, out var bold));
+
+                Assert.Same(semiBold, bold);
+            }
+        }
+
+        [Fact]
+        public void Should_Prefer_The_Platform_Face_Over_A_Cached_Lighter_Face_For_An_Inexact_Match()
+        {
+            var fontManager = new InstalledFamilyFontManagerImpl(InterRegularUri, InterBoldUri);
+
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: fontManager)))
+            {
+                var fontCollection = new TestSystemFontCollection(fontManager);
+
+                // Caches the regular face under Medium.
+                Assert.True(fontCollection.TryGetGlyphTypeface(
+                    "Inter", FontStyle.Normal, FontWeight.Medium, FontStretch.Normal, out var medium));
+
+                Assert.False(((SkiaTypeface)medium.PlatformTypeface).SKTypeface.IsBold);
+
+                // The platform answers SemiBold Italic with the real Bold face slanted.
+                Assert.True(fontCollection.TryGetGlyphTypeface(
+                    "Inter", FontStyle.Italic, FontWeight.SemiBold, FontStretch.Normal, out var semiBoldItalic));
+
+                Assert.True(((SkiaTypeface)semiBoldItalic.PlatformTypeface).SKTypeface.IsBold);
+                Assert.Equal(FontSimulations.Oblique, semiBoldItalic.FontSimulations);
+                Assert.Equal(FontStyle.Italic, semiBoldItalic.Style);
+                Assert.Equal(0, fontManager.StreamTypefaceCreations);
+            }
+        }
+
+        [Fact]
+        public void Should_Ask_The_Platform_Once_For_A_Repeated_Inexact_Match()
+        {
+            var fontManager = new InstalledFamilyFontManagerImpl(InterRegularUri, InterBoldUri);
+
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: fontManager)))
+            {
+                var fontCollection = new TestSystemFontCollection(fontManager);
+
+                Assert.True(fontCollection.TryGetGlyphTypeface(
+                    "Inter", FontStyle.Normal, FontWeight.SemiBold, FontStretch.Normal, out var first));
+
+                Assert.True(fontCollection.TryGetGlyphTypeface(
+                    "Inter", FontStyle.Normal, FontWeight.SemiBold, FontStretch.Normal, out var second));
+
+                Assert.Same(first, second);
+                Assert.Equal(1, fontManager.FamilyMatches);
+            }
+        }
+
+        [Fact]
+        public void Should_Reuse_The_Cached_Face_When_The_Platform_Answers_Another_Key_With_It()
+        {
+            var fontManager = new InstalledFamilyFontManagerImpl(InterRegularUri, InterBoldUri);
+
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: fontManager)))
+            {
+                var fontCollection = new TestSystemFontCollection(fontManager);
+
+                Assert.True(fontCollection.TryGetGlyphTypeface(
+                    "Inter", FontStyle.Normal, FontWeight.SemiBold, FontStretch.Normal, out var semiBold));
+
+                // The platform answers 650 with the same Bold face it answered SemiBold with.
+                Assert.True(fontCollection.TryGetGlyphTypeface(
+                    "Inter", FontStyle.Normal, (FontWeight)650, FontStretch.Normal, out var heavier));
+
+                Assert.Equal(2, fontManager.FamilyMatches);
+                Assert.Same(semiBold, heavier);
+                Assert.NotSame(fontManager.LastFamilyMatch, ((SkiaTypeface)semiBold.PlatformTypeface).SKTypeface);
+
+                Assert.True(fontCollection.GlyphTypefaceCache.TryGetValue("Inter", out var glyphTypefaces));
+                Assert.Same(semiBold, glyphTypefaces[new FontCollectionKey(FontStyle.Normal, FontWeight.Bold,
+                    FontStretch.Normal)]);
+            }
+        }
+
+        [Fact]
+        public void Should_Dispose_The_Platform_Typeface_It_Does_Not_Keep()
+        {
+            var fontManager = new InstalledFamilyFontManagerImpl(InterRegularUri, InterBoldUri);
+
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: fontManager)))
+            {
+                var fontCollection = new TestSystemFontCollection(fontManager);
+
+                Assert.True(fontCollection.TryGetGlyphTypeface(
+                    "Inter", FontStyle.Normal, FontWeight.SemiBold, FontStretch.Normal, out var semiBold));
+
+                var kept = ((SkiaTypeface)semiBold.PlatformTypeface).SKTypeface;
+
+                // The platform answers 650 with the Bold face the collection already holds, so the
+                // platform typeface of that answer is not used.
+                Assert.True(fontCollection.TryGetGlyphTypeface(
+                    "Inter", FontStyle.Normal, (FontWeight)650, FontStretch.Normal, out var heavier));
+
+                Assert.Same(semiBold, heavier);
+
+                var unused = fontManager.LastFamilyMatch!;
+
+                Assert.NotSame(kept, unused);
+                Assert.Equal(IntPtr.Zero, unused.Handle);
+
+                Assert.NotEqual(IntPtr.Zero, kept.Handle);
+                Assert.True(semiBold.CharacterToGlyphMap.TryGetGlyph('A', out _));
+            }
+        }
+
+        [Theory]
+        [InlineData(FontStyle.Normal, 700)]
+        [InlineData(FontStyle.Italic, 400)]
+        [InlineData(FontStyle.Italic, 700)]
+        public void Should_Ask_The_Platform_Once_For_A_Repeated_Colour_Font_Character_Fallback(FontStyle style,
+            int weight)
+        {
+            var fontManager = new InstalledFamilyFontManagerImpl(NotoMonoRegularUri,
+                fallbackUris: new[] { NotoSansJpUri, EmojiUri });
+
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: fontManager)))
+            {
+                var fontCollection = new TestSystemFontCollection(fontManager);
+
+                for (var i = 0; i < 2; i++)
+                {
+                    Assert.True(fontCollection.TryMatchCharacter(EmojiCodepoint, style, (FontWeight)weight,
+                        FontStretch.Normal, null, null, out var match));
+
+                    Assert.True(fontCollection.TryGetGlyphTypeface(match.FontFamily.Name, match.Style, match.Weight,
+                        match.Stretch, out var glyphTypeface));
+
+                    Assert.Equal(EmojiFamily, glyphTypeface.FamilyName);
+                    Assert.Equal(FontSimulations.None, glyphTypeface.FontSimulations);
+                }
+
+                // The regular face is asked for inside the first character match only.
+                Assert.Equal(1, fontManager.CharacterMatches);
+                Assert.Equal(1, fontManager.RegularColourFaceMatches);
             }
         }
 
@@ -944,6 +1157,13 @@ namespace Avalonia.Skia.UnitTests.Media
             /// <summary>Number of character matches asked of the platform.</summary>
             public int CharacterMatches { get; private set; }
 
+            /// <summary>Number of family matches a character match asked of the platform to replace a
+            /// colour font face with its regular upright face.</summary>
+            public int RegularColourFaceMatches { get; private set; }
+
+            /// <summary>The typeface the latest family match returned.</summary>
+            public SKTypeface? LastFamilyMatch { get; private set; }
+
             private string FamilyName => _familyName ??= GetFamilyName(_regularUri);
 
             private string[] FallbackFamilyNames => _fallbackFamilyNames ??= Array.ConvertAll(_fallbackUris, GetFamilyName);
@@ -1013,8 +1233,11 @@ namespace Avalonia.Skia.UnitTests.Media
                         break;
                 }
 
+                LastFamilyMatch = skTypeface;
+
                 platformTypeface = Wrap(FontManagerImpl.CreatePlatformTypeface(skTypeface, faceStyle, faceWeight,
-                    (FontStretch)skTypeface.FontWidth, platformSimulations, style, weight, stretch));
+                    (FontStretch)skTypeface.FontWidth, platformSimulations, style, weight, stretch,
+                    SkiaTypeface.IsColorFont(skTypeface)));
 
                 return true;
             }
@@ -1047,8 +1270,17 @@ namespace Avalonia.Skia.UnitTests.Media
 
                     if (skTypeface.ContainsGlyph(codepoint))
                     {
+                        var matchedUri = uri;
+
+                        // Each installed face here is the only face of its family, so the family
+                        // match asked for a regular colour face is that same face.
                         platformTypeface = FontManagerImpl.CreatePlatformTypeface(skTypeface, fontStyle, fontWeight,
-                            fontStretch);
+                            fontStretch, (_, _) =>
+                            {
+                                RegularColourFaceMatches++;
+
+                                return LoadTypeface(matchedUri);
+                            });
 
                         return true;
                     }

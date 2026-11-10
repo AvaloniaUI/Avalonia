@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
@@ -72,6 +73,22 @@ namespace Avalonia.Media.Fonts.Tables.Variation
         /// <see cref="FontVariationAxis"/> record.
         /// </summary>
         public ImmutableArray<OpenTypeTag> AxisTags { get; }
+
+        /// <summary>
+        /// Reads only the axis tags of an fvar table.
+        /// </summary>
+        /// <param name="data">The table data.</param>
+        /// <param name="axisTags">The axis tags in declaration order.</param>
+        /// <returns>
+        /// <c>true</c> for a table <see cref="TryLoad"/> accepts; <c>false</c> for an unrecognized
+        /// version or a malformed table.
+        /// </returns>
+        internal static bool TryLoadAxisTags(ReadOnlySpan<byte> data, out ImmutableArray<OpenTypeTag> axisTags)
+        {
+            axisTags = default;
+
+            return false;
+        }
 
         /// <summary>
         /// Loads the fvar table from <paramref name="glyphTypeface"/>, resolving axis and
