@@ -1,11 +1,15 @@
+using System;
 using System.Globalization;
 using System.Threading.Tasks;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
+using Avalonia.Controls.Primitives;
 using Avalonia.FreeDesktop.AtSpi;
 using Avalonia.FreeDesktop.AtSpi.DBusXml;
 using Avalonia.FreeDesktop.AtSpi.Handlers;
+using Avalonia.Platform;
 using Avalonia.UnitTests;
+using Moq;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Automation
@@ -77,6 +81,41 @@ namespace Avalonia.Controls.UnitTests.Automation
         public void Uses_AtSpi_Role_Ids(AutomationControlType controlType, int expected)
         {
             Assert.Equal(expected, (int)AtSpiNode.ToAtSpiRole(controlType));
+        }
+
+        [Fact]
+        public async Task Window_Has_Frame_Role()
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+            await using var server = new AtSpiServer();
+            var handler = CreateHandler(new Window(), server);
+
+            Assert.Equal((uint)AtSpiRole.Frame, await handler.GetRoleAsync());
+            Assert.Equal("frame", await handler.GetRoleNameAsync());
+        }
+
+        [Fact]
+        public async Task Window_Exposes_X11_Window_Handle()
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+            var window = new Window();
+            Mock.Get(window.PlatformImpl!).Setup(x => x.Handle).Returns(new PlatformHandle(new IntPtr(42), "XID"));
+            await using var server = new AtSpiServer();
+
+            Assert.Equal("42", (await CreateHandler(window, server).GetAttributesAsync())["avalonia-window-handle"]);
+        }
+
+        [Fact]
+        public async Task PopupRoot_Has_Window_Role()
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+            var window = new Window();
+            var popup = new PopupRoot(window, window.PlatformImpl!.CreatePopup()!);
+            await using var server = new AtSpiServer();
+            var handler = CreateHandler(popup, server);
+
+            Assert.Equal((uint)AtSpiRole.Window, await handler.GetRoleAsync());
+            Assert.Equal("window", await handler.GetRoleNameAsync());
         }
 
         [Theory]
@@ -164,6 +203,20 @@ namespace Avalonia.Controls.UnitTests.Automation
                 Invert: false);
 
             Assert.Equal(expected, AtSpiCollectionHandler.MatchesRule(node, rule));
+        }
+
+        [Fact]
+        public async Task Window_Has_Active_State_Only_When_Active()
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+            var window = new Window();
+            await using var server = new AtSpiServer();
+            var handler = CreateHandler(window, server);
+            var active = 1u << (int)AtSpiState.Active;
+
+            Assert.Equal(0u, (await handler.GetStateAsync())[0] & active);
+            window.PlatformImpl!.Activated!();
+            Assert.Equal(active, (await handler.GetStateAsync())[0] & active);
         }
 
         private static AtSpiAccessibleHandler CreateHandler(Control control, AtSpiServer server)

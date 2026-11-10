@@ -13,7 +13,7 @@ using Xunit;
 
 namespace Avalonia.Base.UnitTests.Input
 {
-    public class GesturesTests
+    public class GesturesTests : ScopedTestBase
     {
         private readonly MouseTestHelper _mouse = new MouseTestHelper();
 

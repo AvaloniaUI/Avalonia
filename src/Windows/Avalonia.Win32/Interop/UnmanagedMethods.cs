@@ -1469,6 +1469,9 @@ namespace Avalonia.Win32.Interop
         [DllImport("user32")]
         public static extern IntPtr GetMessageExtraInfo();
 
+        [DllImport("user32")]
+        public static extern short GetKeyState(VirtualKeyStates nVirtKey);
+
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode, EntryPoint = "RegisterClassExW")]
         public static extern ushort RegisterClassEx(ref WNDCLASSEX lpwcx);
 
@@ -1801,6 +1804,8 @@ namespace Avalonia.Win32.Interop
         public static extern int DeleteObject(IntPtr hObject);
         [DllImport("gdi32.dll", SetLastError = true)]
         public static extern IntPtr CreateCompatibleDC(IntPtr hdc);
+        [DllImport("gdi32.dll")]
+        public static extern bool DeleteDC(IntPtr hdc);
         [DllImport("gdi32.dll")]
         public static extern IntPtr SelectObject(IntPtr hdc, IntPtr hObject);
 

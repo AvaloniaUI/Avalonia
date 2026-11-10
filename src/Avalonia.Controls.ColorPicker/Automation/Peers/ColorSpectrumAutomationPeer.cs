@@ -26,7 +26,7 @@ public class ColorSpectrumAutomationPeer : ControlAutomationPeer, IValueProvider
             throw new System.FormatException($"Invalid color string: '{value}'.");
         }
 
-        Owner.Color = color;
+        Owner.SetCurrentValue(ColorSpectrum.ColorProperty, color);
     }
 
     protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.Custom;
