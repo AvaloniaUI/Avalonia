@@ -769,13 +769,27 @@ namespace Avalonia.Controls.Presenters
             return trailingEdge ? characterHit : new CharacterHit(characterHit.FirstCharacterIndex);
         }
 
+        private bool _movingCaret = false;
+
         public void MoveCaretToTextPosition(int textPosition, bool trailingEdge = false)
         {
-            UpdateCaret(GetCaretCharacterHit(TextLayout, textPosition, trailingEdge));
+            if (!_movingCaret)
+            {
+                _movingCaret = true;
 
-            _navigationPosition = _caretBounds.Position;
+                try
+                {
+                    UpdateCaret(GetCaretCharacterHit(TextLayout, textPosition, trailingEdge));
 
-            CaretChanged();
+                    _navigationPosition = _caretBounds.Position;
+
+                    CaretChanged();
+                }
+                finally
+                {
+                    _movingCaret = false;
+                }
+            }
         }
 
         public void MoveCaretToPoint(Point point)
