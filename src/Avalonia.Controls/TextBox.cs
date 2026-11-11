@@ -1587,11 +1587,13 @@ namespace Avalonia.Controls
             {
                 // This is an Apple ecosystem gesture which does not alter caret position or selection.
                 _scrollViewer?.ScrollToHome();
+                handled = true;
             }
             else if (Match(keymap.ScrollToTheEndOfDocument))
             {
                 // This is an Apple ecosystem gesture which does not alter caret position or selection.
                 _scrollViewer?.ScrollToEnd();
+                handled = true;
             }
             else if (Match(keymap.PageLeft))
             {
