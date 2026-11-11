@@ -136,7 +136,7 @@ namespace Avalonia.Media
         // Per-source variation cache. Only populated on the source typeface (clones
         // delegate WithVariation through _sourceTypeface so a single cache is shared).
         // Lazy-allocated on first variation request.
-        private ConcurrentDictionary<NormalizedVariationPosition, GlyphTypeface>? _variationCache;
+        private GlyphTypefaceVariationCache? _variationCache;
 
         private readonly bool _hasOs2Table;
         private readonly bool _hasHorizontalMetrics;
@@ -2590,8 +2590,10 @@ namespace Avalonia.Media
         /// <remarks>
         /// A clone is owned by the default-instance typeface it was created from, whichever
         /// typeface <see cref="WithVariations"/> was called on. Disposing that typeface
-        /// disposes every clone, and calling <see cref="Dispose()"/> on a clone has no effect.
-        /// Keep the default-instance typeface alive for as long as any clone is in use.
+        /// disposes every clone that is still alive, and calling <see cref="Dispose()"/> on a
+        /// clone has no effect. Keep the default-instance typeface alive for as long as any
+        /// clone is in use. Equal settings return the same clone while it is alive; a clone
+        /// that nothing holds any more can be collected and is recreated on the next request.
         /// </remarks>
         /// <exception cref="ObjectDisposedException">
         /// The default-instance typeface this typeface belongs to has been disposed.
@@ -2645,10 +2647,10 @@ namespace Avalonia.Media
         /// <para>
         /// Per-variation typefaces are cached on the source. The cache key is the
         /// <see cref="NormalizedVariationPosition"/>, which already carries its own
-        /// structural equality + cached hash. The cache is unbounded — LRU eviction
-        /// is a possible follow-up if profiling shows the cache growing without bound
-        /// (e.g. animating a weight axis across many distinct values without ever
-        /// settling).
+        /// structural equality + cached hash. A position returns the same clone for as
+        /// long as the clone is alive; the cache holds only the most recently requested
+        /// clones itself, so the clones an animated axis leaves behind are collected once
+        /// nothing else holds them.
         /// </para>
         /// </remarks>
         internal GlyphTypeface WithVariation(NormalizedVariationPosition variation)
@@ -2681,13 +2683,13 @@ namespace Avalonia.Media
             }
 
             // Allocate the cache lazily. We tolerate the rare race where two threads
-            // both initialize and one allocation loses — the loser's empty dict is
-            // discarded and the winner's dict serves both threads.
+            // both initialize and one allocation loses — the loser's empty cache is
+            // discarded and the winner's cache serves both threads.
             if (source._variationCache is null)
             {
                 Interlocked.CompareExchange(
                     ref source._variationCache,
-                    new ConcurrentDictionary<NormalizedVariationPosition, GlyphTypeface>(),
+                    new GlyphTypefaceVariationCache(),
                     null);
             }
 
@@ -2870,18 +2872,17 @@ namespace Avalonia.Media
                 return;
             }
 
-            // Dispose all cached variation clones before tearing down the platform
-            // typeface — clones may hold shaper handles bound to it. The cache lives
-            // only on the source; for a variation clone _variationCache is null so this
-            // loop is a no-op.
+            // Dispose the variation clones that are still alive before tearing down the
+            // platform typeface — clones may hold shaper handles bound to it. The cache
+            // lives only on the source; for a variation clone _variationCache is null so
+            // this loop is a no-op.
             var cache = _variationCache;
             if (cache is not null)
             {
-                foreach (var entry in cache)
+                foreach (var clone in cache.Clear())
                 {
-                    entry.Value.Dispose(true);
+                    clone.Dispose(true);
                 }
-                cache.Clear();
             }
 
             if (_ownsTextShaperTypeface)

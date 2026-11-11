@@ -491,6 +491,36 @@ namespace Avalonia.Base.UnitTests.Media
             }
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static WeakReference<GlyphTypeface> SweepWeightsRequesting(GlyphTypeface gt, NormalizedVariationPosition position)
+        {
+            var clone = new WeakReference<GlyphTypeface>(gt.WithVariation(position));
+
+            for (var i = 0; i < SweepLength; i++)
+            {
+                gt.WithVariation(WghtPosition(gt, SweepWeight(i)));
+                gt.WithVariation(position);
+            }
+
+            return clone;
+        }
+
+        [Fact]
+        public void A_Variation_Clone_Requested_Throughout_Should_Stay_Cached_Without_Outside_Holders()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var gt = LoadTypeface(InterVariableAsset);
+
+                var clone = SweepWeightsRequesting(gt, WghtPosition(gt, 700));
+
+                CollectGarbage();
+
+                Assert.True(clone.TryGetTarget(out var alive));
+                Assert.Same(alive, gt.WithVariation(WghtPosition(gt, 700)));
+            }
+        }
+
         [Fact]
         public void A_Collected_Variation_Clone_Should_Be_Recreated_At_Its_Position()
         {
