@@ -1497,7 +1497,7 @@ namespace Avalonia.Controls
             }
             else if (Match(keymap.MoveCursorToTheStartOfDocument))
             {
-                MoveHome(true);
+                MoveHome(document: true, withSelection: false);
                 movement = true;
                 selection = false;
                 handled = true;
@@ -1505,7 +1505,7 @@ namespace Avalonia.Controls
             }
             else if (Match(keymap.MoveCursorToTheEndOfDocument))
             {
-                MoveEnd(true);
+                MoveEnd(document: true, withSelection: false);
                 movement = true;
                 selection = false;
                 handled = true;
@@ -1513,7 +1513,7 @@ namespace Avalonia.Controls
             }
             else if (Match(keymap.MoveCursorToTheStartOfLine))
             {
-                MoveHome(false);
+                MoveHome(document: false, withSelection: false);
                 movement = true;
                 selection = false;
                 handled = true;
@@ -1521,7 +1521,7 @@ namespace Avalonia.Controls
             }
             else if (Match(keymap.MoveCursorToTheEndOfLine))
             {
-                MoveEnd(false);
+                MoveEnd(document: false, withSelection: false);
                 movement = true;
                 selection = false;
                 handled = true;
@@ -1529,18 +1529,14 @@ namespace Avalonia.Controls
             }
             else if (Match(keymap.MoveCursorToTheStartOfDocumentWithSelection))
             {
-                SetCurrentValue(SelectionStartProperty, caretIndex);
-                MoveHome(true);
-                SetCurrentValue(SelectionEndProperty, _presenter.CaretIndex);
+                MoveHome(document: true, withSelection: true);
                 movement = true;
                 selection = true;
                 handled = true;
             }
             else if (Match(keymap.MoveCursorToTheEndOfDocumentWithSelection))
             {
-                SetCurrentValue(SelectionStartProperty, caretIndex);
-                MoveEnd(true);
-                SetCurrentValue(SelectionEndProperty, _presenter.CaretIndex);
+                MoveEnd(document: true, withSelection: true);
                 movement = true;
                 selection = true;
                 handled = true;
@@ -1549,8 +1545,7 @@ namespace Avalonia.Controls
             {
                 // Always extend selection from the start, leaving the end anchored.
                 SetCurrentValue(SelectionEndProperty, Math.Max(SelectionStart, SelectionEnd));
-                MoveHome(true);
-                SetCurrentValue(SelectionStartProperty, _presenter.CaretIndex);
+                MoveHome(document: true, withSelection: true);
                 movement = true;
                 selection = true;
                 handled = true;
@@ -1559,26 +1554,21 @@ namespace Avalonia.Controls
             {
                 // Always extend selection from the end, leaving the start anchored.
                 SetCurrentValue(SelectionStartProperty, Math.Min(SelectionStart, SelectionEnd));
-                MoveEnd(true);
-                SetCurrentValue(SelectionEndProperty, _presenter.CaretIndex);
+                MoveEnd(document: true, withSelection: true);
                 movement = true;
                 selection = true;
                 handled = true;
             }
             else if (Match(keymap.MoveCursorToTheStartOfLineWithSelection))
             {
-                SetCurrentValue(SelectionStartProperty, caretIndex);
-                MoveHome(false);
-                SetCurrentValue(SelectionEndProperty, _presenter.CaretIndex);
+                MoveHome(document: false, withSelection: true);
                 movement = true;
                 selection = true;
                 handled = true;
             }
             else if (Match(keymap.MoveCursorToTheEndOfLineWithSelection))
             {
-                SetCurrentValue(SelectionStartProperty, caretIndex);
-                MoveEnd(false);
-                SetCurrentValue(SelectionEndProperty, _presenter.CaretIndex);
+                MoveEnd(document: false, withSelection: true);
                 movement = true;
                 selection = true;
                 handled = true;
@@ -2382,7 +2372,7 @@ namespace Avalonia.Controls
             }
         }
 
-        private void MoveHome(bool document)
+        private void MoveHome(bool document, bool withSelection)
         {
             if (_presenter is null)
             {
@@ -2391,28 +2381,52 @@ namespace Avalonia.Controls
 
             var caretIndex = _presenter.CaretIndex;
 
+            var (normalizedSelectionStart, normalizedSelectionEnd) = GetSelectionRange();
+
+            int newSelectionStart = SelectionStart < 0 ? caretIndex : SelectionStart;
+            int newSelectionEnd = SelectionEnd < 0 ? caretIndex : SelectionEnd;
+
+            int relativeToCharacterIndex = caretIndex;
+
+            switch (HomeEndBehavior)
+            {
+                default:
+                case HomeEndBehaviors.RelativeToCaret:
+                {
+                    relativeToCharacterIndex = caretIndex;
+                    break;
+                }
+                case HomeEndBehaviors.RelativeToSelectionBoundaries:
+                {
+                    relativeToCharacterIndex = Math.Min(newSelectionStart, newSelectionEnd);
+                    newSelectionStart = Math.Max(newSelectionStart, newSelectionEnd);
+                    break;
+                }
+            }
+
             if (document)
             {
                 _presenter.MoveCaretToTextPosition(0);
             }
             else
             {
-                int relativeToCharacterIndex =
-                    HomeEndBehavior switch
-                    {
-                        HomeEndBehaviors.RelativeToSelectionBoundaries => Math.Min(SelectionStart, SelectionEnd),
-                        HomeEndBehaviors.RelativeToCaret or _ => caretIndex,
-                    };
-
                 var textLines = _presenter.TextLayout.TextLines;
                 var lineIndex = _presenter.TextLayout.GetLineIndexFromCharacterIndex(relativeToCharacterIndex, false);
                 var textLine = textLines[lineIndex];
 
                 _presenter.MoveCaretToTextPosition(textLine.FirstTextSourceIndex);
             }
+
+            if (withSelection)
+            {
+                newSelectionEnd = _presenter.CaretIndex;
+
+                SetCurrentValue(SelectionStartProperty, newSelectionStart);
+                SetCurrentValue(SelectionEndProperty, newSelectionEnd);
+            }
         }
 
-        private void MoveEnd(bool document)
+        private void MoveEnd(bool document, bool withSelection)
         {
             if (_presenter is null)
             {
@@ -2422,19 +2436,35 @@ namespace Avalonia.Controls
             var text = Text ?? string.Empty;
             var caretIndex = _presenter.CaretIndex;
 
+            var (normalizedSelectionStart, normalizedSelectionEnd) = GetSelectionRange();
+
+            int newSelectionStart = SelectionStart < 0 ? caretIndex : SelectionStart;
+            int newSelectionEnd = SelectionEnd < 0 ? caretIndex : SelectionEnd;
+
+            int relativeToCharacterIndex;
+
+            switch (HomeEndBehavior)
+            {
+                default:
+                case HomeEndBehaviors.RelativeToCaret:
+                {
+                    relativeToCharacterIndex = caretIndex;
+                    break;
+                }
+                case HomeEndBehaviors.RelativeToSelectionBoundaries:
+                {
+                    relativeToCharacterIndex = Math.Max(newSelectionStart, newSelectionEnd);
+                    newSelectionStart = Math.Min(newSelectionStart, newSelectionEnd);
+                    break;
+                }
+            }
+
             if (document)
             {
                 _presenter.MoveCaretToTextPosition(text.Length, true);
             }
             else
             {
-                int relativeToCharacterIndex =
-                    HomeEndBehavior switch
-                    {
-                        HomeEndBehaviors.RelativeToSelectionBoundaries => Math.Max(SelectionStart, SelectionEnd),
-                        HomeEndBehaviors.RelativeToCaret or _ => caretIndex,
-                    };
-
                 var textLines = _presenter.TextLayout.TextLines;
                 var lineIndex = _presenter.TextLayout.GetLineIndexFromCharacterIndex(relativeToCharacterIndex, false);
                 var textLine = textLines[lineIndex];
@@ -2447,6 +2477,14 @@ namespace Avalonia.Controls
                 }
 
                 _presenter.MoveCaretToTextPosition(textPosition, true);
+            }
+
+            if (withSelection)
+            {
+                newSelectionEnd = _presenter.CaretIndex;
+
+                SetCurrentValue(SelectionStartProperty, newSelectionStart);
+                SetCurrentValue(SelectionEndProperty, newSelectionEnd);
             }
         }
 
