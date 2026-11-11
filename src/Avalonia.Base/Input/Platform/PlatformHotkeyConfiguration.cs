@@ -23,6 +23,14 @@ namespace Avalonia.Input.Platform
                 hotkeys.MoveCursorToTheEndOfLine.Add(new KeyGesture(Key.Right, hotkeys.CommandModifiers));
                 hotkeys.MoveCursorToTheEndOfLineWithSelection.Clear();
                 hotkeys.MoveCursorToTheEndOfLineWithSelection.Add(new KeyGesture(Key.Right, hotkeys.CommandModifiers | hotkeys.SelectionModifiers));
+                hotkeys.MoveCursorToTheStartOfDocument.Clear();
+                hotkeys.MoveCursorToTheStartOfDocument.Add(new KeyGesture(Key.Up, hotkeys.CommandModifiers));
+                hotkeys.MoveCursorToTheStartOfDocumentWithSelection.Clear();
+                hotkeys.MoveCursorToTheStartOfDocumentWithSelection.Add(new KeyGesture(Key.Up, KeyModifiers.Shift | hotkeys.CommandModifiers | hotkeys.SelectionModifiers));
+                hotkeys.MoveCursorToTheEndOfDocument.Clear();
+                hotkeys.MoveCursorToTheEndOfDocument.Add(new KeyGesture(Key.Down, hotkeys.CommandModifiers));
+                hotkeys.MoveCursorToTheEndOfDocumentWithSelection.Clear();
+                hotkeys.MoveCursorToTheEndOfDocumentWithSelection.Add(new KeyGesture(Key.Down, KeyModifiers.Shift | hotkeys.CommandModifiers | hotkeys.SelectionModifiers));
 
                 hotkeys.ScrollToTheStartOfDocument.Add(new KeyGesture(Key.Home));
                 hotkeys.ScrollToTheEndOfDocument.Add(new KeyGesture(Key.End));
