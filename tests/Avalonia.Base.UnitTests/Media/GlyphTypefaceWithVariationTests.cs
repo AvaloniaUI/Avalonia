@@ -3,6 +3,7 @@ using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Runtime.CompilerServices;
 using Avalonia.Base.UnitTests.Media.Fonts.Tables;
 using Avalonia.Media;
 using Avalonia.Media.Fonts;
@@ -415,6 +416,121 @@ namespace Avalonia.Base.UnitTests.Media
             gt.Dispose();
 
             Assert.Throws<ObjectDisposedException>(() => varied.WithVariations(settings));
+        }
+
+        // An animated axis asks for a new position on every frame. The source keeps only the most
+        // recently used clones, so clones nobody holds any more are collected.
+        private const int RecentlyUsedClones = 16;
+
+        private const int SweepLength = 200;
+
+        // Weights 101, 105, ... 897: distinct after quantization, never the default (400) and never 700.
+        private static double SweepWeight(int step) => 101 + (step * 4);
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static WeakReference<GlyphTypeface>[] SweepWeights(GlyphTypeface gt)
+        {
+            var clones = new WeakReference<GlyphTypeface>[SweepLength];
+
+            for (var i = 0; i < clones.Length; i++)
+            {
+                clones[i] = new WeakReference<GlyphTypeface>(gt.WithVariation(WghtPosition(gt, SweepWeight(i))));
+            }
+
+            return clones;
+        }
+
+        private static void CollectGarbage()
+        {
+            for (var i = 0; i < 2; i++)
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+            }
+        }
+
+        [Fact]
+        public void Variation_Clones_Nobody_Holds_Should_Be_Collected()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var gt = LoadTypeface(InterVariableAsset);
+
+                var clones = SweepWeights(gt);
+
+                CollectGarbage();
+
+                var alive = 0;
+
+                foreach (var clone in clones)
+                {
+                    if (clone.TryGetTarget(out _))
+                    {
+                        alive++;
+                    }
+                }
+
+                Assert.InRange(alive, 0, RecentlyUsedClones);
+                GC.KeepAlive(gt);
+            }
+        }
+
+        [Fact]
+        public void A_Held_Variation_Clone_Should_Be_Returned_Again_After_Other_Positions_Were_Requested()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var gt = LoadTypeface(InterVariableAsset);
+                var position = WghtPosition(gt, 700);
+                var held = gt.WithVariation(position);
+
+                SweepWeights(gt);
+                CollectGarbage();
+
+                Assert.Same(held, gt.WithVariation(position));
+            }
+        }
+
+        [Fact]
+        public void A_Collected_Variation_Clone_Should_Be_Recreated_At_Its_Position()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var gt = LoadTypeface(InterVariableAsset);
+
+                SweepWeights(gt);
+                CollectGarbage();
+
+                var position = WghtPosition(gt, SweepWeight(0));
+                var clone = gt.WithVariation(position);
+
+                Assert.NotSame(gt, clone);
+                Assert.Equal(position, clone.VariationPosition);
+                Assert.Same(clone, gt.WithVariation(position));
+            }
+        }
+
+        [Fact]
+        public void Disposing_The_Source_Should_Dispose_A_Held_Clone_After_Other_Positions_Were_Requested()
+        {
+            var shaper = new TrackingTextShaperImpl(varies: true);
+
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(textShaperImpl: shaper)))
+            {
+                var gt = LoadTypefaceWithRetainedFontData(InterVariableAsset);
+                _ = gt.TextShaperTypeface;
+
+                var held = gt.WithVariation(WghtPosition(gt, 700));
+                var heldShaper = (TrackingShaperTypeface)held.TextShaperTypeface;
+
+                SweepWeights(gt);
+                CollectGarbage();
+
+                gt.Dispose();
+
+                Assert.True(heldShaper.IsDisposed);
+                Assert.Throws<ObjectDisposedException>(() => held.WithVariations(FontVariationSettings.Parse("wght=300")));
+            }
         }
 
         private sealed class RetainedPlatformTypeface : IPlatformTypeface
