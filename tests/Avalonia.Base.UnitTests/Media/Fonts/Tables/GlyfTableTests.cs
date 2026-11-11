@@ -45,6 +45,33 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
             Assert.True(glyf.GlyphCount > 0);
         }
 
+        [Fact]
+        public void TryGetGlyphOutlineBounds_Matches_The_Header_Box_For_A_Static_Font()
+        {
+            var typeface = LoadInter();
+            var glyf = LoadGlyf(typeface);
+            var glyph = GlyphFor(typeface, 'A');
+
+            Assert.True(glyf.TryGetGlyphBounds(glyph, out var headerXMin, out var headerYMin, out var headerXMax, out var headerYMax));
+
+            Assert.True(glyf.TryGetGlyphOutlineBounds(glyph, Matrix.Identity, gvarTable: null, activeCoords: default, out var interpreted));
+
+            // Interpreting the contours into the control-point box (no geometry, no render backend)
+            // yields exactly the stored header box for a static font with integer coordinates.
+            Assert.Equal(new GlyphBounds(headerXMin, headerYMin, headerXMax, headerYMax), interpreted);
+        }
+
+        [Fact]
+        public void IsEmptyGlyph_Is_True_Only_For_A_Glyph_Without_Outline_Data()
+        {
+            var typeface = LoadInter();
+            var glyf = LoadGlyf(typeface);
+
+            Assert.True(glyf.IsEmptyGlyph(GlyphFor(typeface, ' ')));
+            Assert.False(glyf.IsEmptyGlyph(GlyphFor(typeface, 'A')));
+            Assert.False(glyf.IsEmptyGlyph(glyf.GlyphCount + 5));
+        }
+
         [Theory]
         [InlineData(-1)]
         [InlineData(int.MaxValue)]
