@@ -16,13 +16,13 @@ public class DropDownButtonTests : ScopedTestBase
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void Reopening_Templated_Flyout_Styles_Replacement_Content(bool replaceWhileOpening)
+    public void Reopening_Templated_Flyout_Does_Not_Claim_Replacement_Content(bool replaceWhileOpening)
     {
         using var services = CreateServicesWithoutTheme();
-        var flyout = new Flyout { Content = new PathIcon() };
+        var original = new PathIcon();
+        var flyout = new Flyout { Content = original };
         var host = new ContentControl
         {
-            Tag = 24d,
             Template = new FuncControlTemplate<ContentControl>((_, _) => new DropDownButton { Flyout = flyout }),
         };
         var window = new Window { Content = host };
@@ -37,10 +37,7 @@ public class DropDownButtonTests : ScopedTestBase
         var presenter = flyout.Popup.Child;
         flyout.Hide();
 
-        var replacement = new PathIcon
-        {
-            [!Control.WidthProperty] = new TemplateBinding(Control.TagProperty),
-        };
+        var replacement = new PathIcon();
         if (replaceWhileOpening)
             flyout.Opening += (_, _) => flyout.Content = replacement;
         else
@@ -48,11 +45,43 @@ public class DropDownButtonTests : ScopedTestBase
         flyout.ShowAt(dropDown);
 
         Assert.Same(presenter, flyout.Popup.Child);
-        Assert.Same(host, replacement.TemplatedParent);
-        Assert.Equal(Brushes.Red, replacement.Foreground);
-        Assert.Equal(24d, replacement.Width);
-        host.Tag = 32d;
-        Assert.Equal(32d, replacement.Width);
+        var flyoutPresenter = Assert.IsType<FlyoutPresenter>(presenter);
+        Assert.Same(replacement, flyoutPresenter.Content);
+        Assert.Contains(replacement, flyoutPresenter.GetVisualDescendants().OfType<PathIcon>());
+        Assert.DoesNotContain(original, flyoutPresenter.GetVisualDescendants().OfType<PathIcon>());
+        Assert.Null(replacement.TemplatedParent);
+        Assert.NotEqual(Brushes.Red, replacement.Foreground);
+    }
+
+    [Fact]
+    public void Replacing_Content_While_Templated_Flyout_Is_Open_Does_Not_Claim_It()
+    {
+        using var services = CreateServicesWithoutTheme();
+        var original = new PathIcon();
+        var flyout = new Flyout { Content = original };
+        var host = new ContentControl
+        {
+            Template = new FuncControlTemplate<ContentControl>((_, _) => new DropDownButton { Flyout = flyout }),
+        };
+        var window = new Window { Content = host };
+        window.Styles.Add(new Style(x => x.OfType<ContentControl>().Template().OfType<PathIcon>())
+        {
+            Setters = { new Setter(PathIcon.ForegroundProperty, Brushes.Red) },
+        });
+        window.Show();
+        host.ApplyTemplate();
+        var dropDown = Assert.Single(host.GetVisualDescendants().OfType<DropDownButton>());
+        flyout.ShowAt(dropDown);
+        var presenter = Assert.IsType<FlyoutPresenter>(flyout.Popup.Child);
+
+        var replacement = new PathIcon();
+        flyout.Content = replacement;
+
+        Assert.Same(replacement, presenter.Content);
+        Assert.Contains(replacement, presenter.GetVisualDescendants().OfType<PathIcon>());
+        Assert.DoesNotContain(original, presenter.GetVisualDescendants().OfType<PathIcon>());
+        Assert.Null(replacement.TemplatedParent);
+        Assert.NotEqual(Brushes.Red, replacement.Foreground);
     }
 
     [Fact]

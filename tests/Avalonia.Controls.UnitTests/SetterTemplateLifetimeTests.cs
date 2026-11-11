@@ -14,10 +14,12 @@ namespace Avalonia.Controls.UnitTests;
 
 public class SetterTemplateLifetimeTests : ScopedTestBase
 {
-    [Fact]
-    public void Active_Setter_Does_Not_Retain_Removed_Descendants()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Active_Setter_Does_Not_Retain_Removed_Descendants(bool nested)
     {
-        var (root, removed) = CreateRemovedContent();
+        var (root, removed) = CreateRemovedContent(nested);
 
         GC.Collect();
         GC.WaitForPendingFinalizers();
@@ -28,12 +30,18 @@ public class SetterTemplateLifetimeTests : ScopedTestBase
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private static (TestRoot, WeakReference<Control>) CreateRemovedContent()
+    private static (TestRoot, WeakReference<Control>) CreateRemovedContent(bool nested)
     {
         var target = CreateTarget();
         var root = new TestRoot
         {
-            Styles = { CreateStyle(() => new Border { Child = new Border { Child = new TextBlock() } }) },
+            Styles =
+            {
+                CreateStyle(() => new Border
+                {
+                    Child = nested ? new Border { Child = new TextBlock() } : new TextBlock(),
+                }),
+            },
             Child = target,
         };
         var content = Assert.IsType<Border>(target.Content);
@@ -148,15 +156,18 @@ public class SetterTemplateLifetimeTests : ScopedTestBase
         Assert.Equal("Changed", Assert.IsType<TextBlock>(replacement.Child).Text);
     }
 
-    [Fact]
-    public void Reactivating_Setter_Content_Restores_Its_TemplateBindings()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Reactivating_Setter_Content_Restores_Its_TemplateBindings(bool rootOnly)
     {
         var target = CreateTarget();
         target.Classes.Add("active");
-        var style = CreateStyle(BuildContent, activeClass: true);
+        var style = CreateStyle(rootOnly ? BuildText : BuildContent, activeClass: true);
         var root = new TestRoot { Styles = { style }, Child = target };
-        var content = Assert.IsType<Border>(target.Content);
-        var text = Assert.IsType<TextBlock>(content.Child);
+        var content = Assert.IsAssignableFrom<Control>(target.Content);
+        var text = rootOnly ? Assert.IsType<TextBlock>(content) :
+            Assert.IsType<TextBlock>(Assert.IsType<Border>(content).Child);
 
         target.Classes.Remove("active");
 
@@ -211,7 +222,10 @@ public class SetterTemplateLifetimeTests : ScopedTestBase
         var root = new TestRoot { Styles = { CreateStyle(BuildContent) }, Child = target };
         var content = Assert.IsType<Border>(target.Content);
         var text = Assert.IsType<TextBlock>(content.Child);
+        Assert.Same(target, text.TemplatedParent);
+        Assert.Equal("Initial", text.Text);
         content.Child = null;
+        Assert.Same(target, text.TemplatedParent);
 
         target.InvalidateStyles(recurse: false);
 
@@ -264,8 +278,16 @@ public class SetterTemplateLifetimeTests : ScopedTestBase
         for (var i = 0; i < 5; ++i)
         {
             var content = Assert.IsType<Border>(target.Content);
+            var text = Assert.IsType<TextBlock>(content.Child);
+            if (bindingInParentTheme)
+            {
+                Assert.Equal("Initial", text.Text);
+                target.Tag = $"Changed {i}";
+                Assert.Equal($"Changed {i}", text.Text);
+                target.Tag = "Initial";
+            }
             discarded.Add(new(content));
-            discarded.Add(new(content.Child!));
+            discarded.Add(new(text));
             target.InvalidateStyles(recurse: false);
             target.ApplyStyling();
         }
@@ -308,6 +330,51 @@ public class SetterTemplateLifetimeTests : ScopedTestBase
         Assert.Same(newOwner, text.TemplatedParent);
         newOwner.Tag = "Other owner changed";
         Assert.Equal("Other owner changed", text.Text);
+    }
+
+    [Fact]
+    public void Discarding_Setter_Content_Does_Not_Clear_Reassigned_Root_Ownership()
+    {
+        var target = CreateTarget();
+        var entry = (IValueEntry)new PropertySetterTemplateInstance(ContentControl.ContentProperty,
+            new FuncTemplate<Control>(BuildText), target);
+        var text = Assert.IsType<TextBlock>(entry.GetValue());
+        var newOwner = new ContentControl { Tag = "Other owner" };
+        text.TemplatedParent = newOwner;
+
+        entry.Unsubscribe();
+        Assert.Same(newOwner, text.TemplatedParent);
+        newOwner.Tag = "Other owner while inactive";
+        Assert.Equal("Other owner while inactive", text.Text);
+
+        Assert.Same(text, entry.GetValue());
+
+        Assert.Same(newOwner, text.TemplatedParent);
+        newOwner.Tag = "Other owner changed";
+        Assert.Equal("Other owner changed", text.Text);
+    }
+
+    [Fact]
+    public void Reading_Value_During_Initialization_Does_Not_Activate_Partially_Built_Content()
+    {
+        var target = CreateTarget();
+        var content = Assert.IsType<Border>(BuildContent());
+        var entry = (IValueEntry)new PropertySetterTemplateInstance(ContentControl.ContentProperty,
+            new FuncTemplate<Control>(() => content), target);
+        content.PropertyChanged += (_, e) =>
+        {
+            if (e.Property == StyledElement.TemplatedParentProperty && e.NewValue is not null)
+            {
+                Assert.Same(content, entry.GetValue());
+                entry.Unsubscribe();
+            }
+        };
+
+        Assert.Same(content, entry.GetValue());
+
+        Assert.Same(target, content.TemplatedParent);
+        Assert.Same(target, content.Child!.TemplatedParent);
+        Assert.Equal("Initial", Assert.IsType<TextBlock>(content.Child).Text);
     }
 
     [Fact]

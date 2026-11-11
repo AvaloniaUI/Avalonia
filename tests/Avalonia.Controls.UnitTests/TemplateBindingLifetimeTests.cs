@@ -123,7 +123,7 @@ public class TemplateBindingLifetimeTests : ScopedTestBase
         return (subscription, new(owner));
     }
     [Fact]
-    public void Disposing_During_First_Publication_Does_Not_Leave_Parent_Change_Subscriptions()
+    public void Disposing_During_First_Publication_Stops_Processing_Notifications()
     {
         var owner = new ContentControl { Tag = "Initial" };
         var target = new TextBlock { TemplatedParent = owner };
@@ -145,5 +145,77 @@ public class TemplateBindingLifetimeTests : ScopedTestBase
         newOwner.Tag = "Changed";
 
         Assert.Equal(1, conversions);
+    }
+
+    [Fact]
+    public void Binding_Tracks_Only_Its_Current_TemplatedParent()
+    {
+        var owner = new ContentControl { Tag = "Initial" };
+        var newOwner = new ContentControl { Tag = "New owner" };
+        var target = new TextBlock { TemplatedParent = owner };
+        var conversions = 0;
+        var binding = new TemplateBinding(Control.TagProperty)
+        {
+            Converter = new FuncValueConverter<object, object>(value =>
+            {
+                ++conversions;
+                return value!;
+            }),
+        };
+        var expression = (UntypedBindingExpressionBase)binding.CreateInstance(target, TextBlock.TextProperty, null);
+        using var subscription = expression.ToObservable(target).Subscribe(_ => { });
+        Assert.Equal(1, conversions);
+
+        target.TemplatedParent = newOwner;
+        Assert.Equal(2, conversions);
+
+        owner.Tag = "Old owner changed";
+        Assert.Equal(2, conversions);
+
+        newOwner.Tag = "New owner changed";
+        Assert.Equal(3, conversions);
+
+        target.TemplatedParent = null;
+        newOwner.Tag = "New owner changed again";
+        Assert.Equal(3, conversions);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Disposed_Binding_Is_Not_Retained_By_Parent_Change_Subscriptions(bool disposeDuringPublication)
+    {
+        var owner = new ContentControl { Tag = "Initial" };
+        var target = new TextBlock { TemplatedParent = owner };
+        var expression = CreateDisposedExpression(target, disposeDuringPublication);
+
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+
+        Assert.False(expression.TryGetTarget(out _));
+        GC.KeepAlive(owner);
+        GC.KeepAlive(target);
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static WeakReference<UntypedBindingExpressionBase> CreateDisposedExpression(
+        TextBlock target, bool disposeDuringPublication)
+    {
+        var binding = new TemplateBinding(Control.TagProperty);
+        var expression = (UntypedBindingExpressionBase)binding.CreateInstance(target, TextBlock.TextProperty, null);
+        var publications = 0;
+        var subscription = expression.ToObservable(target).Subscribe(_ =>
+        {
+            ++publications;
+            if (disposeDuringPublication)
+                expression.Dispose();
+        });
+        Assert.Equal(1, publications);
+        if (!disposeDuringPublication)
+            expression.Dispose();
+        Assert.False(expression.IsRunning);
+        subscription.Dispose();
+        return new(expression);
     }
 }

@@ -378,7 +378,9 @@ namespace Avalonia
             }
         }
 
-        // The caller owns the captured list and must dispose it after use.
+        // The caller owns the captured descendants (excluding the root) and must dispose
+        // the list after use. Keeping the root separate avoids promoting a single child
+        // to a pooled list.
         internal static void ApplyTemplatedParent(
             StyledElement control,
             AvaloniaObject? templatedParent,
@@ -390,20 +392,22 @@ namespace Avalonia
             CollectTemplateChildren(control, ref children);
 
             // Assign ancestors first so restyling each child sees the complete parent chain.
+            control.TemplatedParent = templatedParent;
             foreach (var child in children)
                 child.TemplatedParent = templatedParent;
 
             static void CollectTemplateChildren(StyledElement control, ref PooledInlineList<StyledElement> children)
             {
-                children.Add(control);
-
                 var logicalChildren = control.LogicalChildren;
                 var count = logicalChildren.Count;
 
                 for (var i = 0; i < count; i++)
                 {
                     if (logicalChildren[i] is StyledElement child && child.TemplatedParent is null)
+                    {
+                        children.Add(child);
                         CollectTemplateChildren(child, ref children);
+                    }
                 }
             }
         }
