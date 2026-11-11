@@ -70,7 +70,7 @@ namespace Avalonia.Media.Fonts
             // --- Tier A: requested family, coverage-checked, culture-compatible ---
             if (familyName != null &&
                 _glyphTypefaceCache.TryGetValue(familyName, out var requestedFamily) &&
-                TryGetCoveringMatchForFamily(requestedFamily, key, codepoint, culture, shapingScript, out var requestedGlyphTypeface) &&
+                TryGetCoveringMatchForFamily(familyName, requestedFamily, key, codepoint, culture, shapingScript, out var requestedGlyphTypeface) &&
                 IsCultureCompatible(requestedGlyphTypeface, culture, script))
             {
                 match = BuildTypefaceWithSynthesis(requestedGlyphTypeface, key);
@@ -84,7 +84,7 @@ namespace Avalonia.Media.Fonts
                     cachedFamily != null &&
                     !string.Equals(cachedFamily, familyName, StringComparison.OrdinalIgnoreCase) &&
                     _glyphTypefaceCache.TryGetValue(cachedFamily, out var cachedTypefaces) &&
-                    TryGetCoveringMatchForFamily(cachedTypefaces, key, codepoint, culture, shapingScript, out var cachedGlyphTypeface))
+                    TryGetCoveringMatchForFamily(cachedFamily, cachedTypefaces, key, codepoint, culture, shapingScript, out var cachedGlyphTypeface))
                 {
                     match = BuildTypefaceWithSynthesis(cachedGlyphTypeface, key);
                     return true;
@@ -96,9 +96,13 @@ namespace Avalonia.Media.Fonts
             {
                 // The sweep returns the nearest cached key for the winning family. A codepoint the
                 // bucket family can't cover (e.g. the Simplified-only 华 when the bucket is a JP font)
-                // lands here, so the exact-key upgrade is needed here too: otherwise a Bold face cached
-                // for an earlier run is rendered for a Normal request.
-                bestGt = PreferExactKey(bestGt, key, codepoint, culture, shapingScript);
+                // lands here, so the platform's match for the requested key is needed here too:
+                // otherwise a Bold face cached for an earlier run is rendered for a Normal request.
+                if (_glyphTypefaceCache.TryGetValue(bestFamilyName, out var bestFamily))
+                {
+                    bestGt = PreferPlatformMatch(bestGt, bestFamilyName, bestFamily, key, codepoint, culture,
+                        shapingScript);
+                }
 
                 if (FontFallbackScriptHints.IsLocaleSensitive(refinedScript) || culture != null)
                 {
@@ -130,6 +134,14 @@ namespace Avalonia.Media.Fonts
                     // Keep any existing positive hint (TryAdd won't overwrite); registering the match
                     // lets later lookups for this codepoint be served by Tier C without the platform.
                     _scriptFallbackCache.TryAdd(scriptKey, platformGt.FamilyName);
+
+                    // A face of the requested family is also its answer for the requested key, where
+                    // Tier A looks for it, so a later request does not ask the platform again.
+                    if (familyName != null && IsOfFamily(platformGt, familyName))
+                    {
+                        TryAddGlyphTypeface(familyName, key, platformGt);
+                    }
+
                     match = BuildTypefaceWithSynthesis(platformGt, key);
                     return true;
                 }
@@ -331,11 +343,12 @@ namespace Avalonia.Media.Fonts
 
         /// <summary>
         /// Resolves a covering face for a single family at the requested key. Takes the cheap cached
-        /// covering match first (an exact-key hit needs nothing more) and only escalates to the exact
-        /// key when that match differs in any axis, so a Bold (or Italic, or Condensed) face cached for
-        /// one run is not reused for a differently-keyed request of the same family.
+        /// covering match first (an exact-key hit needs nothing more) and only asks the platform when
+        /// that match differs in any axis, so a Bold (or Italic, or Condensed) face cached for one run
+        /// is not reused for a differently-keyed request of the same family.
         /// </summary>
         private bool TryGetCoveringMatchForFamily(
+            string familyName,
             ConcurrentDictionary<FontCollectionKey, GlyphTypeface?> glyphTypefaces,
             FontCollectionKey key,
             int codepoint,
@@ -348,47 +361,72 @@ namespace Avalonia.Media.Fonts
                 return false;
             }
 
-            glyphTypeface = PreferExactKey(glyphTypeface, key, codepoint, culture, shapingScript);
+            glyphTypeface = PreferPlatformMatch(glyphTypeface, familyName, glyphTypefaces, key, codepoint, culture,
+                shapingScript);
             return true;
         }
 
         /// <summary>
-        /// When <paramref name="glyphTypeface"/> differs from the requested <paramref name="key"/> in
-        /// any axis (style, weight or stretch), asks the platform for the exact-key face of the same
-        /// family - the only source of a key the cache lacks - via <see cref="TryMatchCharacterFromPlatform"/>,
-        /// and returns it when it is an exact, shapeable match; otherwise returns the input unchanged.
-        /// The platform is consulted only on a mismatch, and a collection without one keeps the
-        /// neighbouring match. This guards every key axis, not just weight.
+        /// When <paramref name="glyphTypeface"/>, a covering face cached for <paramref name="familyName"/>,
+        /// differs from the requested <paramref name="key"/> in any axis (style, weight or stretch) and is
+        /// not the face already chosen for that key, asks the platform for the family's face at the
+        /// requested key via <see cref="TryMatchCharacterFromPlatform"/> and returns it when it covers
+        /// the codepoint and can shape; otherwise returns the input unchanged. A collection without a
+        /// platform keeps the neighbouring match.
         /// </summary>
-        private GlyphTypeface PreferExactKey(
+        /// <remarks>
+        /// The cache holds only the faces earlier requests resolved, so its nearest face can be one the
+        /// platform judged worse, such as an italic face for an upright request. The platform matches
+        /// the request against every face of the family, so its answer is the match even when it is
+        /// not the requested key, as for a SemiBold request a family answers with its Bold face. An
+        /// answer of that family is cached under the requested key of <paramref name="familyName"/>,
+        /// where the next request for it looks.
+        /// </remarks>
+        private GlyphTypeface PreferPlatformMatch(
             GlyphTypeface glyphTypeface,
+            string familyName,
+            ConcurrentDictionary<FontCollectionKey, GlyphTypeface?> glyphTypefaces,
             FontCollectionKey key,
             int codepoint,
             CultureInfo? culture,
             Script shapingScript)
         {
-            // The platform's character match, biased by the family already resolved, yields that family
-            // at the requested key when it has that face (MatchCharacter covers the codepoint, so no
-            // extra coverage check is needed). Accept it only when it is the exact key and can shape.
-            // A face already cached under the requested key is the answer chosen for that key, such as
-            // a colour font face that answers a bold request as designed, so the platform would only
-            // return it again.
-            if (glyphTypeface.ToFontCollectionKey() != key &&
-                !IsCachedUnderKey(glyphTypeface, key) &&
-                TryMatchCharacterFromPlatform(codepoint, key, glyphTypeface.FamilyName, culture, out var exact) &&
-                exact.ToFontCollectionKey() == key &&
-                CanShape(exact, shapingScript))
+            // A face cached under the requested key is the answer chosen for that key, such as a colour
+            // font face that answers a bold request as designed, so the platform would only return it
+            // again.
+            if (glyphTypefaces.TryGetValue(key, out var cached) && ReferenceEquals(cached, glyphTypeface))
             {
-                return exact;
+                return glyphTypeface;
+            }
+
+            if (glyphTypeface.ToFontCollectionKey() == key)
+            {
+                return glyphTypeface;
+            }
+
+            if (TryMatchCharacterFromPlatform(codepoint, key, familyName, culture, out var platformMatch) &&
+                platformMatch.CharacterToGlyphMap.TryGetGlyph(codepoint, out _) &&
+                CanShape(platformMatch, shapingScript))
+            {
+                if (IsOfFamily(platformMatch, familyName))
+                {
+                    TryAddGlyphTypeface(familyName, key, platformMatch);
+                }
+
+                return platformMatch;
             }
 
             return glyphTypeface;
         }
 
-        private bool IsCachedUnderKey(GlyphTypeface glyphTypeface, FontCollectionKey key)
-            => _glyphTypefaceCache.TryGetValue(glyphTypeface.FamilyName, out var glyphTypefaces) &&
-               glyphTypefaces.TryGetValue(key, out var cached) &&
-               ReferenceEquals(cached, glyphTypeface);
+        /// <summary>
+        /// Gets whether a face belongs to a family, by the family name the platform matched it in or
+        /// the one the face itself reports. A face such as Arial Black reports its own family name
+        /// while the platform lists it in the Arial family.
+        /// </summary>
+        private static bool IsOfFamily(GlyphTypeface glyphTypeface, string familyName)
+            => string.Equals(glyphTypeface.PlatformTypeface.FamilyName, familyName, StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(glyphTypeface.FamilyName, familyName, StringComparison.OrdinalIgnoreCase);
 
         /// <summary>
         /// Picks a variant of the family that both is close to the requested key and actually maps
@@ -501,7 +539,11 @@ namespace Avalonia.Media.Fonts
 
             var fontSimulations = FontSimulations.None;
 
-            if (style != FontStyle.Normal && glyphTypeface.Style != style)
+            // Any slanted face, italic or oblique, satisfies a slanted request, and slanting it again
+            // would draw it at twice the angle. The platform can know a face is slanted when its font
+            // file does not say so, as CoreText does from a face's traits.
+            if (style != FontStyle.Normal && glyphTypeface.Style == FontStyle.Normal &&
+                glyphTypeface.PlatformTypeface.Style == FontStyle.Normal)
             {
                 fontSimulations |= FontSimulations.Oblique;
             }

@@ -196,17 +196,16 @@ namespace Avalonia.Skia
 
             var allSimulations = fontSimulations | platformSimulations;
 
-            // A simulated face stands for the requested one, so it reports the requested values and
-            // a font collection recognizes it as the face it asked for.
+            // A simulated face stands for the requested one in what it simulates, so it reports the
+            // requested weight or style and a font collection recognizes it as the face it asked for.
+            // A designed italic face that answers an oblique request stays italic, and no simulation
+            // changes the stretch, so those report the face's own values, the ones its glyph typeface
+            // reads from the font file.
             var reportedWeight = (allSimulations & FontSimulations.Bold) != 0 ? weight : faceWeight;
-            var reportedStyle = (allSimulations & FontSimulations.Oblique) != 0 ||
-                                style != FontStyle.Normal && faceStyle != FontStyle.Normal ?
-                style :
-                faceStyle;
-            var reportedStretch = allSimulations != FontSimulations.None ? stretch : faceStretch;
+            var reportedStyle = (allSimulations & FontSimulations.Oblique) != 0 ? style : faceStyle;
 
             return new SkiaTypeface(skTypeface, fontSimulations, platformSimulations, reportedStyle, reportedWeight,
-                reportedStretch);
+                faceStretch);
         }
 
         /// <summary>

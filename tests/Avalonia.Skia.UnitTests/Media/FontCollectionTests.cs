@@ -562,7 +562,7 @@ namespace Avalonia.Skia.UnitTests.Media
 
                 // A slanted face already satisfies a slanted request; slanting it again would double the slant.
                 Assert.Equal(FontSimulations.None, glyphTypeface.FontSimulations);
-                Assert.Equal(FontStyle.Italic, glyphTypeface.PlatformTypeface.Style);
+                Assert.Equal(FontStyle.Oblique, glyphTypeface.PlatformTypeface.Style);
             }
         }
 
