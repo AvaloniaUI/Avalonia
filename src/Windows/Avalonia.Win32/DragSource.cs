@@ -21,14 +21,20 @@ namespace Avalonia.Win32
             Dispatcher.UIThread.VerifyAccess();
 
             triggerEvent.Pointer.Capture(null);
-            
-            if (triggerEvent.Pointer.Type != PointerType.Mouse
-                && UnmanagedMethods.GetKeyState(UnmanagedMethods.VirtualKeyStates.VK_LBUTTON) >= 0
-                && TopLevel.GetTopLevel(triggerEvent.Source as Visual)?.PlatformImpl is WindowImpl window)
+
+            // Windows emulates the mouse messages that OLE follows for the primary contact only, so a second finger would drag with the wrong one.
+            if (!triggerEvent.Pointer.IsPrimary)
             {
-                triggerEvent.PreventGestureRecognition();
+                dataTransfer.Dispose();
+                return Task.FromResult(DragDropEffects.None);
+            }
+
+            if (TopLevel.GetTopLevel(triggerEvent.Source as Visual)?.PlatformImpl is WindowImpl window)
+            {
                 var result = new TaskCompletionSource<DragDropEffects>(TaskCreationOptions.RunContinuationsAsynchronously);
-                window.SetPendingDrag(
+
+                var pending = window.TrySetPendingDrag(
+                    triggerEvent,
                     () =>
                     {
                         try
@@ -40,8 +46,16 @@ namespace Avalonia.Win32
                             result.TrySetException(ex);
                         }
                     },
-                    () => result.TrySetResult(DragDropEffects.None));
-                return result.Task;
+                    () =>
+                    {
+                        dataTransfer.Dispose();
+                        result.TrySetResult(DragDropEffects.None);
+                    });
+
+                if (pending)
+                {
+                    return result.Task;
+                }
             }
 
             return Task.FromResult(StartDragDrop(dataTransfer, allowedEffects));

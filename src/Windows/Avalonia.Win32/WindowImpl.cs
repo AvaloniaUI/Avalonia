@@ -782,17 +782,12 @@ namespace Avalonia.Win32
                 throw new InvalidOperationException("BeginMoveDrag Failed");
             }
 
-            Dispatcher.UIThread.Post(() =>
+            if (TrySetPendingDrag(e, StartMoveDrag))
             {
-                if (e.Pointer.Type != PointerType.Mouse && GetKeyState(VirtualKeyStates.VK_LBUTTON) >= 0)
-                {
-                    SetPendingDrag(StartMoveDrag);
-                }
-                else
-                {
-                    StartMoveDrag();
-                }
-            }, DispatcherPriority.Send);
+                return;
+            }
+
+            Dispatcher.UIThread.Post(StartMoveDrag, DispatcherPriority.Send);
         }
 
         private void StartMoveDrag()
@@ -814,11 +809,7 @@ namespace Avalonia.Win32
 #else
                 e.Pointer.Capture(null);
 
-                if (e.Pointer.Type != PointerType.Mouse && GetKeyState(VirtualKeyStates.VK_LBUTTON) >= 0)
-                {
-                    SetPendingDrag(() => StartResizeDrag(edge));
-                }
-                else
+                if (!TrySetPendingDrag(e, () => StartResizeDrag(edge)))
                 {
                     StartResizeDrag(edge);
                 }
@@ -832,7 +823,23 @@ namespace Avalonia.Win32
                 new IntPtr((int)s_edgeLookup[edge]), IntPtr.Zero);
         }
 
-        internal void SetPendingDrag(Action drag, Action? cancel = null)
+        internal bool TrySetPendingDrag(PointerPressedEventArgs e, Action drag, Action? cancel = null)
+        {
+            // The drag waits for the left button that Windows emulates from the primary contact once it goes down.
+            if (e.Pointer.Type == PointerType.Mouse
+                || !e.Pointer.IsPrimary
+                || GetKeyState(VirtualKeyStates.VK_LBUTTON) < 0)
+            {
+                return false;
+            }
+
+            // A gesture recognizer further up would otherwise claim the pointer while the drag waits for that button.
+            e.PreventGestureRecognition();
+            SetPendingDrag(drag, cancel);
+            return true;
+        }
+
+        private void SetPendingDrag(Action drag, Action? cancel = null)
         {
             CancelPendingDrag();
             _pendingDrag = drag;

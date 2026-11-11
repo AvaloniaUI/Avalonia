@@ -582,11 +582,15 @@ namespace Avalonia.Win32
                         {
                             break;
                         }
-                        if (message != WindowsMessage.WM_POINTERUPDATE)
+                        GetDevicePointerInfo(wParam, out var device, out var info, out var point, out var modifiers, ref timestamp);
+
+                        // A pending drag ends when its own contact lifts, which is how a tap stays a tap, while another contact going down means a gesture such as a pinch.
+                        if (message is WindowsMessage.WM_POINTERDOWN or WindowsMessage.WM_NCPOINTERDOWN
+                            || (message is WindowsMessage.WM_POINTERUP or WindowsMessage.WM_NCPOINTERUP
+                                && info.pointerFlags.HasFlag(PointerFlags.POINTER_FLAG_PRIMARY)))
                         {
                             CancelPendingDrag();
                         }
-                        GetDevicePointerInfo(wParam, out var device, out var info, out var point, out var modifiers, ref timestamp);
                         var eventType = GetEventType(message, info);
 
                         var args = CreatePointerArgs(device, timestamp, eventType, point, modifiers, info.pointerId);
