@@ -504,23 +504,19 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             }
         }
 
-        private static void EmitPropertyCall(XamlIlEmitContext context, IXamlILEmitter codeGen, IXamlType accessorFactoryType, bool acceptsNull)
+        private static void EmitPropertyCall(XamlIlEmitContext context, IXamlILEmitter codeGen, bool acceptsNull)
         {
             // By default use the 2-argument overload of CompiledBindingPathBuilder.Property,
             // unless a "?." null conditional operator appears in the path, in which case use
             // the 3-parameter version with the `acceptsNull` parameter. This ensures we don't
             // get a missing method exception if we run against an old version of Avalonia.
             var types = context.GetAvaloniaTypes();
-            var parameters = new List<IXamlType> { types.IPropertyInfo, accessorFactoryType };
-
             if (acceptsNull)
-            {
-                parameters.Add(context.Configuration.WellKnownTypes.Boolean);
                 codeGen.Ldc_I4(1);
-            }
 
-            codeGen.EmitCall(types.CompiledBindingPathBuilder.GetMethod(
-                new FindMethodMethodSignature("Property", types.CompiledBindingPathBuilder, parameters.ToArray())));
+            codeGen.EmitCall(acceptsNull
+                ? types.CompiledBindingPathBuilderPropertyWithNull
+                : types.CompiledBindingPathBuilderProperty);
         }
 
         class ScopeRegistrationFinder : IXamlAstVisitor
@@ -761,10 +757,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             public void Emit(XamlIlEmitContext context, IXamlILEmitter codeGen)
             {
                 codeGen.Ldsfld(_field);
-                var accessorFactoryType = context.Configuration.GetExtra<XamlIlPropertyInfoAccessorFactoryEmitter>()
+                context.Configuration.GetExtra<XamlIlPropertyInfoAccessorFactoryEmitter>()
                     .EmitLoadAvaloniaPropertyAccessorFactory(context, codeGen);
 
-                EmitPropertyCall(context, codeGen, accessorFactoryType, _acceptsNull);
+                EmitPropertyCall(context, codeGen, _acceptsNull);
             }
 
             public IXamlType Type { get; }
@@ -812,10 +808,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 context.Configuration.GetExtra<XamlIlClrPropertyInfoEmitter>()
                     .Emit(context, codeGen, _property);
 
-                var accessorFactoryType = context.Configuration.GetExtra<XamlIlPropertyInfoAccessorFactoryEmitter>()
+                context.Configuration.GetExtra<XamlIlPropertyInfoAccessorFactoryEmitter>()
                     .EmitLoadInpcPropertyAccessorFactory(context, codeGen);
 
-                EmitPropertyCall(context, codeGen, accessorFactoryType, _acceptsNull);
+                EmitPropertyCall(context, codeGen, _acceptsNull);
             }
 
             public IXamlType Type => _property.PropertyType;
@@ -879,22 +875,14 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 // unless a "?." null conditional operator appears in the path, in which case use
                 // the 3-parameter version with the `acceptsNull` parameter. This ensures we don't
                 // get a missing method exception if we run against an old version of Avalonia.
-                var typeSystem = context.Configuration.TypeSystem;
-                var builderType = context.GetAvaloniaTypes().CompiledBindingPathBuilder;
-                var parameters = new List<IXamlType>
-                {
-                    typeSystem.GetType("System.RuntimeMethodHandle"),
-                    typeSystem.GetType("System.RuntimeTypeHandle")
-                };
+                var types = context.GetAvaloniaTypes();
 
                 if (_acceptsNull)
-                {
-                    parameters.Add(context.Configuration.WellKnownTypes.Boolean);
                     codeGen.Ldc_I4(1);
-                }
 
-                codeGen.EmitCall(builderType.GetMethod(
-                    new FindMethodMethodSignature("Method", builderType, parameters.ToArray())));
+                codeGen.EmitCall(_acceptsNull
+                    ? types.CompiledBindingPathBuilderMethodWithNull
+                    : types.CompiledBindingPathBuilderMethod);
 
 
                 newDelegateTypeBuilder?.CreateType();
@@ -999,22 +987,21 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 context.Configuration.GetExtra<XamlIlClrPropertyInfoEmitter>()
                     .Emit(context, codeGen, _property, _values, _indexerKey);
 
-                IXamlType accessorFactoryType;
                 if (_isNotifyingCollection
                     &&
                     _values.Count == 1
                     && _values[0].Type.GetClrType().Equals(intType))
                 {
-                    accessorFactoryType = context.Configuration.GetExtra<XamlIlPropertyInfoAccessorFactoryEmitter>()
+                    context.Configuration.GetExtra<XamlIlPropertyInfoAccessorFactoryEmitter>()
                         .EmitLoadIndexerAccessorFactory(context, codeGen, _values[0]);
                 }
                 else
                 {
-                    accessorFactoryType = context.Configuration.GetExtra<XamlIlPropertyInfoAccessorFactoryEmitter>()
+                    context.Configuration.GetExtra<XamlIlPropertyInfoAccessorFactoryEmitter>()
                         .EmitLoadInpcPropertyAccessorFactory(context, codeGen);
                 }
 
-                EmitPropertyCall(context, codeGen, accessorFactoryType, acceptsNull: false);
+                EmitPropertyCall(context, codeGen, acceptsNull: false);
             }
 
             public IXamlType Type => _property.PropertyType;
