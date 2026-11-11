@@ -1046,7 +1046,10 @@ namespace Avalonia.Skia.UnitTests.Media
             var fontManager = new InstalledFamilyFontManagerImpl(NotoMonoRegularUri,
                 fallbackUris: new[] { NotoSansJpUri, EmojiUri });
 
-            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: fontManager)))
+            // A glyph run takes the render interface of the first application that creates one in
+            // the process, so laying out text with the headless one breaks later Skia glyph runs.
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(
+                       renderInterface: new PlatformRenderInterface(), fontManagerImpl: fontManager)))
             {
                 var text = "Bold " + char.ConvertFromUtf32(CjkCodepoint) + " " + char.ConvertFromUtf32(EmojiCodepoint);
 
