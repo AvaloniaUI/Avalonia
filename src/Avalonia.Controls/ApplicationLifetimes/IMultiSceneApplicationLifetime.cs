@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using Avalonia.Interactivity;
 using Avalonia.Metadata;
 
 namespace Avalonia.Controls.ApplicationLifetimes
@@ -9,13 +10,7 @@ namespace Avalonia.Controls.ApplicationLifetimes
     [NotClientImplementable]
     public interface IMultiSceneApplicationLifetime : IApplicationLifetime
     {
-        // Currently connected scene lifetimes.
-        IReadOnlyList<IMultiSceneApplicationLifetime> Scenes { get; }
-
-        // Requests a new scene with the supplied creation parameters.
-        // Completes when the platform accepts the request.
-        Task RequestSceneAsync(
-            IReadOnlyDictionary<string, object?> parameters);
+        IReadOnlyList<Scene> Scenes { get; }
     }
 
     [NotClientImplementable]
@@ -28,15 +23,14 @@ namespace Avalonia.Controls.ApplicationLifetimes
         bool IsRestored { get; }
 
         // Synchronously captures a new checkpoint.
-        event EventHandler<ApplicationLifetimeSaveEventArgs>? SaveRequested;
+        event EventHandler<ApplicationLifetimeStateEventArgs>? SaveRequested;
 
         // Marks the previously captured state as outdated.
         void InvalidateState();
     }
 
-    public sealed class ApplicationLifetimeSaveEventArgs : EventArgs
+    public sealed class ApplicationLifetimeStateEventArgs(RoutedEvent routedEvent) : RoutedEventArgs(routedEvent)
     {
-        // A fresh output bag for this checkpoint.
-        public IDictionary<string, object?>? State { get; }
+        public IDictionary<string, object?>? State { get; init; }
     }
 }

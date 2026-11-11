@@ -1,4 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Interactivity;
 using Avalonia.Metadata;
 
 namespace Avalonia.Controls
@@ -9,6 +12,12 @@ namespace Avalonia.Controls
         public readonly static StyledProperty<Point> InitialPositionProperty =
             AvaloniaProperty.Register<Scene, Point>(nameof(InitialPosition));
 
+        public static readonly RoutedEvent<ApplicationLifetimeStateEventArgs> SaveStateEvent =
+            RoutedEvent.Register<Scene, ApplicationLifetimeStateEventArgs>(nameof(SaveState), RoutingStrategies.Direct);
+
+        public static readonly RoutedEvent<ApplicationLifetimeStateEventArgs> RestoreStateEvent =
+            RoutedEvent.Register<Scene, ApplicationLifetimeStateEventArgs>(nameof(RestoreState), RoutingStrategies.Direct);
+
         static Scene()
         {
             TopLevel.AutoSafeAreaPaddingProperty.OverrideDefaultValue<Scene>(false);
@@ -18,6 +27,18 @@ namespace Avalonia.Controls
         {
             get => GetValue(InitialPositionProperty);
             set => SetValue(InitialPositionProperty, value);
+        }
+
+        public event EventHandler<ApplicationLifetimeStateEventArgs>? SaveState
+        {
+            add => AddHandler(SaveStateEvent, value);
+            remove => RemoveHandler(SaveStateEvent, value);
+        }
+
+        public event EventHandler<ApplicationLifetimeStateEventArgs>? RestoreState
+        {
+            add => AddHandler(RestoreStateEvent, value);
+            remove => RemoveHandler(RestoreStateEvent, value);
         }
 
         internal ISceneHost? Host { get; private set; }
@@ -35,7 +56,7 @@ namespace Avalonia.Controls
 
         public void Close()
         {
-            if(Host == null)
+            if (Host == null)
                 Logging.Logger.Sink?.Log(Logging.LogEventLevel.Warning, Logging.LogArea.Control, this, "Scene.Close() called without a host attached");
 
             Host?.Close();

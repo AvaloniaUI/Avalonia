@@ -6,6 +6,6 @@ namespace Avalonia.Controls
 {
     internal interface ISceneHost
     {
-        public void Close();
+        void Close();
     }
 }

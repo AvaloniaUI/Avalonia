@@ -29,6 +29,12 @@ namespace Avalonia
                 .UseHarfBuzz()
                 .UseSkia();
         }
+
+        public static AppBuilder UseAndroidScene(this AppBuilder builder)
+        {
+            AndroidPlatform.UseScenes = true;
+            return builder;
+        }
     }
 
     /// <summary>
@@ -74,6 +80,7 @@ namespace Avalonia.Android
 {
     class AndroidPlatform
     {
+        public static bool UseScenes { get; set; }
         public static readonly AndroidPlatform Instance = new AndroidPlatform();
         public static AndroidPlatformOptions? Options { get; private set; }
 
@@ -96,8 +103,13 @@ namespace Avalonia.Android
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
                 .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new Dictionary<Key, string>() { }))
                 .Bind<IPlatformDragSource>().ToConstant(new AndroidDragSource())
-                .Bind<ISceneManager>().ToConstant(new SceneManager(global::Android.App.Application.Context))
                 .Bind<IActivatableLifetime>().ToConstant(new AndroidActivatableLifetime());
+
+            if (UseScenes)
+            {
+                AvaloniaLocator.CurrentMutable
+                    .Bind<ISceneManager>().ToConstant(new SceneManager(global::Android.App.Application.Context));
+            }
 
             var graphics = InitializeGraphics(Options);
             if (graphics is not null)

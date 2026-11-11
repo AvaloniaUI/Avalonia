@@ -1,18 +1,19 @@
 ﻿using System;
 using Android.Runtime;
+using Avalonia.Controls.ApplicationLifetimes;
 
 namespace Avalonia.Android
 {
     internal interface IAndroidApplication
     {
         internal static Type? WindowActivityType { get; set; }
-        ApplicationLifetime? Lifetime { get; set; }
+        IApplicationLifetime? Lifetime { get; set; }
     }
 
     public class AvaloniaAndroidApplication<TApp> : global::Android.App.Application, IAndroidApplication
         where TApp : Application, new()
     {
-        ApplicationLifetime? IAndroidApplication.Lifetime { get; set; }
+        IApplicationLifetime? IAndroidApplication.Lifetime { get; set; }
 
         protected AvaloniaAndroidApplication(nint javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
         {
@@ -29,7 +30,7 @@ namespace Avalonia.Android
             var builder = CreateAppBuilder();
             builder = CustomizeAppBuilder(builder);
 
-            var lifetime = new ApplicationLifetime();
+            IApplicationLifetime lifetime = AndroidPlatform.UseScenes ? new MultiSceneApplicationLifetime() : new ApplicationLifetime();
 
             ((IAndroidApplication)this).Lifetime = lifetime;
 

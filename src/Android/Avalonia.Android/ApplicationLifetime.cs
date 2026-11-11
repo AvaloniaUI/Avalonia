@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Logging;
@@ -24,5 +25,26 @@ internal class ApplicationLifetime : IActivityApplicationLifetime, ISingleViewAp
             else
                 MainViewFactory = null;
         }
+    }
+}
+
+internal class MultiSceneApplicationLifetime : IMultiSceneApplicationLifetime
+{
+    private List<Controls.Scene> _scenes = new List<Controls.Scene>();
+    public IReadOnlyList<Controls.Scene> Scenes => _scenes;
+
+    public void AddScene(Controls.Scene scene)
+    {
+        if(_scenes.Contains(scene))
+        {
+            throw new InvalidOperationException($"Scene of type {scene.GetType()} has already been added to this lifetime");
+        }
+
+        _scenes.Add(scene);
+    }
+
+    public void RemoveScene(Controls.Scene scene)
+    {
+        _scenes.Remove(scene);
     }
 }

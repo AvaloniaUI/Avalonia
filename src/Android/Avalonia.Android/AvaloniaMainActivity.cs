@@ -1,8 +1,6 @@
 using System;
-using Android.OS;
 using Avalonia.Android.Platform;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Platform;
 
 namespace Avalonia.Android;
 
@@ -10,7 +8,7 @@ public class AvaloniaMainActivity : AvaloniaActivity
 {
     private protected override void InitializeAvaloniaView(object? initialContent)
     {
-        if (Application is IAndroidApplication application && application.Lifetime is { } lifetime)
+        if (Application is IAndroidApplication application && application.Lifetime is ApplicationLifetime lifetime)
         {
             initialContent ??= lifetime.MainViewFactory?.Invoke();
 
