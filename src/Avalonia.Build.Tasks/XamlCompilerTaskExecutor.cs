@@ -205,7 +205,7 @@ namespace Avalonia.Build.Tasks
                 new XamlIlClrPropertyInfoEmitter(typeSystem.CreateTypeBuilder(clrPropertiesDef)),
                 new XamlIlPropertyInfoAccessorFactoryEmitter(typeSystem.CreateTypeBuilder(indexerAccessorClosure)),
                 new XamlIlTrampolineBuilder(typeSystem.CreateTypeBuilder(trampolineBuilder)),
-                new DeterministicIdGenerator(compactHelperNames),
+                compactHelperNames ? new CompactIdentifierGenerator() : new SequentialIdentifierGenerator(),
                 diagnosticsHandler);
 
 
