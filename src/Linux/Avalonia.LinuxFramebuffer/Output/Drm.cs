@@ -203,7 +203,7 @@ namespace Avalonia.LinuxFramebuffer.Output
         }
 
         [DllImport(libdrm, SetLastError = true)]
-        public static extern void drmModePageFlip(int fd, uint crtc_id, uint fb_id,
+        public static extern int drmModePageFlip(int fd, uint crtc_id, uint fb_id,
             DrmModePageFlip flags, void *user_data);
 
 
@@ -250,6 +250,8 @@ namespace Avalonia.LinuxFramebuffer.Output
         public static extern IntPtr gbm_surface_lock_front_buffer(IntPtr surface);
         [DllImport(libgbm, SetLastError = true)]
         public static extern int gbm_surface_release_buffer(IntPtr surface, IntPtr bo);
+        [DllImport(libgbm, SetLastError = true)]
+        public static extern int gbm_surface_has_free_buffers(IntPtr surface);
         [DllImport(libgbm, SetLastError = true)]
         public static extern IntPtr gbm_bo_get_user_data(IntPtr surface);
 

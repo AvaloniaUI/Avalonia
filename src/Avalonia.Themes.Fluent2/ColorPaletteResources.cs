@@ -16,7 +16,7 @@ namespace Avalonia.Themes.Fluent2;
 /// </remarks>
 public partial class ColorPaletteResources : ResourceProvider
 {
-    private readonly Dictionary<string, Color> _colors = new(StringComparer.InvariantCulture);
+    private readonly Dictionary<string, Color> _colors = new(StringComparer.Ordinal);
 
     private readonly record struct TokenDerivation(string SourceKey, byte? LightAlpha, byte? DarkAlpha);
 
@@ -24,7 +24,7 @@ public partial class ColorPaletteResources : ResourceProvider
     // v1-era palette customization keeps affecting the new visuals. The token's own
     // per-variant alpha is applied over the user's RGB; a null alpha keeps the user's.
     // This is a documented heuristic — for exact control override the token keys directly.
-    private static readonly Dictionary<string, TokenDerivation[]> s_tokenDerivations = new(StringComparer.InvariantCulture)
+    private static readonly Dictionary<string, TokenDerivation[]> s_tokenDerivations = new(StringComparer.Ordinal)
     {
         ["TextFillColorPrimary"] = new[] { new TokenDerivation("SystemBaseHighColor", 0xE4, 0xFF) },
         ["TextFillColorSecondary"] = new[] { new TokenDerivation("SystemBaseMediumHighColor", 0x9E, 0xC5) },
@@ -49,46 +49,29 @@ public partial class ColorPaletteResources : ResourceProvider
     {
         if (key is string strKey)
         {
-            if (strKey.Equals(SystemAccentColors.AccentKey, StringComparison.InvariantCulture))
+            switch (strKey)
             {
-                value = _accentColor;
-                return _hasAccentColor;
-            }
-
-            if (strKey.Equals(SystemAccentColors.AccentDark1Key, StringComparison.InvariantCulture))
-            {
-                value = _accentColorDark1;
-                return _hasAccentColor;
-            }
-
-            if (strKey.Equals(SystemAccentColors.AccentDark2Key, StringComparison.InvariantCulture))
-            {
-                value = _accentColorDark2;
-                return _hasAccentColor;
-            }
-
-            if (strKey.Equals(SystemAccentColors.AccentDark3Key, StringComparison.InvariantCulture))
-            {
-                value = _accentColorDark3;
-                return _hasAccentColor;
-            }
-
-            if (strKey.Equals(SystemAccentColors.AccentLight1Key, StringComparison.InvariantCulture))
-            {
-                value = _accentColorLight1;
-                return _hasAccentColor;
-            }
-
-            if (strKey.Equals(SystemAccentColors.AccentLight2Key, StringComparison.InvariantCulture))
-            {
-                value = _accentColorLight2;
-                return _hasAccentColor;
-            }
-
-            if (strKey.Equals(SystemAccentColors.AccentLight3Key, StringComparison.InvariantCulture))
-            {
-                value = _accentColorLight3;
-                return _hasAccentColor;
+                case SystemAccentColors.AccentKey:
+                    value = _accentColor;
+                    return _hasAccentColor;
+                case SystemAccentColors.AccentDark1Key:
+                    value = _accentColorDark1;
+                    return _hasAccentColor;
+                case SystemAccentColors.AccentDark2Key:
+                    value = _accentColorDark2;
+                    return _hasAccentColor;
+                case SystemAccentColors.AccentDark3Key:
+                    value = _accentColorDark3;
+                    return _hasAccentColor;
+                case SystemAccentColors.AccentLight1Key:
+                    value = _accentColorLight1;
+                    return _hasAccentColor;
+                case SystemAccentColors.AccentLight2Key:
+                    value = _accentColorLight2;
+                    return _hasAccentColor;
+                case SystemAccentColors.AccentLight3Key:
+                    value = _accentColorLight3;
+                    return _hasAccentColor;
             }
 
             if (_colors.TryGetValue(strKey, out var color))

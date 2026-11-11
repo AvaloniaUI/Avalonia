@@ -25,10 +25,10 @@ namespace Avalonia.Controls
     [TemplatePart("PART_DrawerFooter", typeof(ContentPresenter))]
     [TemplatePart("PART_ContentPresenter", typeof(ContentPresenter))]
     [TemplatePart("PART_SplitView", typeof(SplitView))]
-    [TemplatePart("PART_TopBar", typeof(Border))]
+    [TemplatePart("PART_TopBar", typeof(Decorator))]
     [TemplatePart("PART_PaneButton", typeof(ToggleButton))]
     [TemplatePart("PART_CompactPaneToggle", typeof(ToggleButton))]
-    [TemplatePart("PART_Backdrop", typeof(Border))]
+    [TemplatePart("PART_Backdrop", typeof(Decorator))]
     [PseudoClasses(":placement-right", ":placement-top", ":placement-bottom", ":detail-is-navpage")]
     public class DrawerPage : Page
     {
@@ -222,9 +222,9 @@ namespace Avalonia.Controls
         private ContentPresenter? _drawerHeaderPresenter;
         private ContentPresenter? _drawerFooterPresenter;
         private SplitView? _splitView;
-        private Border? _topBar;
+        private Decorator? _topBar;
         private ToggleButton? _paneButton;
-        private Border? _backdrop;
+        private Decorator? _backdrop;
         private Point _swipeStartPoint;
         private IDisposable? _navBarVisibleSub;
 
@@ -594,9 +594,9 @@ namespace Avalonia.Controls
             _drawerHeaderPresenter = e.NameScope.Find<ContentPresenter>("PART_DrawerHeader");
             _drawerFooterPresenter = e.NameScope.Find<ContentPresenter>("PART_DrawerFooter");
             _splitView = e.NameScope.Find<SplitView>("PART_SplitView");
-            _topBar = e.NameScope.Find<Border>("PART_TopBar");
+            _topBar = e.NameScope.Find<Decorator>("PART_TopBar");
             _paneButton = e.NameScope.Find<ToggleButton>("PART_PaneButton");
-            _backdrop = e.NameScope.Find<Border>("PART_Backdrop");
+            _backdrop = e.NameScope.Find<Decorator>("PART_Backdrop");
 
             if (_backdrop != null)
             {
