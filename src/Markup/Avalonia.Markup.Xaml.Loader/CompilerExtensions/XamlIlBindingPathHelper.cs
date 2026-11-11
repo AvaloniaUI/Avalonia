@@ -194,9 +194,18 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                         {
                             IXamlType targetType = targetTypeResolver();
 
-                            // Nullable<T> defines only Value and HasValue: look anything else up on T, as C# does.
-                            if (targetType.IsNullable() && !HasMember(targetType, propName.PropertyName))
-                                targetType = targetType.GenericArguments[0];
+                            if (targetType.IsNullable())
+                            {
+                                var underlyingType = targetType.GenericArguments[0];
+
+                                // C# looks a ?. member up on T, and Nullable<T> itself only has Value and HasValue.
+                                var lookUpOnUnderlyingType = propName.AcceptsNull
+                                    ? HasMember(underlyingType, propName.PropertyName)
+                                    : !HasMember(targetType, propName.PropertyName);
+
+                                if (lookUpOnUnderlyingType)
+                                    targetType = underlyingType;
+                            }
 
                             var avaloniaPropertyFieldNameMaybe = propName.PropertyName + "Property";
                             var avaloniaPropertyFieldMaybe = targetType.GetAllFields().FirstOrDefault(f =>

@@ -489,6 +489,56 @@ public class NullConditionalBindingTests
         Assert.Empty(log.Messages);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Should_Read_Value_Property_Of_Struct_With_Null_Conditional_Operator(bool compileBindings)
+    {
+        // As in C#, ?. binds to the member of T, not to Nullable<T>.Value.
+        using var app = Start();
+        using var log = TestLogger.Create();
+        var xaml = $$$"""
+            <Window xmlns='https://github.com/avaloniaui'
+                    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                    xmlns:local='using:Avalonia.Base.UnitTests.Data.Core'
+                    x:DataType='local:NullConditionalBindingTests+First'
+                    x:CompileBindings='{{{compileBindings}}}'>
+                <local:ErrorCollectingTextBox Text='{Binding NullableWithValue?.Value}'/>
+            </Window>
+            """;
+        var data = new First { NullableWithValue = new StructWithValue { Value = "foo" } };
+        var window = CreateTarget(xaml, data);
+        var textBox = Assert.IsType<ErrorCollectingTextBox>(window.Content);
+
+        Assert.Equal("foo", textBox.Text);
+        Assert.Null(textBox.Error);
+        Assert.Empty(log.Messages);
+    }
+
+    [Fact]
+    public void Should_Access_Value_Of_Nullable_Struct_With_Null_Conditional_Operator()
+    {
+        // Only compiled bindings, for the same reason as above.
+        using var app = Start();
+        using var log = TestLogger.Create();
+        var xaml = """
+            <Window xmlns='https://github.com/avaloniaui'
+                    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                    xmlns:local='using:Avalonia.Base.UnitTests.Data.Core'
+                    x:DataType='local:NullConditionalBindingTests+First'
+                    x:CompileBindings='True'>
+                <local:ErrorCollectingTextBox Text='{Binding NullableSecond?.Value.Final}'/>
+            </Window>
+            """;
+        var data = new First { NullableSecond = new NullableSecondValue { Final = "foo" } };
+        var window = CreateTarget(xaml, data);
+        var textBox = Assert.IsType<ErrorCollectingTextBox>(window.Content);
+
+        Assert.Equal("foo", textBox.Text);
+        Assert.Null(textBox.Error);
+        Assert.Empty(log.Messages);
+    }
+
     private static IDisposable Start()
     {
         return UnitTestApplication.Start(TestServices.StyledWindow);
@@ -499,6 +549,11 @@ public class NullConditionalBindingTests
         public string? Final { get; set; }
     }
 
+    public struct StructWithValue
+    {
+        public string? Value { get; set; }
+    }
+
     public class First : StyledElement
     {
         public static readonly StyledProperty<Second?> StyledSecondProperty =
@@ -507,6 +562,8 @@ public class NullConditionalBindingTests
         public Second? Second { get; set; }
 
         public NullableSecondValue? NullableSecond { get; set; }
+
+        public StructWithValue? NullableWithValue { get; set; }
 
         public Second? StyledSecond
         {
