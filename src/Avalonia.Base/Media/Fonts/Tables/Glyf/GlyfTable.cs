@@ -552,19 +552,25 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
         }
 
         /// <summary>
-        /// Computes a glyph's control-point bounding box by interpreting its outline into a
-        /// bounds-accumulating sink (<see cref="BoundsGeometryContext"/>), the equivalent of the
-        /// CFF / CFF2 bounds pass. Unlike
+        /// Computes the bounding box of a glyph's points at a variation instance, the box its header
+        /// would store in a static instance of the font. Unlike
         /// <see cref="TryGetGlyphBounds(int, out short, out short, out short, out short)"/>, which reads
-        /// the static header box, this reflects gvar deformation at the requested variation instance;
-        /// both avoid building geometry, so no render backend is needed. Returns <see langword="false"/>
-        /// for an out-of-range, empty, or malformed glyph.
+        /// the static header box, this reflects gvar deformation at the requested variation instance.
+        /// Only the points are resolved, with no contour walked and no geometry built, so no render
+        /// backend is needed. Returns <see langword="false"/> for an out-of-range, empty, or malformed
+        /// glyph.
         /// </summary>
+        /// <remarks>
+        /// The box spans every on- and off-curve point, composite components at their varied offsets
+        /// and point-matched components on their varied anchor points. Each point is rounded to the
+        /// nearest unit with halves rounded up after <paramref name="transform"/>, as FreeType does
+        /// when it loads a varied glyph and as a static instance stores its points.
+        /// </remarks>
         /// <param name="glyphIndex">The zero-based glyph index.</param>
         /// <param name="transform">Transform applied to every outline point before it is measured.</param>
         /// <param name="gvarTable">Optional gvar table for variation deformation. <c>null</c> skips deformation.</param>
         /// <param name="activeCoords">Normalized variation coordinates in fvar axis order. Empty means no variation.</param>
-        /// <param name="bounds">The computed control-point box; the zero box when this returns <see langword="false"/>.</param>
+        /// <param name="bounds">The computed box; the zero box when this returns <see langword="false"/>.</param>
         public bool TryGetGlyphOutlineBounds(
             int glyphIndex,
             Matrix transform,
@@ -574,15 +580,182 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
         {
             bounds = default;
 
-            var context = new BoundsGeometryContext();
+            var box = PointBox.Empty;
+            var decycler = GlyphDecycler.Rent();
 
-            if (!TryBuildGlyphGeometry(glyphIndex, transform, context, gvarTable, activeCoords))
+            try
             {
+                if (!TryAddGlyphPoints(glyphIndex, transform, decycler, gvarTable, activeCoords, ref box) ||
+                    !box.HasPoints)
+                {
+                    return false;
+                }
+            }
+            catch
+            {
+                // A malformed glyph, a component cycle included, has no box.
                 return false;
             }
+            finally
+            {
+                GlyphDecycler.Return(decycler);
+            }
 
-            bounds = context.ToGlyphBounds();
+            bounds = new GlyphBounds(Round(box.MinX), Round(box.MinY), Round(box.MaxX), Round(box.MaxY));
+
             return true;
+
+            static short Round(double value) =>
+                (short)Math.Clamp(Math.Floor(value + 0.5), short.MinValue, short.MaxValue);
+        }
+
+        /// <summary>
+        /// Adds the varied points of a glyph, transformed by <paramref name="transform"/>, to
+        /// <paramref name="box"/>. An empty glyph, or a composite component that cannot be resolved,
+        /// adds nothing, as the outline builder skips it.
+        /// </summary>
+        /// <returns><see langword="false"/> when a point-matched composite cannot be placed.</returns>
+        private bool TryAddGlyphPoints(int glyphIndex, Matrix transform, GlyphDecycler decycler,
+            GvarTable? gvarTable, ReadOnlySpan<float> activeCoords, ref PointBox box)
+        {
+            using var guard = decycler.Enter(glyphIndex);
+
+            if (!TryGetGlyphData(glyphIndex, out var glyphData) || glyphData.IsEmpty)
+            {
+                return true;
+            }
+
+            var descriptor = new GlyphDescriptor(glyphData);
+
+            if (descriptor.IsSimpleGlyph)
+            {
+                AddSimpleGlyphPoints(descriptor.SimpleGlyph, glyphIndex, transform, gvarTable, activeCoords, ref box);
+
+                return true;
+            }
+
+            var compositeGlyph = descriptor.CompositeGlyph;
+
+            try
+            {
+                var components = compositeGlyph.Components;
+
+                if (compositeGlyph.UsesPointMatching)
+                {
+                    var outline = new ResolvedOutline(64);
+
+                    try
+                    {
+                        if (!TryResolvePointMatchedComposite(components, glyphIndex, decycler, gvarTable,
+                                activeCoords, outline))
+                        {
+                            return false;
+                        }
+
+                        foreach (var point in outline.Points)
+                        {
+                            box.Add(transform.Transform(point));
+                        }
+
+                        return true;
+                    }
+                    finally
+                    {
+                        outline.Dispose();
+                    }
+                }
+
+                using var offsetDeltas = ComponentOffsetDeltas.Compute(glyphIndex, components, gvarTable, activeCoords);
+
+                for (var i = 0; i < components.Length; i++)
+                {
+                    var component = components[i];
+
+                    TryAddGlyphPoints(component.GlyphIndex, CreateComponentTransform(component, offsetDeltas[i]) * transform,
+                        decycler, gvarTable, activeCoords, ref box);
+                }
+
+                return true;
+            }
+            finally
+            {
+                compositeGlyph.Dispose();
+            }
+        }
+
+        private static void AddSimpleGlyphPoints(SimpleGlyph simpleGlyph, int glyphIndex, Matrix transform,
+            GvarTable? gvarTable, ReadOnlySpan<float> activeCoords, ref PointBox box)
+        {
+            float[]? deltaXRented = null;
+            float[]? deltaYRented = null;
+
+            try
+            {
+                var xCoords = simpleGlyph.XCoordinates;
+                var yCoords = simpleGlyph.YCoordinates;
+                var pointCount = xCoords.Length;
+
+                if (gvarTable is not null && !activeCoords.IsEmpty)
+                {
+                    deltaXRented = ArrayPool<float>.Shared.Rent(pointCount);
+                    deltaYRented = ArrayPool<float>.Shared.Rent(pointCount);
+                    deltaXRented.AsSpan(0, pointCount).Clear();
+                    deltaYRented.AsSpan(0, pointCount).Clear();
+
+                    GlyphVariationReader.TryApplyDeltas(
+                        gvarTable, glyphIndex, activeCoords,
+                        simpleGlyph.EndPtsOfContours, xCoords, yCoords,
+                        deltaXRented.AsSpan(0, pointCount), deltaYRented.AsSpan(0, pointCount));
+                }
+
+                for (var i = 0; i < pointCount; i++)
+                {
+                    var x = xCoords[i] + (deltaXRented?[i] ?? 0f);
+                    var y = yCoords[i] + (deltaYRented?[i] ?? 0f);
+                    box.Add(transform.Transform(new Point(x, y)));
+                }
+            }
+            finally
+            {
+                if (deltaXRented != null)
+                {
+                    ArrayPool<float>.Shared.Return(deltaXRented);
+                }
+                if (deltaYRented != null)
+                {
+                    ArrayPool<float>.Shared.Return(deltaYRented);
+                }
+                simpleGlyph.Dispose();
+            }
+        }
+
+        /// <summary>
+        /// The extent of a set of points.
+        /// </summary>
+        private struct PointBox
+        {
+            public static PointBox Empty => new()
+            {
+                MinX = double.PositiveInfinity,
+                MinY = double.PositiveInfinity,
+                MaxX = double.NegativeInfinity,
+                MaxY = double.NegativeInfinity
+            };
+
+            public double MinX;
+            public double MinY;
+            public double MaxX;
+            public double MaxY;
+
+            public readonly bool HasPoints => MinX <= MaxX;
+
+            public void Add(Point point)
+            {
+                MinX = Math.Min(MinX, point.X);
+                MinY = Math.Min(MinY, point.Y);
+                MaxX = Math.Max(MaxX, point.X);
+                MaxY = Math.Max(MaxY, point.Y);
+            }
         }
 
         /// <summary>
@@ -1132,58 +1305,11 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
             ReadOnlySpan<float> activeCoords)
         {
             var outline = new ResolvedOutline(64);
-            using var offsetDeltas = ComponentOffsetDeltas.Compute(glyphIndex, components, gvarTable, activeCoords);
 
             try
             {
-                for (var componentIndex = 0; componentIndex < components.Length; componentIndex++)
-                {
-                    var component = components[componentIndex];
-                    var componentStart = outline.PointCount;
-
-                    // Resolve the component's varied points into composite space with its 2x2
-                    // scale applied (but not the placement offset, which is computed next), so a
-                    // later component is matched onto the points as they are at this instance.
-                    if (!TryResolveSimpleGlyphPoints(
-                            component.GlyphIndex, CreateComponentScale(component), decycler, outline, gvarTable, activeCoords))
-                    {
-                        return false;
-                    }
-
-                    Vector offset;
-
-                    if ((component.Flags & CompositeFlags.ArgsAreXYValues) != 0)
-                    {
-                        // Signed x/y offset (the unscaled-offset default), moved by the
-                        // composite's own variation deltas.
-                        offset = new Vector(component.Arg1, component.Arg2) + offsetDeltas[componentIndex];
-                    }
-                    else
-                    {
-                        // Point matching: arg1 is a point already placed by an earlier component,
-                        // arg2 is a point of this component. They are unsigned point numbers, but
-                        // CompositeGlyph parses the raw bytes/words as signed, so reinterpret to
-                        // unsigned here (two's-complement round-trip).
-                        var argsAreWords = (component.Flags & CompositeFlags.ArgsAreWords) != 0;
-                        int parentPoint = argsAreWords ? (ushort)component.Arg1 : (byte)component.Arg1;
-                        int componentPoint = argsAreWords ? (ushort)component.Arg2 : (byte)component.Arg2;
-
-                        var componentPointCount = outline.PointCount - componentStart;
-
-                        if (parentPoint >= componentStart || componentPoint >= componentPointCount)
-                        {
-                            // Out of range, or references a phantom point this reader does not
-                            // materialise — bail rather than place the component incorrectly.
-                            return false;
-                        }
-
-                        offset = outline.GetPoint(parentPoint) - outline.GetPoint(componentStart + componentPoint);
-                    }
-
-                    outline.TranslateRange(componentStart, outline.PointCount, offset);
-                }
-
-                if (outline.PointCount == 0)
+                if (!TryResolvePointMatchedComposite(components, glyphIndex, decycler, gvarTable, activeCoords,
+                        outline) || outline.PointCount == 0)
                 {
                     return false;
                 }
@@ -1196,6 +1322,74 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
             {
                 outline.Dispose();
             }
+        }
+
+        /// <summary>
+        /// Resolves the varied points of a composite glyph in which at least one component is
+        /// placed by point matching into <paramref name="outline"/>, in the composite's space.
+        /// </summary>
+        /// <returns>
+        /// <see langword="false"/> for a component that is itself composite, or a point index that
+        /// is out of range or refers to a phantom point.
+        /// </returns>
+        private bool TryResolvePointMatchedComposite(
+            ReadOnlySpan<GlyphComponent> components,
+            int glyphIndex,
+            GlyphDecycler decycler,
+            GvarTable? gvarTable,
+            ReadOnlySpan<float> activeCoords,
+            ResolvedOutline outline)
+        {
+            using var offsetDeltas = ComponentOffsetDeltas.Compute(glyphIndex, components, gvarTable, activeCoords);
+
+            for (var componentIndex = 0; componentIndex < components.Length; componentIndex++)
+            {
+                var component = components[componentIndex];
+                var componentStart = outline.PointCount;
+
+                // Resolve the component's varied points into composite space with its 2x2
+                // scale applied (but not the placement offset, which is computed next), so a
+                // later component is matched onto the points as they are at this instance.
+                if (!TryResolveSimpleGlyphPoints(
+                        component.GlyphIndex, CreateComponentScale(component), decycler, outline, gvarTable, activeCoords))
+                {
+                    return false;
+                }
+
+                Vector offset;
+
+                if ((component.Flags & CompositeFlags.ArgsAreXYValues) != 0)
+                {
+                    // Signed x/y offset (the unscaled-offset default), moved by the
+                    // composite's own variation deltas.
+                    offset = new Vector(component.Arg1, component.Arg2) + offsetDeltas[componentIndex];
+                }
+                else
+                {
+                    // Point matching: arg1 is a point already placed by an earlier component,
+                    // arg2 is a point of this component. They are unsigned point numbers, but
+                    // CompositeGlyph parses the raw bytes/words as signed, so reinterpret to
+                    // unsigned here (two's-complement round-trip).
+                    var argsAreWords = (component.Flags & CompositeFlags.ArgsAreWords) != 0;
+                    int parentPoint = argsAreWords ? (ushort)component.Arg1 : (byte)component.Arg1;
+                    int componentPoint = argsAreWords ? (ushort)component.Arg2 : (byte)component.Arg2;
+
+                    var componentPointCount = outline.PointCount - componentStart;
+
+                    if (parentPoint >= componentStart || componentPoint >= componentPointCount)
+                    {
+                        // Out of range, or references a phantom point this reader does not
+                        // materialise — bail rather than place the component incorrectly.
+                        return false;
+                    }
+
+                    offset = outline.GetPoint(parentPoint) - outline.GetPoint(componentStart + componentPoint);
+                }
+
+                outline.TranslateRange(componentStart, outline.PointCount, offset);
+            }
+
+            return true;
         }
 
         /// <summary>
