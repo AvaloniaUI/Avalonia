@@ -85,6 +85,25 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
             Assert.Contains(context.Figures[1], p => IsClose(p, new Point(135, 120)));
         }
 
+        [Fact]
+        public void PointMatched_Composite_Bounds_Round_The_Varied_Points_Half_Up()
+        {
+            // At half the peak every delta halves: the base square spans (2.5, 0) to (112.5, 105)
+            // and the accent matched onto its varied corner reaches (122.5, 115). FreeType rounds
+            // each varied point to the nearest unit with halves up, so the box starts at x = 3,
+            // not at the 2 an outward rounding of the unrounded box gives.
+            var glyf = BuildPointMatchedGlyf();
+            var gvar = BuildGvar(
+                glyphCount: 3,
+                (BaseGlyph, new short[] { 0, 0, 20, 0, 0, 0, 0, 0 }, new short[] { 0, 0, 10, 0, 0, 0, 0, 0 }),
+                (CompositeGlyph, new short[] { 5, 0, 0, 0, 0, 0 }, new short[] { 0, 0, 0, 0, 0, 0 }));
+
+            Assert.True(glyf.TryGetGlyphOutlineBounds(CompositeGlyph, Matrix.Identity, gvar, new[] { 0.5f },
+                out var bounds));
+
+            Assert.Equal(new GlyphBounds(3, 0, 123, 115), bounds);
+        }
+
         // --- Inter --------------------------------------------------------------------------------
 
         private static GlyphTypeface LoadTypeface(string assetUri)
