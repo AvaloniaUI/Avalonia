@@ -14,7 +14,7 @@
 @protocol IRenderTarget;
 
 @interface AvnView : NSView<NSTextInputClient, NSDraggingDestination, AvnTextInputMethodDelegate, CALayerDelegate>
--(AvnView* _Nonnull) initWithParent: (TopLevelImpl* _Nonnull) parent;
+-(AvnView* _Nonnull) initWithParent: (const ComPtr<TopLevelImpl>&) parent;
 -(NSEvent* _Nonnull) lastMouseDownEvent;
 -(AvnPoint) translateLocalPoint:(AvnPoint)pt;
 -(void) onClosed;

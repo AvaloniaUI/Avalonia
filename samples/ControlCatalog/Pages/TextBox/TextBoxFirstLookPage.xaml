@@ -1,0 +1,17 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:ControlCatalog.Controls"
+             x:Class="ControlCatalog.Pages.TextBoxFirstLookPage">
+  <ScrollViewer Padding="24,20,24,28">
+    <StackPanel Spacing="16">
+      <controls:SampleSection Header="First Look"
+                              Description="A TextBox edits one line of text. PlaceholderText is shown while the box is empty, and Text holds whatever the user typed."
+                              Code="&lt;TextBox PlaceholderText=&quot;Your name&quot; Text=&quot;{Binding Name}&quot; /&gt;">
+        <StackPanel Spacing="8" HorizontalAlignment="Left">
+          <TextBox Name="FirstLookBox" Width="280" PlaceholderText="Your name" />
+          <TextBlock Classes="sample-caption" Text="{Binding #FirstLookBox.Text, StringFormat='Text: {0}'}" />
+        </StackPanel>
+      </controls:SampleSection>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

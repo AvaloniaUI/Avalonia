@@ -1,8 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using Avalonia.Controls.Notifications;
-using ControlCatalog.Pages;
 using MiniMvvm;
 
 namespace ControlCatalog.ViewModels

@@ -29,6 +29,7 @@ class WSurface : IPersistentWaylandObject, IWSurface, IWaylandFramebufferSurface
     protected double? PreferredFractionalScale { get; private set; }
     protected List<WaylandOutputsTracker.Output> Outputs  { get; } = new();
     private WlCallback? _frameCallback;
+    private bool _hitTestVisible = true;
     private double _currentScale = 1;
     private const double ScaleEpsilon = 1e-6;
     private readonly List<IDisposable> _activeRenderTargets = new();
@@ -115,6 +116,65 @@ class WSurface : IPersistentWaylandObject, IWSurface, IWaylandFramebufferSurface
 
     public virtual void ResetTextInput() => TextInputV3?.Reset(this);
 
+    public void SetHitTestVisible(bool value)
+    {
+        if (_hitTestVisible == value)
+            return;
+        _hitTestVisible = value;
+        // No-op while disconnected; OnConnected replays the cached value.
+        if (WlSurface == null)
+            return;
+        ApplyInputRegion();
+        // Toggling hit-test visibility changes nothing about what's drawn, so an
+        // idle surface may never attach another buffer. Commit out of band to
+        // promote the region — a commit without an attach is well-defined.
+        if (CanCommitOutOfBand)
+            WlSurface.Commit();
+    }
+
+    /// <summary>
+    /// Whether committing this surface outside of a buffer attach is legal right
+    /// now. When it isn't, staged double-buffered state stays pending and is
+    /// promoted by the surface's own next commit.
+    /// </summary>
+    /// <remarks>
+    /// Such a commit can't promote another frame's half-staged state: UI→worker
+    /// proxy calls land as compositor server jobs, which ServerCompositor.RenderCore
+    /// drains before it renders any target, while the per-frame staging
+    /// (<see cref="OnBeforeNewBufferAttached"/>) and the attach+commit that
+    /// promotes it are one synchronous block inside the render pass.
+    /// </remarks>
+    protected virtual bool CanCommitOutOfBand => true;
+
+    /// <summary>
+    /// Installs the input region matching the cached hit-test state. An empty
+    /// region makes the compositor route pointer/touch input to whatever is
+    /// behind this surface.
+    /// </summary>
+    private void ApplyInputRegion()
+    {
+        if (WlSurface == null)
+            return;
+
+        if (_hitTestVisible)
+        {
+            // null is the protocol default: an infinite input region.
+            WlSurface.SetInputRegion(null!);
+            return;
+        }
+
+        var region = Globals!.WlCompositor.CreateRegion();
+        try
+        {
+            WlSurface.SetInputRegion(region);
+        }
+        finally
+        {
+            region.Destroy();
+            region.Dispose();
+        }
+    }
+
     public virtual void OnConnected(WaylandConnection connection, WaylandGlobals globals)
     {
         Connection = connection;
@@ -127,6 +187,11 @@ class WSurface : IPersistentWaylandObject, IWSurface, IWaylandFramebufferSurface
                 WlSurface, new FractionalScaleListener(this), connection.Queue);
             Viewport = globals.Viewporter!.GetViewport(WlSurface);
         }
+
+        // Re-apply the cached input region on (re)connect. It's double-buffered
+        // state, promoted by the next commit — which happens before the surface
+        // can receive any input.
+        ApplyInputRegion();
     }
 
     private IPlatformRenderSurface[]? _renderSurfaces;
@@ -234,6 +299,13 @@ class WSurface : IPersistentWaylandObject, IWSurface, IWaylandFramebufferSurface
             WlSurface!.SetBufferScale(Math.Max(1, (int)Math.Ceiling(sceneInfo.Scaling)));
 
         _frameCallback = WlSurface!.Frame(new FrameListener(this));
+    }
+
+    internal void OnBufferAttachAborted()
+    {
+        // A callback staged before a failed EGL swap will never be committed.
+        _frameCallback?.Dispose();
+        _frameCallback = null;
     }
 
     class FrameListener(WSurface p) : WlCallback.Listener
@@ -345,6 +417,12 @@ class WXdgShellSurface : WSurface, IWXdgShellSurface
 
     /// <summary>True iff this surface is currently mapped (xdg-shell sense).</summary>
     internal bool IsMapped => _mapped;
+
+    // Committing an xdg_surface before it has a role, or before its initial
+    // configure has been acked, is a protocol error. Until we're mapped, staged
+    // state rides along on the commit that assigns the role (TryAttachToParent)
+    // or on the first buffer attach.
+    protected override bool CanCommitOutOfBand => _mapped;
 
     internal void RegisterPendingChildPopup(WXdgPopup popup) => _pendingChildPopups.Add(popup);
     internal void UnregisterPendingChildPopup(WXdgPopup popup) => _pendingChildPopups.Remove(popup);
@@ -520,6 +598,12 @@ class WXdgShellSurface : WSurface, IWXdgShellSurface
             surfaceHeight = (bufferPixelSize.Height + intScale - 1) / intScale;
         }
 
+        if (surfaceWidth <= 0 || surfaceHeight <= 0)
+        {
+            LastWindowGeometry = null;
+            return;
+        }
+
         var left = Math.Clamp((int)shadowExtents.Left, 0, surfaceWidth - 1);
         var top = Math.Clamp((int)shadowExtents.Top, 0, surfaceHeight - 1);
         var right = Math.Clamp(
@@ -557,6 +641,7 @@ class WXdgTopLevel : WXdgShellSurface, IWXdgTopLevel
     private Size? _minSize;
     private Size? _maxSize;
     private string? _title;
+    private string? _appId;
 
     private ZxdgToplevelDecorationV1? _decoration;
     // Disable SSD support completely and don't allow re-enabling it because we can't
@@ -587,6 +672,11 @@ class WXdgTopLevel : WXdgShellSurface, IWXdgTopLevel
         // Re-apply cached title on reconnect.
         if (_title != null)
             _xdgTopLevel.SetTitle(_title);
+
+        // Re-apply cached app id on reconnect (or default to Globals.AppId).
+        var effectiveAppId = _appId ?? Globals.AppId;
+        if (effectiveAppId != null)
+            _xdgTopLevel.SetAppId(effectiveAppId);
 
         // Re-apply cached min/max if they were ever set on a previous
         // (now-dead) connection. The OnConnected commit below will
@@ -632,6 +722,14 @@ class WXdgTopLevel : WXdgShellSurface, IWXdgTopLevel
     {
         _title = title;
         _xdgTopLevel?.SetTitle(title ?? string.Empty);
+    }
+
+    public void SetAppId(string? appId)
+    {
+        _appId = appId;
+        var effectiveAppId = appId ?? Globals?.AppId;
+        if (effectiveAppId != null)
+            _xdgTopLevel?.SetAppId(effectiveAppId);
     }
 
     public void SetMinMaxSize(Size? minSize, Size? maxSize)
@@ -821,6 +919,11 @@ class WXdgPopup : WXdgShellSurface, IWXdgPopup
         var hadPrevious = _positioner.HasValue;
         _positioner = positioner;
 
+        // The popup child's margin (Deflate) must be carved out of the surface's window geometry
+        // so the compositor positions and constrains against the child content.
+        if (positioner.Deflate != default)
+            SetShadowExtents(positioner.Deflate);
+
         if (!hadPrevious)
         {
             // First positioner — attempt to attach now (may still defer
@@ -915,9 +1018,12 @@ class WXdgPopup : WXdgShellSurface, IWXdgPopup
 
         var positioner = Globals.XdgWmBase.CreatePositioner();
 
-        // Size: protocol requires positive integers.
-        var width = Math.Max(1, (int)Math.Ceiling(p.Size.Width));
-        var height = Math.Max(1, (int)Math.Ceiling(p.Size.Height));
+        // Size corresponds to the popup's window geometry (see the
+        // xdg_positioner.set_size contract), which excludes the child margin.
+        // The protocol requires positive integers.
+        var geometrySize = p.Size.Deflate(p.Deflate);
+        var width = Math.Max(1, (int)Math.Ceiling(geometrySize.Width));
+        var height = Math.Max(1, (int)Math.Ceiling(geometrySize.Height));
         positioner.SetSize(width, height);
 
         // The anchor rect is given in the parent's *buffer-relative* logical
@@ -1001,10 +1107,7 @@ class WXdgPopup : WXdgShellSurface, IWXdgPopup
     {
         protected override void Configure(XdgPopup eventSender, int x, int y, int width, int height)
         {
-            p._pendingBatch.X = x;
-            p._pendingBatch.Y = y;
-            p._pendingBatch.Width = width;
-            p._pendingBatch.Height = height;
+            p._pendingBatch.Geometry = new PixelRect(x, y, width, height);
         }
 
         protected override void PopupDone(XdgPopup eventSender) =>

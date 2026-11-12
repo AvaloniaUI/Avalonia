@@ -14,7 +14,7 @@
   <ControlTheme x:Key="FluentCalendarDatePickerButton" TargetType="Button">
     <Setter Property="TextElement.Foreground" Value="{DynamicResource CalendarDatePickerCalendarGlyphForeground}" />
     <Setter Property="Margin" Value="2,0,4,0" />
-    <Setter Property="Width" Value="20" />
+    <Setter Property="Width" Value="{DynamicResource CalendarDatePickerDropDownButtonWidth}" />
     <Setter Property="Template">
       <ControlTemplate>
         <Grid Height="24"
@@ -30,13 +30,13 @@
                   Grid.ColumnSpan="4"
                   Grid.Row="1"
                   Grid.RowSpan="3"
-                  BorderThickness="0.5,0,0.5,0.5"
+                  BorderThickness="1,0,1,1"
                   BorderBrush="{TemplateBinding Foreground}"
                   CornerRadius="0,0,2,2" />
           <Border Grid.ColumnSpan="4"
                   Grid.RowSpan="1"
                   BorderBrush="{TemplateBinding Foreground}"
-                  BorderThickness="0.5"
+                  BorderThickness="1"
                   CornerRadius="2,2,0,0" />
           <TextBlock Margin="0,-1,0,0"
                      VerticalAlignment="Center"
@@ -72,7 +72,7 @@
     <Setter Property="VerticalAlignment" Value="Center" />
     <Setter Property="HorizontalContentAlignment" Value="Left" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
-    <Setter Property="Padding" Value="4" />
+    <Setter Property="Padding" Value="{DynamicResource CalendarDatePickerPadding}" />
     <Setter Property="Template">
       <ControlTemplate>
         <DataValidationErrors>
@@ -133,7 +133,9 @@
                           SelectedDate="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=SelectedDate, Mode=TwoWay}"
                           DisplayDate="{TemplateBinding DisplayDate}"
                           DisplayDateStart="{TemplateBinding DisplayDateStart}"
-                          DisplayDateEnd="{TemplateBinding DisplayDateEnd}" />
+                          DisplayDateEnd="{TemplateBinding DisplayDateEnd}"
+                          IsWeekNumberVisible="{TemplateBinding IsWeekNumberVisible}"
+                          WeekNumberRule="{TemplateBinding WeekNumberRule}" />
               </Popup>
             </Grid>
           </Panel>

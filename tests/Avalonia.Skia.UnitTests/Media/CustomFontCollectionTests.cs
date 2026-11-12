@@ -32,6 +32,7 @@ namespace Avalonia.Skia.UnitTests.Media
                     new FontAssetInfo($"{AssetsNamespace}.AdobeBlank2VF.ttf", "Adobe Blank 2 VF R", FontWeight.Normal),
                     new FontAssetInfo($"{AssetsNamespace}.Inter-Bold.ttf", "Inter", FontWeight.Bold),
                     new FontAssetInfo($"{AssetsNamespace}.Inter-Regular.ttf", "Inter", FontWeight.Normal),
+                    new FontAssetInfo($"{AssetsNamespace}.InterVariable.ttf", "Inter Variable", FontWeight.Normal),
                     new FontAssetInfo($"{AssetsNamespace}.Manrope-Light.ttf", "Manrope Light", FontWeight.Light),
                     new FontAssetInfo($"{AssetsNamespace}.MiSans-Normal.ttf", "MiSans Normal", (FontWeight)305),
                     new FontAssetInfo($"{AssetsNamespace}.NISC18030.ttf", "GB18030 Bitmap", FontWeight.Normal),
@@ -42,6 +43,7 @@ namespace Avalonia.Skia.UnitTests.Media
                     new FontAssetInfo($"{AssetsNamespace}.NotoSansHebrew-Regular.ttf", "Noto Sans Hebrew", FontWeight.Normal),
                     new FontAssetInfo($"{AssetsNamespace}.NotoSansMiao-Regular.ttf", "Noto Sans Miao", FontWeight.Normal),
                     new FontAssetInfo($"{AssetsNamespace}.NotoSansTamil-Regular.ttf", "Noto Sans Tamil", FontWeight.Normal),
+                    new FontAssetInfo($"{AssetsNamespace}.PointMatch.ttf", "PointMatch", FontWeight.Normal),
                     new FontAssetInfo($"{AssetsNamespace}.SourceSerif4_36pt-Italic.ttf", "Source Serif 4 36pt", FontWeight.Normal),
                     new FontAssetInfo($"{AssetsNamespace}.TwitterColorEmoji-SVGinOT.ttf", "Twitter Color Emoji", FontWeight.Normal)
                 };

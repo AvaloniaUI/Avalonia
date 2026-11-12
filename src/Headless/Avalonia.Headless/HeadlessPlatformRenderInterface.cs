@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using Avalonia.Controls;
+using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Media.TextFormatting;
@@ -36,29 +39,37 @@ namespace Avalonia.Headless
 
         public IGeometryImpl CreateLineGeometry(Point p1, Point p2)
         {
-            var tl = new Point(Math.Min(p1.X, p2.X), Math.Min(p1.Y, p2.Y));
-            var br = new Point(Math.Max(p1.X, p2.X), Math.Max(p1.Y, p2.Y));
-            return new HeadlessGeometryStub(new Rect(tl, br));
+            return new HeadlessLineGeometryContextStub(p1, p2);
         }
 
         public IGeometryImpl CreateRectangleGeometry(Rect rect)
         {
-            return new HeadlessGeometryStub(rect);
+            return new HeadlessRectangleGeometryContextStub(rect);
         }
 
-        public IStreamGeometryImpl CreateStreamGeometry() => new HeadlessStreamingGeometryStub();
+        public IStreamGeometryBuilder CreateStreamGeometryBuilder(IGeometryImpl? source = null)
+        {
+            var sourcePoints = source switch
+            {
+                null => null,
+                IHeadlessGeometryWithEdges geometryWithEdges => geometryWithEdges.Points,
+                _ => throw new InvalidOperationException($"The source {source} isn't an headless geometry.")
+            };
+
+            return new HeadlessStreamGeometryBuilder(sourcePoints);
+        }
 
         public IGeometryImpl CreateGeometryGroup(FillRule fillRule, IReadOnlyList<IGeometryImpl> children) =>
             new HeadlessGeometryStub(children.Count != 0 ?
                 children.Select(c => c.Bounds).Aggregate((a, b) => a.Union(b)) :
                 default);
 
-        public IGeometryImpl CreateCombinedGeometry(GeometryCombineMode combineMode, IGeometryImpl g1, IGeometryImpl g2) 
+        public IGeometryImpl CreateCombinedGeometry(GeometryCombineMode combineMode, IGeometryImpl g1, IGeometryImpl g2)
             => new HeadlessGeometryStub(g1.Bounds.Union(g2.Bounds));
 
         public IRenderTarget CreateRenderTarget(IEnumerable<IPlatformRenderSurface> surfaces) => new HeadlessRenderTarget();
         public IDrawingContextLayerImpl CreateOffscreenRenderTarget(PixelSize pixelSize, Vector scaling,
-            bool enableTextAntialiasing) => 
+            bool enableTextAntialiasing) =>
             new HeadlessBitmapStub(pixelSize, scaling * 96);
 
         public bool IsLost => false;
@@ -111,7 +122,7 @@ namespace Avalonia.Headless
         public IBitmapImpl LoadBitmap(PixelFormat format, AlphaFormat alphaFormat, IntPtr data, PixelSize size, Vector dpi, int stride)
         {
             return new HeadlessBitmapStub(new Size(1, 1), new Vector(96, 96));
-        }        
+        }
 
         public IBitmapImpl LoadBitmapToWidth(Stream stream, int width, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
         {
@@ -134,9 +145,9 @@ namespace Avalonia.Headless
         }
 
         public IGlyphRunImpl CreateGlyphRun(
-            GlyphTypeface glyphTypeface, 
+            GlyphTypeface glyphTypeface,
             double fontRenderingEmSize,
-            IReadOnlyList<GlyphInfo> glyphInfos, 
+            IReadOnlyList<GlyphInfo> glyphInfos,
             Point baselineOrigin)
         {
             return new HeadlessGlyphRunStub(glyphTypeface, fontRenderingEmSize, baselineOrigin);
@@ -160,7 +171,7 @@ namespace Avalonia.Headless
 
             public GlyphTypeface GlyphTypeface { get; }
 
-            public double FontRenderingEmSize { get; }           
+            public double FontRenderingEmSize { get; }
 
             public void Dispose()
             {
@@ -178,14 +189,14 @@ namespace Avalonia.Headless
             }
 
             public Rect Bounds { get; set; }
-            
+
             public double ContourLength { get; } = 0;
-            
+
             public virtual bool FillContains(Point point) => Bounds.Contains(point);
 
             public Rect GetRenderBounds(IPen? pen)
             {
-                if(pen is null)
+                if (pen is null)
                 {
                     return Bounds;
                 }
@@ -201,7 +212,26 @@ namespace Avalonia.Headless
             }
 
             public IGeometryImpl Intersect(IGeometryImpl geometry)
-                => new HeadlessGeometryStub(geometry.Bounds.Intersect(Bounds));
+            {
+                var intersection = geometry.Bounds.Intersect(Bounds);
+                if (intersection == default)
+                {
+                    // In the case that a 0-width or 0-height geometry, like a line is being tested
+                    var rect1 = Bounds;
+                    var rect2 = geometry.Bounds;
+                    var newLeft = (rect1.X > rect2.X) ? rect1.X : rect2.X;
+                    var newTop = (rect1.Y > rect2.Y) ? rect1.Y : rect2.Y;
+                    var newRight = (rect1.Right < rect2.Right) ? rect1.Right : rect2.Right;
+                    var newBottom = (rect1.Bottom < rect2.Bottom) ? rect1.Bottom : rect2.Bottom;
+
+                    if ((newRight >= newLeft) && (newBottom >= newTop))
+                    {
+                        intersection = new Rect(newLeft, newTop, newRight - newLeft, newBottom - newTop);
+                    }
+                }
+
+                return new HeadlessGeometryStub(intersection);
+            }
 
             public ITransformedGeometryImpl WithTransform(Matrix transform) =>
                 new HeadlessTransformedGeometryStub(this, transform);
@@ -224,10 +254,32 @@ namespace Avalonia.Headless
                 segmentGeometry = null;
                 return false;
             }
+
+            public virtual IntersectionResult GetFillIntersectionResult(IGeometryImpl geometry)
+            {
+                var intersection = Intersect(geometry);
+
+                if (intersection?.Bounds.Size != new Size())
+                {
+                    var bounds = GetRenderBounds(null);
+                    var otherBounds = geometry.GetRenderBounds(null);
+
+                    if (bounds.Contains(otherBounds))
+                        return IntersectionResult.FullyInside;
+
+                    if (otherBounds.Contains(bounds))
+                        return IntersectionResult.FullyContains;
+
+                    return IntersectionResult.Intersects;
+                }
+
+                return IntersectionResult.Empty;
+            }
         }
 
-        private class HeadlessTransformedGeometryStub : HeadlessGeometryStub, ITransformedGeometryImpl
+        private class HeadlessTransformedGeometryStub : HeadlessGeometryStub, ITransformedGeometryImpl, IHeadlessGeometryWithEdges
         {
+            private List<Point>? _points;
             public HeadlessTransformedGeometryStub(IGeometryImpl b, Matrix transform) : this(Fix(b, transform))
             {
 
@@ -253,127 +305,264 @@ namespace Avalonia.Headless
 
             public IGeometryImpl SourceGeometry { get; }
             public Matrix Transform { get; }
+
+            public List<Point> Points
+            {
+                get
+                {
+                    if (SourceGeometry is IHeadlessGeometryWithEdges geometryWithEdges)
+                    {
+                        return _points ??= geometryWithEdges.Points.Select(x => x.Transform(Transform)).ToList();
+                    }
+
+                    return [];
+                }
+            }
         }
 
-        private class HeadlessStreamingGeometryStub : HeadlessGeometryStub, IStreamGeometryImpl
+        private abstract class HeadlessGeometryWithEdgesStub(Rect bounds) : HeadlessGeometryStub(bounds), IHeadlessGeometryWithEdges
         {
-            private HeadlessStreamingGeometryContextStub _context;
-            
-            public HeadlessStreamingGeometryStub() : base(default)
+            public abstract List<Point> Points { get; }
+
+            public override IntersectionResult GetFillIntersectionResult(IGeometryImpl geometry)
             {
-                _context = new HeadlessStreamingGeometryContextStub(this);
+                if (geometry is IHeadlessGeometryWithEdges stub)
+                {
+                    var axes = (this as IHeadlessGeometryWithEdges).GetAxes();
+                    axes.AddRange(stub.GetAxes());
+
+                    foreach (var axis in axes)
+                    {
+                        var (min, max) = (this as IHeadlessGeometryWithEdges).ProjectionOnAxis(axis);
+                        var projection2 = stub.ProjectionOnAxis(axis);
+
+                        if (max < projection2.min || projection2.max < min)
+                            return IntersectionResult.Empty;
+                    }
+
+                    var bounds = GetRenderBounds(null);
+                    var otherBounds = geometry.GetRenderBounds(null);
+
+                    if (bounds.Contains(otherBounds))
+                        return IntersectionResult.FullyInside;
+
+                    if (otherBounds.Contains(bounds))
+                        return IntersectionResult.FullyContains;
+
+                    return IntersectionResult.Intersects;
+                }
+
+                return base.GetFillIntersectionResult(geometry);
+            }
+        }
+
+        private class HeadlessLineGeometryContextStub : HeadlessGeometryWithEdgesStub
+        {
+            private List<Point> _points = new List<Point>();
+
+            public HeadlessLineGeometryContextStub(Point p1, Point p2) : base(new Rect(new Point(Math.Min(p1.X, p2.X), Math.Min(p1.Y, p2.Y)),
+                new Point(Math.Max(p1.X, p2.X), Math.Max(p1.Y, p2.Y))))
+            {
+                _points.Add(p1);
+                _points.Add(p2);
             }
 
-            public IStreamGeometryImpl Clone()
+            public override List<Point> Points => _points;
+        }
+
+        private class HeadlessRectangleGeometryContextStub : HeadlessGeometryWithEdgesStub
+        {
+            private List<Point> _points = new List<Point>();
+            public HeadlessRectangleGeometryContextStub(Rect bounds) : base(bounds)
             {
-                return this;
+                _points.Add(bounds.TopLeft);
+                _points.Add(bounds.TopRight);
+                _points.Add(bounds.BottomLeft);
+                _points.Add(bounds.BottomRight);
             }
 
-            public IStreamGeometryContextImpl Open()
+            public override List<Point> Points => _points;
+        }
+
+        internal interface IHeadlessGeometryWithEdges
+        {
+            List<Point> Points { get; }
+
+            public (double min, double max) ProjectionOnAxis(Vector axis)
             {
-                return _context;
+                double min = double.PositiveInfinity, max = double.NegativeInfinity;
+
+                foreach (var point in Points)
+                {
+                    var p = Vector.Dot(axis, new Vector(point.X, point.Y));
+
+                    if (p < min)
+                    {
+                        min = p;
+                    }
+
+                    if (p > max)
+                    {
+                        max = p;
+                    }
+                }
+
+                return (min, max);
+            }
+
+            public List<Vector> GetAxes()
+            {
+                List<Vector> axes = new List<Vector>();
+
+                for (var i = 0; i < Points.Count; i++)
+                {
+                    var point = Points[i];
+                    var otherPoint = Points[(i + i) % Points.Count];
+                    var edge = new Vector(point.X - otherPoint.X, point.Y - otherPoint.Y);
+                    axes.Add(new Vector(-edge.Y, edge.X));
+                }
+
+                return axes;
+            }
+        }
+
+        private class HeadlessSimpleGeometryStub : HeadlessGeometryStub, IHeadlessGeometryWithEdges
+        {
+            public List<Point> Points { get; }
+
+            public HeadlessSimpleGeometryStub(List<Point> points)
+                : base(points.Count == 0 ? default : CalculateBounds(points))
+            {
+                Points = points;
+            }
+
+            private static Rect CalculateBounds(List<Point> points)
+            {
+                Debug.Assert(points.Count > 0);
+
+                var left = double.MaxValue;
+                var right = double.MinValue;
+                var top = double.MaxValue;
+                var bottom = double.MinValue;
+
+                foreach (var p in points)
+                {
+                    left = Math.Min(p.X, left);
+                    right = Math.Max(p.X, right);
+                    top = Math.Min(p.Y, top);
+                    bottom = Math.Max(p.Y, bottom);
+                }
+
+                return new Rect(new Point(left, top), new Point(right, bottom));
             }
 
             public override bool FillContains(Point point)
             {
-                return _context.FillContains(point);
+                // Use the algorithm from https://www.blackpawn.com/texts/pointinpoly/default.html
+                // to determine if the point is in the geometry (since it will always be convex in this situation)
+                for (int i = 0; i < Points.Count; i++)
+                {
+                    var a = Points[i];
+                    var b = Points[(i + 1) % Points.Count];
+                    var c = Points[(i + 2) % Points.Count];
+
+                    Vector v0 = c - a;
+                    Vector v1 = b - a;
+                    Vector v2 = point - a;
+
+                    var dot00 = v0 * v0;
+                    var dot01 = v0 * v1;
+                    var dot02 = v0 * v2;
+                    var dot11 = v1 * v1;
+                    var dot12 = v1 * v2;
+
+
+                    var invDenom = 1 / (dot00 * dot11 - dot01 * dot01);
+                    var u = (dot11 * dot02 - dot01 * dot12) * invDenom;
+                    var v = (dot00 * dot12 - dot01 * dot02) * invDenom;
+                    if ((u >= 0) && (v >= 0) && (u + v < 1))
+                        return true;
+                }
+                return false;
             }
 
-            private class HeadlessStreamingGeometryContextStub : IStreamGeometryContextImpl
+            private IntersectionResult FillContains(IHeadlessGeometryWithEdges geometry)
             {
-                private readonly HeadlessStreamingGeometryStub _parent;
-                private List<Point> points = new List<Point>();
-                public HeadlessStreamingGeometryContextStub(HeadlessStreamingGeometryStub parent)
+                var axes = (this as IHeadlessGeometryWithEdges).GetAxes();
+                axes.AddRange(geometry.GetAxes());
+
+                foreach (var axis in axes)
                 {
-                    _parent = parent;
+                    var (min, max) = (this as IHeadlessGeometryWithEdges).ProjectionOnAxis(axis);
+                    var projection2 = geometry.ProjectionOnAxis(axis);
+
+                    if (max < projection2.min || projection2.max < min)
+                        return IntersectionResult.Empty;
                 }
 
-                private void Track(Point pt)
-                {
-                    points.Add(pt);
-                }
+                return IntersectionResult.Intersects;
+            }
 
-                public Rect CalculateBounds()
-                {
-                    var left = double.MaxValue;
-                    var right = double.MinValue;
-                    var top = double.MaxValue;
-                    var bottom = double.MinValue;
+            public override IntersectionResult GetFillIntersectionResult(IGeometryImpl geometry)
+            {
+                if (geometry is IHeadlessGeometryWithEdges stub)
+                    return FillContains(stub);
 
-                    foreach (var p in points)
-                    {
-                        left = Math.Min(p.X, left);
-                        right = Math.Max(p.X, right);
-                        top = Math.Min(p.Y, top);
-                        bottom = Math.Max(p.Y, bottom);
-                    }
+                return base.GetFillIntersectionResult(geometry);
+            }
+        }
 
-                    return new Rect(new Point(left, top), new Point(right, bottom));
-                }
-                
-                public void Dispose()
-                {
-                    _parent.Bounds = CalculateBounds();
-                }
+        private sealed class HeadlessStreamGeometryBuilder(IEnumerable<Point>? sourcePoints)
+            : IStreamGeometryBuilder, IHeadlessGeometryWithEdges
+        {
+            private bool _built;
 
-                public void ArcTo(Point point, Size size, double rotationAngle, bool isLargeArc, SweepDirection sweepDirection, bool isStroked = true)
-                    => Track(point);
+            public List<Point> Points { get; } = sourcePoints is null ? new List<Point>() : new List<Point>(sourcePoints);
 
-                public void BeginFigure(Point startPoint, bool isFilled = true) => Track(startPoint);
+            private void Track(Point pt)
+            {
+                Points.Add(pt);
+            }
 
-                public void CubicBezierTo(Point point1, Point point2, Point point3, bool isStroked = true)
-                {
-                    Track(point1);
-                    Track(point2);
-                    Track(point3);
-                }
+            public IGeometryImpl ToGeometry()
+            {
+                if (_built)
+                    throw new InvalidOperationException("The geometry has already been built.");
 
-                public void QuadraticBezierTo(Point control, Point endPoint, bool isStroked = true)
-                {
-                    Track(control);
-                    Track(endPoint);
-                }
+                _built = true;
+                return new HeadlessSimpleGeometryStub(Points);
+            }
 
-                public void LineTo(Point point, bool isStroked = true) => Track(point);
+            public void Dispose()
+            {
+            }
 
-                public void EndFigure(bool isClosed)
-                {
-                    Dispose();
-                }
+            public void ArcTo(Point point, Size size, double rotationAngle, bool isLargeArc, SweepDirection sweepDirection, bool isStroked = true)
+                => Track(point);
 
-                public void SetFillRule(FillRule fillRule)
-                {
+            public void BeginFigure(Point startPoint, bool isFilled = true) => Track(startPoint);
 
-                }
-                
-                public bool FillContains(Point point)
-                {
-                    // Use the algorithm from https://www.blackpawn.com/texts/pointinpoly/default.html
-                    // to determine if the point is in the geometry (since it will always be convex in this situation)
-                    for (int i = 0; i < points.Count; i++)
-                    {
-                        var a = points[i];
-                        var b = points[(i + 1) % points.Count];
-                        var c = points[(i + 2) % points.Count];
+            public void CubicBezierTo(Point point1, Point point2, Point point3, bool isStroked = true)
+            {
+                Track(point1);
+                Track(point2);
+                Track(point3);
+            }
 
-                        Vector v0 = c - a;
-                        Vector v1 = b - a;
-                        Vector v2 = point - a;
+            public void QuadraticBezierTo(Point control, Point endPoint, bool isStroked = true)
+            {
+                Track(control);
+                Track(endPoint);
+            }
 
-                        var dot00 = v0 * v0;
-                        var dot01 = v0 * v1;
-                        var dot02 = v0 * v2;
-                        var dot11 = v1 * v1;
-                        var dot12 = v1 * v2;
+            public void LineTo(Point point, bool isStroked = true) => Track(point);
 
+            public void EndFigure(bool isClosed)
+            {
+            }
 
-                        var invDenom = 1 / (dot00 * dot11 - dot01 * dot01);
-                        var u = (dot11 * dot02 - dot01 * dot12) * invDenom;
-                        var v = (dot00 * dot12 - dot01 * dot02) * invDenom;
-                        if ((u >= 0) && (v >= 0) && (u + v < 1)) return true;
-                    }
-                    return false;
-                }
+            public void SetFillRule(FillRule fillRule)
+            {
             }
         }
 
@@ -417,7 +606,7 @@ namespace Avalonia.Headless
 
             public void Blit(IDrawingContextImpl context)
             {
-                
+
             }
 
             public bool CanBlit => false;
@@ -467,7 +656,7 @@ namespace Avalonia.Headless
 
             public void PushClip(IPlatformRenderInterfaceRegion region)
             {
-                
+
             }
 
             public void PopClip()
@@ -528,22 +717,22 @@ namespace Avalonia.Headless
 
             public void DrawBitmap(IBitmapImpl source, double opacity, Rect sourceRect, Rect destRect)
             {
-                
+
             }
 
             public void DrawBitmap(IBitmapImpl source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect)
             {
-                
+
             }
 
             public void DrawRectangle(IBrush? brush, IPen? pen, RoundedRect rect, BoxShadows boxShadow = default)
             {
-                
+
             }
 
             public void DrawRegion(IBrush? brush, IPen? pen, IPlatformRenderInterfaceRegion region)
             {
-                
+
             }
 
             public void DrawEllipse(IBrush? brush, IPen? pen, Rect rect)
@@ -552,22 +741,22 @@ namespace Avalonia.Headless
 
             public void DrawGlyphRun(IBrush? foreground, IGlyphRunImpl glyphRun)
             {
-                
+
             }
 
             public void PushClip(RoundedRect clip)
             {
-                
+
             }
 
             public void PushRenderOptions(RenderOptions renderOptions)
             {
-                
+
             }
 
             public void PopRenderOptions()
             {
-                
+
             }
 
             public void PushTextOptions(TextOptions textOptions)
@@ -605,7 +794,7 @@ namespace Avalonia.Headless
 
         public void Dispose()
         {
-            
+
         }
     }
 }

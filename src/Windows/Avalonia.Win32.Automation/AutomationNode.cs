@@ -88,7 +88,7 @@ namespace Avalonia.Win32.Automation
 
         public virtual object? GetPatternProvider(int patternId)
         {
-            AutomationNode? ThisIfPeerImplementsProvider<T>() => Peer.GetProvider<T>() is object ? this : null;
+            AutomationNode? ThisIfPeerImplementsProvider<T>() => InvokeSync(() => Peer.GetProvider<T>()) is object ? this : null;
 
             return (UiaPatternId)patternId switch
             {
@@ -194,7 +194,35 @@ namespace Avalonia.Win32.Automation
 
         IRawElementProviderSimple[]? IRawElementProviderFragment.GetEmbeddedFragmentRoots() => null;
         void IRawElementProviderSimple2.ShowContextMenu() => InvokeSync(() => Peer.ShowContextMenu());
-        void IInvokeProvider.Invoke() => InvokeSync((AAP.IInvokeProvider x) => x.Invoke());
+
+        void IInvokeProvider.Invoke()
+        {
+            var (provider, isEnabled) = InvokeSync(() => (Peer.GetProvider<AAP.IInvokeProvider>(), Peer.IsEnabled()));
+
+            if (provider is null)
+                throw new NotSupportedException();
+
+            if (!isEnabled)
+                throw new COMException("Element not enabled.", UiaCoreProviderApi.UIA_E_ELEMENTNOTENABLED);
+
+            // https://learn.microsoft.com/en-us/windows/win32/api/uiautomationcore/nf-uiautomationcore-iinvokeprovider-invoke
+            // The IInvokeProvider.Invoke documentation states:
+            //   IInvokeProvider::Invoke is an asynchronous call and must return immediately without blocking.
+            //   This is particularly critical for controls that, directly or indirectly, launch a modal dialog when invoked.
+            //   Any Microsoft UI Automation client that instigated the event will remain blocked until the modal dialog is closed.
+            Dispatcher.UIThread.Post(
+                () =>
+                {
+                    try
+                    {
+                        provider.Invoke();
+                    }
+                    catch (ElementNotEnabledException)
+                    {
+                    }
+                },
+                DispatcherPriority.Input);
+        }
 
         protected void InvokeSync(Action action)
         {
@@ -214,13 +242,13 @@ namespace Avalonia.Win32.Automation
 
         protected void InvokeSync<TInterface>(Action<TInterface> action)
         {
-            if (Peer.GetProvider<TInterface>() is TInterface i)
+            if (InvokeSync(() => Peer.GetProvider<TInterface>()) is TInterface i)
             {
                 try
                 {
                     InvokeSync(() => action(i));
                 }
-                catch (AggregateException e) when (e.InnerException is ElementNotEnabledException)
+                catch (ElementNotEnabledException e)
                 {
                     throw new COMException(e.Message, UiaCoreProviderApi.UIA_E_ELEMENTNOTENABLED);
                 }
@@ -233,13 +261,13 @@ namespace Avalonia.Win32.Automation
 
         protected TResult InvokeSync<TInterface, TResult>(Func<TInterface, TResult> func)
         {
-            if (Peer.GetProvider<TInterface>() is TInterface i)
+            if (InvokeSync(() => Peer.GetProvider<TInterface>()) is TInterface i)
             {
                 try
                 {
                     return InvokeSync(() => func(i));
                 }
-                catch (AggregateException e) when (e.InnerException is ElementNotEnabledException)
+                catch (ElementNotEnabledException e)
                 {
                     throw new COMException(e.Message, UiaCoreProviderApi.UIA_E_ELEMENTNOTENABLED);
                 }

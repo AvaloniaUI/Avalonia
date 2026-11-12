@@ -19,7 +19,7 @@ namespace Avalonia.Controls.UnitTests
             bold.Inlines.Add(span);
 
             var textRuns = new List<TextRun>();
-            bold.BuildTextRun(textRuns, default);
+            bold.BuildTextRun(textRuns);
 
             var runProperties = textRuns[0].Properties;
             Assert.NotNull(runProperties);
@@ -36,7 +36,7 @@ namespace Avalonia.Controls.UnitTests
             italic.Inlines.Add(span);
 
             var textRuns = new List<TextRun>();
-            italic.BuildTextRun(textRuns, default);
+            italic.BuildTextRun(textRuns);
 
             var runProperties = textRuns[0].Properties;
             Assert.NotNull(runProperties);
@@ -54,11 +54,29 @@ namespace Avalonia.Controls.UnitTests
             span.Inlines.Add(innerSpan);
 
             var textRuns = new List<TextRun>();
-            span.BuildTextRun(textRuns, default);
+            span.BuildTextRun(textRuns);
 
             var runProperties = textRuns[0].Properties;
             Assert.NotNull(runProperties);
             Assert.Equal(FontStretch.Condensed, runProperties.Typeface.Stretch);
+        }
+
+        [Fact]
+        public void Should_Inherit_FontVariations_In_Nested_Inlines()
+        {
+            var span = new Span();
+            var innerSpan = new Span();
+            var run = new Run("Test");
+            span.FontVariations = FontVariationSettings.Parse("wght=700");
+            innerSpan.Inlines.Add(run);
+            span.Inlines.Add(innerSpan);
+
+            var textRuns = new List<TextRun>();
+            span.BuildTextRun(textRuns);
+
+            var runProperties = textRuns[0].Properties;
+            Assert.NotNull(runProperties);
+            Assert.Equal(FontVariationSettings.Parse("wght=700"), runProperties.Typeface.FontVariations);
         }
 
         [Fact]
@@ -74,7 +92,7 @@ namespace Avalonia.Controls.UnitTests
             span.Inlines.Add(innerSpan);
 
             var textRuns = new List<TextRun>();
-            span.BuildTextRun(textRuns, default);
+            span.BuildTextRun(textRuns);
 
             var runProperties = textRuns[0].Properties;
             Assert.NotNull(runProperties);

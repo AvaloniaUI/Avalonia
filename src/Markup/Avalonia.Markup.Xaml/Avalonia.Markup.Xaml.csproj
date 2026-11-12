@@ -51,6 +51,7 @@
     <Compile Include="Templates\TreeDataTemplate.cs" />
     <Compile Include="Templates\WindowDrawnDecorationsTemplate.cs" />
     <Compile Include="XamlIl\Runtime\IAvaloniaXamlIlControlTemplateProvider.cs" />
+    <Compile Include="XamlIl\Runtime\FunctionPointerPropertyInfo.cs" />
     <Compile Include="XamlIl\Runtime\IAvaloniaXamlIlParentStackProvider.cs" />
     <Compile Include="XamlIl\Runtime\IAvaloniaXamlIlXmlNamespaceInfoProviderV1.cs" />
     <Compile Include="XamlIl\Runtime\XamlIlParentStackProviderWrapper.cs" />
@@ -71,6 +72,7 @@
     <InternalsVisibleTo Include="Avalonia.Designer.HostApp, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.DesignerSupport, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.Base.UnitTests, PublicKey=$(AvaloniaPublicKey)" />
+    <InternalsVisibleTo Include="Avalonia.Themes.UnitTests, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.Markup.Xaml.Loader, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.Markup.Xaml.UnitTests, PublicKey=$(AvaloniaPublicKey)" />
   </ItemGroup>

@@ -43,6 +43,17 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
         [Fact]
+        public void ContentPresenter_Default_Content_Property_Is_Set()
+        {
+            var xaml = @"<ContentPresenter xmlns='https://github.com/avaloniaui'>Foo</ContentPresenter>";
+
+            var target = AvaloniaRuntimeXamlLoader.Parse<ContentPresenter>(xaml);
+
+            Assert.NotNull(target);
+            Assert.Equal("Foo", target.Content);
+        }
+
+        [Fact]
         public void Attached_Property_Is_Set()
         {
             var xaml =
@@ -863,6 +874,18 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             Assert.NotNull(toolTip);
 
             Assert.Equal("Foo", toolTip.Content);
+        }
+
+        [Fact]
+        public void TextBlock_FontVariations_Is_Parsed_From_String()
+        {
+            // FontVariationSettings has a static Parse(string), which the XAML compiler
+            // picks up for attribute-string conversion — no TypeConverter involved.
+            var xaml = @"<TextBlock xmlns='https://github.com/avaloniaui' FontVariations='wght=700, wdth=85' />";
+
+            var textBlock = AvaloniaRuntimeXamlLoader.Parse<TextBlock>(xaml);
+
+            Assert.Equal(FontVariationSettings.Parse("wght=700, wdth=85"), textBlock.FontVariations);
         }
 
         [Fact]

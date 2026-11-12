@@ -102,6 +102,7 @@ namespace Avalonia.X11
                 PressureXIValuatorClassInfo = null;
                 TouchMajorXIValuatorClassInfo = null;
                 TouchMinorXIValuatorClassInfo = null;
+                IsPen = false;
 
                 foreach (var xiValuatorClassInfo in Valuators)
                 {
@@ -109,6 +110,7 @@ namespace Avalonia.X11
                         xiValuatorClassInfo.Label == pressureAtomPen)
                     {
                         PressureXIValuatorClassInfo = xiValuatorClassInfo;
+                        IsPen |= xiValuatorClassInfo.Label == pressureAtomPen;
                     }
                     else if (xiValuatorClassInfo.Label == touchMajorAtom)
                     {
@@ -156,10 +158,10 @@ namespace Avalonia.X11
                 UpdateKnownValuator();
             }
 
-            public bool HasPressureValuator()
-            {
-                return PressureXIValuatorClassInfo is not null;
-            }
+            /// <summary>
+            /// Whether the current slave device is a pen, i.e. reports the pen pressure axis.
+            /// </summary>
+            public bool IsPen { get; private set; }
 
             public bool IsEraser => _currentSlaveIsEraser;
             public string? Name => _currentSlaveName;
@@ -293,24 +295,37 @@ namespace Avalonia.X11
 
         private void OnEnterLeaveEvent(IXI2Client client, ref XIEnterLeaveEvent ev)
         {
+            var detail = ev.detail;
+            if (detail != XiEnterLeaveDetail.XINotifyNonlinearVirtual &&
+                detail != XiEnterLeaveDetail.XINotifyNonlinear &&
+                detail != XiEnterLeaveDetail.XINotifyVirtual &&
+                detail != XiEnterLeaveDetail.XINotifyAncestor)
+                return;
+
+            var buttons = ParsedDeviceEvent.ParseButtonState(ev.buttons.MaskLen, ev.buttons.Mask);
+            if (buttons != default)
+                return;
+
             if (ev.evtype == XiEventType.XI_Leave)
             {
-                var buttons = ParsedDeviceEvent.ParseButtonState(ev.buttons.MaskLen, ev.buttons.Mask);
-                var detail = ev.detail;
-                if ((detail == XiEnterLeaveDetail.XINotifyNonlinearVirtual ||
-                     detail == XiEnterLeaveDetail.XINotifyNonlinear ||
-                     detail == XiEnterLeaveDetail.XINotifyVirtual)
-                    && buttons == default)
+                foreach (var scroller in _pointerDevice.Scrollers)
                 {
-                    foreach (var scroller in _pointerDevice.Scrollers)
-                    {
-                        _pointerDevice.Valuators[scroller.Number].Value = 0;
-                    }
-
-                    client.ScheduleXI2Input(new RawPointerEventArgs(client.MouseDevice, (ulong)ev.time.ToInt64(),
-                        client.InputRoot,
-                        RawPointerEventType.LeaveWindow, new Point(ev.event_x, ev.event_y), buttons));
+                    _pointerDevice.Valuators[scroller.Number].Value = 0;
                 }
+
+                client.ScheduleXI2Input(new RawPointerEventArgs(client.MouseDevice, (ulong)ev.time.ToInt64(),
+                    client.InputRoot,
+                    RawPointerEventType.LeaveWindow, new Point(ev.event_x, ev.event_y), buttons));
+            }
+            else if (ev.evtype == XiEventType.XI_Enter)
+            {
+                client.ScheduleXI2Input(new RawPointerEventArgs(
+                    client.MouseDevice,
+                    (ulong)ev.time.ToInt64(),
+                    client.InputRoot,
+                    RawPointerEventType.Move,
+                    new Point(ev.event_x, ev.event_y),
+                    ((XModifierMask)ev.mods.Effective).ToRawInputModifiers()));
             }
         }
 
@@ -406,7 +421,7 @@ namespace Avalonia.X11
             {
                 Vector scrollDelta = default;
                 var rawPointerPoint = new RawPointerPoint() { Position = ev.Position };
-                IInputDevice device = _pointerDevice.HasPressureValuator() ? client.PenDevice : client.MouseDevice;
+                IInputDevice device = _pointerDevice.IsPen ? client.PenDevice : client.MouseDevice;
 
                 foreach (var v in ev.Valuators)
                 {
@@ -469,7 +484,7 @@ namespace Avalonia.X11
 
                 if (type.HasValue)
                 {
-                    IInputDevice device = _pointerDevice.HasPressureValuator() ? client.PenDevice : client.MouseDevice;
+                    IInputDevice device = _pointerDevice.IsPen ? client.PenDevice : client.MouseDevice;
                     var pointerPoint = new RawPointerPoint() { Position = ev.Position };
 
                     SetPenSpecificValues(ev, ref pointerPoint);

@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using Android.Content;
+﻿using Android.Content;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 

@@ -5,6 +5,7 @@ using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.LogicalTree;
 using Avalonia.Metadata;
 using static Avalonia.Controls.Presenters.TableViewLayoutHelper;
 
@@ -138,6 +139,9 @@ public class TableView : ListBox
                 $"The column {column.DebugDisplay} is already attached to a {nameof(TableView)}.");
         }
 
+        // Resolve styles and bindings before enabling refresh notifications. The headers
+        // and cells are rebuilt after attachment to apply the column's current values.
+        ((ISetLogicalParent)column).SetParent(this);
         column.TableView = this;
     }
 
@@ -146,6 +150,7 @@ public class TableView : ListBox
         Debug.Assert(column.TableView == this || column.TableView is null);
 
         column.TableView = null;
+        ((ISetLogicalParent)column).SetParent(null);
         column.ActualWidth = double.NaN;
     }
 

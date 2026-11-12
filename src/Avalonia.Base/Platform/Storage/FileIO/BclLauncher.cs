@@ -45,8 +45,16 @@ internal class BclLauncher : ILauncher
             {
                 // If no associated application/json MimeType is found xdg-open opens return error
                 // but it tries to open it anyway using the console editor (nano, vim, other..)
-                var args = EscapeForShell(urlOrFile);
-                ShellExecRaw($"xdg-open \\\"{args}\\\"", waitForExit: false);
+                var info = new ProcessStartInfo
+                {
+                    FileName = "xdg-open",
+                    CreateNoWindow = true,
+                    UseShellExecute = false,
+                };
+                // Using ArgumentList.Add() avoid escaping! 
+                // This is similar to the following code for macos.
+                info.ArgumentList.Add(urlOrFile);
+                using var process = Process.Start(info);
                 return true;
             }
             else if (OperatingSystem.IsWindows() || OperatingSystem.IsMacOS())
@@ -74,31 +82,6 @@ internal class BclLauncher : ILauncher
             Logger.TryGet(LogEventLevel.Error, nameof(BclLauncher))?
                 .Log(null, "Exception during BclLauncher.Exec: {Error}", ex);
             return false;
-        }
-    }
-    
-    private static string EscapeForShell(string input) => Regex
-        .Replace(input, "(?=[`~!#&*()|;'<>])", "\\")
-        .Replace("\"", "\\\\\\\"");
-    
-    private static void ShellExecRaw(string cmd, bool waitForExit = true)
-    {
-        using (var process = Process.Start(
-                   new ProcessStartInfo
-                   {
-                       FileName = "/bin/sh",
-                       Arguments = $"-c \"{cmd}\"",
-                       RedirectStandardOutput = true,
-                       UseShellExecute = false,
-                       CreateNoWindow = true,
-                       WindowStyle = ProcessWindowStyle.Hidden
-                   }
-               ))
-        {
-            if (waitForExit)
-            {
-                process?.WaitForExit();
-            }
         }
     }
 }

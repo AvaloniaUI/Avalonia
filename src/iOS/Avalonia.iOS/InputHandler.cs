@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Avalonia.Collections.Pooled;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
@@ -23,10 +24,15 @@ internal sealed class InputHandler
     private readonly PenDevice _penDevice = new(releasePointerOnPenUp: true);
     private static long _nextTouchPointId = 1;
     private readonly Dictionary<UITouch, long> _knownTouches = new();
+    private int _resetCount;
     private Point? _cachedScrollLocation;
     
     #if !TVOS
+    private static CADisplayLink? s_touchDisplayLink;
+    private static int s_touchingViews;
+    private bool _holdsTouchDisplayLink;
     private CADisplayLink? _momentumDisplayLink;
+    private double _lastMomentumTimestamp;
     private double _momentumVelocityX;
     private double _momentumVelocityY;
     private const double DecelerationRate = 0.95;
@@ -43,8 +49,13 @@ internal sealed class InputHandler
 
     public void Handle(NSSet touches, UIEvent? evt)
     {
+        var resetCount = _resetCount;
         foreach (UITouch t in touches)
         {
+            // Stop once a handler removed the view, the remaining touches were cancelled.
+            if (resetCount != _resetCount)
+                break;
+
             if (t.Type == UITouchType.Indirect)
             {
                 // Ignore Indirect input, like remote controller trackpad.
@@ -55,14 +66,7 @@ internal sealed class InputHandler
             if (!_knownTouches.TryGetValue(t, out var id))
                 _knownTouches[t] = id = _nextTouchPointId++;
 
-            IInputDevice device = t.Type switch
-            {
-                UITouchType.Stylus => _penDevice,
-#pragma warning disable CA1416
-                UITouchType.IndirectPointer => _mouseDevice,
-#pragma warning restore CA1416
-                _ => _touchDevice
-            };
+            var device = GetDevice(t);
 
             var modifiers = RawInputModifiers.None;
             if (OperatingSystem.IsIOSVersionAtLeast(13, 4)
@@ -105,10 +109,11 @@ internal sealed class InputHandler
                 }) : null
             };
 
-            _tl.Input?.Invoke(ev);
-
+            // Forget it first, the handlers may remove the view.
             if (t.Phase is UITouchPhase.Cancelled or UITouchPhase.Ended)
                 _knownTouches.Remove(t);
+
+            _tl.Input?.Invoke(ev);
 
             RawPointerPoint ToPointerPoint(UITouch touch) => new()
             {
@@ -125,6 +130,66 @@ internal sealed class InputHandler
                 => false;
 #endif
         }
+
+        UpdateTouchDisplayLink();
+    }
+
+    private void UpdateTouchDisplayLink()
+    {
+#if !TVOS
+        // UIKit delivers touches at the main thread's display link rate, which stays at 60 Hz on ProMotion displays
+        // unless a main thread display link asks for more. One process-wide link is kept while any view has touches down.
+        var holds = _knownTouches.Count > 0
+            && (_holdsTouchDisplayLink || DisplayLinkTimer.CanExceed60Hz(_view.Window?.WindowScene?.Screen));
+        if (holds == _holdsTouchDisplayLink)
+            return;
+
+        _holdsTouchDisplayLink = holds;
+        if (holds)
+        {
+            if (s_touchingViews++ == 0)
+            {
+                s_touchDisplayLink = CADisplayLink.Create(static () => { });
+                DisplayLinkTimer.SetPreferredFrameRateRange(s_touchDisplayLink);
+                s_touchDisplayLink.AddToRunLoop(NSRunLoop.Main, NSRunLoopMode.Common);
+            }
+        }
+        else if (--s_touchingViews == 0)
+        {
+            s_touchDisplayLink?.Invalidate();
+            s_touchDisplayLink = null;
+        }
+#endif
+    }
+
+    private IInputDevice GetDevice(UITouch touch) => touch.Type switch
+    {
+        UITouchType.Stylus => _penDevice,
+#pragma warning disable CA1416
+        UITouchType.IndirectPointer => _mouseDevice,
+#pragma warning restore CA1416
+        _ => _touchDevice
+    };
+
+    /// <summary>
+    /// Cancels the touches in progress, for when the view leaves its window or is disposed:
+    /// UIKit doesn't report the end of those touches then.
+    /// </summary>
+    public void ResetTouches()
+    {
+        _resetCount++;
+        // Copied, the handlers may remove the view again.
+        var touches = _knownTouches.ToList();
+        _knownTouches.Clear();
+        foreach (var (touch, id) in touches)
+        {
+            var device = GetDevice(touch);
+            var type = device is TouchDevice ? RawPointerEventType.TouchCancel : RawPointerEventType.LeaveWindow;
+            _tl.Input?.Invoke(new RawTouchEventArgs(device, 0, Root, type,
+                new RawPointerPoint { Position = touch.LocationInView(_view).ToAvalonia() }, RawInputModifiers.None, id));
+        }
+
+        UpdateTouchDisplayLink();
     }
 
     public bool Handle(NSSet<UIPress> presses, UIPressesEvent? evt)
@@ -329,7 +394,9 @@ internal sealed class InputHandler
         var scaleFactor = 800.0;
         _momentumVelocityX = velocity.X / scaleFactor;
         _momentumVelocityY = velocity.Y / scaleFactor;
+        _lastMomentumTimestamp = 0;
         _momentumDisplayLink = CADisplayLink.Create(UpdateInertiaScrolling);
+        DisplayLinkTimer.SetPreferredFrameRateRange(_momentumDisplayLink);
         _momentumDisplayLink.AddToRunLoop(NSRunLoop.Main, NSRunLoopMode.Common);
 #endif
     }
@@ -354,8 +421,20 @@ internal sealed class InputHandler
     private void UpdateInertiaScrolling()
     {
 #if !TVOS
-        _momentumVelocityX *= DecelerationRate;
-        _momentumVelocityY *= DecelerationRate;
+        if (_momentumDisplayLink is not { } link)
+            return;
+
+        // The deceleration rate and velocity are per 60 Hz frame, so scale them by the elapsed time.
+        var timestamp = link.TargetTimestamp;
+        var frames = (timestamp - (_lastMomentumTimestamp > 0 ? _lastMomentumTimestamp : link.Timestamp)) * 60;
+        _lastMomentumTimestamp = timestamp;
+        frames = Math.Min(frames, 4); // No big jump after a stall.
+        var deceleration = Math.Pow(DecelerationRate, frames);
+        // Distance the per-frame steps would have covered.
+        var distance = DecelerationRate * (1 - deceleration) / (1 - DecelerationRate);
+        var delta = new Vector(_momentumVelocityX * distance, _momentumVelocityY * distance);
+        _momentumVelocityX *= deceleration;
+        _momentumVelocityY *= deceleration;
 
         var currentMagnitude = Math.Sqrt(_momentumVelocityX * _momentumVelocityX + _momentumVelocityY * _momentumVelocityY);
 
@@ -375,7 +454,7 @@ internal sealed class InputHandler
             (ulong)Environment.TickCount64, 
             Root,
             _cachedScrollLocation.Value,
-            new Vector(_momentumVelocityX, _momentumVelocityY),
+            delta,
             RawInputModifiers.None
         ));
 #endif

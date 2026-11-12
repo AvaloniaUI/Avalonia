@@ -9,6 +9,7 @@ using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Platform.Surfaces;
 using Avalonia.Rendering;
@@ -107,11 +108,25 @@ public class CompositorTestServices : IDisposable
         Assert.Equal(expected, tested);
     }
 
+    public void AssertHitTest(Geometry geometry, Func<Visual, bool>? filter, params GeometryHitTestResult[] expected)
+    {
+        RunJobs();
+        var tested = Renderer.HitTest(geometry, TopLevel, filter);
+        Assert.Equal(expected, tested);
+    }
+
     public void AssertHitTestFirst(Point pt, Func<Visual, bool>? filter, Visual? expected)
     {
         RunJobs();
         var tested = Renderer.HitTestFirst(pt, TopLevel, filter);
         Assert.Equal(expected, tested);
+    }
+
+    public void AssertHitTestFirst(Geometry geometry, Func<Visual, bool>? filter, Visual? expected)
+    {
+        RunJobs();
+        var tested = Renderer.HitTestFirst(geometry, TopLevel, filter);
+        Assert.Equal(expected, tested?.VisualHit);
     }
 
     public class DebugEvents : ICompositionTargetDebugEvents
@@ -163,7 +178,7 @@ public class CompositorTestServices : IDisposable
         public double RenderScaling => 1;
         public IPlatformRenderSurface[] Surfaces { get; } = [new DummyFramebufferSurface()];
         public Action<RawInputEventArgs>? Input { get; set; }
-        public Action<Rect>? Paint { get; set; }
+        public Action<ITopLevelImpl.PaintOptions?>? Paint { get; set; }
         public Action<Size, WindowResizeReason>? Resized { get; set; }
         public Action<double>? ScalingChanged { get; set; }
         public Action<WindowTransparencyLevel>? TransparencyLevelChanged { get; set; }

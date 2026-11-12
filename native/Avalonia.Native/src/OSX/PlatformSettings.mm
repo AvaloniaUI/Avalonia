@@ -1,12 +1,19 @@
 #include "common.h"
+#include "AvnString.h"
 
 @interface CocoaThemeObserver : NSObject
--(id)initWithCallback:(IAvnActionCallback *)callback;
+-(id)initWithCallback:(const ComPtr<IAvnActionCallback>&)callback;
+@end
+
+@interface CocoaLocaleObserver : NSObject
+-(id)initWithCallback:(const ComPtr<IAvnActionCallback>&)callback;
+-(void)localeDidChange:(NSNotification *)notification;
 @end
 
 class PlatformSettings : public ComSingleObject<IAvnPlatformSettings, &IID_IAvnPlatformSettings>
 {
     CocoaThemeObserver* observer;
+    CocoaLocaleObserver* localeObserver;
 
 public:
     FORWARD_IUNKNOWN()
@@ -38,9 +45,20 @@ public:
     {
         @autoreleasepool
         {
-            if (@available(macOS 10.14, *))
+            if (@available(macOS 11.0, *))
             {
-                auto color = [NSColor controlAccentColor];
+                __block NSColor* color;
+                [[NSApp effectiveAppearance] performAsCurrentDrawingAppearance:^{
+                    color = [[NSColor controlAccentColor] colorUsingColorSpace:NSColorSpace.sRGBColorSpace];
+                }];
+                return to_argb(color);
+            }
+            else if (@available(macOS 10.14, *))
+            {
+                auto previousAppearance = NSAppearance.currentAppearance;
+                NSAppearance.currentAppearance = [NSApp effectiveAppearance];
+                auto color = [[NSColor controlAccentColor] colorUsingColorSpace:NSColorSpace.sRGBColorSpace];
+                NSAppearance.currentAppearance = previousAppearance;
                 return to_argb(color);
             }
             else
@@ -50,13 +68,32 @@ public:
         }
     }
     
-    virtual void RegisterColorsChange(IAvnActionCallback *callback) override
+    virtual void RegisterColorsChange(const ComPtr<IAvnActionCallback>& callback) override
     {
         if (@available(macOS 10.14, *))
         {
             observer = [[CocoaThemeObserver alloc] initWithCallback: callback];
             [[NSApplication sharedApplication] addObserver:observer forKeyPath:@"effectiveAppearance" options:NSKeyValueObservingOptionNew context:nil];
         }
+    }
+
+    virtual HRESULT GetPreferredLanguage(ComPtr<IAvnString>& ret) override
+    {
+        @autoreleasepool
+        {
+            auto language = [[NSLocale preferredLanguages] firstObject];
+            ret = language == nil ? nullptr : CreateAvnString(language);
+            return S_OK;
+        }
+    }
+
+    virtual void RegisterLanguageChange(const ComPtr<IAvnActionCallback>& callback) override
+    {
+        localeObserver = [[CocoaLocaleObserver alloc] initWithCallback: callback];
+        [[NSNotificationCenter defaultCenter] addObserver:localeObserver
+                                                 selector:@selector(localeDidChange:)
+                                                     name:NSCurrentLocaleDidChangeNotification
+                                                   object:nil];
     }
     
 private:
@@ -75,7 +112,7 @@ private:
 {
     ComPtr<IAvnActionCallback> _callback;
 }
-- (id) initWithCallback:(IAvnActionCallback *)callback{
+- (id) initWithCallback:(const ComPtr<IAvnActionCallback>&)callback{
     self = [super init];
     if (self) {
         _callback = callback;
@@ -107,7 +144,24 @@ private:
 }
 @end
 
-extern IAvnPlatformSettings* CreatePlatformSettings()
+@implementation CocoaLocaleObserver
 {
-    return new PlatformSettings();
+    ComPtr<IAvnActionCallback> _callback;
+}
+- (id) initWithCallback:(const ComPtr<IAvnActionCallback>&)callback {
+    self = [super init];
+    if (self) {
+        _callback = callback;
+    }
+    return self;
+}
+
+- (void)localeDidChange:(NSNotification *)notification {
+    _callback->Run();
+}
+@end
+
+extern ComPtr<IAvnPlatformSettings> CreatePlatformSettings()
+{
+    return comnew<PlatformSettings>();
 }

@@ -24,66 +24,71 @@ namespace GpuInterop.VulkanDemo;
 public unsafe class VulkanImage : IDisposable
     {
         private readonly VulkanContext _vk;
-        private readonly Instance _instance;
-        private readonly Device _device;
-        private readonly PhysicalDevice _physicalDevice;
         private readonly VulkanCommandBufferPool _commandBufferPool;
         private ImageLayout _currentLayout;
         private AccessFlags _currentAccessFlags;
-        private ImageUsageFlags _imageUsageFlags { get; }
         private ImageView _imageView { get; set; }
         private DeviceMemory _imageMemory { get; set; }
         private ComPtr<ID3D11Texture2D> _d3dTexture2D;
-        
-        internal Image InternalHandle { get; private set; }
+
+        protected Instance Instance { get; }
+        protected Device Device { get; }
+        protected PhysicalDevice PhysicalDevice { get; }
+        protected ImageUsageFlags ImageUsageFlags { get; }
+
+        internal Image InternalHandle { get; private protected set; }
         internal Format Format { get; }
         internal ImageAspectFlags AspectFlags { get; }
         
         public ulong Handle => InternalHandle.Handle;
         public ulong ViewHandle => _imageView.Handle;
-        public uint UsageFlags => (uint) _imageUsageFlags;
+        public uint UsageFlags => (uint) ImageUsageFlags;
         public ulong MemoryHandle => _imageMemory.Handle;
         public DeviceMemory DeviceMemory => _imageMemory;
         public uint MipLevels { get; }
         public Vk Api { get; }
         public PixelSize Size { get; }
-        public ulong MemorySize { get; }
+        public ulong MemorySize { get; private set; }
         public uint CurrentLayout => (uint) _currentLayout;
 
         private bool _hasIOSurface;
-
-        public VulkanImage(VulkanContext vk, uint format, PixelSize size,
-            bool exportable, IReadOnlyList<string> supportedHandleTypes)
+        
+        protected VulkanImage(VulkanContext vk, uint format, PixelSize size)
         {
             _vk = vk;
-            _instance = vk.Instance;
-            _device = vk.Device;
-            _physicalDevice = vk.PhysicalDevice;
+            Instance = vk.Instance;
+            Device = vk.Device;
+            PhysicalDevice = vk.PhysicalDevice;
             _commandBufferPool = vk.Pool;
             Format = (Format)format;
             Api = vk.Api;
             Size = size;
             MipLevels = 1;//mipLevels;
-            _imageUsageFlags =
+            ImageUsageFlags =
                 ImageUsageFlags.ColorAttachmentBit | ImageUsageFlags.TransferDstBit |
                 ImageUsageFlags.TransferSrcBit | ImageUsageFlags.SampledBit;
-            
-            //MipLevels = MipLevels != 0 ? MipLevels : (uint)Math.Floor(Math.Log(Math.Max(Size.Width, Size.Height), 2));
+            AspectFlags = ImageAspectFlags.ColorBit;
 
+            //MipLevels = MipLevels != 0 ? MipLevels : (uint)Math.Floor(Math.Log(Math.Max(Size.Width, Size.Height), 2));
+        }
+
+        public VulkanImage(VulkanContext vk, uint format, PixelSize size,
+            bool exportable, IReadOnlyList<string> supportedHandleTypes) : this(vk, format, size)
+        {
             var handleType = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
                 (supportedHandleTypes.Contains(KnownPlatformGraphicsExternalImageHandleTypes.D3D11TextureNtHandle)
                  && !supportedHandleTypes.Contains(KnownPlatformGraphicsExternalImageHandleTypes.VulkanOpaqueNtHandle) ?
                     ExternalMemoryHandleTypeFlags.D3D11TextureBit :
                     ExternalMemoryHandleTypeFlags.OpaqueWin32Bit) :
                 ExternalMemoryHandleTypeFlags.OpaqueFDBit;
-            
+
             var externalMemoryCreateInfo = new ExternalMemoryImageCreateInfo
             {
                 SType = StructureType.ExternalMemoryImageCreateInfo,
                 HandleTypes = handleType
             };
 
-            
+
             var ioSurfaceCreateInfo = new ExportMetalObjectCreateInfoEXT
             {
                 SType = StructureType.ExportMetalObjectCreateInfoExt,
@@ -91,12 +96,12 @@ public unsafe class VulkanImage : IDisposable
             };
 
             _hasIOSurface = exportable && RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
-            
+
             var imageCreateInfo = new ImageCreateInfo
             {
                 PNext = exportable ?
                     RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ?
-                        &ioSurfaceCreateInfo : 
+                        &ioSurfaceCreateInfo :
                         &externalMemoryCreateInfo : null,
                 SType = StructureType.ImageCreateInfo,
                 ImageType = ImageType.Type2D,
@@ -108,20 +113,20 @@ public unsafe class VulkanImage : IDisposable
                 ArrayLayers = 1,
                 Samples = SampleCountFlags.Count1Bit,
                 Tiling = Tiling,
-                Usage = _imageUsageFlags,
+                Usage = ImageUsageFlags,
                 SharingMode = SharingMode.Exclusive,
                 InitialLayout = ImageLayout.Undefined,
                 Flags = ImageCreateFlags.CreateMutableFormatBit
             };
 
             Api
-                .CreateImage(_device, in imageCreateInfo, null, out var image).ThrowOnError();
+                .CreateImage(Device, in imageCreateInfo, null, out var image).ThrowOnError();
             InternalHandle = image;
 
             if (!exportable || !RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
 
-                Api.GetImageMemoryRequirements(_device, InternalHandle,
+                Api.GetImageMemoryRequirements(Device, InternalHandle,
                     out var memoryRequirements);
 
                 var dedicatedAllocation = new MemoryDedicatedAllocateInfoKHR
@@ -160,28 +165,40 @@ public unsafe class VulkanImage : IDisposable
                     AllocationSize = memoryRequirements.Size,
                     MemoryTypeIndex = (uint)VulkanMemoryHelper.FindSuitableMemoryTypeIndex(
                         Api,
-                        _physicalDevice,
+                        PhysicalDevice,
                         memoryRequirements.MemoryTypeBits, MemoryPropertyFlags.DeviceLocalBit)
                 };
 
-                Api.AllocateMemory(_device, in memoryAllocateInfo, null,
+                Api.AllocateMemory(Device, in memoryAllocateInfo, null,
                     out var imageMemory).ThrowOnError();
 
-                _imageMemory = imageMemory;
-
-
-                MemorySize = memoryRequirements.Size;
-
-                Api.BindImageMemory(_device, InternalHandle, _imageMemory, 0).ThrowOnError();
+                AttachMemory(imageMemory, memoryRequirements.Size);
             }
 
+            CreateImageView();
+        }
+
+        /// <summary>
+        /// Records <paramref name="memory"/> as the backing of <see cref="InternalHandle"/> and binds it.
+        /// </summary>
+        protected void AttachMemory(DeviceMemory memory, ulong size)
+        {
+            _imageMemory = memory;
+            MemorySize = size;
+            Api.BindImageMemory(Device, InternalHandle, _imageMemory, 0).ThrowOnError();
+        }
+
+        /// <summary>
+        /// Creates the image view over <see cref="InternalHandle"/> and moves the image into its initial layout.
+        /// Must be called once by every constructor after the image and its memory exist.
+        /// </summary>
+        protected void CreateImageView()
+        {
             var componentMapping = new ComponentMapping(
                 ComponentSwizzle.Identity,
                 ComponentSwizzle.Identity,
                 ComponentSwizzle.Identity,
                 ComponentSwizzle.Identity);
-
-            AspectFlags = ImageAspectFlags.ColorBit;
 
             var subresourceRange = new ImageSubresourceRange(AspectFlags, 0, MipLevels, 0, 1);
 
@@ -196,7 +213,7 @@ public unsafe class VulkanImage : IDisposable
             };
 
             Api
-                .CreateImageView(_device, in imageViewCreateInfo, null, out var imageView)
+                .CreateImageView(Device, in imageViewCreateInfo, null, out var imageView)
                 .ThrowOnError();
 
             _imageView = imageView;
@@ -222,7 +239,7 @@ public unsafe class VulkanImage : IDisposable
 
         public int ExportFd()
         {
-            if (!Api.TryGetDeviceExtension<KhrExternalMemoryFd>(_instance, _device, out var ext))
+            if (!Api.TryGetDeviceExtension<KhrExternalMemoryFd>(Instance, Device, out var ext))
                 throw new InvalidOperationException();
             var info = new MemoryGetFdInfoKHR
             {
@@ -230,13 +247,13 @@ public unsafe class VulkanImage : IDisposable
                 SType = StructureType.MemoryGetFDInfoKhr,
                 HandleType = ExternalMemoryHandleTypeFlags.OpaqueFDBit
             };
-            ext.GetMemoryF(_device, in info, out var fd).ThrowOnError();
+            ext.GetMemoryF(Device, in info, out var fd).ThrowOnError();
             return fd;
         }
-        
+
         public IntPtr ExportOpaqueNtHandle()
         {
-            if (!Api.TryGetDeviceExtension<KhrExternalMemoryWin32>(_instance, _device, out var ext))
+            if (!Api.TryGetDeviceExtension<KhrExternalMemoryWin32>(Instance, Device, out var ext))
                 throw new InvalidOperationException();
             var info = new MemoryGetWin32HandleInfoKHR()
             {
@@ -244,13 +261,13 @@ public unsafe class VulkanImage : IDisposable
                 SType = StructureType.MemoryGetWin32HandleInfoKhr,
                 HandleType = ExternalMemoryHandleTypeFlags.OpaqueWin32Bit
             };
-            ext.GetMemoryWin32Handle(_device, in info, out var fd).ThrowOnError();
+            ext.GetMemoryWin32Handle(Device, in info, out var fd).ThrowOnError();
             return fd;
         }
 
         public IntPtr ExportIOSurface()
         {
-            if (!Api.TryGetDeviceExtension<ExtMetalObjects>(_instance, _device, out var ext))
+            if (!Api.TryGetDeviceExtension<ExtMetalObjects>(Instance, Device, out var ext))
                 throw new InvalidOperationException();
             var surfaceExport = new ExportMetalIOSurfaceInfoEXT
             {
@@ -262,7 +279,7 @@ public unsafe class VulkanImage : IDisposable
                 SType = StructureType.ExportMetalObjectsInfoExt,
                 PNext = &surfaceExport
             };
-            ext.ExportMetalObjects(_device, ref export);
+            ext.ExportMetalObjects(Device, ref export);
             if (surfaceExport.IoSurface == IntPtr.Zero)
                 throw new Exception("Unable to export IOSurfaceRef");
             return surfaceExport.IoSurface;
@@ -290,7 +307,7 @@ public unsafe class VulkanImage : IDisposable
                     KnownPlatformGraphicsExternalImageHandleTypes.VulkanOpaquePosixFileDescriptor);
         }
 
-        public ImageTiling Tiling => ImageTiling.Optimal;
+        public virtual ImageTiling Tiling => ImageTiling.Optimal;
 
         public bool IsDirectXBacked => _d3dTexture2D.Handle != null;
         
@@ -330,9 +347,9 @@ public unsafe class VulkanImage : IDisposable
 
         public unsafe void Dispose()
         {
-            Api.DestroyImageView(_device, _imageView, null);
-            Api.DestroyImage(_device, InternalHandle, null);
-            Api.FreeMemory(_device, _imageMemory, null);
+            Api.DestroyImageView(Device, _imageView, null);
+            Api.DestroyImage(Device, InternalHandle, null);
+            Api.FreeMemory(Device, _imageMemory, null);
 
             _imageView = default;
             InternalHandle = default;

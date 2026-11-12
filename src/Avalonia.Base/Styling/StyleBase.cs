@@ -18,7 +18,11 @@ namespace Avalonia.Styling
         private IResourceDictionary? _resources;
         private List<SetterBase>? _setters;
         private List<IAnimation>? _animations;
+        // Shared style instances are cached per FrameType. Most styles only ever have a single shared instance, 
+        // so we keep a plain field for that case and lazily upgrade to an array indexed by FrameType when a second frame type is shared.
         private StyleInstance? _sharedInstance;
+        private FrameType _sharedInstanceType;
+        private StyleInstance?[]? _sharedInstances;
 
         public IList<IStyle> Children => _children ??= new(this);
 
@@ -118,9 +122,9 @@ namespace Avalonia.Styling
 
             StyleInstance instance;
 
-            if (_sharedInstance is not null && canShareInstance)
+            if (canShareInstance && GetSharedInstance(type) is { } shared)
             {
-                instance = _sharedInstance;
+                instance = shared;
             }
             else
             {
@@ -144,13 +148,44 @@ namespace Avalonia.Styling
                 if (canShareInstance)
                 {
                     instance.MakeShared();
-                    _sharedInstance = instance;
+                    SetSharedInstance(type, instance);
                 }
             }
 
             ao.GetValueStore().AddFrame(instance);
             instance.ApplyAnimations(ao);
             return instance;
+        }
+
+        private StyleInstance? GetSharedInstance(FrameType type)
+        {
+            if (_sharedInstances is not null)
+            {
+                return _sharedInstances[(int)type];
+            }
+
+            return _sharedInstance is not null && _sharedInstanceType == type ? _sharedInstance : null;
+        }
+
+        private void SetSharedInstance(FrameType type, StyleInstance instance)
+        {
+            if (_sharedInstances is not null)
+            {
+                _sharedInstances[(int)type] = instance;
+            }
+            else if (_sharedInstance is null)
+            {
+                _sharedInstance = instance;
+                _sharedInstanceType = type;
+            }
+            else
+            {
+                var arr = new StyleInstance?[3];
+                arr[(int)_sharedInstanceType] = _sharedInstance;
+                arr[(int)type] = instance;
+                _sharedInstances = arr;
+                _sharedInstance = null;
+            }
         }
 
         internal virtual void SetParent(StyleBase? parent) => Parent = parent;

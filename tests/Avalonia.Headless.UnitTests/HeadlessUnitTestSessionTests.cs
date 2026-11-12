@@ -8,6 +8,20 @@ namespace Avalonia.Headless.UnitTests;
 
 public class HeadlessUnitTestSessionTests
 {
+    [TestCase(false)]
+    [TestCase(true)]
+    public async Task Session_Should_Support_Immediate_Disposal(bool asynchronously)
+    {
+        for (var i = 0; i < 10000; ++i)
+        {
+            var session = HeadlessUnitTestSession.StartNew(typeof(TestApplication));
+            if (asynchronously)
+                await session.DisposeAsync();
+            else
+                session.Dispose();
+        }
+    }
+
     [Test]
     public async Task Dispatch_Should_Report_Cleanup_Exceptions_And_Continue()
     {

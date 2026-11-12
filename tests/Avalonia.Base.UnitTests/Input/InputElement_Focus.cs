@@ -1,4 +1,7 @@
+using System.Linq;
+using Avalonia.Collections;
 using Avalonia.Controls;
+using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.UnitTests;
 using Xunit;
@@ -663,6 +666,49 @@ namespace Avalonia.Base.UnitTests.Input
 
             var focusManager = Assert.IsType<FocusManager>(root.FocusManager);
             Assert.Same(outerButton, focusManager.GetFocusedElement());
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void Removing_Or_Hiding_Focus_Scope_Clears_Focus_When_Root_Focus_Scope_Element_Is_Disabled(bool remove)
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealFocus);
+            Button innerButton, outerButton;
+            TestFocusScope innerScope;
+            var root = new TestRoot
+            {
+                Child = new StackPanel
+                {
+                    Children =
+                    {
+                        (innerScope = new TestFocusScope
+                        {
+                            Children =
+                            {
+                                (innerButton = new Button()),
+                            }
+                        }),
+                        (outerButton = new Button()),
+                    }
+                }
+            };
+
+            // e.g. a button whose command is running while it waits for a choice in a popup.
+            outerButton.Focus();
+            innerButton.Focus();
+            outerButton.IsEnabled = false;
+
+            if (remove)
+                ((Panel)innerScope.Parent!).Children.Remove(innerScope);
+            else
+                innerScope.IsVisible = false;
+
+            // Focus can't return to the disabled button, but must not stay on the removed/hidden control.
+            var focusManager = Assert.IsType<FocusManager>(root.FocusManager);
+            Assert.False(innerButton.IsFocused);
+            Assert.Null(focusManager.GetFocusedElement());
+            Assert.Null(KeyboardDevice.Instance!.FocusedElement);
         }
 
         [Fact]
@@ -1628,6 +1674,114 @@ namespace Avalonia.Base.UnitTests.Input
             Assert.Same(first, KeyboardDevice.Instance?.FocusedElement);
             Assert.Same(first, window1.FocusManager.GetFocusedElement());
         }
+
+        [Fact]
+        public void Focus_Should_Stay_In_Active_Window()
+        {
+            using var app = UnitTestApplication.Start(
+                TestServices.StyledWindow.With(keyboardDevice: () => new KeyboardDevice()));
+            var first = new Button { Name = "FirstButton" };
+            var second = new Button { Name = "SecondButton" };
+
+            var window1 = new Window
+            {
+                Content = first
+            };
+
+            var window2 = new Window
+            {
+                Content = second
+            };
+
+            window1.Show();
+
+            // Focus the first button in the first window
+            first.Focus();
+            Assert.Same(first, KeyboardDevice.Instance?.FocusedElement);
+            Assert.Same(first, window1.FocusManager.GetFocusedElement());
+
+            window2.Show();
+
+            // Focus the second button in the second window
+            second.Focus();
+            Assert.Same(second, KeyboardDevice.Instance?.FocusedElement);
+            Assert.Same(second, window2.FocusManager.GetFocusedElement());
+
+            // Activate the first window again
+            window1.PlatformImpl?.Activated?.Invoke();
+
+            // Focus should have moved back to the first button in the first window
+            Assert.Same(first, KeyboardDevice.Instance?.FocusedElement);
+            Assert.Same(first, window1.FocusManager.GetFocusedElement());
+
+            // Close the second window
+            window2.Close();
+
+            // Focus should still be in the first window
+            Assert.Same(first, KeyboardDevice.Instance?.FocusedElement);
+            Assert.Same(first, window1.FocusManager.GetFocusedElement());
+        }
+
+        [Fact]
+        public void Focus_Should_Not_Be_Restored_To_Detached_Control()
+        {
+            using var app = UnitTestApplication.Start(
+                TestServices.StyledWindow.With(keyboardDevice: () => new KeyboardDevice()));
+            var button = new Button { Name = "Button" };
+            MenuItem topLevelMenu;
+            MenuItem childMenu;
+            var menu = new Menu
+            {
+                Items =
+                    {
+                        (topLevelMenu = new MenuItem
+                        {
+                            Header = "Foo",
+                            Items =
+                            {
+                                (childMenu = new MenuItem { Header = "Bar" })
+                            }
+                        }),
+                    }
+            };
+            var panel = new StackPanel();
+            panel.Children.Add(button);
+            panel.Children.Add(menu);
+
+            var window = new Window
+            {
+                Content = panel,
+                Name = "Window1"
+            };
+
+            window.Show();
+
+            // Focus the button
+            button.Focus();
+            Assert.Same(button, KeyboardDevice.Instance?.FocusedElement);
+            Assert.Same(button, window.FocusManager.GetFocusedElement());
+
+
+            // Open the menu and focus the child menu
+            menu.Open();
+            topLevelMenu.IsSubMenuOpen = true;
+            childMenu.Focus();
+
+            // Remove the previously focused button.
+            panel.Children.Remove(button);
+
+
+            // Close the menus.
+            menu.Close();
+            topLevelMenu.Close();
+
+            window.PlatformImpl?.Activated?.Invoke();
+
+            // When window is activated, focus should be empty
+            Assert.Same(null, KeyboardDevice.Instance?.FocusedElement);
+            Assert.Same(null, window.FocusManager.GetFocusedElement());
+        }
+
 
         private class TestFocusScope : Panel, IFocusScope
         {

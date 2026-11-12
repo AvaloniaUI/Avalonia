@@ -10,7 +10,8 @@
         x:ClassModifier="internal">
   <Design.PreviewWith>
     <Border Padding="20">
-      <Calendar DisplayDate="2000-01-01">
+      <Calendar DisplayDate="2000-01-01" 
+                IsWeekNumberVisible="True">
         <Calendar.BlackoutDates>
           <CalendarDateRange>
             <x:Arguments>
@@ -75,8 +76,14 @@
                  basically...MinWidth of DayItem = 40, 40 * 7 = 280 + margins/padding = ~294
                  Viewport height is set from # of rows displayed (2-8) in Month mode, = ~290 for 6 weeks (+ day names)
                  -->
-          <Grid VerticalAlignment="Stretch" HorizontalAlignment="Stretch" RowDefinitions="40,*" MinWidth="294">
-            <Grid ColumnDefinitions="5*,*,*">
+          <Grid VerticalAlignment="Stretch" 
+                HorizontalAlignment="Stretch" 
+                ColumnDefinitions="Auto, *" 
+                RowDefinitions="40,*" 
+                MinWidth="294"
+                Grid.IsSharedSizeScope="True" >
+            <Grid ColumnDefinitions="5*,*,*"
+                  Grid.ColumnSpan="2">
               <Button Name="PART_HeaderButton"
                       Theme="{StaticResource FluentCalendarButton}"
                       Foreground="{TemplateBinding Foreground}"
@@ -110,17 +117,49 @@
               </Button>
             </Grid>
             <!--Border below is used only for MonthView but it can't be moved inside of Grid because CalendarItem expects it to be empty and it will cause side-effects-->
-            <Border Name="BackgroundLayer" Background="{TemplateBinding BorderBrush}" Margin="0,38,0,0" IsVisible="{Binding #PART_MonthView.IsVisible}" Grid.Row="1" />
-            <Grid Name="PART_MonthView" Grid.Row="1" IsVisible="False" MinHeight="290">
+            <Border Name="BackgroundLayer" 
+                    Background="{TemplateBinding BorderBrush}" 
+                    Margin="0,38,0,0" 
+                    IsVisible="{Binding #PART_MonthView.IsVisible}" 
+                    Grid.Row="1" 
+                    Grid.Column="1" />
+            <!-- The below Grid will be feed by the week numbers -->
+            <Grid Name="PART_ElementWeekNumberLabels"
+                  Grid.Row="1"
+                  Grid.Column="0"
+                  MinWidth="38"
+                  IsVisible="False">
+              <Grid.RowDefinitions>
+                <RowDefinition Height="38" />
+                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMonthViewWeekRow" />
+                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMonthViewWeekRow" />
+                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMonthViewWeekRow" />
+                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMonthViewWeekRow" />
+                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMonthViewWeekRow" />
+                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMonthViewWeekRow" />
+              </Grid.RowDefinitions>
+              <!-- Header for the Weeks. -->
+              <ContentControl Name="WeekNumberHeader" 
+                              Grid.Row="0"
+                              Content="{DynamicResource StringCalendarWeekNumberHeader}"
+                              FontSize="{DynamicResource CalendarWeekNumberFontSize}"
+                              VerticalContentAlignment="Center"
+                              HorizontalContentAlignment="Center" />
+            </Grid>
+            <Grid Name="PART_MonthView" 
+                  Grid.Column="1" 
+                  Grid.Row="1" 
+                  IsVisible="False" 
+                  MinHeight="290">
               <Grid.RowDefinitions>
                 <!--This should always be the week day names??-->
                 <RowDefinition Height="38" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMonthViewWeekRow" />
+                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMonthViewWeekRow" />
+                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMonthViewWeekRow" />
+                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMonthViewWeekRow" />
+                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMonthViewWeekRow" />
+                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMonthViewWeekRow" />
               </Grid.RowDefinitions>
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
@@ -136,6 +175,7 @@
                   Background="{TemplateBinding BorderBrush}"
                   MinHeight="290"
                   Grid.Row="1"
+                  Grid.ColumnSpan="2" 
                   IsVisible="False">
               <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
@@ -158,6 +198,16 @@
     </Style>
     <Style Selector="^ /template/ Button:pressed > Path">
       <Setter Property="Stroke" Value="{DynamicResource CalendarViewNavigationButtonForegroundPressed}" />
+    </Style>
+    <Style Selector="^:hasweeknumbers">
+      <Setter Property="MinWidth" Value="332" />
+      <Style Selector="^ /template/ Grid#PART_ElementWeekNumberLabels">
+        <Style Selector="^ ContentControl">
+          <Setter Property="FontSize" Value="{DynamicResource CalendarWeekNumberFontSize}" />
+          <Setter Property="HorizontalContentAlignment" Value="Center" />
+          <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+      </Style>
     </Style>
   </ControlTheme>
 </ResourceDictionary>

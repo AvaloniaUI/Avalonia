@@ -31,37 +31,21 @@ internal partial class X11Screens
         }
 
 
-        protected unsafe void UpdateWorkArea()
+        protected void UpdateWorkArea()
         {
-            var rect = default(PixelRect);
             //Fallback value
-            rect = rect.Union(Bounds);
             WorkingArea = Bounds;
 
-            var res = XGetWindowProperty(x11.Display,
-                x11.RootWindow,
-                x11.Atoms._NET_WORKAREA,
-                IntPtr.Zero,
-                new IntPtr(128),
-                false,
-                AnyPropertyType,
-                out var type,
-                out var format,
-                out var count,
-                out var bytesAfter,
-                out var prop);
-
-            if (res != (int)Status.Success || type == IntPtr.Zero ||
-                format == 0 || bytesAfter.ToInt64() != 0 || count.ToInt64() % 4 != 0)
+            var pwa = XGetWindowPropertyAsIntPtrArray(x11.Display, x11.RootWindow,
+                x11.Atoms._NET_WORKAREA, x11.Atoms.CARDINAL);
+            if (pwa == null || pwa.Length % 4 != 0)
                 return;
 
-            var pwa = (IntPtr*)prop;
             var wa = new PixelRect(pwa[0].ToInt32(), pwa[1].ToInt32(), pwa[2].ToInt32(), pwa[3].ToInt32());
 
             WorkingArea = Bounds.Intersect(wa);
             if (WorkingArea.Width <= 0 || WorkingArea.Height <= 0)
                 WorkingArea = Bounds;
-            XFree(prop);
         }
     }
 
@@ -296,18 +280,29 @@ internal partial class X11Screens
             
             // Length of a EDID-Block-Length(128 bytes), XRRGetOutputProperty multiplies offset and length by 4
             const int EDIDStructureLength = 32;
-            XRRGetOutputProperty(_x11.Display, rrOutput, _x11.Atoms.EDID, 0, EDIDStructureLength, false, false,
-                AnyPropertyType, out IntPtr actualType, out int actualFormat, out int bytesAfter, out _,
+            XRRGetOutputProperty(_x11.Display, rrOutput, _x11.Atoms.EDID, IntPtr.Zero, EDIDStructureLength, false,
+                false, AnyPropertyType, out IntPtr actualType, out int actualFormat, out IntPtr itemCount, out _,
                 out IntPtr prop);
-            if (actualType != _x11.Atoms.INTEGER)
-                return null;
-            if (actualFormat != 8) // Expecting an byte array
+            if (prop == IntPtr.Zero)
                 return null;
 
-            var edid = new byte[bytesAfter];
-            Marshal.Copy(prop, edid, 0, bytesAfter);
-            XFree(prop);
-            if (edid.Length < 22)
+            byte[] edid;
+            try
+            {
+                if (actualType != _x11.Atoms.INTEGER)
+                    return null;
+                if (actualFormat != 8) // Expecting an byte array
+                    return null;
+
+                edid = new byte[(int)Math.Min((long)itemCount, EDIDStructureLength * 4)];
+                Marshal.Copy(prop, edid, 0, edid.Length);
+            }
+            finally
+            {
+                XFree(prop);
+            }
+
+            if (edid.Length < 23)
                 return null;
             var width = edid[21]; // 0x15 1 Max. Horizontal Image Size cm. 
             var height = edid[22]; // 0x16 1 Max. Vertical Image Size cm. 

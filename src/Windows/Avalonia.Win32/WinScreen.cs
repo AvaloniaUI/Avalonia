@@ -11,13 +11,6 @@ namespace Avalonia.Win32;
 
 internal sealed unsafe class WinScreen(IntPtr hMonitor) : PlatformScreen(new PlatformHandle(hMonitor, "HMonitor"))
 {
-    private static readonly Lazy<bool> s_hasGetDpiForMonitor = new(() =>
-    {
-        var shcore = LoadLibrary("shcore.dll");
-        var method = GetProcAddress(shcore, nameof(GetDpiForMonitor));
-        return method != IntPtr.Zero;
-    });
-
     internal int Frequency { get; private set; }
 
     public void Refresh()
@@ -62,11 +55,12 @@ internal sealed unsafe class WinScreen(IntPtr hMonitor) : PlatformScreen(new Pla
 
             Span<DISPLAYCONFIG_PATH_INFO> paths = stackalloc DISPLAYCONFIG_PATH_INFO[(int)numPathInfo];
             Span<DISPLAYCONFIG_MODE_INFO> modes = stackalloc DISPLAYCONFIG_MODE_INFO[(int)numModeInfo];
-            DISPLAYCONFIG_TOPOLOGY_ID currentTopologyId = default;
 
+            // currentTopologyId must be NULL unless QDC_DATABASE_CURRENT is used,
+            // otherwise QueryDisplayConfig fails with ERROR_INVALID_PARAMETER.
             if (PInvoke.QueryDisplayConfig(
-                    QUERY_DISPLAY_CONFIG_FLAGS.QDC_ONLY_ACTIVE_PATHS, ref numPathInfo, paths, ref numModeInfo, modes,
-                    ref currentTopologyId) != WIN32_ERROR.NO_ERROR)
+                    QUERY_DISPLAY_CONFIG_FLAGS.QDC_ONLY_ACTIVE_PATHS, ref numPathInfo, paths, ref numModeInfo, modes)
+                != WIN32_ERROR.NO_ERROR)
                 return null;
 
             var sourceName = new DISPLAYCONFIG_SOURCE_DEVICE_NAME();
@@ -105,7 +99,7 @@ internal sealed unsafe class WinScreen(IntPtr hMonitor) : PlatformScreen(new Pla
     {
         double dpi;
 
-        if (s_hasGetDpiForMonitor.Value)
+        if (GetDpiForMonitorAvailable)
         {
             GetDpiForMonitor(hMonitor, MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI, out var x, out _);
             dpi = x;

@@ -2,6 +2,7 @@
 using Avalonia.Controls.UnitTests.Utils;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -32,6 +33,25 @@ public class SplitButtonTests : ScopedTestBase
         (target as IClickableControl).RaiseClick();
     }
 
+
+    [Fact]
+    public void SplitButton_Subscribes_Once_To_Style_Set_Command_CanExecuteChanged_While_In_Logical_Tree()
+    {
+        var command = new TestCommand(true);
+        var target = new SplitButton();
+        var root = new TestRoot
+        {
+            Styles = { new Style(x => x.OfType<SplitButton>()) { Setters = { new Setter(SplitButton.CommandProperty, command) } } },
+            Child = target,
+        };
+
+        Assert.Same(command, target.Command);
+        Assert.Equal(1, command.SubscriptionCount);
+
+        root.Child = null;
+
+        Assert.Equal(0, command.SubscriptionCount);
+    }
 
     [Fact]
     void Should_Not_Fire_Click_Event_On_Space_Key_When_It_Is_Not_Focus()

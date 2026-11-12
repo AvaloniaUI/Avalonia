@@ -8,40 +8,40 @@
 #include <pthread.h>
 #include "noarc.h"
 
-extern IAvnPlatformThreadingInterface* CreatePlatformThreading();
+extern ComPtr<IAvnPlatformThreadingInterface> CreatePlatformThreading();
 extern void FreeAvnGCHandle(void* handle);
-extern void PostDispatcherCallback(IAvnActionCallback* cb);
-extern IAvnTopLevel* CreateAvnTopLevel(IAvnTopLevelEvents* events);
-extern IAvnWindow* CreateAvnWindow(IAvnWindowEvents*events);
-extern IAvnPopup* CreateAvnPopup(IAvnWindowEvents*events);
-extern IAvnStorageProvider* CreateStorageProvider();
-extern IAvnScreens* CreateScreens(IAvnScreenEvents* cb);
-extern IAvnClipboard* CreateClipboard(NSPasteboard* pb);
-extern NSObject<NSDraggingSource>* CreateDraggingSource(NSDragOperation op, IAvnDndResultCallback* cb, void* handle);
+extern void PostDispatcherCallback(const ComPtr<IAvnActionCallback>& cb);
+extern ComPtr<IAvnTopLevel> CreateAvnTopLevel(const ComPtr<IAvnTopLevelEvents>& events);
+extern ComPtr<IAvnWindow> CreateAvnWindow(const ComPtr<IAvnWindowEvents>& events);
+extern ComPtr<IAvnPopup> CreateAvnPopup(const ComPtr<IAvnWindowEvents>& events);
+extern ComPtr<IAvnStorageProvider> CreateStorageProvider();
+extern ComPtr<IAvnScreens> CreateScreens(const ComPtr<IAvnScreenEvents>& cb);
+extern ComPtr<IAvnClipboard> CreateClipboard(NSPasteboard* pb);
+extern NSObject<NSDraggingSource>* CreateDraggingSource(NSDragOperation op, const ComPtr<IAvnDndResultCallback>& cb, void* handle);
 extern void* GetAvnDataObjectHandleFromDraggingInfo(NSObject<NSDraggingInfo>* info);
 extern NSString* GetAvnCustomDataType();
 extern AvnDragDropEffects ConvertDragDropEffects(NSDragOperation nsop);
-extern IAvnCursorFactory* CreateCursorFactory();
-extern IAvnGlDisplay* GetGlDisplay();
-extern IAvnMetalDisplay* GetMetalDisplay();
-extern IAvnMenu* CreateAppMenu(IAvnMenuEvents* events);
-extern IAvnTrayIcon* CreateTrayIcon();
-extern IAvnMenuItem* CreateAppMenuItem();
-extern IAvnMenuItem* CreateAppMenuItemSeparator();
-extern IAvnApplicationCommands* CreateApplicationCommands();
-extern IAvnPlatformBehaviorInhibition* CreatePlatformBehaviorInhibition();
-extern IAvnNativeControlHost* CreateNativeControlHost(NSView* parent);
-extern IAvnPlatformSettings* CreatePlatformSettings();
-extern IAvnPlatformRenderTimer* CreatePlatformRenderTimer();
-extern IAvnNativeObjectsMemoryManagement* CreateMemoryManagementHelper();
-extern void SetAppMenu(IAvnMenu *menu);
-extern void SetServicesMenu (IAvnMenu* menu);
+extern ComPtr<IAvnCursorFactory> CreateCursorFactory();
+extern ComPtr<IAvnGlDisplay> GetGlDisplay();
+extern ComPtr<IAvnMetalDisplay> GetMetalDisplay();
+extern ComPtr<IAvnMenu> CreateAppMenu(const ComPtr<IAvnMenuEvents>& events);
+extern ComPtr<IAvnTrayIcon> CreateTrayIcon();
+extern ComPtr<IAvnMenuItem> CreateAppMenuItem();
+extern ComPtr<IAvnMenuItem> CreateAppMenuItemSeparator();
+extern ComPtr<IAvnApplicationCommands> CreateApplicationCommands();
+extern ComPtr<IAvnPlatformBehaviorInhibition> CreatePlatformBehaviorInhibition();
+extern ComPtr<IAvnNativeControlHost> CreateNativeControlHost(NSView* parent);
+extern ComPtr<IAvnPlatformSettings> CreatePlatformSettings();
+extern ComPtr<IAvnPlatformRenderTimer> CreatePlatformRenderTimer();
+extern ComPtr<IAvnNativeObjectsMemoryManagement> CreateMemoryManagementHelper();
+extern void SetAppMenu(const ComPtr<IAvnMenu>& menu);
+extern void SetServicesMenu(const ComPtr<IAvnMenu>& menu);
 class AvnAppMenu;
-extern AvnAppMenu* GetAppMenu ();
+extern ComPtr<AvnAppMenu> GetAppMenu();
 extern NSMenuItem* GetAppMenuItem ();
 extern void SetDockMenu(NSMenu* menu);
 
-extern void InitializeAvnApp(IAvnApplicationEvents* events, bool disableAppDelegate);
+extern void InitializeAvnApp(const ComPtr<IAvnApplicationEvents>& events, bool disableAppDelegate);
 extern void ReleaseAvnAppEvents();
 extern NSApplicationActivationPolicy AvnDesiredActivationPolicy;
 extern NSPoint ToNSPoint (AvnPoint p);
@@ -50,7 +50,7 @@ extern AvnPoint ToAvnPoint (NSPoint p);
 extern AvnPoint ConvertPointY (AvnPoint p);
 extern NSSize ToNSSize (AvnSize s);
 extern AvnSize FromNSSize (NSSize s);
-extern IAvnMTLSharedEvent* ImportMTLSharedEvent(void* object);
+extern ComPtr<IAvnMTLSharedEvent> ImportMTLSharedEvent(void* object);
 #ifdef DEBUG
 #define NSDebugLog(...) NSLog(__VA_ARGS__)
 #else
@@ -88,7 +88,7 @@ public:
 };
 
 @interface ActionCallback : NSObject
-- (ActionCallback*) initWithCallback: (IAvnActionCallback*) callback;
+- (ActionCallback*) initWithCallback: (const ComPtr<IAvnActionCallback>&) callback;
 - (void) action;
 @end
 
@@ -120,6 +120,5 @@ public:
 };
 #define NSApp [NSApplication sharedApplication]
 
-#define START_COM_ARP_CALL START_ARP_CALL; START_COM_CALL
 
 #endif

@@ -17,7 +17,7 @@ namespace Avalonia.Controls.Chrome;
 /// and inserts them into its own visual tree.
 /// </summary>
 [PseudoClasses(pcNormal, pcMaximized, pcFullscreen, pcHasShadow, pcHasBorder, pcHasTitlebar,
-    pcHasMaximize, pcHasFullscreen, pcHasMinimize)]
+    pcHasMaximize, pcHasFullscreen, pcHasMinimize, pcHasClose, pcHasTitle)]
 [TemplatePart(PART_CloseButton, typeof(Button))]
 [TemplatePart(PART_MinimizeButton, typeof(Button))]
 [TemplatePart(PART_MaximizeButton, typeof(Button))]
@@ -36,6 +36,8 @@ public class WindowDrawnDecorations : StyledElement
     internal const string pcHasMaximize = ":has-maximize";
     internal const string pcHasFullscreen = ":has-fullscreen";
     internal const string pcHasMinimize = ":has-minimize";
+    internal const string pcHasClose = ":has-close";
+    internal const string pcHasTitle = ":has-title";
 
     // Template part names for caption buttons
     internal const string PART_CloseButton = "PART_CloseButton";
@@ -125,6 +127,13 @@ public class WindowDrawnDecorations : StyledElement
     /// </summary>
     public static readonly StyledProperty<string?> TitleProperty =
         AvaloniaProperty.Register<WindowDrawnDecorations, string?>(nameof(Title));
+
+    /// <summary>
+    /// Defines the TitleBarDecorations attached property.
+    /// </summary>
+    public static readonly AttachedProperty<TitleBarDecorations> TitleBarDecorationsProperty =
+        AvaloniaProperty.RegisterAttached<WindowDrawnDecorations, StyledElement, TitleBarDecorations>(
+            "TitleBarDecorations", TitleBarDecorations.All);
 
     /// <summary>
     /// Defines the <see cref="EnabledParts"/> property.
@@ -244,11 +253,37 @@ public class WindowDrawnDecorations : StyledElement
 
     /// <summary>
     /// Gets or sets the window title displayed in the decorations.
+    /// Mirrors the value set on the host <see cref="Window"/>.
     /// </summary>
     public string? Title
     {
         get => GetValue(TitleProperty);
         set => SetValue(TitleProperty, value);
+    }
+
+    /// <summary>
+    /// Gets which title bar elements to display.
+    /// </summary>
+    public static TitleBarDecorations GetTitleBarDecorations(StyledElement element)
+        => element.GetValue(TitleBarDecorationsProperty);
+
+    /// <summary>
+    /// Sets which title bar elements to display.
+    /// </summary>
+    /// <remarks>
+    /// Set this property on a <see cref="Window"/> to control the elements displayed in its drawn title bar.
+    /// </remarks>
+    public static void SetTitleBarDecorations(StyledElement element, TitleBarDecorations value)
+        => element.SetValue(TitleBarDecorationsProperty, value);
+
+    /// <summary>
+    /// Gets or sets which title bar elements are requested to be displayed.
+    /// Mirrors the value set on the host <see cref="Window"/>.
+    /// </summary>
+    public TitleBarDecorations TitleBarDecorations
+    {
+        get => GetValue(TitleBarDecorationsProperty);
+        set => SetValue(TitleBarDecorationsProperty, value);
     }
 
     /// <summary>
@@ -334,6 +369,7 @@ public class WindowDrawnDecorations : StyledElement
             x.UpdateEffectiveGeometry();
         });
 
+        TitleBarDecorationsProperty.Changed.AddClassHandler<WindowDrawnDecorations>((x, _) => x.UpdateTitleBarDecorationsPseudoClasses());
         DefaultTitleBarHeightProperty.Changed.AddClassHandler<WindowDrawnDecorations>((x, _) => x.UpdateEffectiveGeometry());
         DefaultFrameThicknessProperty.Changed.AddClassHandler<WindowDrawnDecorations>((x, _) => x.UpdateEffectiveGeometry());
         DefaultShadowThicknessProperty.Changed.AddClassHandler<WindowDrawnDecorations>((x, _) => x.UpdateEffectiveGeometry());
@@ -395,6 +431,8 @@ public class WindowDrawnDecorations : StyledElement
             Disposable.Create(() => window.AllowedWindowActionsChanged -= OnAllowedWindowActionsChanged),
             window.GetObservable(Window.TitleProperty)
                 .Subscribe(title => SetCurrentValue(TitleProperty, title)),
+            window.GetObservable(TitleBarDecorationsProperty)
+                .Subscribe(hints => SetCurrentValue(TitleBarDecorationsProperty, hints)),
             window.GetObservable(Window.CanMaximizeProperty)
                 .Subscribe(_ =>
                 {
@@ -415,7 +453,7 @@ public class WindowDrawnDecorations : StyledElement
                 }),
         };
 
-        UpdateAllowedActionsPseudoClasses();
+        UpdateTitleBarDecorationsPseudoClasses();
         UpdateMaximizeButtonState();
         UpdateMinimizeButtonState();
         UpdateFullScreenButtonState();
@@ -592,18 +630,25 @@ public class WindowDrawnDecorations : StyledElement
 
     private void OnAllowedWindowActionsChanged(PlatformAllowedWindowActions actions)
     {
-        UpdateAllowedActionsPseudoClasses();
+        UpdateTitleBarDecorationsPseudoClasses();
         UpdateMaximizeButtonState();
         UpdateMinimizeButtonState();
         UpdateFullScreenButtonState();
     }
 
-    private void UpdateAllowedActionsPseudoClasses()
+    private void UpdateTitleBarDecorationsPseudoClasses()
     {
         var actions = EffectiveAllowedActions;
-        PseudoClasses.Set(pcHasMaximize, actions.HasFlag(PlatformAllowedWindowActions.Maximize));
-        PseudoClasses.Set(pcHasFullscreen, actions.HasFlag(PlatformAllowedWindowActions.Fullscreen));
-        PseudoClasses.Set(pcHasMinimize, actions.HasFlag(PlatformAllowedWindowActions.Minimize));
+        var hints = TitleBarDecorations;
+
+        PseudoClasses.Set(pcHasMaximize, actions.HasFlag(PlatformAllowedWindowActions.Maximize)
+                                         && hints.HasFlag(TitleBarDecorations.MaximizeButton));
+        PseudoClasses.Set(pcHasFullscreen, actions.HasFlag(PlatformAllowedWindowActions.Fullscreen)
+                                           && hints.HasFlag(TitleBarDecorations.FullScreenButton));
+        PseudoClasses.Set(pcHasMinimize, actions.HasFlag(PlatformAllowedWindowActions.Minimize)
+                                         && hints.HasFlag(TitleBarDecorations.MinimizeButton));
+        PseudoClasses.Set(pcHasClose, hints.HasFlag(TitleBarDecorations.CloseButton));
+        PseudoClasses.Set(pcHasTitle, hints.HasFlag(TitleBarDecorations.Title));
     }
 
     private void UpdateEffectiveGeometry()

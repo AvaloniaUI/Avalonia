@@ -95,6 +95,12 @@ namespace Avalonia.Controls.Presenters
             TextElement.FontStretchProperty.AddOwner<ContentPresenter>();
 
         /// <summary>
+        /// Defines the <see cref="FontVariations"/> property.
+        /// </summary>
+        public static readonly StyledProperty<FontVariationSettings?> FontVariationsProperty =
+            TextElement.FontVariationsProperty.AddOwner<ContentPresenter>();
+
+        /// <summary>
         /// Defines the <see cref="TextAlignment"/> property
         /// </summary>
         public static readonly StyledProperty<TextAlignment> TextAlignmentProperty =
@@ -299,6 +305,16 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <summary>
+        /// Gets or sets the variable-font axis values (e.g. <c>wght=700</c>).
+        /// <c>null</c> means the font's design defaults.
+        /// </summary>
+        public FontVariationSettings? FontVariations
+        {
+            get => GetValue(FontVariationsProperty);
+            set => SetValue(FontVariationsProperty, value);
+        }
+
+        /// <summary>
         /// Gets or sets the text alignment
         /// </summary>
         public TextAlignment TextAlignment
@@ -364,6 +380,7 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Gets or sets the content to be displayed by the presenter.
         /// </summary>
+        [Content]
         [DependsOn(nameof(ContentTemplate))]
         public object? Content
         {
