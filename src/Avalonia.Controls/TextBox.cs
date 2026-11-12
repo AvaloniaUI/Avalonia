@@ -2468,6 +2468,8 @@ namespace Avalonia.Controls
                 // Since we're processing cursor movement without selection, OnKeyDown is going to call ClearSelection,
                 // which will override our results. So, we explicitly collapse the selection here ahead of time to
                 // defuse ClearSelection.
+                caretIndex = _presenter.CaretIndex;
+
                 SetSelectionRangeCore(caretIndex, caretIndex);
             }
             else
@@ -2583,6 +2585,8 @@ namespace Avalonia.Controls
                 // Since we're processing cursor movement without selection, OnKeyDown is going to call ClearSelection,
                 // which will override our results. So, we explicitly collapse the selection here ahead of time to
                 // defuse ClearSelection.
+                caretIndex = _presenter.CaretIndex;
+
                 SetSelectionRangeCore(caretIndex, caretIndex);
             }
             else
