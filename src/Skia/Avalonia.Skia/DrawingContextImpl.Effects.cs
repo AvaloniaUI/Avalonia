@@ -78,10 +78,15 @@ partial class DrawingContextImpl
         // them (e.g. a drop-shadow offset) is drawn outside, unlike CSS backdrop-filter, which clips the
         // filtered backdrop to the element's border box. The layer is restored before the visual's content is
         // drawn so that this clip doesn't affect children that overflow the bounds.
-        using var filter = CreateEffect(effect);
+        // The layer paint applies the current opacity when the layer is composited back.
+        using var filter = CreateEffect(effect, applyCurrentOpacity: false);
+        var paint = SKPaintCache.Shared.Get();
+        paint.Color = new SKColor(255, 255, 255, (byte)(255 * _currentOpacity));
         var savedCount = Canvas.Save();
         Canvas.ClipRect(bounds.ToSKRect());
-        Canvas.SaveLayer(new SKCanvasSaveLayerRec { Bounds = bounds.ToSKRect(), Backdrop = filter });
+        Canvas.SaveLayer(new SKCanvasSaveLayerRec { Bounds = bounds.ToSKRect(), Backdrop = filter, Paint = paint });
+        SKPaintCache.Shared.ReturnReset(paint);
+        // Pops the layer, which is what composites the filtered backdrop, and the clip.
         Canvas.RestoreToCount(savedCount);
     }
 

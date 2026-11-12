@@ -241,6 +241,29 @@ public class DrawingContextImplBackdropTests
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Backdrop_Honors_Current_Opacity(bool retained)
+    {
+        const int w = 80, h = 16;
+        using var bitmap = CreateBitmap(w, h);
+        using var surface = CreateSurface(bitmap);
+        using var ctx = CreateContext(surface);
+
+        DrawSplit(surface, w, h); // red left, blue right
+
+        ctx.PushOpacity(0.5, null);
+        DrawBackdrop(ctx, retained, new ImmutableBlurEffect(8), new PixelRect(0, 0, w, h));
+        ctx.PopOpacity();
+
+        // Just left of the seam a full-strength blur is about half red, half blue; at 50% opacity it is
+        // blended half-and-half with the untouched red underneath.
+        var c = bitmap.GetPixel(w / 2 - 1, h / 2);
+        Assert.InRange((int)c.Red, 170, 215);
+        Assert.InRange((int)c.Blue, 40, 85);
+    }
+
+    [Theory]
     [InlineData(10.0, 11.0)] // Ceiling(10)+1
     [InlineData(5.5, 7.0)]   // Ceiling(5.5)+1
     [InlineData(0.0, 0.0)]   // radius <= 0 -> 0
