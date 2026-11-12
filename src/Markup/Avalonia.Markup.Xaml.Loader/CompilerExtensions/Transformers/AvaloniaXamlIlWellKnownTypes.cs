@@ -56,6 +56,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType PropertyInfoAccessorFactory { get; }
         public IXamlType CompiledBinding { get; }
         public IXamlType CompiledBindingPathBuilder { get; }
+        public IXamlMethod CompiledBindingPathBuilderProperty { get; }
+        public IXamlMethod CompiledBindingPathBuilderPropertyWithNull { get; }
+        public IXamlMethod CompiledBindingPathBuilderMethod { get; }
+        public IXamlMethod CompiledBindingPathBuilderMethodWithNull { get; }
+        public IXamlType RuntimeMethodHandle { get; }
+        public IXamlType RuntimeTypeHandle { get; }
         public IXamlType CompiledBindingPath { get; }
         public IXamlType CompiledBindingExtension { get; }
 
@@ -274,6 +280,22 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             TaskOfT = typeSystem.GetType("System.Threading.Tasks.Task`1");
             IDictionaryT = typeSystem.GetType("System.Collections.Generic.IDictionary`2");
             WeakReferenceOfT = typeSystem.GetType("System.WeakReference`1");
+            RuntimeMethodHandle = typeSystem.GetType("System.RuntimeMethodHandle");
+            RuntimeTypeHandle = typeSystem.GetType("System.RuntimeTypeHandle");
+            var accessorFactoryType = XamlIlTypes.GetFuncOfT(3).MakeGenericType(
+                WeakReferenceOfT.MakeGenericType(XamlIlTypes.Object), IPropertyInfo, IPropertyAccessor);
+            CompiledBindingPathBuilderProperty = CompiledBindingPathBuilder.GetMethod(
+                new FindMethodMethodSignature("Property", CompiledBindingPathBuilder,
+                    IPropertyInfo, accessorFactoryType));
+            CompiledBindingPathBuilderPropertyWithNull = CompiledBindingPathBuilder.GetMethod(
+                new FindMethodMethodSignature("Property", CompiledBindingPathBuilder,
+                    IPropertyInfo, accessorFactoryType, XamlIlTypes.Boolean));
+            CompiledBindingPathBuilderMethod = CompiledBindingPathBuilder.GetMethod(
+                new FindMethodMethodSignature("Method", CompiledBindingPathBuilder,
+                    RuntimeMethodHandle, RuntimeTypeHandle));
+            CompiledBindingPathBuilderMethodWithNull = CompiledBindingPathBuilder.GetMethod(
+                new FindMethodMethodSignature("Method", CompiledBindingPathBuilder,
+                    RuntimeMethodHandle, RuntimeTypeHandle, XamlIlTypes.Boolean));
             IObservableOfT = typeSystem.GetType("System.IObservable`1");
             FontFamily = typeSystem.GetType("Avalonia.Media.FontFamily");
             FontFamilyConstructorUriName = FontFamily.GetConstructor(new List<IXamlType> { Uri, XamlIlTypes.String });
