@@ -39,8 +39,10 @@ internal sealed class ImpellerSkiaRasterLayer : IImpellerOffscreenLayer, IDrawab
 
     public SKImage Snapshot()
     {
+        // The snapshot shares the bitmap's pixels, which go away with the layer.
         using var image = _bitmap.GetSnapshot();
-        return image.ToRasterImage(true);
+        using var pixels = image.PeekPixels();
+        return SKImage.FromPixelCopy(pixels);
     }
 
     public void Blit(IDrawingContextImpl context)
