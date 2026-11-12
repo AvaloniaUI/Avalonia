@@ -836,10 +836,12 @@ namespace Avalonia.Skia
         {
             CheckLease();
 
-            var paint = SKPaintCache.Shared.Get();
+            Canvas.SaveLayer(bounds.ToSKRect(), null);
 
-            Canvas.SaveLayer(bounds.ToSKRect(), paint);
-            _maskStack.Push((Canvas.TotalMatrix, CreatePaint(paint, mask, bounds)));
+            // Mask paints are a plain color or shader, so DstIn applies the mask straight to the layer.
+            var maskPaint = CreatePaint(SKPaintCache.Shared.Get(), mask, bounds);
+            maskPaint.Paint.BlendMode = SKBlendMode.DstIn;
+            _maskStack.Push((Canvas.TotalMatrix, maskPaint));
         }
 
         /// <inheritdoc />
@@ -851,8 +853,6 @@ namespace Avalonia.Skia
             Canvas.SetMatrix(transform);
             using (paintWrapper)
             {
-                // Mask paints are a plain color or shader, so DstIn applies the mask straight to the layer.
-                paintWrapper.Paint.BlendMode = SKBlendMode.DstIn;
                 Canvas.DrawPaint(paintWrapper.Paint);
             }
             // Return the paint wrapper's paint less the reset since the paint is already reset in the Dispose method above.
