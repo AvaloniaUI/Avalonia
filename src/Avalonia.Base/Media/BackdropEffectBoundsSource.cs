@@ -1,17 +1,17 @@
 namespace Avalonia.Media;
 
 /// <summary>
-/// Specifies the bounds used when applying a backdrop effect.
+/// Specifies which bounds of a visual its backdrop effect is limited to.
 /// </summary>
 public enum BackdropEffectBoundsSource
 {
     /// <summary>
-    /// Uses the visual's layout bounds.
+    /// The layout bounds of the visual.
     /// </summary>
     Layout,
 
     /// <summary>
-    /// Uses the bounds of the visual and its descendants.
+    /// The bounds of the visual's subtree.
     /// </summary>
     Subtree
 }

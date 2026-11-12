@@ -5,8 +5,8 @@ using Avalonia.Rendering.Composition.Server;
 namespace Avalonia.Media;
 
 /// <summary>
-/// Controls whether a backdrop effect's sampled result is retained in a texture or resampled every frame.
-/// A null value lets the compositor decide based on the effect's sampling radius.
+/// Selects whether a backdrop effect keeps a snapshot of what is behind the visual, or reads it again on
+/// every draw. With a null value the compositor chooses.
 /// </summary>
 public abstract class BackdropEffectCache
 {
@@ -15,8 +15,8 @@ public abstract class BackdropEffectCache
     }
 
     /// <summary>
-    /// Parses a cache mode name, enabling the <c>BackdropEffectCache="Retained"</c> attribute syntax.
-    /// <c>"Default"</c> maps to <c>null</c> (the compositor decides).
+    /// Parses a backdrop cache mode name, for the <c>BackdropEffectCache="Retained"</c> attribute syntax.
+    /// <c>"Default"</c> gives <c>null</c> (the compositor chooses).
     /// </summary>
     public static BackdropEffectCache? Parse(string s) => s switch
     {
@@ -31,7 +31,7 @@ public abstract class BackdropEffectCache
 }
 
 /// <summary>
-/// A backdrop effect cache mode that retains the sampled backdrop in a texture.
+/// Keeps a snapshot of what is behind the visual and updates only its changed parts.
 /// </summary>
 public sealed class RetainedBackdropEffectCache : BackdropEffectCache
 {
@@ -49,7 +49,7 @@ public sealed class RetainedBackdropEffectCache : BackdropEffectCache
 }
 
 /// <summary>
-/// A backdrop effect cache mode that resamples the backdrop from the live target every frame.
+/// Reads what is behind the visual again on every draw.
 /// </summary>
 public sealed class VolatileBackdropEffectCache : BackdropEffectCache
 {

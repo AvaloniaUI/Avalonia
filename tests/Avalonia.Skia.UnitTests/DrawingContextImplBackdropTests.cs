@@ -7,8 +7,8 @@ using Xunit;
 
 namespace Avalonia.Skia.UnitTests;
 
-// Backdrop drawing-context primitives (IDrawingContextImplWithBackdropSupport) tested in isolation on a
-// raster surface. CPU raster => deterministic, so pixels are asserted directly.
+// IDrawingContextImplWithBackdropSupport on a CPU surface, without the compositor. CPU rendering is
+// deterministic, so the tests check pixels directly.
 public class DrawingContextImplBackdropTests
 {
     [Fact]
@@ -30,7 +30,7 @@ public class DrawingContextImplBackdropTests
 
         Assert.False(ctx.SupportsBackdrop);
 
-        // Driving the volatile backdrop primitive on a surface-less context must not throw (PDF / picture path).
+        // No exception on a context without a surface (as for PDF or picture recording).
         var ex = Record.Exception(() =>
         {
             ctx.DrawVolatileBackdropEffect(new Rect(0, 0, 16, 16), new ImmutableBlurEffect(4));
@@ -48,7 +48,7 @@ public class DrawingContextImplBackdropTests
 
         DrawSplit(surface, w, h); // red left, blue right
 
-        // A zero-radius blur yields a null filter => an empty backdrop layer that composites back as a no-op.
+        // A zero blur radius gives no filter: nothing is drawn.
         ctx.DrawVolatileBackdropEffect(new Rect(0, 0, w, h), new ImmutableBlurEffect(0));
         surface.Canvas.Flush();
 
@@ -66,7 +66,7 @@ public class DrawingContextImplBackdropTests
 
         DrawSplit(surface, w, h);
 
-        // Blur the backdrop over the split, then draw opaque content on top.
+        // Blur the backdrop (the split), then draw opaque content on top.
         ctx.DrawVolatileBackdropEffect(new Rect(0, 0, w, h), new ImmutableBlurEffect(8));
         using (var green = new SKPaint { Color = SKColors.Green })
             surface.Canvas.DrawRect(new SKRect(2, 2, 8, 8), green);
@@ -97,16 +97,16 @@ public class DrawingContextImplBackdropTests
 
         DrawSplit(surface, w, h); // drawn in device space (identity canvas)
 
-        // Under a scale+translate transform the layer bounds are folded through the CTM to device pixels,
-        // so a blur backdrop over a local rect covering the whole surface blurs the device split in place.
+        // With a scale and translate transform, bounds that cover the whole surface blur the split where it
+        // is.
         ctx.Transform = Matrix.CreateScale(2, 2) * Matrix.CreateTranslation(3, 5);
         Assert.True(ctx.Transform.TryInvert(out var inverse));
-        var destRect = new Rect(0, 0, w, h).TransformToAABB(inverse); // maps to the whole device surface
+        var destRect = new Rect(0, 0, w, h).TransformToAABB(inverse); // the whole surface
 
         ctx.DrawVolatileBackdropEffect(destRect, new ImmutableBlurEffect(8));
         surface.Canvas.Flush();
 
-        // The blur landed on the right device region: mixed at the seam, dominant in each half.
+        // The blur is in the right place: mixed at the seam, mostly one colour in each half.
         var seam = bitmap.GetPixel(w / 2, h / 2);
         Assert.InRange((int)seam.Red, 40, 220);
         Assert.InRange((int)seam.Blue, 40, 220);
@@ -126,15 +126,16 @@ public class DrawingContextImplBackdropTests
 
         DrawSplit(surface, w, h);
 
-        using var cache = ctx.CreateBackdropCache(new PixelSize(w, h));
+        using var snapshot = ctx.CreateBackdropSnapshot(new PixelSize(w, h));
         var destRect = new Rect(0, 0, w, h);
 
-        // A full dirty rect refreshes the whole cache from the split, then it is drawn back through the blur.
-        ctx.DrawRetainedBackdropEffect(cache, new PixelRect(0, 0, w, h), new[] { new PixelRect(0, 0, w, h) },
+        // A dirty rect over everything refreshes the whole snapshot from the split. Then the snapshot is drawn
+        // through the blur.
+        ctx.DrawRetainedBackdropEffect(snapshot, new PixelRect(0, 0, w, h), new[] { new PixelRect(0, 0, w, h) },
             new ImmutableBlurEffect(8), destRect);
         surface.Canvas.Flush();
 
-        // A mixed seam is only possible if the cache actually captured the split before drawing it back.
+        // The seam can only be mixed if the snapshot had the split in it.
         var seam = bitmap.GetPixel(w / 2, h / 2);
         Assert.InRange((int)seam.Red, 40, 220);
         Assert.InRange((int)seam.Blue, 40, 220);
@@ -152,24 +153,24 @@ public class DrawingContextImplBackdropTests
         using var surface = CreateSurface(bitmap);
         using var ctx = CreateContext(surface);
 
-        using var cache = ctx.CreateBackdropCache(new PixelSize(size, size));
+        using var snapshot = ctx.CreateBackdropSnapshot(new PixelSize(size, size));
         var destRect = new Rect(0, 0, size, size);
 
-        // Load the cache with red from the target.
+        // Refresh the snapshot with red.
         surface.Canvas.Clear(SKColors.Red);
         surface.Canvas.Flush();
         var cacheBounds = new PixelRect(0, 0, size, size);
-        ctx.DrawRetainedBackdropEffect(cache, cacheBounds, new[] { cacheBounds },
+        ctx.DrawRetainedBackdropEffect(snapshot, cacheBounds, new[] { cacheBounds },
             new ImmutableBlurEffect(0), destRect);
 
-        // Repaint the target blue, then draw with no dirty rects: the stale (red) cache must be reused.
+        // Make the surface blue, then draw without dirty rects: the snapshot is still red.
         surface.Canvas.Clear(SKColors.Blue);
         surface.Canvas.Flush();
-        ctx.DrawRetainedBackdropEffect(cache, cacheBounds, Array.Empty<PixelRect>(), new ImmutableBlurEffect(0),
+        ctx.DrawRetainedBackdropEffect(snapshot, cacheBounds, Array.Empty<PixelRect>(), new ImmutableBlurEffect(0),
             destRect);
         surface.Canvas.Flush();
 
-        AssertColor(bitmap.GetPixel(size / 2, size / 2), 255, 0, 0); // red (refresh skipped), not blue
+        AssertColor(bitmap.GetPixel(size / 2, size / 2), 255, 0, 0); // red: no refresh
     }
 
     [Fact]
@@ -186,12 +187,12 @@ public class DrawingContextImplBackdropTests
         Assert.True(ctx.Transform.TryInvert(out var inverse));
         var destRect = new Rect(0, 0, w, h).TransformToAABB(inverse);
 
-        using var cache = ctx.CreateBackdropCache(new PixelSize(w, h));
-        ctx.DrawRetainedBackdropEffect(cache, new PixelRect(0, 0, w, h), new[] { new PixelRect(0, 0, w, h) },
+        using var snapshot = ctx.CreateBackdropSnapshot(new PixelSize(w, h));
+        ctx.DrawRetainedBackdropEffect(snapshot, new PixelRect(0, 0, w, h), new[] { new PixelRect(0, 0, w, h) },
             new ImmutableBlurEffect(0), destRect);
         surface.Canvas.Flush();
 
-        AssertColor(bitmap.GetPixel(w / 4, h / 2), 255, 0, 0);     // refreshed + drawn back in place
+        AssertColor(bitmap.GetPixel(w / 4, h / 2), 255, 0, 0);     // refreshed and drawn in place
         AssertColor(bitmap.GetPixel(3 * w / 4, h / 2), 0, 0, 255);
     }
 
@@ -205,7 +206,8 @@ public class DrawingContextImplBackdropTests
         using var surface = CreateSurface(bitmap);
         using var ctx = CreateContext(surface);
 
-        // A red square on a transparent target; the backdrop covers (5,5)-(25,25), the shadow is offset by 8.
+        // A red square on a transparent surface. The backdrop bounds are (5,5)-(25,25), the shadow is offset
+        // by 8.
         surface.Canvas.Clear(SKColors.Transparent);
         using (var p = new SKPaint { Color = SKColors.Red })
             surface.Canvas.DrawRect(new SKRect(10, 10, 20, 20), p);
@@ -236,7 +238,7 @@ public class DrawingContextImplBackdropTests
         DrawBackdrop(ctx, retained, new ImmutableDropShadowEffect(8, 8, 2, Colors.Black, 1),
             new PixelRect(5, 5, 20, 20));
 
-        // Opaque backdrop pixels cover their own shadow, and the bounds' edges cast none outside.
+        // Opaque backdrop pixels cover their own shadow, and the edges of the bounds cast no shadow outside.
         for (var y = 0; y < size; y++)
         for (var x = 0; x < size; x++)
             AssertColor(bitmap.GetPixel(x, y), 255, 255, 255);
@@ -258,8 +260,8 @@ public class DrawingContextImplBackdropTests
         DrawBackdrop(ctx, retained, new ImmutableBlurEffect(8), new PixelRect(0, 0, w, h));
         ctx.PopOpacity();
 
-        // Just left of the seam a full-strength blur is about half red, half blue; at 50% opacity it is
-        // blended half-and-half with the untouched red underneath.
+        // Just left of the seam the blur is about half red, half blue. At 50% opacity it is mixed equally with
+        // the red that is already there.
         var c = bitmap.GetPixel(w / 2 - 1, h / 2);
         Assert.InRange((int)c.Red, 170, 215);
         Assert.InRange((int)c.Blue, 40, 85);
@@ -275,7 +277,7 @@ public class DrawingContextImplBackdropTests
         using var surface = CreateSurface(bitmap);
         using var ctx = CreateContext(surface);
 
-        // Red right up to the backdrop's left edge, white under the backdrop.
+        // Red up to the left edge of the backdrop bounds, white inside of them.
         surface.Canvas.Clear(SKColors.White);
         using (var p = new SKPaint { Color = SKColors.Red })
             surface.Canvas.DrawRect(new SKRect(0, 0, 40, h), p);
@@ -283,8 +285,8 @@ public class DrawingContextImplBackdropTests
 
         DrawBackdrop(ctx, retained, new ImmutableBlurEffect(8), new PixelRect(40, 10, 30, 20));
 
-        AssertColor(bitmap.GetPixel(39, 20), 255, 0, 0);     // outside: untouched
-        AssertColor(bitmap.GetPixel(40, 20), 255, 255, 255); // inside: no red bled in
+        AssertColor(bitmap.GetPixel(39, 20), 255, 0, 0);     // outside: not changed
+        AssertColor(bitmap.GetPixel(40, 20), 255, 255, 255); // inside: no red from outside
     }
 
     [Fact]
@@ -299,7 +301,7 @@ public class DrawingContextImplBackdropTests
             using var surface = CreateSurface(bitmap);
             using var ctx = CreateContext(surface);
 
-            // 2px black/white stripes: the blur repeats the edge pixels beyond the bounds in both modes.
+            // 2px black/white stripes. Both modes see the edge pixels repeated outside of the bounds.
             surface.Canvas.Clear(SKColors.White);
             using (var p = new SKPaint { Color = SKColors.Black })
                 for (var x = 0; x < w; x += 4)
@@ -341,8 +343,8 @@ public class DrawingContextImplBackdropTests
         var destRect = bounds.ToRect(1);
         if (retained)
         {
-            using var cache = ctx.CreateBackdropCache(bounds.Size);
-            ctx.DrawRetainedBackdropEffect(cache, bounds, new[] { bounds }, effect, destRect);
+            using var snapshot = ctx.CreateBackdropSnapshot(bounds.Size);
+            ctx.DrawRetainedBackdropEffect(snapshot, bounds, new[] { bounds }, effect, destRect);
         }
         else
             ctx.DrawVolatileBackdropEffect(destRect, effect);

@@ -4,10 +4,9 @@ using Avalonia.Platform;
 namespace Avalonia.Rendering.Composition.Server;
 
 /// <summary>
-/// A side-effect-free view over a dirty-rect tracker's <em>currently accumulating</em> working set,
-/// together with the mapping from the owning host's local space to that tracker's space. The update
-/// walk resolves one of these per collector swap (via <see cref="IDirtyRectCollector.GetWorkingSet"/>).
-/// Reads never finalize, inflate or optimize the tracker, so they stay valid mid-pass.
+/// The working set of a layer: the dirty rects that are collected so far, with the mapping to layer space.
+/// Reading it does not finalize, inflate or merge anything in the tracker, so it can be read while dirty
+/// rects are still being collected. See <see cref="IDirtyRectCollector.GetWorkingSet"/>.
 /// </summary>
 internal readonly struct DirtyRectWorkingSet
 {
@@ -20,23 +19,22 @@ internal readonly struct DirtyRectWorkingSet
         Mapping = mapping;
     }
 
-    /// <summary>Cheap emptiness query used by the descent gate.</summary>
     public bool IsEmpty => _tracker?.IsEmpty ?? true;
 
     /// <summary>
-    /// Fills <paramref name="buffer"/> with the working-set rects mapped into the host's local space.
+    /// Replaces the contents of <paramref name="buffer"/> with the dirty rects in layer space.
     /// </summary>
-    public void CollectHostSpace(List<LtrbRect> buffer)
+    public void CopyInLayerSpaceTo(List<LtrbRect> buffer)
     {
         buffer.Clear();
         if (_tracker == null || _tracker.IsEmpty || !Mapping.IsUsable)
             return;
 
-        _tracker.CollectWorkingSet(buffer);
+        _tracker.CopyWorkingSetTo(buffer);
 
         if (Mapping.IsIdentity)
             return;
         for (var i = 0; i < buffer.Count; i++)
-            buffer[i] = Mapping.TrackerToHost(buffer[i]);
+            buffer[i] = Mapping.LayerPixelsToLayerSpace(buffer[i]);
     }
 }

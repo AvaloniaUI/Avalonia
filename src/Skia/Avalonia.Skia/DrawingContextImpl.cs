@@ -44,9 +44,8 @@ namespace Avalonia.Skia
         private readonly ISkiaGpuRenderSession? _session;
         private bool _leased;
         private bool _useOpacitySaveLayer;
-        // Nesting depth of active intermediate save-layers (Effect/OpacityMask/PushLayer/opacity save-layer)
-        // that redirect drawing to an offscreen. Gates IsBackdropSamplingSafe. Plain clip/transform saves
-        // do NOT count.
+        // Number of open intermediate layers (effect, opacity mask, PushLayer, opacity). Plain clip and
+        // transform saves are not counted. See IsBackdropSamplingSafe.
         private int _intermediateLayerDepth;
 
         /// <summary>

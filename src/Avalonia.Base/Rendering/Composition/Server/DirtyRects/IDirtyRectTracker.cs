@@ -18,10 +18,10 @@ internal interface IDirtyRectTracker : IDirtyRectCollector
     LtrbRect CombinedRect { get; }
 
     /// <summary>
-    /// Appends the tracker's currently accumulating working set (raw, in tracker space) to
-    /// <paramref name="buffer"/> without finalizing, inflating or optimizing it. Safe to call mid-pass.
+    /// Appends the working set, in layer pixels, to <paramref name="buffer"/>. Does not finalize, inflate or
+    /// merge anything.
     /// </summary>
-    void CollectWorkingSet(List<LtrbRect> buffer);
+    void CopyWorkingSetTo(List<LtrbRect> buffer);
 }
 
 internal interface IDirtyRectCollector
@@ -29,8 +29,7 @@ internal interface IDirtyRectCollector
     void AddRect(LtrbRect rect);
 
     /// <summary>
-    /// Resolves a side-effect-free view of the underlying tracker's working set plus the host-local ↔
-    /// tracker-space mapping, for the update walk's backdrop capture and descent gate.
+    /// The working set of the layer that this collector belongs to.
     /// </summary>
     DirtyRectWorkingSet GetWorkingSet();
 }

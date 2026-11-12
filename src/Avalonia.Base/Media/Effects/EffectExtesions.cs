@@ -31,8 +31,8 @@ public static class EffectExtensions
     }
 
     /// <summary>
-    /// The radius, in DIPs, from which a backdrop effect samples its input: the largest component of the
-    /// effect's output padding.
+    /// The sampling radius of a backdrop effect in the visual's local space: the largest side of the effect's
+    /// output padding.
     /// </summary>
     internal static double GetBackdropSamplingRadius(this IEffect? effect)
     {

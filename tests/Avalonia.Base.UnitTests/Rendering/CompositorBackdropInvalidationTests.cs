@@ -17,23 +17,22 @@ public class CompositorBackdropInvalidationTests : CompositorTestsBase
     private static CompositionBitmapCache MakeCache(Compositor compositor) =>
         new(compositor, new ServerCompositionBitmapCache(compositor.Server));
 
-    private static CompositionRetainedBackdropEffectCache MakeRetainedBackdrop(Compositor compositor) =>
+    private static CompositionRetainedBackdropEffectCache MakeRetainedCacheMode(Compositor compositor) =>
         new(compositor, new ServerCompositionRetainedBackdropEffectCache(compositor.Server));
 
-    private static CompositionVolatileBackdropEffectCache MakeVolatileBackdrop(Compositor compositor) =>
+    private static CompositionVolatileBackdropEffectCache MakeVolatileCacheMode(Compositor compositor) =>
         new(compositor, new ServerCompositionVolatileBackdropEffectCache(compositor.Server));
 
-    // 0 => Default (null), 1 => retained, 2 => volatile
-    private static CompositionBackdropEffectCache? MakeBackdropCache(Compositor compositor, int selector) => selector switch
+    // 0: default (null), 1: retained, 2: volatile
+    private static CompositionBackdropEffectCache? MakeBackdropCacheMode(Compositor compositor, int selector) => selector switch
     {
-        1 => MakeRetainedBackdrop(compositor),
-        2 => MakeVolatileBackdrop(compositor),
+        1 => MakeRetainedCacheMode(compositor),
+        2 => MakeVolatileCacheMode(compositor),
         _ => null
     };
 
-    // Brute-force recount of a node's "_backdropsInSubTree": backdrops strictly below the node that are
-    // reachable without crossing a bitmap-cache boundary. A cache-enabled visual blocks its descendants'
-    // backdrops but not its own.
+    // Recounts "_backdropVisualsInSubTree" the slow way: the backdrop visuals below the visual with no bitmap
+    // cache in between. A visual with a bitmap cache hides the backdrop visuals below it, but not itself.
     private static int ReachableBackdrops(ServerCompositionVisual node)
     {
         var count = 0;
@@ -103,14 +102,14 @@ public class CompositorBackdropInvalidationTests : CompositorTestsBase
                     a.CacheMode = a.CacheMode == null ? MakeCache(c) : null;
                     break;
                 case 4:
-                    a.BackdropEffectCache = MakeBackdropCache(c, rnd.Next(3));
+                    a.BackdropEffectCache = MakeBackdropCacheMode(c, rnd.Next(3));
                     break;
             }
 
             s.RunJobs();
 
             foreach (var node in nodes)
-                Assert.Equal(ReachableBackdrops(node.Server), node.Server._backdropsInSubTree);
+                Assert.Equal(ReachableBackdrops(node.Server), node.Server._backdropVisualsInSubTree);
         }
     }
 
@@ -127,21 +126,21 @@ public class CompositorBackdropInvalidationTests : CompositorTestsBase
         leaf.BackdropEffect = Blur(5);
         s.RunJobs();
 
-        // No cache: the backdrop propagates all the way up.
-        Assert.Equal(1, mid.Server._backdropsInSubTree);
-        Assert.Equal(1, root.Server._backdropsInSubTree);
+        // No bitmap cache: the backdrop visual is counted all the way up the parent chain.
+        Assert.Equal(1, mid.Server._backdropVisualsInSubTree);
+        Assert.Equal(1, root.Server._backdropVisualsInSubTree);
 
-        // Enabling a cache on `mid` turns it into a boundary: the leaf backdrop stops at `mid`.
+        // With a bitmap cache on `mid`, the count stops at `mid`.
         mid.CacheMode = MakeCache(c);
         s.RunJobs();
-        Assert.Equal(1, mid.Server._backdropsInSubTree);
-        Assert.Equal(0, root.Server._backdropsInSubTree);
+        Assert.Equal(1, mid.Server._backdropVisualsInSubTree);
+        Assert.Equal(0, root.Server._backdropVisualsInSubTree);
 
-        // Disabling the cache reflows the count above the (former) boundary.
+        // Without the bitmap cache, the visuals above `mid` count it again.
         mid.CacheMode = null;
         s.RunJobs();
-        Assert.Equal(1, mid.Server._backdropsInSubTree);
-        Assert.Equal(1, root.Server._backdropsInSubTree);
+        Assert.Equal(1, mid.Server._backdropVisualsInSubTree);
+        Assert.Equal(1, root.Server._backdropVisualsInSubTree);
     }
 
     [Fact]
@@ -153,17 +152,17 @@ public class CompositorBackdropInvalidationTests : CompositorTestsBase
         var cached = c.CreateContainerVisual();
         root.Children.Add(cached);
         cached.CacheMode = MakeCache(c);
-        cached.BackdropEffect = Blur(5); // the cache host is itself a backdrop
+        cached.BackdropEffect = Blur(5); // the visual with the bitmap cache is a backdrop visual itself
         s.RunJobs();
 
-        // A visual's own backdrop samples its ancestor host, so it still contributes to its parent
-        // even though the visual is a cache boundary for its descendants.
-        Assert.Equal(1, root.Server._backdropsInSubTree);
-        Assert.Equal(0, cached.Server._backdropsInSubTree);
+        // The visual's own backdrop effect is drawn into the outer layer, so the visual still counts for its
+        // parent, even though its bitmap cache hides the backdrop visuals below it.
+        Assert.Equal(1, root.Server._backdropVisualsInSubTree);
+        Assert.Equal(0, cached.Server._backdropVisualsInSubTree);
     }
 
     [Fact]
-    public void Registration_Is_Order_Independent_Effect_Before_Root()
+    public void Backdrop_Visual_List_Entry_Is_Order_Independent_Effect_Before_Root()
     {
         using var s = new CompositorTestServices();
         var c = s.Compositor;
@@ -172,19 +171,19 @@ public class CompositorBackdropInvalidationTests : CompositorTestsBase
         v.BackdropEffect = Blur(5);
         s.RunJobs();
 
-        // Effect set while detached: no registration yet (no target).
+        // Effect set while detached: not in a backdrop visual list yet (no target).
         Assert.Null(v.Server.BackdropState);
 
         ElementComposition.SetElementChildVisual(s.TopLevel, v);
         s.RunJobs();
 
-        // Once rooted, it registers with the target.
+        // Once attached, it is in the target's list.
         Assert.NotNull(v.Server.BackdropState);
         Assert.Contains(v.Server, s.Renderer.CompositionTarget.Server.BackdropVisuals);
     }
 
     [Fact]
-    public void Detach_Clears_Registration()
+    public void Detach_Removes_From_Backdrop_Visual_List()
     {
         using var s = new CompositorTestServices();
         var c = s.Compositor;
@@ -236,11 +235,11 @@ public class CompositorBackdropInvalidationTests : CompositorTestsBase
 
         Assert.NotNull(leaf.Server.BackdropState);
         Assert.Contains(leaf.Server, s.Renderer.CompositionTarget.Server.BackdropVisuals);
-        Assert.Equal(1, root.Server._backdropsInSubTree);
+        Assert.Equal(1, root.Server._backdropVisualsInSubTree);
     }
 
     [Fact]
-    public void Registry_Computes_Device_Space_Aabb_At_Root_Host()
+    public void Backdrop_State_Has_Device_Space_Aabb_In_Root_Layer()
     {
         using var s = new CompositorTestServices();
         var c = s.Compositor;
@@ -250,14 +249,14 @@ public class CompositorBackdropInvalidationTests : CompositorTestsBase
         v.Color = Colors.Red;
         v.BackdropEffect = Blur(5);
         ElementComposition.SetElementChildVisual(s.TopLevel, v);
-        // A couple of frames: the registry uses the previous walk's bounds, so the AABB lands a frame later.
+        // Two frames: the AABB is computed from the bounds of the previous update walk.
         s.RunJobs();
         s.RunJobs();
 
-        var record = v.Server.BackdropState;
-        Assert.NotNull(record);
-        Assert.Null(record!.Host); // root host
-        Assert.Equal(new LtrbPixelRect(100, 100, 150, 150), record.Aabb!.Value);
+        var state = v.Server.BackdropState;
+        Assert.NotNull(state);
+        Assert.Null(state!.Layer); // root layer
+        Assert.Equal(new LtrbPixelRect(100, 100, 150, 150), state.Aabb!.Value);
     }
 
     [Fact]
@@ -265,28 +264,28 @@ public class CompositorBackdropInvalidationTests : CompositorTestsBase
     {
         using var s = new CompositorTestServices();
         var c = s.Compositor;
-        var backdrop = Panel(c);
-        backdrop.Size = new Vector(40, 50);
-        backdrop.BackdropEffect = Blur(5);
+        var backdropVisual = Panel(c);
+        backdropVisual.Size = new Vector(40, 50);
+        backdropVisual.BackdropEffect = Blur(5);
 
         var child = c.CreateSolidColorVisual();
         child.Size = new Vector(100, 120);
-        backdrop.Children.Add(child);
-        ElementComposition.SetElementChildVisual(s.TopLevel, backdrop);
+        backdropVisual.Children.Add(child);
+        ElementComposition.SetElementChildVisual(s.TopLevel, backdropVisual);
         s.RunJobs();
         s.RunJobs();
 
-        var record = backdrop.Server.BackdropState!;
-        Assert.Equal(BackdropEffectBoundsSource.Layout, backdrop.BackdropEffectBoundsSource);
-        Assert.Equal(new LtrbPixelRect(0, 0, 40, 50), record.Aabb!.Value);
+        var state = backdropVisual.Server.BackdropState!;
+        Assert.Equal(BackdropEffectBoundsSource.Layout, backdropVisual.BackdropEffectBoundsSource);
+        Assert.Equal(new LtrbPixelRect(0, 0, 40, 50), state.Aabb!.Value);
 
-        // A descendant-only bounds change does not resize or fully re-ingest a layout-bounds backdrop.
-        record.RetainedInputDirtyArea = null;
+        // A bounds change of a child does not change the AABB of a layout-bounds backdrop visual.
+        state.InputDirtyRect = null;
         child.Size = new Vector(130, 140);
         s.RunJobs();
 
-        Assert.Equal(new LtrbPixelRect(0, 0, 40, 50), record.Aabb!.Value);
-        Assert.Null(record.RetainedInputDirtyArea);
+        Assert.Equal(new LtrbPixelRect(0, 0, 40, 50), state.Aabb!.Value);
+        Assert.Null(state.InputDirtyRect);
     }
 
     [Fact]
@@ -294,19 +293,19 @@ public class CompositorBackdropInvalidationTests : CompositorTestsBase
     {
         using var s = new CompositorTestServices();
         var c = s.Compositor;
-        var backdrop = Panel(c);
-        backdrop.Size = new Vector(40, 50);
-        backdrop.BackdropEffect = Blur(5);
-        backdrop.BackdropEffectBoundsSource = BackdropEffectBoundsSource.Subtree;
+        var backdropVisual = Panel(c);
+        backdropVisual.Size = new Vector(40, 50);
+        backdropVisual.BackdropEffect = Blur(5);
+        backdropVisual.BackdropEffectBoundsSource = BackdropEffectBoundsSource.Subtree;
 
         var child = c.CreateSolidColorVisual();
         child.Size = new Vector(100, 120);
-        backdrop.Children.Add(child);
-        ElementComposition.SetElementChildVisual(s.TopLevel, backdrop);
+        backdropVisual.Children.Add(child);
+        ElementComposition.SetElementChildVisual(s.TopLevel, backdropVisual);
         s.RunJobs();
         s.RunJobs();
 
-        Assert.Equal(new LtrbPixelRect(0, 0, 100, 120), backdrop.Server.BackdropState!.Aabb!.Value);
+        Assert.Equal(new LtrbPixelRect(0, 0, 100, 120), backdropVisual.Server.BackdropState!.Aabb!.Value);
     }
 
     [Fact]
@@ -314,62 +313,61 @@ public class CompositorBackdropInvalidationTests : CompositorTestsBase
     {
         using var s = new CompositorTestServices();
         var c = s.Compositor;
-        var backdrop = Panel(c);
-        backdrop.Size = new Vector(40, 50);
-        backdrop.BackdropEffect = Blur(5);
+        var backdropVisual = Panel(c);
+        backdropVisual.Size = new Vector(40, 50);
+        backdropVisual.BackdropEffect = Blur(5);
 
         var child = c.CreateSolidColorVisual();
         child.Size = new Vector(20, 30);
         child.Offset = new Vector3D(60, 70, 0);
-        backdrop.Children.Add(child);
-        ElementComposition.SetElementChildVisual(s.TopLevel, backdrop);
+        backdropVisual.Children.Add(child);
+        ElementComposition.SetElementChildVisual(s.TopLevel, backdropVisual);
         s.RunJobs();
         s.RunJobs();
 
-        var record = backdrop.Server.BackdropState!;
-        Assert.Equal(new LtrbPixelRect(0, 0, 40, 50), record.Aabb!.Value);
-        record.RetainedInputDirtyArea = null;
+        var state = backdropVisual.Server.BackdropState!;
+        Assert.Equal(new LtrbPixelRect(0, 0, 40, 50), state.Aabb!.Value);
+        state.InputDirtyRect = null;
 
-        backdrop.BackdropEffectBoundsSource = BackdropEffectBoundsSource.Subtree;
+        backdropVisual.BackdropEffectBoundsSource = BackdropEffectBoundsSource.Subtree;
         s.RunJobs();
 
-        Assert.Equal(new LtrbPixelRect(60, 70, 80, 100), record.Aabb!.Value);
-        Assert.Equal(new LtrbRect(60, 70, 80, 100), record.RetainedInputDirtyArea!.Value);
+        Assert.Equal(new LtrbPixelRect(60, 70, 80, 100), state.Aabb!.Value);
+        Assert.Equal(new LtrbRect(60, 70, 80, 100), state.InputDirtyRect!.Value);
     }
 
-    // cacheSelector: 0 => Default (null), 1 => retained, 2 => volatile
+    // cacheSelector: 0: default (null), 1: retained, 2: volatile
     [Theory]
     [InlineData(5.0, 0, true)]
     [InlineData(0.0, 0, false)]
     [InlineData(0.0, 1, true)]
     [InlineData(5.0, 2, false)]
-    public void Registry_Classifies_Retained_Vs_Volatile(double radius, int cacheSelector, bool expectedRetained)
+    public void Backdrop_State_Selects_Retained_Or_Volatile(double radius, int cacheSelector, bool expectedRetained)
     {
         using var s = new CompositorTestServices();
         var c = s.Compositor;
-        var host = Panel(c);
-        ElementComposition.SetElementChildVisual(s.TopLevel, host);
+        var panel = Panel(c);
+        ElementComposition.SetElementChildVisual(s.TopLevel, panel);
         var v = c.CreateSolidColorVisual();
         v.Size = new Vector(50, 50);
         v.BackdropEffect = Blur(radius);
-        v.BackdropEffectCache = MakeBackdropCache(c, cacheSelector);
-        host.Children.Add(v);
+        v.BackdropEffectCache = MakeBackdropCacheMode(c, cacheSelector);
+        panel.Children.Add(v);
         s.RunJobs();
         s.RunJobs();
 
-        var record = v.Server.BackdropState;
-        Assert.NotNull(record);
-        Assert.Equal(expectedRetained, record!.IsRetained);
+        var state = v.Server.BackdropState;
+        Assert.NotNull(state);
+        Assert.Equal(expectedRetained, state!.IsRetained);
     }
 
     [Fact]
-    public void Host_Change_Resets_Retained_State_And_Emits_Damage()
+    public void Layer_Change_Drops_Snapshot_And_Adds_Dirty_Rects()
     {
         using var s = new CompositorTestServices();
         var c = s.Compositor;
-        // A sized, offset ancestor so that (a) enabling a cache on it produces observable target-level
-        // damage and (b) its device space differs from its cache-local space, exercising the host-space
-        // conversion.
+        // A parent with a size and an offset, so that a bitmap cache on it adds dirty rects to the root layer,
+        // and so that its layer space differs from device pixels.
         var mid = c.CreateSolidColorVisual();
         mid.Size = new Vector(200, 200);
         mid.Offset = new Vector3D(10, 10, 0);
@@ -384,23 +382,23 @@ public class CompositorBackdropInvalidationTests : CompositorTestsBase
         s.RunJobs();
         s.RunJobs();
 
-        var record = v.Server.BackdropState!;
-        Assert.Null(record.Host); // root host initially
-        // Root host space is device pixels: the ancestor's offset is folded in.
-        Assert.Equal(new LtrbPixelRect(40, 50, 90, 100), record.Aabb!.Value);
-        var sentinel = new ServerCompositionBackdropStore();
-        record.RetainedState = sentinel;
+        var state = v.Server.BackdropState!;
+        Assert.Null(state.Layer); // root layer at first
+        // Layer space of the root layer is device pixels: includes the parent's offset.
+        Assert.Equal(new LtrbPixelRect(40, 50, 90, 100), state.Aabb!.Value);
+        var sentinel = new ServerCompositionBackdropSnapshot();
+        state.Snapshot = sentinel;
         s.Events.Reset();
 
-        // Enable a cache on the ancestor: the backdrop's host changes to that cache.
+        // A bitmap cache on the parent: the backdrop visual is now in the bitmap cache layer.
         mid.CacheMode = MakeCache(c);
         s.RunJobs();
 
-        Assert.Same(mid.Server.Cache, record.Host);
-        Assert.Null(record.RetainedState); // reset on host change
-        // Cache host space is the cached visual's local space: the ancestor's own offset is NOT folded in.
-        Assert.Equal(new LtrbPixelRect(30, 40, 80, 90), record.Aabb!.Value);
-        Assert.NotEmpty(s.Events.Rects); // the change produced damage via the normal walk
+        Assert.Same(mid.Server.Cache, state.Layer);
+        Assert.Null(state.Snapshot); // dropped on a layer change
+        // Layer space of the bitmap cache layer is the cached visual's local space: no parent offset.
+        Assert.Equal(new LtrbPixelRect(30, 40, 80, 90), state.Aabb!.Value);
+        Assert.NotEmpty(s.Events.Rects); // the update walk collected dirty rects for the change
     }
 
     [Fact]
@@ -418,26 +416,26 @@ public class CompositorBackdropInvalidationTests : CompositorTestsBase
         s.RunJobs();
         s.RunJobs();
 
-        var record = v.Server.BackdropState!;
-        var aabb0 = record.Aabb;
+        var state = v.Server.BackdropState!;
+        var aabb0 = state.Aabb;
         Assert.NotNull(aabb0);
-        var sentinel = new ServerCompositionBackdropStore();
-        record.RetainedState = sentinel;
+        var sentinel = new ServerCompositionBackdropSnapshot();
+        state.Snapshot = sentinel;
 
-        // Sub-pixel move that snaps to the same integral AABB: retained state must survive.
+        // A sub-pixel move that gives the same pixel-aligned AABB: nothing changes.
         v.Offset = new Vector3D(100.4, 100.4, 0);
         s.RunJobs();
         s.RunJobs();
-        Assert.Equal(aabb0!.Value, record.Aabb!.Value);
-        Assert.Same(sentinel, record.RetainedState);
+        Assert.Equal(aabb0!.Value, state.Aabb!.Value);
+        Assert.Same(sentinel, state.Snapshot);
 
-        // A move that changes the snapped AABB keeps the store but marks the whole new AABB for re-ingest.
-        record.RetainedInputDirtyArea = null;
+        // A move that changes the AABB keeps the snapshot, and the whole new AABB is the input dirty rect.
+        state.InputDirtyRect = null;
         v.Offset = new Vector3D(101.6, 101.6, 0);
         s.RunJobs();
-        Assert.NotEqual(aabb0.Value, record.Aabb!.Value);
-        Assert.Same(sentinel, record.RetainedState);
-        Assert.Equal(record.Aabb!.Value.ToLtrbRectUnscaled(), record.RetainedInputDirtyArea);
+        Assert.NotEqual(aabb0.Value, state.Aabb!.Value);
+        Assert.Same(sentinel, state.Snapshot);
+        Assert.Equal(state.Aabb!.Value.ToLtrbRectUnscaled(), state.InputDirtyRect);
     }
 
     [Fact]
@@ -450,7 +448,7 @@ public class CompositorBackdropInvalidationTests : CompositorTestsBase
         parent.Children.Add(child);
         s.RunJobs();
 
-        // Detached: the update walk never visits it, so the per-frame flag is not cleared.
+        // Detached: the update walk does not visit it, so the flag stays set.
         Assert.True(parent.Server._childrenChanged);
     }
 
@@ -459,20 +457,20 @@ public class CompositorBackdropInvalidationTests : CompositorTestsBase
     {
         using var s = new CompositorTestServices();
         var c = s.Compositor;
-        var host = Panel(c);
-        ElementComposition.SetElementChildVisual(s.TopLevel, host);
+        var panel = Panel(c);
+        ElementComposition.SetElementChildVisual(s.TopLevel, panel);
         s.RunJobs();
 
         var child = c.CreateSolidColorVisual();
         child.Size = new Vector(20, 20);
-        host.Children.Add(child);
+        panel.Children.Add(child);
         s.RunJobs();
 
-        Assert.False(host.Server._childrenChanged);
+        Assert.False(panel.Server._childrenChanged);
     }
 
-    // A container that does not clip its children (ClipToBounds defaults to true, which would clip a
-    // zero-sized panel's children — and their damage — down to nothing).
+    // A container that does not clip its children. ClipToBounds is true by default, which clips the children
+    // of a zero-sized container, and their dirty rects, to nothing.
     private static CompositionContainerVisual Panel(Compositor c)
     {
         var v = c.CreateContainerVisual();
@@ -480,8 +478,8 @@ public class CompositorBackdropInvalidationTests : CompositorTestsBase
         return v;
     }
 
-    // A retained backdrop with a known radius: Blur(5) ⇒ R = ceil(5)+1 = 6 host-px at scaling 1.
-    private CompositionSolidColorVisual RetainedBackdrop(Compositor c, Vector size)
+    // A retained backdrop visual. Blur(5) has a sampling radius of ceil(5)+1 = 6 at scaling 1.
+    private CompositionSolidColorVisual RetainedBackdropVisual(Compositor c, Vector size)
     {
         var v = c.CreateSolidColorVisual();
         v.Size = size;
@@ -490,7 +488,7 @@ public class CompositorBackdropInvalidationTests : CompositorTestsBase
         return v;
     }
 
-    private static CompositionContainerVisual ContainerBackdrop(Compositor c)
+    private static CompositionContainerVisual ContainerBackdropVisual(Compositor c)
     {
         var v = Panel(c);
         v.BackdropEffect = Blur(5);
@@ -503,36 +501,36 @@ public class CompositorBackdropInvalidationTests : CompositorTestsBase
     {
         using var s = new CompositorTestServices();
         var c = s.Compositor;
-        var host = Panel(c);
-        ElementComposition.SetElementChildVisual(s.TopLevel, host);
+        var panel = Panel(c);
+        ElementComposition.SetElementChildVisual(s.TopLevel, panel);
 
         var behind = c.CreateSolidColorVisual();
         behind.Size = new Vector(20, 20);
         behind.Offset = new Vector3D(10, 10, 0);
         behind.Color = Colors.Blue;
 
-        var backdrop = RetainedBackdrop(c, new Vector(100, 100));
+        var backdropVisual = RetainedBackdropVisual(c, new Vector(100, 100));
 
-        host.Children.Add(behind);   // earlier DFS = behind the backdrop
-        host.Children.Add(backdrop); // later DFS = in front, samples `behind`
+        panel.Children.Add(behind);   // earlier in draw order: behind the backdrop visual
+        panel.Children.Add(backdropVisual); // later in draw order: in front, `behind` is in its backdrop
         s.RunJobs();
         s.RunJobs();
 
-        var record = backdrop.Server.BackdropState!;
-        Assert.True(record.IsRetained);
-        Assert.Equal(new LtrbPixelRect(0, 0, 100, 100), record.Aabb!.Value);
+        var state = backdropVisual.Server.BackdropState!;
+        Assert.True(state.IsRetained);
+        Assert.Equal(new LtrbPixelRect(0, 0, 100, 100), state.Aabb!.Value);
 
-        record.RetainedInputDirtyArea = null;
+        state.InputDirtyRect = null;
         s.Events.Rects.Clear();
 
-        // Move `behind`: old∪new = (10,10)-(30,70); ∩ AABB is the same; halo = ⊕6 ∩ AABB = (4,4)-(36,76).
+        // `behind` moves: old and new bounds span (10,10)-(30,70), all inside the AABB. Inflated by 6: (4,4)-(36,76).
         behind.Offset = new Vector3D(10, 50, 0);
         s.AssertRects(
-            new Rect(10, 10, 20, 20),  // behind old
-            new Rect(10, 50, 20, 20),  // behind new
-            new Rect(4, 4, 32, 72));   // ((D ∩ AABB) ⊕ R) ∩ AABB
+            new Rect(10, 10, 20, 20),  // `behind`, old
+            new Rect(10, 50, 20, 20),  // `behind`, new
+            new Rect(4, 4, 32, 72));   // output dirty rect
 
-        Assert.Equal(new LtrbRect(10, 10, 30, 70), record.RetainedInputDirtyArea!.Value);
+        Assert.Equal(new LtrbRect(10, 10, 30, 70), state.InputDirtyRect!.Value);
     }
 
     [Fact]
@@ -540,40 +538,40 @@ public class CompositorBackdropInvalidationTests : CompositorTestsBase
     {
         using var s = new CompositorTestServices();
         var c = s.Compositor;
-        var host = Panel(c);
-        ElementComposition.SetElementChildVisual(s.TopLevel, host);
+        var panel = Panel(c);
+        ElementComposition.SetElementChildVisual(s.TopLevel, panel);
 
-        var backdrop = RetainedBackdrop(c, new Vector(100, 100));
+        var backdropVisual = RetainedBackdropVisual(c, new Vector(100, 100));
         var front = c.CreateSolidColorVisual();
         front.Size = new Vector(20, 20);
         front.Offset = new Vector3D(10, 10, 0);
         front.Color = Colors.Blue;
 
-        host.Children.Add(backdrop); // earlier DFS = behind
-        host.Children.Add(front);    // later DFS = in front
+        panel.Children.Add(backdropVisual); // earlier in draw order: behind
+        panel.Children.Add(front);    // later in draw order: in front
         s.RunJobs();
         s.RunJobs();
 
-        var record = backdrop.Server.BackdropState!;
-        record.RetainedInputDirtyArea = null;
+        var state = backdropVisual.Server.BackdropState!;
+        state.InputDirtyRect = null;
         s.Events.Rects.Clear();
 
-        // The change is later in DFS than the backdrop's capture, so its input is untouched.
+        // The change is in front of the backdrop visual, so it is not input.
         front.Offset = new Vector3D(10, 50, 0);
         s.AssertRects(
             new Rect(10, 10, 20, 20),
             new Rect(10, 50, 20, 20));
 
-        Assert.Null(record.RetainedInputDirtyArea);
+        Assert.Null(state.InputDirtyRect);
     }
 
     [Fact]
-    public void Outer_Damage_Does_Not_Reach_Retained_Backdrop_Inside_Clean_Cache()
+    public void Outer_Dirty_Rects_Do_Not_Reach_Retained_Backdrop_Inside_Clean_Bitmap_Cache()
     {
         using var s = new CompositorTestServices();
         var c = s.Compositor;
-        var host = Panel(c);
-        ElementComposition.SetElementChildVisual(s.TopLevel, host);
+        var panel = Panel(c);
+        ElementComposition.SetElementChildVisual(s.TopLevel, panel);
 
         var behind = c.CreateSolidColorVisual();
         behind.Size = new Vector(20, 20);
@@ -583,111 +581,111 @@ public class CompositorBackdropInvalidationTests : CompositorTestsBase
         var cached = c.CreateContainerVisual();
         cached.Size = new Vector(100, 100);
         cached.CacheMode = MakeCache(c);
-        var backdrop = RetainedBackdrop(c, new Vector(100, 100));
-        cached.Children.Add(backdrop);
+        var backdropVisual = RetainedBackdropVisual(c, new Vector(100, 100));
+        cached.Children.Add(backdropVisual);
 
-        host.Children.Add(behind);
-        host.Children.Add(cached);
+        panel.Children.Add(behind);
+        panel.Children.Add(cached);
         s.RunJobs();
         s.RunJobs();
 
-        var record = backdrop.Server.BackdropState!;
-        Assert.Same(cached.Server.Cache, record.Host);
-        record.RetainedInputDirtyArea = null;
+        var state = backdropVisual.Server.BackdropState!;
+        Assert.Same(cached.Server.Cache, state.Layer);
+        state.InputDirtyRect = null;
         s.Events.Rects.Clear();
 
-        // The backdrop samples the cache's own surface: a change outside the (clean) cache is not its input.
+        // The backdrop visual reads the bitmap cache layer: a change outside of the bitmap cache is not its input.
         behind.Offset = new Vector3D(10, 50, 0);
         s.AssertRects(
             new Rect(10, 10, 20, 20),
             new Rect(10, 50, 20, 20));
 
-        Assert.Null(record.RetainedInputDirtyArea);
+        Assert.Null(state.InputDirtyRect);
     }
 
     [Fact]
-    public void Dirty_Ancestor_Fully_Invalidates_Retained_Input()
+    public void Dirty_Parent_Fully_Invalidates_Retained_Input()
     {
         using var s = new CompositorTestServices();
         var c = s.Compositor;
-        var host = Panel(c);
-        ElementComposition.SetElementChildVisual(s.TopLevel, host);
+        var panel = Panel(c);
+        ElementComposition.SetElementChildVisual(s.TopLevel, panel);
 
         var effectParent = Panel(c);
-        effectParent.Effect = Blur(3); // a covering effect ⇒ its subtree walks under a disabled region
-        host.Children.Add(effectParent);
+        effectParent.Effect = Blur(3); // an effect on the parent: its subtree is walked with dirty regions disabled
+        panel.Children.Add(effectParent);
 
         var x = c.CreateSolidColorVisual();
         x.Size = new Vector(20, 20);
         x.Offset = new Vector3D(200, 200, 0);
         x.Color = Colors.Blue;
 
-        var backdrop = RetainedBackdrop(c, new Vector(100, 100));
+        var backdropVisual = RetainedBackdropVisual(c, new Vector(100, 100));
         effectParent.Children.Add(x);
-        effectParent.Children.Add(backdrop);
+        effectParent.Children.Add(backdropVisual);
         s.RunJobs();
         s.RunJobs();
 
-        var record = backdrop.Server.BackdropState!;
-        Assert.Equal(new LtrbPixelRect(0, 0, 100, 100), record.Aabb!.Value);
-        record.RetainedInputDirtyArea = null;
+        var state = backdropVisual.Server.BackdropState!;
+        Assert.Equal(new LtrbPixelRect(0, 0, 100, 100), state.Aabb!.Value);
+        state.InputDirtyRect = null;
 
-        // A dirty-for-render ancestor only adds its covering rect in its own PostSubgraph, so the working set
-        // doesn't contain it at the backdrop's encounter ⇒ the whole input is treated as dirty.
+        // The dirty rect of a dirty parent is collected in its PostSubgraph, so it is not in the working set when
+        // the walk reaches the backdrop visual. The whole input is dirty.
         x.Offset = new Vector3D(200, 250, 0);
         s.RunJobs();
 
-        Assert.Equal(new LtrbRect(0, 0, 100, 100), record.RetainedInputDirtyArea!.Value);
+        Assert.Equal(new LtrbRect(0, 0, 100, 100), state.InputDirtyRect!.Value);
     }
 
     [Fact]
-    public void Child_Removal_Under_Ancestor_Fully_Invalidates_Via_Children_Changed_Blanket()
+    public void Child_Removal_In_Parent_Chain_Fully_Invalidates_Retained_Input()
     {
         using var s = new CompositorTestServices();
         var c = s.Compositor;
-        var host = Panel(c);
-        ElementComposition.SetElementChildVisual(s.TopLevel, host);
+        var panel = Panel(c);
+        ElementComposition.SetElementChildVisual(s.TopLevel, panel);
 
         var p = Panel(c);
-        host.Children.Add(p);
+        panel.Children.Add(p);
 
         var mover = c.CreateSolidColorVisual();
         mover.Size = new Vector(20, 20);
-        mover.Offset = new Vector3D(500, 500, 0); // outside the backdrop AABB
+        mover.Offset = new Vector3D(500, 500, 0); // outside of the backdrop AABB
         mover.Color = Colors.Green;
 
-        var backdrop = RetainedBackdrop(c, new Vector(100, 100));
+        var backdropVisual = RetainedBackdropVisual(c, new Vector(100, 100));
 
         var removable = c.CreateSolidColorVisual();
         removable.Size = new Vector(20, 20);
         removable.Offset = new Vector3D(200, 200, 0);
         removable.Color = Colors.Blue;
 
-        p.Children.Add(mover);     // earlier DFS ⇒ forces descent, its damage is in the working set
-        p.Children.Add(backdrop);
-        p.Children.Add(removable); // removed later ⇒ extra dirty rect emitted in p's PostSubgraph
+        p.Children.Add(mover);     // earlier in draw order: its dirty rects are in the working set
+        p.Children.Add(backdropVisual);
+        p.Children.Add(removable); // removed below: its dirty rect is collected in p's PostSubgraph
         s.RunJobs();
         s.RunJobs();
 
-        var record = backdrop.Server.BackdropState!;
-        record.RetainedInputDirtyArea = null;
+        var state = backdropVisual.Server.BackdropState!;
+        state.InputDirtyRect = null;
 
-        // `mover` is well outside the AABB (empty normal capture); removing `removable` sets p's
-        // children-changed flag whose blanket covers the late extra-dirty-rect ordering hole ⇒ full input.
+        // `mover` is outside of the AABB, so it adds nothing. Removing `removable` sets _childrenChanged on p,
+        // which makes the whole input dirty.
         mover.Offset = new Vector3D(500, 520, 0);
         p.Children.Remove(removable);
         s.RunJobs();
 
-        Assert.Equal(new LtrbRect(0, 0, 100, 100), record.RetainedInputDirtyArea!.Value);
+        Assert.Equal(new LtrbRect(0, 0, 100, 100), state.InputDirtyRect!.Value);
     }
 
     [Fact]
-    public void Descent_Gate_Visits_Clean_Backdrop_Spine_Only_With_Damage()
+    public void Descent_Check_Visits_Clean_Visuals_Only_With_Dirty_Rects()
     {
         using var s = new CompositorTestServices();
         var c = s.Compositor;
-        var host = Panel(c);
-        ElementComposition.SetElementChildVisual(s.TopLevel, host);
+        var panel = Panel(c);
+        ElementComposition.SetElementChildVisual(s.TopLevel, panel);
 
         var mover = c.CreateSolidColorVisual();
         mover.Size = new Vector(20, 20);
@@ -696,58 +694,58 @@ public class CompositorBackdropInvalidationTests : CompositorTestsBase
 
         var c1 = Panel(c);
         var c2 = Panel(c);
-        var backdrop = RetainedBackdrop(c, new Vector(100, 100));
+        var backdropVisual = RetainedBackdropVisual(c, new Vector(100, 100));
 
-        host.Children.Add(mover); // earlier DFS
-        host.Children.Add(c1);    // clean spine c1 → c2 → backdrop
+        panel.Children.Add(mover); // earlier in draw order
+        panel.Children.Add(c1);    // clean visuals: c1, c2, backdrop
         c1.Children.Add(c2);
-        c2.Children.Add(backdrop);
+        c2.Children.Add(backdropVisual);
         s.RunJobs();
         s.RunJobs();
         s.RunJobs();
 
-        var record = backdrop.Server.BackdropState!;
-        record.RetainedInputDirtyArea = null;
+        var state = backdropVisual.Server.BackdropState!;
+        state.InputDirtyRect = null;
 
-        // Idle frame: the clean spine is not descended, nothing is captured, the render is skipped.
+        // Idle frame: the clean visuals are not visited, nothing is collected, nothing is drawn.
         s.Events.Reset();
         s.RunJobs();
-        Assert.Null(record.RetainedInputDirtyArea);
+        Assert.Null(state.InputDirtyRect);
         Assert.Equal(0, s.Events.VisitedVisuals);
 
-        // Damage frame: `mover` (earlier DFS, overlapping the AABB) changes ⇒ the descent gate forces the
-        // walk down the clean spine and the backdrop captures.
+        // `mover` is earlier in draw order and overlaps the AABB. When it changes, the descent check makes the
+        // walk visit the clean visuals, and the input dirty rect is collected.
         mover.Offset = new Vector3D(10, 15, 0);
         s.RunJobs();
-        Assert.Equal(new LtrbRect(10, 10, 30, 35), record.RetainedInputDirtyArea!.Value);
+        Assert.Equal(new LtrbRect(10, 10, 30, 35), state.InputDirtyRect!.Value);
     }
 
     [Fact]
-    public void Dirty_Ancestor_Alone_Fully_Invalidates_Retained_Input()
+    public void Dirty_Parent_Alone_Fully_Invalidates_Retained_Input()
     {
         using var s = new CompositorTestServices();
         var c = s.Compositor;
-        var host = Panel(c);
-        ElementComposition.SetElementChildVisual(s.TopLevel, host);
+        var panel = Panel(c);
+        ElementComposition.SetElementChildVisual(s.TopLevel, panel);
 
-        // The ancestor's own content is drawn behind the backdrop, so its opacity change is backdrop input.
+        // The parent's own content is behind the backdrop visual, so its opacity change is input.
         var ancestor = c.CreateSolidColorVisual();
         ancestor.Size = new Vector(100, 100);
         ancestor.Color = Colors.Blue;
-        var backdrop = RetainedBackdrop(c, new Vector(100, 100));
-        ancestor.Children.Add(backdrop);
-        host.Children.Add(ancestor);
+        var backdropVisual = RetainedBackdropVisual(c, new Vector(100, 100));
+        ancestor.Children.Add(backdropVisual);
+        panel.Children.Add(ancestor);
         s.RunJobs();
         s.RunJobs();
 
-        var record = backdrop.Server.BackdropState!;
-        record.RetainedInputDirtyArea = null;
+        var state = backdropVisual.Server.BackdropState!;
+        state.InputDirtyRect = null;
 
-        // Nothing else is damaged this frame, so the working set is empty when the walk reaches the ancestor.
+        // Nothing else is dirty this frame, so the working set is empty when the walk reaches the parent.
         ancestor.Opacity = 0.5f;
         s.RunJobs();
 
-        Assert.Equal(new LtrbRect(0, 0, 100, 100), record.RetainedInputDirtyArea!.Value);
+        Assert.Equal(new LtrbRect(0, 0, 100, 100), state.InputDirtyRect!.Value);
     }
 
     [Fact]
@@ -755,39 +753,41 @@ public class CompositorBackdropInvalidationTests : CompositorTestsBase
     {
         using var s = new CompositorTestServices();
         var c = s.Compositor;
-        var host = Panel(c);
-        ElementComposition.SetElementChildVisual(s.TopLevel, host);
+        var panel = Panel(c);
+        ElementComposition.SetElementChildVisual(s.TopLevel, panel);
 
         var p = Panel(c);
-        host.Children.Add(p);
+        panel.Children.Add(p);
 
         var removable = c.CreateSolidColorVisual();
         removable.Size = new Vector(20, 20);
-        removable.Offset = new Vector3D(10, 10, 0); // behind the backdrop
+        removable.Offset = new Vector3D(10, 10, 0); // behind the backdrop visual
         removable.Color = Colors.Blue;
-        var backdrop = RetainedBackdrop(c, new Vector(100, 100));
+        var backdropVisual = RetainedBackdropVisual(c, new Vector(100, 100));
 
         p.Children.Add(removable);
-        p.Children.Add(backdrop);
+        p.Children.Add(backdropVisual);
         s.RunJobs();
         s.RunJobs();
 
-        var record = backdrop.Server.BackdropState!;
-        record.RetainedInputDirtyArea = null;
+        var state = backdropVisual.Server.BackdropState!;
+        state.InputDirtyRect = null;
 
-        // The removal's damage is only emitted in p's PostSubgraph, after the backdrop's position in the walk.
+        // The dirty rect of the removal is collected in p's PostSubgraph, after the walk has passed the
+        // backdrop visual.
         p.Children.Remove(removable);
         s.RunJobs();
 
-        Assert.Equal(new LtrbRect(0, 0, 100, 100), record.RetainedInputDirtyArea!.Value);
+        Assert.Equal(new LtrbRect(0, 0, 100, 100), state.InputDirtyRect!.Value);
     }
 
-    private (CompositionContainerVisual cached, CompositionSolidColorVisual removable, ServerCompositionVisualBackdropState record)
+    private (CompositionContainerVisual cached, CompositionSolidColorVisual removable,
+        ServerCompositionVisualBackdropState state)
         BuildCachedBackdrop(CompositorTestServices s)
     {
         var c = s.Compositor;
-        var host = Panel(c);
-        ElementComposition.SetElementChildVisual(s.TopLevel, host);
+        var panel = Panel(c);
+        ElementComposition.SetElementChildVisual(s.TopLevel, panel);
 
         var cached = c.CreateContainerVisual();
         cached.Size = new Vector(100, 100);
@@ -796,42 +796,42 @@ public class CompositorBackdropInvalidationTests : CompositorTestsBase
         removable.Size = new Vector(20, 20);
         removable.Offset = new Vector3D(10, 10, 0);
         removable.Color = Colors.Blue;
-        var backdrop = RetainedBackdrop(c, new Vector(100, 100));
+        var backdropVisual = RetainedBackdropVisual(c, new Vector(100, 100));
         cached.Children.Add(removable);
-        cached.Children.Add(backdrop);
-        host.Children.Add(cached);
+        cached.Children.Add(backdropVisual);
+        panel.Children.Add(cached);
         s.RunJobs();
         s.RunJobs();
 
-        var record = backdrop.Server.BackdropState!;
-        Assert.Same(cached.Server.Cache, record.Host);
-        record.RetainedInputDirtyArea = null;
-        return (cached, removable, record);
+        var state = backdropVisual.Server.BackdropState!;
+        Assert.Same(cached.Server.Cache, state.Layer);
+        state.InputDirtyRect = null;
+        return (cached, removable, state);
     }
 
     [Fact]
     public void Moving_A_Cache_Does_Not_Invalidate_Retained_Backdrop_Inside_It()
     {
         using var s = new CompositorTestServices();
-        var (cached, _, record) = BuildCachedBackdrop(s);
+        var (cached, _, state) = BuildCachedBackdrop(s);
 
-        // The cache's contents are unchanged; only where it is drawn moves.
+        // The contents of the bitmap cache layer are the same. Only the place where it is drawn changes.
         cached.Offset = new Vector3D(30, 0, 0);
         s.RunJobs();
 
-        Assert.Null(record.RetainedInputDirtyArea);
+        Assert.Null(state.InputDirtyRect);
     }
 
     [Fact]
     public void Child_Removal_Inside_Cache_Fully_Invalidates_Later_Sibling_Retained_Input()
     {
         using var s = new CompositorTestServices();
-        var (cached, removable, record) = BuildCachedBackdrop(s);
+        var (cached, removable, state) = BuildCachedBackdrop(s);
 
         cached.Children.Remove(removable);
         s.RunJobs();
 
-        Assert.Equal(new LtrbRect(0, 0, 100, 100), record.RetainedInputDirtyArea!.Value);
+        Assert.Equal(new LtrbRect(0, 0, 100, 100), state.InputDirtyRect!.Value);
     }
 
     [Fact]
@@ -839,38 +839,38 @@ public class CompositorBackdropInvalidationTests : CompositorTestsBase
     {
         using var s = new CompositorTestServices();
         var c = s.Compositor;
-        var host = Panel(c);
-        ElementComposition.SetElementChildVisual(s.TopLevel, host);
+        var panel = Panel(c);
+        ElementComposition.SetElementChildVisual(s.TopLevel, panel);
 
-        var backdrop = ContainerBackdrop(c);
-        host.Children.Add(backdrop);
+        var backdropVisual = ContainerBackdropVisual(c);
+        panel.Children.Add(backdropVisual);
 
         var d = c.CreateSolidColorVisual();
         d.Size = new Vector(20, 20);
         d.Color = Colors.Red;
-        backdrop.Children.Add(d);
+        backdropVisual.Children.Add(d);
         s.RunJobs();
         s.RunJobs();
 
-        var record = backdrop.Server.BackdropState!;
-        Assert.Equal(new LtrbPixelRect(0, 0, 20, 20), record.Aabb!.Value);
-        record.RetainedInputDirtyArea = null;
-        var sentinel = new ServerCompositionBackdropStore();
-        record.RetainedState = sentinel;
+        var state = backdropVisual.Server.BackdropState!;
+        Assert.Equal(new LtrbPixelRect(0, 0, 20, 20), state.Aabb!.Value);
+        state.InputDirtyRect = null;
+        var sentinel = new ServerCompositionBackdropSnapshot();
+        state.Snapshot = sentinel;
 
-        // A child of the backdrop resizes during the walk ⇒ FinalizeSubtreeBounds changes the backdrop's
-        // bounds after the registry snapshot. The PostSubgraph stale-AABB check re-ingests the same frame.
+        // A child of the backdrop visual gets a new size: FinalizeSubtreeBounds changes the bounds that the AABB
+        // was computed from. CheckBackdropStaleAabb corrects the AABB in the same frame.
         d.Size = new Vector(60, 60);
         s.RunJobs();
 
-        Assert.Equal(new LtrbPixelRect(0, 0, 60, 60), record.Aabb!.Value);
-        Assert.Equal(new LtrbRect(0, 0, 60, 60), record.RetainedInputDirtyArea!.Value);
-        Assert.Same(sentinel, record.RetainedState); // the store is kept; it reallocates on a size change
+        Assert.Equal(new LtrbPixelRect(0, 0, 60, 60), state.Aabb!.Value);
+        Assert.Equal(new LtrbRect(0, 0, 60, 60), state.InputDirtyRect!.Value);
+        Assert.Same(sentinel, state.Snapshot); // the snapshot is kept
 
-        // In-place record update ⇒ the registry does not re-detect the change next frame (no spurious repaint).
-        record.RetainedInputDirtyArea = null;
+        // The state is up to date, so the next backdrop state recompute sees no change.
+        state.InputDirtyRect = null;
         s.RunJobs();
-        Assert.Null(record.RetainedInputDirtyArea);
+        Assert.Null(state.InputDirtyRect);
     }
 
     [Fact]
@@ -878,31 +878,31 @@ public class CompositorBackdropInvalidationTests : CompositorTestsBase
     {
         using var s = new CompositorTestServices();
         var c = s.Compositor;
-        var host = Panel(c);
-        ElementComposition.SetElementChildVisual(s.TopLevel, host);
+        var panel = Panel(c);
+        ElementComposition.SetElementChildVisual(s.TopLevel, panel);
 
-        var backdrop = ContainerBackdrop(c);
-        host.Children.Add(backdrop);
+        var backdropVisual = ContainerBackdropVisual(c);
+        panel.Children.Add(backdropVisual);
 
         var d = c.CreateSolidColorVisual();
         d.Size = new Vector(20, 20);
         d.Offset = new Vector3D(0.2, 0.2, 0);
         d.Color = Colors.Red;
-        backdrop.Children.Add(d);
+        backdropVisual.Children.Add(d);
         s.RunJobs();
         s.RunJobs();
 
-        var record = backdrop.Server.BackdropState!;
-        // (0.2,0.2)-(20.2,20.2) snaps out to (0,0,21,21).
-        Assert.Equal(new LtrbPixelRect(0, 0, 21, 21), record.Aabb!.Value);
-        record.RetainedInputDirtyArea = null;
+        var state = backdropVisual.Server.BackdropState!;
+        // (0.2,0.2)-(20.2,20.2) rounds out to (0,0,21,21).
+        Assert.Equal(new LtrbPixelRect(0, 0, 21, 21), state.Aabb!.Value);
+        state.InputDirtyRect = null;
 
-        // Sub-pixel jitter that snaps to the same host AABB ⇒ the pixel-aligned stale check finds no change.
+        // A sub-pixel move that gives the same pixel-aligned AABB: no change.
         d.Offset = new Vector3D(0.4, 0.4, 0);
         s.RunJobs();
 
-        Assert.Equal(new LtrbPixelRect(0, 0, 21, 21), record.Aabb!.Value);
-        Assert.Null(record.RetainedInputDirtyArea);
+        Assert.Equal(new LtrbPixelRect(0, 0, 21, 21), state.Aabb!.Value);
+        Assert.Null(state.InputDirtyRect);
     }
 
     [Fact]
@@ -910,177 +910,177 @@ public class CompositorBackdropInvalidationTests : CompositorTestsBase
     {
         using var s = new CompositorTestServices();
         var c = s.Compositor;
-        var host = Panel(c);
-        ElementComposition.SetElementChildVisual(s.TopLevel, host);
+        var panel = Panel(c);
+        ElementComposition.SetElementChildVisual(s.TopLevel, panel);
 
-        var backdrop = ContainerBackdrop(c);
-        host.Children.Add(backdrop);
+        var backdropVisual = ContainerBackdropVisual(c);
+        panel.Children.Add(backdropVisual);
 
-        // A static child keeps the backdrop's subtree bounds strictly larger than the moving child's rects.
+        // A static child keeps the subtree bounds of the backdrop visual larger than the rects of the moving child.
         var stat = c.CreateSolidColorVisual();
         stat.Size = new Vector(20, 20);
         stat.Offset = new Vector3D(50, 50, 0);
         stat.Color = Colors.Green;
-        backdrop.Children.Add(stat);
+        backdropVisual.Children.Add(stat);
 
         var mover = c.CreateSolidColorVisual();
         mover.Size = new Vector(20, 20);
         mover.Color = Colors.Red;
-        backdrop.Children.Add(mover);
+        backdropVisual.Children.Add(mover);
         s.RunJobs();
         s.RunJobs();
 
         s.Events.Rects.Clear();
 
-        // A descendant moves beyond the backdrop's old bounds. The backdrop visual itself is untouched, yet
-        // its whole old∪new subtree bounds are emitted (forced dirty-for-render), not just the child's rects.
+        // A child moves outside of the old bounds of the backdrop visual. The old and the new subtree bounds of
+        // the backdrop visual are collected, not only the rects of the child.
         mover.Offset = new Vector3D(0, 80, 0);
         s.AssertRects(
-            new Rect(0, 0, 70, 70),   // old subtree bounds = union(stat, mover old)
-            new Rect(0, 50, 70, 50)); // new subtree bounds = union(stat, mover new)
+            new Rect(0, 0, 70, 70),   // old subtree bounds: union(stat, mover old)
+            new Rect(0, 50, 70, 50)); // new subtree bounds: union(stat, mover new)
     }
 
     [Fact]
-    public void InvalidateRetainedBackdrops_Marks_Only_Retained_In_The_Matching_Host()
+    public void InvalidateRetainedBackdropInputs_Marks_Only_Retained_In_The_Matching_Layer()
     {
         using var s = new CompositorTestServices();
         var c = s.Compositor;
-        var host = Panel(c);
-        ElementComposition.SetElementChildVisual(s.TopLevel, host);
+        var panel = Panel(c);
+        ElementComposition.SetElementChildVisual(s.TopLevel, panel);
 
-        var retainedVisual = RetainedBackdrop(c, new Vector(50, 50));
+        var retainedVisual = RetainedBackdropVisual(c, new Vector(50, 50));
 
         var volatileVisual = c.CreateSolidColorVisual();
         volatileVisual.Size = new Vector(50, 50);
         volatileVisual.Offset = new Vector3D(100, 0, 0);
         volatileVisual.Color = Colors.Blue;
-        volatileVisual.BackdropEffect = Blur(0); // R = 0 ⇒ volatile
+        volatileVisual.BackdropEffect = Blur(0); // no sampling radius: volatile
 
-        // A separate cache host, to prove host filtering.
-        var cacheHost = Panel(c);
-        cacheHost.Offset = new Vector3D(0, 200, 0);
-        cacheHost.CacheMode = MakeCache(c);
+        // A bitmap cache layer, to check that only the given layer is affected.
+        var cachedVisual = Panel(c);
+        cachedVisual.Offset = new Vector3D(0, 200, 0);
+        cachedVisual.CacheMode = MakeCache(c);
 
-        host.Children.Add(retainedVisual);
-        host.Children.Add(volatileVisual);
-        host.Children.Add(cacheHost);
+        panel.Children.Add(retainedVisual);
+        panel.Children.Add(volatileVisual);
+        panel.Children.Add(cachedVisual);
         s.RunJobs();
         s.RunJobs();
 
-        var retainedRecord = retainedVisual.Server.BackdropState!;
-        var volatileRecord = volatileVisual.Server.BackdropState!;
-        Assert.True(retainedRecord.IsRetained);
-        Assert.False(volatileRecord.IsRetained);
+        var retainedState = retainedVisual.Server.BackdropState!;
+        var volatileState = volatileVisual.Server.BackdropState!;
+        Assert.True(retainedState.IsRetained);
+        Assert.False(volatileState.IsRetained);
 
         var target = s.Renderer.CompositionTarget.Server;
 
-        retainedRecord.RetainedInputDirtyArea = null;
-        volatileRecord.RetainedInputDirtyArea = null;
-        target.InvalidateRetainedBackdrops(null); // root host
+        retainedState.InputDirtyRect = null;
+        volatileState.InputDirtyRect = null;
+        target.InvalidateRetainedBackdropInputs(null); // root layer
 
-        Assert.Equal(new LtrbRect(0, 0, 50, 50), retainedRecord.RetainedInputDirtyArea!.Value);
-        Assert.Null(volatileRecord.RetainedInputDirtyArea); // volatile is untouched by the retained bypass
+        Assert.Equal(new LtrbRect(0, 0, 50, 50), retainedState.InputDirtyRect!.Value);
+        Assert.Null(volatileState.InputDirtyRect); // volatile: not affected
 
-        // A non-matching (cache) host marks nothing in the root host.
-        retainedRecord.RetainedInputDirtyArea = null;
-        target.InvalidateRetainedBackdrops(cacheHost.Server.Cache);
-        Assert.Null(retainedRecord.RetainedInputDirtyArea);
+        // A bitmap cache layer marks nothing in the root layer.
+        retainedState.InputDirtyRect = null;
+        target.InvalidateRetainedBackdropInputs(cachedVisual.Server.Cache);
+        Assert.Null(retainedState.InputDirtyRect);
     }
 
-    // A volatile backdrop with a non-zero radius: Blur(5) + volatile ⇒ R = 6 host-px, classified volatile.
-    private CompositionSolidColorVisual VolatileBackdrop(Compositor c, Vector size, Vector3D offset)
+    // A volatile backdrop visual with a sampling radius of 6 (Blur(5), explicitly volatile).
+    private CompositionSolidColorVisual VolatileBackdropVisual(Compositor c, Vector size, Vector3D offset)
     {
         var v = c.CreateSolidColorVisual();
         v.Size = size;
         v.Offset = offset;
         v.Color = Colors.Blue;
         v.BackdropEffect = Blur(5);
-        v.BackdropEffectCache = MakeVolatileBackdrop(c);
+        v.BackdropEffectCache = MakeVolatileCacheMode(c);
         return v;
     }
 
     [Fact]
-    public void Volatile_Expansion_Emits_Whole_Aabb_And_Reaches_Later_Retained()
+    public void Volatile_Whole_Aabb_Invalidation_Reaches_Retained_In_Front()
     {
         using var s = new CompositorTestServices();
         var c = s.Compositor;
-        var host = Panel(c);
-        ElementComposition.SetElementChildVisual(s.TopLevel, host);
+        var panel = Panel(c);
+        ElementComposition.SetElementChildVisual(s.TopLevel, panel);
 
         var behind = c.CreateSolidColorVisual();
         behind.Size = new Vector(20, 20);
-        behind.Offset = new Vector3D(200, 0, 0); // overlaps the volatile, not the retained
+        behind.Offset = new Vector3D(200, 0, 0); // overlaps the volatile one, not the retained one
         behind.Color = Colors.Green;
 
-        var vol = VolatileBackdrop(c, new Vector(300, 100), new Vector3D(0, 0, 0));
-        var retained = RetainedBackdrop(c, new Vector(50, 50)); // later than `vol`, overlaps its AABB
+        var vol = VolatileBackdropVisual(c, new Vector(300, 100), new Vector3D(0, 0, 0));
+        var retained = RetainedBackdropVisual(c, new Vector(50, 50)); // in front of `vol`, overlaps its AABB
 
-        host.Children.Add(behind);   // earliest DFS
-        host.Children.Add(vol);      // volatile, R > 0
-        host.Children.Add(retained); // latest DFS ⇒ receives the volatile's expansion
+        panel.Children.Add(behind);   // first in draw order
+        panel.Children.Add(vol);      // volatile, with a sampling radius
+        panel.Children.Add(retained); // last in draw order: gets the AABB of the volatile one as input
         s.RunJobs();
         s.RunJobs();
 
-        var volRecord = vol.Server.BackdropState!;
-        var retRecord = retained.Server.BackdropState!;
-        Assert.False(volRecord.IsRetained);
-        Assert.True(retRecord.IsRetained);
-        Assert.Equal(new LtrbPixelRect(0, 0, 300, 100), volRecord.Aabb!.Value);
+        var volState = vol.Server.BackdropState!;
+        var retState = retained.Server.BackdropState!;
+        Assert.False(volState.IsRetained);
+        Assert.True(retState.IsRetained);
+        Assert.Equal(new LtrbPixelRect(0, 0, 300, 100), volState.Aabb!.Value);
 
-        retRecord.RetainedInputDirtyArea = null;
+        retState.InputDirtyRect = null;
         s.Events.Rects.Clear();
 
-        // The change is outside the retained AABB, so the walk captures nothing for it. The volatile pass then
-        // expands the whole volatile AABB and delivers it (∩ retained AABB) to the later retained visual.
+        // The change is outside of the retained AABB, so the update walk collects nothing for it. The volatile
+        // pass adds the whole volatile AABB, and its part inside the retained AABB is input for `retained`.
         behind.Offset = new Vector3D(200, 50, 0);
         s.AssertRects(
-            new Rect(200, 0, 20, 20),   // behind old
-            new Rect(200, 50, 20, 20),  // behind new
-            new Rect(0, 0, 300, 100),   // whole-visual invalidation of the volatile
-            new Rect(0, 0, 50, 50));    // retained halo of the delivered damage (⊕6 clamped to its AABB)
+            new Rect(200, 0, 20, 20),   // `behind`, old
+            new Rect(200, 50, 20, 20),  // `behind`, new
+            new Rect(0, 0, 300, 100),   // whole-AABB invalidation of the volatile one
+            new Rect(0, 0, 50, 50));    // output dirty rect of the retained one (inflated by 6, clipped to its AABB)
 
-        Assert.Equal(new LtrbRect(0, 0, 50, 50), retRecord.RetainedInputDirtyArea!.Value);
+        Assert.Equal(new LtrbRect(0, 0, 50, 50), retState.InputDirtyRect!.Value);
     }
 
     [Fact]
-    public void Volatile_Expansion_Reaches_Retained_Behind_Retained_Through_Its_Halo()
+    public void Volatile_Whole_Aabb_Invalidation_Reaches_Retained_Through_Output_Dirty_Rect_Of_Another()
     {
         using var s = new CompositorTestServices();
         var c = s.Compositor;
-        var host = Panel(c);
-        ElementComposition.SetElementChildVisual(s.TopLevel, host);
+        var panel = Panel(c);
+        ElementComposition.SetElementChildVisual(s.TopLevel, panel);
 
         var behind = c.CreateSolidColorVisual();
         behind.Size = new Vector(20, 20);
-        behind.Offset = new Vector3D(10, 10, 0); // overlaps only the volatile
+        behind.Offset = new Vector3D(10, 10, 0); // overlaps only the volatile one
         behind.Color = Colors.Green;
 
-        var vol = VolatileBackdrop(c, new Vector(100, 100), new Vector3D(0, 0, 0)); // x 0..100
-        var r1 = RetainedBackdrop(c, new Vector(100, 100));
-        r1.Offset = new Vector3D(95, 0, 0); // x 95..195: overlaps the volatile in 95..100
-        var r2 = RetainedBackdrop(c, new Vector(50, 50));
-        r2.Offset = new Vector3D(102, 0, 0); // x 102..152: clear of the volatile, inside r1
+        var vol = VolatileBackdropVisual(c, new Vector(100, 100), new Vector3D(0, 0, 0)); // x 0..100
+        var r1 = RetainedBackdropVisual(c, new Vector(100, 100));
+        r1.Offset = new Vector3D(95, 0, 0); // x 95..195: overlaps the volatile one in 95..100
+        var r2 = RetainedBackdropVisual(c, new Vector(50, 50));
+        r2.Offset = new Vector3D(102, 0, 0); // x 102..152: does not touch the volatile one, inside r1
 
-        host.Children.Add(behind);
-        host.Children.Add(vol);
-        host.Children.Add(r1);
-        host.Children.Add(r2);
+        panel.Children.Add(behind);
+        panel.Children.Add(vol);
+        panel.Children.Add(r1);
+        panel.Children.Add(r2);
         s.RunJobs();
         s.RunJobs();
 
-        var r1Record = r1.Server.BackdropState!;
-        var r2Record = r2.Server.BackdropState!;
-        r1Record.RetainedInputDirtyArea = null;
-        r2Record.RetainedInputDirtyArea = null;
+        var r1State = r1.Server.BackdropState!;
+        var r2State = r2.Server.BackdropState!;
+        r1State.InputDirtyRect = null;
+        r2State.InputDirtyRect = null;
 
         behind.Offset = new Vector3D(10, 50, 0);
         s.RunJobs();
 
-        // r1 receives the volatile's AABB ∩ its own: x 95..100. Its output changes in that ⊕ R(6): x 95..106.
-        Assert.Equal(new LtrbRect(95, 0, 100, 100), r1Record.RetainedInputDirtyArea!.Value);
-        // r2 is in front of r1, so r1's changed output in x 102..106 is r2's input.
-        Assert.True(r2Record.RetainedInputDirtyArea.HasValue, "r2 received no input damage");
-        Assert.Equal(new LtrbRect(102, 0, 106, 50), r2Record.RetainedInputDirtyArea!.Value);
+        // r1 gets the part of the volatile AABB inside its own: x 95..100. Its output dirty rect: x 95..106.
+        Assert.Equal(new LtrbRect(95, 0, 100, 100), r1State.InputDirtyRect!.Value);
+        // r2 is in front of r1, so the output dirty rect of r1 in x 102..106 is input of r2.
+        Assert.True(r2State.InputDirtyRect.HasValue, "r2 received no input damage");
+        Assert.Equal(new LtrbRect(102, 0, 106, 50), r2State.InputDirtyRect!.Value);
     }
 
     [Fact]
@@ -1088,28 +1088,28 @@ public class CompositorBackdropInvalidationTests : CompositorTestsBase
     {
         using var s = new CompositorTestServices();
         var c = s.Compositor;
-        var host = Panel(c);
-        ElementComposition.SetElementChildVisual(s.TopLevel, host);
+        var panel = Panel(c);
+        ElementComposition.SetElementChildVisual(s.TopLevel, panel);
 
         var behind = c.CreateSolidColorVisual();
         behind.Size = new Vector(20, 20);
         behind.Color = Colors.Green;
 
-        // A chain where each volatile only overlaps its immediate neighbour; the fixpoint must walk the chain.
-        var v1 = VolatileBackdrop(c, new Vector(100, 100), new Vector3D(0, 0, 0));
-        var v2 = VolatileBackdrop(c, new Vector(100, 100), new Vector3D(80, 0, 0));
-        var v3 = VolatileBackdrop(c, new Vector(100, 100), new Vector3D(160, 0, 0));
+        // Each volatile one overlaps only the next one, so the pass has to repeat.
+        var v1 = VolatileBackdropVisual(c, new Vector(100, 100), new Vector3D(0, 0, 0));
+        var v2 = VolatileBackdropVisual(c, new Vector(100, 100), new Vector3D(80, 0, 0));
+        var v3 = VolatileBackdropVisual(c, new Vector(100, 100), new Vector3D(160, 0, 0));
 
-        host.Children.Add(behind);
-        host.Children.Add(v1);
-        host.Children.Add(v2);
-        host.Children.Add(v3);
+        panel.Children.Add(behind);
+        panel.Children.Add(v1);
+        panel.Children.Add(v2);
+        panel.Children.Add(v3);
         s.RunJobs();
         s.RunJobs();
 
         s.Events.Rects.Clear();
 
-        // `behind` only touches v1; the fixpoint expands v1 → (reaches v2) → v2 → (reaches v3) → v3.
+        // `behind` touches only v1. Invalidating v1 reaches v2, and v2 reaches v3.
         behind.Offset = new Vector3D(0, 50, 0);
         s.AssertRects(
             new Rect(0, 0, 20, 20),
@@ -1124,20 +1124,20 @@ public class CompositorBackdropInvalidationTests : CompositorTestsBase
     {
         using var s = new CompositorTestServices();
         var c = s.Compositor;
-        var host = Panel(c);
-        ElementComposition.SetElementChildVisual(s.TopLevel, host);
+        var panel = Panel(c);
+        ElementComposition.SetElementChildVisual(s.TopLevel, panel);
 
         var behind = c.CreateSolidColorVisual();
         behind.Size = new Vector(20, 20);
         behind.Color = Colors.Green;
 
-        // v1 and v2 overlap each other: without the per-frame `expanded` marks the loop would never settle.
-        var v1 = VolatileBackdrop(c, new Vector(100, 100), new Vector3D(0, 0, 0));
-        var v2 = VolatileBackdrop(c, new Vector(100, 100), new Vector3D(50, 0, 0));
+        // v1 and v2 overlap each other: without the Invalidated flags the loop would not end.
+        var v1 = VolatileBackdropVisual(c, new Vector(100, 100), new Vector3D(0, 0, 0));
+        var v2 = VolatileBackdropVisual(c, new Vector(100, 100), new Vector3D(50, 0, 0));
 
-        host.Children.Add(behind);
-        host.Children.Add(v1);
-        host.Children.Add(v2);
+        panel.Children.Add(behind);
+        panel.Children.Add(v1);
+        panel.Children.Add(v2);
         s.RunJobs();
         s.RunJobs();
 
@@ -1148,7 +1148,7 @@ public class CompositorBackdropInvalidationTests : CompositorTestsBase
             new Rect(0, 0, 20, 20),
             new Rect(0, 50, 20, 20),
             new Rect(0, 0, 100, 100),   // v1
-            new Rect(50, 0, 100, 100)); // v2 (each expands exactly once ⇒ the loop terminates)
+            new Rect(50, 0, 100, 100)); // v2 (each one is invalidated once, so the loop ends)
     }
 
     [Fact]
@@ -1156,95 +1156,94 @@ public class CompositorBackdropInvalidationTests : CompositorTestsBase
     {
         using var s = new CompositorTestServices();
         var c = s.Compositor;
-        var host = Panel(c);
-        ElementComposition.SetElementChildVisual(s.TopLevel, host);
+        var panel = Panel(c);
+        ElementComposition.SetElementChildVisual(s.TopLevel, panel);
 
-        var retained = RetainedBackdrop(c, new Vector(50, 50)); // earlier DFS = behind
-        var vol = VolatileBackdrop(c, new Vector(50, 50), new Vector3D(100, 0, 0)); // later DFS = in front
+        var retained = RetainedBackdropVisual(c, new Vector(50, 50)); // earlier in draw order: behind
+        var vol = VolatileBackdropVisual(c, new Vector(50, 50), new Vector3D(100, 0, 0)); // later in draw order: in front
 
         var behind = c.CreateSolidColorVisual();
         behind.Size = new Vector(20, 20);
-        behind.Offset = new Vector3D(100, 0, 0); // overlaps the volatile only
+        behind.Offset = new Vector3D(100, 0, 0); // overlaps the volatile one only
         behind.Color = Colors.Green;
 
-        host.Children.Add(retained);
-        host.Children.Add(vol);
-        host.Children.Add(behind);
+        panel.Children.Add(retained);
+        panel.Children.Add(vol);
+        panel.Children.Add(behind);
         s.RunJobs();
         s.RunJobs();
 
-        var retRecord = retained.Server.BackdropState!;
-        retRecord.RetainedInputDirtyArea = null;
+        var retState = retained.Server.BackdropState!;
+        retState.InputDirtyRect = null;
         s.Events.Rects.Clear();
 
-        // The volatile expands, but it is later in DFS than the retained visual, so delivery skips it.
+        // The volatile one is invalidated, but it is in front of the retained one, so it is not its input.
         behind.Offset = new Vector3D(100, 20, 0);
         s.AssertRects(
             new Rect(100, 0, 20, 20),
             new Rect(100, 20, 20, 20),
-            new Rect(100, 0, 50, 50)); // whole-visual invalidation of the volatile only
+            new Rect(100, 0, 50, 50)); // whole-AABB invalidation of the volatile one only
 
-        Assert.Null(retRecord.RetainedInputDirtyArea);
+        Assert.Null(retState.InputDirtyRect);
     }
 
     [Fact]
-    public void Volatile_Inside_Cache_Delivers_To_Later_Retained_In_Parent_Host()
+    public void Volatile_Inside_Bitmap_Cache_Reaches_Retained_In_Front_In_Outer_Layer()
     {
         using var s = new CompositorTestServices();
         var c = s.Compositor;
-        var host = Panel(c);
-        ElementComposition.SetElementChildVisual(s.TopLevel, host);
+        var panel = Panel(c);
+        ElementComposition.SetElementChildVisual(s.TopLevel, panel);
 
-        var cacheHost = Panel(c);
-        cacheHost.CacheMode = MakeCache(c);
+        var cachedVisual = Panel(c);
+        cachedVisual.CacheMode = MakeCache(c);
 
         var behind = c.CreateSolidColorVisual();
         behind.Size = new Vector(20, 20);
         behind.Color = Colors.Green;
-        var vol = VolatileBackdrop(c, new Vector(100, 100), new Vector3D(0, 0, 0)); // inside the cache
-        cacheHost.Children.Add(behind);
-        cacheHost.Children.Add(vol);
+        var vol = VolatileBackdropVisual(c, new Vector(100, 100), new Vector3D(0, 0, 0)); // inside the bitmap cache
+        cachedVisual.Children.Add(behind);
+        cachedVisual.Children.Add(vol);
 
-        var retained = RetainedBackdrop(c, new Vector(50, 50)); // in the parent (root) host, later than the cache
+        var retained = RetainedBackdropVisual(c, new Vector(50, 50)); // in the root layer, in front of the cached visual
 
-        host.Children.Add(cacheHost); // earlier DFS = child host boundary
-        host.Children.Add(retained);  // later DFS ⇒ receives the upward propagation
+        panel.Children.Add(cachedVisual); // earlier in draw order
+        panel.Children.Add(retained);  // later in draw order: gets the bounds of the cached visual as input
         s.RunJobs();
         s.RunJobs();
         s.RunJobs();
 
-        var retRecord = retained.Server.BackdropState!;
-        Assert.Same(cacheHost.Server.Cache, vol.Server.BackdropState!.Host); // volatile hosted by the cache
-        Assert.Null(retRecord.Host); // retained in the root host
+        var retState = retained.Server.BackdropState!;
+        Assert.Same(cachedVisual.Server.Cache, vol.Server.BackdropState!.Layer); // in the bitmap cache layer
+        Assert.Null(retState.Layer); // retained one in the root layer
 
-        retRecord.RetainedInputDirtyArea = null;
+        retState.InputDirtyRect = null;
         s.Events.Rects.Clear();
 
-        // The change is inside the cache (invisible to the target debug proxy). The cache's coarse subtree
-        // bounds propagate up to the root host and reach the later retained visual.
+        // The change is inside the bitmap cache, which the debug proxy of the target does not see. The bounds
+        // of the cached visual become dirty in the root layer and reach the retained one in front of it.
         behind.Offset = new Vector3D(0, 50, 0);
         s.AssertRects(
-            new Rect(0, 0, 100, 100),  // cache visual's coarse subtree bounds in the parent host
-            new Rect(0, 0, 50, 50));   // retained halo of the propagated damage
+            new Rect(0, 0, 100, 100),  // bounds of the cached visual in the root layer
+            new Rect(0, 0, 50, 50));   // output dirty rect of the retained one
 
-        Assert.Equal(new LtrbRect(0, 0, 50, 50), retRecord.RetainedInputDirtyArea!.Value);
+        Assert.Equal(new LtrbRect(0, 0, 50, 50), retState.InputDirtyRect!.Value);
     }
 
     [Fact]
-    public void Retained_Inside_Cache_Captures_Cache_Local_Rect_Behind_It()
+    public void Retained_Inside_Bitmap_Cache_Collects_Layer_Space_Rect_Behind_It()
     {
         using var s = new CompositorTestServices();
         var c = s.Compositor;
-        var host = Panel(c);
-        ElementComposition.SetElementChildVisual(s.TopLevel, host);
+        var panel = Panel(c);
+        ElementComposition.SetElementChildVisual(s.TopLevel, panel);
 
-        // RenderAtScale + a non-zero draw offset (content does not start at the origin) make cache-local space
-        // differ from the tracker's texture-pixel space in both scale and translation, exercising the full
-        // host-local ↔ tracker-px mapping end-to-end through the update walk.
-        var cacheHost = Panel(c);
+        // RenderAtScale and a draw offset (the content does not start at the origin) make layer space differ
+        // from layer pixels in scale and in offset, so the update walk has to use the whole mapping.
+        var cachedVisual = Panel(c);
         var cache = MakeCache(c);
         cache.RenderAtScale = 2;
-        cacheHost.CacheMode = cache;
+        cachedVisual.CacheMode = cache;
 
         var behind = c.CreateSolidColorVisual();
         behind.Size = new Vector(10, 10);
@@ -1253,30 +1252,30 @@ public class CompositorBackdropInvalidationTests : CompositorTestsBase
 
         var retained = c.CreateSolidColorVisual();
         retained.Size = new Vector(60, 60);
-        retained.Offset = new Vector3D(20, 20, 0); // ⇒ cache subtree bounds start at (20,20), draw offset = -20
+        retained.Offset = new Vector3D(20, 20, 0); // cached subtree bounds start at (20,20), draw offset = -20
         retained.Color = Colors.Red;
         retained.BackdropEffect = Blur(5);
 
-        cacheHost.Children.Add(behind);   // earlier DFS = behind the backdrop, inside the cache
-        cacheHost.Children.Add(retained); // retained backdrop inside the cache
-        host.Children.Add(cacheHost);
-        // Extra frames so the cache draws at least once (establishing the tracker mapping) before capture.
+        cachedVisual.Children.Add(behind);   // behind the backdrop visual, inside the bitmap cache
+        cachedVisual.Children.Add(retained); // retained backdrop visual inside the bitmap cache
+        panel.Children.Add(cachedVisual);
+        // More frames, so that the bitmap cache draws once and has a mapping before the input dirty rect is collected.
         s.RunJobs();
         s.RunJobs();
         s.RunJobs();
 
-        var record = retained.Server.BackdropState!;
-        Assert.Same(cacheHost.Server.Cache, record.Host);
-        Assert.True(record.IsRetained);
-        Assert.Equal(new LtrbPixelRect(20, 20, 80, 80), record.Aabb!.Value); // cache-local
+        var state = retained.Server.BackdropState!;
+        Assert.Same(cachedVisual.Server.Cache, state.Layer);
+        Assert.True(state.IsRetained);
+        Assert.Equal(new LtrbPixelRect(20, 20, 80, 80), state.Aabb!.Value); // layer space
 
-        record.RetainedInputDirtyArea = null;
+        state.InputDirtyRect = null;
 
-        // A partial change behind the retained backdrop, inside the cache. The captured input must be the
-        // cache-LOCAL rect (behind's old∪new ∩ AABB), proving the tracker-px → host-local unmapping.
+        // A change behind the retained backdrop visual, inside the bitmap cache. The input dirty rect has to be
+        // in layer space (old and new bounds of `behind` inside the AABB), not in layer pixels.
         behind.Offset = new Vector3D(30, 45, 0);
         s.RunJobs();
 
-        Assert.Equal(new LtrbRect(30, 40, 40, 55), record.RetainedInputDirtyArea!.Value);
+        Assert.Equal(new LtrbRect(30, 40, 40, 55), state.InputDirtyRect!.Value);
     }
 }

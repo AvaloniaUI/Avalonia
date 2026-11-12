@@ -54,9 +54,9 @@ partial class DrawingContextImpl
         return null;
     }
 
-    // A backdrop effect may only read from within its own bounds: the input is cropped to them, and a blur sees
-    // the edge pixels repeated beyond (a "hard" border), so nothing outside bleeds in. The current opacity is
-    // not baked in: the callers apply it when compositing.
+    // A backdrop effect reads the backdrop only inside the backdrop bounds: the input is cropped to them, and a
+    // blur sees the edge pixels repeated outside. The current opacity is not part of the filter: the callers
+    // apply it when they draw the result.
     static SKImageFilter? CreateBackdropEffect(IEffect effect, SKRect bounds)
     {
         if (effect is IBlurEffect blur)
@@ -82,13 +82,12 @@ partial class DrawingContextImpl
 
     public bool SupportsBackdrop => Surface != null;
 
-    // Safe unless an intermediate save-layer (Effect/OpacityMask/PushLayer/opacity save-layer) is active: those
-    // redirect drawing to an offscreen while Surface still refers to the root, so a snapshot would read stale
-    // pixels. Plain clip/transform saves don't affect the root surface and aren't counted.
+    // The retained path reads Surface, which is always the layer's own surface. While an intermediate layer
+    // (effect, opacity mask, PushLayer, opacity) is open, drawing goes to that intermediate layer, so Surface does
+    // not have the backdrop. Plain clip and transform saves do not open one.
     public bool IsBackdropSamplingSafe => Surface != null && _intermediateLayerDepth == 0;
 
-    // Same creation path as CreateLayer; the returned SurfaceRenderTarget is the opaque cache handle.
-    public IDrawingContextBackdropCacheImpl CreateBackdropCache(PixelSize size)
+    public IDrawingContextBackdropSnapshotImpl CreateBackdropSnapshot(PixelSize size)
     {
         CheckLease();
         return CreateRenderTarget(size, true, false);
@@ -97,77 +96,72 @@ partial class DrawingContextImpl
     public void DrawVolatileBackdropEffect(Rect bounds, IEffect effect)
     {
         CheckLease();
-        // SaveLayerRec.Backdrop initialises the new layer with the current canvas contents (through any nested
-        // save-layers) filtered by `filter`; restoring right away composites it back. A null filter (identity,
-        // e.g. R=0 blur) yields an empty layer, i.e. a no-op.
-        // SaveLayer bounds are only a size hint: without the explicit clip, filter output that extends past
-        // them (e.g. a drop-shadow offset) is drawn outside, unlike CSS backdrop-filter, which clips the
-        // filtered backdrop to the element's border box. The layer is restored before the visual's content is
-        // drawn so that this clip doesn't affect children that overflow the bounds.
-        // The layer paint applies the current opacity when the layer is composited back.
+        // A SaveLayer with a backdrop filter starts with the filtered canvas contents (read through any open
+        // intermediate layers). Restoring it right away draws that result back. A null filter (e.g. a zero blur
+        // radius) gives an empty one, which draws nothing.
+        // The SaveLayer bounds are only a size hint. Without the clip, filter output outside of them (e.g. a
+        // drop-shadow offset) would be drawn, unlike CSS backdrop-filter, which clips to the border box.
+        // The visual's content is drawn after the restore, so the clip does not apply to it.
         using var filter = CreateBackdropEffect(effect, bounds.ToSKRect());
         var paint = SKPaintCache.Shared.Get();
+        // Applied when the SaveLayer is restored.
         paint.Color = new SKColor(255, 255, 255, (byte)(255 * _currentOpacity));
         var savedCount = Canvas.Save();
         Canvas.ClipRect(bounds.ToSKRect(), antialias: true);
         Canvas.SaveLayer(new SKCanvasSaveLayerRec { Bounds = bounds.ToSKRect(), Backdrop = filter, Paint = paint });
         SKPaintCache.Shared.ReturnReset(paint);
-        // Pops the layer, which is what composites the filtered backdrop, and the clip.
+        // Restores the SaveLayer, which draws the filtered backdrop, and the clip.
         Canvas.RestoreToCount(savedCount);
     }
 
-    public void DrawRetainedBackdropEffect(IDrawingContextBackdropCacheImpl cache, PixelRect cacheBounds,
+    public void DrawRetainedBackdropEffect(IDrawingContextBackdropSnapshotImpl snapshot, PixelRect snapshotBounds,
         IReadOnlyList<PixelRect> dirtyRects, IEffect effect, Rect bounds)
     {
         CheckLease();
-        // The backend only ever hands back a cache it created via CreateBackdropCache, so this cast is safe.
-        if (Surface is not { } surface || cache is not SurfaceRenderTarget skiaLayer)
+        // The snapshot is always one that CreateBackdropSnapshot returned.
+        if (Surface is not { } surface || snapshot is not SurfaceRenderTarget skiaSnapshot)
             return;
 
-        // The layer's pixel (0,0) sits at this device-space position on the target surface.
-        var layerOrigin = cacheBounds.Position;
-        var layerSurface = skiaLayer.Surface;
+        // Layer pixel position of the snapshot's pixel (0,0).
+        var origin = snapshotBounds.Position;
 
-        // Step 1: refresh the damaged regions of the layer directly from the live target. A single
-        // SKSurface.Draw blits the whole target onto the layer canvas at (-layerOrigin); the per-rect clip
-        // restricts each write to one dirty region. Src blend overwrites, so sub-alpha target pixels replace
-        // the stale layer pixels instead of compositing over them.
+        // Refresh: copy the dirty rects from the layer's surface into the snapshot. Src blend replaces the old
+        // snapshot pixels, also where the layer is not opaque.
         if (dirtyRects.Count > 0)
         {
-            var layerCanvas = layerSurface.Canvas;
+            var snapshotCanvas = skiaSnapshot.Surface.Canvas;
             var srcPaint = SKPaintCache.Shared.Get();
             srcPaint.BlendMode = SKBlendMode.Src;
-            var saved = layerCanvas.Save();
-            layerCanvas.ResetMatrix();
+            var saved = snapshotCanvas.Save();
+            snapshotCanvas.ResetMatrix();
             try
             {
                 foreach (var dirty in dirtyRects)
                 {
                     if (dirty.Width < 1 || dirty.Height < 1)
                         continue;
-                    layerCanvas.Save();
-                    layerCanvas.ClipRect(SKRect.Create(
-                        dirty.X - layerOrigin.X, dirty.Y - layerOrigin.Y, dirty.Width, dirty.Height));
-                    surface.Draw(layerCanvas, -layerOrigin.X, -layerOrigin.Y, srcPaint);
-                    layerCanvas.Restore();
+                    snapshotCanvas.Save();
+                    snapshotCanvas.ClipRect(SKRect.Create(
+                        dirty.X - origin.X, dirty.Y - origin.Y, dirty.Width, dirty.Height));
+                    surface.Draw(snapshotCanvas, -origin.X, -origin.Y, srcPaint);
+                    snapshotCanvas.Restore();
                 }
             }
             finally
             {
-                layerCanvas.RestoreToCount(saved);
+                snapshotCanvas.RestoreToCount(saved);
                 SKPaintCache.Shared.ReturnReset(srcPaint);
             }
         }
 
-        // Step 2: draw the (now current) layer through the effect, clipped to bounds. The local matrix maps
-        // layer pixels back into the current coordinate space, so the layer stays device-aligned under any
-        // transform while the clip follows it.
-        using var image = skiaLayer.SnapshotImage();
-        if (!(Transform * Matrix.CreateTranslation(-layerOrigin.X, -layerOrigin.Y)).TryInvert(out var localMatrix))
+        // Draw the snapshot through the effect, clipped to the backdrop bounds. The shader matrix maps snapshot
+        // pixels into the current coordinate space, so the snapshot stays aligned to layer pixels under any
+        // transform, and only the clip follows the transform.
+        using var image = skiaSnapshot.SnapshotImage();
+        if (!(Transform * Matrix.CreateTranslation(-origin.X, -origin.Y)).TryInvert(out var localMatrix))
             return;
 
-        // The paint below applies the current opacity.
-        using var filter = CreateBackdropEffect(effect, bounds.ToSKRect()); // null filter -> identity blit
+        using var filter = CreateBackdropEffect(effect, bounds.ToSKRect()); // null filter: plain copy
         using var shader = SKShader.CreateImage(
             image, SKShaderTileMode.Clamp, SKShaderTileMode.Clamp, localMatrix.ToSKMatrix());
 
@@ -175,8 +169,8 @@ partial class DrawingContextImpl
         var savedCount = Canvas.Save();
         try
         {
-            // The filter output (e.g. a drop-shadow offset) may extend past the bounds; keep it inside, matching
-            // the volatile path.
+            // Filter output outside of the bounds (e.g. a drop-shadow offset) is not drawn, same as in the
+            // volatile path.
             var skBounds = bounds.ToSKRect();
             Canvas.ClipRect(skBounds, antialias: true);
             paint.Shader = shader;

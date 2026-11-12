@@ -304,7 +304,7 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Gets or sets the effect applied to the content rendered behind this control's subtree.
+        /// Gets or sets the effect that is applied to what is drawn behind this visual.
         /// </summary>
         public IEffect? BackdropEffect
         {
@@ -313,7 +313,7 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Gets or sets the bounds used when applying the backdrop effect.
+        /// Gets or sets which bounds of this visual the backdrop effect is limited to.
         /// </summary>
         public BackdropEffectBoundsSource BackdropEffectBoundsSource
         {
@@ -322,8 +322,8 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Gets or sets whether the backdrop effect's sampled result is retained in a texture
-        /// or resampled from the live content every frame.
+        /// Gets or sets whether the backdrop effect keeps a snapshot of what is behind this visual, or reads it
+        /// again on every draw. When null, the compositor chooses.
         /// </summary>
         public BackdropEffectCache? BackdropEffectCache
         {

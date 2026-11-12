@@ -15,11 +15,10 @@ using Xunit;
 
 namespace Avalonia.Skia.RenderTests;
 
-// Backdrop rendering, driven through the real compositor + Skia into an SKBitmap framebuffer.
-// The core correctness gates are self-contained (no committed reference images): a two-frame partial
-// repaint is compared against a full-redraw of the same final state rendered in a fresh compositor, and
-// the "erase trick" (wipe the framebuffer between ticks with retention advertised) exposes exactly which
-// pixels were repainted. CPU raster => deterministic blur.
+// Backdrop effects drawn by the real compositor and Skia into an SKBitmap framebuffer.
+// The tests need no reference images. A partial redraw is compared with a full redraw of the same final
+// state by a new compositor. Erasing the framebuffer between frames, while reporting it as retained, shows
+// which pixels a frame redrew. CPU rendering makes the blur deterministic.
 public class BackdropCompositionTests : TestBase
 {
     public BackdropCompositionTests()
@@ -32,14 +31,14 @@ public class BackdropCompositionTests : TestBase
     private static CompositionBitmapCache MakeCache(Compositor c) =>
         new(c, new ServerCompositionBitmapCache(c.Server));
 
-    private static CompositionVolatileBackdropEffectCache MakeVolatileBackdrop(Compositor c) =>
+    private static CompositionVolatileBackdropEffectCache MakeVolatileCacheMode(Compositor c) =>
         new(c, new ServerCompositionVolatileBackdropEffectCache(c.Server));
 
-    private static CompositionRetainedBackdropEffectCache MakeRetainedBackdrop(Compositor c) =>
+    private static CompositionRetainedBackdropEffectCache MakeRetainedCacheMode(Compositor c) =>
         new(c, new ServerCompositionRetainedBackdropEffectCache(c.Server));
 
-    private static CompositionBackdropEffectCache MakeBackdropCache(Compositor c, bool retained) =>
-        retained ? MakeRetainedBackdrop(c) : MakeVolatileBackdrop(c);
+    private static CompositionBackdropEffectCache MakeBackdropCacheMode(Compositor c, bool retained) =>
+        retained ? MakeRetainedCacheMode(c) : MakeVolatileCacheMode(c);
 
     private static ImmutableDropShadowEffect DropShadow(double offset, double blur) =>
         new(offset, offset, blur, Colors.Black, 1);
@@ -51,8 +50,8 @@ public class BackdropCompositionTests : TestBase
         public IFramebufferRenderTarget CreateFramebufferRenderTarget() => _cb();
     }
 
-    // Owns a compositor rendering into an SKBitmap framebuffer, plus a single attached container visual
-    // (`Root`) the tests populate. `Retained` toggles the per-frame PreviousFrameIsRetained advertisement.
+    // A compositor that draws into an SKBitmap framebuffer, with one container visual (`Root`) for the tests
+    // to fill. `Retained` sets PreviousFrameIsRetained for the next frames.
     private sealed class Harness : IDisposable
     {
         private readonly ManualRenderTimer _timer = new();
@@ -127,13 +126,13 @@ public class BackdropCompositionTests : TestBase
 
     private static bool IsPainted(SKColor c) => c.Alpha != 0;
 
-    // Shared render-test RMS error budget; the backdrop frames are near-identical to their full-redraw
-    // reference, so a real mismatch blows well past it.
+    // The frames are almost the same as their full redraw reference, so a real difference is far above this.
     private const double AllowedError = 0.022;
 
     private static SKBitmap ToUnpremulRgba(SKBitmap bmp)
     {
-        var converted = new SKBitmap(new SKImageInfo(bmp.Width, bmp.Height, SKColorType.Rgba8888, SKAlphaType.Unpremul));
+        var converted = new SKBitmap(
+            new SKImageInfo(bmp.Width, bmp.Height, SKColorType.Rgba8888, SKAlphaType.Unpremul));
         bmp.PeekPixels().ReadPixels(converted.Info, converted.GetPixels(), converted.RowBytes);
         return converted;
     }
@@ -146,26 +145,26 @@ public class BackdropCompositionTests : TestBase
         Assert.True(error <= AllowedError, $"Frame differs from full-redraw reference: error {error} > {AllowedError}");
     }
 
-    // Populates a scene: an opaque base, a movable "behind" square (earlier DFS), a retained blur backdrop
-    // covering the middle, and a "caret" square in front (later DFS). Returns the mutable pieces.
+    // An opaque base, a movable `behind` square (earlier in draw order), a retained blur backdrop visual over
+    // the middle, and a `caret` square in front of it.
     private static (CompositionSolidColorVisual behind, CompositionSolidColorVisual caret) BuildScene(
         Harness h, double behindY, double caretX, bool volatileBackdrop = false)
     {
         var baseRect = h.Rect(Colors.White, 0, 0, 200, 200);
-        var stripe = h.Rect(Colors.Blue, 0, 0, 200, 30); // static pattern for the blur to smear
+        var stripe = h.Rect(Colors.Blue, 0, 0, 200, 30); // a pattern for the blur to show
         var behind = h.Rect(Colors.Red, 20, behindY, 40, 40);
 
-        var backdrop = h.Rect(Colors.Transparent, 40, 40, 120, 120);
-        backdrop.BackdropEffect = Blur(5); // R = ceil(5)+1 = 6 device px
+        var backdropVisual = h.Rect(Colors.Transparent, 40, 40, 120, 120);
+        backdropVisual.BackdropEffect = Blur(5); // sampling radius: ceil(5)+1 = 6 device pixels
         if (volatileBackdrop)
-            backdrop.BackdropEffectCache = MakeVolatileBackdrop(h.Compositor);
+            backdropVisual.BackdropEffectCache = MakeVolatileCacheMode(h.Compositor);
 
-        var caret = h.Rect(Colors.Black, caretX, 60, 6, 40); // in front, over the backdrop
+        var caret = h.Rect(Colors.Black, caretX, 60, 6, 40); // in front of the backdrop visual
 
         h.Root.Children.Add(baseRect);
         h.Root.Children.Add(stripe);
         h.Root.Children.Add(behind);
-        h.Root.Children.Add(backdrop);
+        h.Root.Children.Add(backdropVisual);
         h.Root.Children.Add(caret);
         return (behind, caret);
     }
@@ -173,7 +172,7 @@ public class BackdropCompositionTests : TestBase
     [Fact]
     public void Retained_Front_Change_Equals_Full_Redraw()
     {
-        // caret moves (front-only); the retained backdrop must not sample the caret => equals a full redraw.
+        // The caret moves. It is in front, so it is not input: the result equals a full redraw.
         using var reference = new Harness(200, 200);
         BuildScene(reference, behindY: 40, caretX: 100);
         reference.Retained(false);
@@ -187,7 +186,7 @@ public class BackdropCompositionTests : TestBase
         h.Frame();
 
         h.Retained(true);
-        caret.Offset = new Vector3D(100, 60, 0); // front-only change
+        caret.Offset = new Vector3D(100, 60, 0); // a change in front only
         h.Frame();
 
         AssertSimilar(h.Fb, reference.Fb);
@@ -209,7 +208,7 @@ public class BackdropCompositionTests : TestBase
         h.Frame();
 
         h.Retained(true);
-        behind.Offset = new Vector3D(20, 120, 0); // behind change, re-ingested into the retained texture
+        behind.Offset = new Vector3D(20, 120, 0); // a change behind: the snapshot is refreshed
         h.Frame();
 
         AssertSimilar(h.Fb, reference.Fb);
@@ -218,8 +217,8 @@ public class BackdropCompositionTests : TestBase
     [Fact]
     public void Retained_Behind_Change_Equals_Full_Redraw_At_Scaling_2()
     {
-        // Scaling 2 folds the root DPI scale into both the registry AABB and the draw matrix; a wrong fold
-        // shows up as a mismatch against the full redraw.
+        // With scaling 2, the root scale is part of the AABB and of the draw transform. An error in either shows
+        // as a difference from the full redraw.
         using var reference = new Harness(200, 200, scaling: 2);
         BuildScene(reference, behindY: 120, caretX: 100);
         reference.Retained(false);
@@ -242,17 +241,17 @@ public class BackdropCompositionTests : TestBase
     [Fact]
     public void Retained_Backdrop_Move_Equals_Full_Redraw()
     {
-        // A same-size move keeps the retained texture; its stale contents must be fully re-ingested.
+        // A move without a size change keeps the snapshot. It has to be refreshed completely.
         CompositionSolidColorVisual Build(Harness h, double x)
         {
             h.Root.Children.Add(h.Rect(Colors.White, 0, 0, 200, 200));
             h.Root.Children.Add(h.Rect(Colors.Blue, 0, 0, 200, 30));
             h.Root.Children.Add(h.Rect(Colors.Red, 20, 40, 40, 40));
-            var backdrop = h.Rect(Colors.Transparent, x, 20, 80, 80);
-            backdrop.BackdropEffect = Blur(5);
-            backdrop.BackdropEffectCache = MakeRetainedBackdrop(h.Compositor);
-            h.Root.Children.Add(backdrop);
-            return backdrop;
+            var backdropVisual = h.Rect(Colors.Transparent, x, 20, 80, 80);
+            backdropVisual.BackdropEffect = Blur(5);
+            backdropVisual.BackdropEffectCache = MakeRetainedCacheMode(h.Compositor);
+            h.Root.Children.Add(backdropVisual);
+            return backdropVisual;
         }
 
         using var reference = new Harness(200, 200);
@@ -261,12 +260,12 @@ public class BackdropCompositionTests : TestBase
         reference.Frame();
 
         using var h = new Harness(200, 200);
-        var backdrop = Build(h, 10);
+        var backdropVisual = Build(h, 10);
         h.Frame();
         h.Frame();
 
         h.Retained(true);
-        backdrop.Offset = new Vector3D(90, 20, 0);
+        backdropVisual.Offset = new Vector3D(90, 20, 0);
         h.Frame();
         h.Frame();
 
@@ -274,19 +273,19 @@ public class BackdropCompositionTests : TestBase
     }
 
     [Fact]
-    public void Retained_Backdrop_Ancestor_Opacity_Change_Equals_Full_Redraw()
+    public void Retained_Backdrop_Parent_Opacity_Change_Equals_Full_Redraw()
     {
-        // The ancestor's own content is behind the backdrop; with nothing else damaged, its opacity change
-        // must still reach the backdrop.
+        // The parent's own content is behind the backdrop visual. Its opacity change has to reach the backdrop
+        // visual, even when nothing else is dirty.
         CompositionSolidColorVisual Build(Harness h, float opacity)
         {
             h.Root.Children.Add(h.Rect(Colors.White, 0, 0, 200, 200));
             var ancestor = h.Rect(Colors.Blue, 20, 20, 120, 120);
             ancestor.Opacity = opacity;
-            var backdrop = h.Rect(Colors.Transparent, 20, 20, 80, 80);
-            backdrop.BackdropEffect = Blur(5);
-            backdrop.BackdropEffectCache = MakeRetainedBackdrop(h.Compositor);
-            ancestor.Children.Add(backdrop);
+            var backdropVisual = h.Rect(Colors.Transparent, 20, 20, 80, 80);
+            backdropVisual.BackdropEffect = Blur(5);
+            backdropVisual.BackdropEffectCache = MakeRetainedCacheMode(h.Compositor);
+            ancestor.Children.Add(backdropVisual);
             h.Root.Children.Add(ancestor);
             return ancestor;
         }
@@ -312,7 +311,7 @@ public class BackdropCompositionTests : TestBase
     [Fact]
     public void Retained_Backdrop_Earlier_Sibling_Removal_Equals_Full_Redraw()
     {
-        // The removed sibling's damage is emitted after the backdrop's position in the update walk.
+        // The dirty rect of the removed visual is collected after the update walk has passed the backdrop visual.
         (CompositionContainerVisual panel, CompositionSolidColorVisual? behind) Build(Harness h, bool withBehind)
         {
             h.Root.Children.Add(h.Rect(Colors.White, 0, 0, 200, 200));
@@ -325,10 +324,10 @@ public class BackdropCompositionTests : TestBase
                 panel.Children.Add(behind);
             }
 
-            var backdrop = h.Rect(Colors.Transparent, 20, 20, 100, 100);
-            backdrop.BackdropEffect = Blur(5);
-            backdrop.BackdropEffectCache = MakeRetainedBackdrop(h.Compositor);
-            panel.Children.Add(backdrop);
+            var backdropVisual = h.Rect(Colors.Transparent, 20, 20, 100, 100);
+            backdropVisual.BackdropEffect = Blur(5);
+            backdropVisual.BackdropEffectCache = MakeRetainedCacheMode(h.Compositor);
+            panel.Children.Add(backdropVisual);
             h.Root.Children.Add(panel);
             return (panel, behind);
         }
@@ -361,13 +360,13 @@ public class BackdropCompositionTests : TestBase
         h.Root.Children.Add(h.Rect(Colors.Black, 0, 0, 60, 200)); // hard edge at x = 60
 
         // An 80x80 square centred at (100,100), rotated 45 degrees: a diamond with a 56.6 half-diagonal.
-        var backdrop = h.Rect(Colors.Transparent, 60, 60, 80, 80);
-        backdrop.ClipToBounds = false;
-        backdrop.CenterPoint = new Vector3D(40, 40, 0);
-        backdrop.RotationAngle = (float)(Math.PI / 4);
-        backdrop.BackdropEffect = Blur(8);
-        backdrop.BackdropEffectCache = MakeBackdropCache(h.Compositor, retained);
-        h.Root.Children.Add(backdrop);
+        var backdropVisual = h.Rect(Colors.Transparent, 60, 60, 80, 80);
+        backdropVisual.ClipToBounds = false;
+        backdropVisual.CenterPoint = new Vector3D(40, 40, 0);
+        backdropVisual.RotationAngle = (float)(Math.PI / 4);
+        backdropVisual.BackdropEffect = Blur(8);
+        backdropVisual.BackdropEffectCache = MakeBackdropCacheMode(h.Compositor, retained);
+        h.Root.Children.Add(backdropVisual);
         h.Frame();
         h.Frame();
 
@@ -375,7 +374,7 @@ public class BackdropCompositionTests : TestBase
         var inside = h.Px(60, 100);
         Assert.InRange((int)inside.Red, 60, 200);
 
-        // (59..60, 55) is inside the diamond's axis-aligned box but outside the diamond: the edge stays hard.
+        // (58..61, 55) is inside the AABB of the diamond but outside of the diamond: the edge stays hard.
         Assert.True(h.Px(58, 55).Red < 10, $"left={h.Px(58, 55)}");
         Assert.True(h.Px(61, 55).Red > 245, $"right={h.Px(61, 55)}");
     }
@@ -385,21 +384,21 @@ public class BackdropCompositionTests : TestBase
     [InlineData(true)]
     public void Change_Just_Outside_Backdrop_Bounds_Equals_Full_Redraw(bool retained)
     {
-        // A visual moves next to the backdrop: within the blur radius of its edge, but not overlapping it.
+        // A visual moves next to the backdrop visual: closer to its edge than the blur radius, but not over it.
         CompositionSolidColorVisual Build(Harness h, double neighbourX)
         {
             h.Root.Children.Add(h.Rect(Colors.White, 0, 0, 200, 200));
             var next = h.Rect(Colors.Red, neighbourX, 40, 10, 80);
             h.Root.Children.Add(next);
-            var backdrop = h.Rect(Colors.Transparent, 40, 40, 80, 80);
-            backdrop.BackdropEffect = Blur(8);
-            backdrop.BackdropEffectCache = MakeBackdropCache(h.Compositor, retained);
-            h.Root.Children.Add(backdrop);
+            var backdropVisual = h.Rect(Colors.Transparent, 40, 40, 80, 80);
+            backdropVisual.BackdropEffect = Blur(8);
+            backdropVisual.BackdropEffectCache = MakeBackdropCacheMode(h.Compositor, retained);
+            h.Root.Children.Add(backdropVisual);
             return next;
         }
 
         using var reference = new Harness(200, 200);
-        Build(reference, 29); // x 29..39, the backdrop starts at 40
+        Build(reference, 29); // x 29..39, the backdrop bounds start at 40
         reference.Frame();
         reference.Frame();
 
@@ -413,7 +412,7 @@ public class BackdropCompositionTests : TestBase
         h.Frame();
         h.Frame();
 
-        // Compare the backdrop's edge pixels directly: the strip is too small for a whole-image error.
+        // Compare the edge pixels directly: the strip is too small to show in a whole-image error.
         for (var x = 40; x < 46; x++)
         {
             var expected = reference.Px(x, 80);
@@ -422,7 +421,7 @@ public class BackdropCompositionTests : TestBase
         }
     }
 
-    // Stripes behind a subtree-bounds backdrop container whose only child defines its bounds.
+    // Stripes behind a backdrop visual with subtree bounds. Its only child defines the bounds.
     private static CompositionSolidColorVisual BuildSubtreeBoundsScene(Harness h, bool retained, double childWidth)
     {
         h.Root.Children.Add(h.Rect(Colors.White, 0, 0, 200, 200));
@@ -434,7 +433,7 @@ public class BackdropCompositionTests : TestBase
         container.Offset = new Vector3D(10, 40, 0);
         container.BackdropEffect = Blur(8);
         container.BackdropEffectBoundsSource = BackdropEffectBoundsSource.Subtree;
-        container.BackdropEffectCache = MakeBackdropCache(h.Compositor, retained);
+        container.BackdropEffectCache = MakeBackdropCacheMode(h.Compositor, retained);
         var child = h.Rect(Color.FromArgb(0x20, 0xFF, 0, 0), 0, 0, childWidth, 100);
         container.Children.Add(child);
         h.Root.Children.Add(container);
@@ -458,7 +457,7 @@ public class BackdropCompositionTests : TestBase
 
         h.Retained(true);
         child.Size = new Vector(180, 100);
-        h.Frame(); // a single frame: the backdrop must already cover the new bounds
+        h.Frame(); // one frame: the effect has to cover the new bounds already
 
         AssertSimilar(h.Fb, reference.Fb);
     }
@@ -503,7 +502,7 @@ public class BackdropCompositionTests : TestBase
     }
 
     [Fact]
-    public void Retained_Behind_Change_Repaints_Only_The_Halo_Not_The_Whole_Aabb()
+    public void Retained_Behind_Change_Repaints_Only_The_Output_Dirty_Rect_Not_The_Whole_Aabb()
     {
         using var h = new Harness(200, 200);
         var (behind, _) = BuildScene(h, behindY: 45, caretX: 100);
@@ -511,16 +510,17 @@ public class BackdropCompositionTests : TestBase
         h.Frame();
         h.Frame();
 
-        // Erase, advertise retention, move `behind` a little: only D ∪ ((D∩AABB)⊕R)∩AABB is repainted.
+        // Erase, report the frame as retained, move `behind` a little: only the bounds of `behind` and the
+        // output dirty rect are redrawn.
         h.Erase();
         h.Retained(true);
         behind.Offset = new Vector3D(20, 50, 0);
         h.Frame();
 
-        // The backdrop AABB is (40,40)-(160,160). `behind` old∪new is (20,45)-(60,90); the halo stays near it.
-        // A backdrop pixel far from the change (bottom-right of the AABB) must NOT have been repainted.
-        Assert.False(IsPainted(h.Px(150, 150)), "retained backdrop far from the change should stay erased");
-        // The changed area itself is repainted.
+        // The AABB is (40,40)-(160,160), `behind` covers (20,45)-(60,90).
+        // A pixel of the effect far from the change (bottom right of the AABB) is not redrawn.
+        Assert.False(IsPainted(h.Px(150, 150)), "retained backdropVisual far from the change should stay erased");
+        // The changed area is redrawn.
         Assert.True(IsPainted(h.Px(45, 70)), "the damaged/halo area should be repainted");
     }
 
@@ -538,10 +538,10 @@ public class BackdropCompositionTests : TestBase
         behind.Offset = new Vector3D(20, 50, 0);
         h.Frame();
 
-        // Whole-visual invalidation: every pixel of the volatile AABB (40,40)-(160,160) is repainted,
-        // including the far corner untouched by the retained case above.
-        Assert.True(IsPainted(h.Px(150, 150)), "volatile backdrop must repaint its whole AABB");
-        Assert.True(IsPainted(h.Px(45, 45)), "volatile backdrop must repaint its whole AABB");
+        // Whole-AABB invalidation: every pixel of the volatile AABB (40,40)-(160,160) is redrawn, including the
+        // far corner that the retained case above leaves alone.
+        Assert.True(IsPainted(h.Px(150, 150)), "volatile backdropVisual must repaint its whole AABB");
+        Assert.True(IsPainted(h.Px(45, 45)), "volatile backdropVisual must repaint its whole AABB");
     }
 
     [Fact]
@@ -555,32 +555,32 @@ public class BackdropCompositionTests : TestBase
 
         h.Erase();
         h.Retained(true);
-        caret.Offset = new Vector3D(120, 60, 0); // front-only move, both positions inside the AABB
+        caret.Offset = new Vector3D(120, 60, 0); // a move in front, both positions inside the AABB
         h.Frame();
 
-        // Only the caret's old/new columns are touched; the backdrop interior between them is not repainted.
+        // Only the old and new caret columns are redrawn, not the effect between them.
         Assert.True(IsPainted(h.Px(72, 80)), "old caret column repainted");
         Assert.True(IsPainted(h.Px(122, 80)), "new caret column repainted");
-        Assert.False(IsPainted(h.Px(100, 150)), "backdrop interior away from the caret should stay erased");
+        Assert.False(IsPainted(h.Px(100, 150)), "backdropVisual interior away from the caret should stay erased");
     }
 
     [Fact]
     public void Surfaceless_Context_Skips_Backdrop_Without_Crashing()
     {
         using var h = new Harness(200, 200);
-        var backdrop = h.Rect(Colors.Transparent, 40, 40, 120, 120);
-        backdrop.BackdropEffect = Blur(5);
+        var backdropVisual = h.Rect(Colors.Transparent, 40, 40, 120, 120);
+        backdropVisual.BackdropEffect = Blur(5);
         h.Root.Children.Add(h.Rect(Colors.White, 0, 0, 200, 200));
-        h.Root.Children.Add(backdrop);
+        h.Root.Children.Add(backdropVisual);
         h.Frame();
         h.Frame();
 
-        var record = backdrop.Server.BackdropState;
-        Assert.NotNull(record);
-        Assert.NotNull(record!.Aabb); // AABB established, so the draw site reaches the SupportsBackdrop guard
+        var state = backdropVisual.Server.BackdropState;
+        Assert.NotNull(state);
+        Assert.NotNull(state!.Aabb); // with an AABB, drawing gets as far as the SupportsBackdrop check
 
-        // Re-render the live server tree into a canvas-only (surface-less) context: the backdrop draw site
-        // must detect SupportsBackdrop == false and skip without throwing (PDF pages / picture recording path).
+        // Draw the server tree into a context without a surface (as for PDF or picture recording): the backdrop
+        // effect is skipped without an exception.
         using var bitmap = new SKBitmap(200, 200, SKColorType.Rgba8888, SKAlphaType.Premul);
         using var canvas = new SKCanvas(bitmap);
         var ctx = (IDrawingContextImpl)DrawingContextHelper.WrapSkiaCanvas(canvas, new Vector(96, 96));
@@ -592,12 +592,11 @@ public class BackdropCompositionTests : TestBase
         Assert.Null(ex);
     }
 
-    // A container with an ancestor Effect whose SaveLayer is active over the whole subtree. A red/blue split is
-    // drawn INTO that layer, then a nested visual over it optionally carries a backdrop. Because the split lives
-    // in the effect's offscreen (not the root surface), only the volatile SaveLayerRec path can sample it; the
-    // retained path (which reads the root Surface) must skip. A zero-radius ancestor Effect is a visually-neutral
-    // way to force that active intermediate save-layer, so the seam stays hard unless the backdrop itself blurs
-    // it. Returns the nested (backdrop) visual.
+    // A container with an effect, which opens an intermediate layer for its whole subtree. A red/blue split is
+    // drawn into that intermediate layer, and a visual over it can have a backdrop effect. The split is not in
+    // the root layer, so only the volatile path can read it, and the retained path has to skip. The container's
+    // effect has a zero radius: it opens the intermediate layer but does not blur, so the split stays hard
+    // unless the backdrop effect blurs it. Returns the visual over the split.
     private static CompositionSolidColorVisual BuildAncestorEffectTree(Harness h, bool withBackdrop,
         bool volatileBackdrop)
     {
@@ -606,16 +605,16 @@ public class BackdropCompositionTests : TestBase
         var container = h.Compositor.CreateContainerVisual();
         container.ClipToBounds = false;
         container.Offset = new Vector3D(40, 40, 0);
-        container.Effect = Blur(0); // active intermediate save-layer over the subtree, but no blur of its own
-        container.Children.Add(h.Rect(Colors.Red, 0, 0, 60, 120));   // drawn INTO the effect layer
-        container.Children.Add(h.Rect(Colors.Blue, 60, 0, 60, 120)); // seam at container-x 60 => root-x 100
+        container.Effect = Blur(0); // opens an intermediate layer, no blur of its own
+        container.Children.Add(h.Rect(Colors.Red, 0, 0, 60, 120));   // drawn into the intermediate layer
+        container.Children.Add(h.Rect(Colors.Blue, 60, 0, 60, 120)); // split at container x 60, root x 100
 
-        var inner = h.Rect(Colors.Transparent, 0, 0, 120, 120); // covers the split, gives the backdrop a region
+        var inner = h.Rect(Colors.Transparent, 0, 0, 120, 120); // covers the split
         if (withBackdrop)
         {
             inner.BackdropEffect = Blur(8);
             if (volatileBackdrop)
-                inner.BackdropEffectCache = MakeVolatileBackdrop(h.Compositor);
+                inner.BackdropEffectCache = MakeVolatileCacheMode(h.Compositor);
         }
         container.Children.Add(inner);
         h.Root.Children.Add(container);
@@ -623,11 +622,10 @@ public class BackdropCompositionTests : TestBase
     }
 
     [Fact]
-    public void Volatile_Backdrop_Under_Ancestor_Effect_Samples_Through_And_Renders()
+    public void Volatile_Backdrop_Under_Parent_Effect_Samples_Through_And_Renders()
     {
-        // The ancestor Effect redirects drawing to an offscreen; SaveLayerRec.Backdrop captures that offscreen
-        // (through the layer) and blurs it, so the nested volatile backdrop renders correctly. Deterministic =>
-        // equals a fresh full redraw of the same tree.
+        // The parent's effect opens an intermediate layer. The volatile path reads through it, so the backdrop
+        // effect is drawn correctly and equals a full redraw of the same tree.
         using var reference = new Harness(200, 200);
         BuildAncestorEffectTree(reference, withBackdrop: true, volatileBackdrop: true);
         reference.Retained(false);
@@ -642,14 +640,13 @@ public class BackdropCompositionTests : TestBase
             h.Frame();
             h.Frame();
         });
-        Assert.Null(ex); // no crash / garbage
+        Assert.Null(ex); // no exception
 
         Assert.NotNull(inner.Server.BackdropState!.Aabb);
-        AssertSimilar(h.Fb, reference.Fb); // deterministic: matches a fresh redraw of the same tree
+        AssertSimilar(h.Fb, reference.Fb); // equals a full redraw of the same tree
 
-        // The backdrop sampled the split through the ancestor layer and blurred it: the seam (root-x 100) is now
-        // a red/blue mix, and the blur has bled colour a couple of pixels into each half (impossible for a hard
-        // seam, where those pixels stay pure).
+        // The split was read through the intermediate layer and blurred: the split column (root x 100) is a
+        // red/blue mix, and some colour has spread a few pixels into each half.
         var seam = h.Px(100, 100);
         Assert.InRange((int)seam.Red, 40, 220);
         Assert.InRange((int)seam.Blue, 40, 220);
@@ -658,11 +655,10 @@ public class BackdropCompositionTests : TestBase
     }
 
     [Fact]
-    public void Retained_Backdrop_Under_Ancestor_Effect_Is_Skipped_Not_Garbage()
+    public void Retained_Backdrop_Under_Parent_Effect_Is_Skipped_Not_Garbage()
     {
-        // The retained path samples the root Surface, which the ancestor Effect's SaveLayer has diverted away
-        // from; sampling it would blit garbage. The draw site detects the active save-layer and skips (degrade
-        // to no-blur) => the frame equals the same tree without a backdrop.
+        // The retained path cannot read the intermediate layer that the parent's effect opened. The backdrop
+        // effect is skipped, so the frame equals the same tree without a backdrop effect.
         using var reference = new Harness(200, 200);
         BuildAncestorEffectTree(reference, withBackdrop: false, volatileBackdrop: false);
         reference.Retained(false);
@@ -677,10 +673,10 @@ public class BackdropCompositionTests : TestBase
             h.Frame();
             h.Frame();
         });
-        Assert.Null(ex); // no crash / garbage
+        Assert.Null(ex); // no exception
 
-        // The AABB is established (the draw site is actually reached), yet the backdrop is skipped, so the frame
-        // matches the no-backdrop reference: the seam stays a hard red/blue edge with no blur bleed.
+        // There is an AABB (so drawing is attempted), but the backdrop effect is skipped: the frame equals the
+        // reference without it, and the split stays a hard red/blue edge.
         Assert.NotNull(inner.Server.BackdropState);
         Assert.NotNull(inner.Server.BackdropState!.Aabb);
         AssertSimilar(h.Fb, reference.Fb);
@@ -691,33 +687,33 @@ public class BackdropCompositionTests : TestBase
     [Fact]
     public void Blur_Backdrop_Over_Pattern_Softens_A_Hard_Edge()
     {
-        // A hard red/blue split behind a blur backdrop: the seam column becomes a red/blue mix.
+        // A hard red/blue split behind a blur backdrop visual: the split column becomes a red/blue mix.
         using var h = new Harness(200, 200);
         h.Root.Children.Add(h.Rect(Colors.Red, 0, 0, 100, 200));
         h.Root.Children.Add(h.Rect(Colors.Blue, 100, 0, 100, 200));
-        var backdrop = h.Rect(Colors.Transparent, 40, 40, 120, 120);
-        backdrop.BackdropEffect = Blur(8);
-        h.Root.Children.Add(backdrop);
+        var backdropVisual = h.Rect(Colors.Transparent, 40, 40, 120, 120);
+        backdropVisual.BackdropEffect = Blur(8);
+        h.Root.Children.Add(backdropVisual);
         h.Frame();
         h.Frame();
 
-        var seam = h.Px(100, 100); // on the seam, inside the blurred region
+        var seam = h.Px(100, 100); // on the split, inside the backdrop bounds
         Assert.InRange((int)seam.Red, 40, 220);
         Assert.InRange((int)seam.Blue, 40, 220);
 
-        // Outside the blurred AABB the split stays hard.
+        // Outside of the backdrop bounds the split stays hard.
         var hardRed = h.Px(60, 20);
         Assert.True(hardRed.Red > 200 && hardRed.Blue < 40, $"expected pure red outside AABB, got {hardRed}");
     }
 
     [Fact]
-    public void Container_Host_With_Children_Renders_Backdrop_But_Empty_Container_Has_No_Region()
+    public void Container_With_Children_Renders_Backdrop_Effect_But_Empty_Container_Has_No_Region()
     {
         using var h = new Harness(200, 200);
         h.Root.Children.Add(h.Rect(Colors.Red, 0, 0, 100, 200));
         h.Root.Children.Add(h.Rect(Colors.Blue, 100, 0, 100, 200));
 
-        // Subtree mode lets a bare container (no own content) derive its backdrop region from its children.
+        // With subtree bounds, a container without own content gets its backdrop bounds from its children.
         var container = h.Compositor.CreateContainerVisual();
         container.ClipToBounds = false;
         container.BackdropEffect = Blur(8);
@@ -726,7 +722,7 @@ public class BackdropCompositionTests : TestBase
         container.Children.Add(h.Rect(Colors.Transparent, 0, 0, 120, 120));
         h.Root.Children.Add(container);
 
-        // A sibling container with the same backdrop but no children: null subtree bounds => no AABB, no draw.
+        // The same container without children: no subtree bounds, so no AABB and nothing drawn.
         var empty = h.Compositor.CreateContainerVisual();
         empty.BackdropEffect = Blur(8);
         empty.BackdropEffectBoundsSource = BackdropEffectBoundsSource.Subtree;
@@ -735,27 +731,27 @@ public class BackdropCompositionTests : TestBase
         h.Frame();
         h.Frame();
 
-        Assert.NotNull(container.Server.BackdropState!.Aabb); // children give it a region
-        Assert.Null(empty.Server.BackdropState!.Aabb);        // content-less container => no region
+        Assert.NotNull(container.Server.BackdropState!.Aabb); // has bounds from its children
+        Assert.Null(empty.Server.BackdropState!.Aabb);        // no content, no bounds
 
         var seam = h.Px(100, 100);
         Assert.InRange((int)seam.Red, 40, 220);
         Assert.InRange((int)seam.Blue, 40, 220);
     }
 
-    // A cache host with a red/blue pattern and a retained blur backdrop, all INSIDE the cache. The backdrop's
-    // host is the cache, so it samples the cache surface via GetDirtyRectSpaceMapping (the content is
-    // offset from the cache-local origin, so the mapping has a non-zero translation).
+    // A visual with a bitmap cache. Inside it: a red/blue pattern and a retained blur backdrop visual, which
+    // reads the bitmap cache layer. The content does not start at the origin of the cached visual, so the
+    // layer space mapping has an offset.
     private static void BuildCachedSplitScene(Harness h)
     {
         var cacheHost = h.Compositor.CreateContainerVisual();
         cacheHost.ClipToBounds = false;
         cacheHost.CacheMode = MakeCache(h.Compositor);
         cacheHost.Children.Add(h.Rect(Colors.Red, 20, 20, 60, 120));
-        cacheHost.Children.Add(h.Rect(Colors.Blue, 80, 20, 60, 120)); // seam at x = 80
-        var backdrop = h.Rect(Colors.Transparent, 20, 20, 120, 120);
-        backdrop.BackdropEffect = Blur(8);
-        cacheHost.Children.Add(backdrop);
+        cacheHost.Children.Add(h.Rect(Colors.Blue, 80, 20, 60, 120)); // split at x = 80
+        var backdropVisual = h.Rect(Colors.Transparent, 20, 20, 120, 120);
+        backdropVisual.BackdropEffect = Blur(8);
+        cacheHost.Children.Add(backdropVisual);
         h.Root.Children.Add(cacheHost);
     }
 
@@ -776,7 +772,7 @@ public class BackdropCompositionTests : TestBase
         h.Frame();
         h.Frame();
 
-        // The in-cache backdrop actually blurred the cache surface: the seam is mixed, the halves stay pure.
+        // The backdrop visual blurred the bitmap cache layer: the split is mixed, the halves are not.
         var seam = h.Px(80, 80);
         Assert.InRange((int)seam.Red, 40, 220);
         Assert.InRange((int)seam.Blue, 40, 220);
@@ -785,26 +781,26 @@ public class BackdropCompositionTests : TestBase
         var blue = h.Px(125, 80);
         Assert.True(blue.Blue > 180 && blue.Red < 60, $"expected blue-dominant inside the cache blur, got {blue}");
 
-        // And the whole composited frame equals a fresh full redraw of the same scene.
+        // The whole frame equals a full redraw of the same scene.
         AssertSimilar(h.Fb, reference.Fb);
     }
 
     [Fact]
     public void Retained_Backdrop_Inside_BitmapCache_Behind_Change_Equals_Full_Redraw()
     {
-        // A movable "behind" square + a retained blur backdrop, both inside the cache. The mover stays within
-        // the opaque base so the cache subtree bounds (and layer) do not resize.
+        // A movable `behind` square and a retained blur backdrop visual, both inside the bitmap cache. The square
+        // stays over the opaque base, so the bounds of the cached subtree (and the layer size) do not change.
         static CompositionSolidColorVisual Build(Harness h, double moverY)
         {
             var cacheHost = h.Compositor.CreateContainerVisual();
             cacheHost.ClipToBounds = false;
             cacheHost.CacheMode = MakeCache(h.Compositor);
             cacheHost.Children.Add(h.Rect(Colors.White, 20, 20, 120, 120));
-            var mover = h.Rect(Colors.Red, 40, moverY, 40, 40); // earlier DFS => behind the backdrop
+            var mover = h.Rect(Colors.Red, 40, moverY, 40, 40); // earlier in draw order: behind the backdrop visual
             cacheHost.Children.Add(mover);
-            var backdrop = h.Rect(Colors.Transparent, 20, 20, 120, 120);
-            backdrop.BackdropEffect = Blur(8);
-            cacheHost.Children.Add(backdrop);
+            var backdropVisual = h.Rect(Colors.Transparent, 20, 20, 120, 120);
+            backdropVisual.BackdropEffect = Blur(8);
+            cacheHost.Children.Add(backdropVisual);
             h.Root.Children.Add(cacheHost);
             return mover;
         }
@@ -823,8 +819,8 @@ public class BackdropCompositionTests : TestBase
         h.Frame();
         h.Frame();
 
-        // Move the behind content inside the cache; the in-cache retained backdrop must re-ingest from the
-        // cache surface (cache-host capture => render) and match a fresh full redraw of the final state.
+        // Move the content behind, inside the bitmap cache. The snapshot is refreshed from the bitmap cache layer,
+        // and the frame equals a full redraw of the final state.
         h.Retained(true);
         mover.Offset = new Vector3D(40, 90, 0);
         h.Frame();
@@ -832,16 +828,16 @@ public class BackdropCompositionTests : TestBase
         AssertSimilar(h.Fb, reference.Fb);
     }
 
-    // A transparent backdrop "card" over a red square on a transparent target; the shadow is offset by 20.
+    // A transparent backdrop visual over a red square on a transparent target. The shadow is offset by 20.
     private static CompositionSolidColorVisual BuildDropShadowScene(Harness h, bool retained, double squareY)
     {
         var square = h.Rect(Colors.Red, 70, squareY, 30, 30);
-        var backdrop = h.Rect(Colors.Transparent, 30, 30, 80, 80);
-        backdrop.ClipToBounds = false; // like a control: only the backdrop's own clip may contain the shadow
-        backdrop.BackdropEffect = DropShadow(20, 0);
-        backdrop.BackdropEffectCache = MakeBackdropCache(h.Compositor, retained);
+        var backdropVisual = h.Rect(Colors.Transparent, 30, 30, 80, 80);
+        backdropVisual.ClipToBounds = false; // as for a control: only the backdrop bounds limit the shadow
+        backdropVisual.BackdropEffect = DropShadow(20, 0);
+        backdropVisual.BackdropEffectCache = MakeBackdropCacheMode(h.Compositor, retained);
         h.Root.Children.Add(square);
-        h.Root.Children.Add(backdrop);
+        h.Root.Children.Add(backdropVisual);
         return square;
     }
 
@@ -850,8 +846,8 @@ public class BackdropCompositionTests : TestBase
     [InlineData(true)]
     public void DropShadow_Backdrop_Shadows_Translucent_Backdrop_Clipped_To_Bounds(bool retained)
     {
-        // Matches CSS backdrop-filter: drop-shadow(): the shadow shows only where the backdrop is transparent
-        // and is clipped to the backdrop's bounds (30..110).
+        // Same as CSS backdrop-filter: drop-shadow(): the shadow shows only where the backdrop is transparent, and
+        // is clipped to the backdrop bounds (30..110).
         using var h = new Harness(200, 200);
         BuildDropShadowScene(h, retained, squareY: 70);
         h.Frame();
@@ -859,10 +855,10 @@ public class BackdropCompositionTests : TestBase
 
         var square = h.Px(80, 80);
         Assert.True(square.Red > 250 && square.Green < 5, $"square={square}");
-        var shadow = h.Px(105, 105); // square shadow spans 90..120
+        var shadow = h.Px(105, 105); // the shadow of the square covers 90..120
         Assert.True(shadow.Alpha == 255 && shadow.Red < 5, $"shadow={shadow}");
-        Assert.False(IsPainted(h.Px(115, 115)), "shadow drawn outside the backdrop bounds");
-        Assert.False(IsPainted(h.Px(60, 60)), "shadow drawn where the backdrop has nothing to shadow");
+        Assert.False(IsPainted(h.Px(115, 115)), "shadow drawn outside the backdropVisual bounds");
+        Assert.False(IsPainted(h.Px(60, 60)), "shadow drawn where the backdropVisual has nothing to shadow");
     }
 
     [Theory]
@@ -870,20 +866,20 @@ public class BackdropCompositionTests : TestBase
     [InlineData(true)]
     public void DropShadow_Backdrop_Over_Opaque_Content_Equals_No_Backdrop(bool retained)
     {
-        // Opaque backdrop pixels cover their own shadow, and the bounds' edges must not cast one outside.
+        // Opaque backdrop pixels cover their own shadow, and the edges of the bounds cast no shadow outside.
         void Build(Harness h, bool withBackdrop)
         {
             h.Root.Children.Add(h.Rect(Colors.White, 0, 0, 200, 200));
             h.Root.Children.Add(h.Rect(Colors.Blue, 0, 60, 200, 30));
-            var backdrop = h.Rect(Colors.Transparent, 40, 40, 120, 120);
-            backdrop.ClipToBounds = false;
+            var backdropVisual = h.Rect(Colors.Transparent, 40, 40, 120, 120);
+            backdropVisual.ClipToBounds = false;
             if (withBackdrop)
             {
-                backdrop.BackdropEffect = DropShadow(10, 4);
-                backdrop.BackdropEffectCache = MakeBackdropCache(h.Compositor, retained);
+                backdropVisual.BackdropEffect = DropShadow(10, 4);
+                backdropVisual.BackdropEffectCache = MakeBackdropCacheMode(h.Compositor, retained);
             }
 
-            h.Root.Children.Add(backdrop);
+            h.Root.Children.Add(backdropVisual);
         }
 
         using var reference = new Harness(200, 200);
@@ -904,7 +900,7 @@ public class BackdropCompositionTests : TestBase
     [InlineData(true)]
     public void DropShadow_Backdrop_Behind_Change_Equals_Full_Redraw(bool retained)
     {
-        // The shadow samples its input at an offset, so the backdrop's dirty-rect expansion must cover it.
+        // The shadow reads its input at an offset. The output dirty rect has to cover that.
         using var reference = new Harness(200, 200);
         BuildDropShadowScene(reference, retained, squareY: 40);
         reference.Retained(false);
@@ -927,14 +923,14 @@ public class BackdropCompositionTests : TestBase
     [Fact]
     public void Volatile_DropShadow_Backdrop_Does_Not_Clip_Overflowing_Children()
     {
-        // The backdrop is clipped to the layout bounds (30..80); a child overflowing them must still render.
+        // The effect is clipped to the layout bounds (30..80). A child outside of them is still drawn.
         using var h = new Harness(200, 200);
         var host = h.Compositor.CreateContainerVisual();
         host.Offset = new Vector3D(30, 30, 0);
         host.Size = new Vector(50, 50);
         host.ClipToBounds = false;
         host.BackdropEffect = DropShadow(10, 0);
-        host.BackdropEffectCache = MakeVolatileBackdrop(h.Compositor);
+        host.BackdropEffectCache = MakeVolatileCacheMode(h.Compositor);
         host.Children.Add(h.Rect(Colors.Green, 60, 60, 30, 30));
         h.Root.Children.Add(host);
         h.Frame();
@@ -947,8 +943,8 @@ public class BackdropCompositionTests : TestBase
     [Fact]
     public void Public_BackdropEffect_On_A_Control_Renders()
     {
-        // The public Visual.BackdropEffect / BackdropEffectCache API on a control, rendered over live
-        // content through the real compositor + Skia. Programmatic assertion only (no reference image).
+        // The public Visual.BackdropEffect and BackdropEffectCache properties on a control, drawn by the real
+        // compositor and Skia. Checked by pixel, without a reference image.
         const int size = 200;
         using var fb = new SKBitmap(size, size, SKColorType.Rgba8888, SKAlphaType.Premul);
 
@@ -1000,16 +996,16 @@ public class BackdropCompositionTests : TestBase
                 timer.TriggerTick();
             }
 
-            // The shadow expands the draw-list/subtree bounds, but the default backdrop mode is constrained
-            // to the Border's 120x120 layout box.
+            // The shadow makes the subtree bounds larger, but the backdrop bounds are the 120x120 layout rect of the
+            // Border by default.
             Assert.Equal(new LtrbPixelRect(40, 40, 160, 160),
                 frosted.CompositionVisual!.Server.BackdropState!.Aabb!.Value);
         }
 
-        // The scene rendered through the compositor: red content shows through the frosted overlay.
+        // Drawn through the compositor: the red content shows through the overlay.
         var center = fb.GetPixel(size / 2, size / 2);
         Assert.NotEqual((byte)0, center.Alpha);
-        Assert.True(center.Red > 100, $"expected red-dominant content behind the backdrop, got {center}");
+        Assert.True(center.Red > 100, $"expected red-dominant content behind the backdropVisual, got {center}");
     }
 }
 #endif

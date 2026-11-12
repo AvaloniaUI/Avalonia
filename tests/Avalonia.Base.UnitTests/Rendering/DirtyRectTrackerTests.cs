@@ -13,7 +13,7 @@ public class DirtyRectTrackerTests
     private static List<LtrbRect> Collect(IDirtyRectTracker tracker)
     {
         Buffer.Clear();
-        tracker.CollectWorkingSet(Buffer);
+        tracker.CopyWorkingSetTo(Buffer);
         return new List<LtrbRect>(Buffer);
     }
 
@@ -29,12 +29,12 @@ public class DirtyRectTrackerTests
     public void Single_Working_Set_Is_The_Running_Union_And_Reflects_Later_Adds()
     {
         var tracker = new SingleDirtyRectTracker();
-        Assert.Empty(Collect(tracker)); // nothing accumulated yet
+        Assert.Empty(Collect(tracker)); // nothing collected yet
 
         tracker.AddRect(new LtrbRect(10, 10, 20, 20));
         Assert.Equal(new[] { new LtrbRect(10, 10, 20, 20) }, Collect(tracker));
 
-        // Mid-pass read is side-effect-free: a later add grows the same union, re-read sees it.
+        // Reading the working set changes nothing: a later add extends the same rect, and the next read sees it.
         tracker.AddRect(new LtrbRect(40, 40, 60, 60));
         Assert.Equal(new[] { new LtrbRect(10, 10, 60, 60) }, Collect(tracker));
         Assert.Equal(new[] { new LtrbRect(10, 10, 60, 60) }, Collect(tracker)); // repeatable
@@ -57,8 +57,8 @@ public class DirtyRectTrackerTests
         Assert.Contains(new LtrbRect(10, 10, 20, 20), afterTwo);
         Assert.Contains(new LtrbRect(100, 100, 120, 120), afterTwo);
 
-        // Reading must not freeze the region (GetUninflatedDirtyRegions sets _optimized and drops later
-        // adds): a subsequent add is still reflected.
+        // Reading does not set _optimized (GetUninflatedDirtyRegions does, and then misses later adds): a
+        // later add is still read.
         tracker.AddRect(new LtrbRect(500, 500, 520, 520));
         Assert.Equal(3, Collect(tracker).Count);
     }
@@ -72,7 +72,7 @@ public class DirtyRectTrackerTests
         tracker.AddRect(new LtrbRect(100, 100, 110, 110));
         tracker.AddRect(new LtrbRect(200, 200, 210, 210));
 
-        // Capture granularity deliberately matches render granularity: never more than the working array.
+        // The working set is as coarse as the dirty region that is drawn: at most the size of the array.
         Assert.True(Collect(tracker).Count <= 2);
     }
 
@@ -101,7 +101,7 @@ public class DirtyRectTrackerTests
         Assert.True(ws.Mapping.IsIdentity);
 
         var host = new List<LtrbRect>();
-        ws.CollectHostSpace(host);
+        ws.CopyInLayerSpaceTo(host);
         Assert.Equal(new[] { new LtrbRect(10, 10, 20, 20) }, host);
     }
 
@@ -109,20 +109,20 @@ public class DirtyRectTrackerTests
     [InlineData(0.0, 0.0, 1.0, 1.0)]
     [InlineData(-30.0, -40.0, 2.0, 2.0)]
     [InlineData(5.0, -7.0, 1.5, 3.0)]
-    public void Host_Space_Mapping_Matches_The_Cache_Proxy_And_Round_Trips(double ox, double oy, double sx, double sy)
+    public void Layer_Space_Mapping_Matches_The_Bitmap_Cache_Proxy_And_Round_Trips(double ox, double oy, double sx, double sy)
     {
         var mapping = new DirtyRectSpaceMapping(new Vector(ox, oy), sx, sy);
         var host = new LtrbRect(10, 20, 50, 80);
 
-        // Forward direction reproduces the cache collector proxy's per-corner formula exactly.
-        var tracker = mapping.HostToTracker(host);
+        // Layer space to layer pixels: same formula as the bitmap cache collector proxy.
+        var tracker = mapping.LayerSpaceToLayerPixels(host);
         Assert.Equal((host.Left + ox) * sx, tracker.Left, 6);
         Assert.Equal((host.Top + oy) * sy, tracker.Top, 6);
         Assert.Equal((host.Right + ox) * sx, tracker.Right, 6);
         Assert.Equal((host.Bottom + oy) * sy, tracker.Bottom, 6);
 
-        // Inverse round-trips.
-        var back = mapping.TrackerToHost(tracker);
+        // And back.
+        var back = mapping.LayerPixelsToLayerSpace(tracker);
         Assert.Equal(host.Left, back.Left, 6);
         Assert.Equal(host.Top, back.Top, 6);
         Assert.Equal(host.Right, back.Right, 6);
@@ -130,7 +130,7 @@ public class DirtyRectTrackerTests
     }
 
     [Fact]
-    public void Host_Space_Mapping_Is_Unusable_Before_A_Cache_Has_A_Scale()
+    public void Layer_Space_Mapping_Is_Unusable_Before_A_Bitmap_Cache_Has_A_Scale()
     {
         Assert.False(new DirtyRectSpaceMapping(default, 0, 0).IsUsable);
         Assert.True(DirtyRectSpaceMapping.Identity.IsUsable);

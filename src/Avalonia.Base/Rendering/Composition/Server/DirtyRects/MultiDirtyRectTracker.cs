@@ -52,7 +52,7 @@ internal partial class MultiDirtyRectTracker : IDirtyRectTracker
 
     public bool IsEmpty => _regions.IsEmpty;
 
-    public void CollectWorkingSet(List<LtrbRect> buffer) => _regions.CollectRawRegions(buffer);
+    public void CopyWorkingSetTo(List<LtrbRect> buffer) => _regions.CopyRawRegionsTo(buffer);
 
     public bool Intersects(LtrbRect rect)
     {

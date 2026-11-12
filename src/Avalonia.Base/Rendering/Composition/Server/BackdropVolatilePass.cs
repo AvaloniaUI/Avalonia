@@ -7,83 +7,75 @@ namespace Avalonia.Rendering.Composition.Server;
 partial class ServerCompositionTarget
 {
     /// <summary>
-    /// Post-update volatile backdrop pass. Runs in <see cref="ServerCompositionTarget.Update"/>
-    /// after <c>UpdateRoot</c>. Per layer host it collects backdrops (and child-host boundaries) in DFS order,
-    /// then spins a fixpoint that expands every volatile (R&gt;0) backdrop whose AABB the host's dirty region
-    /// touches to its <em>whole</em> AABB (the whole-visual invalidation rule) and delivers that damage to
-    /// retained backdrops later in DFS order, applying their output-inflation rule. Damage newly added to a
-    /// child host is propagated up the host tree (coarse subtree bounds) to retained backdrops later than the
-    /// child-host boundary. The pass only <em>marks</em> the region and grows retained input areas — nothing
-    /// draws here.
+    /// The volatile pass. Runs in <see cref="ServerCompositionTarget.Update"/> after the update walk.
+    /// A volatile backdrop visual cannot be redrawn in part: when a dirty rect touches its AABB, the whole AABB
+    /// becomes dirty (whole-AABB invalidation). That is new input for the backdrop visuals in front of it, so
+    /// the pass repeats until nothing changes. It only adds dirty rects and grows input dirty rects, it draws
+    /// nothing.
     ///
-    /// Region reads/writes use the mid-pass raw working set exclusively: <c>Intersects()</c>/<c>CombinedRect</c>
-    /// are invalid until <c>FinalizeFrame</c> (which runs later in <c>Render</c>), and
-    /// <c>GetUninflatedDirtyRegions()</c> would set the multi-rect tracker's optimized flag and silently drop
-    /// later fixpoint additions from reads.
+    /// The pass reads the working sets only. <c>Intersects()</c> and <c>CombinedRect</c> are not valid before
+    /// <c>FinalizeFrame</c>, and <c>GetUninflatedDirtyRegions()</c> makes the multi-rect tracker ignore rects
+    /// that are added later.
     /// </summary>
     internal sealed class BackdropVolatilePass
     {
         internal struct VolatileEntry
         {
-            public int DfsIndex;
-            public ServerCompositionVisualBackdropState Registration;
-            public bool Expanded;
+            public int DrawOrderIndex;
+            public ServerCompositionVisualBackdropState State;
+            public bool Invalidated;
         }
 
         internal struct RetainedEntry
         {
-            public int DfsIndex;
-            public ServerCompositionVisualBackdropState Registration;
+            public int DrawOrderIndex;
+            public ServerCompositionVisualBackdropState State;
         }
 
-        internal sealed class HostScan
+        internal sealed class LayerScan
         {
-            // The layer host: null is the render target ("root") host, otherwise a bitmap cache.
-            public ServerCompositionVisualCache? Host;
+            // Null for the root layer.
+            public ServerCompositionVisualCache? Layer;
 
-            // For the root host this is the same DebugEvents-wrapped collector the update walk used (so additions
-            // stay test-observable); for a cache host it is that cache's own collector.
+            // The dirty region of the layer.
             public IDirtyRectCollector Collector = null!;
 
-            // The visual the host is rooted at: the target's root visual, or the cache-owning visual.
-            public ServerCompositionVisual HostRootVisual = null!;
+            // The root visual of the target, or the visual with the bitmap cache.
+            public ServerCompositionVisual LayerRootVisual = null!;
 
-            // Parent host in the layer-host tree, plus this host's boundary visual DFS position / coarse bounds
-            // within that parent (used by the upward propagation).
-            public HostScan? Parent;
-            public int BoundaryDfsIndex;
-            public LtrbRect? BoundaryCoarseBounds;
+            // The layer that this bitmap cache is drawn into, and the place and bounds of the cached visual in it.
+            public LayerScan? OuterLayer;
+            public int DrawOrderIndexInOuterLayer;
+            public LtrbRect? BoundsInOuterLayer;
 
             public List<VolatileEntry> Volatiles = null!;
             public List<RetainedEntry> Retained = null!;
 
-            // Set whenever this pass adds any rect to this host; gates the upward propagation.
-            public bool ReceivedNewDamage;
+            // Whether this pass added a dirty rect to the layer.
+            public bool ReceivedNewDirtyRects;
             public int Counter;
 
-            // Clears all per-frame state so a pooled shell can be reused. Volatiles/Retained are assigned by
-            // NewHostScan right after this and nulled on return, so they're left alone here.
+            // Volatiles and Retained are set by NewLayerScan.
             public void Reset()
             {
-                Host = null;
+                Layer = null;
                 Collector = null!;
-                HostRootVisual = null!;
-                Parent = null;
-                BoundaryDfsIndex = 0;
-                BoundaryCoarseBounds = null;
-                ReceivedNewDamage = false;
+                LayerRootVisual = null!;
+                OuterLayer = null;
+                DrawOrderIndexInOuterLayer = 0;
+                BoundsInOuterLayer = null;
+                ReceivedNewDirtyRects = false;
                 Counter = 0;
             }
         }
 
         private CompositorPools _pools = null!;
-        private List<HostScan> _hosts = null!;
+        private List<LayerScan> _layers = null!;
         private List<LtrbRect> _workingBuffer = null!;
-        // Damage sources accumulated by a single DeliverToLaterRetained call.
+        // Used by AddInputDirtyRectInFront.
         private List<LtrbRect> _deliveryBuffer = null!;
-        // HostScan shells reused across frames (this pass instance is reused per target). Only the shell is
-        // pooled here; its inner Volatiles/Retained lists are rented from CompositorPools per frame.
-        private readonly Stack<HostScan> _hostScanPool = new();
+        // LayerScan objects are reused across frames. Their lists come from CompositorPools.
+        private readonly Stack<LayerScan> _layerScanPool = new();
 
         public void Run(ServerCompositionTarget target, IDirtyRectCollector rootCollector, double rootScaling)
         {
@@ -95,91 +87,88 @@ partial class ServerCompositionTarget
         private void Execute(ServerCompositionTarget target, IDirtyRectCollector rootCollector, double rootScaling)
         {
             _pools = target.Compositor.Pools;
-            _hosts = _pools.BackdropHostScanListPool.Rent();
+            _layers = _pools.BackdropLayerScanListPool.Rent();
             _workingBuffer = _pools.LtrbRectListPool.Rent();
             _deliveryBuffer = _pools.LtrbRectListPool.Rent();
             try
             {
                 var root = target.Root!;
-                var rootScan = NewHostScan();
-                rootScan.Host = null;
+                var rootScan = NewLayerScan();
+                rootScan.Layer = null;
                 rootScan.Collector = rootCollector;
-                rootScan.HostRootVisual = root;
-                _hosts.Add(rootScan);
+                rootScan.LayerRootVisual = root;
+                _layers.Add(rootScan);
 
-                // Root host space is device pixels: fold the target scaling (and the root visual's own transform)
-                // in, matching the registry's host-space AABBs.
+                // Layer space of the root layer is device pixels.
                 var scale = Matrix.CreateScale(rootScaling, rootScaling);
-                var rootInner = root.OwnTransform is { } rootTransform ? rootTransform * scale : scale;
-                Scan(rootScan, root, rootInner);
+                var rootToLayer = root.OwnTransform is { } rootTransform ? rootTransform * scale : scale;
+                Scan(rootScan, root, rootToLayer);
 
-                // Process bottom-up so a child host's upward propagation is already in the parent's region before
-                // the parent's own fixpoint runs. Scan() appends every child host after its parent, so reverse
-                // order visits children before parents.
-                for (var i = _hosts.Count - 1; i >= 0; i--)
+                // Scan adds a bitmap cache layer after the layer it is drawn into. Go in reverse, so that a
+                // bitmap cache layer has passed its dirty rects to the outer layer before that one is handled.
+                for (var i = _layers.Count - 1; i >= 0; i--)
                 {
-                    var host = _hosts[i];
-                    RunFixpoint(host);
-                    if (host.Host != null && host.ReceivedNewDamage)
-                        PropagateToParent(host);
+                    var scan = _layers[i];
+                    InvalidateVolatiles(scan);
+                    if (scan.Layer != null && scan.ReceivedNewDirtyRects)
+                        PropagateToOuterLayer(scan);
                 }
             }
             finally
             {
-                foreach (var host in _hosts)
+                foreach (var scan in _layers)
                 {
-                    _pools.BackdropVolatileEntryListPool.Return(host.Volatiles);
-                    _pools.BackdropRetainedEntryListPool.Return(host.Retained);
-                    host.Volatiles = null!;
-                    host.Retained = null!;
-                    _hostScanPool.Push(host);
+                    _pools.BackdropVolatileEntryListPool.Return(scan.Volatiles);
+                    _pools.BackdropRetainedEntryListPool.Return(scan.Retained);
+                    scan.Volatiles = null!;
+                    scan.Retained = null!;
+                    _layerScanPool.Push(scan);
                 }
-                _pools.BackdropHostScanListPool.Return(ref _hosts);
+                _pools.BackdropLayerScanListPool.Return(ref _layers);
                 _pools.LtrbRectListPool.Return(ref _workingBuffer);
                 _pools.LtrbRectListPool.Return(ref _deliveryBuffer);
             }
         }
 
-        private HostScan NewHostScan()
+        private LayerScan NewLayerScan()
         {
-            var scan = _hostScanPool.Count > 0 ? _hostScanPool.Pop() : new HostScan();
+            var scan = _layerScanPool.Count > 0 ? _layerScanPool.Pop() : new LayerScan();
             scan.Reset();
             scan.Volatiles = _pools.BackdropVolatileEntryListPool.Rent();
             scan.Retained = _pools.BackdropRetainedEntryListPool.Rent();
             return scan;
         }
 
-        // Downward DFS collecting DFS-ordered backdrop and child-host-boundary entries for <paramref name="scan"/>'s
-        // host. <paramref name="mInner"/> maps <paramref name="node"/>'s inner (content/child) space to host space.
-        private void Scan(HostScan scan, ServerCompositionVisual node, Matrix mInner)
+        // Finds the backdrop visuals and the bitmap caches of one layer, in draw order. `toLayer` maps the local
+        // space of `node` to layer space.
+        private void Scan(LayerScan scan, ServerCompositionVisual node, Matrix toLayer)
         {
             var index = scan.Counter++;
 
-            var registration = node.BackdropState;
-            if (registration is { Aabb: not null } && ReferenceEquals(registration.Host, scan.Host))
+            var state = node.BackdropState;
+            if (state is { Aabb: not null } && ReferenceEquals(state.Layer, scan.Layer))
             {
-                if (registration.IsRetained)
-                    scan.Retained.Add(new RetainedEntry { DfsIndex = index, Registration = registration });
+                if (state.IsRetained)
+                    scan.Retained.Add(new RetainedEntry { DrawOrderIndex = index, State = state });
                 else
-                    scan.Volatiles.Add(new VolatileEntry { DfsIndex = index, Registration = registration });
+                    scan.Volatiles.Add(new VolatileEntry { DrawOrderIndex = index, State = state });
             }
 
-            // A cache boundary (other than this host's own root) starts a child host: record its DFS position and
-            // scan it as a separate host, but never descend into it within this host (a different backbuffer).
-            if (node.Cache is { } childHost && !ReferenceEquals(node, scan.HostRootVisual))
+            // A bitmap cache below the layer's root visual is a layer of its own: scan it separately.
+            if (node.Cache is { } childLayer && !ReferenceEquals(node, scan.LayerRootVisual))
             {
-                if (node._backdropsInSubTree > 0)
+                if (node._backdropVisualsInSubTree > 0)
                 {
-                    var childScan = NewHostScan();
-                    childScan.Host = childHost;
-                    childScan.Collector = childHost.DirtyRectCollector;
-                    childScan.HostRootVisual = node;
-                    childScan.Parent = scan;
-                    childScan.BoundaryDfsIndex = index;
-                    childScan.BoundaryCoarseBounds =
-                        node.SubTreeBounds is { } bounds ? bounds.TransformToAABB(mInner) : null;
-                    _hosts.Add(childScan);
-                    // Cache host space is the cache visual's own inner space, so its children start at identity.
+                    var childScan = NewLayerScan();
+                    childScan.Layer = childLayer;
+                    childScan.Collector = childLayer.DirtyRectCollector;
+                    childScan.LayerRootVisual = node;
+                    childScan.OuterLayer = scan;
+                    childScan.DrawOrderIndexInOuterLayer = index;
+                    childScan.BoundsInOuterLayer =
+                        node.SubTreeBounds is { } bounds ? bounds.TransformToAABB(toLayer) : null;
+                    _layers.Add(childScan);
+                    // Layer space of a bitmap cache layer is the local space of the cached visual.
                     Scan(childScan, node, Matrix.Identity);
                 }
 
@@ -191,50 +180,50 @@ partial class ServerCompositionTarget
 
             foreach (var child in children.List)
             {
-                // Prune spines with no backdrops in this host and no backdrop-hosting cache below.
-                if (child._backdropsInSubTree > 0 || child.BackdropState != null)
+                // Skip subtrees without backdrop visuals.
+                if (child._backdropVisualsInSubTree > 0 || child.BackdropState != null)
                 {
-                    var childInner = child.OwnTransform is { } ownTransform ? ownTransform * mInner : mInner;
-                    Scan(scan, child, childInner);
+                    var childToLayer = child.OwnTransform is { } ownTransform ? ownTransform * toLayer : toLayer;
+                    Scan(scan, child, childToLayer);
                 }
             }
         }
 
-        // Spins the whole-visual expansion until an iteration changes nothing. Each volatile expands at most once
-        // (the Expanded mark), so the loop runs in at most O(volatiles) iterations.
-        private void RunFixpoint(HostScan host)
+        // Whole-AABB invalidation, repeated until nothing changes. Every entry is invalidated at most once, so the
+        // loop ends.
+        private void InvalidateVolatiles(LayerScan scan)
         {
-            if (host.Volatiles.Count == 0)
+            if (scan.Volatiles.Count == 0)
                 return;
 
-            var volatiles = CollectionsMarshal.AsSpan(host.Volatiles);
+            var volatiles = CollectionsMarshal.AsSpan(scan.Volatiles);
             var changed = true;
             while (changed)
             {
                 changed = false;
 
-                var workingSet = host.Collector.GetWorkingSet();
+                var workingSet = scan.Collector.GetWorkingSet();
                 if (workingSet.IsEmpty)
                     break;
-                workingSet.CollectHostSpace(_workingBuffer);
+                workingSet.CopyInLayerSpaceTo(_workingBuffer);
                 if (_workingBuffer.Count == 0)
                     break;
 
                 for (var i = 0; i < volatiles.Length; i++)
                 {
                     ref var entry = ref volatiles[i];
-                    if (entry.Expanded || entry.Registration.HostSpaceSamplingRadius <= 0
-                        || entry.Registration.Aabb is not { } aabbPixels)
+                    if (entry.Invalidated || entry.State.LayerSpaceSamplingRadius <= 0
+                        || entry.State.Aabb is not { } aabbPixels)
                         continue;
 
                     var aabb = aabbPixels.ToLtrbRectUnscaled();
                     if (!IntersectsWorkingSet(aabb))
                         continue;
 
-                    entry.Expanded = true;
-                    host.Collector.AddRect(aabb);
-                    host.ReceivedNewDamage = true;
-                    DeliverToLaterRetained(host, entry.DfsIndex, aabb);
+                    entry.Invalidated = true;
+                    scan.Collector.AddRect(aabb);
+                    scan.ReceivedNewDirtyRects = true;
+                    AddInputDirtyRectInFront(scan, entry.DrawOrderIndex, aabb);
                     changed = true;
                 }
             }
@@ -248,23 +237,23 @@ partial class ServerCompositionTarget
             return false;
         }
 
-        // Delivers damage produced at <paramref name="sourceDfsIndex"/> to every retained backdrop later in DFS
-        // order in the host, applying the output-inflation rule (((D ∩ AABB) ⊕ R) ∩ AABB added to the region).
-        // A retained backdrop's inflated output is in turn input for the retained backdrops after it, so it joins
-        // the sources (host.Retained is in DFS order).
-        private void DeliverToLaterRetained(HostScan host, int sourceDfsIndex, LtrbRect source)
+        // Adds `source` to the input dirty rect of every retained backdrop visual in front of
+        // `sourceDrawOrderIndex`, and their output dirty rects to the dirty region. An output dirty rect is input
+        // for the retained backdrop visuals in front of it, so it is added to the sources (scan.Retained is in
+        // draw order).
+        private void AddInputDirtyRectInFront(LayerScan scan, int sourceDrawOrderIndex, LtrbRect source)
         {
             var sources = _deliveryBuffer;
             sources.Clear();
             sources.Add(source);
 
-            foreach (var retained in host.Retained)
+            foreach (var retained in scan.Retained)
             {
-                if (retained.DfsIndex <= sourceDfsIndex)
+                if (retained.DrawOrderIndex <= sourceDrawOrderIndex)
                     continue;
 
-                var record = retained.Registration;
-                if (record.Aabb is not { } aabbPixels)
+                var state = retained.State;
+                if (state.Aabb is not { } aabbPixels)
                     continue;
 
                 var aabb = aabbPixels.ToLtrbRectUnscaled();
@@ -273,37 +262,35 @@ partial class ServerCompositionTarget
                     if (rect.IntersectOrNull(aabb) is { } intersection)
                         hit = LtrbRect.FullUnion(hit, intersection);
 
-                if (hit is not { } damage)
+                if (hit is not { } inputDirty)
                     continue;
 
-                record.RetainedInputDirtyArea = LtrbRect.FullUnion(record.RetainedInputDirtyArea, damage);
+                state.InputDirtyRect = LtrbRect.FullUnion(state.InputDirtyRect, inputDirty);
 
-                if (record.HostSpaceSamplingRadius > 0
-                    && damage.Inflate(new Thickness(record.HostSpaceSamplingRadius)).IntersectOrNull(aabb) is { } halo)
+                if (state.LayerSpaceSamplingRadius > 0
+                    && inputDirty.Inflate(new Thickness(state.LayerSpaceSamplingRadius)).IntersectOrNull(aabb)
+                        is { } outputDirtyRect)
                 {
-                    host.Collector.AddRect(halo);
-                    host.ReceivedNewDamage = true;
-                    sources.Add(halo);
+                    scan.Collector.AddRect(outputDirtyRect);
+                    scan.ReceivedNewDirtyRects = true;
+                    sources.Add(outputDirtyRect);
                 }
             }
         }
 
-        // Propagates a child host's post-update damage up to its parent host as the child-host visual's coarse
-        // subtree bounds (as bitmap caches propagate today), delivered to retained backdrops later than that
-        // boundary and added to the parent host's region.
-        private void PropagateToParent(HostScan host)
+        // A bitmap cache layer that got new dirty rects is redrawn, so the bounds of the cached visual are dirty in
+        // the outer layer.
+        private void PropagateToOuterLayer(LayerScan scan)
         {
-            var parent = host.Parent;
-            if (parent == null || host.BoundaryCoarseBounds is not { } coarse || coarse.IsZeroSize)
+            var outer = scan.OuterLayer;
+            if (outer == null || scan.BoundsInOuterLayer is not { } bounds || bounds.IsZeroSize)
                 return;
 
-            // Two halves. The AddRect half overlaps the update walk's own cache-boundary dirty emission (the
-            // boundary's coarse bounds already reach the parent region there), so it looks redundant — but the
-            // DeliverToLaterRetained half is NOT: it grows the retained-input areas of parent-host backdrops that
-            // sit after this boundary in DFS. Do not "simplify away" this call by leaning on the walk's emission.
-            parent.Collector.AddRect(coarse);
-            parent.ReceivedNewDamage = true;
-            DeliverToLaterRetained(parent, host.BoundaryDfsIndex, coarse);
+            // The update walk may have collected these bounds already. AddInputDirtyRectInFront is still needed for
+            // the retained backdrop visuals in front of the cached visual.
+            outer.Collector.AddRect(bounds);
+            outer.ReceivedNewDirtyRects = true;
+            AddInputDirtyRectInFront(outer, scan.DrawOrderIndexInOuterLayer, bounds);
         }
     }
 }

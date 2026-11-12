@@ -64,7 +64,7 @@ internal class CompositorPools
     public StackPool<IDirtyRectCollector> DirtyRectCollectorStackPool { get; } = new();
 
     public ListPool<LtrbRect> LtrbRectListPool { get; } = new();
-    public ListPool<ServerCompositionTarget.BackdropVolatilePass.HostScan> BackdropHostScanListPool { get; } = new();
+    public ListPool<ServerCompositionTarget.BackdropVolatilePass.LayerScan> BackdropLayerScanListPool { get; } = new();
     public ListPool<ServerCompositionTarget.BackdropVolatilePass.VolatileEntry> BackdropVolatileEntryListPool { get; } = new();
     public ListPool<ServerCompositionTarget.BackdropVolatilePass.RetainedEntry> BackdropRetainedEntryListPool { get; } = new();
 }

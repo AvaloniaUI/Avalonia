@@ -40,8 +40,8 @@ internal class ServerCompositionVisualCache
         _layerCreatedWithContext = null;
     }
 
-    // Host-local ↔ texture-pixel mapping for backdrops hosted by this cache, matching the collector proxy's
-    // offset/scale. Valid once the cache has drawn at least once this frame (which sets the offset/scale).
+    // Layer space to layer pixels mapping of this bitmap cache layer, same as in DirtyRectCollectorProxy.
+    // Usable after the first draw, which sets the offset and the scale.
     public DirtyRectSpaceMapping GetDirtyRectSpaceMapping() =>
         new(_drawAtOffset, _scaleX, _scaleY);
 
@@ -187,10 +187,9 @@ internal class ServerCompositionVisualCache
         {
             ResetDirtyRects();
             DirtyRectCollector.AddRect(LtrbRect.Infinite);
-            // A full cache re-render clears this host's surface, so every retained backdrop sampling it
-            // must re-ingest its whole input. Done here, as the flag is consumed, so it covers every cause
-            // (explicit invalidation and layer recreation) with the registry host assignments already settled.
-            TargetVisual.Root?.InvalidateRetainedBackdrops(this);
+            // A full redraw of the bitmap cache layer: the snapshots of the retained backdrop visuals inside
+            // need a full refresh. Done here to cover every reason for a full redraw.
+            TargetVisual.Root?.InvalidateRetainedBackdropInputs(this);
         }
 
         // Compute the final dirty rect set that accounts for antialiasing effects

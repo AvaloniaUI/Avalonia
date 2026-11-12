@@ -322,10 +322,10 @@ partial class MultiDirtyRectTracker
         }
 
         /// <summary>
-        /// Appends the raw, non-empty working regions to <paramref name="buffer"/> without consolidating,
-        /// merging or setting <c>_optimized</c> (which would silently drop later <see cref="Add"/>s from reads).
+        /// Appends the non-empty dirty regions to <paramref name="buffer"/> as they are. Does not merge them and
+        /// does not set <c>_optimized</c>, after which a later <see cref="Add"/> would be missing from reads.
         /// </summary>
-        public void CollectRawRegions(List<LtrbRect> buffer)
+        public void CopyRawRegionsTo(List<LtrbRect> buffer)
         {
             if (_maxSurfaceFallback)
             {

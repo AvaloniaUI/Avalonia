@@ -224,42 +224,41 @@ namespace Avalonia.Platform
     public interface IDrawingContextImplWithBackdropSupport : IDrawingContextImpl
     {
         /// <summary>
-        /// Whether the context can currently serve as a backdrop source. A backend may implement this
-        /// interface yet still not support backdrops at runtime (e.g. a surface-less recording context).
+        /// Whether the context can read back what it has drawn. A backend that implements this interface can
+        /// still return false for some contexts (e.g. a recording context without a surface).
         /// </summary>
         bool SupportsBackdrop { get; }
 
         /// <summary>
-        /// Whether sampling the backdrop right now would read the correct pixels. False while an intermediate
-        /// save-layer (an ancestor Effect/OpacityMask, the root save-layer clip, or an opacity save-layer) is
-        /// active: drawing is redirected to an offscreen but the backend still samples its root surface, which
-        /// no longer holds the content behind the backdrop. Distinct from <see cref="SupportsBackdrop"/>, the
-        /// target-level capability probe.
+        /// Whether <see cref="DrawRetainedBackdropEffect"/> can read the backdrop right now. False while an
+        /// intermediate layer (effect, opacity mask, opacity) is open and the backend cannot read it back.
+        /// <see cref="DrawVolatileBackdropEffect"/> is not affected.
         /// </summary>
         bool IsBackdropSamplingSafe { get; }
 
         /// <summary>
-        /// Creates an opaque retained-backdrop cache sized to <paramref name="size"/> device pixels, to be
-        /// passed back to <see cref="DrawRetainedBackdropEffect"/>. The caller owns and disposes it.
+        /// Creates a backdrop snapshot of <paramref name="size"/> layer pixels for
+        /// <see cref="DrawRetainedBackdropEffect"/>. The caller disposes it.
         /// </summary>
-        IDrawingContextBackdropCacheImpl CreateBackdropCache(PixelSize size);
+        IDrawingContextBackdropSnapshotImpl CreateBackdropSnapshot(PixelSize size);
 
         /// <summary>
-        /// Volatile backdrop: draws the current canvas contents (through any nested layers) filtered by
-        /// <paramref name="effect"/> back onto the canvas, clipped to <paramref name="bounds"/> (in the current
-        /// coordinate space, so the clip follows the current transform).
+        /// Applies <paramref name="effect"/> to what is already drawn (read through open intermediate layers)
+        /// and draws the result, clipped to <paramref name="bounds"/>. The bounds are in the current coordinate
+        /// space, so the clip follows the current transform.
         /// </summary>
         void DrawVolatileBackdropEffect(Rect bounds, IEffect effect);
 
         /// <summary>
-        /// Retained backdrop: refreshes <paramref name="cache"/> from the live target over
-        /// <paramref name="dirtyRects"/> (device-space pixels), then draws the cache through
-        /// <paramref name="effect"/>, clipped to <paramref name="bounds"/> (in the current coordinate space).
-        /// <paramref name="cacheBounds"/> is the axis-aligned device-space area the cache covers. The cache must
-        /// be one created by this context via <see cref="CreateBackdropCache"/>. An empty dirty list skips the
-        /// refresh.
+        /// Refreshes <paramref name="snapshot"/> from the layer in <paramref name="dirtyRects"/>, then draws it
+        /// through <paramref name="effect"/>, clipped to <paramref name="bounds"/> (current coordinate space).
         /// </summary>
-        void DrawRetainedBackdropEffect(IDrawingContextBackdropCacheImpl cache, PixelRect cacheBounds,
+        /// <param name="snapshot">Created by <see cref="CreateBackdropSnapshot"/> of this context.</param>
+        /// <param name="snapshotBounds">The area that the snapshot covers, in layer pixels.</param>
+        /// <param name="dirtyRects">In layer pixels. Empty to draw without a refresh.</param>
+        /// <param name="effect">The backdrop effect.</param>
+        /// <param name="bounds">The backdrop bounds.</param>
+        void DrawRetainedBackdropEffect(IDrawingContextBackdropSnapshotImpl snapshot, PixelRect snapshotBounds,
             IReadOnlyList<PixelRect> dirtyRects, IEffect effect, Rect bounds);
     }
 
@@ -273,11 +272,11 @@ namespace Avalonia.Platform
     }
 
     /// <summary>
-    /// Opaque handle to a retained-backdrop cache owned by an <see cref="IDrawingContextImplWithBackdropSupport"/>.
-    /// The compositor tracks its size itself, so no members are exposed beyond disposal.
+    /// A backdrop snapshot, see <see cref="IDrawingContextImplWithBackdropSupport.CreateBackdropSnapshot"/>.
+    /// The compositor tracks its size, so the handle only has to be disposable.
     /// </summary>
     [PrivateApi]
-    public interface IDrawingContextBackdropCacheImpl : IDisposable
+    public interface IDrawingContextBackdropSnapshotImpl : IDisposable
     {
     }
 

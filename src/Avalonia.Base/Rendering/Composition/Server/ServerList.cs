@@ -26,9 +26,8 @@ namespace Avalonia.Rendering.Composition.Server
         }
 
         /// <summary>
-        /// Invoked when the list was replaced wholesale during deserialization. Overridden by the visual
-        /// children collection to flag structural change for retained-backdrop invalidation, so an incremental
-        /// rewrite of this class must still notify on every child mutation (see ServerCompositionVisualCollection).
+        /// Called when deserialization replaced the list. See <see cref="ServerCompositionVisualCollection"/>
+        /// for what depends on it.
         /// </summary>
         protected virtual void OnListReplaced()
         {

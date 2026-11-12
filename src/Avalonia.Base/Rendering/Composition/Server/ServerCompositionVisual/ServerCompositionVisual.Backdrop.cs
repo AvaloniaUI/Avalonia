@@ -6,10 +6,8 @@ using Avalonia.Platform;
 namespace Avalonia.Rendering.Composition.Server;
 
 /// <summary>
-/// Per-backdrop state for a <see cref="ServerCompositionVisual"/> with a backdrop effect,
-/// recomputed once per frame before the update walk. Holds the pixel-aligned AABB in host space, the layer
-/// host it belongs to, the composed visual-&gt;host transform used to build the AABB and the retained/volatile
-/// classification.
+/// The backdrop state of a backdrop visual. Recomputed once per frame before the update walk.
+/// See README.md in this directory for the terms.
 /// </summary>
 internal sealed class ServerCompositionVisualBackdropState
 {
@@ -17,102 +15,103 @@ internal sealed class ServerCompositionVisualBackdropState
 
     public ServerCompositionVisual Visual { get; }
 
-    /// <summary>Nearest ancestor bitmap cache, or null for the render target ("root") host.</summary>
-    public ServerCompositionVisualCache? Host { get; set; }
+    /// <summary>
+    /// The layer that the visual is drawn into: the nearest bitmap cache in the parent chain, or null for the
+    /// root layer.
+    /// </summary>
+    public ServerCompositionVisualCache? Layer { get; set; }
 
-    /// <summary>Pixel-aligned AABB in host space for this frame, or null when the visual has no bounds.</summary>
+    /// <summary>The backdrop AABB, or null when the visual has no backdrop bounds.</summary>
     public LtrbPixelRect? Aabb { get; set; }
 
     /// <summary>
-    /// Composed transform mapping the visual's parent-local space into host space. Stashed for the walk-time
-    /// stale-AABB check; ancestor transforms are only rewritten by the pre-walk passes, so it stays valid for
-    /// the whole frame.
+    /// Maps the visual's parent space to layer space. The update walk does not change transforms, so it is
+    /// valid for the whole frame.
     /// </summary>
-    public Matrix VisualToHostTransform { get; set; } = Matrix.Identity;
+    public Matrix ParentToLayerTransform { get; set; } = Matrix.Identity;
 
     /// <summary>Retained when true, volatile when false.</summary>
     public bool IsRetained { get; set; }
 
-    /// <summary>The effect's input sampling radius expressed in host-space pixels (R, DIPs × host scale).</summary>
-    public double HostSpaceSamplingRadius { get; set; }
+    /// <summary>The sampling radius of the effect in layer space.</summary>
+    public double LayerSpaceSamplingRadius { get; set; }
 
     /// <summary>
-    /// Retained backdrop's accumulated pending input damage, in host space. Grown by the update walk's
-    /// capture (working set ∩ AABB) and set to the whole AABB on full invalidation. Consumed by the render pass.
+    /// The input dirty rect in layer space (retained only). The update walk and the volatile pass grow it,
+    /// the render walk clears it after the refresh.
     /// </summary>
-    public LtrbRect? RetainedInputDirtyArea { get; set; }
+    public LtrbRect? InputDirtyRect { get; set; }
 
-    /// <summary>The retained capture store, created lazily by the render pass.</summary>
-    public ServerCompositionBackdropStore? RetainedState { get; set; }
+    /// <summary>The backdrop snapshot (retained only). Created by the render walk on first use.</summary>
+    public ServerCompositionBackdropSnapshot? Snapshot { get; set; }
 
     /// <summary>
-    /// Disposes the retained store (freeing its layer) and clears the slot. Idempotent. Only safe when the
-    /// render context is already current (i.e. from the render pass); off-context callers must use
-    /// <see cref="DisposeRetainedStateWithContext"/>.
+    /// Disposes the snapshot. The render context must be current (true in the render walk). Other callers use
+    /// <see cref="DisposeSnapshotWithContext"/>.
     /// </summary>
-    public void DisposeAndClearRetainedState()
+    public void DisposeSnapshot()
     {
-        RetainedState?.Dispose();
-        RetainedState = null;
+        Snapshot?.Dispose();
+        Snapshot = null;
     }
 
     /// <summary>
-    /// Disposes the retained store with the render interface made current, for callers running outside the
-    /// render pass (the update walk / deserialization) where the GPU context isn't already current. No-op
-    /// when there is nothing to dispose.
+    /// Disposes the snapshot from outside of the render walk (update walk, deserialization), where the render
+    /// context is not current yet.
     /// </summary>
-    public void DisposeRetainedStateWithContext()
+    public void DisposeSnapshotWithContext()
     {
-        if (RetainedState == null)
+        if (Snapshot == null)
             return;
         try
         {
             using (Visual.Compositor.RenderInterface.EnsureCurrent())
-                DisposeAndClearRetainedState();
+                DisposeSnapshot();
         }
         catch (Exception ex)
         {
-            // The context couldn't be made current (e.g. platform graphics not ready). Abandon the resource
-            // rather than crashing the update; mirrors ServerCompositionTarget.ResetRenderTarget's fallback.
+            // The context can't be made current (e.g. platform graphics are not ready). Leak the snapshot
+            // instead of failing the update, same as ServerCompositionTarget.ResetRenderTarget.
             Logger.TryGet(LogEventLevel.Error, LogArea.Visual)?.Log(Visual,
-                "Unable to make the render interface current to dispose a backdrop cache: {Error}", ex);
-            RetainedState = null;
+                "Unable to make the render interface current to dispose a backdrop snapshot: {Error}", ex);
+            Snapshot = null;
         }
     }
 
-    /// <summary>Marks the entire input (the whole AABB) as pending, overriding any partial capture.</summary>
-    public void MarkRetainedInputFull() => RetainedInputDirtyArea = Aabb?.ToLtrbRectUnscaled();
+    /// <summary>Makes the whole AABB the input dirty rect.</summary>
+    public void MarkInputFullyDirty() => InputDirtyRect = Aabb?.ToLtrbRectUnscaled();
 }
 
 partial class ServerCompositionVisual
 {
-    // Number of backdrop visuals in this node's subtree that are visible to this node's layer host,
-    // i.e. reachable without crossing a bitmap-cache boundary. Excludes this node itself. Maintained
-    // eagerly along the parent chain; consumed by the update pass.
-    internal int _backdropsInSubTree;
+    // Number of backdrop visuals below this visual that are drawn into the same layer as its children, i.e.
+    // with no bitmap cache in between. Does not include this visual. Kept up to date along the parent chain,
+    // read by the update walk and the volatile pass.
+    internal int _backdropVisualsInSubTree;
 
-    // Tracks whether this node's own backdrop is currently accounted for in the parent chain counters.
+    // Whether this visual is counted in _backdropVisualsInSubTree of its parent chain.
     private bool _ownBackdropCounted;
 
-    // Per-frame flag raised when this node's children collection was replaced during deserialization.
-    // Cleared in the update walk's PostSubgraph.
+    // Set when the children collection was replaced this frame. Cleared by the update walk's PostSubgraph.
     internal bool _childrenChanged;
 
     internal ServerCompositionVisualBackdropState? BackdropState { get; set; }
 
-    // The count this node contributes to its parent chain: its own backdrop (which always crosses this
-    // node's own cache) plus, unless this node is a cache boundary, the backdrops reaching it from below.
+    // What this visual adds to the counter of its parent: itself if it is a backdrop visual (its backdrop
+    // effect is drawn into the parent's layer even when the visual has a bitmap cache), plus the backdrop
+    // visuals below it unless it has a bitmap cache.
     private int BackdropContributionToParent =>
-        (_ownBackdropCounted ? 1 : 0) + (Cache != null ? 0 : _backdropsInSubTree);
+        (_ownBackdropCounted ? 1 : 0) + (Cache != null ? 0 : _backdropVisualsInSubTree);
 
-    // Walks up from `start`, adjusting the counter; propagation stops at (does not cross) cache boundaries.
+    // Adjusts the counter from `start` up the parent chain, up to and including the first visual with a
+    // bitmap cache.
     private static void PropagateBackdropCountDelta(ServerCompositionVisual? start, int delta)
     {
         if (delta == 0)
             return;
         for (var n = start; n != null; n = n.Parent)
         {
-            n._backdropsInSubTree += delta;
+            n._backdropVisualsInSubTree += delta;
             if (n.Cache != null)
                 break;
         }
@@ -135,47 +134,47 @@ partial class ServerCompositionVisual
             _ownBackdropCounted = has;
         }
 
-        UpdateBackdropRegistration();
+        UpdateBackdropVisualRegistration();
     }
 
-    private LtrbPixelRect? ComputeBackdropAabb(Matrix parentToHostTransform)
+    private LtrbPixelRect? ComputeBackdropAabb(Matrix parentToLayerTransform)
     {
-        LtrbRect? hostRect;
+        LtrbRect? layerRect;
         if (BackdropEffectBoundsSource == BackdropEffectBoundsSource.Layout)
         {
             if (!Visible || Size.X <= 0 || Size.Y <= 0)
                 return null;
 
             var layoutBounds = new LtrbRect(0, 0, Size.X, Size.Y);
-            var localToHost = _ownTransform is { } ownTransform
-                ? ownTransform * parentToHostTransform
-                : parentToHostTransform;
-            hostRect = layoutBounds.TransformToAABB(localToHost);
+            var localToLayer = _ownTransform is { } ownTransform
+                ? ownTransform * parentToLayerTransform
+                : parentToLayerTransform;
+            layerRect = layoutBounds.TransformToAABB(localToLayer);
         }
         else
-            hostRect = _transformedSubTreeBounds?.TransformToAABB(parentToHostTransform);
+            layerRect = _transformedSubTreeBounds?.TransformToAABB(parentToLayerTransform);
 
-        return hostRect is { IsZeroSize: false } bounds ? LtrbPixelRect.FromRectUnscaled(bounds) : null;
+        return layerRect is { IsZeroSize: false } bounds ? LtrbPixelRect.FromRectUnscaled(bounds) : null;
     }
 
-    // Called from OnCacheModeChanging, before Cache is reset to null. If this node was a cache boundary
-    // its descendant backdrops were stopping here; removing the boundary lets them propagate upwards again.
+    // Cache is still the old one here. Without the bitmap cache, the backdrop visuals below count for the
+    // parent chain again.
     private void Backdrop_OnCacheModeChanging()
     {
         if (Cache != null)
-            PropagateBackdropCountDelta(Parent, _backdropsInSubTree);
+            PropagateBackdropCountDelta(Parent, _backdropVisualsInSubTree);
     }
 
-    // Called from OnCacheModeChanged, after Cache is assigned. If this node became a cache boundary its
-    // descendant backdrops must stop here instead of reaching ancestors.
+    // Cache is the new one here. With a bitmap cache, the backdrop visuals below no longer count for the
+    // parent chain.
     private void Backdrop_OnCacheModeChanged()
     {
         if (Cache != null)
-            PropagateBackdropCountDelta(Parent, -_backdropsInSubTree);
+            PropagateBackdropCountDelta(Parent, -_backdropVisualsInSubTree);
     }
 
-    // Idempotent, order-independent (Root-before-Effect and Effect-before-Root both converge).
-    internal void UpdateBackdropRegistration()
+    // Gives the same result whether Root or BackdropEffect is set first.
+    internal void UpdateBackdropVisualRegistration()
     {
         var shouldRegister = BackdropEffect != null && Root != null;
         if (shouldRegister)
@@ -183,93 +182,92 @@ partial class ServerCompositionVisual
             if (BackdropState == null)
             {
                 BackdropState = new ServerCompositionVisualBackdropState(this);
-                Root!.RegisterBackdrop(this);
+                Root!.RegisterBackdropVisual(this);
             }
         }
         else if (BackdropState != null)
-            Root?.UnregisterBackdrop(this);
+            Root?.UnregisterBackdropVisual(this);
     }
 
     private void Backdrop_OnRootChanging()
     {
-        // Root still points at the old target; drop any registration tied to it.
+        // Root is still the old target here.
         if (BackdropState != null)
-            Root?.UnregisterBackdrop(this);
+            Root?.UnregisterBackdropVisual(this);
     }
 
-    private void Backdrop_OnRootChanged() => UpdateBackdropRegistration();
+    private void Backdrop_OnRootChanged() => UpdateBackdropVisualRegistration();
 
     internal void NotifyChildrenChanged() => _childrenChanged = true;
 
     /// <summary>
-    /// Recomputes this backdrop's registry record: its layer host, host-space AABB and classification.
-    /// Runs in <see cref="ServerCompositionTarget.Update"/> before the update walk. Never adds damage rects;
-    /// on a host or pixel-aligned AABB change it resets the retained state and marks the visual
-    /// dirty-for-render so the walk emits <c>old ∪ new</c> at the visual's own DFS position.
+    /// Recomputes the backdrop state: layer, AABB, retained or volatile. Runs in
+    /// <see cref="ServerCompositionTarget.Update"/> before the update walk. It never adds dirty rects: when the
+    /// layer or the AABB changes, it marks the visual dirty, and the update walk collects the old and the new
+    /// bounds at the visual's place in draw order.
     /// </summary>
-    internal void RecomputeBackdropRegistration(double rootScaling)
+    internal void RecomputeBackdropState(double rootScaling)
     {
-        var record = BackdropState;
-        if (record == null)
+        var state = BackdropState;
+        if (state == null)
             return;
 
-        // The UI preference wins; a null (Default) mode falls back to R > 0.
+        // Without an explicit backdrop cache mode: retained if the effect has a sampling radius.
         var radius = BackdropEffect.GetBackdropSamplingRadius();
-        record.IsRetained = BackdropEffectCache switch
+        state.IsRetained = BackdropEffectCache switch
         {
             ServerCompositionRetainedBackdropEffectCache => true,
             ServerCompositionVolatileBackdropEffectCache => false,
             _ => radius > 0
         };
 
-        // Walk up to the nearest cache host, accumulating the transform into host space.
+        // Find the layer and the transform to it.
         var transform = Matrix.Identity;
-        ServerCompositionVisualCache? host = null;
-        for (var ancestor = Parent; ancestor != null; ancestor = ancestor.Parent)
+        ServerCompositionVisualCache? layer = null;
+        for (var current = Parent; current != null; current = current.Parent)
         {
-            if (ancestor.Cache != null)
+            if (current.Cache != null)
             {
-                host = ancestor.Cache;
+                layer = current.Cache;
                 break;
             }
 
-            if (ancestor._ownTransform.HasValue)
-                transform *= ancestor._ownTransform.Value;
+            if (current._ownTransform.HasValue)
+                transform *= current._ownTransform.Value;
         }
 
-        // For the root host, host space is device pixels: apply the target scaling.
-        if (host == null)
+        // Layer space of the root layer is device pixels.
+        if (layer == null)
             transform *= Matrix.CreateScale(rootScaling, rootScaling);
 
-        record.VisualToHostTransform = transform;
+        state.ParentToLayerTransform = transform;
 
-        // R is defined in DIPs; express it in host-space pixels using the uniform scale of the full
-        // content→host transform (this visual's own transform folded in, matching how the AABB is sized).
-        var contentToHost = _ownTransform.HasValue ? _ownTransform.Value * transform : transform;
-        record.HostSpaceSamplingRadius = radius * Math.Sqrt(Math.Abs(contentToHost.GetDeterminant()));
+        // The radius is in the visual's local space. Scale it by the uniform scale of the local to layer
+        // transform.
+        var contentToLayer = _ownTransform.HasValue ? _ownTransform.Value * transform : transform;
+        state.LayerSpaceSamplingRadius = radius * Math.Sqrt(Math.Abs(contentToLayer.GetDeterminant()));
 
-        // Build the pixel-aligned host-space AABB from either the visual's layout box or the last completed
-        // walk's transformed subtree bounds.
+        // Subtree bounds are the ones of the previous update walk here. The walk corrects the AABB if they
+        // change (CheckBackdropStaleAabb).
         var newAabb = ComputeBackdropAabb(transform);
 
-        var hostChanged = !ReferenceEquals(record.Host, host);
-        var aabbChanged = record.Aabb != newAabb;
+        var layerChanged = !ReferenceEquals(state.Layer, layer);
+        var aabbChanged = state.Aabb != newAabb;
 
-        record.Aabb = newAabb;
-        record.Host = host;
+        state.Aabb = newAabb;
+        state.Layer = layer;
 
-        if (hostChanged || aabbChanged)
+        if (layerChanged || aabbChanged)
         {
-            // The retained texture's contents are stale: re-ingest the whole (new) AABB. The store itself is
-            // kept across a move or resize (it reallocates on a size change) and only dropped on a host change
-            // or when there is nothing left to capture.
-            if (hostChanged || newAabb == null)
-                record.DisposeRetainedStateWithContext();
-            record.RetainedInputDirtyArea = newAabb?.ToLtrbRectUnscaled();
+            // The snapshot no longer matches the input: make the whole new AABB the input dirty rect. The
+            // snapshot object is kept for a move or resize (it recreates its surface when the size changes).
+            if (layerChanged || newAabb == null)
+                state.DisposeSnapshotWithContext();
+            state.InputDirtyRect = newAabb?.ToLtrbRectUnscaled();
             PropagateFlags(false, true);
         }
-        else if (!record.IsRetained)
-            // Classified volatile this frame (e.g. after a cache-hint change): the retained texture is dead weight.
-            record.DisposeRetainedStateWithContext();
+        else if (!state.IsRetained)
+            // Volatile (e.g. the backdrop cache mode changed): the snapshot is not needed.
+            state.DisposeSnapshotWithContext();
     }
 }

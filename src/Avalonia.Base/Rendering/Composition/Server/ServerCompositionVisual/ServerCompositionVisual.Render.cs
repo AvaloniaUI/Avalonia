@@ -138,11 +138,10 @@ partial class ServerCompositionVisual
                 if (visual.AdornedVisual != null)
                     AdornerHelper_RenderPreGraphPushAdornerClip(visual);
 
-                // Draw the backdrop under the visual's own content and children. Skipped for a cache root
-                // (this block never runs for it): its backdrop samples the outer surface and was already
-                // drawn in the outer walk, so the nested walk must not redraw it against the cache surface.
+                // Before the visual's own content and children. Not reached for the root of a bitmap cache
+                // render: its backdrop effect belongs to the outer layer and the outer render walk drew it.
                 if (visual.BackdropEffect != null)
-                    DrawBackdrop(visual);
+                    DrawBackdropEffect(visual);
 
                 // If caching is enabled, draw from cache and skip rendering
                 if (visual.Cache != null)
@@ -173,32 +172,30 @@ partial class ServerCompositionVisual
             visitChildren = _renderChildren;
         }
 
-        // Maps a host-space rect to surface (device/texture) pixels: identity for the root host, the cache
-        // collector proxy's offset/scale for a cache host.
-        private static LtrbPixelRect ToSurfacePixels(LtrbRect hostRect, DirtyRectSpaceMapping mapping) =>
-            LtrbPixelRect.FromRectUnscaled(mapping.IsIdentity ? hostRect : mapping.HostToTracker(hostRect));
+        // Layer space to layer pixels.
+        private static LtrbPixelRect ToLayerPixels(LtrbRect hostRect, DirtyRectSpaceMapping mapping) =>
+            LtrbPixelRect.FromRectUnscaled(mapping.IsIdentity ? hostRect : mapping.LayerSpaceToLayerPixels(hostRect));
 
-        // Draws the backdrop for `visual` (which has a BackdropEffect) at the current draw site, under the visual's
-        // own content and children. Volatile filters the live canvas; retained refreshes and draws its persistent cache.
-        private void DrawBackdrop(ServerCompositionVisual visual)
+        // Draws the backdrop effect of a backdrop visual.
+        private void DrawBackdropEffect(ServerCompositionVisual visual)
         {
-            var record = visual.BackdropState;
-            if (record?.Aabb is not { } aabbPixels)
+            var state = visual.BackdropState;
+            if (state?.Aabb is not { } aabbPixels)
                 return;
 
-            // Surface-less outputs (PDF pages, picture recording) render without backdrops by design.
+            // A layer without readable pixels (PDF, picture recording) draws no backdrop effects.
             if (_canvas is not IDrawingContextImplWithBackdropSupport { SupportsBackdrop: true } backdropCanvas)
                 return;
 
-            var mapping = record.Host?.GetDirtyRectSpaceMapping() ?? DirtyRectSpaceMapping.Identity;
+            var mapping = state.Layer?.GetDirtyRectSpaceMapping() ?? DirtyRectSpaceMapping.Identity;
             if (!mapping.IsUsable)
                 return;
 
-            var aabbHost = aabbPixels.ToLtrbRectUnscaled();
-            var surfaceAabb = ToSurfacePixels(aabbHost, mapping);
+            var aabbInLayer = aabbPixels.ToLtrbRectUnscaled();
+            var aabbInLayerPixels = ToLayerPixels(aabbInLayer, mapping);
 
-            // Where the effect may show: the visual's own bounds in its coordinate space (the canvas' current
-            // one), so the clip follows any transform. The AABB only sizes what is captured.
+            // The backdrop bounds. They are in the visual's local space, which is the current coordinate
+            // space of the canvas, so the clip follows the visual's transform.
             var localBounds = visual.BackdropEffectBoundsSource == Media.BackdropEffectBoundsSource.Layout
                 ? new LtrbRect(0, 0, visual.Size.X, visual.Size.Y)
                 : visual._subTreeBounds;
@@ -206,37 +203,34 @@ partial class ServerCompositionVisual
                 return;
             var bounds = boundsRect.ToRect();
 
-            if (record.IsRetained)
+            if (state.IsRetained)
             {
-                // Retained samples the root Surface directly. An active intermediate save-layer (an ancestor
-                // Effect/OpacityMask, the root save-layer clip, or an opacity save-layer) redirects drawing to
-                // an offscreen, yet the backend still samples its root surface — which no longer holds the
-                // pixels behind this visual. Sampling it would blit garbage, so degrade to no-blur: skip the
-                // draw and drop the cache (a fresh one re-ingests the whole AABB once the save-layer is gone).
+                // The retained path cannot read the backdrop while an intermediate layer is open. Draw no
+                // effect and drop the snapshot: a new one refreshes the whole AABB when reading works again.
                 if (!backdropCanvas.IsBackdropSamplingSafe)
                 {
-                    record.DisposeAndClearRetainedState();
+                    state.DisposeSnapshot();
                     return;
                 }
 
-                var store = record.RetainedState ??= new ServerCompositionBackdropStore();
+                var snapshot = state.Snapshot ??= new ServerCompositionBackdropSnapshot();
 
-                LtrbPixelRect? pending = null;
-                if (record.RetainedInputDirtyArea is { } dirtyHost)
+                LtrbPixelRect? inputDirtyRect = null;
+                if (state.InputDirtyRect is { } dirtyInLayer)
                 {
-                    var clamped = dirtyHost.IntersectOrEmpty(aabbHost);
+                    var clamped = dirtyInLayer.IntersectOrEmpty(aabbInLayer);
                     if (!clamped.IsZeroSize)
-                        pending = ToSurfacePixels(clamped, mapping);
+                        inputDirtyRect = ToLayerPixels(clamped, mapping);
                 }
 
                 var renderContext = visual.Compositor.RenderInterface.Value;
-                store.Draw(backdropCanvas, renderContext, surfaceAabb, pending, visual.BackdropEffect!, bounds);
-                record.RetainedInputDirtyArea = null; // consumed into the layer
+                snapshot.Draw(backdropCanvas, renderContext, aabbInLayerPixels, inputDirtyRect,
+                    visual.BackdropEffect!, bounds);
+                state.InputDirtyRect = null; // the snapshot is up to date
             }
             else
             {
-                // Volatile: a native backdrop filter captures the current canvas (through any nested intermediate
-                // layers) and filters it, so it's correct even under an ancestor Effect/OpacityMask.
+                // The backend reads the backdrop itself, also through open intermediate layers.
                 backdropCanvas.DrawVolatileBackdropEffect(bounds, visual.BackdropEffect!);
             }
         }

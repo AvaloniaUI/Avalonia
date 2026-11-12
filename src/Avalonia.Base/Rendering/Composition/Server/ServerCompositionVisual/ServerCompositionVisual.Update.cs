@@ -19,19 +19,20 @@ internal partial class ServerCompositionVisual
         private Stack<IDirtyRectCollector> _dirtyRegionCollectorStack;
         private bool AreDirtyRegionsDisabled() => _dirtyRegionDisableCount != 0;
 
-        // Number of ancestor visuals (within the current layer host) whose children collection changed
-        // this frame. Consumed by retained backdrop capture; scoped per host (reset across cache boundaries).
-        private int _childrenChangedAncestorCount;
-        private Stack<int> _childrenChangedAncestorCountStack;
+        // Number of visuals in the parent chain, within the current layer, whose children collection changed
+        // this frame. Reset when a bitmap cache is pushed.
+        private int _childrenChangedParentChainCount;
+        private Stack<int> _childrenChangedParentChainCountStack;
 
-        // A view of the current collector's working set + host-space mapping, resolved on every collector swap.
+        // The working set of the current layer. Updated whenever _dirtyRegion is switched.
         private DirtyRectWorkingSet _currentWorkingSet;
 
-        // Number of ancestor-or-self bitmap caches the walk is passing through without having pushed them
-        // (e.g. the cache visual itself moved). The walk state then belongs to an outer host, while backdrops
-        // below sample the cache's own surface. A plain counter is enough: a cache is only skipped when nothing
-        // in its subtree is dirty, so no nested cache gets pushed and no damage is collected while it's non-zero.
-        private int _skippedCacheDepth;
+        // Number of skipped bitmap caches that the walk is currently inside of (e.g. the cached visual itself
+        // moved). The walk state then belongs to an outer layer, while the backdrop visuals below read the
+        // bitmap cache layer. A plain counter is enough: a bitmap cache is only skipped when nothing in its
+        // subtree is dirty, so no bitmap cache below it is pushed and no dirty rect is collected while this is
+        // non-zero.
+        private int _skippedBitmapCacheDepth;
         private List<LtrbRect>? _workingSetBuffer;
 
         public UpdateContext(CompositorPools pools, IDirtyRectCollector dirtyRects, Matrix transform, LtrbRect clip)
@@ -39,7 +40,7 @@ internal partial class ServerCompositionVisual
             _dirtyRegion = dirtyRects;
             _context = new TreeWalkContext(pools, transform, clip);
             _dirtyRegionDisableCountStack = pools.IntStackPool.Rent();
-            _childrenChangedAncestorCountStack = pools.IntStackPool.Rent();
+            _childrenChangedParentChainCountStack = pools.IntStackPool.Rent();
             _dirtyRegionCollectorStack = pools.DirtyRectCollectorStackPool.Rent();
             _currentWorkingSet = _dirtyRegion.GetWorkingSet();
         }
@@ -53,10 +54,9 @@ internal partial class ServerCompositionVisual
                 _currentWorkingSet = _dirtyRegion.GetWorkingSet();
                 _dirtyRegionDisableCountStack.Push(_dirtyRegionDisableCount);
                 _dirtyRegionDisableCount = 0;
-                // Children-changed damage is scoped per host: ancestors above the cache don't blanket
-                // backdrops inside it (different backbuffer).
-                _childrenChangedAncestorCountStack.Push(_childrenChangedAncestorCount);
-                _childrenChangedAncestorCount = 0;
+                // A children change outside of the bitmap cache does not affect the backdrop inside of it.
+                _childrenChangedParentChainCountStack.Push(_childrenChangedParentChainCount);
+                _childrenChangedParentChainCount = 0;
 
                 _context.PushSetTransform(Matrix.Identity);
                 _context.ResetClip(LtrbRect.Infinite);
@@ -72,7 +72,7 @@ internal partial class ServerCompositionVisual
                 _dirtyRegion = _dirtyRegionCollectorStack.Pop();
                 _currentWorkingSet = _dirtyRegion.GetWorkingSet();
                 _dirtyRegionDisableCount = _dirtyRegionDisableCountStack.Pop();
-                _childrenChangedAncestorCount = _childrenChangedAncestorCountStack.Pop();
+                _childrenChangedParentChainCount = _childrenChangedParentChainCountStack.Pop();
                 if (visual.Cache.IsDirty)
                     AddToDirtyRegion(visual._subTreeBounds);
             }
@@ -83,7 +83,7 @@ internal partial class ServerCompositionVisual
             return (node._isDirtyForRenderInSubgraph || node._needsToAddExtraDirtyRectToDirtyRegion || node._contentChanged);
         }
 
-        private bool IsCacheSkipped(ServerCompositionVisual node) =>
+        private bool IsBitmapCacheSkipped(ServerCompositionVisual node) =>
             node.Cache != null && !NeedToPushBoundsAffectingProperties(node);
         
         public void PreSubgraph(ServerCompositionVisual node, out bool visitChildren)
@@ -95,15 +95,15 @@ internal partial class ServerCompositionVisual
             if (node is { _needsBoundingBoxUpdate: true, OpacityMaskBrush: not null })
                 node._isDirtyForRender = true;
 
-            // Same reason for a backdrop: its output region is a function of its subtree bounds, so a
-            // descendant-driven bounds change must emit the backdrop's own old∪new bounds.
+            // Same for a backdrop visual with subtree bounds: its output covers its subtree bounds, so when a
+            // child changes them, the old and the new bounds of this visual are dirty.
             if (node is { _needsBoundingBoxUpdate: true, BackdropEffectBoundsSource: BackdropEffectBoundsSource.Subtree }
                 && node.BackdropEffect != null)
                 node._isDirtyForRender = true;
 
-            // Retained backdrop capture, before this node's own/descendant damage (old-bounds emission and
-            // the dirty-region-disable increment below) which paints on top of the effect.
-            CaptureRetainedBackdropDirtyRects(node);
+            // Before anything of this visual is collected: its own content and children are drawn in front of
+            // its backdrop effect, so they are not input.
+            CollectBackdropInputDirtyRects(node);
 
             // Special handling for effects: just add the entire node's old subtree bounds as a dirty region
             // WPF does this because they had legacy effects with non-affine transforms, we do this because 
@@ -142,21 +142,20 @@ internal partial class ServerCompositionVisual
                 PushCacheIfNeeded(node);
             }
 
-            if (IsCacheSkipped(node))
-                _skippedCacheDepth++;
+            if (IsBitmapCacheSkipped(node))
+                _skippedBitmapCacheDepth++;
 
-            // Consumed by descendant backdrop capture. Incremented after any cache push so a cache owner's
-            // structural change blankets the backdrops inside its cache, but not for its own backdrop
-            // (captured above) nor for ancestors above the cache.
+            // After the bitmap cache push, so that it counts for the backdrop visuals inside of this visual's
+            // bitmap cache, and not for this visual's own backdrop effect (handled above).
             if (node._childrenChanged)
-                _childrenChangedAncestorCount++;
+                _childrenChangedParentChainCount++;
 
-            // Descent gate: keep descending a clean spine toward backdrops while something behind them may have
-            // changed: the host collector has damage, or a covering dirty ancestor / structural change whose
-            // damage is only emitted in its PostSubgraph. Never into a cache that wasn't pushed: it is its own
-            // backdrop source and nothing inside it changed.
-            if (node._backdropsInSubTree > 0 && _skippedCacheDepth == 0
-                && (!_currentWorkingSet.IsEmpty || _dirtyRegionDisableCount > 0 || _childrenChangedAncestorCount > 0))
+            // Descent check: visit the children of a clean visual when a backdrop visual below may have dirty
+            // input. That is when the layer already has dirty rects, or when a dirty parent or a children change
+            // in the parent chain will add them later (in PostSubgraph). Not inside a skipped bitmap cache: its
+            // layer has its own backdrop and nothing in it changed.
+            if (node._backdropVisualsInSubTree > 0 && _skippedBitmapCacheDepth == 0
+                && (!_currentWorkingSet.IsEmpty || _dirtyRegionDisableCount > 0 || _childrenChangedParentChainCount > 0))
                 visitChildren = true;
 
             if (node._needsBoundingBoxUpdate)
@@ -191,7 +190,7 @@ internal partial class ServerCompositionVisual
                     parent._subTreeBounds = LtrbRect.FullUnion(parent._subTreeBounds, node._transformedSubTreeBounds);
             }
 
-            // FinalizeSubtreeBounds may have just changed this backdrop's bounds after the registry snapshot.
+            // FinalizeSubtreeBounds may have changed the bounds that the backdrop AABB was computed from.
             CheckBackdropStaleAabb(node);
 
             //
@@ -204,12 +203,12 @@ internal partial class ServerCompositionVisual
                 AddToDirtyRegion(node._extraDirtyRect);
             }
 
-            // Mirror of the PreSubgraph increment (before the matching cache pop restores the host's count).
+            // Before the bitmap cache pop, which restores the count of the outer layer.
             if (node._childrenChanged)
-                _childrenChangedAncestorCount--;
+                _childrenChangedParentChainCount--;
 
-            if (IsCacheSkipped(node))
-                _skippedCacheDepth--;
+            if (IsBitmapCacheSkipped(node))
+                _skippedBitmapCacheDepth--;
 
             // If we pushed transforms here, we need to pop them again.  If we're handling a cache we need
             // to finish handling it here as well.
@@ -276,81 +275,82 @@ internal partial class ServerCompositionVisual
             _dirtyRegion.AddRect(transformed);
         }
         
-        // Accumulates a retained backdrop's pending input damage at its DFS position.
-        private void CaptureRetainedBackdropDirtyRects(ServerCompositionVisual node)
+        // Collects the input dirty rect of a retained backdrop visual. Everything collected before the walk
+        // reaches the visual is behind it.
+        private void CollectBackdropInputDirtyRects(ServerCompositionVisual node)
         {
-            var record = node.BackdropState;
-            if (record is not { IsRetained: true, Aabb: { } aabbPixels })
+            var state = node.BackdropState;
+            if (state is not { IsRetained: true, Aabb: { } aabbPixels })
                 return;
 
-            // The collected damage belongs to an outer host, not to the cache this backdrop samples.
-            if (_skippedCacheDepth > 0)
+            // The working set belongs to an outer layer, not to the bitmap cache layer that this visual reads.
+            if (_skippedBitmapCacheDepth > 0)
                 return;
 
             var aabb = aabbPixels.ToLtrbRectUnscaled();
 
-            LtrbRect? damage;
-            if (_dirtyRegionDisableCount > 0 || _childrenChangedAncestorCount > 0)
-                // A covering dirty-for-render ancestor (whose rect isn't in the working set until its own
-                // PostSubgraph) or a structural ancestor change ⇒ treat the whole input as dirty.
-                damage = aabb;
+            LtrbRect? inputDirty;
+            if (_dirtyRegionDisableCount > 0 || _childrenChangedParentChainCount > 0)
+                // The dirty rect of a dirty parent or of a children change is collected in that parent's
+                // PostSubgraph, so it is not in the working set yet. The whole input is dirty.
+                inputDirty = aabb;
             else
             {
-                damage = null;
+                inputDirty = null;
                 if (!_currentWorkingSet.IsEmpty)
                 {
                     var buffer = _workingSetBuffer ??= _context.Pools.LtrbRectListPool.Rent();
-                    _currentWorkingSet.CollectHostSpace(buffer);
+                    _currentWorkingSet.CopyInLayerSpaceTo(buffer);
                     foreach (var rect in buffer)
                     {
                         if (rect.IntersectOrNull(aabb) is { } hit)
-                            damage = LtrbRect.FullUnion(damage, hit);
+                            inputDirty = LtrbRect.FullUnion(inputDirty, hit);
                     }
                 }
             }
 
-            if (damage is not { } newDamage)
+            if (inputDirty is not { } newDirtyRect)
                 return;
 
-            record.RetainedInputDirtyArea = LtrbRect.FullUnion(record.RetainedInputDirtyArea, newDamage);
+            state.InputDirtyRect = LtrbRect.FullUnion(state.InputDirtyRect, newDirtyRect);
 
-            // Output inflation (R > 0): the blurred halo (D ⊕ R) ∩ AABB. Added directly to the current
-            // collector in host space (never via AddToDirtyRegion, which re-applies the walk transform and
-            // no-ops under disabled regions). Skipped while disabled: the covering ancestor's bounds subsume it.
-            if (record.HostSpaceSamplingRadius > 0 && _dirtyRegionDisableCount == 0
-                && newDamage.Inflate(new Thickness(record.HostSpaceSamplingRadius)).IntersectOrNull(aabb) is { } halo)
-                _dirtyRegion.AddRect(halo);
+            // The output dirty rect. It is in layer space already, so it is added directly and not through
+            // AddToDirtyRegion, which applies the walk transform. Not needed under a dirty parent: the parent's
+            // bounds cover it.
+            if (state.LayerSpaceSamplingRadius > 0 && _dirtyRegionDisableCount == 0
+                && newDirtyRect.Inflate(new Thickness(state.LayerSpaceSamplingRadius)).IntersectOrNull(aabb)
+                    is { } outputDirtyRect)
+                _dirtyRegion.AddRect(outputDirtyRect);
         }
 
-        // Stale-AABB check in a subtree-bounds backdrop's PostSubgraph: the registry computed the AABB from the
-        // previous walk's bounds, which this walk may have just changed (or produced for the first time).
+        // The AABB of a backdrop visual with subtree bounds was computed from the bounds of the previous update
+        // walk. This walk may have changed them, or computed them for the first time.
         private void CheckBackdropStaleAabb(ServerCompositionVisual node)
         {
-            var record = node.BackdropState;
-            if (record == null || node.BackdropEffectBoundsSource != BackdropEffectBoundsSource.Subtree)
+            var state = node.BackdropState;
+            if (state == null || node.BackdropEffectBoundsSource != BackdropEffectBoundsSource.Subtree)
                 return;
 
             LtrbPixelRect? fresh = null;
             if (node._transformedSubTreeBounds is { } bounds)
             {
-                var hostRect = bounds.TransformToAABB(record.VisualToHostTransform);
+                var hostRect = bounds.TransformToAABB(state.ParentToLayerTransform);
                 if (!hostRect.IsZeroSize)
                     fresh = LtrbPixelRect.FromRectUnscaled(hostRect);
             }
 
-            if (fresh == record.Aabb)
+            if (fresh == state.Aabb)
                 return;
 
-            // Updating the record in place also keeps the registry from re-detecting the change next frame.
-            record.Aabb = fresh;
-            if (!record.IsRetained)
+            // With the state updated here, the next backdrop state recompute sees no change.
+            state.Aabb = fresh;
+            if (!state.IsRetained)
                 return;
 
-            // Same handling as the registry's AABB change: re-ingest the whole input, keep the store unless
-            // nothing is left to capture.
-            record.RetainedInputDirtyArea = fresh?.ToLtrbRectUnscaled();
+            // Same as an AABB change in RecomputeBackdropState.
+            state.InputDirtyRect = fresh?.ToLtrbRectUnscaled();
             if (fresh == null)
-                record.DisposeRetainedStateWithContext();
+                state.DisposeSnapshotWithContext();
         }
 
         private void PushBoundsAffectingProperties(ServerCompositionVisual node)
@@ -372,7 +372,7 @@ internal partial class ServerCompositionVisual
         public void Dispose()
         {
             _context.Pools.IntStackPool.Return(ref _dirtyRegionDisableCountStack);
-            _context.Pools.IntStackPool.Return(ref _childrenChangedAncestorCountStack);
+            _context.Pools.IntStackPool.Return(ref _childrenChangedParentChainCountStack);
             _context.Pools.DirtyRectCollectorStackPool.Return(ref _dirtyRegionCollectorStack);
             if (_workingSetBuffer != null)
                 _context.Pools.LtrbRectListPool.Return(ref _workingSetBuffer);
