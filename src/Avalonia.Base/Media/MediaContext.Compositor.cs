@@ -142,13 +142,12 @@ partial class MediaContext
             try
             {
                 PulseAndFireInvokeOnRenderCallbacks(!_animationsAreWaitingForComposition);
+                SyncCommit(target.Compositor, true, catchExceptions);
             }
             finally
             {
                 _isRendering = false;
             }
-
-            SyncCommit(target.Compositor, true, catchExceptions);
         }
 
         // CompositionBatchFinished schedules the next pass for animations and other compositors
