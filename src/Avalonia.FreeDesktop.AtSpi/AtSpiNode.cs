@@ -11,6 +11,7 @@ using Avalonia.DBus;
 using Avalonia.FreeDesktop.AtSpi.DBusXml;
 using Avalonia.FreeDesktop.AtSpi.Handlers;
 using Avalonia.Logging;
+using Avalonia.Threading;
 using static Avalonia.FreeDesktop.AtSpi.AtSpiConstants;
 
 namespace Avalonia.FreeDesktop.AtSpi
@@ -24,7 +25,8 @@ namespace Avalonia.FreeDesktop.AtSpi
         private bool _attached;
         private bool _childrenDirty = true;
         private List<AtSpiNode> _attachedChildren = [];
-        private HashSet<AutomationPeer> _itemHosts = [];
+        private bool _childrenUpdatePosted;
+        private HashSet<AutomationPeer>? _itemHosts;
 
         private readonly string _path;
 
@@ -228,7 +230,7 @@ namespace Avalonia.FreeDesktop.AtSpi
         }
 
         private static void CollectSelectionItemPeers(
-            IReadOnlyList<AutomationPeer> peers, List<AutomationPeer> result, HashSet<AutomationPeer> hosts)
+            IReadOnlyList<AutomationPeer> peers, List<AutomationPeer> result, HashSet<AutomationPeer>? hosts)
         {
             foreach (var peer in peers)
             {
@@ -238,8 +240,10 @@ namespace Avalonia.FreeDesktop.AtSpi
                 }
                 else
                 {
-                    hosts.Add(peer);
-                    CollectSelectionItemPeers(peer.GetChildren(), result, hosts);
+                    // A popup is its own window, whose node already follows the peers inside it.
+                    var hostsToWatch = peer.GetProvider<IRootProvider>() is null ? hosts : null;
+                    hostsToWatch?.Add(peer);
+                    CollectSelectionItemPeers(peer.GetChildren(), result, hostsToWatch);
                 }
             }
         }
@@ -248,7 +252,7 @@ namespace Avalonia.FreeDesktop.AtSpi
         // own, so a change to their children is a change to this node's.
         private void WatchItemHosts(HashSet<AutomationPeer> hosts)
         {
-            foreach (var host in _itemHosts)
+            foreach (var host in _itemHosts ?? [])
             {
                 if (!hosts.Contains(host))
                     host.ChildrenChanged -= OnPeerChildrenChanged;
@@ -256,7 +260,7 @@ namespace Avalonia.FreeDesktop.AtSpi
 
             foreach (var host in hosts)
             {
-                if (!_itemHosts.Contains(host))
+                if (_itemHosts?.Contains(host) != true)
                     host.ChildrenChanged += OnPeerChildrenChanged;
             }
 
@@ -415,7 +419,8 @@ namespace Avalonia.FreeDesktop.AtSpi
             Parent = null;
             Peer.ChildrenChanged -= OnPeerChildrenChanged;
             Peer.PropertyChanged -= OnPeerPropertyChanged;
-            WatchItemHosts([]);
+            if (_itemHosts is not null)
+                WatchItemHosts([]);
             DisposePathRegistration();
         }
 
@@ -478,10 +483,17 @@ namespace Avalonia.FreeDesktop.AtSpi
                 return;
 
             // No client has read these children, so there is nothing to report. The next read builds them.
-            if (_childrenDirty)
+            if (_childrenDirty || _childrenUpdatePosted)
                 return;
 
-            UpdateChildren(Server.HasEventListeners ? EventObjectHandler : null);
+            // Scrolling realizes and recycles many items at once; one update afterwards reports only the net change.
+            _childrenUpdatePosted = true;
+            Dispatcher.UIThread.Post(() =>
+            {
+                _childrenUpdatePosted = false;
+                if (IsAttached && !_childrenDirty)
+                    UpdateChildren(Server.HasEventListeners ? EventObjectHandler : null);
+            });
         }
 
         private void OnPeerPropertyChanged(object? sender, AutomationPropertyChangedEventArgs e)
