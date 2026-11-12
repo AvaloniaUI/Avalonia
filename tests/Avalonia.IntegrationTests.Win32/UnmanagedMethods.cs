@@ -25,4 +25,23 @@ internal static partial class UnmanagedMethods
     }
 
     public const int SM_CMONITORS = 80;
+
+    [LibraryImport("user32.dll")]
+    public static partial void keybd_event(byte bVk, byte bScan, uint dwFlags, nuint dwExtraInfo);
+
+    [LibraryImport("user32.dll")]
+    public static partial IntPtr GetForegroundWindow();
+
+    [LibraryImport("user32.dll", EntryPoint = "LoadKeyboardLayoutW", StringMarshalling = StringMarshalling.Utf16)]
+    public static partial IntPtr LoadKeyboardLayout(string pwszKLID, uint flags);
+
+    [LibraryImport("user32.dll")]
+    public static partial IntPtr ActivateKeyboardLayout(IntPtr hkl, uint flags);
+
+    [LibraryImport("user32.dll")]
+    public static partial IntPtr GetKeyboardLayout(uint idThread);
+
+    public const uint KEYEVENTF_KEYUP = 0x2;
+    public const uint KLF_ACTIVATE = 0x1;
+    public const uint KLF_NOTELLSHELL = 0x80;
 }

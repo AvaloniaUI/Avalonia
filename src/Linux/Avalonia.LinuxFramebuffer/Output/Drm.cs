@@ -253,6 +253,8 @@ namespace Avalonia.LinuxFramebuffer.Output
         [DllImport(libgbm, SetLastError = true)]
         public static extern void gbm_surface_release_buffer(IntPtr surface, IntPtr bo);
         [DllImport(libgbm, SetLastError = true)]
+        public static extern int gbm_surface_has_free_buffers(IntPtr surface);
+        [DllImport(libgbm, SetLastError = true)]
         public static extern IntPtr gbm_bo_get_user_data(IntPtr surface);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]

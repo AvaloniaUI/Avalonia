@@ -123,7 +123,7 @@ namespace Avalonia.LinuxFramebuffer.Output
         private GbmEglSwapchain.FrontBuffer? _scanoutBuffer;
         private GbmEglSwapchain.FrontBuffer? _pendingBuffer;
         private GCHandle _pendingFlipHandle;
-        private bool _pageFlipCompleted;
+        private volatile bool _pageFlipCompleted;
         private uint _crtcId;
 
         private static readonly DrmEventPageFlipHandlerDelegate s_pageFlipHandler =
@@ -229,13 +229,13 @@ namespace Avalonia.LinuxFramebuffer.Output
 
         private void PageFlip(IRef<GbmEglSwapchain> swapchain)
         {
-            // A previously accepted flip may still complete after an interrupted event wait.
-            WaitForPageFlip();
             var next = GbmEglSwapchain.LockFrontBuffer(swapchain);
             var handle = default(GCHandle);
             var submitted = false;
             try
             {
+                // Wait for the previous flip after acquiring the newly rendered frame.
+                WaitForPageFlip();
                 _pageFlipCompleted = false;
                 handle = GCHandle.Alloc(this);
                 if (drmModePageFlip(_card.Fd, _crtcId, next.FramebufferId,
@@ -255,7 +255,9 @@ namespace Avalonia.LinuxFramebuffer.Output
                     next.Dispose();
                 }
             }
-            WaitForPageFlip();
+            // Render ahead while the queued flip waits for vblank, unless the pool is exhausted.
+            if (!swapchain.Item.HasFreeBuffers)
+                WaitForPageFlip();
         }
 
         private void WaitForPageFlip()
@@ -365,9 +367,11 @@ namespace Avalonia.LinuxFramebuffer.Output
 
             public override IGlPlatformSurfaceRenderingSession BeginDrawCore(IRenderTarget.RenderTargetSceneInfo sceneInfo)
             {
-                // Complete accepted flips before EGL tries to acquire another back buffer.
-                _parent.WaitForPageFlip();
                 var swapchain = _swapchain.Item;
+                // Retire completed flips without blocking; wait only if EGL needs a buffer released.
+                if (_parent._pendingBuffer != null &&
+                    (_parent._pageFlipCompleted || !swapchain.HasFreeBuffers))
+                    _parent.WaitForPageFlip();
                 var size = swapchain.Size;
                 var session = base.BeginDraw(swapchain.EglSurface, size, _parent.Scaling, onFinish: _pageFlip);
                 try

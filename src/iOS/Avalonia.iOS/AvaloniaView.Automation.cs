@@ -9,6 +9,10 @@ namespace Avalonia.iOS
         public UIAccessibilityContainerType AccessibilityContainerType => 
             _accessWrapper.AccessibilityContainerType;
 
+        [Export("accessibilityElements")]
+        public NSObject GetAccessibilityElements() =>
+            _accessWrapper.GetAccessibilityElements();
+
         [Export("accessibilityElementCount")]
         public nint AccessibilityElementCount() => 
             _accessWrapper.AccessibilityElementCount();

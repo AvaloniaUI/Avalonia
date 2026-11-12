@@ -15,6 +15,7 @@ internal sealed class GbmEglSwapchain : IDisposable
 
     public EglSurface EglSurface { get; }
     public PixelSize Size { get; }
+    public bool HasFreeBuffers => gbm_surface_has_free_buffers(_gbmSurface) != 0;
     public bool IsCorrupted { get; set; }
 
     public GbmEglSwapchain(DrmCard card, IntPtr device, EglDisplay display, PixelSize size)
