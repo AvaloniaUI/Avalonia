@@ -240,6 +240,40 @@ public class BackdropCompositionTests : TestBase
     }
 
     [Fact]
+    public void Retained_Backdrop_Move_Equals_Full_Redraw()
+    {
+        // A same-size move keeps the retained texture; its stale contents must be fully re-ingested.
+        CompositionSolidColorVisual Build(Harness h, double x)
+        {
+            h.Root.Children.Add(h.Rect(Colors.White, 0, 0, 200, 200));
+            h.Root.Children.Add(h.Rect(Colors.Blue, 0, 0, 200, 30));
+            h.Root.Children.Add(h.Rect(Colors.Red, 20, 40, 40, 40));
+            var backdrop = h.Rect(Colors.Transparent, x, 20, 80, 80);
+            backdrop.BackdropEffect = Blur(5);
+            backdrop.BackdropEffectCache = MakeRetainedBackdrop(h.Compositor);
+            h.Root.Children.Add(backdrop);
+            return backdrop;
+        }
+
+        using var reference = new Harness(200, 200);
+        Build(reference, 90);
+        reference.Frame();
+        reference.Frame();
+
+        using var h = new Harness(200, 200);
+        var backdrop = Build(h, 10);
+        h.Frame();
+        h.Frame();
+
+        h.Retained(true);
+        backdrop.Offset = new Vector3D(90, 20, 0);
+        h.Frame();
+        h.Frame();
+
+        AssertSimilar(h.Fb, reference.Fb);
+    }
+
+    [Fact]
     public void Volatile_Overlap_Equals_Full_Redraw()
     {
         using var reference = new Harness(200, 200);

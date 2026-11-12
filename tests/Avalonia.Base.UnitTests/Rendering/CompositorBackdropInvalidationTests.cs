@@ -404,7 +404,7 @@ public class CompositorBackdropInvalidationTests : CompositorTestsBase
     }
 
     [Fact]
-    public void SubPixel_Move_Keeps_Aabb_And_Retained_State_But_Pixel_Move_Resets()
+    public void Pixel_Move_Keeps_Retained_State_And_Reingests_Whole_Aabb()
     {
         using var s = new CompositorTestServices();
         var c = s.Compositor;
@@ -431,12 +431,13 @@ public class CompositorBackdropInvalidationTests : CompositorTestsBase
         Assert.Equal(aabb0!.Value, record.Aabb!.Value);
         Assert.Same(sentinel, record.RetainedState);
 
-        // A move that changes the snapped AABB resets the retained state.
+        // A move that changes the snapped AABB keeps the store but marks the whole new AABB for re-ingest.
+        record.RetainedInputDirtyArea = null;
         v.Offset = new Vector3D(101.6, 101.6, 0);
         s.RunJobs();
-        s.RunJobs();
         Assert.NotEqual(aabb0.Value, record.Aabb!.Value);
-        Assert.Null(record.RetainedState);
+        Assert.Same(sentinel, record.RetainedState);
+        Assert.Equal(record.Aabb!.Value.ToLtrbRectUnscaled(), record.RetainedInputDirtyArea);
     }
 
     [Fact]

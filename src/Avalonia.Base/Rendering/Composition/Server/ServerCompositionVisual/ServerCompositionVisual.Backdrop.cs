@@ -260,9 +260,11 @@ partial class ServerCompositionVisual
 
         if (hostChanged || aabbChanged)
         {
-            // Host/size change ⇒ the retained texture is no longer valid; drop it so the render pass
-            // reallocates and re-ingests. Reset the input to the whole (new) AABB for that re-ingest.
-            record.DisposeRetainedStateWithContext();
+            // The retained texture's contents are stale: re-ingest the whole (new) AABB. The store itself is
+            // kept across a move or resize (it reallocates on a size change) and only dropped on a host change
+            // or when there is nothing left to capture.
+            if (hostChanged || newAabb == null)
+                record.DisposeRetainedStateWithContext();
             record.RetainedInputDirtyArea = newAabb?.ToLtrbRectUnscaled();
             PropagateFlags(false, true);
         }
