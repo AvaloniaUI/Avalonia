@@ -9,6 +9,7 @@ using Avalonia.OpenGL.Egl;
 using Avalonia.OpenGL.Surfaces;
 using Avalonia.Platform;
 using Avalonia.Rendering.Composition;
+using Avalonia.Utilities;
 using static Avalonia.LinuxFramebuffer.NativeUnsafeMethods;
 using static Avalonia.LinuxFramebuffer.Output.LibDrm;
 
@@ -114,67 +115,31 @@ namespace Avalonia.LinuxFramebuffer.Output
         [DllImport("libEGL.so.1")]
         static extern IntPtr eglGetProcAddress(string proc);
 
-        private GbmBoUserDataDestroyCallbackDelegate FbDestroyDelegate;
         private drmModeModeInfo _mode;
+        private IntPtr _gbmDevice;
         private EglDisplay _eglDisplay;
-        private EglSurface _eglSurface;
         private EglContext _deferredContext;
-        private IntPtr _currentBo;
-        private IntPtr _gbmTargetSurface;
+        private IRef<GbmEglSwapchain> _renderSwapchain;
+        private GbmEglSwapchain.FrontBuffer? _scanoutBuffer;
+        private GbmEglSwapchain.FrontBuffer? _pendingBuffer;
+        private GCHandle _pendingFlipHandle;
+        private bool _pageFlipCompleted;
         private uint _crtcId;
 
-        void FbDestroyCallback(IntPtr bo, IntPtr userData)
-        {
-            drmModeRmFB(_card.Fd, userData.ToInt32());
-        }
-
-        uint GetFbIdForBo(IntPtr bo)
-        {
-            if (bo == IntPtr.Zero)
-                throw new ArgumentException("bo is 0");
-            var data = gbm_bo_get_user_data(bo);
-            if (data != IntPtr.Zero)
-                return (uint)data.ToInt32();
-
-            var w = gbm_bo_get_width(bo);
-            var h = gbm_bo_get_height(bo);
-            var stride = gbm_bo_get_stride(bo);
-            var handle = gbm_bo_get_handle(bo).u32;
-            var format = gbm_bo_get_format(bo);
-
-            // prepare for the new ioctl call
-            var handles = new uint[] { handle, 0, 0, 0 };
-            var pitches = new uint[] { stride, 0, 0, 0 };
-            var offsets = new uint[4];
-
-            var ret = drmModeAddFB2(_card.Fd, w, h, format, handles, pitches,
-                                    offsets, out var fbHandle, 0);
-
-            if (ret != 0)
+        private static readonly DrmEventPageFlipHandlerDelegate s_pageFlipHandler =
+            (_, _, _, _, userData) =>
             {
-                // legacy fallback
-                ret = drmModeAddFB(_card.Fd, w, h, 24, 32, stride, (uint)handle,
-                                   out fbHandle);
-
-                if (ret != 0)
-                    throw new Win32Exception(ret, $"drmModeAddFb failed {ret}");
-            }
-
-            gbm_bo_set_user_data(bo, new IntPtr((int)fbHandle), FbDestroyDelegate);
-
-
-            return fbHandle;
-        }
+                var output = (DrmOutput)GCHandle.FromIntPtr((IntPtr)userData).Target!;
+                output._pageFlipCompleted = true;
+            };
 
         [MemberNotNull(nameof(_card))]
         [MemberNotNull(nameof(PlatformGraphics))]
-        [MemberNotNull(nameof(FbDestroyDelegate))]
         [MemberNotNull(nameof(_eglDisplay))]
-        [MemberNotNull(nameof(_eglSurface))]
+        [MemberNotNull(nameof(_renderSwapchain))]
         [MemberNotNull(nameof(_deferredContext))]
         void Init(DrmCard card, DrmResources resources, DrmConnector connector, DrmModeInfo modeInfo)
         {
-            FbDestroyDelegate = FbDestroyCallback;
             _card = card;
             uint GetCrtc()
             {
@@ -197,54 +162,55 @@ namespace Avalonia.LinuxFramebuffer.Output
             }
 
             _crtcId = GetCrtc();
-            var device = gbm_create_device(card.Fd);
-            _gbmTargetSurface = gbm_surface_create(device, modeInfo.Resolution.Width, modeInfo.Resolution.Height,
-                GbmColorFormats.GBM_FORMAT_XRGB8888, GbmBoFlags.GBM_BO_USE_SCANOUT | GbmBoFlags.GBM_BO_USE_RENDERING);
-            if (_gbmTargetSurface == IntPtr.Zero)
-                throw new InvalidOperationException("Unable to create GBM surface");
+            _gbmDevice = gbm_create_device(card.Fd);
+            if (_gbmDevice == IntPtr.Zero)
+                throw new Win32Exception(Marshal.GetLastWin32Error(), "Unable to create GBM device");
 
             _eglDisplay = new EglDisplay(
                 new EglDisplayCreationOptions
                 {
                     Egl = new EglInterface(eglGetProcAddress),
                     PlatformType = 0x31D7,
-                    PlatformDisplay = device,
+                    PlatformDisplay = _gbmDevice,
                     SupportsMultipleContexts = true,
                     SupportsContextSharing = true
                 });
 
-            var surface = _eglDisplay.EglInterface.CreateWindowSurface(_eglDisplay.Handle, _eglDisplay.Config, _gbmTargetSurface, new[] { EglConsts.EGL_NONE, EglConsts.EGL_NONE });
-
-            _eglSurface = new EglSurface(_eglDisplay, surface);
-
             _deferredContext = _eglDisplay.CreateContext(null);
             PlatformGraphics = new SharedContextGraphics(_deferredContext);
+            _renderSwapchain = RefCountable.Create(
+                new GbmEglSwapchain(_card, _gbmDevice, _eglDisplay, modeInfo.Resolution));
 
             var initialBufferSwappingColorR = _outputOptions.InitialBufferSwappingColor.R / 255.0f;
             var initialBufferSwappingColorG = _outputOptions.InitialBufferSwappingColor.G / 255.0f;
             var initialBufferSwappingColorB = _outputOptions.InitialBufferSwappingColor.B / 255.0f;
             var initialBufferSwappingColorA = _outputOptions.InitialBufferSwappingColor.A / 255.0f;
-            using (_deferredContext.MakeCurrent(_eglSurface))
+            using (_deferredContext.MakeCurrent(_renderSwapchain.Item.EglSurface))
             {
                 _deferredContext.GlInterface.ClearColor(initialBufferSwappingColorR, initialBufferSwappingColorG,
                     initialBufferSwappingColorB, initialBufferSwappingColorA);
                 _deferredContext.GlInterface.Clear(GlConsts.GL_COLOR_BUFFER_BIT | GlConsts.GL_STENCIL_BUFFER_BIT);
-                _eglSurface.SwapBuffers();
+                _renderSwapchain.Item.EglSurface.SwapBuffers();
             }
 
-            var bo = gbm_surface_lock_front_buffer(_gbmTargetSurface);
-            var fbId = GetFbIdForBo(bo);
+            var buffer = GbmEglSwapchain.LockFrontBuffer(_renderSwapchain);
             var connectorId = connector.Id;
             var mode = modeInfo.Mode;
-
-
-            var res = drmModeSetCrtc(_card.Fd, _crtcId, fbId, 0, 0, &connectorId, 1, &mode);
-            if (res != 0)
-                throw new Win32Exception(res, "drmModeSetCrtc failed");
-
+            try
+            {
+                var result = drmModeSetCrtc(_card.Fd, _crtcId, buffer.FramebufferId,
+                    0, 0, &connectorId, 1, &mode);
+                if (result != 0)
+                    throw new Win32Exception(Marshal.GetLastWin32Error(), "drmModeSetCrtc failed");
+                _scanoutBuffer = buffer;
+            }
+            catch
+            {
+                buffer.Dispose();
+                throw;
+            }
             _mode = mode;
-            _currentBo = bo;
-            
+
             if (_outputOptions.EnableInitialBufferSwapping)
             {
                 //Go through two cycles of buffer swapping (there are render artifacts otherwise)
@@ -261,55 +227,91 @@ namespace Avalonia.LinuxFramebuffer.Output
 
         }
 
-        private void PageFlip()
+        private void PageFlip(IRef<GbmEglSwapchain> swapchain)
         {
-            var nextBo = gbm_surface_lock_front_buffer(_gbmTargetSurface);
-            if (nextBo == IntPtr.Zero)
+            // A previously accepted flip may still complete after an interrupted event wait.
+            WaitForPageFlip();
+            var next = GbmEglSwapchain.LockFrontBuffer(swapchain);
+            var handle = default(GCHandle);
+            var submitted = false;
+            try
             {
-                // Not sure what else can be done
-                Console.WriteLine("gbm_surface_lock_front_buffer failed");
+                _pageFlipCompleted = false;
+                handle = GCHandle.Alloc(this);
+                if (drmModePageFlip(_card.Fd, _crtcId, next.FramebufferId,
+                        DrmModePageFlip.Event, (void*)GCHandle.ToIntPtr(handle)) != 0)
+                    throw new Win32Exception(Marshal.GetLastWin32Error(), "drmModePageFlip failed");
+
+                _pendingBuffer = next;
+                _pendingFlipHandle = handle;
+                submitted = true;
             }
-            else
+            finally
             {
-
-                var fb = GetFbIdForBo(nextBo);
-                bool waitingForFlip = true;
-
-                drmModePageFlip(_card.Fd, _crtcId, fb, DrmModePageFlip.Event, null);
-
-                DrmEventPageFlipHandlerDelegate flipCb =
-                    (int fd, uint sequence, uint tv_sec, uint tv_usec, void* user_data) =>
-                    {
-                        waitingForFlip = false;
-                    };
-                var cbHandle = GCHandle.Alloc(flipCb);
-                var ctx = new DrmEventContext
+                if (!submitted)
                 {
-                    version = 4,
-                    page_flip_handler = Marshal.GetFunctionPointerForDelegate(flipCb)
-                };
-                while (waitingForFlip)
-                {
-                    var pfd = new PollFd {events = 1, fd = _card.Fd};
-                    poll(&pfd, new IntPtr(1), -1);
-                    drmHandleEvent(_card.Fd, &ctx);
+                    if (handle.IsAllocated)
+                        handle.Free();
+                    next.Dispose();
                 }
-
-                cbHandle.Free();
-                gbm_surface_release_buffer(_gbmTargetSurface, _currentBo);
-                _currentBo = nextBo;
             }
+            WaitForPageFlip();
+        }
+
+        private void WaitForPageFlip()
+        {
+            if (_pendingBuffer == null)
+                return;
+
+            var context = new DrmEventContext
+            {
+                version = 4,
+                page_flip_handler = Marshal.GetFunctionPointerForDelegate(s_pageFlipHandler)
+            };
+            // Keep both leases pinned if waiting fails: KMS may have accepted the new buffer.
+            while (!_pageFlipCompleted)
+            {
+                var pfd = new PollFd { events = 1, fd = _card.Fd };
+                if (poll(&pfd, new IntPtr(1), -1) < 0)
+                {
+                    var error = Marshal.GetLastWin32Error();
+                    if (error == 4) // EINTR
+                        continue;
+                    throw new Win32Exception(error, "Waiting for DRM page flip failed");
+                }
+                if ((pfd.revents & (8 | 16 | 32)) != 0) // POLLERR | POLLHUP | POLLNVAL
+                    throw new InvalidOperationException("DRM page flip event source is unavailable");
+                if (drmHandleEvent(_card.Fd, &context) != 0)
+                {
+                    var error = Marshal.GetLastWin32Error();
+                    if (error == 4) // EINTR
+                        continue;
+                    throw new Win32Exception(error, "Reading DRM page flip event failed");
+                }
+            }
+
+            var previous = _scanoutBuffer;
+            _scanoutBuffer = _pendingBuffer;
+            _pendingBuffer = null;
+            _pendingFlipHandle.Free();
+            // Release through the buffer's original surface, after KMS has stopped scanning it.
+            previous?.Dispose();
         }
 
         private bool UsePartialPresentation => _outputOptions.UsePartialPresentation == true;
 
         public IGlPlatformSurfaceRenderTarget CreateGlRenderTarget()
         {
-            // A failed frame with a native dirty rectangle declaration needs a fresh EGL surface.
-            // The GBM swapchain and its current scanout buffer remain owned by this output.
-            if (_eglSurface.IsClosed)
-                _eglSurface = _eglDisplay.CreateWindowSurface(_gbmTargetSurface);
-            return new RenderTarget(this);
+            if (_renderSwapchain.Item.IsCorrupted)
+            {
+                var replacement = RefCountable.Create(
+                    new GbmEglSwapchain(_card, _gbmDevice, _eglDisplay, _mode.Resolution));
+                var previous = _renderSwapchain;
+                _renderSwapchain = replacement;
+                // The old scanout lease keeps its surfaces alive until a replacement flip completes.
+                previous.Dispose();
+            }
+            return new RenderTarget(this, _renderSwapchain.Clone());
         }
 
 
@@ -324,14 +326,15 @@ namespace Avalonia.LinuxFramebuffer.Output
         private sealed class RenderTarget : EglPlatformSurfaceRenderTargetBase
         {
             private readonly DrmOutput _parent;
-            private readonly EglSurface _surface;
+            private readonly IRef<GbmEglSwapchain> _swapchain;
             private readonly Action _pageFlip;
+            private bool _disposed;
 
-            public RenderTarget(DrmOutput parent) : base(parent._deferredContext)
+            public RenderTarget(DrmOutput parent, IRef<GbmEglSwapchain> swapchain) : base(parent._deferredContext)
             {
                 _parent = parent;
-                _surface = parent._eglSurface;
-                _pageFlip = parent.PageFlip;
+                _swapchain = swapchain;
+                _pageFlip = () => parent.PageFlip(_swapchain);
             }
 
             protected override RenderTargetProperties Properties => base.Properties with
@@ -341,18 +344,32 @@ namespace Avalonia.LinuxFramebuffer.Output
 
             protected override bool UsePartialPresentation => _parent.UsePartialPresentation;
             protected override bool SkipWaits => true;
+            public override bool IsCorrupted => _disposed || base.IsCorrupted || _swapchain.Item.IsCorrupted;
 
             public override void Dispose()
             {
-                base.Dispose();
-                if (base.IsCorrupted && !Context.IsLost)
-                    _surface.Dispose();
+                if (_disposed)
+                    return;
+                _disposed = true;
+                try
+                {
+                    if (base.IsCorrupted)
+                        _swapchain.Item.IsCorrupted = true;
+                    base.Dispose();
+                }
+                finally
+                {
+                    _swapchain.Dispose();
+                }
             }
 
             public override IGlPlatformSurfaceRenderingSession BeginDrawCore(IRenderTarget.RenderTargetSceneInfo sceneInfo)
             {
-                var size = _parent._mode.Resolution;
-                var session = base.BeginDraw(_surface, size, _parent.Scaling, onFinish: _pageFlip);
+                // Complete accepted flips before EGL tries to acquire another back buffer.
+                _parent.WaitForPageFlip();
+                var swapchain = _swapchain.Item;
+                var size = swapchain.Size;
+                var session = base.BeginDraw(swapchain.EglSurface, size, _parent.Scaling, onFinish: _pageFlip);
                 try
                 {
                     Context.GlInterface.Viewport(0, 0, size.Width, size.Height);
