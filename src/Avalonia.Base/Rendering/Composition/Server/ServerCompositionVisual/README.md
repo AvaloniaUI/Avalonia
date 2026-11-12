@@ -1,10 +1,22 @@
 # Server-side composition visuals
 
 `ServerCompositionVisual` is the render-thread counterpart of `CompositionVisual`. This directory holds the per-frame
-tree passes (dirty region collection and rendering), bitmap caches and backdrop effects.
+tree passes (dirty region collection and rendering), bitmap caches, adorner support, readback for hit-testing and
+backdrop effects.
 
-The dirty region logic is a port of WPF's (`WpfGfx`), so some older comments still use its vocabulary. The glossary
-lists those words as synonyms. New comments use the first term only.
+## Design
+
+The update algorithm is close to the one in WPF (`WpfGfx`), with changes for features that WPF does not have. Some
+older comments still use WPF's vocabulary. The glossary lists those words as synonyms. New comments use the first
+term only.
+
+- A visual does not store a world transform. It stores its own transform (to parent space) and its subtree bounds.
+  A walk keeps the transform to the layer on a stack while it goes down the tree.
+- A change marks the visual dirty and sets flags up its parent chain (`PropagateFlags`). The update walk visits only
+  the parts of the tree that have those flags, so the cost of a frame depends on what changed, not on the tree size.
+- The render walk skips a subtree when its bounds do not intersect the dirty region or the clip.
+- A bitmap cache draws its subtree into its own surface and keeps its own dirty region. This part follows WPF's
+  `BitmapCache` closely.
 
 ## Glossary
 
@@ -25,9 +37,15 @@ Synonyms that you can still find in older comments are listed in parentheses. Do
 
 ### Passes
 
-- **update walk**: `UpdateContext`. Recomputes subtree bounds and collects the dirty region. Runs once per frame.
+- **own properties pass**: `RecomputeOwnProperties` for every visual with changed properties.
+- **adorner pass**: `UpdateAdorner` for every adorner whose transform can have changed.
+- **update walk**: `UpdateContext`. Recomputes subtree bounds and collects the dirty region. Once per frame and
+  target.
+- **volatile pass**: `BackdropVolatilePass`. Between the two walks.
 - **render walk**: `RenderContext`. Draws the visuals that intersect the dirty region.
-- **volatile pass**: `BackdropVolatilePass`. Runs between the two walks, see below.
+- **readback pass**: writes the transforms that the UI thread reads for hit-testing.
+
+See "Frame pipeline" for the order and the details.
 
 ### Layers
 
@@ -108,18 +126,71 @@ Synonyms that you can still find in older comments are listed in parentheses. Do
 
 ## Frame pipeline
 
-For a `ServerCompositionTarget`, in this order:
+The first three steps run once per frame for the whole compositor (`ServerCompositor.ExecuteGlobalPasses`). Steps 4
+to 7 run for every `ServerCompositionTarget` (`Update`, then `Render`). The last step runs once again.
 
-1. **Backdrop state recompute** (`RecomputeBackdropState`). For every backdrop visual in the list: find its layer,
+1. **Apply batches**. Deserializes the changes that the UI thread committed and sets the properties of the server
+   objects. A visual that leaves its parent adds its bounds to the parent as an extra dirty rect
+   (`AddExtraDirtyRect`), because after the removal nothing else knows where it was. Animations are processed after
+   the batches.
+2. **Own properties pass**. For every visual that was enqueued by a property change: recompute its own transform,
+   clip and content bounds, then set the dirty and bounds flags on it and up its parent chain (`PropagateFlags`).
+   A transform change also notifies the adorners that depend on the visual.
+3. **Adorner pass**. The own transforms are final here, so an adorner can compute where its adorned visual is. See
+   "Adorners".
+4. **Backdrop state recompute** (`RecomputeBackdropState`). For every backdrop visual in the list: find its layer,
    compute its AABB and decide retained or volatile. If the layer or the AABB changed, the visual is marked dirty.
    This step never adds dirty rects itself.
-2. **Update walk**. Recomputes bounds and collects the dirty region of every layer. For retained backdrop visuals it
-   also collects input dirty rects: a dirty rect that is already in the working set when the walk reaches a visual
-   belongs to something behind it, so it is a change of that visual's backdrop.
-3. **Volatile pass**. A volatile backdrop visual cannot be redrawn in part, so whole-AABB invalidation applies. That
+5. **Update walk**. Goes down the tree only where flags are set. Recomputes subtree bounds and collects the dirty
+   region of every layer: the old and the new bounds of a dirty visual, and the extra dirty rects from step 1. Under
+   a pushed bitmap cache the dirty rects go to the dirty region of that bitmap cache, and the bounds of the cached
+   visual become dirty in the outer layer. For retained backdrop visuals the walk also collects input dirty rects:
+   a dirty rect that is already in the working set when the walk reaches a visual belongs to something behind it,
+   so it is a change of that visual's backdrop.
+6. **Volatile pass**. A volatile backdrop visual cannot be redrawn in part, so whole-AABB invalidation applies. That
    new dirty rect is input for the backdrop visuals in front of it, so the pass repeats until nothing changes.
-4. **Render walk**. Draws the dirty region. A retained backdrop visual first refreshes its snapshot from its input
+7. **Render walk**. Draws the dirty region of the root layer. A visual with a bitmap cache first redraws the dirty
+   region of its bitmap cache layer (a render walk of its own that starts at the cached visual), then draws the
+   bitmap cache layer into the outer layer. A retained backdrop visual first refreshes its snapshot from its input
    dirty rect, then draws the snapshot through the effect. A volatile one filters the layer contents directly.
+8. **Readback pass**. See "Readback".
+
+## Adorners
+
+An adorner is a child of the adorner layer, but it has to be drawn where its adorned visual (`AdornedVisual`) is,
+and that visual is in a different part of the tree. The adorner code is in `ServerCompositionVisual.Adorners.cs`
+and its members have the `AdornerHelper_` prefix.
+
+- **Transform**. In the adorner pass, an adorner sets its own transform to the transform from the adorner layer's
+  parent to the adorned visual, combined with the adorner's own offset, scale and rotation
+  (`UpdateAdorner`). The `RenderTransform` that the UI thread sets on an adorner is ignored, because it can be behind
+  a transform that the compositor animates. This is the only difference in how an adorner is updated: after this
+  step it is a normal visual with a normal own transform.
+- **Notifications**. An adorner has to run that step again when the transform of the adorned visual, or of any
+  visual in its parent chain, changes. `ServerCompositionVisual.Act.cs` tracks that: a visual can subscribe to
+  transform changes of the parent chain of another visual.
+- **Clip**. With `AdornerIsClipped`, the render walk applies the clips of the adorned visual's parent chain (bounds
+  clips and geometry clips, up to the common parent) before it draws the adorner, and removes them after it
+  (`AdornerHelper_RenderPreGraphPushAdornerClip`).
+- **Limits**. The tree is expected to be: common parent, adorner layer, adorner. The adorned visual has to be in the
+  subtree of the common parent. Otherwise the adorner is not drawn.
+
+## Readback
+
+Hit-testing on the UI thread needs the transforms and visibility that the render thread computed. The update walk
+only visits a part of the tree, so the tree as a whole has no version number. Each visual has two readback slots
+with a revision number instead (`ServerCompositionVisual.Readback.cs`).
+
+- A visual is enqueued when its transform, its visibility or its subtree bounds change.
+- The readback pass writes all enqueued visuals as one new revision, under a lock.
+- The UI thread takes the same lock only to move to the newest revision. It then reads, for each visual, the newest
+  slot that is not newer than its revision. So it always sees values from one consistent revision.
+- The writer picks the slot that the UI thread cannot be reading: a slot that is already newer than the reader's
+  revision, or else the older one of the two.
+
+The lock is held for a short time on both sides: the UI thread only changes a number, and the render thread writes
+values that were collected before. Hit-testing can wait a fraction of a millisecond when a very large update is
+written.
 
 ## Backdrop rules
 
