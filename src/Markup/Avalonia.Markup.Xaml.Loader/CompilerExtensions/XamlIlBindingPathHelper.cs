@@ -196,15 +196,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
                             if (targetType.IsNullable())
                             {
-                                var underlyingType = targetType.GenericArguments[0];
-
-                                // C# looks a ?. member up on T, and Nullable<T> itself only has Value and HasValue.
-                                var lookUpOnUnderlyingType = propName.AcceptsNull
-                                    ? HasMember(underlyingType, propName.PropertyName)
-                                    : !HasMember(targetType, propName.PropertyName);
-
-                                if (lookUpOnUnderlyingType)
-                                    targetType = underlyingType;
+                                // C# looks a ?. member up on T. Without ?., fall back to T only when Nullable<T> lacks the member.
+                                if (propName.AcceptsNull || !HasMember(targetType, propName.PropertyName))
+                                    targetType = targetType.GenericArguments[0];
                             }
 
                             var avaloniaPropertyFieldNameMaybe = propName.PropertyName + "Property";

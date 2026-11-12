@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Xml;
 using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Logging;
@@ -515,28 +516,23 @@ public class NullConditionalBindingTests
         Assert.Empty(log.Messages);
     }
 
-    [Fact]
-    public void Should_Access_Value_Of_Nullable_Struct_With_Null_Conditional_Operator()
+    [Theory]
+    [InlineData("NullableSecond?.Value.Final")]
+    [InlineData("NullableSecond?.HasValue")]
+    public void Should_Not_Compile_Nullable_Member_With_Null_Conditional_Operator(string path)
     {
-        // Only compiled bindings, for the same reason as above.
         using var app = Start();
-        using var log = TestLogger.Create();
-        var xaml = """
+        var xaml = $$"""
             <Window xmlns='https://github.com/avaloniaui'
                     xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
                     xmlns:local='using:Avalonia.Base.UnitTests.Data.Core'
                     x:DataType='local:NullConditionalBindingTests+First'
                     x:CompileBindings='True'>
-                <local:ErrorCollectingTextBox Text='{Binding NullableSecond?.Value.Final}'/>
+                <TextBlock Tag='{Binding {{path}}}'/>
             </Window>
             """;
-        var data = new First { NullableSecond = new NullableSecondValue { Final = "foo" } };
-        var window = CreateTarget(xaml, data);
-        var textBox = Assert.IsType<ErrorCollectingTextBox>(window.Content);
 
-        Assert.Equal("foo", textBox.Text);
-        Assert.Null(textBox.Error);
-        Assert.Empty(log.Messages);
+        Assert.ThrowsAny<XmlException>(() => AvaloniaRuntimeXamlLoader.Load(xaml));
     }
 
     private static IDisposable Start()
