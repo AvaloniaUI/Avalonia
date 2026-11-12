@@ -391,9 +391,8 @@ namespace Avalonia.Media.Fonts
             CultureInfo? culture,
             Script shapingScript)
         {
-            // A face cached under the requested key is the answer chosen for that key, such as a colour
-            // font face that answers a bold request as designed, so the platform would only return it
-            // again.
+            // A face cached under the requested key is the answer chosen for that key, so the platform
+            // would only return it again.
             if (glyphTypefaces.TryGetValue(key, out var cached) && ReferenceEquals(cached, glyphTypeface))
             {
                 return glyphTypeface;
@@ -596,9 +595,9 @@ namespace Avalonia.Media.Fonts
 
             if (simulator is not null)
             {
-                // The platform typeface decides which simulations its face takes. A variant it refuses,
-                // such as a bold or oblique colour font face, is not built from a copy of the font file
-                // either: the caller uses the source face as it is.
+                // The platform typeface decides which simulations its face takes. A variant it refuses
+                // is not built from a copy of the font file either: the caller uses the source face as
+                // it is.
                 if (!simulator.TryCreateSimulatedTypeface(fontSimulations, style, weight, stretch,
                         out var simulatedTypeface))
                 {
@@ -613,13 +612,6 @@ namespace Avalonia.Media.Fonts
                 AddSyntheticGlyphTypeface(glyphTypeface, key, syntheticGlyphTypeface);
 
                 return true;
-            }
-
-            // A colour glyph is fixed artwork that emboldening or slanting only distorts, so a colour
-            // font face is used as designed.
-            if (IsColorFont(glyphTypeface.PlatformTypeface))
-            {
-                return false;
             }
 
             // Without a variant from the platform typeface, the synthetic face is built from a copy
@@ -640,28 +632,6 @@ namespace Avalonia.Media.Fonts
                     }
 
                     return false;
-                }
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// Gets whether the face draws its glyphs from a colour table: COLR layers, sbix or CBDT
-        /// bitmaps, or SVG documents.
-        /// </summary>
-        /// <remarks>
-        /// Only asked of a platform typeface that does not implement
-        /// <see cref="IPlatformTypefaceSimulator"/>, which decides for itself. Reading a table can copy
-        /// it, and a bitmap table of a colour emoji font is large.
-        /// </remarks>
-        private static bool IsColorFont(IPlatformTypeface platformTypeface)
-        {
-            foreach (var tag in ColorGlyphTables.Tags)
-            {
-                if (platformTypeface.TryGetTable(tag, out var table) && !table.IsEmpty)
-                {
-                    return true;
                 }
             }
 

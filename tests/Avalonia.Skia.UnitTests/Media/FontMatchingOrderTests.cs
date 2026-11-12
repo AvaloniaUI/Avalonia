@@ -400,10 +400,12 @@ namespace Avalonia.Skia.UnitTests.Media
                     failures.Add("invariant: an upright request is drawn slanted", $"{request}: {outcome}");
                 }
 
-                if (face.IsColor && (outcome.IsDrawnSlanted || outcome.IsDrawnEmboldened ||
-                                     outcome.Simulations != FontSimulations.None))
+                // A simulation the platform applies inside the typeface reaches every glyph, colour
+                // glyphs included, while one applied when drawing is left to the renderer.
+                if (face.IsColor && ((SkiaTypeface)glyphTypeface.PlatformTypeface).PlatformSimulations !=
+                    FontSimulations.None)
                 {
-                    failures.Add("invariant: a colour face is simulated", $"{request}: {outcome}");
+                    failures.Add("invariant: a colour face is simulated by the platform", $"{request}: {outcome}");
                 }
 
                 var cachedKeys = collection.GetCachedKeys(glyphTypeface);

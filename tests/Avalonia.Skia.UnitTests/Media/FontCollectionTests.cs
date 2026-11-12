@@ -1162,7 +1162,7 @@ namespace Avalonia.Skia.UnitTests.Media
             public int CharacterMatches { get; private set; }
 
             /// <summary>Number of family matches a character match asked of the platform to replace a
-            /// colour font face with its regular upright face.</summary>
+            /// colour font face the platform simulated with the face as designed.</summary>
             public int RegularColourFaceMatches { get; private set; }
 
             /// <summary>The typeface the latest family match returned.</summary>
@@ -1240,8 +1240,7 @@ namespace Avalonia.Skia.UnitTests.Media
                 LastFamilyMatch = skTypeface;
 
                 platformTypeface = Wrap(FontManagerImpl.CreatePlatformTypeface(skTypeface, faceStyle, faceWeight,
-                    (FontStretch)skTypeface.FontWidth, platformSimulations, style, weight, stretch,
-                    SkiaTypeface.IsColorFont(skTypeface)));
+                    (FontStretch)skTypeface.FontWidth, platformSimulations, style, weight, stretch));
 
                 return true;
             }
@@ -1277,7 +1276,7 @@ namespace Avalonia.Skia.UnitTests.Media
                         var matchedUri = uri;
 
                         // Each installed face here is the only face of its family, so the family
-                        // match asked for a regular colour face is that same face.
+                        // match asked for a designed colour face is that same face.
                         platformTypeface = FontManagerImpl.CreatePlatformTypeface(skTypeface, fontStyle, fontWeight,
                             fontStretch, (_, _) =>
                             {

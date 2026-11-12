@@ -34,10 +34,8 @@ namespace Avalonia.Media
         /// disposed.
         /// </param>
         /// <returns>
-        /// <c>true</c> if the variant could be created; <c>false</c> if the face takes none of the
-        /// simulations, such as a colour font face, whose glyphs are artwork that is neither emboldened
-        /// nor slanted, or if the variant leaves out a simulation the platform applied inside this
-        /// typeface, which cannot be removed.
+        /// <c>true</c> if the variant could be created; <c>false</c> if the variant leaves out a
+        /// simulation the platform applied inside this typeface, which cannot be removed.
         /// </returns>
         bool TryCreateSimulatedTypeface(FontSimulations fontSimulations, FontStyle style, FontWeight weight,
             FontStretch stretch, [NotNullWhen(true)] out IPlatformTypeface? typeface);

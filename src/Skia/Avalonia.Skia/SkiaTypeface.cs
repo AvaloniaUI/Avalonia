@@ -61,6 +61,11 @@ namespace Avalonia.Skia
 
         public FontStretch Stretch { get; }
 
+        /// <summary>
+        /// Gets the simulations the platform applied inside <see cref="SKTypeface"/>.
+        /// </summary>
+        internal FontSimulations PlatformSimulations => _platformSimulations;
+
         public SKFont CreateSKFont(float size)
         {
             var appliedSimulations = FontSimulations & ~_platformSimulations;
@@ -77,7 +82,7 @@ namespace Avalonia.Skia
         {
             // The platform's own simulations are part of the Skia typeface, so a variant without one
             // of them cannot be drawn from it.
-            if ((_platformSimulations & ~fontSimulations) != 0 || IsColorFont(SKTypeface))
+            if ((_platformSimulations & ~fontSimulations) != 0)
             {
                 typeface = null;
 
@@ -127,16 +132,13 @@ namespace Avalonia.Skia
         }
 
         /// <summary>
-        /// Gets whether a typeface draws its glyphs from a colour table: COLR layers, sbix or CBDT
-        /// bitmaps, or SVG documents. A colour glyph is fixed artwork that emboldening or slanting
-        /// only distorts, so a colour font face is never simulated.
+        /// Gets whether a typeface has a colour glyph table: COLR layers, sbix or CBDT bitmaps, or SVG
+        /// documents. Only the table directory is read, since a bitmap table of a colour emoji font is
+        /// large.
         /// </summary>
         /// <remarks>
-        /// SVG counts even where Skia draws the monochrome outlines such a font carries as a fallback,
-        /// so the face looks the same in a bold or italic run whichever of its tables a backend draws.
-        /// The check is per face because simulations are; a COLR or SVG font also has outlines, so
-        /// the presence of outlines does not tell a colour glyph apart. Only the table directory is
-        /// read, since a bitmap table of a colour emoji font is large.
+        /// A colour font face is simulated like any other face, since most such faces also have outline
+        /// glyphs. Whether a simulation reaches its colour glyphs is up to the renderer that draws them.
         /// </remarks>
         internal static bool IsColorFont(SKTypeface typeface)
         {

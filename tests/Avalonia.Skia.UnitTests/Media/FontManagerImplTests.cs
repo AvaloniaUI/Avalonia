@@ -79,36 +79,36 @@ namespace Avalonia.Skia.UnitTests.Media
         }
 
         [Theory]
-        [InlineData(FontStyle.Normal, 700)]
-        [InlineData(FontStyle.Italic, 400)]
-        [InlineData(FontStyle.Italic, 700)]
-        [InlineData(FontStyle.Oblique, 400)]
-        public void Should_Match_The_Regular_Face_Of_A_Colour_Font_For_A_Bold_Or_Slanted_Request(FontStyle style,
-            int weight)
+        [InlineData(FontSimulations.Bold, (int)SKFontStyleWeight.Normal)]
+        [InlineData(FontSimulations.Oblique, (int)SKFontStyleWeight.Bold)]
+        [InlineData(FontSimulations.Bold | FontSimulations.Oblique, (int)SKFontStyleWeight.Normal)]
+        public void Should_Match_The_Designed_Face_Of_A_Colour_Font_The_Platform_Simulated(
+            FontSimulations platformSimulations, int expectedWeight)
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
-                var matched = LoadTypeface(EmojiUri);
+                var matched = LoadTypeface(ArefBoldUri);
                 var familyName = matched.FamilyName;
+                var width = matched.FontWidth;
                 var requests = new List<(string FamilyName, SKFontStyle Style)>();
-                SKTypeface? regular = null;
+                SKTypeface? designed = null;
 
-                var result = FontManagerImpl.MatchRegularColourFace(matched, SkiaTypeface.IsColorFont(matched), style, (FontWeight)weight,
-                    FontStretch.Condensed, (name, fontStyle) =>
+                // A weight the platform did not simulate is the face's own and is asked for again.
+                var result = FontManagerImpl.MatchDesignedColourFace(matched, platformSimulations, (name, fontStyle) =>
                     {
                         requests.Add((name, fontStyle));
 
-                        return regular = LoadTypeface(EmojiUri);
+                        return designed = LoadTypeface(ArefRegularUri);
                     });
 
                 var request = Assert.Single(requests);
 
                 Assert.Equal(familyName, request.FamilyName);
-                Assert.Equal((int)SKFontStyleWeight.Normal, request.Style.Weight);
-                Assert.Equal((int)SKFontStyleWidth.Condensed, request.Style.Width);
+                Assert.Equal(expectedWeight, request.Style.Weight);
                 Assert.Equal(SKFontStyleSlant.Upright, request.Style.Slant);
+                Assert.Equal(width, request.Style.Width);
 
-                Assert.Same(regular, result);
+                Assert.Same(designed, result);
 
                 // The first match is replaced, so nothing else releases its native typeface.
                 Assert.Equal(IntPtr.Zero, matched.Handle);
@@ -117,19 +117,15 @@ namespace Avalonia.Skia.UnitTests.Media
             }
         }
 
-        [Theory]
-        [InlineData(EmojiUri, FontStyle.Normal, 400)]
-        [InlineData(NotoMonoUri, FontStyle.Normal, 700)]
-        [InlineData(NotoMonoUri, FontStyle.Italic, 400)]
-        public void Should_Keep_The_Matched_Face_Unless_A_Colour_Font_Answers_A_Bold_Or_Slanted_Request(
-            string uri, FontStyle style, int weight)
+        [Fact]
+        public void Should_Keep_A_Colour_Font_Face_The_Platform_Did_Not_Simulate()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
-                using var matched = LoadTypeface(uri);
+                using var matched = LoadTypeface(ArefBoldUri);
 
-                var result = FontManagerImpl.MatchRegularColourFace(matched, SkiaTypeface.IsColorFont(matched), style, (FontWeight)weight,
-                    FontStretch.Normal, (_, _) => throw new InvalidOperationException("Unexpected platform match."));
+                var result = FontManagerImpl.MatchDesignedColourFace(matched, FontSimulations.None,
+                    (_, _) => throw new InvalidOperationException("Unexpected platform match."));
 
                 Assert.Same(matched, result);
             }

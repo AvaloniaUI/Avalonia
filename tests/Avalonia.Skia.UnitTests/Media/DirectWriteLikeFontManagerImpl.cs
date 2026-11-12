@@ -330,11 +330,6 @@ namespace Avalonia.Skia.UnitTests.Media
                 fontSimulations |= FontSimulations.Oblique;
             }
 
-            if (answer.Face.IsColor)
-            {
-                fontSimulations = FontSimulations.None;
-            }
-
             var allSimulations = fontSimulations | answer.PlatformSimulations;
 
             var reportedWeight = (allSimulations & FontSimulations.Bold) != 0 ? weight : answer.Weight;
