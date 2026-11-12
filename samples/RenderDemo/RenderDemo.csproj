@@ -5,6 +5,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\..\src\Avalonia.Base\Rendering\SceneGraph\LineBoundsHelper.cs" Link="LineBoundsHelper.cs" />
+    <Compile Include="..\ImpellerSandbox\ImpellerSampleExtensions.cs" Link="ImpellerSampleExtensions.cs" />
     <Compile Update="Pages\TextFormatterPage.axaml.cs">
       <DependentUpon>TextFormatterPage.axaml</DependentUpon>
       <SubType>Code</SubType>
@@ -14,6 +15,7 @@
     <ProjectReference Include="..\..\src\Avalonia.Fonts.Inter\Avalonia.Fonts.Inter.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Themes.Fluent\Avalonia.Themes.Fluent.csproj" />
     <ProjectReference Include="..\..\src\Linux\Avalonia.LinuxFramebuffer\Avalonia.LinuxFramebuffer.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.Impeller\Avalonia.Impeller.csproj" />
     <ProjectReference Include="..\MiniMvvm\MiniMvvm.csproj" />
     <ProjectReference Include="..\SampleControls\ControlSamples.csproj" />
   </ItemGroup>

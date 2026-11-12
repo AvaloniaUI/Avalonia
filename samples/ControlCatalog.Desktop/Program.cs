@@ -140,16 +140,18 @@ namespace ControlCatalog.Desktop
         /// This method is needed for IDE previewer infrastructure
         /// </summary>
         public static AppBuilder BuildAvaloniaApp()
-            => AppBuilder.Configure<App>()
+        {
+            var x11Options = new X11PlatformOptions
+            {
+                EnableMultiTouch = true,
+                UseDBusMenu = true,
+                EnableIme = true,
+            };
+            return AppBuilder.Configure<App>()
                 .UsePlatformDetect()
                 .WithDataAnnotationsValidation()
                 .UseWaylandWithFallback()
-                .With(new X11PlatformOptions
-                {
-                    EnableMultiTouch = true,
-                    UseDBusMenu = true,
-                    EnableIme = true,
-                })
+                .With(x11Options)
 
                 .With(new VulkanOptions
                 {
@@ -163,6 +165,7 @@ namespace ControlCatalog.Desktop
                     UseRegionDirtyRectClipping = true
                 })
                 .UseSkia()
+                .UseImpellerIfRequested(x11Options)
                 .WithInterFont()
 #if DEBUG
                 .WithDeveloperTools()
@@ -175,6 +178,7 @@ namespace ControlCatalog.Desktop
                         : null;
                 })
                 .LogToTrace();
+        }
 
         private static void SilenceConsole()
         {
