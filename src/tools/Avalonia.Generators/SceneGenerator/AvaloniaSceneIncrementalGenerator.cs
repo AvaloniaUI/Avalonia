@@ -240,6 +240,12 @@ namespace Avalonia.Generators.SceneGenerator
                 androidSceneAttribute.ConstructorArguments[5].Value is int configChangesValue
                     ? configChangesValue
                     : 128 | 1024 | 512 | 2048;
+            var launchMode = GetLaunchModeExpression(androidSceneAttribute);
+            var actions = GetStringArray(androidSceneAttribute, 7);
+            var categories = GetStringArray(androidSceneAttribute, 8);
+            var dataMimeTypes = GetStringArray(androidSceneAttribute, 9);
+            var dataPaths = GetStringArray(androidSceneAttribute, 10);
+            var dataSchemes = GetStringArray(androidSceneAttribute, 11);
             var sceneClassName = sceneClass.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
             var generatedClassName = $"{sceneClass.Name}Activity";
             var namespaceName = attributedNamespace.ToDisplayString();
@@ -265,7 +271,25 @@ namespace Avalonia.Generators.SceneGenerator
                 .Append(", Icon = ").Append(SymbolDisplay.FormatLiteral(iconResource, quote: true))
                 .Append(", Exported = ").Append(isExported ? "true" : "false")
                 .Append(", MainLauncher = ").Append(isLauncher ? "true" : "false")
-                .Append(", ConfigurationChanges = (ConfigChanges)").Append(configChanges).AppendLine(")]");
+                .Append(", ConfigurationChanges = (ConfigChanges)").Append(configChanges)
+                .Append(", LaunchMode = ").Append(launchMode).AppendLine(")]");
+
+            if (actions is { Length: > 0 } || categories is { Length: > 0 } || dataMimeTypes is { Length: > 0 } ||
+                dataPaths is { Length: > 0 } || dataSchemes is { Length: > 0 })
+            {
+                sourceBuilder.Append("[IntentFilter(");
+                if (actions is { Length: > 0 })
+                {
+                    AppendStringArray(sourceBuilder, actions);
+                }
+
+                AppendCategoryProperty(sourceBuilder, categories);
+                AppendIntentFilterProperty(sourceBuilder, "DataMimeTypes", dataMimeTypes);
+                AppendIntentFilterProperty(sourceBuilder, "DataPaths", dataPaths);
+                AppendIntentFilterProperty(sourceBuilder, "DataSchemes", dataSchemes);
+                sourceBuilder.AppendLine(")]");
+            }
+
             var generatedClassFullName = string.IsNullOrEmpty(namespaceName)
                 ? $"global::{generatedClassName}"
                 : $"global::{namespaceName}.{generatedClassName}";
@@ -283,6 +307,119 @@ namespace Avalonia.Generators.SceneGenerator
                 .AppendLine("}");
 
             context.AddSource(hintName, SourceText.From(sourceBuilder.ToString(), Encoding.UTF8));
+        }
+
+        private static string GetLaunchModeExpression(AttributeData attribute)
+        {
+            if (attribute.ConstructorArguments.Length <= 6 ||
+                attribute.ConstructorArguments[6].Type is not INamedTypeSymbol launchModeType)
+            {
+                return "global::Android.Content.PM.LaunchMode.Multiple";
+            }
+
+            var launchModeValue = attribute.ConstructorArguments[6].Value;
+            foreach (var member in launchModeType.GetMembers())
+            {
+                if (member is IFieldSymbol field && field.HasConstantValue &&
+                    Equals(field.ConstantValue, launchModeValue))
+                {
+                    return $"global::Android.Content.PM.LaunchMode.{field.Name}";
+                }
+            }
+
+            return "global::Android.Content.PM.LaunchMode.Multiple";
+        }
+
+        private static string[]? GetStringArray(AttributeData attribute, int argumentIndex)
+        {
+            if (attribute.ConstructorArguments.Length <= argumentIndex ||
+                attribute.ConstructorArguments[argumentIndex].IsNull)
+            {
+                return null;
+            }
+
+            var values = attribute.ConstructorArguments[argumentIndex].Values;
+            var result = new string[values.Length];
+            for (var index = 0; index < values.Length; index++)
+            {
+                result[index] = values[index].Value as string ?? string.Empty;
+            }
+
+            return result;
+        }
+
+        private static void AppendCategoryProperty(StringBuilder sourceBuilder, string[]? categories)
+        {
+            if (categories is null || categories.Length == 0)
+            {
+                return;
+            }
+
+            if (sourceBuilder[sourceBuilder.Length - 1] != '(')
+            {
+                sourceBuilder.Append(", ");
+            }
+
+            sourceBuilder.Append("Categories = new string[] { ");
+            for (var index = 0; index < categories.Length; index++)
+            {
+                if (index > 0)
+                {
+                    sourceBuilder.Append(", ");
+                }
+
+                sourceBuilder.Append(GetCategoryExpression(categories[index]));
+            }
+
+            sourceBuilder.Append(" }");
+        }
+
+        private static string GetCategoryExpression(string category)
+        {
+            var categoryName = category switch
+            {
+                "android.intent.category.DEFAULT" => "Default",
+                "android.intent.category.BROWSABLE" => "Browsable",
+                "android.intent.category.LAUNCHER" => "Launcher",
+                "android.intent.category.LEANBACK_LAUNCHER" => "LeanbackLauncher",
+                _ => null,
+            };
+
+            return categoryName is null
+                ? SymbolDisplay.FormatLiteral(category, quote: true)
+                : $"global::Avalonia.Controls.AndroidSceneCategory.{categoryName}";
+        }
+
+        private static void AppendIntentFilterProperty(StringBuilder sourceBuilder, string propertyName, string[]? values)
+        {
+            if (values is null || values.Length == 0)
+            {
+                return;
+            }
+
+            if (sourceBuilder[sourceBuilder.Length - 1] != '(')
+            {
+                sourceBuilder.Append(", ");
+            }
+
+            sourceBuilder.Append(propertyName).Append(" = ");
+            AppendStringArray(sourceBuilder, values);
+        }
+
+        private static void AppendStringArray(StringBuilder sourceBuilder, string[] values)
+        {
+            sourceBuilder.Append("new string[] { ");
+            for (var index = 0; index < values.Length; index++)
+            {
+                if (index > 0)
+                {
+                    sourceBuilder.Append(", ");
+                }
+
+                sourceBuilder.Append(SymbolDisplay.FormatLiteral(values[index], quote: true));
+            }
+
+            sourceBuilder.Append(" }");
         }
 
         private static void GenerateSceneAppBuilderExtension(

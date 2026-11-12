@@ -22,7 +22,7 @@ namespace ControlCatalog.Android
     /// `AvaloniaActivity` internally will redirect parameters to the Avalonia Application.
     /// </summary>
     [Activity(NoHistory = true, LaunchMode = LaunchMode.SingleTop, Exported = true, Theme = "@android:style/Theme.NoDisplay")]
-    [IntentFilter(new[] { ActionView }, Categories = new[] { CategoryDefault, CategoryBrowsable }, DataScheme = "avln")]
+   // [IntentFilter(new[] { ActionView }, Categories = new[] { CategoryDefault, CategoryBrowsable }, DataScheme = "avln")]
     public class DataSchemeActivity : AvaloniaActivity
     {
         protected override void OnCreate(Bundle? savedInstanceState)
@@ -30,12 +30,5 @@ namespace ControlCatalog.Android
             base.OnCreate(savedInstanceState);
             Finish();
         }
-    }
-
-    [Activity(Theme = "@style/MyTheme.NoActionBar", Icon = "@drawable/icon", ResizeableActivity = true,
-    ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize | ConfigChanges.UiMode | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize)]
-    public class WindowActivity : AvaloniaActivity
-    {
-
     }
 }

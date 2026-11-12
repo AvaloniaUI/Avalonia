@@ -12,7 +12,6 @@ namespace ControlCatalog.Android
     {
         protected Application(nint javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
         {
-            RegisterWindowActivityType(typeof(WindowActivity));
         }
 
         protected override AppBuilder CustomizeAppBuilder(AppBuilder builder)
