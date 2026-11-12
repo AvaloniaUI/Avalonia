@@ -5,6 +5,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Threading;
 using Avalonia.Media.Imaging;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Controls;
@@ -15,6 +16,9 @@ namespace ImpellerSandbox;
 
 internal class MainWindow : Window
 {
+    private readonly TextBlock _cacheCounter = new() { Foreground = Brushes.White, HorizontalAlignment = HorizontalAlignment.Center };
+    private int _cacheTicks;
+
     public MainWindow()
     {
         Title = "Impeller Sandbox";
@@ -133,9 +137,31 @@ internal class MainWindow : Window
                         HorizontalAlignment = HorizontalAlignment.Center,
                         VerticalAlignment = VerticalAlignment.Center
                     }
+                },
+                // Bitmap cache: rendered through an offscreen layer, partially redrawn as the counter ticks.
+                new Border
+                {
+                    Width = 140, Height = 70, CornerRadius = new CornerRadius(12),
+                    Background = Brushes.SeaGreen,
+                    CacheMode = new BitmapCache(),
+                    Child = new StackPanel
+                    {
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        VerticalAlignment = VerticalAlignment.Center,
+                        Children =
+                        {
+                            new TextBlock { Text = "Cached", FontSize = 20, Foreground = Brushes.White },
+                            _cacheCounter
+                        }
+                    }
                 }
             }
         };
+        DispatcherTimer.Run(() =>
+        {
+            _cacheCounter.Text = (++_cacheTicks).ToString();
+            return true;
+        }, TimeSpan.FromMilliseconds(100));
 
         // Tile / scene brushes: VisualBrush (scene) + tiled and stretched ImageBrushes.
         var visualBrushSource = new Border
