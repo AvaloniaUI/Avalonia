@@ -1,12 +1,11 @@
 using Avalonia.Controls;
 
-namespace ControlCatalog.Pages
+namespace ControlCatalog.Pages;
+
+public partial class BackdropEffectPage : ContentPage
 {
-    public partial class BackdropEffectPage : ContentPage
+    public BackdropEffectPage()
     {
-        public BackdropEffectPage()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
     }
 }
