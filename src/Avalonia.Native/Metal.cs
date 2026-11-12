@@ -203,7 +203,7 @@ internal class MetalRenderTarget : IMetalPlatformSurfaceRenderTarget
     }
 }
 
-internal class MetalDrawingSession : IMetalPlatformSurfaceRenderingSession
+internal class MetalDrawingSession : IMetalPlatformSurfaceRenderingSessionWithDrawable
 {
     private IAvnMetalRenderingSession? _session;
 
@@ -228,6 +228,10 @@ internal class MetalDrawingSession : IMetalPlatformSurfaceRenderingSession
     }
 
     public IntPtr Texture => Session.Texture;
+
+    public IntPtr Drawable => Session.Drawable;
+
+    public void SuppressPresentation() => Session.SuppressPresentation();
 
     public PixelSize Size
     {

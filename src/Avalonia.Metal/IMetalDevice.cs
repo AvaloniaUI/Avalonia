@@ -33,3 +33,18 @@ public interface IMetalPlatformSurfaceRenderingSession : IDisposable
     double Scaling { get; }
     bool IsYFlipped { get; }
 }
+
+/// <summary>
+/// A rendering session backed by a <c>CAMetalDrawable</c>, for renderers that present the drawable themselves.
+/// </summary>
+[PrivateApi]
+public interface IMetalPlatformSurfaceRenderingSessionWithDrawable : IMetalPlatformSurfaceRenderingSession
+{
+    /// <summary>The <c>id&lt;CAMetalDrawable&gt;</c> backing this session.</summary>
+    IntPtr Drawable { get; }
+
+    /// <summary>
+    /// Stops the session from presenting <see cref="Drawable"/> on dispose. The caller must present it instead.
+    /// </summary>
+    void SuppressPresentation();
+}

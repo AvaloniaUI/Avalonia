@@ -1156,6 +1156,8 @@ interface IAvnMetalRenderingSession : IUnknown
      HRESULT GetPixelSize(AvnPixelSize* ret);
      double GetScaling();
      [intptr]void* GetTexture();
+     [intptr]void* GetDrawable();
+     void SuppressPresentation();
 }
 
 [uuid(60992d19-38f0-4141-a0a9-76ac303801f3)]

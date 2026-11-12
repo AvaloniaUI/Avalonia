@@ -180,6 +180,7 @@ class AvnMetalRenderSession : public ComSingleObject<IAvnMetalRenderingSession, 
     AvnPixelSize _size;
     double _scaling;
     bool _presentWithTransaction;
+    bool _suppressPresentation = false;
 public:
     FORWARD_IUNKNOWN()
 
@@ -202,9 +203,24 @@ public:
         return (__bridge void*) _texture;
     }
 
+    void *GetDrawable() override {
+        return (__bridge void*) _drawable;
+    }
+
+    void SuppressPresentation() override {
+        _suppressPresentation = true;
+    }
+
     ~AvnMetalRenderSession()
     {
         START_ARP_CALL;
+        if(_suppressPresentation)
+        {
+            // The caller presents the drawable itself.
+            if(_presentWithTransaction)
+                _layer.presentsWithTransaction = NO;
+            return;
+        }
         auto buffer = [_queue commandBuffer];
         if(_presentWithTransaction)
         {
