@@ -1043,6 +1043,47 @@ public class CompositorBackdropInvalidationTests : CompositorTestsBase
     }
 
     [Fact]
+    public void Volatile_Expansion_Reaches_Retained_Behind_Retained_Through_Its_Halo()
+    {
+        using var s = new CompositorTestServices();
+        var c = s.Compositor;
+        var host = Panel(c);
+        ElementComposition.SetElementChildVisual(s.TopLevel, host);
+
+        var behind = c.CreateSolidColorVisual();
+        behind.Size = new Vector(20, 20);
+        behind.Offset = new Vector3D(10, 10, 0); // overlaps only the volatile
+        behind.Color = Colors.Green;
+
+        var vol = VolatileBackdrop(c, new Vector(100, 100), new Vector3D(0, 0, 0)); // x 0..100
+        var r1 = RetainedBackdrop(c, new Vector(100, 100));
+        r1.Offset = new Vector3D(95, 0, 0); // x 95..195: overlaps the volatile in 95..100
+        var r2 = RetainedBackdrop(c, new Vector(50, 50));
+        r2.Offset = new Vector3D(102, 0, 0); // x 102..152: clear of the volatile, inside r1
+
+        host.Children.Add(behind);
+        host.Children.Add(vol);
+        host.Children.Add(r1);
+        host.Children.Add(r2);
+        s.RunJobs();
+        s.RunJobs();
+
+        var r1Record = r1.Server.BackdropState!;
+        var r2Record = r2.Server.BackdropState!;
+        r1Record.RetainedInputDirtyArea = null;
+        r2Record.RetainedInputDirtyArea = null;
+
+        behind.Offset = new Vector3D(10, 50, 0);
+        s.RunJobs();
+
+        // r1 receives the volatile's AABB ∩ its own: x 95..100. Its output changes in that ⊕ R(6): x 95..106.
+        Assert.Equal(new LtrbRect(95, 0, 100, 100), r1Record.RetainedInputDirtyArea!.Value);
+        // r2 is in front of r1, so r1's changed output in x 102..106 is r2's input.
+        Assert.True(r2Record.RetainedInputDirtyArea.HasValue, "r2 received no input damage");
+        Assert.Equal(new LtrbRect(102, 0, 106, 50), r2Record.RetainedInputDirtyArea!.Value);
+    }
+
+    [Fact]
     public void Volatile_Behind_Volatile_Chain_Converges_To_Whole_Aabbs()
     {
         using var s = new CompositorTestServices();

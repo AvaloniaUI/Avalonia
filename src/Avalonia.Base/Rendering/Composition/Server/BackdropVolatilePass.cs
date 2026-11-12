@@ -79,6 +79,8 @@ partial class ServerCompositionTarget
         private CompositorPools _pools = null!;
         private List<HostScan> _hosts = null!;
         private List<LtrbRect> _workingBuffer = null!;
+        // Damage sources accumulated by a single DeliverToLaterRetained call.
+        private List<LtrbRect> _deliveryBuffer = null!;
         // HostScan shells reused across frames (this pass instance is reused per target). Only the shell is
         // pooled here; its inner Volatiles/Retained lists are rented from CompositorPools per frame.
         private readonly Stack<HostScan> _hostScanPool = new();
@@ -95,6 +97,7 @@ partial class ServerCompositionTarget
             _pools = target.Compositor.Pools;
             _hosts = _pools.BackdropHostScanListPool.Rent();
             _workingBuffer = _pools.LtrbRectListPool.Rent();
+            _deliveryBuffer = _pools.LtrbRectListPool.Rent();
             try
             {
                 var root = target.Root!;
@@ -133,6 +136,7 @@ partial class ServerCompositionTarget
                 }
                 _pools.BackdropHostScanListPool.Return(ref _hosts);
                 _pools.LtrbRectListPool.Return(ref _workingBuffer);
+                _pools.LtrbRectListPool.Return(ref _deliveryBuffer);
             }
         }
 
@@ -246,8 +250,14 @@ partial class ServerCompositionTarget
 
         // Delivers damage produced at <paramref name="sourceDfsIndex"/> to every retained backdrop later in DFS
         // order in the host, applying the output-inflation rule (((D ∩ AABB) ⊕ R) ∩ AABB added to the region).
-        private static void DeliverToLaterRetained(HostScan host, int sourceDfsIndex, LtrbRect source)
+        // A retained backdrop's inflated output is in turn input for the retained backdrops after it, so it joins
+        // the sources (host.Retained is in DFS order).
+        private void DeliverToLaterRetained(HostScan host, int sourceDfsIndex, LtrbRect source)
         {
+            var sources = _deliveryBuffer;
+            sources.Clear();
+            sources.Add(source);
+
             foreach (var retained in host.Retained)
             {
                 if (retained.DfsIndex <= sourceDfsIndex)
@@ -258,7 +268,12 @@ partial class ServerCompositionTarget
                     continue;
 
                 var aabb = aabbPixels.ToLtrbRectUnscaled();
-                if (source.IntersectOrNull(aabb) is not { } damage)
+                LtrbRect? hit = null;
+                foreach (var rect in sources)
+                    if (rect.IntersectOrNull(aabb) is { } intersection)
+                        hit = LtrbRect.FullUnion(hit, intersection);
+
+                if (hit is not { } damage)
                     continue;
 
                 record.RetainedInputDirtyArea = LtrbRect.FullUnion(record.RetainedInputDirtyArea, damage);
@@ -268,6 +283,7 @@ partial class ServerCompositionTarget
                 {
                     host.Collector.AddRect(halo);
                     host.ReceivedNewDamage = true;
+                    sources.Add(halo);
                 }
             }
         }
@@ -275,7 +291,7 @@ partial class ServerCompositionTarget
         // Propagates a child host's post-update damage up to its parent host as the child-host visual's coarse
         // subtree bounds (as bitmap caches propagate today), delivered to retained backdrops later than that
         // boundary and added to the parent host's region.
-        private static void PropagateToParent(HostScan host)
+        private void PropagateToParent(HostScan host)
         {
             var parent = host.Parent;
             if (parent == null || host.BoundaryCoarseBounds is not { } coarse || coarse.IsZeroSize)
