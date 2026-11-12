@@ -47,14 +47,17 @@ namespace Avalonia.Headless
         {
             IsPopup = true;
             _popupParent = popupParent;
+            RenderScaling = popupParent.RenderScaling;
             _popupPositioner = new ManagedPopupPositioner(
                 new ManagedPopupPositionerPopupImplHelper(popupParent, PopupMoveResize));
         }
 
         private void PopupMoveResize(PixelPoint position, Size size, double scaling)
         {
-            Position = position;
+            _position = position;
             PositionChanged?.Invoke(position);
+            if (RenderScaling != scaling)
+                ((IHeadlessWindow)this).SetRenderScaling(scaling);
             DoResize(size, WindowResizeReason.Unspecified);
         }
 
@@ -69,7 +72,7 @@ namespace Avalonia.Headless
         public Size ClientSize { get; set; }
         public Size? FrameSize => null;
         public double RenderScaling { get; private set; } = 1;
-        public double DesktopScaling => RenderScaling;
+        public double DesktopScaling => _options.UseLogicalDesktopCoordinates ? 1 : RenderScaling;
         public IPlatformRenderSurface[] Surfaces { get; }
         public Action<RawInputEventArgs>? Input { get; set; }
         public Action<Rect>? Paint { get; set; }
@@ -87,9 +90,9 @@ namespace Avalonia.Headless
 
         public IInputRoot? InputRoot { get; set; }
 
-        public Point PointToClient(PixelPoint point) => (point - Position).ToPoint(RenderScaling);
+        public Point PointToClient(PixelPoint point) => (point - Position).ToPoint(DesktopScaling);
 
-        public PixelPoint PointToScreen(Point point) => PixelPoint.FromPoint(point, RenderScaling) + Position;
+        public PixelPoint PointToScreen(Point point) => PixelPoint.FromPoint(point, DesktopScaling) + Position;
 
         public void SetCursor(ICursorImpl? cursor)
         {
@@ -113,7 +116,8 @@ namespace Avalonia.Headless
             Dispatcher.UIThread.Post(() => Deactivated?.Invoke(), DispatcherPriority.Input);
         }
 
-        public PixelPoint Position { get; set; }
+        private PixelPoint _position;
+        public PixelPoint Position => IsPopup || _options.SupportsWindowPositioning ? _position : default;
         public Action<PixelPoint>? PositionChanged { get; set; }
         public void Activate()
         {
@@ -399,7 +403,9 @@ namespace Avalonia.Headless
 
         void IWindowImpl.Move(PixelPoint point)
         {
-            Position = point;
+            if (!_options.SupportsWindowPositioning)
+                return;
+            _position = point;
             PositionChanged?.Invoke(point);
         }
 

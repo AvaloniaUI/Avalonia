@@ -87,7 +87,18 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
             return;
         if (_updating)
             throw new InvalidOperationException("Visual was invalidated during the render pass");
-        _dirty.Add(visual);
+
+        if (visual.CompositionVisual is null)
+        {
+            // Queuing a detached visual would keep it alive for as long as rendering is stopped.
+            _dirty.Remove(visual);
+            _recalculateChildren.Remove(visual);
+        }
+        else
+        {
+            _dirty.Add(visual);
+        }
+
         QueueUpdate();
     }
 
@@ -223,6 +234,9 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
 
     public void TriggerSceneInvalidatedForUnitTests(Rect rect) =>
         SceneInvalidated?.Invoke(this, new SceneInvalidatedEventArgs(rect));
+
+    internal bool HasPendingUpdateForUnitTests(Visual visual) =>
+        _dirty.Contains(visual) || _recalculateChildren.Contains(visual);
     
     private void Update()
     {

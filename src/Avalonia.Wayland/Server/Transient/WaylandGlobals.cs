@@ -49,6 +49,7 @@ class WaylandGlobals
     /// every toplevel (no SSD negotiation will be attempted).
     /// </summary>
     public ZxdgDecorationManagerV1? XdgDecorationManager { get; }
+    public string? AppId { get; }
 
     public bool HasFractionalScaling => FractionalScaleManager != null && Viewporter != null;
 
@@ -130,6 +131,7 @@ class WaylandGlobals
     {
         Connection = connection;
         Worker = worker;
+        AppId = platformOptions.AppId;
         InputDispatcher = new WaylandInputDispatcher(this);
         Outputs = new WaylandOutputsTracker(outputsSink);
         Registry = connection.Display.GetRegistry(new RegistryListener(this), connection.Queue);

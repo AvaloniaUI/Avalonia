@@ -33,6 +33,7 @@
         <StackPanel Spacing="8">
           <TextBox Name="PasswordBox"
                    Width="320"
+                   Classes="revealPasswordButton"
                    HorizontalAlignment="Left"
                    PlaceholderText="Password"
                    UseFloatingPlaceholder="True"

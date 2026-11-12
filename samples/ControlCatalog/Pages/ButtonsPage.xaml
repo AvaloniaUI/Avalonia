@@ -166,8 +166,11 @@
                 <DropDownButton Flyout="{StaticResource SharedMenuFlyout}">
                   <TextBlock Text="Drop Down Button" />
               </DropDownButton>
-              <DropDownButton Padding="0,0,8,0" Flyout="{StaticResource SharedMenuFlyout}">
-                <Border Background="Teal" Height="32" Width="32" />
+              <DropDownButton Padding="0,0,11,0"
+                              VerticalContentAlignment="Stretch"
+                              HorizontalContentAlignment="Stretch"
+                              Flyout="{StaticResource SharedMenuFlyout}">
+                <Border Background="Teal" MinWidth="32" />
               </DropDownButton>
               <DropDownButton IsEnabled="False" Content="Disabled" />
               <DropDownButton />

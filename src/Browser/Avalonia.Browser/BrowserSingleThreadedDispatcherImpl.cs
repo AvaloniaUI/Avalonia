@@ -9,6 +9,8 @@ namespace Avalonia.Browser;
 
 // Dispatcher backend for single-threaded WASM. The browser event loop is the only loop:
 // wake-ups are posted as macrotasks and everything runs on the main thread, so no locking is needed.
+// Queued input shares the signal: JS posts it when a record lands in the input queue, and every signal
+// drains the queue before running jobs.
 // Pending input is deliberately not queried: the browser dispatches input between our tasks on its own,
 // and gating low-priority jobs on isInputPending starves them for as long as the pointer keeps moving.
 internal partial class BrowserSingleThreadedDispatcherImpl : IDispatcherImplWithExplicitBackgroundProcessing
@@ -82,7 +84,20 @@ internal partial class BrowserSingleThreadedDispatcherImpl : IDispatcherImplWith
     {
         if (s_instance is not { } impl)
             return;
-        impl._signaled = false;
+
+        // The input queue wakes us through this same signal. Drain it first, so input jobs posted by the
+        // grouper run in this pass instead of signaling again; _signaled stays set to suppress that signal.
+        impl._signaled = true;
+        try
+        {
+            using var _ = JsCallbackHelper.EnsureDispatcherContext();
+            BrowserInputQueue.Drain();
+        }
+        finally
+        {
+            impl._signaled = false;
+        }
+
         impl.Signaled?.Invoke();
     }
 

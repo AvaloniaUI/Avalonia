@@ -1334,8 +1334,17 @@ namespace Avalonia.Win32.Interop
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool GetKeyboardState(byte* lpKeyState);
 
+        [DllImport("user32.dll", ExactSpelling = true)]
+        public static extern short GetKeyState(int nVirtKey);
+
         [DllImport("user32.dll", EntryPoint = "MapVirtualKeyW")]
         public static extern uint MapVirtualKey(uint uCode, uint uMapType);
+
+        [DllImport("user32.dll", EntryPoint = "MapVirtualKeyExW")]
+        public static extern uint MapVirtualKeyEx(uint uCode, uint uMapType, IntPtr dwhkl);
+
+        [DllImport("user32.dll")]
+        public static extern int GetKeyboardLayoutList(int nBuff, IntPtr* lpList);
 
         [DllImport("user32.dll", EntryPoint = "GetMessageW", SetLastError = true)]
         public static extern int GetMessage(out MSG lpMsg, IntPtr hWnd, uint wMsgFilterMin, uint wMsgFilterMax);
@@ -1468,6 +1477,9 @@ namespace Avalonia.Win32.Interop
 
         [DllImport("user32")]
         public static extern IntPtr GetMessageExtraInfo();
+
+        [DllImport("user32")]
+        public static extern short GetKeyState(VirtualKeyStates nVirtKey);
 
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode, EntryPoint = "RegisterClassExW")]
         public static extern ushort RegisterClassEx(ref WNDCLASSEX lpwcx);
@@ -1718,7 +1730,10 @@ namespace Avalonia.Win32.Interop
         [DllImport("comdlg32.dll")]
         public static extern int CommDlgExtendedError();
 
-        public static bool ShCoreAvailable => LoadLibrary("shcore.dll") != IntPtr.Zero;
+        private static readonly Lazy<bool> s_getDpiForMonitorAvailable = new(() =>
+            GetProcAddress(LoadLibrary("shcore.dll"), nameof(GetDpiForMonitor)) != IntPtr.Zero);
+
+        public static bool GetDpiForMonitorAvailable => s_getDpiForMonitorAvailable.Value;
 
         [DllImport("shcore.dll")]
         public static extern void SetProcessDpiAwareness(PROCESS_DPI_AWARENESS value);
@@ -1727,7 +1742,7 @@ namespace Avalonia.Win32.Interop
         public static extern bool SetProcessDpiAwarenessContext(IntPtr dpiAWarenessContext);
 
         [DllImport("shcore.dll")]
-        public static extern long GetDpiForMonitor(IntPtr hmonitor, MONITOR_DPI_TYPE dpiType, out uint dpiX, out uint dpiY);
+        public static extern int GetDpiForMonitor(IntPtr hmonitor, MONITOR_DPI_TYPE dpiType, out uint dpiX, out uint dpiY);
 
         [DllImport("gdi32.dll")]
         public static extern int GetDeviceCaps(IntPtr hdc, DEVICECAP nIndex);
@@ -1798,6 +1813,8 @@ namespace Avalonia.Win32.Interop
         public static extern int DeleteObject(IntPtr hObject);
         [DllImport("gdi32.dll", SetLastError = true)]
         public static extern IntPtr CreateCompatibleDC(IntPtr hdc);
+        [DllImport("gdi32.dll")]
+        public static extern bool DeleteDC(IntPtr hdc);
         [DllImport("gdi32.dll")]
         public static extern IntPtr SelectObject(IntPtr hdc, IntPtr hObject);
 

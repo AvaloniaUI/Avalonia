@@ -53,7 +53,7 @@ using System;
 
 namespace Avalonia.Media
 {
-    static class PreciseEllipticArcHelper
+    internal static class PreciseEllipticArcHelper
     {
         /// <summary>
         /// This class represents an elliptical arc on a 2D plane.
@@ -77,7 +77,7 @@ namespace Avalonia.Media
         /// to use it for pie-charts rendering. If these lines are not included, the curve is not 
         /// naturally closed.
         /// </summary>
-        public sealed class EllipticalArc
+        private sealed class EllipticalArc
         {
 
             private const double TwoPi = 2 * Math.PI;
@@ -1021,7 +1021,7 @@ namespace Avalonia.Media
             /// <param name="p1">Start point</param>
             /// <param name="p2">End point</param>
             /// <param name="size">Ellipse radii</param>
-            /// <param name="theta">Ellipse theta (angle measured from the abscissa)</param>
+            /// <param name="theta">Ellipse theta in radians (angle measured from the abscissa).</param>
             /// <param name="isLargeArc">Large Arc Indicator</param>
             /// <param name="clockwise">Clockwise direction flag</param>
             public static void BuildArc(StreamGeometryContext path, Point p1, Point p2, Size size, double theta, bool isLargeArc, bool clockwise)
@@ -1155,9 +1155,39 @@ namespace Avalonia.Media
             }
         }
 
-        public static void ArcTo(StreamGeometryContext streamGeometryContextImpl, Point currentPoint, Point point, Size size, double rotationAngle, bool isLargeArc, SweepDirection sweepDirection)
+        /// <summary>
+        /// Builds a precise elliptical arc from the current to destination point within the geometry context.
+        /// </summary>
+        /// <param name="streamGeometryContextImpl">The geometry context to build the arc within.</param>
+        /// <param name="currentPoint">The starting point.</param>
+        /// <param name="point">The destination point where the arc ends.</param>
+        /// <param name="size">The radii of an ellipse whose path is used to draw the arc.</param>
+        /// <param name="rotationAngle">
+        ///   The rotation angle (in degrees) of the ellipse that specifies the path of the arc; positive values are clockwise.
+        ///   This will rotate the entire arc relative to the X-axis and is not commonly used.
+        /// </param>
+        /// <param name="isLargeArc">
+        ///   Specifies whether the arc should follow the longer path around an ellipse rather than the shorter one.
+        ///   <c>true</c> to draw the arc greater than 180 degrees; otherwise, <c>false</c>.
+        /// </param>
+        /// <param name="sweepDirection">
+        ///   A value that indicates whether the arc is drawn in the Clockwise or Counterclockwise direction.
+        /// </param>
+        public static void ArcTo(
+            StreamGeometryContext streamGeometryContextImpl,
+            Point currentPoint,
+            Point point,
+            Size size,
+            double rotationAngle,
+            bool isLargeArc,
+            SweepDirection sweepDirection)
         {
-            EllipticalArc.BuildArc(streamGeometryContextImpl, currentPoint, point, size, rotationAngle*(Math.PI/180),
+            EllipticalArc.BuildArc(
+                streamGeometryContextImpl,
+                currentPoint,
+                point,
+                size,
+                rotationAngle * (Math.PI / 180),
                 isLargeArc,
                 sweepDirection == SweepDirection.Clockwise);
         }

@@ -85,7 +85,8 @@ namespace Avalonia.Input
                     // Previous effective focus is no longer part of the focus root's visual tree. We clear the focused element
                     _focusRoot.ClearValue(FocusedElementProperty);
 
-                    if (Current != null && GetFocusScope(Current) != _focusRoot)
+                    // Keep focus in another scope (e.g. window), unless the focused element was removed or hidden.
+                    if (Current != null && IsVisible(Current) && GetFocusScope(Current) != _focusRoot)
                     {
                         _focusRoot = null;
 

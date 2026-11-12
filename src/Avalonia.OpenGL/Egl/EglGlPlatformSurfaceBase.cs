@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Metadata;
 using Avalonia.OpenGL.Surfaces;
 using Avalonia.Platform;
 
@@ -12,6 +13,11 @@ namespace Avalonia.OpenGL.Egl
     public abstract class EglPlatformSurfaceRenderTargetBase : IGlPlatformSurfaceRenderTarget
     {
         protected EglContext Context { get; }
+
+        RenderTargetProperties IGlPlatformSurfaceRenderTarget.Properties => Properties;
+
+        [PrivateApi]
+        protected virtual RenderTargetProperties Properties => default;
 
         protected EglPlatformSurfaceRenderTargetBase(EglContext context)
         {

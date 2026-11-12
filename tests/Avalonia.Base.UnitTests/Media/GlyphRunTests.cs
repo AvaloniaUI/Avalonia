@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Avalonia.Base.UnitTests.Media
 {
-    public class GlyphRunTests : TestWithServicesBase
+    public class GlyphRunTests : ScopedTestBase
     {
         [InlineData(new double[] { 30, 0, 0 }, new int[] { 0, 0, 0 }, 0, 0, 0)]
         [InlineData(new double[] { 30, 0, 0 }, new int[] { 0, 0, 0 }, 0, 3, 30)]
