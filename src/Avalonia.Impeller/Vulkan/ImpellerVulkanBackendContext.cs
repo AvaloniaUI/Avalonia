@@ -32,6 +32,12 @@ internal sealed class ImpellerVulkanBackendContext : ImpellerBackendContext
     internal static ImpellerVulkanBackendContext Create(IVulkanInstance loader, object? surfaceFactory,
         Func<bool> isLost, ImpellerOptions options)
     {
+        // Impeller creates swapchains at 1x1 and only resizes them when presenting reports them out of date,
+        // which this platform never does.
+        if (OperatingSystem.IsAndroid())
+            throw new PlatformNotSupportedException(
+                "Impeller can't size Vulkan swapchains on this platform. Use OpenGL ES rendering instead.");
+
         var impellerContext = ImpellerContext.CreateVulkanNew(
                 (nint instance, string name) => loader.GetInstanceProcAddress(instance, name),
                 options.EnableVulkanValidation)
