@@ -13,6 +13,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
     sealed class AvaloniaXamlIlWellKnownTypes
     {
         public IXamlType RuntimeHelpers { get; }
+        public IXamlMethod GetPropertyInfoFromPointers { get; }
+        public IXamlMethod GetTypedPropertyInfoFromPointers { get; }
         public IXamlType AvaloniaObject { get; }
         public IXamlType BindingPriority { get; }
         public IXamlType AvaloniaObjectExtensions { get; }
@@ -49,9 +51,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlMethod INameScopeRegister { get; }
         public IXamlMethod INameScopeComplete { get; }
         public IXamlType IPropertyInfo { get; }
-        public IXamlType ClrPropertyInfo { get; }
         public IXamlType IPropertyInfoT { get; }
-        public IXamlType ClrPropertyInfoT { get; }
         public IXamlType IPropertyAccessor { get; }
         public IXamlType PropertyInfoAccessorFactory { get; }
         public IXamlType CompiledBinding { get; }
@@ -198,6 +198,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public AvaloniaXamlIlWellKnownTypes(IXamlTypeSystem typeSystem)
         {
             RuntimeHelpers = typeSystem.GetType("Avalonia.Markup.Xaml.XamlIl.Runtime.XamlIlRuntimeHelpers");
+            GetPropertyInfoFromPointers = RuntimeHelpers.GetMethod(m =>
+                m.Name == "GetPropertyInfoFromPointers" && m.IsGenericMethod);
+            GetTypedPropertyInfoFromPointers = RuntimeHelpers.GetMethod(m =>
+                m.Name == "GetTypedPropertyInfoFromPointers" && m.IsGenericMethod);
 
             XamlIlTypes = typeSystem.WellKnownTypes;
             AvaloniaObject = typeSystem.GetType("Avalonia.AvaloniaObject");
@@ -255,9 +259,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             AvaloniaObjectSetValueMethod = AvaloniaObject.GetMethod("SetValue", IDisposable,
                 false, AvaloniaProperty, XamlIlTypes.Object, BindingPriority);
             IPropertyInfo = typeSystem.GetType("Avalonia.Data.Core.IPropertyInfo");
-            ClrPropertyInfo = typeSystem.GetType("Avalonia.Data.Core.ClrPropertyInfo");
             IPropertyInfoT = typeSystem.GetType("Avalonia.Data.Core.IPropertyInfo`2");
-            ClrPropertyInfoT = typeSystem.GetType("Avalonia.Data.Core.ClrPropertyInfo`2");
             IPropertyAccessor = typeSystem.GetType("Avalonia.Data.Core.Plugins.IPropertyAccessor");
             PropertyInfoAccessorFactory = typeSystem.GetType("Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings.PropertyInfoAccessorFactory");
             CompiledBinding = typeSystem.GetType("Avalonia.Data.CompiledBinding");
