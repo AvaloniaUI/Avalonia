@@ -75,10 +75,13 @@
     </Project>
     <Project Path="samples/Generators.Sandbox/Generators.Sandbox.csproj" />
     <Project Path="samples/GpuInterop/GpuInterop.csproj" />
+    <Project Path="samples/ImpellerSandbox/ImpellerSandbox.csproj" />
     <Project Path="samples/IntegrationTestApp/IntegrationTestApp.csproj" />
     <Project Path="samples/MiniMvvm/MiniMvvm.csproj" />
     <Project Path="samples/PlatformSanityChecks/PlatformSanityChecks.csproj" />
     <Project Path="samples/RenderDemo/RenderDemo.csproj" />
+    <Project Path="samples/RendererBench.Report/RendererBench.Report.csproj" />
+    <Project Path="samples/RendererBench/RendererBench.csproj" />
     <Project Path="samples/SafeAreaDemo.Android/SafeAreaDemo.Android.csproj">
       <Deploy />
     </Project>
@@ -149,6 +152,7 @@
     <Project Path="tests/Avalonia.Headless.NUnit.PerTest.UnitTests/Avalonia.Headless.NUnit.PerTest.UnitTests.csproj" />
     <Project Path="tests/Avalonia.Headless.XUnit.PerAssembly.UnitTests/Avalonia.Headless.XUnit.PerAssembly.UnitTests.csproj" />
     <Project Path="tests/Avalonia.Headless.XUnit.PerTest.UnitTests/Avalonia.Headless.XUnit.PerTest.UnitTests.csproj" />
+    <Project Path="tests/Avalonia.Impeller.UnitTests/Avalonia.Impeller.UnitTests.csproj" />
     <Project Path="tests/Avalonia.IntegrationTests.Win32/Avalonia.IntegrationTests.Win32.csproj" />
     <Project Path="tests/Avalonia.LeakTests/Avalonia.LeakTests.csproj" />
     <Project Path="tests/Avalonia.Markup.UnitTests/Avalonia.Markup.UnitTests.csproj" />
@@ -200,6 +204,7 @@
   <Project Path="src/Avalonia.DesignerSupport/Avalonia.DesignerSupport.csproj" />
   <Project Path="src/Avalonia.Dialogs/Avalonia.Dialogs.csproj" />
   <Project Path="src/Avalonia.Fonts.Inter/Avalonia.Fonts.Inter.csproj" />
+  <Project Path="src/Avalonia.Impeller/Avalonia.Impeller.csproj" />
   <Project Path="src/Avalonia.Metal/Avalonia.Metal.csproj" />
   <Project Path="src/Avalonia.MicroCom/Avalonia.MicroCom.csproj" />
   <Project Path="src/Avalonia.OpenGL/Avalonia.OpenGL.csproj" />
