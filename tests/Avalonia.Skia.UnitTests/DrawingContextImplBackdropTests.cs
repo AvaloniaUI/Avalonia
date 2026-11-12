@@ -266,6 +266,62 @@ public class DrawingContextImplBackdropTests
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Backdrop_Does_Not_Read_Outside_Its_Bounds(bool retained)
+    {
+        const int w = 80, h = 40;
+        using var bitmap = CreateBitmap(w, h);
+        using var surface = CreateSurface(bitmap);
+        using var ctx = CreateContext(surface);
+
+        // Red right up to the backdrop's left edge, white under the backdrop.
+        surface.Canvas.Clear(SKColors.White);
+        using (var p = new SKPaint { Color = SKColors.Red })
+            surface.Canvas.DrawRect(new SKRect(0, 0, 40, h), p);
+        surface.Canvas.Flush();
+
+        DrawBackdrop(ctx, retained, new ImmutableBlurEffect(8), new PixelRect(40, 10, 30, 20));
+
+        AssertColor(bitmap.GetPixel(39, 20), 255, 0, 0);     // outside: untouched
+        AssertColor(bitmap.GetPixel(40, 20), 255, 255, 255); // inside: no red bled in
+    }
+
+    [Fact]
+    public void Volatile_And_Retained_Backdrops_Match_At_The_Bounds_Edge()
+    {
+        const int w = 80, h = 40;
+        var bounds = new PixelRect(40, 10, 30, 20);
+
+        SKBitmap Render(bool retained)
+        {
+            var bitmap = CreateBitmap(w, h);
+            using var surface = CreateSurface(bitmap);
+            using var ctx = CreateContext(surface);
+
+            // 2px black/white stripes: the blur repeats the edge pixels beyond the bounds in both modes.
+            surface.Canvas.Clear(SKColors.White);
+            using (var p = new SKPaint { Color = SKColors.Black })
+                for (var x = 0; x < w; x += 4)
+                    surface.Canvas.DrawRect(new SKRect(x, 0, x + 2, h), p);
+            surface.Canvas.Flush();
+
+            DrawBackdrop(ctx, retained, new ImmutableBlurEffect(8), bounds);
+            return bitmap;
+        }
+
+        using var volatileResult = Render(false);
+        using var retainedResult = Render(true);
+
+        for (var y = bounds.Y; y < bounds.Bottom; y++)
+        for (var x = bounds.X; x < bounds.Right; x++)
+        {
+            var expected = volatileResult.GetPixel(x, y);
+            AssertColor(retainedResult.GetPixel(x, y), expected.Red, expected.Green, expected.Blue);
+        }
+    }
+
+    [Theory]
     [InlineData(10.0, 11.0)] // Ceiling(10)+1
     [InlineData(5.5, 7.0)]   // Ceiling(5.5)+1
     [InlineData(0.0, 0.0)]   // radius <= 0 -> 0

@@ -30,7 +30,7 @@ partial class DrawingContextImpl
         _intermediateLayerDepth--;
     }
 
-    SKImageFilter? CreateEffect(IEffect effect, bool applyCurrentOpacity = true)
+    SKImageFilter? CreateEffect(IEffect effect)
     {
         if (effect is IBlurEffect blur)
         {
@@ -44,11 +44,37 @@ partial class DrawingContextImpl
         {
             var sigma = drop.BlurRadius > 0 ? SkBlurRadiusToSigma(drop.BlurRadius) : 0;
             var alpha = drop.Color.A * drop.Opacity;
-            if (applyCurrentOpacity && !_useOpacitySaveLayer)
+            if (!_useOpacitySaveLayer)
                 alpha *= _currentOpacity;
             var color = new SKColor(drop.Color.R, drop.Color.G, drop.Color.B, (byte)Math.Max(0, Math.Min(255, alpha)));
 
             return SKImageFilter.CreateDropShadow((float)drop.OffsetX, (float)drop.OffsetY, sigma, sigma, color);
+        }
+
+        return null;
+    }
+
+    // A backdrop effect may only read from within its own bounds: the input is cropped to them, and a blur sees
+    // the edge pixels repeated beyond (a "hard" border), so nothing outside bleeds in. The current opacity is
+    // not baked in: the callers apply it when compositing.
+    static SKImageFilter? CreateBackdropEffect(IEffect effect, SKRect bounds)
+    {
+        if (effect is IBlurEffect blur)
+        {
+            if (blur.Radius <= 0)
+                return null;
+            var sigma = SkBlurRadiusToSigma(blur.Radius);
+            return SKImageFilter.CreateBlur(sigma, sigma, SKShaderTileMode.Clamp, null, bounds);
+        }
+
+        if (effect is IDropShadowEffect drop)
+        {
+            var sigma = drop.BlurRadius > 0 ? SkBlurRadiusToSigma(drop.BlurRadius) : 0;
+            var alpha = (byte)Math.Max(0, Math.Min(255, drop.Color.A * drop.Opacity));
+            var color = new SKColor(drop.Color.R, drop.Color.G, drop.Color.B, alpha);
+            using var cropped = SKImageFilter.CreateOffset(0, 0, null, bounds);
+            return SKImageFilter.CreateDropShadow((float)drop.OffsetX, (float)drop.OffsetY, sigma, sigma, color,
+                cropped);
         }
 
         return null;
@@ -79,7 +105,7 @@ partial class DrawingContextImpl
         // filtered backdrop to the element's border box. The layer is restored before the visual's content is
         // drawn so that this clip doesn't affect children that overflow the bounds.
         // The layer paint applies the current opacity when the layer is composited back.
-        using var filter = CreateEffect(effect, applyCurrentOpacity: false);
+        using var filter = CreateBackdropEffect(effect, bounds.ToSKRect());
         var paint = SKPaintCache.Shared.Get();
         paint.Color = new SKColor(255, 255, 255, (byte)(255 * _currentOpacity));
         var savedCount = Canvas.Save();
@@ -140,8 +166,8 @@ partial class DrawingContextImpl
         if (!(Transform * Matrix.CreateTranslation(-layerOrigin.X, -layerOrigin.Y)).TryInvert(out var localMatrix))
             return;
 
-        // The paint below already applies the current opacity.
-        using var filter = CreateEffect(effect, applyCurrentOpacity: false); // null filter -> identity blit
+        // The paint below applies the current opacity.
+        using var filter = CreateBackdropEffect(effect, bounds.ToSKRect()); // null filter -> identity blit
         using var shader = SKShader.CreateImage(
             image, SKShaderTileMode.Clamp, SKShaderTileMode.Clamp, localMatrix.ToSKMatrix());
 

@@ -380,6 +380,48 @@ public class BackdropCompositionTests : TestBase
         Assert.True(h.Px(61, 55).Red > 245, $"right={h.Px(61, 55)}");
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Change_Just_Outside_Backdrop_Bounds_Equals_Full_Redraw(bool retained)
+    {
+        // A visual moves next to the backdrop: within the blur radius of its edge, but not overlapping it.
+        CompositionSolidColorVisual Build(Harness h, double neighbourX)
+        {
+            h.Root.Children.Add(h.Rect(Colors.White, 0, 0, 200, 200));
+            var next = h.Rect(Colors.Red, neighbourX, 40, 10, 80);
+            h.Root.Children.Add(next);
+            var backdrop = h.Rect(Colors.Transparent, 40, 40, 80, 80);
+            backdrop.BackdropEffect = Blur(8);
+            backdrop.BackdropEffectCache = MakeBackdropCache(h.Compositor, retained);
+            h.Root.Children.Add(backdrop);
+            return next;
+        }
+
+        using var reference = new Harness(200, 200);
+        Build(reference, 29); // x 29..39, the backdrop starts at 40
+        reference.Frame();
+        reference.Frame();
+
+        using var h = new Harness(200, 200);
+        var next = Build(h, 0);
+        h.Frame();
+        h.Frame();
+
+        h.Retained(true);
+        next.Offset = new Vector3D(29, 40, 0);
+        h.Frame();
+        h.Frame();
+
+        // Compare the backdrop's edge pixels directly: the strip is too small for a whole-image error.
+        for (var x = 40; x < 46; x++)
+        {
+            var expected = reference.Px(x, 80);
+            var actual = h.Px(x, 80);
+            Assert.True(Math.Abs(expected.Green - actual.Green) <= 8, $"x={x}: expected {expected}, actual {actual}");
+        }
+    }
+
     [Fact]
     public void Volatile_Overlap_Equals_Full_Redraw()
     {
