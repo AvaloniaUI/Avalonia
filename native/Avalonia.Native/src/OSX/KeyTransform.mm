@@ -403,16 +403,34 @@ static bool IsAllowedAsciiChar(UniChar c)
     return true;
 }
 
-static UniCharCount CharsFromScanCode(UInt16 scanCode, NSEventModifierFlags modifierFlags, UInt16 keyAction, UniChar* buffer, UniCharCount bufferSize)
+// Returns the retained 'uchr' data of the current input source. With useLayoutFallback, an input method without its
+// own layout data (for example Pinyin) gives the data of the keyboard layout that it uses.
+static CFDataRef CopyKeyboardLayoutData(bool useLayoutFallback)
 {
-    auto currentKeyboard = TISCopyCurrentKeyboardInputSource();
-    if (!currentKeyboard)
-        return 0;
+    auto source = TISCopyCurrentKeyboardInputSource();
+    auto data = source ?
+        static_cast<CFDataRef>(TISGetInputSourceProperty(source, kTISPropertyUnicodeKeyLayoutData)) :
+        nullptr;
 
-    auto layoutData = static_cast<CFDataRef>(TISGetInputSourceProperty(currentKeyboard, kTISPropertyUnicodeKeyLayoutData));
-    if (!layoutData)
-        return 0;
+    if (!data && useLayoutFallback)
+    {
+        if (source)
+            CFRelease(source);
+        source = TISCopyCurrentKeyboardLayoutInputSource();
+        data = source ?
+            static_cast<CFDataRef>(TISGetInputSourceProperty(source, kTISPropertyUnicodeKeyLayoutData)) :
+            nullptr;
+    }
 
+    if (data)
+        CFRetain(data);
+    if (source)
+        CFRelease(source);
+    return data;
+}
+
+static UniCharCount CharsFromLayout(CFDataRef layoutData, UInt16 scanCode, NSEventModifierFlags modifierFlags, UInt16 keyAction, UniChar* buffer, UniCharCount bufferSize)
+{
     auto* keyboardLayout = reinterpret_cast<const UCKeyboardLayout*>(CFDataGetBytePtr(layoutData));
 
     UInt32 deadKeyState = 0;
@@ -466,6 +484,17 @@ static UniCharCount CharsFromScanCode(UInt16 scanCode, NSEventModifierFlags modi
     return length;
 }
 
+static UniCharCount CharsFromScanCode(UInt16 scanCode, NSEventModifierFlags modifierFlags, UInt16 keyAction, UniChar* buffer, UniCharCount bufferSize, bool useLayoutFallback = false)
+{
+    auto layoutData = CopyKeyboardLayoutData(useLayoutFallback);
+    if (!layoutData)
+        return 0;
+
+    auto length = CharsFromLayout(layoutData, scanCode, modifierFlags, keyAction, buffer, bufferSize);
+    CFRelease(layoutData);
+    return length;
+}
+
 AvnKey VirtualKeyFromScanCode(uint16_t scanCode, NSEventModifierFlags modifierFlags)
 {
     auto physicalKey = PhysicalKeyFromScanCode(scanCode);
@@ -486,13 +515,47 @@ AvnKey VirtualKeyFromScanCode(uint16_t scanCode, NSEventModifierFlags modifierFl
     return it == qwertyVirtualKeyFromPhysicalKey.end() ? AvnKeyNone : it->second;
 }
 
-NSString* KeySymbolFromScanCode(uint16_t scanCode, NSEventModifierFlags modifierFlags)
+static NSString* CharsStringFromLayout(CFDataRef layoutData, uint16_t scanCode, NSEventModifierFlags modifierFlags)
+{
+    const UniCharCount charCount = 4;
+    UniChar chars[charCount];
+    auto length = CharsFromLayout(layoutData, scanCode, modifierFlags, kUCKeyActionDown, chars, charCount);
+    return length > 0 ? [NSString stringWithCharacters:chars length:length] : nullptr;
+}
+
+static bool SameChars(NSString* a, NSString* b)
+{
+    return a == b || (a != nullptr && b != nullptr && [a isEqualToString:b]);
+}
+
+bool ConsumedModifiersFromScanCode(uint16_t scanCode, NSEventModifierFlags modifierFlags, AvnInputModifiers* result)
+{
+    auto layoutData = CopyKeyboardLayoutData(true);
+    if (!layoutData)
+        return false;
+
+    unsigned int consumed = AvnInputModifiersNone;
+    auto chars = CharsStringFromLayout(layoutData, scanCode, modifierFlags);
+
+    if ((modifierFlags & NSEventModifierFlagShift)
+        && !SameChars(chars, CharsStringFromLayout(layoutData, scanCode, modifierFlags & ~NSEventModifierFlagShift)))
+        consumed |= Shift;
+    if ((modifierFlags & NSEventModifierFlagOption)
+        && !SameChars(chars, CharsStringFromLayout(layoutData, scanCode, modifierFlags & ~NSEventModifierFlagOption)))
+        consumed |= Alt;
+
+    CFRelease(layoutData);
+    *result = (AvnInputModifiers)consumed;
+    return true;
+}
+
+NSString* KeySymbolFromScanCode(uint16_t scanCode, NSEventModifierFlags modifierFlags, bool useLayoutFallback)
 {
     auto physicalKey = PhysicalKeyFromScanCode(scanCode);
 
     const UniCharCount charCount = 4;
     UniChar chars[charCount];
-    auto length = CharsFromScanCode(scanCode, modifierFlags, kUCKeyActionDisplay, chars, charCount);
+    auto length = CharsFromScanCode(scanCode, modifierFlags, kUCKeyActionDisplay, chars, charCount, useLayoutFallback);
     if (length > 0)
         return [NSString stringWithCharacters:chars length:length];
 

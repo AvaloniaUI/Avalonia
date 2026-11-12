@@ -137,17 +137,6 @@ partial class Build : NukeBuild
         }
     });
 
-    // Ensure that Bun.Official.Tool is downloaded at least once on CI to work around https://github.com/dotnet/sdk/issues/51831
-    Target InitDnx => _ => _
-        .Executes(() =>
-        {
-            var process = ProcessTasks.StartProcess(
-                "dnx",
-                "Bun.Unofficial.Tool --yes -- install",
-                $"{RootDirectory}/src/Browser/Avalonia.Browser/webapp");
-            process.AssertZeroExitCode();
-        });
-
     Target CompileNative => _ => _
         .DependsOn(Clean)
         .OnlyWhenStatic(() => EnvironmentInfo.IsOsx)
@@ -159,7 +148,7 @@ partial class Build : NukeBuild
         });
 
     Target Compile => _ => _
-        .DependsOn(Clean, InitDnx)
+        .DependsOn(Clean)
         .Executes(() =>
         {
             DotNetBuild(c => ApplySetting(c)
@@ -301,6 +290,14 @@ partial class Build : NukeBuild
             RunCoreTest("Avalonia.LeakTests");
         });
 
+    Target RunWin32IntegrationTests => _ => _
+        .OnlyWhenStatic(() => !Parameters.SkipTests && Parameters.IsRunningOnWindows)
+        .DependsOn(Compile)
+        .Executes(() =>
+        {
+            RunCoreTest("Avalonia.IntegrationTests.Win32");
+        });
+
 
     Target CreateIntermediateNugetPackages => _ => _
         .DependsOn(Compile)
@@ -395,6 +392,7 @@ partial class Build : NukeBuild
 
     Target RunTests => _ => _
         .DependsOn(RunCoreLibsTests)
+        .DependsOn(RunWin32IntegrationTests)
         .DependsOn(RunRenderTests)
         .DependsOn(RunToolsTests)
         .DependsOn(RunHtmlPreviewerTests)
