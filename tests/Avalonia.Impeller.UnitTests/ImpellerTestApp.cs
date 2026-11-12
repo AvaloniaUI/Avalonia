@@ -13,7 +13,7 @@ internal static class ImpellerTestApp
 {
     private static readonly Lazy<IPlatformGraphics?> s_glGraphics = new(CreateGlGraphics);
 
-    /// <summary>Headless OpenGL ES through Mesa, or null where it isn't available.</summary>
+    /// <summary>Headless OpenGL ES, or null where it isn't available.</summary>
     public static IPlatformGraphics? GlGraphics => s_glGraphics.Value;
 
     private static IPlatformGraphics? CreateGlGraphics()

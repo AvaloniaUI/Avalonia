@@ -45,7 +45,7 @@ internal class ImpellerGlRenderTarget : IRenderTarget
                     $"Can't create an Impeller drawing context for a {size} surface.");
             }
 
-            // Wayland DMA-BUF binds a framebuffer other than 0.
+            // The surface may bind a framebuffer other than 0.
             session.Context.GlInterface.GetIntegerv(GL_FRAMEBUFFER_BINDING, out var fbo);
 
             var impellerSurface = _context.ImpellerContext.SurfaceCreateWrappedFBONew(

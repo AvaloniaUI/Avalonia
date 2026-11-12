@@ -152,7 +152,7 @@ internal static class Program
         if (platform is not ("x11" or "wayland" or "macos"))
             throw new ArgumentException("--platform must be x11, wayland or macos.");
 
-        // Wayland and macOS pace frames from the compositor, so only vsync runs there.
+        // Some platforms pace frames from the compositor, so only vsync runs there.
         var paced = platform is "wayland" or "macos";
         var modes = List("modes", paced ? "vsync" : "vsync,uncapped");
         if (paced && modes.Contains("uncapped"))

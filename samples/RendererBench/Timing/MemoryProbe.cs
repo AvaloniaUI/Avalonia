@@ -18,8 +18,8 @@ internal static unsafe class MemoryProbe
     private static IntPtr s_metalDevice;
 
     /// <summary>
-    /// Physical footprint on macOS (what Activity Monitor shows) or resident set on Linux, in MB. Covers native
-    /// allocations, managed heap and GPU memory that the OS counts against the process.
+    /// Process footprint in MB. Covers native allocations, managed heap and GPU memory that the OS counts against
+    /// the process.
     /// </summary>
     public static double FootprintMb()
     {
@@ -39,7 +39,7 @@ internal static unsafe class MemoryProbe
         if (!OperatingSystem.IsMacOS())
             return ReadProcStatusMb("VmHWM:");
 
-        // ru_maxrss follows two timevals in struct rusage and is in bytes on macOS.
+        // ru_maxrss follows two timevals in struct rusage and is in bytes here.
         var usage = stackalloc long[18];
         return getrusage(0, usage) == 0 ? usage[4] / Mb : double.NaN;
     }

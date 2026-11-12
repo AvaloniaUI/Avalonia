@@ -49,7 +49,7 @@ internal sealed class SkiaGlContext : IDisposable
             Marshal.GetDelegateForFunctionPointer<GlStencilMaskSeparate>(gl.GetProcAddress("glStencilMaskSeparate"));
         using (glContext.EnsureCurrent())
         {
-            // Wayland prefers desktop OpenGL contexts; Skia must match the context's profile.
+            // The context can be desktop OpenGL; Skia must match its profile.
             var iface = glContext.Version.Type == GlProfileType.OpenGL
                 ? GRGlInterface.CreateOpenGl(proc => gl.GetProcAddress(proc))
                 : GRGlInterface.CreateGles(proc => gl.GetProcAddress(proc));

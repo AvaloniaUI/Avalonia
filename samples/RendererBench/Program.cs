@@ -106,7 +106,6 @@ internal static class Program
 
         if (Options.Platform == "macos")
         {
-            // Both backends render through Metal on macOS, which is the only macOS path Impeller supports.
             builder = builder.UseAvaloniaNative().With(new AvaloniaNativePlatformOptions
             {
                 RenderingMode = new[] { AvaloniaNativeRenderingMode.Metal }
@@ -116,7 +115,7 @@ internal static class Program
         {
             builder = builder.UseX11().With(new X11PlatformOptions
             {
-                // Both backends render through EGL/GLES on X11, which is the only GL path Impeller supports.
+                // Both backends render through OpenGL ES, which Impeller needs.
                 RenderingMode = new[] { X11RenderingMode.Egl },
                 GlProfiles = new List<GlVersion>
                 {
@@ -186,7 +185,7 @@ internal sealed class App : Application
         base.OnFrameworkInitializationCompleted();
     }
 
-    // X11 paces a SleepLoopRenderTimer at the monitor refresh rate; raise it far above any refresh rate.
+    // The sleep loop timer runs at the monitor refresh rate; raise it far above any refresh rate.
     private static SleepLoopRenderTimer? FindRenderTimer()
     {
         var loop = AvaloniaLocator.Current.GetService<IRenderLoop>();
@@ -199,7 +198,7 @@ internal sealed class App : Application
 
     private void Start(IClassicDesktopStyleApplicationLifetime desktop)
     {
-        // Animation frames are not paced by presents on every platform (Wayland ticks on each commit), so the
+        // Animation frames are not paced by presents everywhere, so the
         // scene advances once per rendered frame instead. It advances when the frame starts, not when it is
         // presented, so the UI thread prepares the next frame while the render thread draws this one.
         FrameRecorder.Instance.FrameStarted += () =>

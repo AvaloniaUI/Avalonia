@@ -46,7 +46,7 @@ public sealed class RunResult
     public double GcPauseMs { get; set; }
 
     /// <summary>
-    /// Physical footprint on macOS or resident set on Linux at the start and end of the measured window, and its
+    /// Process footprint at the start and end of the measured window, and its
     /// peak during it. Covers native, managed and OS-counted GPU memory.
     /// </summary>
     public double FootprintStartMb { get; set; }

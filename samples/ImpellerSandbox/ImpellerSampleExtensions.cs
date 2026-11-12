@@ -4,8 +4,8 @@ using Avalonia;
 using Avalonia.OpenGL;
 
 /// <summary>
-/// Opts a sample into Impeller with RENDERER=impeller. IMPELLER_BACKEND=vulkan prefers Vulkan over OpenGL ES on
-/// Linux and Windows; macOS always uses Metal.
+/// Opts a sample into Impeller with RENDERER=impeller. IMPELLER_BACKEND=vulkan prefers Vulkan over OpenGL ES
+/// where the platform offers both.
 /// </summary>
 internal static class ImpellerSampleExtensions
 {
