@@ -23,7 +23,7 @@ namespace Avalonia.Wayland;
 /// Shared base for Wayland top-level and popup window implementations.
 /// Holds the common DI/threading state, render-scale, cursor, event
 /// callbacks and no-op platform methods that Wayland doesn't support
-/// (Move, SetTopmost, Activate, PointToClient/Screen, etc.).
+/// (Move, SetTopmost, PointToClient/Screen, etc.).
 /// </summary>
 internal abstract partial class WindowBaseImpl : IWindowBaseImpl
 {
@@ -86,7 +86,7 @@ internal abstract partial class WindowBaseImpl : IWindowBaseImpl
     internal event Action? ChildPositionsInvalidated;
 
     protected void InvalidateChildPositions() => ChildPositionsInvalidated?.Invoke();
-    public void Activate() { }
+    public virtual void Activate() { }
     public void SetTopmost(bool value) { }
 
     public abstract Size MaxAutoSizeHint { get; }

@@ -12,6 +12,7 @@ using NWayland.Protocols.TextInputUnstableV3;
 using NWayland.Protocols.Viewporter;
 using NWayland.Protocols.Wayland;
 using NWayland.Protocols.XdgDecorationUnstableV1;
+using NWayland.Protocols.XdgActivationV1;
 using NWayland.Protocols.XdgForeignUnstableV2;
 using NWayland.Protocols.XdgOutputUnstableV1;
 using NWayland.Protocols.XdgShell;
@@ -34,6 +35,8 @@ class WaylandGlobals
     public WpViewporter? Viewporter { get; }
     public ZwpTextInputManagerV3? TextInputManagerV3 { get; }
     public ZxdgExporterV2? XdgExporter { get; }
+    public XdgActivationV1? XdgActivation { get; private set; }
+    private uint? _xdgActivationGlobalName;
     /// <summary>
     /// Bound when the compositor advertises <c>zxdg_output_manager_v1</c>.
     /// When present, screens use <c>zxdg_output_v1.logical_*</c> as the
@@ -66,10 +69,18 @@ class WaylandGlobals
             {
                 p.OnSeatGlobal(name, version);
             }
+            else if (@interface == XdgActivationV1.ProxyType.Interface.Name && version >= 1
+                     && p.XdgActivation == null)
+            {
+                p.XdgActivation = eventSender.Bind<XdgActivationV1>(name, 1, null);
+                p._xdgActivationGlobalName = name;
+            }
         }
 
         protected override void GlobalRemove(WlRegistry eventSender, uint name)
         {
+            if (p._xdgActivationGlobalName == name)
+                p.DisposeXdgActivation();
             p.InputDispatcher.OnSeatRemoved(name);
             p.GlobalRemoved?.Invoke(name);
         }
@@ -193,7 +204,17 @@ class WaylandGlobals
 
     public void Dispose()
     {
+        DisposeXdgActivation();
         InputDispatcher.Dispose();
         Worker.PlatformGraphics.Reset();
+    }
+
+    private void DisposeXdgActivation()
+    {
+        Worker.Activation.Clear();
+        XdgActivation?.Destroy();
+        XdgActivation?.Dispose();
+        XdgActivation = null;
+        _xdgActivationGlobalName = null;
     }
 }

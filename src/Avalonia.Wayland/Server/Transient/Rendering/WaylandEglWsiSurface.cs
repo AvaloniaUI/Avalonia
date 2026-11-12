@@ -77,7 +77,9 @@ internal sealed class WaylandEglWsiSurface : EglGlPlatformSurfaceBase, IPlatform
             // SwapInterval(0) is set inside beforeSwap (so it runs with our
             // surface current); GTK re-asserts it every frame defensively
             // and we follow suit — some drivers reset it on resize.
+            var surface = _surface.WlSurface!;
             var session = BeginDraw(_eglSurface!, size, sceneInfo.Scaling,
+                onFinish: () => _surface.OnBufferCommitted(surface),
                 beforeSwap: () =>
                 {
                     var display = Context.Display;
