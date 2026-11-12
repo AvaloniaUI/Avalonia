@@ -14,16 +14,14 @@ using static Avalonia.OpenGL.GlConsts;
 
 namespace ImpellerSandbox;
 
-internal class MainWindow : Window
+/// <summary>The sandbox content, shared by the desktop and mobile heads.</summary>
+internal class SandboxView : UserControl
 {
     private readonly TextBlock _cacheCounter = new() { Foreground = Brushes.White, HorizontalAlignment = HorizontalAlignment.Center };
     private int _cacheTicks;
 
-    public MainWindow()
+    public SandboxView()
     {
-        Title = "Impeller Sandbox";
-        Width = 900;
-        Height = 1000;
         Background = Brushes.DimGray;
 
         var gradient = new LinearGradientBrush
@@ -258,7 +256,11 @@ internal class MainWindow : Window
             }
         };
 
-        Content = layout;
+        Content = new ScrollViewer
+        {
+            Content = layout,
+            HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto
+        };
     }
 
     /// <summary>Renders a tiled ImageBrush into a RenderTargetBitmap.</summary>

@@ -75,6 +75,9 @@
     </Project>
     <Project Path="samples/Generators.Sandbox/Generators.Sandbox.csproj" />
     <Project Path="samples/GpuInterop/GpuInterop.csproj" />
+    <Project Path="samples/ImpellerSandbox.Android/ImpellerSandbox.Android.csproj">
+      <Deploy />
+    </Project>
     <Project Path="samples/ImpellerSandbox/ImpellerSandbox.csproj" />
     <Project Path="samples/IntegrationTestApp/IntegrationTestApp.csproj" />
     <Project Path="samples/MiniMvvm/MiniMvvm.csproj" />

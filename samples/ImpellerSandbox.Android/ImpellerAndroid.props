@@ -1,0 +1,15 @@
+<Project>
+  <!-- Shared by the Android sample heads. They render with Impeller unless -p:AvaloniaRenderer=skia is passed. -->
+  <PropertyGroup>
+    <AvaloniaRenderer Condition="'$(AvaloniaRenderer)' == ''">impeller</AvaloniaRenderer>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(AvaloniaRenderer)' == 'impeller'">
+    <DefineConstants>$(DefineConstants);AVALONIA_IMPELLER</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(MSBuildThisFileDirectory)..\..\src\Avalonia.Impeller\Avalonia.Impeller.csproj" />
+    <Compile Include="$(MSBuildThisFileDirectory)ImpellerAndroidExtensions.cs" Link="ImpellerAndroidExtensions.cs"
+             Condition="!Exists('$(MSBuildProjectDirectory)/ImpellerAndroidExtensions.cs')" />
+  </ItemGroup>
+</Project>
