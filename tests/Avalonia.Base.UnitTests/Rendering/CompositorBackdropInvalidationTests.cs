@@ -855,6 +855,8 @@ public class CompositorBackdropInvalidationTests : CompositorTestsBase
         var record = backdrop.Server.BackdropState!;
         Assert.Equal(new LtrbPixelRect(0, 0, 20, 20), record.Aabb!.Value);
         record.RetainedInputDirtyArea = null;
+        var sentinel = new ServerCompositionBackdropStore();
+        record.RetainedState = sentinel;
 
         // A child of the backdrop resizes during the walk ⇒ FinalizeSubtreeBounds changes the backdrop's
         // bounds after the registry snapshot. The PostSubgraph stale-AABB check re-ingests the same frame.
@@ -863,6 +865,7 @@ public class CompositorBackdropInvalidationTests : CompositorTestsBase
 
         Assert.Equal(new LtrbPixelRect(0, 0, 60, 60), record.Aabb!.Value);
         Assert.Equal(new LtrbRect(0, 0, 60, 60), record.RetainedInputDirtyArea!.Value);
+        Assert.Same(sentinel, record.RetainedState); // the store is kept; it reallocates on a size change
 
         // In-place record update ⇒ the registry does not re-detect the change next frame (no spurious repaint).
         record.RetainedInputDirtyArea = null;

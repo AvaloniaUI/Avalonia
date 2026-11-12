@@ -341,10 +341,11 @@ internal partial class ServerCompositionVisual
             if (fresh != record.Aabb)
             {
                 record.Aabb = fresh;
+                // Same handling as the registry's AABB change (which won't fire next frame now that the record
+                // is updated in place): re-ingest the whole input, keep the store unless nothing is left to capture.
                 record.RetainedInputDirtyArea = fresh?.ToLtrbRectUnscaled();
-                // The AABB moved, so the retained texture must be re-realized; matches the registry's own
-                // reset on an AABB change (which won't fire next frame now that the record is updated in place).
-                record.DisposeRetainedStateWithContext();
+                if (fresh == null)
+                    record.DisposeRetainedStateWithContext();
             }
         }
 
