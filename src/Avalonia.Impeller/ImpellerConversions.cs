@@ -5,9 +5,6 @@ using NImpeller;
 
 namespace Avalonia.Impeller;
 
-/// <summary>
-/// Value-type conversions between Avalonia primitives and their NImpeller counterparts.
-/// </summary>
 internal static class ImpellerConversions
 {
     public static ImpellerColor ToImpeller(this Color c) =>
@@ -29,12 +26,7 @@ internal static class ImpellerConversions
     public static ImpellerRect ToImpeller(this Rect r) =>
         new() { X = (float)r.X, Y = (float)r.Y, Width = (float)r.Width, Height = (float)r.Height };
 
-    /// <summary>
-    /// Embeds Avalonia's row-vector 3x3 matrix into a 4x4. System.Numerics stores row-major and
-    /// uses the row-vector convention, which is bit-for-bit identical to Impeller's column-major /
-    /// column-vector layout, so the resulting <see cref="Matrix4x4"/> can be handed straight to
-    /// Impeller. The 2D projective terms (M13/M23/M33) are preserved in the w column.
-    /// </summary>
+    // System.Numerics row-major, row-vector layout matches Impeller's column-major, column-vector one.
     public static ImpellerMatrix ToImpeller(this Matrix m) =>
         new Matrix4x4(
             (float)m.M11, (float)m.M12, 0f, (float)m.M13,
@@ -72,11 +64,7 @@ internal static class ImpellerConversions
         _ => ImpellerTileMode.kImpellerTileModeClamp
     };
 
-    /// <summary>
-    /// Maps Avalonia's <see cref="BitmapBlendingMode"/> to Impeller's blend mode. The two enums line up
-    /// one-to-one (mirroring <c>Avalonia.Skia</c>'s <c>ToSKBlendMode</c>); <c>Unspecified</c> defaults to
-    /// source-over. Note Avalonia has no "Modulate" mode, so that Impeller value is never produced.
-    /// </summary>
+    // The enums line up one-to-one, as in Avalonia.Skia.
     public static ImpellerBlendMode ToImpeller(this BitmapBlendingMode blend) => blend switch
     {
         BitmapBlendingMode.Unspecified => ImpellerBlendMode.kImpellerBlendModeSourceOver,
