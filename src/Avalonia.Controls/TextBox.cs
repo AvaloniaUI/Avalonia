@@ -385,9 +385,9 @@ namespace Avalonia.Controls
             //   containing the end of the selection region. Selection is cleared (set to the caret).
             // - If Shift _is_ pressed, then:
             //     * The caret is moved to the start (Home) or end (End) of the line it's on.
-            //     * If that position is within the selection region, then the caret is moved to the
-            //       start/end of the next line in the same direction, and then the selection region is
-            //       contracted to that position.
+            //     * If that position is within the selection region and the line boundary is a word
+            //       wrap, then the caret is moved to the start/end of the next line in the same
+            //       direction, and then the selection region is contracted to that position.
             //     * Otherwise, the end of the selection region that the caret just jumped over is
             //       moved to the caret, expanding the other side of the selection region.
             RelativeToSelectionBoundaries,
@@ -2465,27 +2465,30 @@ namespace Avalonia.Controls
                     }
                     case HomeEndBehaviors.RelativeToSelectionBoundaries:
                     {
+                        int oldCaretIndex = caretIndex;
+
                         caretIndex = _presenter.CaretIndex;
 
                         var (normalizedStart, normalizedEnd) = GetSelectionRange();
 
-                        bool caretIsInSelection = (normalizedStart < caretIndex) && (caretIndex < normalizedEnd);
+                        bool caretIsInSelection = (normalizedStart < caretIndex) && (caretIndex <= normalizedEnd);
 
                         if (!caretIsInSelection || (lineIndex <= 0))
                         {
                             newSelectionStart = Math.Max(newSelectionStart, newSelectionEnd);
                             newSelectionEnd = caretIndex;
                         }
-                        else
+                        else if (caretIndex != newSelectionStart)
                         {
-                            var textLine = textLines[lineIndex - 1];
+                            var textLine = textLines[lineIndex];
+                            var prevLine = textLines[lineIndex - 1];
 
-                            newSelectionEnd = textLine.FirstTextSourceIndex + textLine.Length - textLine.NewLineLength;
-
-                            if (textLine.TextLineBreak?.IsSplit == true)
-                            {
-                                newSelectionEnd -= textLine.TrailingWhitespaceLength;
-                            }
+                            if (prevLine.TextLineBreak?.IsSplit != true)
+                                newSelectionEnd = textLine.FirstTextSourceIndex;
+                            else if (oldCaretIndex == textLine.FirstTextSourceIndex)
+                                newSelectionEnd = prevLine.FirstTextSourceIndex;
+                            else
+                                newSelectionEnd = prevLine.FirstTextSourceIndex + prevLine.Length - prevLine.TrailingWhitespaceLength;
 
                             _presenter.MoveCaretToTextPosition(newSelectionEnd);
                         }
@@ -2571,6 +2574,8 @@ namespace Avalonia.Controls
                     }
                     case HomeEndBehaviors.RelativeToSelectionBoundaries:
                     {
+                        int oldCaretIndex = caretIndex;
+
                         caretIndex = _presenter.CaretIndex;
 
                         var (normalizedStart, normalizedEnd) = GetSelectionRange();
@@ -2584,9 +2589,15 @@ namespace Avalonia.Controls
                         }
                         else
                         {
-                            var textLine = textLines[lineIndex + 1];
+                            var textLine = textLines[lineIndex];
+                            var nextLine = textLines[lineIndex + 1];
 
-                            newSelectionEnd = textLine.FirstTextSourceIndex;
+                            newSelectionEnd = textLine.FirstTextSourceIndex + textLine.Length;
+
+                            if (textLine.TextLineBreak?.IsSplit != true)
+                            {
+                                newSelectionEnd = newSelectionEnd - textLine.TrailingWhitespaceLength;
+                            }
 
                             _presenter.MoveCaretToTextPosition(newSelectionEnd);
                         }
