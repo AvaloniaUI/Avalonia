@@ -515,17 +515,20 @@ namespace Avalonia.Controls
 
         private void OnCaretIndexChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            UndoRedoState state;
-            if (IsUndoEnabled && _undoRedoHelper.TryGetLastState(out state) && state.Text == Text)
-                _undoRedoHelper.UpdateLastState();
+            if (!_inSetSelectionRange)
+            {
+                UndoRedoState state;
+                if (IsUndoEnabled && _undoRedoHelper.TryGetLastState(out state) && state.Text == Text)
+                    _undoRedoHelper.UpdateLastState();
 
-            using var _ = _imClient.BeginChange();
+                using var _ = _imClient.BeginChange();
 
-            var newValue = e.GetNewValue<int>();
-            SetCurrentValue(SelectionStartProperty, newValue);
-            SetCurrentValue(SelectionEndProperty, newValue);
+                var newValue = e.GetNewValue<int>();
+                SetCurrentValue(SelectionStartProperty, newValue);
+                SetCurrentValue(SelectionEndProperty, newValue);
 
-            _presenter?.SetCurrentValue(TextPresenter.CaretIndexProperty, newValue);
+                _presenter?.SetCurrentValue(TextPresenter.CaretIndexProperty, newValue);
+            }
         }
 
         /// <summary>
@@ -591,12 +594,15 @@ namespace Avalonia.Controls
 
         private void OnSelectionStartChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            UpdateCommandStates();
-
-            var value = e.GetNewValue<int>();
-            if (SelectionEnd == value && CaretIndex != value)
+            if (!_inSetSelectionRange)
             {
-                SetCurrentValue(CaretIndexProperty, value);
+                UpdateCommandStates();
+
+                var value = e.GetNewValue<int>();
+                if (SelectionEnd == value && CaretIndex != value)
+                {
+                    SetCurrentValue(CaretIndexProperty, value);
+                }
             }
         }
 
@@ -615,12 +621,15 @@ namespace Avalonia.Controls
 
         private void OnSelectionEndChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            UpdateCommandStates();
-
-            var value = e.GetNewValue<int>();
-            if (SelectionStart == value && CaretIndex != value)
+            if (!_inSetSelectionRange)
             {
-                SetCurrentValue(CaretIndexProperty, value);
+                UpdateCommandStates();
+
+                var value = e.GetNewValue<int>();
+                if (SelectionStart == value && CaretIndex != value)
+                {
+                    SetCurrentValue(CaretIndexProperty, value);
+                }
             }
         }
 
@@ -2454,7 +2463,14 @@ namespace Avalonia.Controls
                 _presenter.MoveCaretToTextPosition(textLine.FirstTextSourceIndex);
             }
 
-            if (withSelection)
+            if (!withSelection)
+            {
+                // Since we're processing cursor movement without selection, OnKeyDown is going to call ClearSelection,
+                // which will override our results. So, we explicitly collapse the selection here ahead of time to
+                // defuse ClearSelection.
+                SetSelectionRangeCore(caretIndex, caretIndex);
+            }
+            else
             {
                 switch (HomeEndBehavior)
                 {
@@ -2497,8 +2513,7 @@ namespace Avalonia.Controls
                     }
                 }
 
-                SetCurrentValue(SelectionStartProperty, newSelectionStart);
-                SetCurrentValue(SelectionEndProperty, newSelectionEnd);
+                SetSelectionRangeCore(newSelectionStart, newSelectionEnd);
             }
         }
 
@@ -2563,7 +2578,14 @@ namespace Avalonia.Controls
                 _presenter.MoveCaretToTextPosition(textPosition, true);
             }
 
-            if (withSelection)
+            if (!withSelection)
+            {
+                // Since we're processing cursor movement without selection, OnKeyDown is going to call ClearSelection,
+                // which will override our results. So, we explicitly collapse the selection here ahead of time to
+                // defuse ClearSelection.
+                SetSelectionRangeCore(caretIndex, caretIndex);
+            }
+            else
             {
                 switch (HomeEndBehavior)
                 {
@@ -2606,8 +2628,7 @@ namespace Avalonia.Controls
                     }
                 }
 
-                SetCurrentValue(SelectionStartProperty, newSelectionStart);
-                SetCurrentValue(SelectionEndProperty, newSelectionEnd);
+                SetSelectionRangeCore(newSelectionStart, newSelectionEnd);
             }
         }
 
@@ -2672,6 +2693,23 @@ namespace Avalonia.Controls
 
             SetCurrentValue(SelectionStartProperty, 0);
             SetCurrentValue(SelectionEndProperty, Text?.Length ?? 0);
+        }
+
+        private bool _inSetSelectionRange;
+
+        private void SetSelectionRangeCore(int start, int end)
+        {
+            _inSetSelectionRange = true;
+
+            try
+            {
+                SetCurrentValue(SelectionStartProperty, start);
+                SetCurrentValue(SelectionEndProperty, end);
+            }
+            finally
+            {
+                _inSetSelectionRange = false;
+            }
         }
 
         private (int start, int end) GetSelectionRange()
