@@ -2602,7 +2602,7 @@ namespace Avalonia.Controls
 
                         var (normalizedStart, normalizedEnd) = GetSelectionRange();
 
-                        bool caretIsInSelection = (normalizedStart < caretIndex) && (caretIndex < normalizedEnd);
+                        bool caretIsInSelection = (normalizedStart <= caretIndex) && (caretIndex < normalizedEnd);
 
                         if (!caretIsInSelection || (lineIndex + 1 >= textLines.Count))
                         {
