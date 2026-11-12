@@ -2817,7 +2817,7 @@ namespace Avalonia.Controls.UnitTests
                     [!!TextPresenter.CaretIndexProperty] = new Binding
                     {
                         Path = nameof(TextPresenter.CaretIndex),
-                        Mode = BindingMode.TwoWay,
+                        Mode = BindingMode.OneWay,
                         Priority = BindingPriority.Template,
                         RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent),
                     }
