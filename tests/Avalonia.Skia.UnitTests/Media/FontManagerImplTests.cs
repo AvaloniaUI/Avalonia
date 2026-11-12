@@ -135,6 +135,72 @@ namespace Avalonia.Skia.UnitTests.Media
             }
         }
 
+        [Theory]
+        [InlineData(FontStyle.Normal)]
+        [InlineData(FontStyle.Italic)]
+        public void Should_Keep_The_Designed_Bold_Face_Of_A_Colour_Font_Family(FontStyle style)
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var bold = LoadTypeface(ArefBoldUri);
+
+                using var typeface = FontManagerImpl.CreatePlatformTypeface(bold, style, FontWeight.Bold,
+                    FontStretch.Normal, (_, _) => throw new InvalidOperationException("Unexpected platform match."));
+
+                Assert.Same(bold, typeface.SKTypeface);
+                Assert.Equal(FontWeight.Bold, typeface.Weight);
+                Assert.Equal(FontSimulations.None, typeface.FontSimulations & FontSimulations.Bold);
+            }
+        }
+
+        [Theory]
+        [InlineData(FontStyle.Normal, 700, FontSimulations.Bold)]
+        [InlineData(FontStyle.Italic, 400, FontSimulations.Oblique)]
+        [InlineData(FontStyle.Italic, 700, FontSimulations.Bold | FontSimulations.Oblique)]
+        public void Should_Simulate_A_Colour_Font_Face_Matched_To_A_Bold_Or_Slanted_Request(FontStyle style,
+            int weight, FontSimulations expectedSimulations)
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var regular = LoadTypeface(ArefRegularUri);
+
+                using var typeface = FontManagerImpl.CreatePlatformTypeface(regular, style, (FontWeight)weight,
+                    FontStretch.Normal, (_, _) => throw new InvalidOperationException("Unexpected platform match."));
+
+                Assert.Same(regular, typeface.SKTypeface);
+                Assert.Equal(expectedSimulations, typeface.FontSimulations);
+                Assert.Equal((FontWeight)weight, typeface.Weight);
+                Assert.Equal(style, typeface.Style);
+            }
+        }
+
+        [Theory]
+        [InlineData(FontSimulations.Bold)]
+        [InlineData(FontSimulations.Oblique)]
+        [InlineData(FontSimulations.Bold | FontSimulations.Oblique)]
+        public void Should_Simulate_A_Colour_Font_Face_Created_From_A_Stream(FontSimulations simulations)
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var assetLoader = AvaloniaLocator.Current.GetRequiredService<IAssetLoader>();
+
+                using var stream = assetLoader.Open(new Uri(ArefRegularUri, UriKind.Absolute));
+
+                Assert.True(new FontManagerImpl().TryCreateGlyphTypeface(stream, simulations, out var typeface));
+
+                using (typeface)
+                {
+                    Assert.Equal(simulations, typeface.FontSimulations);
+                }
+            }
+        }
+
+        private const string ArefRegularUri =
+            "resm:Avalonia.Skia.UnitTests.Fonts.ArefRuqaaInk-Regular.Subset.ttf?assembly=Avalonia.Skia.UnitTests";
+
+        private const string ArefBoldUri =
+            "resm:Avalonia.Skia.UnitTests.Fonts.ArefRuqaaInk-Bold.Subset.ttf?assembly=Avalonia.Skia.UnitTests";
+
         private const string EmojiUri =
             "resm:Avalonia.Skia.UnitTests.Assets.TwitterColorEmoji-SVGinOT.ttf?assembly=Avalonia.Skia.UnitTests";
 

@@ -696,10 +696,11 @@ namespace Avalonia.Skia.UnitTests.Media
         }
 
         [Win32Theory("Windows specific font")]
-        [InlineData(FontStyle.Normal, FontWeight.Bold)]
-        [InlineData(FontStyle.Italic, FontWeight.Normal)]
-        [InlineData(FontStyle.Italic, FontWeight.Bold)]
-        public void Should_Not_Simulate_A_Colour_Emoji_Character_Fallback(FontStyle style, FontWeight weight)
+        [InlineData(FontStyle.Normal, FontWeight.Bold, FontSimulations.Bold)]
+        [InlineData(FontStyle.Italic, FontWeight.Normal, FontSimulations.Oblique)]
+        [InlineData(FontStyle.Italic, FontWeight.Bold, FontSimulations.Bold | FontSimulations.Oblique)]
+        public void Should_Simulate_A_Colour_Emoji_Character_Fallback_On_The_Designed_Face(FontStyle style,
+            FontWeight weight, FontSimulations expectedSimulations)
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
             {
@@ -715,9 +716,11 @@ namespace Avalonia.Skia.UnitTests.Media
 
                     Assert.Equal("Segoe UI Emoji", glyphTypeface.FamilyName);
 
-                    // Segoe UI Emoji has a single regular face, so any other weight or slant the
-                    // typeface reports is a simulation applied to the colour glyphs.
-                    Assert.Equal(FontSimulations.None, glyphTypeface.FontSimulations);
+                    // Segoe UI Emoji has a single regular face. The simulations are applied when its
+                    // outline glyphs are drawn, so the typeface itself is the face as designed; a
+                    // weight or slant it reports would be a simulation DirectWrite applies to every
+                    // glyph, colour glyphs included.
+                    Assert.Equal(expectedSimulations, glyphTypeface.FontSimulations);
                     Assert.Equal((int)FontWeight.Normal, skTypeface.FontWeight);
                     Assert.Equal(SKFontStyleSlant.Upright, skTypeface.FontStyle.Slant);
                 }

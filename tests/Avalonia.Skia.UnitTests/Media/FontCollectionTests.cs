@@ -795,11 +795,11 @@ namespace Avalonia.Skia.UnitTests.Media
         }
 
         [Theory]
-        [InlineData(FontStyle.Normal, 700)]
-        [InlineData(FontStyle.Italic, 400)]
-        [InlineData(FontStyle.Italic, 700)]
+        [InlineData(FontStyle.Normal, 700, FontSimulations.Bold)]
+        [InlineData(FontStyle.Italic, 400, FontSimulations.Oblique)]
+        [InlineData(FontStyle.Italic, 700, FontSimulations.Bold | FontSimulations.Oblique)]
         public void Should_Ask_The_Platform_Once_For_A_Repeated_Colour_Font_Character_Fallback(FontStyle style,
-            int weight)
+            int weight, FontSimulations expectedSimulations)
         {
             var fontManager = new InstalledFamilyFontManagerImpl(NotoMonoRegularUri,
                 fallbackUris: new[] { NotoSansJpUri, EmojiUri });
@@ -817,12 +817,12 @@ namespace Avalonia.Skia.UnitTests.Media
                         match.Stretch, out var glyphTypeface));
 
                     Assert.Equal(EmojiFamily, glyphTypeface.FamilyName);
-                    Assert.Equal(FontSimulations.None, glyphTypeface.FontSimulations);
+                    Assert.Equal(expectedSimulations, glyphTypeface.FontSimulations);
                 }
 
-                // The regular face is asked for inside the first character match only.
+                // The platform answers with the face as designed, so it is not asked again for it.
                 Assert.Equal(1, fontManager.CharacterMatches);
-                Assert.Equal(1, fontManager.RegularColourFaceMatches);
+                Assert.Equal(0, fontManager.RegularColourFaceMatches);
             }
         }
 
@@ -871,13 +871,14 @@ namespace Avalonia.Skia.UnitTests.Media
         }
 
         [Theory]
-        [InlineData(FontStyle.Normal, 700, false)]
-        [InlineData(FontStyle.Italic, 400, false)]
-        [InlineData(FontStyle.Italic, 700, false)]
-        [InlineData(FontStyle.Normal, 700, true)]
-        [InlineData(FontStyle.Italic, 400, true)]
-        [InlineData(FontStyle.Italic, 700, true)]
-        public void Should_Not_Simulate_A_Colour_Font_Face(FontStyle style, int weight, bool regularFirst)
+        [InlineData(FontStyle.Normal, 700, false, FontSimulations.Bold)]
+        [InlineData(FontStyle.Italic, 400, false, FontSimulations.Oblique)]
+        [InlineData(FontStyle.Italic, 700, false, FontSimulations.Bold | FontSimulations.Oblique)]
+        [InlineData(FontStyle.Normal, 700, true, FontSimulations.Bold)]
+        [InlineData(FontStyle.Italic, 400, true, FontSimulations.Oblique)]
+        [InlineData(FontStyle.Italic, 700, true, FontSimulations.Bold | FontSimulations.Oblique)]
+        public void Should_Simulate_A_Colour_Font_Face(FontStyle style, int weight, bool regularFirst,
+            FontSimulations expectedSimulations)
         {
             var fontManager = new InstalledFamilyFontManagerImpl(EmojiUri);
 
@@ -896,11 +897,10 @@ namespace Avalonia.Skia.UnitTests.Media
 
                 Assert.Equal(0, fontManager.StreamTypefaceCreations);
 
-                // A colour glyph is fixed artwork: emboldening or slanting it only distorts it.
-                Assert.Equal(FontSimulations.None, glyphTypeface.FontSimulations);
-                Assert.Equal(FontSimulations.None, glyphTypeface.PlatformTypeface.FontSimulations);
-                Assert.Equal(FontWeight.Normal, glyphTypeface.Weight);
-                Assert.Equal(FontStyle.Normal, glyphTypeface.Style);
+                // The face is simulated for its outline glyphs; its colour glyphs are drawn as designed.
+                Assert.Equal(expectedSimulations, glyphTypeface.FontSimulations);
+                Assert.Equal((FontWeight)weight, glyphTypeface.Weight);
+                Assert.Equal(style, glyphTypeface.Style);
 
                 Assert.True(fontCollection.GlyphTypefaceCache.TryGetValue(EmojiFamily, out var glyphTypefaces));
                 Assert.True(glyphTypefaces.TryGetValue(
@@ -912,7 +912,7 @@ namespace Avalonia.Skia.UnitTests.Media
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public void Should_Not_Synthesize_A_Colour_Font_Face(bool supportsSimulation)
+        public void Should_Synthesize_A_Colour_Font_Face(bool supportsSimulation)
         {
             var fontManager = new InstalledFamilyFontManagerImpl(EmojiUri, supportsSimulation: supportsSimulation);
 
@@ -923,10 +923,11 @@ namespace Avalonia.Skia.UnitTests.Media
                 Assert.True(fontCollection.TryGetGlyphTypeface(
                     EmojiFamily, FontStyle.Normal, FontWeight.Normal, FontStretch.Normal, out var regular));
 
-                Assert.False(fontCollection.TryCreateSyntheticGlyphTypeface(
-                    regular, FontStyle.Italic, FontWeight.Bold, FontStretch.Normal, out _));
+                Assert.True(fontCollection.TryCreateSyntheticGlyphTypeface(
+                    regular, FontStyle.Italic, FontWeight.Bold, FontStretch.Normal, out var synthetic));
 
-                Assert.Equal(0, fontManager.StreamTypefaceCreations);
+                Assert.Equal(FontSimulations.Bold | FontSimulations.Oblique, synthetic.FontSimulations);
+                Assert.Equal(supportsSimulation ? 0 : 1, fontManager.StreamTypefaceCreations);
             }
         }
 
@@ -954,10 +955,11 @@ namespace Avalonia.Skia.UnitTests.Media
         }
 
         [Theory]
-        [InlineData(FontStyle.Normal, 700)]
-        [InlineData(FontStyle.Italic, 400)]
-        [InlineData(FontStyle.Italic, 700)]
-        public void Should_Not_Simulate_A_Colour_Font_Face_For_A_Character_Fallback(FontStyle style, int weight)
+        [InlineData(FontStyle.Normal, 700, FontSimulations.Bold)]
+        [InlineData(FontStyle.Italic, 400, FontSimulations.Oblique)]
+        [InlineData(FontStyle.Italic, 700, FontSimulations.Bold | FontSimulations.Oblique)]
+        public void Should_Simulate_A_Colour_Font_Face_For_A_Character_Fallback(FontStyle style, int weight,
+            FontSimulations expectedSimulations)
         {
             var fontManager = new InstalledFamilyFontManagerImpl(NotoMonoRegularUri,
                 fallbackUris: new[] { NotoSansJpUri, EmojiUri });
@@ -973,8 +975,7 @@ namespace Avalonia.Skia.UnitTests.Media
                     match.Stretch, out var glyphTypeface));
 
                 Assert.Equal(EmojiFamily, glyphTypeface.FamilyName);
-                Assert.Equal(FontSimulations.None, glyphTypeface.FontSimulations);
-                Assert.Equal(FontSimulations.None, glyphTypeface.PlatformTypeface.FontSimulations);
+                Assert.Equal(expectedSimulations, glyphTypeface.FontSimulations);
                 Assert.Equal(0, fontManager.StreamTypefaceCreations);
             }
         }
@@ -1040,7 +1041,7 @@ namespace Avalonia.Skia.UnitTests.Media
         [Theory]
         [InlineData(FontStyle.Normal, 700, FontSimulations.Bold)]
         [InlineData(FontStyle.Italic, 400, FontSimulations.Oblique)]
-        public void TextLayout_Should_Simulate_A_Cjk_Fallback_Run_But_Not_A_Colour_Emoji_Run(FontStyle style,
+        public void TextLayout_Should_Simulate_Every_Fallback_Run(FontStyle style,
             int weight, FontSimulations expectedSimulations)
         {
             var fontManager = new InstalledFamilyFontManagerImpl(NotoMonoRegularUri,
@@ -1067,7 +1068,7 @@ namespace Avalonia.Skia.UnitTests.Media
 
                 Assert.Equal(expectedSimulations, simulationsByFamily["Noto Mono"]);
                 Assert.Equal(expectedSimulations, simulationsByFamily[CjkFamily]);
-                Assert.Equal(FontSimulations.None, simulationsByFamily[EmojiFamily]);
+                Assert.Equal(expectedSimulations, simulationsByFamily[EmojiFamily]);
             }
         }
 
