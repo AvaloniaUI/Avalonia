@@ -13,19 +13,25 @@ namespace Avalonia.Impeller;
 /// </summary>
 internal sealed class ImpellerVulkanBackendContext : ImpellerBackendContext
 {
-    private readonly IVulkanPlatformGraphicsContext _platformContext;
+    private readonly Func<bool> _isLost;
 
-    private ImpellerVulkanBackendContext(IVulkanPlatformGraphicsContext platformContext,
-        ImpellerContext impellerContext, IVulkanPlatformGraphicsContext context) : base(impellerContext)
+    private ImpellerVulkanBackendContext(ImpellerContext impellerContext, IVulkanPlatformGraphicsContext context,
+        Func<bool> isLost) : base(impellerContext)
     {
-        _platformContext = platformContext;
         VulkanContext = context;
+        _isLost = isLost;
     }
 
     public static ImpellerVulkanBackendContext Create(IVulkanPlatformGraphicsContext platformContext,
-        ImpellerOptions options)
+        ImpellerOptions options) =>
+        Create(platformContext.Instance,
+            platformContext.TryGetFeature(typeof(IVulkanKhrSurfacePlatformSurfaceFactory)),
+            () => platformContext.IsLost, options);
+
+    // The loader only has to provide vkGetInstanceProcAddr.
+    internal static ImpellerVulkanBackendContext Create(IVulkanInstance loader, object? surfaceFactory,
+        Func<bool> isLost, ImpellerOptions options)
     {
-        var loader = platformContext.Instance;
         var impellerContext = ImpellerContext.CreateVulkanNew(
                 (nint instance, string name) => loader.GetInstanceProcAddress(instance, name),
                 options.EnableVulkanValidation)
@@ -37,11 +43,11 @@ internal sealed class ImpellerVulkanBackendContext : ImpellerBackendContext
             var device = new ImpellerVulkanDevice(info, new ImpellerVulkanInstance(info.Vk_instance, loader));
 
             var features = new Dictionary<Type, object>();
-            if (platformContext.TryGetFeature(typeof(IVulkanKhrSurfacePlatformSurfaceFactory)) is { } factory)
-                features[typeof(IVulkanKhrSurfacePlatformSurfaceFactory)] = factory;
+            if (surfaceFactory is not null)
+                features[typeof(IVulkanKhrSurfacePlatformSurfaceFactory)] = surfaceFactory;
 
-            return new ImpellerVulkanBackendContext(platformContext, impellerContext,
-                new Avalonia.Vulkan.VulkanContext(device, features));
+            return new ImpellerVulkanBackendContext(impellerContext,
+                new Avalonia.Vulkan.VulkanContext(device, features), isLost);
         }
         catch
         {
@@ -76,5 +82,5 @@ internal sealed class ImpellerVulkanBackendContext : ImpellerBackendContext
 
     public override bool IsReadyToCreateRenderTarget(IEnumerable<IPlatformRenderSurface> surfaces) => true;
 
-    public override bool IsLost => _platformContext.IsLost;
+    public override bool IsLost => _isLost();
 }
