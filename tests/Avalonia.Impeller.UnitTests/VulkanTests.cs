@@ -170,6 +170,7 @@ public class VulkanTests
                 surface.Resize(new PixelSize(80, 60));
             var sceneInfo = new IRenderTarget.RenderTargetSceneInfo(surface.Size, 1, CompositionTransparencyLevel.None);
             using var context = target.CreateDrawingContext(sceneInfo, out _);
+            Assert.Null(context.GetFeature(typeof(Avalonia.Skia.ISkiaSharpApiLeaseFeature)));
             context.Clear(Colors.White);
             context.DrawRectangle(Brushes.Red, new ImmutablePen(Brushes.Blue, 2),
                 new RoundedRect(new Rect(4, 4, 30, 20), 4));

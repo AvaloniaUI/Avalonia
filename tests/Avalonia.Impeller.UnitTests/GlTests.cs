@@ -64,24 +64,4 @@ public class GlTests
             Assert.Equal(0, Pixel(target, 10, 17).Alpha);
         });
     }
-
-    [Fact]
-    public void SkiaSharp_Lease_Is_Composited()
-    {
-        WithGlBackend(backend =>
-        {
-            using var layer = backend.CreateTextureLayer(new PixelSize(Size, Size), new Vector(96, 96));
-            using (var context = layer.CreateDrawingContext())
-            {
-                var feature = (ISkiaSharpApiLeaseFeature?)context.GetFeature(typeof(ISkiaSharpApiLeaseFeature));
-                Assert.NotNull(feature);
-                using var lease = feature.Lease();
-                using var paint = new SKPaint { Color = SKColors.Red };
-                lease.SkCanvas.DrawRect(0, 0, 10, 10, paint);
-            }
-
-            Assert.Equal(SKColors.Red, Pixel(layer, 5, 5));
-            Assert.Equal(0, Pixel(layer, 15, 15).Alpha);
-        });
-    }
 }
