@@ -5,7 +5,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
+using Avalonia.Android.Platform;
 using Avalonia.Controls;
+using Avalonia.Platform;
 
 namespace Avalonia.Android.Scene
 {
@@ -19,7 +21,7 @@ namespace Avalonia.Android.Scene
 
         private Dictionary<Type, Type> _activityTypes = new Dictionary<Type, Type>();
 
-        public Task<bool> ShowScene(Controls.Scene scene)
+        public Task<bool> ShowScene(Controls.Scene scene, SceneLaunchOptions? options = null)
         {
             var tcs = new TaskCompletionSource<bool>();
 
@@ -33,12 +35,20 @@ namespace Avalonia.Android.Scene
             var request = new WindowRequest(scene, tcs);
             s_pendingRequests.TryAdd(id, request);
 
-            var options = ActivityOptions.MakeBasic();
+            var activityOptions = ActivityOptions.MakeBasic();
 
             var r = new global::Android.Graphics.Rect((int)rect.Left, (int)rect.Top, (int)rect.Right, (int)rect.Bottom);
-            options = options?.SetLaunchBounds(r);
+            activityOptions = activityOptions?.SetLaunchBounds(r);
 
-            context.StartActivity(intent, options?.ToBundle());
+            if(options != null)
+            {
+                if(OperatingSystem.IsAndroidVersionAtLeast(26) && options.Display?.TryGetPlatformHandle() is PlatformHandle handle)
+                {
+                    activityOptions = activityOptions?.SetLaunchDisplayId((int)handle.Handle);
+                }
+            }
+
+            context.StartActivity(intent, activityOptions?.ToBundle());
 
             return tcs.Task;
         }

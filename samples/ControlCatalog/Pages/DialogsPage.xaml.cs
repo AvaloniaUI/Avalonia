@@ -326,6 +326,8 @@ namespace ControlCatalog.Pages
 
             Scene.Click += async delegate
             {
+                var screens = GetTopLevel().Screens?.All;
+                var screen = screens?.ElementAtOrDefault(1) ?? screens?.FirstOrDefault();
                 var scene = new SampleScene()
                 {
                     InitialPosition = new Point(200, 200),
@@ -333,7 +335,10 @@ namespace ControlCatalog.Pages
                     Height = 480
                 };
 
-                await scene.ShowAsync();
+                await scene.ShowAsync(new SceneLaunchOptions()
+                {
+                    Display = screen
+                });
             };
 
             LaunchFile.Click += async delegate

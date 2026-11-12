@@ -4,6 +4,6 @@ namespace Avalonia.Controls
 {
     internal interface ISceneManager
     {
-        Task<bool> ShowScene(Scene scene);
+        Task<bool> ShowScene(Scene scene, SceneLaunchOptions? options);
     }
 }

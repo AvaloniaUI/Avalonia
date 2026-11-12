@@ -54,12 +54,12 @@ namespace Avalonia.Android.Scene
 
         private void SceneActivity_Deactivated(object? sender, ActivatedEventArgs e)
         {
-            Scene?.RaiseDeactivatedEvent(e);
+            Scene?.OnDeactivated(e);
         }
 
         private void SceneActivity_Activated(object? sender, ActivatedEventArgs e)
         {
-            Scene?.RaiseActivatedEvent(e);
+            Scene?.OnActivated(e);
         }
 
         private protected override void InitializeAvaloniaView(object? initialContent)

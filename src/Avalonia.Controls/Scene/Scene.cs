@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Interactivity;
 using Avalonia.Metadata;
+using Avalonia.Platform;
 
 namespace Avalonia.Controls
 {
@@ -46,10 +47,10 @@ namespace Avalonia.Controls
 
         internal ISceneHost? Host { get; private set; }
 
-        public Task<bool> ShowAsync()
+        public Task<bool> ShowAsync(SceneLaunchOptions? options = null)
         {
             var manager = AvaloniaLocator.Current.GetService<ISceneManager>();
-            return manager?.ShowScene(this) ?? Task.FromResult(false);
+            return manager?.ShowScene(this, options) ?? Task.FromResult(false);
         }
 
         internal void AttachHost(ISceneHost host)
@@ -67,14 +68,19 @@ namespace Avalonia.Controls
             Host = null;
         }
 
-        internal void RaiseActivatedEvent(ActivatedEventArgs eventArgs)
+        protected internal virtual void OnActivated(ActivatedEventArgs eventArgs)
         {
             Activated?.Invoke(this, eventArgs);
         }
 
-        internal void RaiseDeactivatedEvent(ActivatedEventArgs eventArgs)
+        protected internal virtual void OnDeactivated(ActivatedEventArgs eventArgs)
         {
             Deactivated?.Invoke(this, eventArgs);
         }
+    }
+
+    public class SceneLaunchOptions
+    {
+        public Screen? Display { get; set; }
     }
 }
