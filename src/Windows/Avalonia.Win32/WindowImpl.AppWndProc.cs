@@ -906,6 +906,9 @@ namespace Avalonia.Win32
                     {
                         _deadCharPending = false;
                         UpdateInputMethod(lParam);
+                        // A layout added after startup has no table yet. Build it before the first key in that
+                        // layout, which can be a dead key.
+                        KeyboardLayoutTable.Get(lParam);
                         // call DefWindowProc to pass to all children
                         break;
                     }
