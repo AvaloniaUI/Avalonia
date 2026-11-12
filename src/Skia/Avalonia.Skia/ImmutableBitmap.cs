@@ -161,6 +161,8 @@ namespace Avalonia.Skia
             Dpi = dpi;
         }
 
+        internal SKImage Image => _image;
+
         public Vector Dpi { get; }
         public PixelSize PixelSize { get; }
 

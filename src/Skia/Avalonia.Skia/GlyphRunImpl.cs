@@ -108,6 +108,12 @@ namespace Avalonia.Skia
             }
         }
 
+        internal SkiaTypeface Typeface => _glyphTypefaceImpl;
+
+        internal ReadOnlySpan<ushort> GlyphIndices => _glyphIndices;
+
+        internal ReadOnlySpan<SKPoint> GlyphPositions => _glyphPositions;
+
         public double FontRenderingEmSize { get; }
 
         public Point BaselineOrigin { get; }

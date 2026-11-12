@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>$(AvsCurrentTargetFramework)</TargetFrameworks>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- NImpeller value types trip CA1815. -->
+    <NoWarn>$(NoWarn);CA1815</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\packages\Avalonia\Avalonia.csproj" />
+    <ProjectReference Include="..\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NImpeller" />
+  </ItemGroup>
+
+  <Import Project="..\..\build\DevAnalyzers.props" />
+  <Import Project="..\..\build\TrimmingEnable.props" />
+  <Import Project="..\..\build\NullableEnable.props" />
+
+  <ItemGroup Label="InternalsVisibleTo">
+    <InternalsVisibleTo Include="Avalonia.Impeller.UnitTests, PublicKey=$(AvaloniaPublicKey)" />
+  </ItemGroup>
+</Project>
