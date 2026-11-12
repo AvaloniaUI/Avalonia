@@ -301,6 +301,14 @@ partial class Build : NukeBuild
             RunCoreTest("Avalonia.LeakTests");
         });
 
+    Target RunWin32IntegrationTests => _ => _
+        .OnlyWhenStatic(() => !Parameters.SkipTests && Parameters.IsRunningOnWindows)
+        .DependsOn(Compile)
+        .Executes(() =>
+        {
+            RunCoreTest("Avalonia.IntegrationTests.Win32");
+        });
+
 
     Target CreateIntermediateNugetPackages => _ => _
         .DependsOn(Compile)
@@ -395,6 +403,7 @@ partial class Build : NukeBuild
 
     Target RunTests => _ => _
         .DependsOn(RunCoreLibsTests)
+        .DependsOn(RunWin32IntegrationTests)
         .DependsOn(RunRenderTests)
         .DependsOn(RunToolsTests)
         .DependsOn(RunHtmlPreviewerTests)
