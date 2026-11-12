@@ -13,6 +13,13 @@ using Xunit;
 namespace Avalonia.Base.UnitTests.Data.Core;
 
 /// <summary>
+/// A top-level type used to test casting in a binding path.
+/// </summary>
+public class DerivedSecond : NullConditionalBindingTests.Second
+{
+}
+
+/// <summary>
 /// Tests for null-conditional operator in binding paths.
 /// </summary>
 /// <remarks>
@@ -377,6 +384,32 @@ public class NullConditionalBindingTests
         result.DataContext = data;
         result.Show();
         return result;
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Should_Not_Report_Error_With_Null_Conditional_Operator_After_Cast(bool compileBindings)
+    {
+        using var app = Start();
+        using var log = TestLogger.Create();
+        var xaml = $$$"""
+            <Window xmlns='https://github.com/avaloniaui'
+                    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                    xmlns:local='clr-namespace:Avalonia.Base.UnitTests.Data.Core;assembly=Avalonia.Base.UnitTests'
+                    x:DataType='local:NullConditionalBindingTests+First'
+                    x:CompileBindings='{{{compileBindings}}}'>
+                <local:ErrorCollectingTextBox Text='{Binding ((local:DerivedSecond)Second)?.Third.Final}'/>
+            </Window>
+            """;
+        var data = new First { Second = null };
+        var window = CreateTarget(xaml, data);
+        var textBox = Assert.IsType<ErrorCollectingTextBox>(window.Content);
+
+        Assert.Null(textBox.Text);
+        Assert.Null(textBox.Error);
+        Assert.Equal(BindingValueType.Value, textBox.ErrorState);
+        Assert.Empty(log.Messages);
     }
 
     private static IDisposable Start()

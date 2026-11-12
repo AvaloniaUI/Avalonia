@@ -146,13 +146,15 @@ namespace Avalonia.Controls.ApplicationLifetimes
             Startup?.Invoke(this, new ControlledApplicationLifetimeStartupEventArgs(args));
 
             _cts = new CancellationTokenSource();
+            var token = _cts.Token;
 
             // Note due to a bug in the JIT we wrap this in a method, otherwise MainWindow
             // gets stuffed into a local var and can not be GCed until after the program stops.
             // this method never exits until program end.
             ShowMainWindow();
 
-            Dispatcher.UIThread.MainLoop(_cts.Token);
+            if (!token.IsCancellationRequested)
+                Dispatcher.UIThread.MainLoop(token);
             Environment.ExitCode = _exitCode;
             return _exitCode;
         }
@@ -227,6 +229,8 @@ namespace Avalonia.Controls.ApplicationLifetimes
 
                 if (!shutdownCancelled)
                 {
+                    e.WillExitMainLoop = _cts is not null;
+
                     _cts?.Cancel();
                     _cts = null;
                     Dispatcher.UIThread.InvokeShutdown();

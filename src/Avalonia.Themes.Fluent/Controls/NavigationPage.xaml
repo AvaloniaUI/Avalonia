@@ -1,5 +1,6 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    x:ClassModifier="internal">
   <Design.PreviewWith>
     <Border Width="400" Height="600">
       <NavigationPage />
@@ -12,6 +13,11 @@
 
   <SolidColorBrush x:Key="NavigationBarBackground" Color="{DynamicResource SystemChromeMediumColor}" />
   <SolidColorBrush x:Key="NavigationBarForeground" Color="{DynamicResource SystemBaseMediumColor}" />
+
+  <LinearGradientBrush x:Key="NavigationBarShadowBackground" StartPoint="0%,0%" EndPoint="0%,100%">
+    <GradientStop Color="#0C000000" Offset="0" />
+    <GradientStop Color="#00000000" Offset="1" />
+  </LinearGradientBrush>
 
   <ControlTheme x:Key="{x:Type NavigationPage}" TargetType="NavigationPage">
     <!-- Transparent keeps the hit-test surface active for the back-swipe gesture edge area. -->
@@ -182,14 +188,8 @@
                   VerticalAlignment="Top"
                   IsVisible="False"
                   Height="4"
-                  IsHitTestVisible="False">
-            <Border.Background>
-              <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
-                <GradientStop Color="#0C000000" Offset="0" />
-                <GradientStop Color="#00000000" Offset="1" />
-              </LinearGradientBrush>
-            </Border.Background>
-          </Border>
+                  IsHitTestVisible="False"
+                  Background="{DynamicResource NavigationBarShadowBackground}" />
 
           <!-- Modal overlay: ZIndex=99 holds the static layer during transitions; ZIndex=100 is the animating modal. -->
           <ContentPresenter Name="PART_ModalBackPresenter"

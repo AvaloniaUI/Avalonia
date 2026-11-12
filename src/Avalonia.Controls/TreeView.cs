@@ -52,6 +52,8 @@ namespace Avalonia.Controls
         private object? _selectedItem;
         private IList? _selectedItems;
         private bool _syncingSelectedItems;
+        private bool _suppressSelectionChanged;
+        private readonly List<object> _reportedSelection = new();
 
         /// <summary>
         /// Initializes static members of the <see cref="TreeView"/> class.
@@ -221,7 +223,19 @@ namespace Avalonia.Controls
             }
 
             AddItems(this);
-            SynchronizeItems(SelectedItems, allItems);
+
+            _suppressSelectionChanged = true;
+
+            try
+            {
+                SynchronizeItems(SelectedItems, allItems);
+            }
+            finally
+            {
+                _suppressSelectionChanged = false;
+            }
+
+            RaiseSelectionChanged();
         }
 
         /// <summary>
@@ -330,10 +344,21 @@ namespace Avalonia.Controls
         {
             var oldValue = _selectedItem;
             _syncingSelectedItems = true;
-            SelectedItems.Clear();
-            _selectedItem = item;
-            SelectedItems.Add(item);
-            _syncingSelectedItems = false;
+            _suppressSelectionChanged = true;
+
+            try
+            {
+                SelectedItems.Clear();
+                _selectedItem = item;
+                SelectedItems.Add(item);
+            }
+            finally
+            {
+                _syncingSelectedItems = false;
+                _suppressSelectionChanged = false;
+            }
+
+            RaiseSelectionChanged();
 
             RaisePropertyChanged(SelectedItemProperty, oldValue, _selectedItem);    
         }
@@ -405,11 +430,12 @@ namespace Avalonia.Controls
                         MarkContainerSelected(container, false);
                     }
 
+                    // A reset carries no item lists, so the delta comes from the last reported selection.
+                    (removed, added) = GetSelectionDelta();
+
                     if (SelectedItems.Count > 0)
                     {
                         SelectedItemsAdded(SelectedItems);
-
-                        added = SelectedItems;
                     }
                     else if (!_syncingSelectedItems)
                     {
@@ -443,13 +469,44 @@ namespace Avalonia.Controls
                     break;
             }
 
+            // Suppressed changes keep accumulating until the caller raises the event itself.
+            if (!_suppressSelectionChanged)
+            {
+                RaiseSelectionChanged(removed, added);
+            }
+        }
+
+        /// <summary>
+        /// Compares the current selection against the last reported selection.
+        /// </summary>
+        private (IList Removed, IList Added) GetSelectionDelta()
+        {
+            return (
+                _reportedSelection.Where(x => !SelectedItems.Contains(x)).ToArray(),
+                SelectedItems.OfType<object>().Where(x => !_reportedSelection.Contains(x)).ToArray());
+        }
+
+        /// <summary>
+        /// Raises <see cref="SelectingItemsControl.SelectionChangedEvent"/> for everything that has
+        /// changed since the event was last raised.
+        /// </summary>
+        private void RaiseSelectionChanged()
+        {
+            var (removed, added) = GetSelectionDelta();
+            RaiseSelectionChanged(removed, added);
+        }
+
+        private void RaiseSelectionChanged(IList? removed, IList? added)
+        {
+            _reportedSelection.Clear();
+            _reportedSelection.AddRange(SelectedItems.OfType<object>());
+
             if (added?.Count > 0 || removed?.Count > 0)
             {
-                var changed = new SelectionChangedEventArgs(
+                RaiseEvent(new SelectionChangedEventArgs(
                     SelectingItemsControl.SelectionChangedEvent,
                     removed ?? Empty,
-                    added ?? Empty);
-                RaiseEvent(changed);
+                    added ?? Empty));
             }
         }
 

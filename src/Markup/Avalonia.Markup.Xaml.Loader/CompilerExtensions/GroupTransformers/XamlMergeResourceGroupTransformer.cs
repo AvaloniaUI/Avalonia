@@ -12,6 +12,15 @@ internal class XamlMergeResourceGroupTransformer : IXamlAstGroupTransformer
 {
     public IXamlAstNode Transform(AstGroupTransformationContext context, IXamlAstNode node)
     {
+        var mergingDocuments = new List<IXamlDocumentResource>();
+        if (context.CurrentDocument is { } currentDocument)
+            mergingDocuments.Add(currentDocument);
+        return MergeResources(context, node, context.CurrentDocument?.Uri, mergingDocuments);
+    }
+
+    private static IXamlAstNode MergeResources(AstGroupTransformationContext context, IXamlAstNode node,
+        string? documentUri, List<IXamlDocumentResource> mergingDocuments)
+    {
         var resourceDictionaryType = context.GetAvaloniaTypes().ResourceDictionary;
         if (node is not XamlObjectInitializationNode resourceDictionaryNode
             || resourceDictionaryNode.Type != resourceDictionaryType
@@ -78,7 +87,7 @@ internal class XamlMergeResourceGroupTransformer : IXamlAstGroupTransformer
         foreach (var sourceNode in mergeSourceNodes)
         {
             var (originalAssetPath, propertyNode) =
-                AvaloniaXamlIncludeTransformer.ResolveSourceFromXamlInclude(context, "MergeResourceInclude", sourceNode, true);
+                AvaloniaXamlIncludeTransformer.ResolveSourceFromXamlInclude(context, "MergeResourceInclude", sourceNode, true, documentUri);
             if (originalAssetPath is null)
             {
                 return context.ReportTransformError(
@@ -92,6 +101,23 @@ internal class XamlMergeResourceGroupTransformer : IXamlAstGroupTransformer
                 return context.ReportTransformError(
                     $"Node MergeResourceInclude is unable to resolve \"{originalAssetPath}\" path.", propertyNode, node);
             }
+
+            if (mergingDocuments.Contains(targetDocument))
+            {
+                return context.ReportTransformError(
+                    $"Node MergeResourceInclude has a circular reference to \"{originalAssetPath}\".", propertyNode, node);
+            }
+
+            // Documents are transformed in order, so the merged document might not be transformed yet.
+            // Its own MergeResourceInclude nodes are merged first, otherwise they would be inlined unprocessed.
+            // Merging is idempotent, it does nothing when the document is transformed later.
+            mergingDocuments.Add(targetDocument);
+            var dictionaries = new ResourceDictionaryFinder(resourceDictionaryType);
+            targetDocumentRoot.Visit(dictionaries);
+            // Nested dictionaries first, they are found after their parents.
+            for (var i = dictionaries.Found.Count - 1; i >= 0; i--)
+                MergeResources(context, dictionaries.Found[i], targetDocument.Uri, mergingDocuments);
+            mergingDocuments.RemoveAt(mergingDocuments.Count - 1);
 
             var singleRootObject = ((XamlManipulationGroupNode)targetDocumentRoot.Manipulation!)
                 .Children.OfType<XamlObjectInitializationNode>().Single();
@@ -207,5 +233,26 @@ internal class XamlMergeResourceGroupTransformer : IXamlAstGroupTransformer
         }
 
         return false;
+    }
+
+    private sealed class ResourceDictionaryFinder(IXamlType resourceDictionaryType) : IXamlAstVisitor
+    {
+        /// <summary>Resource dictionary nodes, parents before their children.</summary>
+        public List<XamlObjectInitializationNode> Found { get; } = new();
+
+        public IXamlAstNode Visit(IXamlAstNode node)
+        {
+            if (node is XamlObjectInitializationNode initialization && initialization.Type == resourceDictionaryType)
+                Found.Add(initialization);
+            return node;
+        }
+
+        public void Push(IXamlAstNode node)
+        {
+        }
+
+        public void Pop()
+        {
+        }
     }
 }

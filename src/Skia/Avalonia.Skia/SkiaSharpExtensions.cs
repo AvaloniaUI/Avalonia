@@ -116,11 +116,6 @@ namespace Avalonia.Skia
             return new Rect(r.Left, r.Top, r.Right - r.Left, r.Bottom - r.Top);
         }
 
-        internal static LtrbRect ToAvaloniaLtrbRect(this SKRect r)
-        {
-            return new LtrbRect(r.Left, r.Top, r.Right, r.Bottom);
-        }
-
         public static PixelRect ToAvaloniaPixelRect(this SKRectI r)
         {
             return new PixelRect(r.Left, r.Top, r.Right - r.Left, r.Bottom - r.Top);

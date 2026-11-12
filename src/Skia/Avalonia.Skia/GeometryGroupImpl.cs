@@ -47,7 +47,7 @@ namespace Avalonia.Skia
                         fill.AddPath(fillPath);
                 }
 
-                FillPath = fill;
+                FillPath = CachePathBounds(fill);
             }
             else
                 FillPath = stroke;

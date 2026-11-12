@@ -82,6 +82,7 @@ namespace Avalonia.Win32
             s_options = options;
 
             SetDpiAwareness();
+            KeyboardLayoutTable.Prepare();
 
             Dispatcher.InitializeUIThreadDispatcher(s_instance._dispatcher);
             
@@ -172,6 +173,12 @@ namespace Avalonia.Win32
                         return IntPtr.Zero;
                     }
                 }
+            }
+
+            if (msg == (uint)WindowsMessage.WM_DISPLAYCHANGE)
+            {
+                Screen?.OnChanged();
+                UpdateTimerFps();
             }
 
             if (msg == (uint)WindowsMessage.WM_SETTINGCHANGE)

@@ -16,6 +16,9 @@ internal interface IDirtyRectTracker : IDirtyRectCollector
     void Initialize(LtrbRect bounds);
     void Visualize(IDrawingContextImpl context);
     LtrbRect CombinedRect { get; }
+    void CopyRects(List<PixelRect> rects);
+    // Dirty rectangles before antialiasing inflation, for replay through AddRect/FinalizeFrame.
+    void CopyUninflatedRects(List<LtrbRect> rects);
 }
 
 internal interface IDirtyRectCollector

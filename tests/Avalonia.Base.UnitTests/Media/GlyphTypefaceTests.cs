@@ -16,6 +16,7 @@ namespace Avalonia.Base.UnitTests.Media
         private const string InterFontUri = "resm:Avalonia.Base.UnitTests.Assets.Inter-Regular.ttf?assembly=Avalonia.Base.UnitTests";
         private const string BlankFontUri = "resm:Avalonia.Base.UnitTests.Assets.AdobeBlank2VF.ttf?assembly=Avalonia.Base.UnitTests";
         private const string GB18030FontUri = "resm:Avalonia.Base.UnitTests.Assets.NISC18030.ttf?assembly=Avalonia.Base.UnitTests";
+        private const string MiSansFontUri = "resm:Avalonia.Base.UnitTests.Assets.MiSans-Normal.ttf?assembly=Avalonia.Base.UnitTests";
 
         [Fact]
         public void Should_Load_Inter_Font()
@@ -73,8 +74,8 @@ namespace Avalonia.Base.UnitTests.Media
             // Ensure advance can be retrieved
             Assert.True(typeface.TryGetHorizontalGlyphAdvance(glyphIndex, out var advance));
 
-            // Advance returned by GetGlyphAdvance should match the metrics width
-            Assert.Equal(metrics.Width, advance);
+            // The advance lives on AdvanceWidth; Width is the ink bounding-box width.
+            Assert.Equal(metrics.AdvanceWidth, advance);
         }
 
         [Theory]
@@ -275,6 +276,134 @@ namespace Avalonia.Base.UnitTests.Media
 
             Assert.True(result);
             Assert.True(metrics.Width > 0);
+        }
+
+        [Fact]
+        public void TryGetGlyphMetrics_Width_Is_Ink_Box_Not_Advance()
+        {
+            var assetLoader = new StandardAssetLoader();
+
+            using var stream = assetLoader.Open(new Uri(InterFontUri));
+
+            var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
+
+            var glyphIndex = typeface.CharacterToGlyphMap['A'];
+
+            Assert.True(typeface.TryGetGlyphMetrics(glyphIndex, out var metrics));
+            Assert.True(typeface.TryGetHorizontalGlyphAdvance(glyphIndex, out var advance));
+
+            // The advance belongs on AdvanceWidth...
+            Assert.Equal(advance, metrics.AdvanceWidth);
+
+            // ...and Width is the ink bounding-box width, a distinct value.
+            Assert.True(metrics.Width > 0);
+            Assert.NotEqual(metrics.AdvanceWidth, metrics.Width);
+        }
+
+        [Fact]
+        public void TryGetGlyphMetrics_Empty_Glyph_Has_Advance_But_No_Ink()
+        {
+            var assetLoader = new StandardAssetLoader();
+
+            using var stream = assetLoader.Open(new Uri(InterFontUri));
+
+            var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
+
+            var spaceGlyph = typeface.CharacterToGlyphMap[' '];
+
+            Assert.True(typeface.TryGetGlyphMetrics(spaceGlyph, out var metrics));
+
+            // The space glyph has a horizontal advance but no ink.
+            Assert.True(metrics.AdvanceWidth > 0);
+            Assert.Equal((ushort)0, metrics.Width);
+            Assert.Equal((ushort)0, metrics.Height);
+        }
+
+        [Fact]
+        public void TryGetGlyphMetrics_Batch_Matches_Single()
+        {
+            var assetLoader = new StandardAssetLoader();
+
+            using var stream = assetLoader.Open(new Uri(InterFontUri));
+
+            var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
+
+            var map = typeface.CharacterToGlyphMap;
+            var glyphIndices = new ushort[] { map['A'], map['B'], map['g'], map[' '] };
+
+            var batch = new GlyphMetrics[glyphIndices.Length];
+            Assert.True(typeface.TryGetGlyphMetrics(glyphIndices, batch));
+
+            for (var i = 0; i < glyphIndices.Length; i++)
+            {
+                Assert.True(typeface.TryGetGlyphMetrics(glyphIndices[i], out var single));
+
+                // GlyphMetrics is a record struct, so this is structural equality.
+                Assert.Equal(single, batch[i]);
+            }
+        }
+
+        [Fact]
+        public void TryGetVerticalGlyphAdvance_Returns_False_For_Latin_Font()
+        {
+            var assetLoader = new StandardAssetLoader();
+            using var stream = assetLoader.Open(new Uri(InterFontUri));
+            var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
+
+            var glyphIndex = typeface.CharacterToGlyphMap['A'];
+
+            // Latin fonts typically carry no vmtx table — the call returns false and
+            // leaves the advance at zero.
+            Assert.False(typeface.TryGetVerticalGlyphAdvance(glyphIndex, out var advance));
+            Assert.Equal((ushort)0, advance);
+        }
+
+        [Fact]
+        public void TryGetVerticalGlyphAdvances_Batch_Returns_False_For_Latin_Font()
+        {
+            var assetLoader = new StandardAssetLoader();
+            using var stream = assetLoader.Open(new Uri(InterFontUri));
+            var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
+
+            var map = typeface.CharacterToGlyphMap;
+            var glyphIndices = new ushort[] { map['A'], map['B'], map['g'] };
+            var advances = new ushort[glyphIndices.Length];
+
+            Assert.False(typeface.TryGetVerticalGlyphAdvances(glyphIndices, advances));
+        }
+
+        [Fact]
+        public void TryGetVerticalGlyphAdvance_Returns_True_For_CJK_Font()
+        {
+            var assetLoader = new StandardAssetLoader();
+            using var stream = assetLoader.Open(new Uri(MiSansFontUri));
+            var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
+
+            // CJK glyph: U+4E2D ("中"). MiSans is a CJK font with a vmtx table.
+            var glyphIndex = typeface.CharacterToGlyphMap['中'];
+
+            Assert.True(typeface.TryGetVerticalGlyphAdvance(glyphIndex, out var advance));
+            Assert.True(advance > 0, "Expected a positive vertical advance for a CJK glyph.");
+        }
+
+        [Fact]
+        public void TryGetVerticalGlyphAdvances_Batch_Matches_Single_For_CJK_Font()
+        {
+            var assetLoader = new StandardAssetLoader();
+            using var stream = assetLoader.Open(new Uri(MiSansFontUri));
+            var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
+
+            var map = typeface.CharacterToGlyphMap;
+            var glyphIndices = new ushort[] { map['中'], map['文'], map['字'], map[' '] };
+
+            var batch = new ushort[glyphIndices.Length];
+            Assert.True(typeface.TryGetVerticalGlyphAdvances(glyphIndices, batch));
+
+            for (var i = 0; i < glyphIndices.Length; i++)
+            {
+                Assert.True(typeface.TryGetVerticalGlyphAdvance(glyphIndices[i], out var single));
+                Assert.Equal(single, batch[i]);
+            }
         }
 
         [Fact]

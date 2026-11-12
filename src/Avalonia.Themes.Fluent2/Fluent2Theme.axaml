@@ -1,0 +1,31 @@
+﻿<Styles x:Class="Avalonia.Themes.Fluent2.Fluent2Theme"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:fluent="using:Avalonia.Themes.Fluent2"
+        xmlns:accents="using:Avalonia.Themes.Fluent2.Accents"
+        xmlns:strings="using:Avalonia.Themes.Fluent2.Strings">
+  <Styles.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <!-- Default palette colors have the lowest priority: custom palettes (ColorPaletteResourcesCollection)
+             and system accent colors are checked before them, as that's the only place for user to redefine palette in a good way -->
+        <ResourceInclude Source="/Accents/ColorPalettes.axaml" />
+        <accents:SystemAccentColors />
+        <fluent:ColorPaletteResourcesCollection />
+
+        <!-- Invariant strings are kept as a separate dictionary, so a culture-aware provider can be merged after it
+             and override translated strings, falling back to invariant ones. -->
+        <ResourceInclude Source="/Strings/InvariantResources.axaml" />
+
+        <!-- Resources and brushes will be merged into current dictionary for slightly better
+             performance and possible optimizations (MergeResourceInclude must come last) -->
+        <MergeResourceInclude Source="/Accents/BaseResources.axaml" />
+        <MergeResourceInclude Source="/Accents/Fluent2TokenResources.axaml" />
+        <MergeResourceInclude Source="/Controls/FluentControls.axaml" />
+      </ResourceDictionary.MergedDictionaries>
+      
+      <!-- These are not part of MergedDictionaries so we can add or remove them easier -->
+      <ResourceInclude x:Key="CompactStyles" Source="/DensityStyles/Compact.axaml" />
+    </ResourceDictionary>
+  </Styles.Resources>
+</Styles>

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Threading.Tasks;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Platform;
@@ -323,6 +324,10 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="PastingFromClipboard"/> event.
         /// </summary>
+        /// <remarks>
+        /// The event is raised with <see cref="PastingFromClipboardEventArgs"/>.
+        /// </remarks>
+        // TODO13: retype to RoutedEvent<PastingFromClipboardEventArgs>.
         public static readonly RoutedEvent<RoutedEventArgs> PastingFromClipboardEvent =
             RoutedEvent.Register<TextBox, RoutedEventArgs>(
                 nameof(PastingFromClipboard), RoutingStrategies.Bubble);
@@ -386,6 +391,7 @@ namespace Avalonia.Controls
         private bool _canRedo;
 
         private int _wordSelectionStart = -1;
+        private (int Start, int End) _selectionAtPointerPress;
         private int _selectedTextChangesMadeSinceLastUndoSnapshot;
         private bool _hasDoneSnapshotOnce;
         private int _currentClickCount;
@@ -1059,6 +1065,10 @@ namespace Avalonia.Controls
         /// <summary>
         /// Raised when content is being pasted from the clipboard
         /// </summary>
+        /// <remarks>
+        /// The event is raised with <see cref="PastingFromClipboardEventArgs"/>.
+        /// </remarks>
+        // TODO13: retype to EventHandler<PastingFromClipboardEventArgs>.
         public event EventHandler<RoutedEventArgs>? PastingFromClipboard
         {
             add => AddHandler(PastingFromClipboardEvent, value);
@@ -1155,6 +1165,9 @@ namespace Avalonia.Controls
 
             if (change.Property == TextProperty)
             {
+                // Do not expose a selection with only one endpoint coerced to the new text.
+                using var _ = _imClient.BeginChange();
+
                 if (_needsUndoRedoSnapshotAfterTextChange)
                 {
                     _needsUndoRedoSnapshotAfterTextChange = false;
@@ -1460,28 +1473,28 @@ namespace Avalonia.Controls
         /// </summary>
         public async void Paste()
         {
-            var eventArgs = new RoutedEventArgs(PastingFromClipboardEvent);
+            await PasteCoreAsync(TopLevel.GetTopLevel(this)?.Clipboard);
+        }
+
+        private async Task PasteCoreAsync(IClipboard? clipboard)
+        {
+            var eventArgs = new PastingFromClipboardEventArgs(PastingFromClipboardEvent, clipboard);
             RaiseEvent(eventArgs);
-            if (eventArgs.Handled)
+            if (eventArgs.Handled || clipboard is null)
             {
                 return;
             }
 
             string? text = null;
 
-            var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
-
-            if (clipboard != null)
+            try
             {
-                try
-                {
-                    text = await clipboard.TryGetTextAsync();
-                }
-                catch (Exception ex) when (ClipboardHelper.IsExpectedClipboardException(ex))
-                {
-                    Logger.TryGet(LogEventLevel.Warning, LogArea.Control)
-                        ?.Log(this, "Failed to read text from clipboard: {Error}", ex);
-                }
+                text = await clipboard.TryGetTextAsync();
+            }
+            catch (Exception ex) when (ClipboardHelper.IsExpectedClipboardException(ex))
+            {
+                Logger.TryGet(LogEventLevel.Warning, LogArea.Control)
+                    ?.Log(this, "Failed to read text from clipboard: {Error}", ex);
             }
 
             if (string.IsNullOrEmpty(text))
@@ -1939,6 +1952,7 @@ namespace Avalonia.Controls
             _isInTouchMode = false;
             _isInTouchSelectionMode = false;
             _isDoubleTapped = e.ClickCount == 2;
+            _selectionAtPointerPress = GetSelectionRange();
             if (text != null && clickInfo.Pointer?.Captured is not Border)
             {
                 if (e.Pointer.Type == PointerType.Mouse && clickInfo.Properties.IsLeftButtonPressed)
@@ -2195,7 +2209,7 @@ namespace Avalonia.Controls
                 return;
             }
 
-            using var _ = _imClient.BeginChange();
+            using var change = _imClient.BeginChange();
 
             if (e.Pointer.Type != PointerType.Mouse && !_isInTouchSelectionMode)
             {
@@ -2233,6 +2247,33 @@ namespace Avalonia.Controls
                     SetCurrentValue(SelectionStartProperty, caretIndex);
                 }
             }
+
+            if (e.InitialPressMouseButton == MouseButton.Middle)
+            {
+                // Middle-click pastes the primary selection at the click position on platforms supporting it.
+                if (!IsReadOnly && TopLevel.GetTopLevel(this)?.TryGetClipboard(ClipboardType.PrimarySelection) is { } primarySelection)
+                {
+                    _presenter.MoveCaretToPoint(e.GetPosition(_presenter));
+
+                    var caretIndex = _presenter.CaretIndex;
+                    SetCurrentValue(CaretIndexProperty, caretIndex);
+                    SetCurrentValue(SelectionStartProperty, caretIndex);
+                    SetCurrentValue(SelectionEndProperty, caretIndex);
+
+                    _ = PasteCoreAsync(primarySelection);
+                    e.Handled = true;
+                }
+            }
+            else if (e.InitialPressMouseButton == MouseButton.Left)
+            {
+                var (start, end) = GetSelectionRange();
+                if (!IsPasswordBox && start != end && (start, end) != _selectionAtPointerPress)
+                {
+                    // The pointer gesture changed the selection, publish it to the primary selection.
+                    _ = PrimarySelectionHelper.PublishTextAsync(this, GetSelection);
+                }
+            }
+
             _isInTouchSelectionMode = false;
             _isInTouchCaretMode = false;
             _hasTouchSelection = false;
@@ -2811,7 +2852,7 @@ namespace Avalonia.Controls
                 if (MaxLines > 0 && double.IsNaN(Height))
                 {
                     var fontSize = FontSize;
-                    var typeface = new Typeface(FontFamily, FontStyle, FontWeight, FontStretch);
+                    var typeface = new Typeface(FontFamily, FontStyle, FontWeight, FontStretch, FontVariations);
                     var paragraphProperties = TextLayout.CreateTextParagraphProperties(typeface, fontSize, null, default, default, null, default, LineHeight, default, FontFeatures);
                     var textLayout = new TextLayout(new LineTextSource(MaxLines), paragraphProperties);
                     var verticalSpace = GetVerticalSpaceBetweenScrollViewerAndPresenter();
@@ -2827,7 +2868,7 @@ namespace Avalonia.Controls
                 if (MinLines > 0 && double.IsNaN(Height))
                 {
                     var fontSize = FontSize;
-                    var typeface = new Typeface(FontFamily, FontStyle, FontWeight, FontStretch);
+                    var typeface = new Typeface(FontFamily, FontStyle, FontWeight, FontStretch, FontVariations);
                     var paragraphProperties = TextLayout.CreateTextParagraphProperties(typeface, fontSize, null, default, default, null, default, LineHeight, default, FontFeatures);
                     var textLayout = new TextLayout(new LineTextSource(MinLines), paragraphProperties);
                     var verticalSpace = GetVerticalSpaceBetweenScrollViewerAndPresenter();

@@ -31,8 +31,8 @@ namespace Avalonia.Build.Tasks
                 References?.Select(i => i.ItemSpec).ToArray() ?? Array.Empty<string>(),
                 ProjectDirectory, VerifyIl, DefaultCompileBindings, outputImportance,
                 new XamlCompilerDiagnosticsFilter(AnalyzerConfigFiles),
-                (SignAssembly && !DelaySign) ? AssemblyOriginatorKeyFile : null,
-                SkipXamlCompilation, DebuggerLaunch, VerboseExceptions, CreateSourceInfo);
+                (SignAssembly && !DelaySign && !PublicSign) ? AssemblyOriginatorKeyFile : null,
+                SkipXamlCompilation, DebuggerLaunch, VerboseExceptions, CreateSourceInfo, CompactHelperNames);
 
             if (res.Success && !res.WrittenFile)
             {
@@ -91,6 +91,7 @@ namespace Avalonia.Build.Tasks
         public string AssemblyOriginatorKeyFile { get; set; }
         public bool SignAssembly { get; set; }
         public bool DelaySign { get; set; }
+        public bool PublicSign { get; set; }
 
         public string ReportImportance { get; set; }
 
@@ -100,6 +101,8 @@ namespace Avalonia.Build.Tasks
         public bool DebuggerLaunch { get; set; }
 
         public bool CreateSourceInfo { get; set; }
+
+        public bool CompactHelperNames { get; set; }
 
         public bool VerboseExceptions { get; set; }
 

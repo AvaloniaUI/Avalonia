@@ -69,6 +69,9 @@ namespace Avalonia.Skia
             using (var skData = SKData.Create(skStream))
             using (var codec = SKCodec.Create(skData))
             {
+                if (codec == null)
+                    throw new ArgumentException("Unable to load bitmap from provided data");
+
                 var info = codec.Info;
 
                 // get the scale that is nearest to what we want (eg: jpg returned 512)

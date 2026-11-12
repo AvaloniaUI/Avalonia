@@ -87,5 +87,19 @@ public class ColorSpectrumAutomationPeerTests
             Assert.Equal(Colors.White.ToString(), changed.OldValue);
             Assert.Equal(Colors.Black.ToString(), changed.NewValue);
         }
+
+        [Fact]
+        public void SetValue_Preserves_Style_Binding()
+        {
+            var spectrum = new ColorSpectrum();
+            var peer = (IValueProvider)ControlAutomationPeer.CreatePeerForElement(spectrum);
+
+            AutomationPeerAssert.PreservesStyleBinding(
+                spectrum,
+                ColorSpectrum.ColorProperty,
+                Colors.Red,
+                Colors.Blue,
+                () => peer.SetValue(Colors.Blue.ToString()));
+        }
     }
 }

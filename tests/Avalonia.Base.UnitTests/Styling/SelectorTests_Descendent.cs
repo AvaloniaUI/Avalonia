@@ -4,10 +4,11 @@ using Avalonia.Controls;
 using Avalonia.LogicalTree;
 using Avalonia.Styling;
 using Xunit;
+using Avalonia.UnitTests;
 
 namespace Avalonia.Base.UnitTests.Styling
 {
-    public class SelectorTests_Descendant
+    public class SelectorTests_Descendant : ScopedTestBase
     {
         [Fact]
         public void Descendant_Matches_Control_When_It_Is_Child_OfType()

@@ -109,12 +109,11 @@ internal sealed class FrameTimeGraph
         _textRenderer.DrawAsciiText(context, buffer.Slice(0, charsWritten), brush);
     }
 
-    private IStreamGeometryImpl BuildGraphGeometry(double maxY)
+    private IGeometryImpl BuildGraphGeometry(double maxY)
     {
         Debug.Assert(_frameCount > 0);
 
-        var graphGeometry = _renderInterface.CreateStreamGeometry();
-        using var geometryContext = graphGeometry.Open();
+        using var geometryContext = _renderInterface.CreateStreamGeometryBuilder();
 
         var xRatio = _graphSize.Width / _frameValues.Length;
         var yRatio = _graphSize.Height / maxY;
@@ -129,7 +128,7 @@ internal sealed class FrameTimeGraph
         }
 
         geometryContext.EndFigure(false);
-        return graphGeometry;
+        return geometryContext.ToGeometry();
     }
 
     private (double Min, double Average, double Max) GetYValues()

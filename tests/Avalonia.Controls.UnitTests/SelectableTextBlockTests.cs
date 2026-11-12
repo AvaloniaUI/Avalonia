@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using Avalonia.Controls.Documents;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.Harfbuzz;
 using Avalonia.Headless;
+using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
@@ -142,6 +144,25 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(FontStyle.Italic, props.Typeface.Style);
 
                 Assert.Same(target.SelectionForegroundBrush, props.ForegroundBrush);
+            }
+        }
+
+        [Fact]
+        public async Task Pointer_Selection_Is_Published_To_Primary_Selection()
+        {
+            using (UnitTestApplication.Start(TextBoxTests.CreatePrimarySelectionServices()))
+            {
+                var target = new SelectableTextBlock { Text = "0123" };
+                var window = new Window { Content = target };
+                window.Show();
+
+                var mouse = new MouseTestHelper();
+                mouse.Down(target, MouseButton.Left, new Point(1, 300));
+                mouse.Move(target, new Point(700, 300));
+                mouse.Up(target, MouseButton.Left, new Point(700, 300));
+
+                Assert.Equal("0123", target.SelectedText);
+                Assert.Equal("0123", await window.TryGetClipboard(ClipboardType.PrimarySelection)!.TryGetTextAsync());
             }
         }
 
@@ -318,6 +339,83 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Right_Click_Below_Text_Should_Keep_Selection()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var target = new SelectableTextBlock
+                {
+                    Width = 200,
+                    Text = "first line\nsecond line\n"
+                };
+
+                var root = new TestRoot(target)
+                {
+                    ClientSize = new Size(300, 200)
+                };
+
+                root.Measure(root.ClientSize);
+                root.Arrange(new Rect(root.ClientSize));
+                root.ExecuteInitialLayoutPass();
+
+                var mouse = new MouseTestHelper();
+                var firstCharacterBounds = target.TextLayout.HitTestTextPosition(0);
+                var start = target.TranslatePoint(new Point(
+                    firstCharacterBounds.X + 1,
+                    firstCharacterBounds.Y + firstCharacterBounds.Height / 2), root);
+                var belowText = target.TranslatePoint(new Point(
+                    target.TextLayout.Width / 2,
+                    target.TextLayout.Height + 10), root);
+
+                mouse.Down(target, MouseButton.Left, start);
+                mouse.Move(target, belowText.GetValueOrDefault());
+                mouse.Up(target, MouseButton.Left, belowText);
+
+                mouse.Down(target, MouseButton.Right, belowText);
+                mouse.Up(target, MouseButton.Right, belowText);
+
+                Assert.Equal(0, target.SelectionStart);
+                Assert.Equal(target.Text!.Length, target.SelectionEnd);
+                Assert.True(target.CanCopy);
+            }
+        }
+
+        [Fact]
+        public void Right_Click_On_Unselected_Text_Should_Move_Selection()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var target = new SelectableTextBlock
+                {
+                    Width = 200,
+                    Text = "first line\nsecond line"
+                };
+
+                var root = new TestRoot(target)
+                {
+                    ClientSize = new Size(300, 200)
+                };
+
+                root.Measure(root.ClientSize);
+                root.Arrange(new Rect(root.ClientSize));
+                root.ExecuteInitialLayoutPass();
+
+                target.SelectionStart = 0;
+                target.SelectionEnd = 5;
+
+                var characterBounds = target.TextLayout.HitTestTextPosition(14);
+                var onUnselectedText = target.TranslatePoint(characterBounds.Center, root);
+                var mouse = new MouseTestHelper();
+
+                mouse.Down(target, MouseButton.Right, onUnselectedText);
+                mouse.Up(target, MouseButton.Right, onUnselectedText);
+
+                Assert.Equal(target.SelectionStart, target.SelectionEnd);
+                Assert.False(target.CanCopy);
+            }
+        }
+
         private static TestServices ClipboardServices
             => TestServices.MockThreadingInterface.With(
                 assetLoader: new StandardAssetLoader(),
@@ -356,6 +454,25 @@ namespace Avalonia.Controls.UnitTests
             Assert.True(target.CanCopy);
 
             return target;
+        }
+
+        [Fact]
+        public void Should_Shape_Inlines_When_TextLayout_Is_Created_Between_Content_Change_And_Measure()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var target = new SelectableTextBlock { Inlines = new InlineCollection() };
+
+            target.Measure(new Size(1000, 1000));
+            target.Arrange(new Rect(0, 0, 1000, 1000));
+
+            target.Inlines = new InlineCollection { new Run("Hello World") };
+
+            _ = target.TextLayout;
+
+            target.Measure(new Size(1000, 1000));
+
+            Assert.True(target.DesiredSize.Width > 0, $"DesiredSize was {target.DesiredSize}");
         }
 
         private class TestTopLevel(ITopLevelImpl impl) : TopLevel(impl);

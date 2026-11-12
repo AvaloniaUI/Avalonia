@@ -78,6 +78,15 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
         public Size Size { get; set; }
 
         /// <summary>
+        /// Gets or sets how far to deflate <see cref="Size"/> when positioning the popup.
+        /// </summary>
+        /// <remarks>
+        /// This is normally set to the margin of the popup's child. This allows out-of-bounds effects 
+        /// like drop shadows to be drawn without affecting the final position of the child.
+        /// </remarks>
+        public Thickness Deflate { get; set; }
+
+        /// <summary>
         /// Specifies the anchor rectangle within the parent that the popup will be placed relative
         /// to, in device-independent pixels.
         /// </summary>
@@ -452,6 +461,7 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
             TopLevel topLevel,
             PopupPositionRequest positionRequest,
             Size popupSize,
+            Thickness deflate,
             FlowDirection flowDirection)
         {
             if (popupSize == default)
@@ -459,24 +469,19 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
                 return;
             }
 
-            var parameters = BuildParameters(topLevel, positionRequest, popupSize, flowDirection);
-            positioner.Update(parameters);
-        }
+            var positionerParameters = new PopupPositionerParameters
+            {
+                Offset = positionRequest.Offset,
+                Size = popupSize,
+                Deflate = deflate,
+                ConstraintAdjustment = positionRequest.ConstraintAdjustment
+            };
 
-        private static PopupPositionerParameters BuildParameters(
-            TopLevel topLevel,
-            PopupPositionRequest positionRequest,
-            Size popupSize,
-            FlowDirection flowDirection)
-        {
-            PopupPositionerParameters positionerParameters = default;
-            positionerParameters.Offset = positionRequest.Offset;
-            positionerParameters.Size = popupSize;
-            positionerParameters.ConstraintAdjustment = positionRequest.ConstraintAdjustment;
             if (positionRequest.Placement == PlacementMode.Pointer)
             {
                 // We need a better way for tracking the last pointer position
-                var position = topLevel.PointToClient(topLevel.LastPointerPosition ?? default);
+                var position = positionRequest.PointerPosition
+                    ?? topLevel.PointToClient(topLevel.LastPointerPosition ?? default);
 
                 positionerParameters.AnchorRectangle = new Rect(position, new Size(1, 1));
                 positionerParameters.Anchor = PopupAnchor.TopLeft;
@@ -492,6 +497,7 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
 
                 var customPlacementParameters = new CustomPopupPlacement(
                     popupSize,
+                    deflate,
                     positionRequest.Target)
                 {
                     AnchorRectangle = positionerParameters.AnchorRectangle,
@@ -562,7 +568,7 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
                 }
             }
 
-            return positionerParameters;
+            positioner.Update(positionerParameters);
         }
 
         private static Rect CalculateAnchorRect(TopLevel topLevel, PopupPositionRequest positionRequest)

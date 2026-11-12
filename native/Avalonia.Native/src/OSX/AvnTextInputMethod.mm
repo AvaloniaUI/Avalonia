@@ -20,9 +20,7 @@ bool AvnTextInputMethod::IsActive() {
     return Client != nullptr;
 }
 
-HRESULT AvnTextInputMethod::SetClient(IAvnTextInputMethodClient *client) {
-    START_COM_CALL;
-    
+HRESULT AvnTextInputMethod::SetClient(const ComPtr<IAvnTextInputMethodClient>& client) {
     Client = client;
     
     return S_OK;
