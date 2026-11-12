@@ -41,6 +41,8 @@ internal class App : Application
             if (Environment.GetEnvironmentVariable("IMPELLER_SMOKE") == "1")
             {
                 desktop.MainWindow.Topmost = true;
+                var window = desktop.MainWindow;
+                DispatcherTimer.RunOnce(() => window.Width += 120, TimeSpan.FromSeconds(1.5));
                 DispatcherTimer.RunOnce(() =>
                 {
                     Console.WriteLine("IMPELLER_SMOKE: rendered, exiting.");
