@@ -36,9 +36,10 @@ namespace Avalonia.Android.Scene
 
             Scene ??= new T();
 
-            base.OnCreate(savedInstanceState);
+            (this as IAvaloniaActivity).Activated += SceneActivity_Activated;
+            (this as IAvaloniaActivity).Deactivated += SceneActivity_Deactivated;
 
-            Content = Scene;
+            base.OnCreate(savedInstanceState);
 
             if (Application is IAndroidApplication application
                 && application.Lifetime is MultiSceneApplicationLifetime lifetime)
@@ -51,11 +52,31 @@ namespace Avalonia.Android.Scene
             request?.SetComplete();
         }
 
+        private void SceneActivity_Deactivated(object? sender, ActivatedEventArgs e)
+        {
+            Scene?.RaiseDeactivatedEvent(e);
+        }
+
+        private void SceneActivity_Activated(object? sender, ActivatedEventArgs e)
+        {
+            Scene?.RaiseActivatedEvent(e);
+        }
+
+        private protected override void InitializeAvaloniaView(object? initialContent)
+        {
+            base.InitializeAvaloniaView(initialContent);
+
+            Content = Scene;
+        }
+
         protected override void OnDestroy()
         {
             base.OnDestroy();
 
-            if(Scene != null 
+            (this as IAvaloniaActivity).Activated -= SceneActivity_Activated;
+            (this as IAvaloniaActivity).Deactivated -= SceneActivity_Deactivated;
+
+            if (Scene != null 
                 && Application is IAndroidApplication application 
                 && application.Lifetime is MultiSceneApplicationLifetime lifetime)
             {

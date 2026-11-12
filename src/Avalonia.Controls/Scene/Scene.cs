@@ -29,6 +29,9 @@ namespace Avalonia.Controls
             set => SetValue(InitialPositionProperty, value);
         }
 
+        public event EventHandler<ActivatedEventArgs>? Activated;
+        public event EventHandler<ActivatedEventArgs>? Deactivated;
+
         public event EventHandler<ApplicationLifetimeStateEventArgs>? SaveState
         {
             add => AddHandler(SaveStateEvent, value);
@@ -62,6 +65,16 @@ namespace Avalonia.Controls
             Host?.Close();
 
             Host = null;
+        }
+
+        internal void RaiseActivatedEvent(ActivatedEventArgs eventArgs)
+        {
+            Activated?.Invoke(this, eventArgs);
+        }
+
+        internal void RaiseDeactivatedEvent(ActivatedEventArgs eventArgs)
+        {
+            Deactivated?.Invoke(this, eventArgs);
         }
     }
 }
