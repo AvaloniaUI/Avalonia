@@ -374,7 +374,7 @@ namespace Avalonia.Controls
             InternalSynchronization,
         }
 
-        private enum HomeEndBehaviors
+        internal enum HomeEndBehaviors
         {
             // Windows & Linux standard behaviour: Wherever the caret has been left, Home/End move it
             // from that position, and drag selection end along if Shift is pressed.
@@ -407,7 +407,7 @@ namespace Avalonia.Controls
         private static readonly string[] invalidCharacters = new String[1] { "\u007f" };
         private bool _canUndo;
         private bool _canRedo;
-        private static readonly HomeEndBehaviors HomeEndBehavior = InferHomeEndBehavior();
+        internal static HomeEndBehaviors HomeEndBehavior = InferHomeEndBehavior();
 
         private int _wordSelectionStart = -1;
         private (int Start, int End) _selectionAtPointerPress;
