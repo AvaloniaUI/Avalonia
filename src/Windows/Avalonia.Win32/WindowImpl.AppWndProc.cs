@@ -715,10 +715,7 @@ namespace Avalonia.Win32
                         {
                             if (BeginPaint(_hwnd, out PAINTSTRUCT ps) != IntPtr.Zero)
                             {
-                                var f = RenderScaling;
-                                var r = ps.rcPaint;
-                                Paint?.Invoke(new Rect(r.left / f, r.top / f, (r.right - r.left) / f,
-                                    (r.bottom - r.top) / f));
+                                Paint?.Invoke(null);
                                 EndPaint(_hwnd, ref ps);
                             }
                         }

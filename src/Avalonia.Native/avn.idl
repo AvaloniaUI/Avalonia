@@ -846,7 +846,6 @@ interface IAvnTopLevelEvents : IUnknown
                           IAvnString* keyText, IAvnString* alternateKeyText, AvnKeyEventInfo info);
     bool RawTextInputEvent(u_int64_t timeStamp, [const] char* text);
     void ScalingChanged(double scaling);
-    void RunRenderPriorityJobs();
     void LostFocus();
     
     IAvnAutomationPeer* GetAutomationPeer();
