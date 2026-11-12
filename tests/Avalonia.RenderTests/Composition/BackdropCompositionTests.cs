@@ -422,6 +422,64 @@ public class BackdropCompositionTests : TestBase
         }
     }
 
+    // Stripes behind a subtree-bounds backdrop container whose only child defines its bounds.
+    private static CompositionSolidColorVisual BuildSubtreeBoundsScene(Harness h, bool retained, double childWidth)
+    {
+        h.Root.Children.Add(h.Rect(Colors.White, 0, 0, 200, 200));
+        for (var x = 0; x < 200; x += 20)
+            h.Root.Children.Add(h.Rect(Colors.Black, x, 0, 10, 200));
+
+        var container = h.Compositor.CreateContainerVisual();
+        container.ClipToBounds = false;
+        container.Offset = new Vector3D(10, 40, 0);
+        container.BackdropEffect = Blur(8);
+        container.BackdropEffectBoundsSource = BackdropEffectBoundsSource.Subtree;
+        container.BackdropEffectCache = MakeBackdropCache(h.Compositor, retained);
+        var child = h.Rect(Color.FromArgb(0x20, 0xFF, 0, 0), 0, 0, childWidth, 100);
+        container.Children.Add(child);
+        h.Root.Children.Add(container);
+        return child;
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Subtree_Bounds_Backdrop_Follows_Child_Resize_In_The_Same_Frame(bool retained)
+    {
+        using var reference = new Harness(200, 200);
+        BuildSubtreeBoundsScene(reference, retained, 180);
+        for (var i = 0; i < 3; i++)
+            reference.Frame();
+
+        using var h = new Harness(200, 200);
+        var child = BuildSubtreeBoundsScene(h, retained, 20);
+        for (var i = 0; i < 3; i++)
+            h.Frame();
+
+        h.Retained(true);
+        child.Size = new Vector(180, 100);
+        h.Frame(); // a single frame: the backdrop must already cover the new bounds
+
+        AssertSimilar(h.Fb, reference.Fb);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Subtree_Bounds_Backdrop_Appears_In_The_First_Frame(bool retained)
+    {
+        using var reference = new Harness(200, 200);
+        BuildSubtreeBoundsScene(reference, retained, 180);
+        for (var i = 0; i < 3; i++)
+            reference.Frame();
+
+        using var h = new Harness(200, 200);
+        BuildSubtreeBoundsScene(h, retained, 180);
+        h.Frame();
+
+        AssertSimilar(h.Fb, reference.Fb);
+    }
+
     [Fact]
     public void Volatile_Overlap_Equals_Full_Redraw()
     {

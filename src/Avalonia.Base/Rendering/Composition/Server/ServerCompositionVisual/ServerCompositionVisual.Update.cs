@@ -191,9 +191,8 @@ internal partial class ServerCompositionVisual
                     parent._subTreeBounds = LtrbRect.FullUnion(parent._subTreeBounds, node._transformedSubTreeBounds);
             }
 
-            // FinalizeSubtreeBounds may have just changed this backdrop's bounds after the registry snapshot;
-            // re-ingest its whole input and refresh the record so the registry doesn't repeat the work next frame.
-            CheckRetainedBackdropStaleAabb(node);
+            // FinalizeSubtreeBounds may have just changed this backdrop's bounds after the registry snapshot.
+            CheckBackdropStaleAabb(node);
 
             //
             // If there are additional dirty regions, pick them up. (Additional dirty regions are
@@ -323,11 +322,12 @@ internal partial class ServerCompositionVisual
                 _dirtyRegion.AddRect(halo);
         }
 
-        // Stale-AABB check in a retained backdrop's PostSubgraph.
-        private void CheckRetainedBackdropStaleAabb(ServerCompositionVisual node)
+        // Stale-AABB check in a subtree-bounds backdrop's PostSubgraph: the registry computed the AABB from the
+        // previous walk's bounds, which this walk may have just changed (or produced for the first time).
+        private void CheckBackdropStaleAabb(ServerCompositionVisual node)
         {
             var record = node.BackdropState;
-            if (record is not { IsRetained: true } || node.BackdropEffectBoundsSource != BackdropEffectBoundsSource.Subtree)
+            if (record == null || node.BackdropEffectBoundsSource != BackdropEffectBoundsSource.Subtree)
                 return;
 
             LtrbPixelRect? fresh = null;
@@ -338,15 +338,19 @@ internal partial class ServerCompositionVisual
                     fresh = LtrbPixelRect.FromRectUnscaled(hostRect);
             }
 
-            if (fresh != record.Aabb)
-            {
-                record.Aabb = fresh;
-                // Same handling as the registry's AABB change (which won't fire next frame now that the record
-                // is updated in place): re-ingest the whole input, keep the store unless nothing is left to capture.
-                record.RetainedInputDirtyArea = fresh?.ToLtrbRectUnscaled();
-                if (fresh == null)
-                    record.DisposeRetainedStateWithContext();
-            }
+            if (fresh == record.Aabb)
+                return;
+
+            // Updating the record in place also keeps the registry from re-detecting the change next frame.
+            record.Aabb = fresh;
+            if (!record.IsRetained)
+                return;
+
+            // Same handling as the registry's AABB change: re-ingest the whole input, keep the store unless
+            // nothing is left to capture.
+            record.RetainedInputDirtyArea = fresh?.ToLtrbRectUnscaled();
+            if (fresh == null)
+                record.DisposeRetainedStateWithContext();
         }
 
         private void PushBoundsAffectingProperties(ServerCompositionVisual node)
