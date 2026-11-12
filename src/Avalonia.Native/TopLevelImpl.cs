@@ -241,7 +241,17 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
         return args.Handled;
     }
 
-    public void RawMouseEvent(AvnRawMouseEventType type, AvnPointerDeviceType deviceType, ulong timeStamp, AvnInputModifiers modifiers, AvnPoint point, AvnVector delta, float pressure, float xTilt, float yTilt)
+    private static TouchPadGesturePhase ToGesturePhase(AvnTouchPadGesturePhase phase)
+        => phase switch
+        {
+            AvnTouchPadGesturePhase.AvnTouchPadGesturePhaseBegan => TouchPadGesturePhase.Began,
+            AvnTouchPadGesturePhase.AvnTouchPadGesturePhaseChanged => TouchPadGesturePhase.Changed,
+            AvnTouchPadGesturePhase.AvnTouchPadGesturePhaseEnded => TouchPadGesturePhase.Ended,
+            AvnTouchPadGesturePhase.AvnTouchPadGesturePhaseCancelled => TouchPadGesturePhase.Cancelled,
+            _ => TouchPadGesturePhase.None
+        };
+
+    public void RawMouseEvent(AvnRawMouseEventType type, AvnPointerDeviceType deviceType, ulong timeStamp, AvnInputModifiers modifiers, AvnPoint point, AvnVector delta, float pressure, float xTilt, float yTilt, AvnTouchPadGesturePhase gesturePhase)
     {
         if (_inputRoot is null)
             return;
@@ -262,17 +272,20 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
 
             case AvnRawMouseEventType.Magnify:
                 Input?.Invoke(new RawPointerGestureEventArgs(_mouse, timeStamp, _inputRoot, RawPointerEventType.Magnify,
-                    point.ToAvaloniaPoint(), new Vector(delta.X, delta.Y), (RawInputModifiers)modifiers));
+                    point.ToAvaloniaPoint(), new Vector(delta.X, delta.Y), (RawInputModifiers)modifiers,
+                    ToGesturePhase(gesturePhase)));
                 break;
 
             case AvnRawMouseEventType.Rotate:
                 Input?.Invoke(new RawPointerGestureEventArgs(_mouse, timeStamp, _inputRoot, RawPointerEventType.Rotate,
-                    point.ToAvaloniaPoint(), new Vector(delta.X, delta.Y), (RawInputModifiers)modifiers));
+                    point.ToAvaloniaPoint(), new Vector(delta.X, delta.Y), (RawInputModifiers)modifiers,
+                    ToGesturePhase(gesturePhase)));
                 break;
 
             case AvnRawMouseEventType.Swipe:
                 Input?.Invoke(new RawPointerGestureEventArgs(_mouse, timeStamp, _inputRoot, RawPointerEventType.Swipe,
-                    point.ToAvaloniaPoint(), new Vector(delta.X, delta.Y), (RawInputModifiers)modifiers));
+                    point.ToAvaloniaPoint(), new Vector(delta.X, delta.Y), (RawInputModifiers)modifiers,
+                    ToGesturePhase(gesturePhase)));
                 break;
 
             default:
@@ -466,9 +479,11 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
             _parent.Resized?.Invoke(s, (WindowResizeReason)reason);
         }
 
-        void IAvnTopLevelEvents.RawMouseEvent(AvnRawMouseEventType type, AvnPointerDeviceType pointerDeviceType, ulong timeStamp, AvnInputModifiers modifiers, AvnPoint point, AvnVector delta, float pressure, float xTilt, float yTilt)
+        void IAvnTopLevelEvents.RawMouseEvent(AvnRawMouseEventType type, AvnPointerDeviceType pointerDeviceType,
+            ulong timeStamp, AvnInputModifiers modifiers, AvnPoint point, AvnVector delta, float pressure, float xTilt,
+            float yTilt, AvnTouchPadGesturePhase gesturePhase)
         {
-            _parent.RawMouseEvent(type, pointerDeviceType, timeStamp, modifiers, point, delta, pressure, xTilt, yTilt);
+            _parent.RawMouseEvent(type, pointerDeviceType, timeStamp, modifiers, point, delta, pressure, xTilt, yTilt, gesturePhase);
         }
 
         int IAvnTopLevelEvents.RawKeyEvent(AvnRawKeyEventType type, ulong timeStamp, AvnInputModifiers modifiers, AvnKey key, AvnPhysicalKey physicalKey, string keySymbol,

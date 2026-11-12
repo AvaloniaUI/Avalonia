@@ -11,12 +11,16 @@ namespace Avalonia.Input.Raw
             IInputRoot root,
             RawPointerEventType gestureType,
             Point position,
-            Vector delta, RawInputModifiers inputModifiers)
+            Vector delta, RawInputModifiers inputModifiers,
+            TouchPadGesturePhase phase)
             : base(device, timestamp, root, gestureType, position, inputModifiers)
         {
             Delta = delta;
+            Phase = phase;
         }
 
         public Vector Delta { get; private set; }
+
+        public TouchPadGesturePhase Phase { get; private set; }
     }
 }

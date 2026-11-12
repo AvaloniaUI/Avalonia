@@ -239,6 +239,19 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
     *yTilt = -tilt.y * 90;
 }
 
+static AvnTouchPadGesturePhase ToAvnTouchPadGesturePhase(NSEventPhase phase)
+{
+    if (phase & NSEventPhaseBegan)
+        return AvnTouchPadGesturePhaseBegan;
+    if (phase & NSEventPhaseChanged)
+        return AvnTouchPadGesturePhaseChanged;
+    if (phase & NSEventPhaseEnded)
+        return AvnTouchPadGesturePhaseEnded;
+    if (phase & NSEventPhaseCancelled)
+        return AvnTouchPadGesturePhaseCancelled;
+    return AvnTouchPadGesturePhaseNone;
+}
+
 - (void)mouseEvent:(NSEvent *)event withType:(AvnRawMouseEventType) type
 {
     bool triggerInputWhenDisabled = type != Move && type != LeaveWindow;
@@ -260,6 +273,7 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
     
     auto point = ToAvnPoint(localPoint);
     AvnVector delta = { 0, 0};
+    AvnTouchPadGesturePhase gesturePhase = AvnTouchPadGesturePhaseNone;
 
     if(type == Wheel)
     {
@@ -281,10 +295,12 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
     else if (type == Magnify)
     {
         delta.X = delta.Y = [event magnification];
+        gesturePhase = ToAvnTouchPadGesturePhase([event phase]);
     }
     else if (type == Rotate)
     {
         delta.X = delta.Y = [event rotation];
+        gesturePhase = ToAvnTouchPadGesturePhase([event phase]);
     }
     else if (type == Swipe)
     {
@@ -383,7 +399,7 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
     auto parent = _parent.tryGet();
     if(parent != nullptr)
     {
-        parent->TopLevelEvents->RawMouseEvent(type, pointerType, timestamp, modifiers, point, delta, pressure, xTilt, yTilt);
+        parent->TopLevelEvents->RawMouseEvent(type, pointerType, timestamp, modifiers, point, delta, pressure, xTilt, yTilt, gesturePhase);
     }
 
     // This handler is shared by all mouse event types. Only real mouse-moved
