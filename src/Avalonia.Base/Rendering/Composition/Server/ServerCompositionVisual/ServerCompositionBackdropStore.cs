@@ -35,9 +35,9 @@ internal sealed class ServerCompositionBackdropStore : IDisposable
     /// <param name="surfaceAabb">The backdrop AABB in surface pixels; the layer covers exactly this rect.</param>
     /// <param name="pending">Pending input to re-ingest, in surface pixels (already ∩ AABB), or null.</param>
     /// <param name="effect">The backdrop effect.</param>
-    /// <param name="destRect">The backdrop AABB in the canvas' current coordinate space.</param>
+    /// <param name="bounds">The backdrop's bounds in the canvas' current coordinate space.</param>
     public void Draw(IDrawingContextImplWithBackdropSupport canvas, IPlatformRenderInterfaceContext renderContext,
-        LtrbPixelRect surfaceAabb, LtrbPixelRect? pending, IEffect effect, Rect destRect)
+        LtrbPixelRect surfaceAabb, LtrbPixelRect? pending, IEffect effect, Rect bounds)
     {
         var size = new PixelSize(surfaceAabb.Right - surfaceAabb.Left, surfaceAabb.Bottom - surfaceAabb.Top);
         if (size.Width < 1 || size.Height < 1)
@@ -71,6 +71,6 @@ internal sealed class ServerCompositionBackdropStore : IDisposable
         else
             dirtyRects = Array.Empty<PixelRect>();
 
-        canvas.DrawRetainedBackdropEffect(_cache!, dirtyRects, effect, destRect);
+        canvas.DrawRetainedBackdropEffect(_cache!, surfaceAabb.ToPixelRect(), dirtyRects, effect, bounds);
     }
 }

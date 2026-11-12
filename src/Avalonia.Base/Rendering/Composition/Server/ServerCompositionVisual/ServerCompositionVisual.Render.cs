@@ -190,9 +190,6 @@ partial class ServerCompositionVisual
             if (_canvas is not IDrawingContextImplWithBackdropSupport { SupportsBackdrop: true } backdropCanvas)
                 return;
 
-            if (!_canvas.Transform.TryInvert(out var inverse))
-                return;
-
             var mapping = record.Host?.GetDirtyRectSpaceMapping() ?? DirtyRectSpaceMapping.Identity;
             if (!mapping.IsUsable)
                 return;
@@ -200,9 +197,14 @@ partial class ServerCompositionVisual
             var aabbHost = aabbPixels.ToLtrbRectUnscaled();
             var surfaceAabb = ToSurfacePixels(aabbHost, mapping);
 
-            // The AABB in the canvas' current coordinate space. The backend re-derives the device-space
-            // snapshot/layer rect from this and the current Transform, owning all the pixel-space math.
-            var destRect = surfaceAabb.ToLtrbRectUnscaled().ToRect().TransformToAABB(inverse);
+            // Where the effect may show: the visual's own bounds in its coordinate space (the canvas' current
+            // one), so the clip follows any transform. The AABB only sizes what is captured.
+            var localBounds = visual.BackdropEffectBoundsSource == Media.BackdropEffectBoundsSource.Layout
+                ? new LtrbRect(0, 0, visual.Size.X, visual.Size.Y)
+                : visual._subTreeBounds;
+            if (localBounds is not { IsZeroSize: false } boundsRect)
+                return;
+            var bounds = boundsRect.ToRect();
 
             if (record.IsRetained)
             {
@@ -228,14 +230,14 @@ partial class ServerCompositionVisual
                 }
 
                 var renderContext = visual.Compositor.RenderInterface.Value;
-                store.Draw(backdropCanvas, renderContext, surfaceAabb, pending, visual.BackdropEffect!, destRect);
+                store.Draw(backdropCanvas, renderContext, surfaceAabb, pending, visual.BackdropEffect!, bounds);
                 record.RetainedInputDirtyArea = null; // consumed into the layer
             }
             else
             {
                 // Volatile: a native backdrop filter captures the current canvas (through any nested intermediate
                 // layers) and filters it, so it's correct even under an ancestor Effect/OpacityMask.
-                backdropCanvas.DrawVolatileBackdropEffect(destRect, visual.BackdropEffect!);
+                backdropCanvas.DrawVolatileBackdropEffect(bounds, visual.BackdropEffect!);
             }
         }
 

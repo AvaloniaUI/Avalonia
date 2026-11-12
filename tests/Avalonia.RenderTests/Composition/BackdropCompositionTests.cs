@@ -351,6 +351,35 @@ public class BackdropCompositionTests : TestBase
         AssertSimilar(h.Fb, reference.Fb);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Rotated_Backdrop_Is_Limited_To_The_Rotated_Bounds(bool retained)
+    {
+        using var h = new Harness(200, 200);
+        h.Root.Children.Add(h.Rect(Colors.White, 0, 0, 200, 200));
+        h.Root.Children.Add(h.Rect(Colors.Black, 0, 0, 60, 200)); // hard edge at x = 60
+
+        // An 80x80 square centred at (100,100), rotated 45 degrees: a diamond with a 56.6 half-diagonal.
+        var backdrop = h.Rect(Colors.Transparent, 60, 60, 80, 80);
+        backdrop.ClipToBounds = false;
+        backdrop.CenterPoint = new Vector3D(40, 40, 0);
+        backdrop.RotationAngle = (float)(Math.PI / 4);
+        backdrop.BackdropEffect = Blur(8);
+        backdrop.BackdropEffectCache = MakeBackdropCache(h.Compositor, retained);
+        h.Root.Children.Add(backdrop);
+        h.Frame();
+        h.Frame();
+
+        // (60,100) is inside the diamond: the edge is blurred there.
+        var inside = h.Px(60, 100);
+        Assert.InRange((int)inside.Red, 60, 200);
+
+        // (59..60, 55) is inside the diamond's axis-aligned box but outside the diamond: the edge stays hard.
+        Assert.True(h.Px(58, 55).Red < 10, $"left={h.Px(58, 55)}");
+        Assert.True(h.Px(61, 55).Red > 245, $"right={h.Px(61, 55)}");
+    }
+
     [Fact]
     public void Volatile_Overlap_Equals_Full_Redraw()
     {

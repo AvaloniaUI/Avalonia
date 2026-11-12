@@ -246,18 +246,21 @@ namespace Avalonia.Platform
 
         /// <summary>
         /// Volatile backdrop: draws the current canvas contents (through any nested layers) filtered by
-        /// <paramref name="effect"/> back onto the canvas, clipped to <paramref name="bounds"/>.
+        /// <paramref name="effect"/> back onto the canvas, clipped to <paramref name="bounds"/> (in the current
+        /// coordinate space, so the clip follows the current transform).
         /// </summary>
         void DrawVolatileBackdropEffect(Rect bounds, IEffect effect);
 
         /// <summary>
         /// Retained backdrop: refreshes <paramref name="cache"/> from the live target over
         /// <paramref name="dirtyRects"/> (device-space pixels), then draws the cache through
-        /// <paramref name="effect"/> at <paramref name="destRect"/>. The cache must be one created by this
-        /// context via <see cref="CreateBackdropCache"/>. An empty dirty list skips the refresh.
+        /// <paramref name="effect"/>, clipped to <paramref name="bounds"/> (in the current coordinate space).
+        /// <paramref name="cacheBounds"/> is the axis-aligned device-space area the cache covers. The cache must
+        /// be one created by this context via <see cref="CreateBackdropCache"/>. An empty dirty list skips the
+        /// refresh.
         /// </summary>
-        void DrawRetainedBackdropEffect(IDrawingContextBackdropCacheImpl cache, IReadOnlyList<PixelRect> dirtyRects,
-            IEffect effect, Rect destRect);
+        void DrawRetainedBackdropEffect(IDrawingContextBackdropCacheImpl cache, PixelRect cacheBounds,
+            IReadOnlyList<PixelRect> dirtyRects, IEffect effect, Rect bounds);
     }
 
     public static class DrawingContextImplExtensions

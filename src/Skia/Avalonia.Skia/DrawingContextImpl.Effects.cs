@@ -83,15 +83,15 @@ partial class DrawingContextImpl
         var paint = SKPaintCache.Shared.Get();
         paint.Color = new SKColor(255, 255, 255, (byte)(255 * _currentOpacity));
         var savedCount = Canvas.Save();
-        Canvas.ClipRect(bounds.ToSKRect());
+        Canvas.ClipRect(bounds.ToSKRect(), antialias: true);
         Canvas.SaveLayer(new SKCanvasSaveLayerRec { Bounds = bounds.ToSKRect(), Backdrop = filter, Paint = paint });
         SKPaintCache.Shared.ReturnReset(paint);
         // Pops the layer, which is what composites the filtered backdrop, and the clip.
         Canvas.RestoreToCount(savedCount);
     }
 
-    public void DrawRetainedBackdropEffect(IDrawingContextBackdropCacheImpl cache, IReadOnlyList<PixelRect> dirtyRects,
-        IEffect effect, Rect destRect)
+    public void DrawRetainedBackdropEffect(IDrawingContextBackdropCacheImpl cache, PixelRect cacheBounds,
+        IReadOnlyList<PixelRect> dirtyRects, IEffect effect, Rect bounds)
     {
         CheckLease();
         // The backend only ever hands back a cache it created via CreateBackdropCache, so this cast is safe.
@@ -99,7 +99,7 @@ partial class DrawingContextImpl
             return;
 
         // The layer's pixel (0,0) sits at this device-space position on the target surface.
-        var layerOrigin = PixelRect.FromRect(destRect.TransformToAABB(Transform), 1).Position;
+        var layerOrigin = cacheBounds.Position;
         var layerSurface = skiaLayer.Surface;
 
         // Step 1: refresh the damaged regions of the layer directly from the live target. A single
@@ -133,8 +133,9 @@ partial class DrawingContextImpl
             }
         }
 
-        // Step 2: draw the (now current) layer through the effect at destRect. The local matrix maps layer
-        // pixels back into the current coordinate space.
+        // Step 2: draw the (now current) layer through the effect, clipped to bounds. The local matrix maps
+        // layer pixels back into the current coordinate space, so the layer stays device-aligned under any
+        // transform while the clip follows it.
         using var image = skiaLayer.SnapshotImage();
         if (!(Transform * Matrix.CreateTranslation(-layerOrigin.X, -layerOrigin.Y)).TryInvert(out var localMatrix))
             return;
@@ -148,14 +149,14 @@ partial class DrawingContextImpl
         var savedCount = Canvas.Save();
         try
         {
-            // The filter output (e.g. a drop-shadow offset) may extend past destRect; keep it inside, matching
-            // the bounds of the volatile save-layer.
-            var skDestRect = destRect.ToSKRect();
-            Canvas.ClipRect(skDestRect);
+            // The filter output (e.g. a drop-shadow offset) may extend past the bounds; keep it inside, matching
+            // the volatile path.
+            var skBounds = bounds.ToSKRect();
+            Canvas.ClipRect(skBounds, antialias: true);
             paint.Shader = shader;
             paint.ImageFilter = filter;
             paint.Color = new SKColor(255, 255, 255, (byte)(255 * _currentOpacity));
-            Canvas.DrawRect(skDestRect, paint);
+            Canvas.DrawRect(skBounds, paint);
         }
         finally
         {

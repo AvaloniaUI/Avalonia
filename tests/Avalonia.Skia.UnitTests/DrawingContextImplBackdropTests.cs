@@ -130,7 +130,7 @@ public class DrawingContextImplBackdropTests
         var destRect = new Rect(0, 0, w, h);
 
         // A full dirty rect refreshes the whole cache from the split, then it is drawn back through the blur.
-        ctx.DrawRetainedBackdropEffect(cache, new[] { new PixelRect(0, 0, w, h) },
+        ctx.DrawRetainedBackdropEffect(cache, new PixelRect(0, 0, w, h), new[] { new PixelRect(0, 0, w, h) },
             new ImmutableBlurEffect(8), destRect);
         surface.Canvas.Flush();
 
@@ -158,13 +158,15 @@ public class DrawingContextImplBackdropTests
         // Load the cache with red from the target.
         surface.Canvas.Clear(SKColors.Red);
         surface.Canvas.Flush();
-        ctx.DrawRetainedBackdropEffect(cache, new[] { new PixelRect(0, 0, size, size) },
+        var cacheBounds = new PixelRect(0, 0, size, size);
+        ctx.DrawRetainedBackdropEffect(cache, cacheBounds, new[] { cacheBounds },
             new ImmutableBlurEffect(0), destRect);
 
         // Repaint the target blue, then draw with no dirty rects: the stale (red) cache must be reused.
         surface.Canvas.Clear(SKColors.Blue);
         surface.Canvas.Flush();
-        ctx.DrawRetainedBackdropEffect(cache, Array.Empty<PixelRect>(), new ImmutableBlurEffect(0), destRect);
+        ctx.DrawRetainedBackdropEffect(cache, cacheBounds, Array.Empty<PixelRect>(), new ImmutableBlurEffect(0),
+            destRect);
         surface.Canvas.Flush();
 
         AssertColor(bitmap.GetPixel(size / 2, size / 2), 255, 0, 0); // red (refresh skipped), not blue
@@ -185,7 +187,7 @@ public class DrawingContextImplBackdropTests
         var destRect = new Rect(0, 0, w, h).TransformToAABB(inverse);
 
         using var cache = ctx.CreateBackdropCache(new PixelSize(w, h));
-        ctx.DrawRetainedBackdropEffect(cache, new[] { new PixelRect(0, 0, w, h) },
+        ctx.DrawRetainedBackdropEffect(cache, new PixelRect(0, 0, w, h), new[] { new PixelRect(0, 0, w, h) },
             new ImmutableBlurEffect(0), destRect);
         surface.Canvas.Flush();
 
@@ -284,7 +286,7 @@ public class DrawingContextImplBackdropTests
         if (retained)
         {
             using var cache = ctx.CreateBackdropCache(bounds.Size);
-            ctx.DrawRetainedBackdropEffect(cache, new[] { bounds }, effect, destRect);
+            ctx.DrawRetainedBackdropEffect(cache, bounds, new[] { bounds }, effect, destRect);
         }
         else
             ctx.DrawVolatileBackdropEffect(destRect, effect);
