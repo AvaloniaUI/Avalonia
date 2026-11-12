@@ -4,13 +4,13 @@ using Avalonia;
 using Avalonia.OpenGL;
 
 /// <summary>
-/// Opts a sample into Impeller with RENDERER=impeller. IMPELLER_BACKEND=vulkan prefers Vulkan over OpenGL ES
-/// where the platform offers both.
+/// Renders a sample with Impeller unless RENDERER=skia is set. IMPELLER_BACKEND=vulkan prefers Vulkan over
+/// OpenGL ES where the platform offers both.
 /// </summary>
 internal static class ImpellerSampleExtensions
 {
     public static bool IsImpellerRequested =>
-        string.Equals(Environment.GetEnvironmentVariable("RENDERER"), "impeller", StringComparison.OrdinalIgnoreCase);
+        !string.Equals(Environment.GetEnvironmentVariable("RENDERER"), "skia", StringComparison.OrdinalIgnoreCase);
 
     private static bool PreferVulkan =>
         string.Equals(Environment.GetEnvironmentVariable("IMPELLER_BACKEND"), "vulkan",

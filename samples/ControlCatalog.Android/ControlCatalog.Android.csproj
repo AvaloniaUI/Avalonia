@@ -22,4 +22,6 @@
     <ProjectReference Include="..\..\src\Android\Avalonia.Android\Avalonia.Android.csproj" />
     <ProjectReference Include="..\ControlCatalog\ControlCatalog.csproj" />
   </ItemGroup>
+
+  <Import Project="..\ImpellerSandbox.Android\ImpellerAndroid.props" />
 </Project>
