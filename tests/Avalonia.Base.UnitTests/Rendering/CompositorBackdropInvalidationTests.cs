@@ -568,6 +568,44 @@ public class CompositorBackdropInvalidationTests : CompositorTestsBase
     }
 
     [Fact]
+    public void Outer_Damage_Does_Not_Reach_Retained_Backdrop_Inside_Clean_Cache()
+    {
+        using var s = new CompositorTestServices();
+        var c = s.Compositor;
+        var host = Panel(c);
+        ElementComposition.SetElementChildVisual(s.TopLevel, host);
+
+        var behind = c.CreateSolidColorVisual();
+        behind.Size = new Vector(20, 20);
+        behind.Offset = new Vector3D(10, 10, 0);
+        behind.Color = Colors.Blue;
+
+        var cached = c.CreateContainerVisual();
+        cached.Size = new Vector(100, 100);
+        cached.CacheMode = MakeCache(c);
+        var backdrop = RetainedBackdrop(c, new Vector(100, 100));
+        cached.Children.Add(backdrop);
+
+        host.Children.Add(behind);
+        host.Children.Add(cached);
+        s.RunJobs();
+        s.RunJobs();
+
+        var record = backdrop.Server.BackdropState!;
+        Assert.Same(cached.Server.Cache, record.Host);
+        record.RetainedInputDirtyArea = null;
+        s.Events.Rects.Clear();
+
+        // The backdrop samples the cache's own surface: a change outside the (clean) cache is not its input.
+        behind.Offset = new Vector3D(10, 50, 0);
+        s.AssertRects(
+            new Rect(10, 10, 20, 20),
+            new Rect(10, 50, 20, 20));
+
+        Assert.Null(record.RetainedInputDirtyArea);
+    }
+
+    [Fact]
     public void Dirty_Ancestor_Fully_Invalidates_Retained_Input()
     {
         using var s = new CompositorTestServices();
@@ -682,6 +720,118 @@ public class CompositorBackdropInvalidationTests : CompositorTestsBase
         mover.Offset = new Vector3D(10, 15, 0);
         s.RunJobs();
         Assert.Equal(new LtrbRect(10, 10, 30, 35), record.RetainedInputDirtyArea!.Value);
+    }
+
+    [Fact]
+    public void Dirty_Ancestor_Alone_Fully_Invalidates_Retained_Input()
+    {
+        using var s = new CompositorTestServices();
+        var c = s.Compositor;
+        var host = Panel(c);
+        ElementComposition.SetElementChildVisual(s.TopLevel, host);
+
+        // The ancestor's own content is drawn behind the backdrop, so its opacity change is backdrop input.
+        var ancestor = c.CreateSolidColorVisual();
+        ancestor.Size = new Vector(100, 100);
+        ancestor.Color = Colors.Blue;
+        var backdrop = RetainedBackdrop(c, new Vector(100, 100));
+        ancestor.Children.Add(backdrop);
+        host.Children.Add(ancestor);
+        s.RunJobs();
+        s.RunJobs();
+
+        var record = backdrop.Server.BackdropState!;
+        record.RetainedInputDirtyArea = null;
+
+        // Nothing else is damaged this frame, so the working set is empty when the walk reaches the ancestor.
+        ancestor.Opacity = 0.5f;
+        s.RunJobs();
+
+        Assert.Equal(new LtrbRect(0, 0, 100, 100), record.RetainedInputDirtyArea!.Value);
+    }
+
+    [Fact]
+    public void Child_Removal_Alone_Fully_Invalidates_Later_Sibling_Retained_Input()
+    {
+        using var s = new CompositorTestServices();
+        var c = s.Compositor;
+        var host = Panel(c);
+        ElementComposition.SetElementChildVisual(s.TopLevel, host);
+
+        var p = Panel(c);
+        host.Children.Add(p);
+
+        var removable = c.CreateSolidColorVisual();
+        removable.Size = new Vector(20, 20);
+        removable.Offset = new Vector3D(10, 10, 0); // behind the backdrop
+        removable.Color = Colors.Blue;
+        var backdrop = RetainedBackdrop(c, new Vector(100, 100));
+
+        p.Children.Add(removable);
+        p.Children.Add(backdrop);
+        s.RunJobs();
+        s.RunJobs();
+
+        var record = backdrop.Server.BackdropState!;
+        record.RetainedInputDirtyArea = null;
+
+        // The removal's damage is only emitted in p's PostSubgraph, after the backdrop's position in the walk.
+        p.Children.Remove(removable);
+        s.RunJobs();
+
+        Assert.Equal(new LtrbRect(0, 0, 100, 100), record.RetainedInputDirtyArea!.Value);
+    }
+
+    private (CompositionContainerVisual cached, CompositionSolidColorVisual removable, ServerCompositionVisualBackdropState record)
+        BuildCachedBackdrop(CompositorTestServices s)
+    {
+        var c = s.Compositor;
+        var host = Panel(c);
+        ElementComposition.SetElementChildVisual(s.TopLevel, host);
+
+        var cached = c.CreateContainerVisual();
+        cached.Size = new Vector(100, 100);
+        cached.CacheMode = MakeCache(c);
+        var removable = c.CreateSolidColorVisual();
+        removable.Size = new Vector(20, 20);
+        removable.Offset = new Vector3D(10, 10, 0);
+        removable.Color = Colors.Blue;
+        var backdrop = RetainedBackdrop(c, new Vector(100, 100));
+        cached.Children.Add(removable);
+        cached.Children.Add(backdrop);
+        host.Children.Add(cached);
+        s.RunJobs();
+        s.RunJobs();
+
+        var record = backdrop.Server.BackdropState!;
+        Assert.Same(cached.Server.Cache, record.Host);
+        record.RetainedInputDirtyArea = null;
+        return (cached, removable, record);
+    }
+
+    [Fact]
+    public void Moving_A_Cache_Does_Not_Invalidate_Retained_Backdrop_Inside_It()
+    {
+        using var s = new CompositorTestServices();
+        var (cached, _, record) = BuildCachedBackdrop(s);
+
+        // The cache's contents are unchanged; only where it is drawn moves.
+        cached.Offset = new Vector3D(30, 0, 0);
+        s.RunJobs();
+
+        Assert.Null(record.RetainedInputDirtyArea);
+    }
+
+    [Fact]
+    public void Child_Removal_Inside_Cache_Fully_Invalidates_Later_Sibling_Retained_Input()
+    {
+        using var s = new CompositorTestServices();
+        var (cached, removable, record) = BuildCachedBackdrop(s);
+
+        cached.Children.Remove(removable);
+        s.RunJobs();
+
+        Assert.Equal(new LtrbRect(0, 0, 100, 100), record.RetainedInputDirtyArea!.Value);
     }
 
     [Fact]

@@ -274,6 +274,84 @@ public class BackdropCompositionTests : TestBase
     }
 
     [Fact]
+    public void Retained_Backdrop_Ancestor_Opacity_Change_Equals_Full_Redraw()
+    {
+        // The ancestor's own content is behind the backdrop; with nothing else damaged, its opacity change
+        // must still reach the backdrop.
+        CompositionSolidColorVisual Build(Harness h, float opacity)
+        {
+            h.Root.Children.Add(h.Rect(Colors.White, 0, 0, 200, 200));
+            var ancestor = h.Rect(Colors.Blue, 20, 20, 120, 120);
+            ancestor.Opacity = opacity;
+            var backdrop = h.Rect(Colors.Transparent, 20, 20, 80, 80);
+            backdrop.BackdropEffect = Blur(5);
+            backdrop.BackdropEffectCache = MakeRetainedBackdrop(h.Compositor);
+            ancestor.Children.Add(backdrop);
+            h.Root.Children.Add(ancestor);
+            return ancestor;
+        }
+
+        using var reference = new Harness(200, 200);
+        Build(reference, 0.3f);
+        reference.Frame();
+        reference.Frame();
+
+        using var h = new Harness(200, 200);
+        var ancestor = Build(h, 1);
+        h.Frame();
+        h.Frame();
+
+        h.Retained(true);
+        ancestor.Opacity = 0.3f;
+        h.Frame();
+        h.Frame();
+
+        AssertSimilar(h.Fb, reference.Fb);
+    }
+
+    [Fact]
+    public void Retained_Backdrop_Earlier_Sibling_Removal_Equals_Full_Redraw()
+    {
+        // The removed sibling's damage is emitted after the backdrop's position in the update walk.
+        (CompositionContainerVisual panel, CompositionSolidColorVisual? behind) Build(Harness h, bool withBehind)
+        {
+            h.Root.Children.Add(h.Rect(Colors.White, 0, 0, 200, 200));
+            var panel = h.Compositor.CreateContainerVisual();
+            panel.ClipToBounds = false;
+            CompositionSolidColorVisual? behind = null;
+            if (withBehind)
+            {
+                behind = h.Rect(Colors.Red, 40, 40, 40, 40);
+                panel.Children.Add(behind);
+            }
+
+            var backdrop = h.Rect(Colors.Transparent, 20, 20, 100, 100);
+            backdrop.BackdropEffect = Blur(5);
+            backdrop.BackdropEffectCache = MakeRetainedBackdrop(h.Compositor);
+            panel.Children.Add(backdrop);
+            h.Root.Children.Add(panel);
+            return (panel, behind);
+        }
+
+        using var reference = new Harness(200, 200);
+        Build(reference, false);
+        reference.Frame();
+        reference.Frame();
+
+        using var h = new Harness(200, 200);
+        var (panel, behind) = Build(h, true);
+        h.Frame();
+        h.Frame();
+
+        h.Retained(true);
+        panel.Children.Remove(behind!);
+        h.Frame();
+        h.Frame();
+
+        AssertSimilar(h.Fb, reference.Fb);
+    }
+
+    [Fact]
     public void Volatile_Overlap_Equals_Full_Redraw()
     {
         using var reference = new Harness(200, 200);

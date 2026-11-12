@@ -26,6 +26,12 @@ internal partial class ServerCompositionVisual
 
         // A view of the current collector's working set + host-space mapping, resolved on every collector swap.
         private DirtyRectWorkingSet _currentWorkingSet;
+
+        // Number of ancestor-or-self bitmap caches the walk is passing through without having pushed them
+        // (e.g. the cache visual itself moved). The walk state then belongs to an outer host, while backdrops
+        // below sample the cache's own surface. A plain counter is enough: a cache is only skipped when nothing
+        // in its subtree is dirty, so no nested cache gets pushed and no damage is collected while it's non-zero.
+        private int _skippedCacheDepth;
         private List<LtrbRect>? _workingSetBuffer;
 
         public UpdateContext(CompositorPools pools, IDirtyRectCollector dirtyRects, Matrix transform, LtrbRect clip)
@@ -76,6 +82,9 @@ internal partial class ServerCompositionVisual
         {
             return (node._isDirtyForRenderInSubgraph || node._needsToAddExtraDirtyRectToDirtyRegion || node._contentChanged);
         }
+
+        private bool IsCacheSkipped(ServerCompositionVisual node) =>
+            node.Cache != null && !NeedToPushBoundsAffectingProperties(node);
         
         public void PreSubgraph(ServerCompositionVisual node, out bool visitChildren)
         {
@@ -133,15 +142,21 @@ internal partial class ServerCompositionVisual
                 PushCacheIfNeeded(node);
             }
 
+            if (IsCacheSkipped(node))
+                _skippedCacheDepth++;
+
             // Consumed by descendant backdrop capture. Incremented after any cache push so a cache owner's
             // structural change blankets the backdrops inside its cache, but not for its own backdrop
             // (captured above) nor for ancestors above the cache.
             if (node._childrenChanged)
                 _childrenChangedAncestorCount++;
 
-            // Descent gate: keep descending a clean spine toward backdrops while the current host collector
-            // has damage. Uses the cache's tracker once a cache has been pushed for this node.
-            if (node._backdropsInSubTree > 0 && !_currentWorkingSet.IsEmpty)
+            // Descent gate: keep descending a clean spine toward backdrops while something behind them may have
+            // changed: the host collector has damage, or a covering dirty ancestor / structural change whose
+            // damage is only emitted in its PostSubgraph. Never into a cache that wasn't pushed: it is its own
+            // backdrop source and nothing inside it changed.
+            if (node._backdropsInSubTree > 0 && _skippedCacheDepth == 0
+                && (!_currentWorkingSet.IsEmpty || _dirtyRegionDisableCount > 0 || _childrenChangedAncestorCount > 0))
                 visitChildren = true;
 
             if (node._needsBoundingBoxUpdate)
@@ -193,6 +208,9 @@ internal partial class ServerCompositionVisual
             // Mirror of the PreSubgraph increment (before the matching cache pop restores the host's count).
             if (node._childrenChanged)
                 _childrenChangedAncestorCount--;
+
+            if (IsCacheSkipped(node))
+                _skippedCacheDepth--;
 
             // If we pushed transforms here, we need to pop them again.  If we're handling a cache we need
             // to finish handling it here as well.
@@ -264,6 +282,10 @@ internal partial class ServerCompositionVisual
         {
             var record = node.BackdropState;
             if (record is not { IsRetained: true, Aabb: { } aabbPixels })
+                return;
+
+            // The collected damage belongs to an outer host, not to the cache this backdrop samples.
+            if (_skippedCacheDepth > 0)
                 return;
 
             var aabb = aabbPixels.ToLtrbRectUnscaled();
