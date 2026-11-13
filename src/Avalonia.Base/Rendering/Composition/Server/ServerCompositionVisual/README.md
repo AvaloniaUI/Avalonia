@@ -194,8 +194,8 @@ written.
 
 ## Backdrop rules
 
-- A backdrop visual reads the backdrop only inside its own backdrop bounds. The effect sees the edge pixels repeated
-  outside of them. So a change outside of the AABB never changes the output.
+- A backdrop visual reads the backdrop only inside its own backdrop bounds. The effect sees the content mirrored
+  at the edges of the bounds. So a change outside of the AABB never changes the output.
 - Retained and volatile produce the same pixels, except under an intermediate layer (see below). Apart from that the
   mode is a performance choice only.
 - Every layer has its own backdrop. A backdrop visual inside a bitmap cache reads the bitmap cache layer and never

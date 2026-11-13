@@ -293,7 +293,8 @@ public class DrawingContextImplBackdropTests
     public void Volatile_And_Retained_Backdrops_Match_At_The_Bounds_Edge()
     {
         const int w = 80, h = 40;
-        var bounds = new PixelRect(40, 10, 30, 20);
+        // Each vertical edge is in the middle of a stripe, so the mirrored content continues the stripes.
+        var bounds = new PixelRect(41, 10, 30, 20);
 
         SKBitmap Render(bool retained)
         {
@@ -301,7 +302,7 @@ public class DrawingContextImplBackdropTests
             using var surface = CreateSurface(bitmap);
             using var ctx = CreateContext(surface);
 
-            // 2px black/white stripes. Both modes see the edge pixels repeated outside of the bounds.
+            // 2px black/white stripes. Both modes see the content mirrored at the edges of the bounds.
             surface.Canvas.Clear(SKColors.White);
             using (var p = new SKPaint { Color = SKColors.Black })
                 for (var x = 0; x < w; x += 4)
@@ -320,6 +321,8 @@ public class DrawingContextImplBackdropTests
         {
             var expected = volatileResult.GetPixel(x, y);
             AssertColor(retainedResult.GetPixel(x, y), expected.Red, expected.Green, expected.Blue);
+            // The blur of the stripes is the average also at the edges. Repeated edge pixels would not give that.
+            AssertColor(expected, 127, 127, 127, tolerance: 14);
         }
     }
 

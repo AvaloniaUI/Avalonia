@@ -55,8 +55,8 @@ partial class DrawingContextImpl
     }
 
     // A backdrop effect reads the backdrop only inside the backdrop bounds: the input is cropped to them, and a
-    // blur sees the edge pixels repeated outside. The current opacity is not part of the filter: the callers
-    // apply it when they draw the result.
+    // blur sees the content mirrored at the edges (same as CSS backdrop-filter and WinRT). The current opacity
+    // is not part of the filter: the callers apply it when they draw the result.
     static SKImageFilter? CreateBackdropEffect(IEffect effect, SKRect bounds)
     {
         if (effect is IBlurEffect blur)
@@ -64,7 +64,7 @@ partial class DrawingContextImpl
             if (blur.Radius <= 0)
                 return null;
             var sigma = SkBlurRadiusToSigma(blur.Radius);
-            return SKImageFilter.CreateBlur(sigma, sigma, SKShaderTileMode.Clamp, null, bounds);
+            return SKImageFilter.CreateBlur(sigma, sigma, SKShaderTileMode.Mirror, null, bounds);
         }
 
         if (effect is IDropShadowEffect drop)
