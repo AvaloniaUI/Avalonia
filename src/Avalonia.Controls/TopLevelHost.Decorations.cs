@@ -200,11 +200,6 @@ internal partial class TopLevelHost
             frame.Bottom + shadow.Bottom);
     }
 
-    internal void UpdateResizeGrips()
-    {
-        UpdateResizeGripThickness();
-    }
-
     private void OnDecorationsGeometryChanged()
     {
         UpdateResizeGripThickness();

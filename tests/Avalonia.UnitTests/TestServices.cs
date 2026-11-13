@@ -77,6 +77,7 @@ namespace Avalonia.UnitTests
             Func<IMouseDevice?>? mouseDevice = null,
             IRuntimePlatform? platform = null,
             IPlatformRenderInterface? renderInterface = null,
+            IPlatformSettings? platformSettings = null,
             ICursorFactory? standardCursorFactory = null,
             Func<IStyle>? theme = null,
             IFontManagerImpl? fontManagerImpl = null,
@@ -94,6 +95,7 @@ namespace Avalonia.UnitTests
             MouseDevice = mouseDevice;
             Platform = platform;
             RenderInterface = renderInterface;
+            PlatformSettings = platformSettings;
             FontManagerImpl = fontManagerImpl;
             TextShaperImpl = textShaperImpl;
             StandardCursorFactory = standardCursorFactory;
@@ -111,6 +113,7 @@ namespace Avalonia.UnitTests
         public Func<IMouseDevice?>? MouseDevice { get; }
         public IRuntimePlatform? Platform { get; }
         public IPlatformRenderInterface? RenderInterface { get; }
+        public IPlatformSettings? PlatformSettings { get; }
         public IFontManagerImpl? FontManagerImpl { get; }
         public ITextShaperImpl? TextShaperImpl { get; }
         public ICursorFactory? StandardCursorFactory { get; }
@@ -128,6 +131,7 @@ namespace Avalonia.UnitTests
             Func<IMouseDevice?>? mouseDevice = null,
             IRuntimePlatform? platform = null,
             IPlatformRenderInterface? renderInterface = null,
+            IPlatformSettings? platformSettings = null,
             IRenderTimer? renderLoop = null,
             IScheduler? scheduler = null,
             ICursorFactory? standardCursorFactory = null,
@@ -147,6 +151,7 @@ namespace Avalonia.UnitTests
                 mouseDevice: mouseDevice ?? MouseDevice,
                 platform: platform ?? Platform,
                 renderInterface: renderInterface ?? RenderInterface,
+                platformSettings: platformSettings ?? PlatformSettings,
                 fontManagerImpl: fontManagerImpl ?? FontManagerImpl,
                 textShaperImpl: textShaperImpl ?? TextShaperImpl,
                 standardCursorFactory: standardCursorFactory ?? StandardCursorFactory,

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Reactive;
@@ -152,7 +153,9 @@ namespace Avalonia.Controls.Primitives
         private bool _ignoreIsOpenChanged;
         private bool _isUsingOverlayLayer;
         private PopupOpenState? _openState;
+        private Point? _pointerPosition;
         private Action<IPopupHost?>? _popupHostChangedHandler;
+        private List<Popup>? _openedPopups;
 
         /// <summary>
         /// Initializes static members of the <see cref="Popup"/> class.
@@ -176,6 +179,11 @@ namespace Avalonia.Controls.Primitives
         internal event EventHandler<CancelEventArgs>? Closing;
 
         internal IPopupHost? Host => _openState?.PopupHost;
+
+        /// <summary>
+        /// Gets the popups that are currently open directly inside this popup, in the order they were opened.
+        /// </summary>
+        public IReadOnlyList<Popup> OpenedPopups => _openedPopups ?? (IReadOnlyList<Popup>)[];
 
         /// <summary>
         /// Gets or sets a hint to the window manager that a shadow should be added to the popup.
@@ -558,14 +566,7 @@ namespace Avalonia.Controls.Primitives
 
                 if (dismissLayer != null)
                 {
-                    dismissLayer.IsVisible = true;
-                    dismissLayer.InputPassThroughElement = OverlayInputPassThroughElement;
-                    
-                    Disposable.Create(() =>
-                    {
-                        dismissLayer.IsVisible = false;
-                        dismissLayer.InputPassThroughElement = null;
-                    }).DisposeWith(handlerCleanup);
+                    dismissLayer.Register(OverlayInputPassThroughElement).DisposeWith(handlerCleanup);
                     
                     SubscribeToEventHandler<LightDismissOverlayLayer, EventHandler<PointerPressedEventArgs>>(
                         dismissLayer,
@@ -575,7 +576,12 @@ namespace Avalonia.Controls.Primitives
                 }
             }
 
-            _openState = new PopupOpenState(placementTarget, topLevel, popupHost, cleanupPopup);
+            _openState = new PopupOpenState(placementTarget, topLevel, popupHost, cleanupPopup, FindParentPopup(placementTarget));
+
+            if (_openState.ParentPopup is { } parentPopup)
+                parentPopup.AddOpenedPopup(this);
+            else
+                topLevel.AddOpenedPopup(this);
 
             WindowManagerAddShadowHintChanged(popupHost, WindowManagerAddShadowHint);
 
@@ -717,6 +723,12 @@ namespace Avalonia.Controls.Primitives
 
         private void UpdateHostPosition(IPopupHost popupHost, Control placementTarget)
         {
+            // Pointer placement stays at the pointer position from when it was first applied (#22359).
+            if (Placement != PlacementMode.Pointer)
+                _pointerPosition = null;
+            else if (_pointerPosition is null && TopLevel.GetTopLevel(placementTarget) is { } topLevel)
+                _pointerPosition = topLevel.PointToClient(topLevel.LastPointerPosition ?? default);
+
             popupHost.ConfigurePosition(new PopupPositionRequest(
                 placementTarget,
                 Placement,
@@ -725,7 +737,8 @@ namespace Avalonia.Controls.Primitives
                 PlacementGravity,
                 PlacementConstraintAdjustment,
                 PlacementRect ?? new Rect(default, placementTarget.Bounds.Size),
-                CustomPopupPlacementCallback));
+                CustomPopupPlacementCallback,
+                _pointerPosition));
         }
 
         private void UpdateHostSizing(IPopupHost popupHost, TopLevel topLevel, Control placementTarget)
@@ -736,7 +749,7 @@ namespace Avalonia.Controls.Primitives
             if (InheritsTransform && placementTarget.TransformToVisual(topLevel) is { } m)
             {
                 scaleX = Math.Sqrt(m.M11 * m.M11 + m.M12 * m.M12);
-                scaleY = Math.Sqrt(m.M11 * m.M11 + m.M12 * m.M12);
+                scaleY = Math.Sqrt(m.M21 * m.M21 + m.M22 * m.M22);
 
                 // Ideally we'd only assign a ScaleTransform here when the scale != 1, but there's
                 // an issue with LayoutTransformControl in that it sets its LayoutTransform property
@@ -844,8 +857,14 @@ namespace Avalonia.Controls.Primitives
                 return;
             }
 
+            if (_openState.ParentPopup is { } parentPopup)
+                parentPopup.RemoveOpenedPopup(this);
+            else
+                _openState.TopLevel.RemoveOpenedPopup(this);
+
             _openState.Dispose();
             _openState = null;
+            _pointerPosition = null;
 
             _popupHostChangedHandler?.Invoke(null);
 
@@ -1063,21 +1082,40 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
+        internal void AddOpenedPopup(Popup popup) => (_openedPopups ??= new List<Popup>(capacity: 2)).Add(popup);
+
+        internal void RemoveOpenedPopup(Popup popup) => _openedPopups?.Remove(popup);
+
+        private static Popup? FindParentPopup(Visual placementTarget)
+        {
+            foreach (var visual in placementTarget.GetSelfAndVisualAncestors())
+            {
+                if (visual is IPopupHost)
+                    return (visual as StyledElement)?.Parent as Popup;
+            }
+
+            return null;
+        }
+
         private class PopupOpenState : IDisposable
         {
             private readonly IDisposable _cleanup;
             private IDisposable? _presenterCleanup;
             private Control _placementTarget;
 
-            public PopupOpenState(Control placementTarget, TopLevel topLevel, IPopupHost popupHost, IDisposable cleanup)
+            public PopupOpenState(Control placementTarget, TopLevel topLevel, IPopupHost popupHost, IDisposable cleanup,
+                Popup? parentPopup)
             {
                 PlacementTarget = placementTarget;
                 TopLevel = topLevel;
+                ParentPopup = parentPopup;
                 PopupHost = popupHost;
                 _cleanup = cleanup;
             }
 
             public TopLevel TopLevel { get; }
+
+            public Popup? ParentPopup { get; }
 
             public Control PlacementTarget
             {

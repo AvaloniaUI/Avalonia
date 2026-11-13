@@ -154,7 +154,8 @@ public partial class WindowPage : UserControl
 
     private void SendToBack_Click(object? sender, RoutedEventArgs e)
     {
-        var lifetime = (ClassicDesktopStyleApplicationLifetime)Application.Current!.ApplicationLifetime!;
+        if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime lifetime)
+            return;
 
         foreach (var window in lifetime.Windows.ToArray())
         {
@@ -174,7 +175,8 @@ public partial class WindowPage : UserControl
 
     private void RestoreAll_Click(object? sender, RoutedEventArgs e)
     {
-        var lifetime = (ClassicDesktopStyleApplicationLifetime)Application.Current!.ApplicationLifetime!;
+        if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime lifetime)
+            return;
 
         foreach (var window in lifetime.Windows.ToArray())
         {

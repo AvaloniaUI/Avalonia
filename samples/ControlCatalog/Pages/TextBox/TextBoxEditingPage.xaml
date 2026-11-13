@@ -1,0 +1,117 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:ControlCatalog.Controls"
+             x:Class="ControlCatalog.Pages.TextBoxEditingPage">
+  <ScrollViewer Padding="24,20,24,28">
+    <StackPanel Spacing="16">
+
+      <controls:SampleSection Header="TextChanging and TextChanged"
+                              Description="TextChanging is raised synchronously as soon as Text has been set, before the new text is drawn. TextChanged follows on the next dispatcher pass, once it has been rendered."
+                              StageMinHeight="190">
+        <StackPanel Spacing="8">
+          <TextBox Name="TextEventsBox"
+                   Width="360"
+                   HorizontalAlignment="Left"
+                   PlaceholderText="Type something" />
+          <Border Width="360"
+                  HorizontalAlignment="Left"
+                  Background="{DynamicResource CatalogCardBackground}"
+                  CornerRadius="6"
+                  Padding="10,8">
+            <TextBlock Name="TextEventLog" Classes="sample-caption" TextWrapping="Wrap" MinHeight="76" />
+          </Border>
+        </StackPanel>
+        <controls:SampleSection.Options>
+          <StackPanel Spacing="8">
+            <Button Content="Clear the log" Click="OnClearTextLog" HorizontalAlignment="Stretch" />
+            <TextBlock Classes="sample-caption"
+                       TextWrapping="Wrap"
+                       Text="Both carry a plain RoutedEventArgs, so neither reports what changed. Read Text in the handler." />
+          </StackPanel>
+        </controls:SampleSection.Options>
+        <controls:SampleSection.Code><x:String xml:space="preserve"><![CDATA[<TextBox TextChanging="OnTextChanging" TextChanged="OnTextChanged" />]]></x:String></controls:SampleSection.Code>
+      </controls:SampleSection>
+
+      <controls:SampleSection Header="Clipboard events"
+                              Description="CuttingToClipboard, CopyingToClipboard and PastingFromClipboard are raised before the control touches the clipboard. Setting Handled on the arguments cancels the operation."
+                              StageMinHeight="200">
+        <StackPanel Spacing="8">
+          <TextBox Name="ClipboardBox"
+                   Width="360"
+                   HorizontalAlignment="Left"
+                   Text="Select part of this line, then try Ctrl+X, Ctrl+C and Ctrl+V." />
+          <Border Width="360"
+                  HorizontalAlignment="Left"
+                  Background="{DynamicResource CatalogCardBackground}"
+                  CornerRadius="6"
+                  Padding="10,8">
+            <TextBlock Name="ClipboardLog" Classes="sample-caption" TextWrapping="Wrap" MinHeight="76" />
+          </Border>
+        </StackPanel>
+        <controls:SampleSection.Options>
+          <StackPanel Spacing="8">
+            <CheckBox Name="BlockCutCheck" Content="Cancel cut" />
+            <CheckBox Name="BlockCopyCheck" Content="Cancel copy" />
+            <CheckBox Name="BlockPasteCheck" Content="Cancel paste" />
+            <Button Content="Clear the log" Click="OnClearClipboardLog" HorizontalAlignment="Stretch" />
+            <TextBlock Classes="sample-caption"
+                       TextWrapping="Wrap"
+                       Text="A handler cancels the operation by setting e.Handled to true, which is how a field can refuse to give its contents away." />
+          </StackPanel>
+        </controls:SampleSection.Options>
+        <controls:SampleSection.Code><x:String xml:space="preserve"><![CDATA[<TextBox CuttingToClipboard="OnCutting"
+         CopyingToClipboard="OnCopying"
+         PastingFromClipboard="OnPasting" />]]></x:String></controls:SampleSection.Code>
+      </controls:SampleSection>
+
+      <controls:SampleSection Header="A context menu built from CanCut, CanCopy and CanPaste"
+                              Description="The three read-only properties say which clipboard commands make sense right now, so a custom ContextFlyout can enable its items from them. Right click the box to open it."
+                              StageMinHeight="150">
+        <StackPanel Spacing="8">
+          <TextBox Name="FlyoutBox"
+                   Width="360"
+                   HorizontalAlignment="Left"
+                   Text="Right click here for a custom menu." />
+          <TextBlock Classes="sample-caption" Text="{Binding #FlyoutBox.CanCut, StringFormat='CanCut: {0}'}" />
+          <TextBlock Classes="sample-caption" Text="{Binding #FlyoutBox.CanCopy, StringFormat='CanCopy: {0}'}" />
+          <TextBlock Classes="sample-caption" Text="{Binding #FlyoutBox.CanPaste, StringFormat='CanPaste: {0}'}" />
+        </StackPanel>
+        <controls:SampleSection.Options>
+          <StackPanel Spacing="8">
+            <CheckBox Content="IsReadOnly" IsChecked="{Binding #FlyoutBox.IsReadOnly}" />
+            <TextBlock Classes="sample-caption"
+                       TextWrapping="Wrap"
+                       Text="CanCut and CanCopy need a selection, and a box with a PasswordChar reports false for both. CanPaste follows IsReadOnly." />
+          </StackPanel>
+        </controls:SampleSection.Options>
+      </controls:SampleSection>
+
+      <controls:SampleSection Header="Undo and redo"
+                              Description="The box keeps its own undo stack. UndoLimit caps how many steps it holds, and turning IsUndoEnabled off clears the stack."
+                              StageMinHeight="190">
+        <StackPanel Spacing="8">
+          <TextBox Name="UndoBox"
+                   Width="360"
+                   HorizontalAlignment="Left"
+                   AcceptsReturn="True"
+                   MinLines="3"
+                   MaxLines="6"
+                   Text="Edit this, then undo and redo with the buttons or with Ctrl+Z and Ctrl+Y." />
+          <TextBlock Classes="sample-caption" Text="{Binding #UndoBox.CanUndo, StringFormat='CanUndo: {0}'}" />
+          <TextBlock Classes="sample-caption" Text="{Binding #UndoBox.CanRedo, StringFormat='CanRedo: {0}'}" />
+        </StackPanel>
+        <controls:SampleSection.Options>
+          <StackPanel Spacing="8">
+            <Button Content="Undo()" Click="OnUndo" IsEnabled="{Binding #UndoBox.CanUndo}" HorizontalAlignment="Stretch" />
+            <Button Content="Redo()" Click="OnRedo" IsEnabled="{Binding #UndoBox.CanRedo}" HorizontalAlignment="Stretch" />
+            <CheckBox Content="IsUndoEnabled" IsChecked="{Binding #UndoBox.IsUndoEnabled}" />
+            <TextBlock Text="UndoLimit" Classes="sample-caption" />
+            <NumericUpDown Value="{Binding #UndoBox.UndoLimit}" Minimum="1" Maximum="50" Increment="1" FormatString="0" />
+          </StackPanel>
+        </controls:SampleSection.Options>
+        <controls:SampleSection.Code><x:String xml:space="preserve"><![CDATA[<TextBox IsUndoEnabled="True" UndoLimit="10" />]]></x:String></controls:SampleSection.Code>
+      </controls:SampleSection>
+
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

@@ -8,6 +8,9 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     x:ClassModifier="internal">
+  <Design.PreviewWith>
+    <Calendar IsWeekNumberVisible="True" />
+  </Design.PreviewWith>
   <ControlTheme x:Key="{x:Type CalendarItem}"
                 TargetType="CalendarItem">
     <Setter Property="CornerRadius" Value="1" />
@@ -23,7 +26,7 @@
             <Border BorderBrush="{DynamicResource ThemeBackgroundBrush}"
                     BorderThickness="2"
                     CornerRadius="1">
-              <Grid>
+              <Grid  Grid.IsSharedSizeScope="True">
                 <Grid.RowDefinitions>
                   <RowDefinition Height="Auto" />
                   <RowDefinition Height="*" />
@@ -31,7 +34,6 @@
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="Auto" />
                   <ColumnDefinition Width="*" />
-                  <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
                 <Grid.Styles>
@@ -60,65 +62,91 @@
                   </Style>
                 </Grid.Styles>
 
-                <Rectangle Grid.ColumnSpan="3"
-                           Height="22"
-                           VerticalAlignment="Top"
-                           Fill="{TemplateBinding HeaderBackground}"
-                           Stretch="Fill" />
+                <Grid Grid.ColumnSpan="2" >
+                  <Rectangle Grid.ColumnSpan="3"
+                             Height="22"
+                             VerticalAlignment="Top"
+                             Fill="{TemplateBinding HeaderBackground}"
+                             Stretch="Fill" />
 
-                <Button Name="PART_PreviousButton"
-                        HorizontalAlignment="Left"
-                        Classes="CalendarHeader CalendarNavigation"
-                        IsVisible="False">
+                  <Button Name="PART_PreviousButton"
+                          HorizontalAlignment="Left"
+                          Classes="CalendarHeader CalendarNavigation"
+                          IsVisible="False">
 
-                  <Path Width="6"
-                        Height="10"
-                        Margin="14,-6,0,0"
-                        HorizontalAlignment="Left"
-                        VerticalAlignment="Center"
-                        Data="M288.75,232.25 L288.75,240.625 L283,236.625 z"
-                        Stretch="Fill" />
+                    <Path Width="6"
+                          Height="10"
+                          Margin="14,-6,0,0"
+                          HorizontalAlignment="Left"
+                          VerticalAlignment="Center"
+                          Data="M288.75,232.25 L288.75,240.625 L283,236.625 z"
+                          Stretch="Fill" />
 
-                </Button>
+                  </Button>
 
-                <Button Name="PART_HeaderButton"
-                        Grid.Column="1"
-                        Padding="1,5,1,9"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
-                        Classes="CalendarHeader"
-                        FontSize="10.5"
-                        FontWeight="Bold" />
+                  <Button Name="PART_HeaderButton"
+                          Grid.Column="1"
+                          Padding="1,5,1,9"
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Center"
+                          Classes="CalendarHeader"
+                          FontSize="10.5"
+                          FontWeight="Bold" />
 
-                <Button Name="PART_NextButton"
-                        Grid.Column="2"
-                        HorizontalAlignment="Right"
-                        Classes="CalendarHeader CalendarNavigation"
-                        IsVisible="False">
+                  <Button Name="PART_NextButton"
+                          Grid.Column="2"
+                          HorizontalAlignment="Right"
+                          Classes="CalendarHeader CalendarNavigation"
+                          IsVisible="False">
 
-                  <Path Width="6"
-                        Height="10"
-                        Margin="0,-6,14,0"
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Center"
-                        Data="M282.875,231.875 L282.875,240.375 L288.625,236 z"
-                        Stretch="Fill" />
+                    <Path Width="6"
+                          Height="10"
+                          Margin="0,-6,14,0"
+                          HorizontalAlignment="Right"
+                          VerticalAlignment="Center"
+                          Data="M282.875,231.875 L282.875,240.375 L288.625,236 z"
+                          Stretch="Fill" />
 
-                </Button>
+                  </Button>
+                </Grid>
+
+                <Grid Name="PART_ElementWeekNumberLabels" 
+                      Grid.Row="1"
+                      Grid.Column="0"
+                      IsVisible="False"
+                      MinWidth="20"
+                      Margin="6,-1,6,6"
+                      VerticalAlignment="Stretch">
+                  <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" SharedSizeGroup="CalendarMonthViewHeaderRow" />
+                    <RowDefinition Height="Auto" SharedSizeGroup="CalendarMonthViewWeekRow" />
+                    <RowDefinition Height="Auto" SharedSizeGroup="CalendarMonthViewWeekRow" />
+                    <RowDefinition Height="Auto" SharedSizeGroup="CalendarMonthViewWeekRow" />
+                    <RowDefinition Height="Auto" SharedSizeGroup="CalendarMonthViewWeekRow" />
+                    <RowDefinition Height="Auto" SharedSizeGroup="CalendarMonthViewWeekRow" />
+                    <RowDefinition Height="Auto" SharedSizeGroup="CalendarMonthViewWeekRow" />
+                  </Grid.RowDefinitions>
+                  <!-- week number header -->
+                  <ContentControl Content="{DynamicResource StringCalendarWeekNumberHeader}"
+                                  FontSize="9.5"
+                                  VerticalAlignment="Top"
+                                  VerticalContentAlignment="Center"
+                                  HorizontalContentAlignment="Center" />
+                </Grid>
 
                 <Grid Name="PART_MonthView"
                       Grid.Row="1"
-                      Grid.ColumnSpan="3"
+                      Grid.Column="1"
                       Margin="6,-1,6,6"
                       IsVisible="False">
                   <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" SharedSizeGroup="CalendarMonthViewHeaderRow" />
+                    <RowDefinition Height="Auto" SharedSizeGroup="CalendarMonthViewWeekRow" />
+                    <RowDefinition Height="Auto" SharedSizeGroup="CalendarMonthViewWeekRow" />
+                    <RowDefinition Height="Auto" SharedSizeGroup="CalendarMonthViewWeekRow" />
+                    <RowDefinition Height="Auto" SharedSizeGroup="CalendarMonthViewWeekRow" />
+                    <RowDefinition Height="Auto" SharedSizeGroup="CalendarMonthViewWeekRow" />
+                    <RowDefinition Height="Auto" SharedSizeGroup="CalendarMonthViewWeekRow" />
                   </Grid.RowDefinitions>
                   <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
@@ -175,6 +203,17 @@
 
     <Style Selector="^:calendardisabled /template/ Rectangle#DisabledVisual">
       <Setter Property="IsVisible" Value="True" />
+    </Style>
+    
+    <Style Selector="^:hasweeknumbers">
+      <Style Selector="^ /template/ Grid#PART_ElementWeekNumberLabels">
+        <Style Selector="^ ContentControl">
+          <Setter Property="FontSize" Value="9.5" />
+          <Setter Property="HorizontalContentAlignment" Value="Center" />
+          <Setter Property="VerticalAlignment" Value="Stretch" />
+          <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+      </Style>
     </Style>
   </ControlTheme>
 </ResourceDictionary>

@@ -1103,6 +1103,28 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
+        public void Changing_ItemsSource_During_SelectionChanged_When_Selection_Lost_Does_Not_Throw()
+        {
+            // Issue #7536.
+            var target = new SelectingItemsControl
+            {
+                ItemsSource = new ObservableCollection<Item> { new(), new(), new() },
+                SelectedIndex = 0,
+            };
+            var raised = 0;
+
+            target.SelectionChanged += (s, e) =>
+            {
+                target.ItemsSource = new ObservableCollection<Item> { new(), new() };
+                ++raised;
+            };
+
+            target.SelectedIndex = -1;
+
+            Assert.Equal(1, raised);
+        }
+
+        [Fact]
         public void Setting_SelectedIndex_Should_Raise_PropertyChanged_Events()
         {
             var items = new ObservableCollection<string> { "foo", "bar", "baz" };
@@ -1911,6 +1933,33 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             target.AutoScrollToSelectedItem = true;
             Threading.Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+            Assert.True(raised);
+        }
+
+        [Fact]
+        public void AutoScrollToSelectedItem_Scrolls_Synchronously_When_Laid_Out()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var items = new ObservableCollection<string>
+            {
+               "Foo",
+               "Bar",
+               "Baz"
+            };
+
+            var target = new ListBox
+            {
+                Template = Template(),
+                ItemsSource = items,
+            };
+
+            var raised = false;
+
+            Prepare(target);
+            target.AddHandler(Control.RequestBringIntoViewEvent, (_, _) => raised = true);
+            target.SelectedIndex = 2;
+
             Assert.True(raised);
         }
 

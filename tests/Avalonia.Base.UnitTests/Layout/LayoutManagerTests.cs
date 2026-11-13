@@ -4,6 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
+using Avalonia.VisualTree;
 using Xunit;
 
 namespace Avalonia.Base.UnitTests.Layout
@@ -577,6 +578,42 @@ namespace Avalonia.Base.UnitTests.Layout
             Assert.True(greatGrandparent.IsArrangeValid);
             Assert.True(root.IsMeasureValid);
             Assert.True(root.IsArrangeValid);
+        }
+
+        [Fact]
+        public void Control_Can_Move_To_Another_Root_While_Its_Arrange_Is_Deferred()
+        {
+            // Issue #22476
+            var child = new LayoutTestControl();
+            var parent = new LayoutTestControl { Child = child };
+            var grandparent = new LayoutTestControl { Child = parent };
+            var mover = new LayoutTestControl();
+            var root = new LayoutTestRoot { Child = new StackPanel { Children = { grandparent, mover } } };
+            var otherRoot = new LayoutTestRoot();
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
+            otherRoot.LayoutManager.ExecuteInitialLayoutPass();
+
+            grandparent.DoArrangeOverride = (_, s) =>
+            {
+                parent.InvalidateMeasure();
+                return s;
+            };
+
+            mover.DoArrangeOverride = (_, s) =>
+            {
+                parent.Child = null;
+                otherRoot.Child = child;
+                return s;
+            };
+
+            child.InvalidateArrange();
+            grandparent.InvalidateArrange();
+            mover.InvalidateArrange();
+
+            root.LayoutManager.ExecuteLayoutPass();
+
+            Assert.Same(otherRoot, child.GetVisualRoot());
         }
     }
 }

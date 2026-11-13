@@ -301,6 +301,13 @@ class WSurface : IPersistentWaylandObject, IWSurface, IWaylandFramebufferSurface
         _frameCallback = WlSurface!.Frame(new FrameListener(this));
     }
 
+    internal void OnBufferAttachAborted()
+    {
+        // A callback staged before a failed EGL swap will never be committed.
+        _frameCallback?.Dispose();
+        _frameCallback = null;
+    }
+
     class FrameListener(WSurface p) : WlCallback.Listener
     {
         protected override void Done(WlCallback eventSender, uint callbackData)
@@ -591,6 +598,12 @@ class WXdgShellSurface : WSurface, IWXdgShellSurface
             surfaceHeight = (bufferPixelSize.Height + intScale - 1) / intScale;
         }
 
+        if (surfaceWidth <= 0 || surfaceHeight <= 0)
+        {
+            LastWindowGeometry = null;
+            return;
+        }
+
         var left = Math.Clamp((int)shadowExtents.Left, 0, surfaceWidth - 1);
         var top = Math.Clamp((int)shadowExtents.Top, 0, surfaceHeight - 1);
         var right = Math.Clamp(
@@ -628,6 +641,7 @@ class WXdgTopLevel : WXdgShellSurface, IWXdgTopLevel
     private Size? _minSize;
     private Size? _maxSize;
     private string? _title;
+    private string? _appId;
 
     private ZxdgToplevelDecorationV1? _decoration;
     // Disable SSD support completely and don't allow re-enabling it because we can't
@@ -658,6 +672,11 @@ class WXdgTopLevel : WXdgShellSurface, IWXdgTopLevel
         // Re-apply cached title on reconnect.
         if (_title != null)
             _xdgTopLevel.SetTitle(_title);
+
+        // Re-apply cached app id on reconnect (or default to Globals.AppId).
+        var effectiveAppId = _appId ?? Globals.AppId;
+        if (effectiveAppId != null)
+            _xdgTopLevel.SetAppId(effectiveAppId);
 
         // Re-apply cached min/max if they were ever set on a previous
         // (now-dead) connection. The OnConnected commit below will
@@ -703,6 +722,14 @@ class WXdgTopLevel : WXdgShellSurface, IWXdgTopLevel
     {
         _title = title;
         _xdgTopLevel?.SetTitle(title ?? string.Empty);
+    }
+
+    public void SetAppId(string? appId)
+    {
+        _appId = appId;
+        var effectiveAppId = appId ?? Globals?.AppId;
+        if (effectiveAppId != null)
+            _xdgTopLevel?.SetAppId(effectiveAppId);
     }
 
     public void SetMinMaxSize(Size? minSize, Size? maxSize)
@@ -892,6 +919,11 @@ class WXdgPopup : WXdgShellSurface, IWXdgPopup
         var hadPrevious = _positioner.HasValue;
         _positioner = positioner;
 
+        // The popup child's margin (Deflate) must be carved out of the surface's window geometry
+        // so the compositor positions and constrains against the child content.
+        if (positioner.Deflate != default)
+            SetShadowExtents(positioner.Deflate);
+
         if (!hadPrevious)
         {
             // First positioner — attempt to attach now (may still defer
@@ -986,9 +1018,12 @@ class WXdgPopup : WXdgShellSurface, IWXdgPopup
 
         var positioner = Globals.XdgWmBase.CreatePositioner();
 
-        // Size: protocol requires positive integers.
-        var width = Math.Max(1, (int)Math.Ceiling(p.Size.Width));
-        var height = Math.Max(1, (int)Math.Ceiling(p.Size.Height));
+        // Size corresponds to the popup's window geometry (see the
+        // xdg_positioner.set_size contract), which excludes the child margin.
+        // The protocol requires positive integers.
+        var geometrySize = p.Size.Deflate(p.Deflate);
+        var width = Math.Max(1, (int)Math.Ceiling(geometrySize.Width));
+        var height = Math.Max(1, (int)Math.Ceiling(geometrySize.Height));
         positioner.SetSize(width, height);
 
         // The anchor rect is given in the parent's *buffer-relative* logical
@@ -1072,10 +1107,7 @@ class WXdgPopup : WXdgShellSurface, IWXdgPopup
     {
         protected override void Configure(XdgPopup eventSender, int x, int y, int width, int height)
         {
-            p._pendingBatch.X = x;
-            p._pendingBatch.Y = y;
-            p._pendingBatch.Width = width;
-            p._pendingBatch.Height = height;
+            p._pendingBatch.Geometry = new PixelRect(x, y, width, height);
         }
 
         protected override void PopupDone(XdgPopup eventSender) =>

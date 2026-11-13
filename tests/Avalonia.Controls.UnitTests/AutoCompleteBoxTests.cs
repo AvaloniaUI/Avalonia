@@ -6,6 +6,7 @@ using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
+using Avalonia.VisualTree;
 using Xunit;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -1248,6 +1249,42 @@ namespace Avalonia.Controls.UnitTests
                 Dispatcher.UIThread.RunJobs();
                 test.Invoke(control, textBox);
             }
+        }
+
+        [Fact]
+        public void Focus_Moving_Into_The_DropDown_Should_Not_Close_It()
+        {
+            using var app = UnitTestApplication.Start(TestServices.FocusableWindow);
+
+            var box = new AutoCompleteBox
+            {
+                ItemsSource = new[] { "apple", "apricot", "banana" },
+                FilterMode = AutoCompleteFilterMode.StartsWith,
+                Width = 200
+            };
+
+            var window = new Window { Content = box };
+            window.Show();
+            window.LayoutManager.ExecuteInitialLayoutPass();
+
+            box.Focus();
+            var textBox = box.GetVisualDescendants().OfType<TextBox>().First(t => t.Name == "PART_TextBox");
+            textBox.Text = "ap";
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+            Assert.True(box.IsDropDownOpen, "the drop-down did not open");
+
+            var popup = box.GetVisualDescendants().OfType<Popup>().First();
+            var item = popup.Child!.GetSelfAndVisualDescendants().OfType<ListBoxItem>().First();
+
+            box.RaiseEvent(new FocusChangedEventArgs(InputElement.LostFocusEvent)
+            {
+                Source = box,
+                NewFocusedElement = item
+            });
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+            Assert.True(box.IsDropDownOpen, "focus moving into the drop-down closed it");
         }
 
         private static TestServices Services => TestServices.StyledWindow;

@@ -43,8 +43,6 @@ public:
     
     virtual HRESULT Pointer(void**retOut) override
     {
-        START_COM_CALL;
-        
         @autoreleasepool
         {
             if(retOut == nullptr)
@@ -60,8 +58,6 @@ public:
     
     virtual HRESULT Length(int*retOut) override
     {
-        START_COM_CALL;
-        
         @autoreleasepool
         {
             if(retOut == nullptr)
@@ -109,63 +105,41 @@ public:
         return (unsigned int)_list.size();
     }
     
-    virtual HRESULT Get(unsigned int index, IAvnString**ppv) override
+    virtual HRESULT Get(unsigned int index, ComPtr<IAvnString>& ppv) override
     {
-        START_COM_CALL;
-        
-        @autoreleasepool
-        {
-            if(_list.size() <= index)
-                return E_INVALIDARG;
-            *ppv = _list[index].getRetainedReference();
-            return S_OK;
-        }
+        if(_list.size() <= index)
+            return E_INVALIDARG;
+        ppv = _list[index];
+        return S_OK;
     }
 };
 
-IAvnString* CreateAvnString(NSString* string)
+ComPtr<IAvnString> CreateAvnString(NSString* string)
 {
-    return new AvnStringImpl(string);
+    return comnew<AvnStringImpl>(string);
 }
 
-
-IAvnStringArray* CreateAvnStringArray(NSArray<NSString*> * array)
+ComPtr<IAvnStringArray> CreateAvnStringArray(NSArray<NSString*> * array)
 {
-    return new AvnStringArrayImpl(array);
+    return comnew<AvnStringArrayImpl>(array);
 }
 
-IAvnStringArray* CreateAvnStringArray(NSArray<NSURL*> * array)
+ComPtr<IAvnStringArray> CreateAvnStringArray(NSArray<NSURL*> * array)
 {
-    return new AvnStringArrayImpl(array);
+    return comnew<AvnStringArrayImpl>(array);
 }
 
-IAvnStringArray* CreateAvnStringArray(NSString* string)
+ComPtr<IAvnStringArray> CreateAvnStringArray(NSString* string)
 {
-    return new AvnStringArrayImpl(string);
+    return comnew<AvnStringArrayImpl>(string);
 }
 
-IAvnString* CreateByteArray(void* data, int len)
+ComPtr<IAvnString> CreateByteArray(void* data, int len)
 {
-    return new AvnStringImpl(data, len);
+    return comnew<AvnStringImpl>(data, len);
 }
 
-NSString* GetNSStringAndRelease(IAvnString* s)
-{
-    NSString* result = nil;
-    
-    if (s != nullptr)
-    {
-        char* p;
-        if (s->Pointer((void**)&p) == S_OK && p != nullptr)
-            result = [NSString stringWithUTF8String:p];
-        
-        s->Release();
-    }
-    
-    return result;
-}
-
-NSString* GetNSStringWithoutRelease(IAvnString* s)
+NSString* GetNSString(const ComPtr<IAvnString>& s)
 {
     NSString* result = nil;
     
@@ -179,20 +153,19 @@ NSString* GetNSStringWithoutRelease(IAvnString* s)
     return result;
 }
 
-NSArray<NSString*>* GetNSArrayOfStringsAndRelease(IAvnStringArray* array)
+NSArray<NSString*>* GetNSArrayOfStrings(const ComPtr<IAvnStringArray>& array)
 {
     auto output = [NSMutableArray array];
     if (array)
     {
-        IAvnString* arrayItem;
         for (int i = 0; i < array->GetCount(); i++)
         {
-            if (array->Get(i, &arrayItem) == 0) {
-                NSString* ext = GetNSStringAndRelease(arrayItem);
+            ComPtr<IAvnString> arrayItem;
+            if (array->Get(i, arrayItem) == 0) {
+                NSString* ext = GetNSString(arrayItem);
                 [output addObject:ext];
             }
         }
-        array->Release();
     }
     return output;
 }

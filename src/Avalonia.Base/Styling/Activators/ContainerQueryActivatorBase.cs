@@ -1,20 +1,21 @@
 ﻿using System;
 using System.Linq;
 using Avalonia.Layout;
+using Avalonia.LogicalTree;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Styling.Activators
 {
     internal abstract class ContainerQueryActivatorBase : StyleActivatorBase, IStyleActivatorSink
     {
-        private readonly Visual _visual;
+        private readonly StyledElement _target;
         private readonly string? _containerName;
+        private Visual? _visual;
         private Layoutable? _currentScreenSizeProvider;
 
-        public ContainerQueryActivatorBase(
-            Visual visual, string? containerName = null)
+        public ContainerQueryActivatorBase(StyledElement target, string? containerName = null)
         {
-            _visual = visual;
+            _target = target;
             _containerName = containerName;
         }
 
@@ -28,24 +29,67 @@ namespace Avalonia.Styling.Activators
             InitializeScreenSizeProvider();
         }
 
+        private void Target_DetachedFromLogicalTree(object? sender, LogicalTreeAttachmentEventArgs e)
+        {
+            SetVisual(null);
+            ReevaluateIsActive();
+        }
+
+        private void Target_AttachedToLogicalTree(object? sender, LogicalTreeAttachmentEventArgs e)
+        {
+            SetVisual(GetVisual(_target));
+            InitializeScreenSizeProvider();
+        }
+
         protected Layoutable? CurrentContainer => _currentScreenSizeProvider;
 
         void IStyleActivatorSink.OnNext(bool value) => ReevaluateIsActive();
 
         protected override void Initialize()
         {
-            InitializeScreenSizeProvider();
+            if (_target is not Visual)
+            {
+                _target.AttachedToLogicalTree += Target_AttachedToLogicalTree;
+                _target.DetachedFromLogicalTree += Target_DetachedFromLogicalTree;
+            }
 
-            _visual.AttachedToVisualTree += Visual_AttachedToVisualTree;
-            _visual.DetachedFromVisualTree += Visual_DetachedFromVisualTree;
+            SetVisual(GetVisual(_target));
+            InitializeScreenSizeProvider();
         }
 
         protected override void Deinitialize()
         {
-            _visual.AttachedToVisualTree -= Visual_AttachedToVisualTree;
-            _visual.DetachedFromVisualTree -= Visual_DetachedFromVisualTree;
+            if (_target is not Visual)
+            {
+                _target.AttachedToLogicalTree -= Target_AttachedToLogicalTree;
+                _target.DetachedFromLogicalTree -= Target_DetachedFromLogicalTree;
+            }
+
+            SetVisual(null);
+        }
+
+        private void SetVisual(Visual? visual)
+        {
+            if (_visual == visual)
+            {
+                return;
+            }
 
             DeInitializeScreenSizeProvider();
+
+            if (_visual is { } oldVisual)
+            {
+                oldVisual.AttachedToVisualTree -= Visual_AttachedToVisualTree;
+                oldVisual.DetachedFromVisualTree -= Visual_DetachedFromVisualTree;
+            }
+
+            _visual = visual;
+
+            if (_visual is { } newVisual)
+            {
+                newVisual.AttachedToVisualTree += Visual_AttachedToVisualTree;
+                newVisual.DetachedFromVisualTree += Visual_DetachedFromVisualTree;
+            }
         }
 
         private void DeInitializeScreenSizeProvider()
@@ -60,7 +104,7 @@ namespace Avalonia.Styling.Activators
 
         private void InitializeScreenSizeProvider()
         {
-            if (_currentScreenSizeProvider == null && GetContainer(_visual, _containerName) is { } container && Container.GetQueryProvider(container) is { } provider)
+            if (_currentScreenSizeProvider == null && GetContainer(_target, _containerName) is { } container && Container.GetQueryProvider(container) is { } provider)
             {
                 _currentScreenSizeProvider = container;
 
@@ -71,12 +115,24 @@ namespace Avalonia.Styling.Activators
             ReevaluateIsActive();
         }
 
-        internal static Layoutable? GetContainer(Visual visual, string? containerName)
+        internal static Layoutable? GetContainer(StyledElement target, string? containerName)
         {
-            return visual.GetVisualAncestors().Where(x => x is Layoutable layoutable &&
-                ((containerName == null && Container.GetSizing(layoutable) != ContainerSizing.Normal)
-                || (containerName != null && Container.GetName(layoutable) == containerName))).FirstOrDefault() as Layoutable;
+            var visual = GetVisual(target);
+            if (visual is null)
+            {
+                return null;
+            }
+
+            // The first visual logical ancestor can itself be the container for a non-visual target.
+            var ancestors = target is Visual ? visual.GetVisualAncestors() : visual.GetSelfAndVisualAncestors();
+
+            return ancestors.OfType<Layoutable>().FirstOrDefault(layoutable =>
+                (containerName == null && Container.GetSizing(layoutable) != ContainerSizing.Normal)
+                || (containerName != null && Container.GetName(layoutable) == containerName));
         }
+
+        private static Visual? GetVisual(StyledElement target)
+            => target as Visual ?? target.GetLogicalAncestors().OfType<Visual>().FirstOrDefault();
 
         private void HeightChanged(object? sender, EventArgs e)
         {

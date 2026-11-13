@@ -2,12 +2,9 @@
 #include "trayicon.h"
 #include "menu.h"
 
-extern IAvnTrayIcon* CreateTrayIcon()
+extern ComPtr<IAvnTrayIcon> CreateTrayIcon()
 {
-    @autoreleasepool
-    {
-        return new AvnTrayIcon();
-    }
+    return comnew<AvnTrayIcon>();
 }
 
 AvnTrayIcon::AvnTrayIcon()
@@ -27,8 +24,6 @@ AvnTrayIcon::~AvnTrayIcon()
 
 HRESULT AvnTrayIcon::SetIcon (void* data, size_t length)
 {
-    START_COM_CALL;
-    
     @autoreleasepool
     {
         if(data != nullptr)
@@ -56,13 +51,11 @@ HRESULT AvnTrayIcon::SetIcon (void* data, size_t length)
     }
 }
 
-HRESULT AvnTrayIcon::SetMenu (IAvnMenu* menu)
+HRESULT AvnTrayIcon::SetMenu (const ComPtr<IAvnMenu>& menu)
 {
-    START_COM_CALL;
-    
     @autoreleasepool
     {
-        auto appMenu = dynamic_cast<AvnAppMenu*>(menu);
+        auto appMenu = menu.dynamicCast<AvnAppMenu>();
         
         if(appMenu != nullptr)
         {
@@ -75,8 +68,6 @@ HRESULT AvnTrayIcon::SetMenu (IAvnMenu* menu)
 
 HRESULT AvnTrayIcon::SetIsVisible(bool isVisible)
 {
-    START_COM_CALL;
-    
     @autoreleasepool
     {
         [_native setVisible:isVisible];
@@ -87,8 +78,6 @@ HRESULT AvnTrayIcon::SetIsVisible(bool isVisible)
 
 HRESULT AvnTrayIcon::SetToolTipText(char* text)
 {
-    START_COM_CALL;
-    
     @autoreleasepool
     {
         if (text != nullptr)
@@ -102,8 +91,6 @@ HRESULT AvnTrayIcon::SetToolTipText(char* text)
 
 HRESULT AvnTrayIcon::SetIsTemplateIcon(bool isTemplateIcon)
 {
-    START_COM_CALL;
-    
     @autoreleasepool
     {
         if (_isTemplateIcon != isTemplateIcon)

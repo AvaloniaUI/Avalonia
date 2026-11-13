@@ -28,6 +28,8 @@ namespace Avalonia.Controls
         private EventHandler? _canExecuteChangeHandler = default;
         private EventHandler CanExecuteChangedHandler => _canExecuteChangeHandler ??= new(CanExecuteChanged);
 
+        private bool _isSubscribedToCommand;
+
         /// <summary>
         /// Defines the <see cref="Command"/> property.
         /// </summary>
@@ -389,7 +391,7 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         IEnumerable<IMenuItem> IMenuElement.SubItems => LogicalChildren.OfType<IMenuItem>();
 
-        private IMenuInteractionHandler? MenuInteractionHandler =>
+        internal IMenuInteractionHandler? MenuInteractionHandler =>
             this.FindLogicalAncestorOfType<MenuBase>()?.InteractionHandler ??
             this.FindAncestorOfType<MenuBase>()?.InteractionHandler;
 
@@ -456,6 +458,8 @@ namespace Avalonia.Controls
                 command.CanExecuteChanged += CanExecuteChangedHandler;
             }
 
+            _isSubscribedToCommand = true;
+
             TryUpdateCanExecute(command, parameter);
 
             var parent = Parent;
@@ -492,6 +496,8 @@ namespace Avalonia.Controls
             {
                 Command.CanExecuteChanged -= CanExecuteChangedHandler;
             }
+
+            _isSubscribedToCommand = false;
         }
 
         /// <summary>
@@ -623,7 +629,7 @@ namespace Avalonia.Controls
             if (e.Sender is MenuItem menuItem)
 
             {
-                if (((ILogical)menuItem).IsAttachedToLogicalTree)
+                if (menuItem._isSubscribedToCommand)
                 {
                     if (e.OldValue is ICommand oldCommand)
                     {

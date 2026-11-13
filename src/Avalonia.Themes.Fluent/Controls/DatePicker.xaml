@@ -133,6 +133,10 @@
       <Setter Property="Fill" Value="{DynamicResource DatePickerSpacerFillDisabled}"/>
     </Style>
 
+    <Style Selector="^ /template/ Button#PART_FlyoutButton TextBlock">
+      <Setter Property="VerticalAlignment" Value="{TemplateBinding VerticalContentAlignment}"/>
+    </Style>
+
     <!-- Changes foreground for watermark text when SelectedDate is null-->
     <Style Selector="^:hasnodate /template/ Button#PART_FlyoutButton TextBlock">
       <Setter Property="Foreground" Value="{DynamicResource TextControlPlaceholderForeground}"/>
