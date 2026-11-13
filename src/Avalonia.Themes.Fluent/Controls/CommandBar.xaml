@@ -314,14 +314,18 @@
                       CornerRadius="{DynamicResource OverlayCornerRadius}"
                       Padding="4"
                       MinWidth="160">
-                <ItemsControl x:Name="PART_OverflowPresenter"
-                              ItemsSource="{Binding OverflowItems, RelativeSource={RelativeSource TemplatedParent}}">
-                  <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                      <StackPanel Spacing="2" />
-                    </ItemsPanelTemplate>
-                  </ItemsControl.ItemsPanel>
-                </ItemsControl>
+                <ScrollViewer Theme="{StaticResource FluentMenuScrollViewer}"
+                              HorizontalScrollBarVisibility="Disabled"
+                              VerticalScrollBarVisibility="Auto">
+                  <ItemsControl x:Name="PART_OverflowPresenter"
+                                ItemsSource="{Binding OverflowItems, RelativeSource={RelativeSource TemplatedParent}}">
+                    <ItemsControl.ItemsPanel>
+                      <ItemsPanelTemplate>
+                        <StackPanel Spacing="2" />
+                      </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                  </ItemsControl>
+                </ScrollViewer>
               </Border>
             </Popup>
           </Panel>

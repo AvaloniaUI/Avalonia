@@ -80,6 +80,9 @@ namespace Avalonia.Controls
         static CalendarDatePicker()
         {
             FocusableProperty.OverrideDefaultValue<CalendarDatePicker>(true);
+
+            // The picker forwards focus to its text box, so as a tab stop it would trap Shift+Tab.
+            IsTabStopProperty.OverrideDefaultValue<CalendarDatePicker>(false);
         }
 
         /// <summary>
@@ -116,6 +119,10 @@ namespace Avalonia.Controls
             if (_calendar != null)
             {
                 _calendar.SelectionMode = CalendarSelectionMode.SingleDate;
+
+                // The calendar handles the arrow keys itself, so the drop-down gives it the focus without putting it in the tab order.
+                _calendar.Focusable = true;
+                _calendar.IsTabStop = false;
 
                 _calendar.DayButtonMouseUp += Calendar_DayButtonMouseUp;
                 _calendar.DisplayDateChanged += Calendar_DisplayDateChanged;
@@ -396,14 +403,21 @@ namespace Avalonia.Controls
         protected override void OnGotFocus(FocusChangedEventArgs e)
         {
             base.OnGotFocus(e);
-            if(IsEnabled && _textBox != null && e.NavigationMethod == NavigationMethod.Tab)
+
+            // Only keyboard focus on a closed picker goes to the text box, because that closes the drop-down.
+            if (IsEnabled && _textBox != null && ReferenceEquals(e.Source, this)
+                && e.NavigationMethod != NavigationMethod.Pointer && !IsDropDownOpen)
             {
-                _textBox.Focus();
-                var text = _textBox.Text;
-                if(!string.IsNullOrEmpty(text))
+                _textBox.Focus(e.NavigationMethod);
+
+                if (e.NavigationMethod == NavigationMethod.Tab)
                 {
-                    _textBox.SelectionStart = 0;
-                    _textBox.SelectionEnd = text.Length;
+                    var text = _textBox.Text;
+                    if (!string.IsNullOrEmpty(text))
+                    {
+                        _textBox.SelectionStart = 0;
+                        _textBox.SelectionEnd = text.Length;
+                    }
                 }
             }
         }
@@ -691,8 +705,6 @@ namespace Avalonia.Controls
         {
             if (_calendar != null)
             {
-                _calendar.Focus();
-
                 // Open the PopUp
                 _onOpenSelectedDate = SelectedDate;
                 _popUp!.IsOpen = true;
@@ -700,6 +712,7 @@ namespace Avalonia.Controls
 
                 UpdatePseudoClasses();
                 _calendar.ResetStates();
+                _calendar.Focus();
                 OnCalendarOpened(new RoutedEventArgs());
             }
         }

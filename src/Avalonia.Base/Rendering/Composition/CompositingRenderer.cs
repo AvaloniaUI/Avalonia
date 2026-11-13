@@ -87,7 +87,18 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
             return;
         if (_updating)
             throw new InvalidOperationException("Visual was invalidated during the render pass");
-        _dirty.Add(visual);
+
+        if (visual.CompositionVisual is null)
+        {
+            // Queuing a detached visual would keep it alive for as long as rendering is stopped.
+            _dirty.Remove(visual);
+            _recalculateChildren.Remove(visual);
+        }
+        else
+        {
+            _dirty.Add(visual);
+        }
+
         QueueUpdate();
     }
 
@@ -223,6 +234,9 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
 
     public void TriggerSceneInvalidatedForUnitTests(Rect rect) =>
         SceneInvalidated?.Invoke(this, new SceneInvalidatedEventArgs(rect));
+
+    internal bool HasPendingUpdateForUnitTests(Visual visual) =>
+        _dirty.Contains(visual) || _recalculateChildren.Contains(visual);
     
     private void Update()
     {
@@ -254,14 +268,21 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
 
     /// <inheritdoc />
     public void Paint(Rect rect) => Paint(rect, true);
-    public void Paint(Rect rect, bool catchExceptions)
+    public void Paint(Rect rect, bool catchExceptions) => Paint(catchExceptions, false);
+
+    /// <summary>
+    /// Synchronously renders the target.
+    /// </summary>
+    /// <param name="catchExceptions">Catch exceptions thrown by the compositor during the render.</param>
+    /// <param name="flushRenderPass">Run a render pass (animations and layout) before the render.</param>
+    internal void Paint(bool catchExceptions, bool flushRenderPass)
     {
         if (_isDisposed)
             return;
 
         QueueUpdate();
         CompositionTarget.RequestRedraw();
-        MediaContext.Instance.ImmediateRenderRequested(CompositionTarget, catchExceptions);
+        MediaContext.Instance.ImmediateRenderRequested(CompositionTarget, catchExceptions, flushRenderPass);
     }
 
     /// <inheritdoc />

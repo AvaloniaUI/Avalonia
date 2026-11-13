@@ -38,7 +38,7 @@
     bool _isTitlebarSession;
     AvnMenu* _menu;
     ComPtr<IAvnAutomationPeer> _automationPeer;
-    AvnAutomationNode* _automationNode;
+    ComPtr<AvnAutomationNode> _automationNode;
 }
 
 -(AvnView* _Nullable) view
@@ -167,7 +167,7 @@
     _menu = menu;
 }
 
--(CLASS_NAME*_Nonnull)  initWithParent: (WindowBaseImpl*_Nonnull) parent contentRect: (NSRect)contentRect styleMask: (NSWindowStyleMask)styleMask;
+-(CLASS_NAME*_Nonnull)  initWithParent: (const ComPtr<WindowBaseImpl>&) parent contentRect: (NSRect)contentRect styleMask: (NSWindowStyleMask)styleMask;
 {
     // https://jameshfisher.com/2020/07/10/why-is-the-contentrect-of-my-nswindow-ignored/
     // create nswindow with specific contentRect, otherwise we wont be able to resize the window
@@ -348,6 +348,10 @@
 
 - (void)windowWillExitFullScreen:(NSNotification *_Nonnull)notification
 {
+    // Prepare the destination appearance before AppKit starts the exit animation.
+    if (_isExtended)
+        [self setTitlebarAppearsTransparent:true];
+
     auto parent = _parent.tryGetWithCast<IWindowStateChanged>();
 
     if(parent != nullptr)
@@ -625,10 +629,10 @@
     if (automationPeer == nullptr)
         return nil;
 
-    return GetNSStringAndRelease(automationPeer->GetAutomationId());
+    return GetNSString(automationPeer->GetAutomationId());
 }
 
-- (IAvnAutomationPeer* _Nullable) automationPeer
+- (ComPtr<IAvnAutomationPeer>) automationPeer
 {
     auto parent = _parent.tryGet();
     if (parent && _automationPeer == nullptr)
@@ -637,7 +641,7 @@
         if (peer != nullptr)
         {
             _automationPeer = peer;
-            _automationNode = new AvnAutomationNode(self);
+            _automationNode = comnew<AvnAutomationNode>(self);
             _automationPeer->SetNode(_automationNode);
         }
     }

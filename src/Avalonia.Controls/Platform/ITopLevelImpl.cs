@@ -59,7 +59,26 @@ namespace Avalonia.Platform
         /// <summary>
         /// Gets or sets a method called when the toplevel requires painting.
         /// </summary>
-        Action<Rect>? Paint { get; set; }
+        /// <remarks>
+        /// Pass <c>null</c> for the default behavior.
+        /// </remarks>
+        Action<PaintOptions?>? Paint { get; set; }
+
+        /// <summary>
+        /// Options for a paint request from <see cref="Paint"/>.
+        /// </summary>
+        public record struct PaintOptions
+        {
+            /// <summary>
+            /// Runs a render pass (animations and layout) synchronously before the frame is rendered,
+            /// with dispatcher processing disabled.
+            /// </summary>
+            /// <remarks>
+            /// Use it when the platform needs an up-to-date frame right now (e. g. during an interactive resize)
+            /// and must not run dispatcher jobs from the paint callback.
+            /// </remarks>
+            public bool FlushRenderPass { get; init; }
+        }
 
         /// <summary>
         /// Gets or sets a method called when the toplevel is resized.
@@ -75,6 +94,18 @@ namespace Avalonia.Platform
         /// Gets or sets a method called when the toplevel's TransparencyLevel changes.
         /// </summary>
         Action<WindowTransparencyLevel>? TransparencyLevelChanged { get; set; }
+
+        /// <summary>
+        /// Gets an opaque platform-specific object with extra information about the scene,
+        /// to be passed to the platform render target with each frame.
+        /// The object must be immutable; implementations must publish a new instance on change.
+        /// </summary>
+        object? PlatformSpecificSceneInfo => null;
+
+        /// <summary>
+        /// Gets or sets a method called when <see cref="PlatformSpecificSceneInfo"/> changes.
+        /// </summary>
+        Action<object?>? PlatformSpecificSceneInfoChanged { get => null; set { } }
 
         /// <summary>
         /// Gets the compositor that's compatible with the toplevel

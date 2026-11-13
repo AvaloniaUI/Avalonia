@@ -4,10 +4,11 @@ using Avalonia.Data;
 using Avalonia.Data.Core;
 using Avalonia.PropertyStore;
 using Xunit;
+using Avalonia.UnitTests;
 
 namespace Avalonia.Base.UnitTests
 {
-    public class AvaloniaPropertyTests
+    public class AvaloniaPropertyTests : ScopedTestBase
     {
         [Fact]
         public void Constructor_Sets_Properties()

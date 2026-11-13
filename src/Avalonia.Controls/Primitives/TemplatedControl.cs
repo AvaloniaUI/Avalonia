@@ -80,6 +80,12 @@ namespace Avalonia.Controls.Primitives
             TextElement.FontStretchProperty.AddOwner<TemplatedControl>();
 
         /// <summary>
+        /// Defines the <see cref="FontVariations"/> property.
+        /// </summary>
+        public static readonly StyledProperty<FontVariationSettings?> FontVariationsProperty =
+            TextElement.FontVariationsProperty.AddOwner<TemplatedControl>();
+
+        /// <summary>
         /// Defines the <see cref="Foreground"/> property.
         /// </summary>
         public static readonly StyledProperty<IBrush?> ForegroundProperty =
@@ -234,6 +240,16 @@ namespace Avalonia.Controls.Primitives
         {
             get => GetValue(FontStretchProperty);
             set => SetValue(FontStretchProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the variable-font axis values (e.g. <c>wght=700</c>) used to draw
+        /// the control's text. <c>null</c> means the font's design defaults.
+        /// </summary>
+        public FontVariationSettings? FontVariations
+        {
+            get => GetValue(FontVariationsProperty);
+            set => SetValue(FontVariationsProperty, value);
         }
 
         /// <summary>

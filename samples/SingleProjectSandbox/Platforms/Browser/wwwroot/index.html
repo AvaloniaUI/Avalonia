@@ -6,10 +6,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <base href="/" />
-    <link rel="modulepreload" href="./main.js" />
-    <link rel="modulepreload" href="./_framework/dotnet.js" />
-    <link rel="modulepreload" href="./_framework/avalonia.js" />
     <link rel="stylesheet" href="./app.css" />
+    <link rel="preload" id="webassembly" />
+    <script type="importmap"></script>
 </head>
 
 <body style="margin: 0; overflow: hidden">
@@ -22,7 +21,7 @@
         <img class="icon" src="Logo.svg" alt="Avalonia Logo" />
     </div>
 </div>
-<script type='module' src="./main.js"></script>
+<script type='module' src="main#[.{fingerprint}].js"></script>
 </body>
 
 </html>

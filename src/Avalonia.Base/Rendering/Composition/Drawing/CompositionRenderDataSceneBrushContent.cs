@@ -25,6 +25,7 @@ internal class CompositionRenderDataSceneBrushContent : ISceneBrushContent
     public double Opacity => Brush.Opacity;
     public ITransform? Transform => Brush.Transform;
     public RelativePoint TransformOrigin => Brush.TransformOrigin;
+    public ITransform? RelativeTransform => Brush.RelativeTransform;
 
     public void Dispose()
     {

@@ -136,7 +136,7 @@ namespace Avalonia.Browser
         public IPlatformRenderSurface[] Surfaces => _surface?.GetRenderSurfaces() ?? [];
 
         public Action<RawInputEventArgs>? Input { get; set; }
-        public Action<Rect>? Paint { get; set; }
+        public Action<ITopLevelImpl.PaintOptions?>? Paint { get; set; }
         public Action<Size, WindowResizeReason>? Resized { get; set; }
         public Action<double>? ScalingChanged { get; set; }
         public Action<WindowTransparencyLevel>? TransparencyLevelChanged { get; set; }
@@ -146,11 +146,6 @@ namespace Avalonia.Browser
 
         public void SetFrameThemeVariant(PlatformThemeVariant? themeVariant)
         {
-            // not in the standard, but we potentially can use "apple-mobile-web-app-status-bar-style" for iOS and "theme-color" for android.
-            if (themeVariant == null && AvaloniaLocator.Current.GetService<IPlatformSettings>() is BrowserPlatformSettings platformSettings)
-            {
-                platformSettings.OnValuesChanged();
-            }
         }
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; }

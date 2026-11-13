@@ -1,9 +1,10 @@
 ﻿using Avalonia.Media;
 using Xunit;
+using Avalonia.UnitTests;
 
 namespace Avalonia.Base.UnitTests.Media
 {
-    public class TextDecorationTests
+    public class TextDecorationTests : ScopedTestBase
     {
         [Fact]
         public void Should_Parse_TextDecorations()

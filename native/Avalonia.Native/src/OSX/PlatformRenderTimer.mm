@@ -4,15 +4,23 @@ class PlatformRenderTimer : public ComSingleObject<IAvnPlatformRenderTimer, &IID
 {
 private:
     ComPtr<IAvnActionCallback> _callback;
-    CVDisplayLinkRef _displayLink;
+    CVDisplayLinkRef _displayLink = nil;
 
 public:
     FORWARD_IUNKNOWN()
-    virtual int RegisterTick (
-        IAvnActionCallback* callback) override
+
+    virtual ~PlatformRenderTimer()
     {
-        START_COM_CALL;
-        
+        if (_displayLink != nil)
+        {
+            // Stops the display link thread, so OnTick never sees a destroyed object
+            CVDisplayLinkStop(_displayLink);
+            CVDisplayLinkRelease(_displayLink);
+        }
+    }
+    virtual int RegisterTick (
+        const ComPtr<IAvnActionCallback>& callback) override
+    {
         @autoreleasepool
         {
             if (_displayLink != nil)
@@ -38,8 +46,6 @@ public:
 
     virtual void Start () override
     {
-        START_COM_CALL;
-
         @autoreleasepool
         {
             if (CVDisplayLinkIsRunning(_displayLink) == false) {
@@ -50,8 +56,6 @@ public:
 
     virtual void Stop () override
     {
-        START_COM_CALL;
-
         @autoreleasepool
         {
             if (CVDisplayLinkIsRunning(_displayLink) == true) {
@@ -62,8 +66,6 @@ public:
 
     virtual bool RunsInBackground () override
     {
-        START_COM_CALL;
-
         @autoreleasepool
         {
             return true;
@@ -79,7 +81,7 @@ public:
     }
 };
 
-extern IAvnPlatformRenderTimer* CreatePlatformRenderTimer()
+extern ComPtr<IAvnPlatformRenderTimer> CreatePlatformRenderTimer()
 {
-    return new PlatformRenderTimer();
+    return comnew<PlatformRenderTimer>();
 }
