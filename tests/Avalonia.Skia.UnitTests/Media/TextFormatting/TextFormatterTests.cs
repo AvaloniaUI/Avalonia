@@ -1545,7 +1545,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             public override int Length { get; }
         }
 
-        private class RecordingTextShaper : ITextShaperImpl
+        internal class RecordingTextShaper : ITextShaperImpl
         {
             private readonly ITextShaperImpl _inner;
 
