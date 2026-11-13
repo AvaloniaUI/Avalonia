@@ -103,6 +103,11 @@ internal class Win32DispatcherImpl : IControlledDispatcherImpl
 
     public void RunLoop(CancellationToken cancellationToken)
     {
+        // The token is only checked between messages, so wake GetMessage when it's
+        // cancelled from another thread. Otherwise an idle loop keeps waiting until
+        // the next message arrives, which may never happen.
+        using var registration = cancellationToken.Register(WakeUp);
+
         var result = 0;
         while (!cancellationToken.IsCancellationRequested 
                && (result = GetMessage(out var msg, IntPtr.Zero, 0, 0)) > 0)
@@ -116,6 +121,10 @@ internal class Win32DispatcherImpl : IControlledDispatcherImpl
                 ?.Log(this, "Unmanaged error in {0}. Error Code: {1}", nameof(RunLoop), Marshal.GetLastWin32Error());
         }
     }
+
+    // WM_NULL only makes GetMessage return; unlike Signal it doesn't dispatch work items
+    private void WakeUp() =>
+        PostMessage(_messageWindow, (uint)WindowsMessage.WM_NULL, IntPtr.Zero, IntPtr.Zero);
 
     public long Now => _clock.ElapsedMilliseconds;
 }
