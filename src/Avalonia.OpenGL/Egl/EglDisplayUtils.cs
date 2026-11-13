@@ -128,10 +128,37 @@ internal static class EglDisplayUtils
             ? new[] { EGL_PBUFFER_BIT | EGL_WINDOW_BIT, EGL_WINDOW_BIT, EGL_PBUFFER_BIT }
             : new[] { EGL_PBUFFER_BIT | EGL_WINDOW_BIT, EGL_WINDOW_BIT };
 
+        var rejectedVersions = new List<string>();
         foreach (var cfg in cfgs)
         {
             if (!egl.BindApi(cfg.Api))
                 continue;
+
+            var found = FindConfig(cfg.RenderableTypeBit);
+            if (found is not { } match)
+                continue;
+
+            // EGL_RENDERABLE_TYPE doesn't tell which versions of the API are supported.
+            if (!CanCreateContext(egl, display, match.Config, cfg.Attributes, out var error))
+            {
+                rejectedVersions.Add($"{cfg.Version.Type} {cfg.Version.Major}.{cfg.Version.Minor} " +
+                                     $"({(EglErrors)error})");
+                continue;
+            }
+
+            egl.GetConfigAttrib(display, match.Config, EGL_SAMPLES, out var sampleCount);
+            egl.GetConfigAttrib(display, match.Config, EGL_STENCIL_SIZE, out var returnedStencilSize);
+            return new EglConfigInfo(match.Config, cfg.Version, match.SurfaceType, cfg.Attributes, sampleCount,
+                returnedStencilSize, cfg.Api);
+        }
+
+        if (rejectedVersions.Count > 0)
+            throw new OpenGlException("No suitable EGL config was found, eglCreateContext failed for: " +
+                                      string.Join(", ", rejectedVersions));
+        throw new OpenGlException("No suitable EGL config was found");
+
+        (IntPtr Config, int SurfaceType)? FindConfig(int renderableTypeBit)
+        {
             foreach (var surfaceType in surfaceTypes)
             foreach (var stencilSize in new[] { 8, 1, 0 })
             foreach (var depthSize in new[] { 8, 1, 0 })
@@ -139,7 +166,7 @@ internal static class EglDisplayUtils
                 var attribs = new[]
                 {
                     EGL_SURFACE_TYPE, surfaceType,
-                    EGL_RENDERABLE_TYPE, cfg.RenderableTypeBit,
+                    EGL_RENDERABLE_TYPE, renderableTypeBit,
                     EGL_RED_SIZE, 8,
                     EGL_GREEN_SIZE, 8,
                     EGL_BLUE_SIZE, 8,
@@ -148,17 +175,28 @@ internal static class EglDisplayUtils
                     EGL_DEPTH_SIZE, depthSize,
                     EGL_NONE
                 };
-                if (ChooseConfigWithProbe(egl, display, attribs, probeConfig) is not { } config)
-                    continue;
-
-                egl.GetConfigAttrib(display, config, EGL_SAMPLES, out var sampleCount);
-                egl.GetConfigAttrib(display, config, EGL_STENCIL_SIZE, out var returnedStencilSize);
-                return new EglConfigInfo(config, cfg.Version, surfaceType, cfg.Attributes, sampleCount,
-                    returnedStencilSize, cfg.Api);
+                if (ChooseConfigWithProbe(egl, display, attribs, probeConfig) is { } config)
+                    return (config, surfaceType);
             }
+
+            return null;
+        }
+    }
+
+    // Expects the API of the context to be already bound with eglBindAPI.
+    private static bool CanCreateContext(EglInterface egl, IntPtr display, IntPtr config, int[] attributes,
+        out int error)
+    {
+        var context = egl.CreateContext(display, config, IntPtr.Zero, attributes);
+        if (context == IntPtr.Zero)
+        {
+            error = egl.GetError();
+            return false;
         }
 
-        throw new OpenGlException("No suitable EGL config was found");
+        egl.DestroyContext(display, context);
+        error = EGL_SUCCESS;
+        return true;
     }
 
     
