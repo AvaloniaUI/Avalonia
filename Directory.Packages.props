@@ -38,7 +38,7 @@
     <PackageVersion Include="MonoMac.NetStandard" Version="0.0.4" />
     <PackageVersion Include="Moq" Version="4.20.72" />
     <PackageVersion Include="Nito.AsyncEx.Context" Version="5.1.2" />
-    <PackageVersion Include="NImpeller" Version="3.50.0" />
+    <PackageVersion Include="NImpeller" Version="3.50.0.1" />
     <PackageVersion Include="NuGet.Protocol" Version="7.9.0" />
     <PackageVersion Include="Nuke.Common" Version="10.1.0" />
     <PackageVersion Include="Numerge" Version="1.0.0" />
