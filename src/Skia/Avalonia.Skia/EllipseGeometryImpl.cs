@@ -16,7 +16,7 @@ namespace Avalonia.Skia
             var path = new SKPath();
             path.AddOval(rect.ToSKRect());
 
-            StrokePath = path;
+            StrokePath = CachePathBounds(path);
             Bounds = rect;
         }
     }

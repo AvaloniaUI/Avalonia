@@ -1,41 +1,51 @@
 ﻿using System;
+using System.Reflection;
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
+using SkiaSharp;
 using Xunit;
 
 namespace Avalonia.Skia.UnitTests
 {
     public class HitTesting
     {
-        [Fact]
-        public void Hit_Test_Should_Respect_Fill()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Hit_Test_Should_Respect_Fill(bool rectangle)
         {
             using (AvaloniaLocator.EnterScope())
             {
                 SkiaPlatform.Initialize();
+
+                Shape shape = rectangle ? new Rectangle() : new Ellipse();
+                shape.Width = 100;
+                shape.Height = 100;
+                shape.Fill = Brushes.Red;
+                shape.HorizontalAlignment = HorizontalAlignment.Center;
+                shape.VerticalAlignment = VerticalAlignment.Center;
 
                 using var services = new CompositorTestServices(new Size(100, 100), 
                     AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>())
                 {
                     TopLevel =
                     {
-                        Content = new Ellipse
-                        {
-                            Width = 100,
-                            Height = 100,
-                            Fill = Brushes.Red,
-                            HorizontalAlignment = HorizontalAlignment.Center,
-                            VerticalAlignment = VerticalAlignment.Center
-                        }
+                        Content = shape
                     }
                 };
 
-                services.AssertHitTest(10, 10, null, Array.Empty<Visual>());
-                services.AssertHitTest(50, 50, null, (Visual)services.TopLevel.Content);
+                shape.Measure(new Size(100, 100));
+                shape.Arrange(new Rect(0, 0, 100, 100));
+                AssertGeometryCanBeShared(shape.RenderedGeometry?.PlatformImpl, new Point(50, 50));
+
+                services.AssertHitTest(10, 10, null, rectangle ? [shape] : []);
+                services.AssertHitTest(50, 50, null, shape);
+                services.AssertHitTest(101, 50, null, Array.Empty<Visual>());
             }
         }
 
@@ -283,6 +293,30 @@ namespace Avalonia.Skia.UnitTests
                 services.AssertHitTest(new RectangleGeometry(new Rect(45, 45, 10, 10)), null,
                     new GeometryHitTestResult(line, IntersectionResult.Intersects));
             }
+        }
+
+        internal static void AssertGeometryCanBeShared(IGeometryImpl? geometry, Point inside)
+        {
+            var impl = Assert.IsAssignableFrom<GeometryImpl>(geometry);
+            var fill = Assert.IsType<SKPath>(impl.FillPath);
+
+            // Check SkiaSharp 4.x's pending builder before a read can flush it, so a
+            // regression fails an assertion instead of crashing in native code.
+            var builderField = typeof(SKPath).GetField("_builder", BindingFlags.Instance | BindingFlags.NonPublic);
+            if (impl.StrokePath is { } stroke)
+                Assert.Null(builderField?.GetValue(stroke));
+            Assert.Null(builderField?.GetValue(fill));
+
+            using var bitmap = new SKBitmap(128, 128);
+            using var canvas = new SKCanvas(bitmap);
+            using var paint = new SKPaint { Color = SKColors.Black };
+            canvas.Clear();
+
+            Parallel.Invoke(
+                () => Assert.True(impl.FillContains(inside)),
+                () => canvas.DrawPath(fill, paint));
+
+            Assert.Equal(SKColors.Black, bitmap.GetPixel((int)inside.X, (int)inside.Y));
         }
     }
 }

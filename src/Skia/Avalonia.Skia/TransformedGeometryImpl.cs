@@ -19,10 +19,11 @@ namespace Avalonia.Skia
             Transform = transform;
             var matrix = transform.ToSKMatrix();
 
-            var transformedPath = StrokePath =  source.StrokePath.Clone();
+            var transformedPath = source.StrokePath.Clone();
             if (transformedPath is not null)
                 transformedPath.Transform(matrix);
 
+            StrokePath = CachePathBounds(transformedPath);
             Bounds = transformedPath?.TightBounds.ToAvaloniaRect() ?? default;
             
             if (ReferenceEquals(source.StrokePath, source.FillPath))
