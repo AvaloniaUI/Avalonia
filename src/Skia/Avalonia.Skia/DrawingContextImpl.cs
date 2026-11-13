@@ -18,7 +18,8 @@ namespace Avalonia.Skia
     /// </summary>
     internal partial class DrawingContextImpl : IDrawingContextImpl,
         IDrawingContextWithAcrylicLikeSupport,
-        IDrawingContextImplWithEffects
+        IDrawingContextImplWithEffects,
+        IDrawingContextImplWithBackdropSupport
     {
         private IDisposable?[]? _disposables;
         // TODO: Get rid of this value, it's currently used to calculate intermediate sizes for tile brushes
@@ -43,6 +44,9 @@ namespace Avalonia.Skia
         private readonly ISkiaGpuRenderSession? _session;
         private bool _leased;
         private bool _useOpacitySaveLayer;
+        // Number of open intermediate layers (effect, opacity mask, PushLayer, opacity). Plain clip and
+        // transform saves are not counted. See IsBackdropSamplingSafe.
+        private int _intermediateLayerDepth;
 
         /// <summary>
         /// Context create info.
@@ -701,12 +705,14 @@ namespace Avalonia.Skia
         {
             CheckLease();
             Canvas.SaveLayer(bounds.ToSKRect(), null!);
+            _intermediateLayerDepth++;
         }
 
         public void PopLayer()
         {
             CheckLease();
             RestoreCanvas();
+            _intermediateLayerDepth--;
         }
 
         /// <inheritdoc />
@@ -733,6 +739,8 @@ namespace Avalonia.Skia
                 {
                     Canvas.SaveLayer(new SKPaint { ColorF = new SKColorF(0, 0, 0, (float)opacity) });
                 }
+
+                _intermediateLayerDepth++;
             }
             else
             {
@@ -750,6 +758,7 @@ namespace Avalonia.Skia
             if (useOpacitySaveLayer)
             {
                 RestoreCanvas();
+                _intermediateLayerDepth--;
             }
 
             _currentOpacity = _opacityStack.Pop();
@@ -837,6 +846,7 @@ namespace Avalonia.Skia
             CheckLease();
 
             Canvas.SaveLayer(bounds.ToSKRect(), null);
+            _intermediateLayerDepth++;
 
             // Mask paints are a plain color or shader, so DstIn applies the mask straight to the layer.
             var maskPaint = CreatePaint(SKPaintCache.Shared.Get(), mask, bounds);
@@ -859,6 +869,7 @@ namespace Avalonia.Skia
             SKPaintCache.Shared.Return(paintWrapper.Paint);
 
             RestoreCanvas();
+            _intermediateLayerDepth--;
         }
 
         /// <inheritdoc />

@@ -45,6 +45,8 @@ internal class RegionDirtyRectTracker : IDirtyRectTracker
 
     public bool Intersects(LtrbRect rect) => _region.Intersects(rect);
 
+    public void CopyWorkingSetTo(List<LtrbRect> buffer) => buffer.AddRange(_rects);
+
     public void Initialize(LtrbRect bounds) => _rects.Clear();
 
     public void Visualize(IDrawingContextImpl context)
@@ -56,6 +58,8 @@ internal class RegionDirtyRectTracker : IDirtyRectTracker
     }
 
     public LtrbRect CombinedRect { get; private set; }
+
+    public DirtyRectWorkingSet GetWorkingSet() => new(this, DirtyRectSpaceMapping.Identity);
 
     public void CopyRects(List<PixelRect> rects)
     {
@@ -69,5 +73,4 @@ internal class RegionDirtyRectTracker : IDirtyRectTracker
         rects.Clear();
         rects.AddRange(_rects);
     }
-    
 }
