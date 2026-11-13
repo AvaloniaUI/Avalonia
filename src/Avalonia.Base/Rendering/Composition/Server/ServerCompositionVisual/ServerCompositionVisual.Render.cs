@@ -213,18 +213,32 @@ partial class ServerCompositionVisual
                     return;
                 }
 
+                // The layer has no pixels outside of its surface, so the snapshot covers only the part of the
+                // AABB that is inside.
+                var layerSize = state.Layer?.LayerPixelSize ?? visual.Root?.PixelSize ?? default;
+                var snapshotBounds = new LtrbPixelRect(
+                    Math.Max(aabbInLayerPixels.Left, 0), Math.Max(aabbInLayerPixels.Top, 0),
+                    Math.Min(aabbInLayerPixels.Right, layerSize.Width),
+                    Math.Min(aabbInLayerPixels.Bottom, layerSize.Height));
+                if (snapshotBounds.Right <= snapshotBounds.Left || snapshotBounds.Bottom <= snapshotBounds.Top)
+                {
+                    state.DisposeSnapshot();
+                    return;
+                }
+
                 var snapshot = state.Snapshot ??= new ServerCompositionBackdropSnapshot();
 
                 LtrbPixelRect? inputDirtyRect = null;
                 if (state.InputDirtyRect is { } dirtyInLayer)
                 {
-                    var clamped = dirtyInLayer.IntersectOrEmpty(aabbInLayer);
+                    var clamped = dirtyInLayer.IntersectOrEmpty(aabbInLayer)
+                        .IntersectOrEmpty(mapping.LayerPixelsToLayerSpace(snapshotBounds.ToLtrbRectUnscaled()));
                     if (!clamped.IsZeroSize)
                         inputDirtyRect = ToLayerPixels(clamped, mapping);
                 }
 
                 var renderContext = visual.Compositor.RenderInterface.Value;
-                snapshot.Draw(backdropCanvas, renderContext, aabbInLayerPixels, inputDirtyRect,
+                snapshot.Draw(backdropCanvas, renderContext, snapshotBounds, inputDirtyRect,
                     visual.BackdropEffect!, bounds);
                 state.InputDirtyRect = null; // the snapshot is up to date
             }

@@ -504,6 +504,108 @@ public class BackdropCompositionTests : TestBase
         Assert.True(h.Px(98, 30).Red < 10 && h.Px(101, 30).Red > 245, $"{h.Px(98, 30)} {h.Px(101, 30)}");
     }
 
+    // Stripes behind a backdrop visual that is much taller than the 200x200 target.
+    private static CompositionSolidColorVisual BuildTallBackdropScene(Harness h, bool retained, double y)
+    {
+        h.Root.Children.Add(h.Rect(Colors.White, 0, 0, 200, 200));
+        for (var x = 0; x < 200; x += 20)
+            h.Root.Children.Add(h.Rect(Colors.Black, x, 0, 10, 200));
+        h.Root.Children.Add(h.Rect(Colors.Red, 0, 100, 200, 10));
+
+        var backdropVisual = h.Rect(Color.FromArgb(0x30, 0xFF, 0xFF, 0xFF), 40, y, 120, 20000);
+        backdropVisual.BackdropEffect = Blur(8);
+        backdropVisual.BackdropEffectCache = MakeBackdropCacheMode(h.Compositor, retained);
+        h.Root.Children.Add(backdropVisual);
+        return backdropVisual;
+    }
+
+    [Fact]
+    public void Retained_Snapshot_Is_Limited_To_The_Root_Layer()
+    {
+        using var h = new Harness(200, 200);
+        var backdropVisual = BuildTallBackdropScene(h, retained: true, y: 20);
+        h.Frame();
+        h.Frame();
+
+        // The AABB is (40,20)-(160,20020). Only its part inside the 200x200 layer has pixels to copy.
+        var snapshot = backdropVisual.Server.BackdropState!.Snapshot;
+        Assert.NotNull(snapshot);
+        Assert.Equal(new PixelRect(40, 20, 120, 180), snapshot!.Bounds);
+
+        var blurred = h.Px(100, 60); // stripes are blurred to grey
+        Assert.InRange((int)blurred.Red, 60, 220);
+    }
+
+    [Fact]
+    public void Retained_Tall_Backdrop_Visual_Move_Equals_Full_Redraw()
+    {
+        using var reference = new Harness(200, 200);
+        BuildTallBackdropScene(reference, retained: true, y: -500);
+        reference.Frame();
+        reference.Frame();
+
+        using var h = new Harness(200, 200);
+        var backdropVisual = BuildTallBackdropScene(h, retained: true, y: 20);
+        h.Frame();
+        h.Frame();
+
+        h.Retained(true);
+        backdropVisual.Offset = new Vector3D(40, -500, 0);
+        h.Frame();
+        h.Frame();
+
+        AssertSimilar(h.Fb, reference.Fb);
+    }
+
+    [Fact]
+    public void Retained_And_Volatile_Match_For_A_Backdrop_Visual_That_Leaves_The_Layer()
+    {
+        using var retained = new Harness(200, 200);
+        BuildTallBackdropScene(retained, retained: true, y: 20);
+        retained.Frame();
+        retained.Frame();
+
+        using var volatileHarness = new Harness(200, 200);
+        BuildTallBackdropScene(volatileHarness, retained: false, y: 20);
+        volatileHarness.Frame();
+        volatileHarness.Frame();
+
+        AssertSimilar(retained.Fb, volatileHarness.Fb);
+        // The bottom rows are where the layer ends inside of the backdrop bounds.
+        for (var x = 45; x < 155; x += 5)
+        {
+            var expected = volatileHarness.Px(x, 199);
+            var actual = retained.Px(x, 199);
+            Assert.True(Math.Abs(expected.Red - actual.Red) <= 8, $"x={x}: volatile {expected}, retained {actual}");
+        }
+    }
+
+    [Fact]
+    public void Retained_Snapshot_Is_Limited_To_The_Bitmap_Cache_Layer()
+    {
+        using var h = new Harness(200, 200);
+        h.Root.Children.Add(h.Rect(Colors.White, 0, 0, 200, 200));
+
+        // A clipping visual with a bitmap cache: its layer is 100x100, the backdrop visual inside is far taller.
+        var cached = h.Rect(Colors.Blue, 20, 20, 100, 100);
+        cached.CacheMode = MakeCache(h.Compositor);
+        cached.Children.Add(h.Rect(Colors.Red, 0, 0, 50, 100));
+        var backdropVisual = h.Rect(Color.FromArgb(0x30, 0xFF, 0xFF, 0xFF), 10, 10, 80, 20000);
+        backdropVisual.BackdropEffect = Blur(8);
+        backdropVisual.BackdropEffectCache = MakeRetainedCacheMode(h.Compositor);
+        cached.Children.Add(backdropVisual);
+        h.Root.Children.Add(cached);
+        for (var i = 0; i < 3; i++)
+            h.Frame();
+
+        var snapshot = backdropVisual.Server.BackdropState!.Snapshot;
+        Assert.NotNull(snapshot);
+        Assert.Equal(new PixelRect(10, 10, 80, 90), snapshot!.Bounds);
+
+        var edge = h.Px(70, 60); // the red/blue edge at layer x = 50 is blurred
+        Assert.True(edge.Red > 30 && edge.Blue > 30, $"edge={edge}");
+    }
+
     [Fact]
     public void Volatile_Overlap_Equals_Full_Redraw()
     {

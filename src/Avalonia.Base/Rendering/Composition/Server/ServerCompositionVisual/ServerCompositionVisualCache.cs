@@ -42,6 +42,8 @@ internal class ServerCompositionVisualCache
 
     // Layer space to layer pixels mapping of this bitmap cache layer, same as in DirtyRectCollectorProxy.
     // Usable after the first draw, which sets the offset and the scale.
+    public PixelSize LayerPixelSize => _layer?.PixelSize ?? default;
+
     public DirtyRectSpaceMapping GetDirtyRectSpaceMapping() =>
         new(_drawAtOffset, _scaleX, _scaleY);
 

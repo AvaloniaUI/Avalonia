@@ -162,8 +162,9 @@ partial class DrawingContextImpl
             return;
 
         using var filter = CreateBackdropEffect(effect, bounds.ToSKRect()); // null filter: plain copy
+        // The snapshot ends where the layer ends. There are no pixels beyond that, same as for the volatile path.
         using var shader = SKShader.CreateImage(
-            image, SKShaderTileMode.Clamp, SKShaderTileMode.Clamp, localMatrix.ToSKMatrix());
+            image, SKShaderTileMode.Decal, SKShaderTileMode.Decal, localMatrix.ToSKMatrix());
 
         var paint = SKPaintCache.Shared.Get();
         var savedCount = Canvas.Save();

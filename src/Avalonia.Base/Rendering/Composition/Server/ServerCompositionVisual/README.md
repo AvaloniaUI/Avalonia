@@ -105,7 +105,8 @@ See "Frame pipeline" for the order and the details.
   - retained: the input is kept in a backdrop snapshot and only its dirty parts are read again.
   - volatile: the input is read from the layer on every draw.
 - **backdrop snapshot** ('store', 'retained state', 'backdrop texture'): `ServerCompositionBackdropSnapshot`. The
-  retained copy of a backdrop visual's input. It has the size of the backdrop AABB.
+  retained copy of a backdrop visual's input. It covers the part of the backdrop AABB that is inside of the layer:
+  the layer has no pixels outside of its surface, so there is nothing to copy from there.
 - **refresh** ('ingest', 're-ingest', 'capture'): to copy pixels from the layer into the backdrop snapshot.
 - **input dirty rect**: the part of a retained backdrop visual's input that changed and is not in the snapshot yet
   (`InputDirtyRect`). A refresh clears it.
@@ -198,6 +199,8 @@ written.
 
 ## Backdrop rules
 
+- Outside of the layer there are no pixels. Both modes see transparent there. This matters for a backdrop visual
+  that is partly outside of the layer (for example in a scroll viewer).
 - A backdrop visual reads the backdrop only inside its own backdrop bounds. The effect sees the content mirrored
   at the edges of the bounds. So a change outside of the AABB never changes the output.
 - Retained and volatile produce the same pixels, except under an intermediate layer (see below). Apart from that the
