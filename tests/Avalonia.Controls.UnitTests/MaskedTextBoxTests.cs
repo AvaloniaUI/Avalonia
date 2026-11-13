@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Reactive.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
@@ -851,6 +853,51 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Theory]
+        [InlineData(typeof(TimeoutException))]
+        [InlineData(typeof(OperationCanceledException))]
+        [InlineData(typeof(UnauthorizedAccessException))]
+        [InlineData(typeof(COMException))]
+        public void Paste_Does_Not_Change_Text_When_Clipboard_Fails(Type exceptionType)
+        {
+            using (Start())
+            {
+                var clipboardImpl = new ThrowingClipboardImplStub(exceptionType);
+                var target = new MaskedTextBox
+                {
+                    Template = CreateTemplate(),
+                    Mask = "00:00",
+                    Text = "12:34"
+                };
+
+                var topLevel = new TestTopLevel(CreateMockTopLevelImpl(clipboardImpl).Object)
+                {
+                    Template = CreateTopLevelTemplate(),
+                    Content = target
+                };
+
+                topLevel.ApplyTemplate();
+                topLevel.LayoutManager.ExecuteInitialLayoutPass();
+                target.ApplyTemplate();
+
+                var messages = new List<string>();
+
+                using (TestLogSink.Start((_, _, _, messageTemplate, _) => messages.Add(messageTemplate)))
+                {
+                    using var syncContext = UnitTestSynchronizationContext.Begin();
+
+                    RaiseKeyEvent(target, Key.V, KeyModifiers.Control);
+
+                    Assert.Null(Record.Exception(syncContext.ExecutePostedCallbacks));
+                }
+
+                Assert.Equal(1, clipboardImpl.TryGetDataCount);
+                Assert.Equal("12:34", target.Text);
+                Assert.False(target.CanUndo);
+                Assert.Equal(["Failed to read text from clipboard: {Error}"], messages);
+            }
+        }
+
+        [Theory]
         [InlineData(Key.X, KeyModifiers.Control)]
         [InlineData(Key.Back, KeyModifiers.None)]
         [InlineData(Key.Delete, KeyModifiers.None)]
@@ -1127,12 +1174,12 @@ namespace Avalonia.Controls.UnitTests
         {
         }
 
-        private static Mock<ITopLevelImpl> CreateMockTopLevelImpl()
+        private static Mock<ITopLevelImpl> CreateMockTopLevelImpl(IClipboardImpl? clipboardImpl = null)
         {
             var clipboard = new Mock<ITopLevelImpl>();
             clipboard.Setup(x => x.Compositor).Returns(RendererMocks.CreateDummyCompositor());
             clipboard.Setup(r => r.TryGetFeature(typeof(IClipboard)))
-                .Returns(new Clipboard(new HeadlessClipboardImplStub()));
+                .Returns(new Clipboard(clipboardImpl ?? new HeadlessClipboardImplStub()));
             clipboard.SetupGet(x => x.RenderScaling).Returns(1);
             return clipboard;
         }

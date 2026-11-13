@@ -2122,6 +2122,32 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Grid_Controls_With_Spacing_With_Span_Allows_A_Rounding_Residual()
+        {
+            // Distributing the spanned height into the three star rows leaves a residual of
+            // about 2.8e-14, which failed the Debug sanity check in EnsureMinSizeInDefinitionRange.
+            var target = new Grid
+            {
+                RowSpacing = 12,
+                RowDefinitions = RowDefinitions.Parse("*,*,*,*,*,*,*"),
+                Children =
+                {
+                    new Border
+                    {
+                        Height = 540.8571428571429,
+                        [Grid.RowProperty] = 4,
+                        [Grid.RowSpanProperty] = 3
+                    }
+                },
+            };
+
+            target.Measure(new Size(1000, 1278));
+
+            // The child's height plus the four spacings outside its span, layout rounded
+            Assert.Equal(589, target.DesiredSize.Height);
+        }
+
+        [Fact]
         public void Grid_Controls_With_Spacing_With_Span_And_SharedSize()
         {
             using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);

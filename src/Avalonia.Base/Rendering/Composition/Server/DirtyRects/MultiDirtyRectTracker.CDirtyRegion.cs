@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using Avalonia.Platform;
 
@@ -318,6 +319,25 @@ partial class MultiDirtyRectTracker
             }
 
             return _resolvedRegions.AsSpan(0, _regionCount);
+        }
+
+        /// <summary>
+        /// Appends the non-empty dirty regions to <paramref name="buffer"/> as they are. Does not merge them and
+        /// does not set <c>_optimized</c>, after which a later <see cref="Add"/> would be missing from reads.
+        /// </summary>
+        public void CopyRawRegionsTo(List<LtrbRect> buffer)
+        {
+            if (_maxSurfaceFallback)
+            {
+                buffer.Add(_surfaceBounds);
+                return;
+            }
+
+            for (int i = 0; i < MaxDirtyRegionCount; i++)
+            {
+                if (!_dirtyRegions[i].IsEmpty)
+                    buffer.Add(_dirtyRegions[i]);
+            }
         }
 
         /// <summary>

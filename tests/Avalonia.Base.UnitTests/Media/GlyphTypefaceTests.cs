@@ -697,25 +697,94 @@ namespace Avalonia.Base.UnitTests.Media
                        typeface.FaceNames.Count > 0);
         }
 
+        [Fact]
+        public void Bold_Simulation_Should_Report_The_Platform_Weight_When_It_Is_Heavier_Than_Bold()
+        {
+            using var stream = new StandardAssetLoader().Open(new Uri(InterFontUri));
+
+            // A platform typeface that simulates a missing face reports the weight it was requested with.
+            var typeface = new GlyphTypeface(
+                new CustomPlatformTypeface(stream, weight: FontWeight.ExtraBold, fontSimulations: FontSimulations.Bold),
+                FontSimulations.Bold);
+
+            Assert.Equal(FontWeight.ExtraBold, typeface.Weight);
+        }
+
+        [Fact]
+        public void Bold_Simulation_Should_Report_The_Platform_Weight_When_It_Is_SemiBold()
+        {
+            using var stream = new StandardAssetLoader().Open(new Uri(InterFontUri));
+
+            // A face simulated for a SemiBold request is registered under SemiBold, so a Bold
+            // request still asks for its own face.
+            var typeface = new GlyphTypeface(
+                new CustomPlatformTypeface(stream, weight: FontWeight.SemiBold, fontSimulations: FontSimulations.Bold),
+                FontSimulations.Bold);
+
+            Assert.Equal(FontWeight.SemiBold, typeface.Weight);
+        }
+
+        [Fact]
+        public void Bold_Simulation_Should_Report_Bold_When_The_Platform_Reports_The_Design_Weight()
+        {
+            using var stream = new StandardAssetLoader().Open(new Uri(InterFontUri));
+
+            // A typeface created from a font stream reports the design weight of the font file.
+            var typeface = new GlyphTypeface(
+                new CustomPlatformTypeface(stream, fontSimulations: FontSimulations.Bold),
+                FontSimulations.Bold);
+
+            Assert.Equal(FontWeight.Bold, typeface.Weight);
+        }
+
+        [Fact]
+        public void Oblique_Simulation_Should_Report_The_Platform_Style_When_It_Is_Slanted()
+        {
+            using var stream = new StandardAssetLoader().Open(new Uri(InterFontUri));
+
+            var typeface = new GlyphTypeface(
+                new CustomPlatformTypeface(stream, style: FontStyle.Oblique, fontSimulations: FontSimulations.Oblique),
+                FontSimulations.Oblique);
+
+            Assert.Equal(FontStyle.Oblique, typeface.Style);
+        }
+
+        [Fact]
+        public void Oblique_Simulation_Should_Report_Italic_When_The_Platform_Reports_An_Upright_Style()
+        {
+            using var stream = new StandardAssetLoader().Open(new Uri(InterFontUri));
+
+            var typeface = new GlyphTypeface(
+                new CustomPlatformTypeface(stream, fontSimulations: FontSimulations.Oblique),
+                FontSimulations.Oblique);
+
+            Assert.Equal(FontStyle.Italic, typeface.Style);
+        }
+
         private class CustomPlatformTypeface : IPlatformTypeface
         {
             private readonly UnmanagedFontMemory _fontMemory;
 
-            public CustomPlatformTypeface(Stream stream, string fontFamily = "Custom")
+            public CustomPlatformTypeface(Stream stream, string fontFamily = "Custom",
+                FontWeight weight = FontWeight.Normal, FontStyle style = FontStyle.Normal,
+                FontSimulations fontSimulations = FontSimulations.None)
             {
                 _fontMemory = UnmanagedFontMemory.LoadFromStream(stream);
                 FamilyName = fontFamily;
+                Weight = weight;
+                Style = style;
+                FontSimulations = fontSimulations;
             }
 
-            public FontWeight Weight => FontWeight.Normal;
+            public FontWeight Weight { get; }
 
-            public FontStyle Style => FontStyle.Normal;
+            public FontStyle Style { get; }
 
             public FontStretch Stretch => FontStretch.Normal;
 
             public string FamilyName { get; }
 
-            public FontSimulations FontSimulations => FontSimulations.None;
+            public FontSimulations FontSimulations { get; }
 
             public void Dispose()
             {

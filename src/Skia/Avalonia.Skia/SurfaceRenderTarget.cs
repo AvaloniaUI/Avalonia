@@ -11,7 +11,8 @@ namespace Avalonia.Skia
     /// <summary>
     /// Skia render target that writes to a surface.
     /// </summary>
-    internal class SurfaceRenderTarget : IDrawableBitmapImpl, IDrawingContextLayerWithRenderContextAffinityImpl
+    internal class SurfaceRenderTarget : IDrawableBitmapImpl, IDrawingContextLayerWithRenderContextAffinityImpl,
+        IDrawingContextBackdropSnapshotImpl
     {
         private readonly bool _useScaledDrawing;
         private readonly ISkiaSurface _surface;
@@ -76,6 +77,11 @@ namespace Avalonia.Skia
         }
 
         public RenderTargetProperties Properties => default;
+
+        /// <summary>
+        /// The backing Skia surface. The drawing context draws into it to refresh a backdrop snapshot.
+        /// </summary>
+        internal SKSurface Surface => _surface.Surface;
 
         /// <summary>
         /// Create backing Skia surface.
