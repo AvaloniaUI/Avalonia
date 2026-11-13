@@ -14,6 +14,7 @@ using Avalonia.Input.Platform;
 using Avalonia.Input.TextInput;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Moq;
@@ -1468,6 +1469,45 @@ namespace Avalonia.Controls.UnitTests
 
                 Assert.Equal("initial edit", textBox.Text);
                 Assert.Equal("initial edit", source.Bar);
+            }
+        }
+
+        [Fact]
+        public void Delayed_TwoWay_Binding_Source_Echo_Should_Not_Clear_Undo_History()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var source = new Class1 { Bar = "initial" };
+                var textBox = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    DataContext = source,
+                };
+
+                textBox.Bind(TextBox.TextProperty, new Binding(nameof(Class1.Bar))
+                {
+                    Mode = BindingMode.TwoWay,
+                    Delay = 300,
+                });
+                textBox.Measure(Size.Infinity);
+                textBox.CaretIndex = textBox.Text!.Length;
+
+                RaiseTextEvent(textBox, " edit");
+                RaiseKeyEvent(textBox, Key.Space, KeyModifiers.None);
+                RaiseTextEvent(textBox, " more");
+
+                Assert.Equal("initial", source.Bar);
+                Assert.True(textBox.CanUndo);
+
+                var timer = Assert.Single(Dispatcher.SnapshotTimersForUnitTests());
+                timer.ForceFire();
+
+                Assert.Equal("initial edit more", source.Bar);
+                Assert.True(textBox.CanUndo);
+
+                textBox.Undo();
+
+                Assert.Equal("initial edit", textBox.Text);
             }
         }
 
