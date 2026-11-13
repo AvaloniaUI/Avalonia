@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Avalonia.Base.UnitTests.Media;
 
-public class DrawingRecordingTests
+public class DrawingRecordingTests : ScopedTestBase
 {
     [Fact]
     public void Create_Returns_NonNull()
