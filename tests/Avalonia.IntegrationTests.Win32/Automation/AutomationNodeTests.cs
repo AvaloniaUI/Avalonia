@@ -1,12 +1,14 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Threading;
 using Avalonia.Win32.Automation;
+using Avalonia.Win32.Automation.Marshalling;
 using Xunit;
 using UIA = Avalonia.Win32.Automation.Interop;
 
@@ -101,6 +103,56 @@ public class AutomationNodeTests
             () => Task.Run(() => ((UIA.IToggleProvider)node).Toggle(), TestContext.Current.CancellationToken));
 
         Assert.Equal(UIA.UiaCoreProviderApi.UIA_E_ELEMENTNOTENABLED, exception.HResult);
+    }
+
+    [Fact]
+    public async Task GetPropertyValue_LabeledBy_Returns_Label_AutomationNode()
+    {
+        var (textBoxNode, labelNode) = await Dispatcher.UIThread.InvokeAsync(
+            () =>
+            {
+                var label = new TextBlock { Text = "Label" };
+                var textBox = new TextBox();
+                AutomationProperties.SetLabeledBy(textBox, label);
+
+                var textBoxNode = AutomationNode.GetOrCreate(ControlAutomationPeer.CreatePeerForElement(textBox));
+                var labelNode = AutomationNode.GetOrCreate(ControlAutomationPeer.CreatePeerForElement(label));
+                return (textBoxNode, labelNode);
+            },
+            DispatcherPriority.Normal,
+            TestContext.Current.CancellationToken);
+
+        var value = await Task.Run(
+            () => textBoxNode.GetPropertyValue((int)UIA.UiaPropertyId.LabeledBy),
+            TestContext.Current.CancellationToken);
+
+        Assert.Same(labelNode, value);
+
+        var variant = ComVariantMarshaller.ConvertToUnmanaged(value);
+        try
+        {
+            Assert.Equal(VarEnum.VT_UNKNOWN, variant.VarType);
+            Assert.Same(labelNode, ComVariantMarshaller.ConvertToManaged(variant));
+        }
+        finally
+        {
+            ComVariantMarshaller.Free(variant);
+        }
+    }
+
+    [Fact]
+    public async Task GetPropertyValue_LabeledBy_Returns_Null_When_Not_Set()
+    {
+        var textBoxNode = await Dispatcher.UIThread.InvokeAsync(
+            () => AutomationNode.GetOrCreate(ControlAutomationPeer.CreatePeerForElement(new TextBox())),
+            DispatcherPriority.Normal,
+            TestContext.Current.CancellationToken);
+
+        var value = await Task.Run(
+            () => textBoxNode.GetPropertyValue((int)UIA.UiaPropertyId.LabeledBy),
+            TestContext.Current.CancellationToken);
+
+        Assert.Null(value);
     }
 
     private static async Task<AutomationNode> CreateMenuItemNodeAsync(bool isChecked)
