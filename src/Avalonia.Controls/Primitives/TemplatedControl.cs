@@ -5,15 +5,13 @@ using Avalonia.Interactivity;
 using Avalonia.Logging;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
-using Avalonia.Rendering.Composition;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
 {
     /// <summary>
     /// A lookless control whose visual appearance is defined by its <see cref="Template"/>.
     /// </summary>
-    public class TemplatedControl : Control, IVisualWithRoundRectClip
+    public class TemplatedControl : Control
     {
         /// <summary>
         /// Defines the <see cref="Background"/> property.
@@ -120,7 +118,6 @@ namespace Avalonia.Controls.Primitives
                 RoutingStrategies.Direct);
 
         private IControlTemplate? _appliedTemplate;
-        private CompositionBorderVisual? _borderVisual;
 
         /// <summary>
         /// Initializes static members of the <see cref="TemplatedControl"/> class.
@@ -347,16 +344,6 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
-        {
-            base.OnPropertyChanged(change);
-
-            if (change.Property == CornerRadiusProperty)
-            {
-                _borderVisual?.CornerRadius = change.GetNewValue<CornerRadius>();
-            }
-        }
-
         /// <inheritdoc/>
         protected override Control GetTemplateFocusTarget()
         {
@@ -462,15 +449,5 @@ namespace Avalonia.Controls.Primitives
                 }
             }
         }
-
-        private protected override CompositionDrawListVisual CreateCompositionVisual(Compositor compositor)
-        {
-            return _borderVisual = new CompositionBorderVisual(compositor, this)
-            {
-                CornerRadius = CornerRadius
-            };
-        }
-
-        public CornerRadius ClipToBoundsRadius => CornerRadius;
     }
 }
