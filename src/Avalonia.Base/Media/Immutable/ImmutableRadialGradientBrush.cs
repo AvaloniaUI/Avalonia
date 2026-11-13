@@ -104,7 +104,7 @@ namespace Avalonia.Media.Immutable
             Center = source.Center;
             GradientOrigin = source.GradientOrigin;
             RadiusX = source.RadiusX;
-            RadiusY = source.RadiusX;
+            RadiusY = source.RadiusY;
         }
 
         /// <inheritdoc/>

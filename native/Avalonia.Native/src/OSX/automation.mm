@@ -136,6 +136,7 @@
     switch (controlType) {
         case AutomationList: return @"AXContentList";
         case AutomationListItem: return NSAccessibilityTableRowSubrole;
+        case AutomationTabItem: return NSAccessibilityTabButtonSubrole;
     }
 
     auto landmarkType = _peer->GetLandmarkType();

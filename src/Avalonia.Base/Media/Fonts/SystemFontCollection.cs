@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -52,43 +52,97 @@ namespace Avalonia.Media.Fonts
                 return false;
             }
 
-            // The font manager didn't return a perfect match either. Find the nearest match ourselves.
-            if (key != platformTypeface.ToFontCollectionKey() &&
-                TryGetGlyphTypeface(familyName, key, allowNearestMatch: true, out glyphTypeface))
+            // The platform matched the request against every installed face of the family, while the
+            // cache only holds earlier requests, so its answer is the match even when it is not the
+            // requested key. A cached nearest match could only pick a face the platform judged worse,
+            // such as an upright Medium for a SemiBold Italic request when the family has a Bold.
+            var platformKey = platformTypeface.ToFontCollectionKey();
+            var platformFamilyName = platformTypeface.FamilyName;
+
+            if (!TryGetOrAddPlatformGlyphTypeface(platformTypeface, platformFamilyName, platformKey,
+                    out var platformGlyphTypeface))
             {
+                return false;
+            }
+
+            glyphTypeface = platformGlyphTypeface;
+
+            if (platformKey != key &&
+                TryCreateSyntheticGlyphTypeface(platformGlyphTypeface, style, weight, stretch, out var synthetic))
+            {
+                glyphTypeface = synthetic;
+            }
+
+            if (!TryAddGlyphTypeface(familyName, key, glyphTypeface) &&
+                _glyphTypefaceCache.TryGetValue(familyName, out var existingMap) &&
+                existingMap.TryGetValue(key, out var existing) && existing is not null)
+            {
+                // Another thread registered a face for this request first.
+                glyphTypeface = existing;
+            }
+
+            if (!string.Equals(familyName, platformFamilyName, StringComparison.OrdinalIgnoreCase))
+            {
+                TryAddGlyphTypeface(platformFamilyName, key, glyphTypeface);
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Gets the glyph typeface cached for a platform typeface under the key it reports, or creates
+        /// and caches one.
+        /// </summary>
+        /// <remarks>
+        /// The collection owns the platform typeface the font manager returned, so one it does not keep
+        /// is disposed, unless it is the very instance the cached glyph typeface holds.
+        /// </remarks>
+        private bool TryGetOrAddPlatformGlyphTypeface(IPlatformTypeface platformTypeface, string platformFamilyName,
+            FontCollectionKey platformKey,
+            [NotNullWhen(true)] out GlyphTypeface? glyphTypeface)
+        {
+            if (TryGetCached(platformFamilyName, platformKey, out glyphTypeface))
+            {
+                if (!ReferenceEquals(platformTypeface, glyphTypeface.PlatformTypeface))
+                {
+                    platformTypeface.Dispose();
+                }
+
                 return true;
             }
 
-            glyphTypeface = GlyphTypeface.TryCreate(platformTypeface);
+            glyphTypeface = GlyphTypeface.TryCreate(platformTypeface, platformTypeface.FontSimulations);
+
             if (glyphTypeface is null)
             {
                 return false;
             }
 
-            //Add to cache with platform typeface family name first
-            TryAddGlyphTypeface(platformTypeface.FamilyName, key, glyphTypeface);
-            
-            // Then the requested family name
-            if (!string.Equals(familyName, platformTypeface.FamilyName, StringComparison.OrdinalIgnoreCase))
-                TryAddGlyphTypeface(familyName, key, glyphTypeface);
-
-            //Add to cache
-            if (!TryAddGlyphTypeface(glyphTypeface))
+            if (!TryAddGlyphTypeface(platformFamilyName, platformKey, glyphTypeface) &&
+                TryGetCached(platformFamilyName, platformKey, out var existing))
             {
-                // Another thread may have added an entry for this key while we were creating the glyph typeface.
-                // Re-check the cache and yield the existing glyph typeface if present.
-                if (_glyphTypefaceCache.TryGetValue(familyName, out var existingMap) && existingMap.TryGetValue(key, out var existingTypeface) && existingTypeface != null)
-                {
-                    glyphTypeface = existingTypeface;
+                // Another thread cached a face under this key first. The glyph typeface created here
+                // owns the platform typeface, so disposing it releases both.
+                glyphTypeface.Dispose();
 
-                    return true;
-                }
+                glyphTypeface = existing;
 
-                return false;
+                return true;
             }
 
-            //Requested glyph typeface should be in cache now
-            return TryGetGlyphTypeface(familyName, key, allowNearestMatch: false, out glyphTypeface);
+            // The face's own family names, under which a synthetic variant of it is looked up.
+            TryAddGlyphTypeface(glyphTypeface, platformKey);
+
+            return true;
+        }
+
+        private bool TryGetCached(string familyName, FontCollectionKey key,
+            [NotNullWhen(true)] out GlyphTypeface? glyphTypeface)
+        {
+            glyphTypeface = null;
+
+            return _glyphTypefaceCache.TryGetValue(familyName, out var glyphTypefaces) &&
+                   glyphTypefaces.TryGetValue(key, out glyphTypeface) && glyphTypeface is not null;
         }
 
         public override bool TryGetFamilyTypefaces(string familyName, [NotNullWhen(true)] out IReadOnlyList<Typeface>? familyTypefaces)
@@ -121,28 +175,10 @@ namespace Avalonia.Media.Fonts
 
             var platformKey = new FontCollectionKey(platformTypeface.Style, platformTypeface.Weight, platformTypeface.Stretch);
 
-            // Check cache first to avoid creating a duplicate GlyphTypeface.
-            if (_glyphTypefaceCache.TryGetValue(platformTypeface.FamilyName, out var glyphTypefaces) &&
-                glyphTypefaces.TryGetValue(platformKey, out var existing) &&
-                existing != null)
-            {
-                glyphTypeface = existing;
-                return true;
-            }
-
-            glyphTypeface = GlyphTypeface.TryCreate(platformTypeface);
-
-            if (glyphTypeface is null)
-            {
-                return false;
-            }
-
-            // Register in the cache so future lookups can short-circuit through TryMatchCharacter's
-            // Tier C without re-invoking the platform.
-            TryAddGlyphTypeface(platformTypeface.FamilyName, platformKey, glyphTypeface);
-            TryAddGlyphTypeface(glyphTypeface, platformKey);
-
-            return true;
+            // Registered under the platform's key, so future lookups can short-circuit through
+            // TryMatchCharacter's Tier C without re-invoking the platform.
+            return TryGetOrAddPlatformGlyphTypeface(platformTypeface, platformTypeface.FamilyName, platformKey,
+                out glyphTypeface);
         }
     }
 }
