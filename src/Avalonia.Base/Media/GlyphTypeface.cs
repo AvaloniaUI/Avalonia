@@ -99,6 +99,19 @@ namespace Avalonia.Media
         private StatTable? _statTable;
         private volatile bool _statTableLoaded;
 
+        // MATH and GDEF tables — read only by math layout, so parsed on first access on the source
+        // typeface and shared by its clones, like STAT. GDEF is loaded only for a variation clone of
+        // a variable font, whose MATH values it varies.
+        private Fonts.Tables.OpenTypeMath.MathTable? _mathData;
+        private volatile bool _mathDataLoaded;
+        private GdefTable? _gdefTable;
+        private volatile bool _gdefTableLoaded;
+
+        // The MATH view of this typeface: the shared parsed table with the constants resolved at this
+        // instance's variation position. Per instance, created on first access.
+        private OpenTypeMathTable? _mathTable;
+        private volatile bool _mathTableLoaded;
+
         // Source typeface for variation clones. Null for default-instance typefaces
         // (the source) — every WithVariation clone points back to its source so all
         // variations of the same font share a single cache and resource owner.
@@ -1174,6 +1187,93 @@ namespace Avalonia.Media
                 }
 
                 return source._statTable;
+            }
+        }
+
+        /// <summary>
+        /// Gets the font's OpenType MATH table, which math layout reads its constants, glyph
+        /// information and glyph variants from.
+        /// </summary>
+        /// <value>
+        /// <c>null</c> when the font has no MATH table, or its header or all of its sub-tables are
+        /// unusable.
+        /// </value>
+        /// <remarks>
+        /// The table is parsed on first access and shared by all variation instances of the font. Each
+        /// instance returns its own <see cref="OpenTypeMathTable"/>, whose values are varied to the
+        /// instance's position. Repeated access returns the same object.
+        /// </remarks>
+        public OpenTypeMathTable? MathTable
+        {
+            get
+            {
+                if (!_mathTableLoaded)
+                {
+                    var data = MathData;
+                    OpenTypeMathTable? mathTable = null;
+
+                    if (data is not null)
+                    {
+                        float[]? regionScalers = null;
+                        var store = _activeCoords is not null ? Gdef?.VariationStore : null;
+
+                        if (store is not null)
+                        {
+                            regionScalers = new float[store.RegionCount];
+                            store.ComputeRegionScalers(_activeCoords, regionScalers);
+                        }
+
+                        mathTable = new OpenTypeMathTable(data, store, regionScalers);
+                    }
+
+                    // Publish the table before the flag so a reader that sees the flag sees it. Two
+                    // threads racing here build equal views and either may win.
+                    _mathTable = mathTable;
+                    _mathTableLoaded = true;
+                }
+
+                return _mathTable;
+            }
+        }
+
+        private Fonts.Tables.OpenTypeMath.MathTable? MathData
+        {
+            get
+            {
+                var source = _sourceTypeface ?? this;
+
+                if (!source._mathDataLoaded)
+                {
+                    Fonts.Tables.OpenTypeMath.MathTable.TryLoad(source, out var mathData);
+
+                    source._mathData = mathData;
+                    source._mathDataLoaded = true;
+                }
+
+                return source._mathData;
+            }
+        }
+
+        private GdefTable? Gdef
+        {
+            get
+            {
+                var source = _sourceTypeface ?? this;
+
+                if (!source._gdefTableLoaded)
+                {
+                    GdefTable? gdefTable = null;
+
+                    if (source._fvarTable is not null)
+                    {
+                        GdefTable.TryLoad(source, source._fvarTable.Axes.Length, out gdefTable);
+                    }
+
+                    source._gdefTable = gdefTable;
+                    source._gdefTableLoaded = true;
+                }
+
+                return source._gdefTable;
             }
         }
 
