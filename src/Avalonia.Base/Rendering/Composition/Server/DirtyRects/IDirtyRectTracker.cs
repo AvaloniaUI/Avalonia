@@ -22,6 +22,10 @@ internal interface IDirtyRectTracker : IDirtyRectCollector
     /// merge anything.
     /// </summary>
     void CopyWorkingSetTo(List<LtrbRect> buffer);
+
+    void CopyRects(List<PixelRect> rects);
+    // Dirty rectangles before antialiasing inflation, for replay through AddRect/FinalizeFrame.
+    void CopyUninflatedRects(List<LtrbRect> rects);
 }
 
 internal interface IDirtyRectCollector

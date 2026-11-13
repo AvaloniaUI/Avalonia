@@ -77,6 +77,20 @@ namespace Avalonia.Controls.UnitTests.Presenters
         }
 
         [Fact]
+        public void TextPresenter_Should_Use_FontVariations_Property()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var variations = FontVariationSettings.Parse("wght=650, wdth=85");
+                var presenter = new TextPresenter { FontVariations = variations, Text = "test" };
+
+                Assert.NotNull(presenter.TextLayout);
+                Assert.NotNull(presenter.TextLayout.TextLines[0].TextRuns[0].Properties);
+                Assert.Equal(variations, presenter.TextLayout.TextLines[0].TextRuns[0].Properties!.Typeface.FontVariations);
+            }
+        }
+
+        [Fact]
         public void Measure_And_Arrange_Should_Use_WidthIncludingTrailingWhitespace_For_Bounds()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))

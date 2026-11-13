@@ -257,9 +257,24 @@ namespace Avalonia.Input
                     {
                         _ignoreAltUp = false;
                     }
-                    else if (_showingAccessKeys && MainMenu != null)
+                    else if (_showingAccessKeys &&
+                        MainMenu is not null &&
+                        (e.KeyModifiers & ~KeyModifiers.Alt) == KeyModifiers.None)
                     {
                         MainMenu.Open();
+                    }
+
+                    break;
+
+                case Key.LeftShift:
+                case Key.RightShift:
+                case Key.LeftCtrl:
+                case Key.RightCtrl:
+                case Key.LWin:
+                case Key.RWin:
+                    if (_altIsDown)
+                    {
+                        _ignoreAltUp = true;
                     }
 
                     break;

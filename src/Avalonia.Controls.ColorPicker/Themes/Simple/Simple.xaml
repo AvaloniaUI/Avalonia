@@ -5,6 +5,19 @@
   <Styles.Resources>
     <ResourceDictionary>
 
+      <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Default">
+          <SolidColorBrush x:Key="ColorControlLightSelectorBrush" Color="#FFFFFFFF" />
+          <SolidColorBrush x:Key="ColorControlDarkSelectorBrush" Color="#E4000000" />
+          <StaticResource x:Key="ColorControlDefaultSelectorBrush" ResourceKey="ThemeForegroundBrush" />
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Dark">
+          <SolidColorBrush x:Key="ColorControlLightSelectorBrush" Color="#FFFFFFFF" />
+          <SolidColorBrush x:Key="ColorControlDarkSelectorBrush" Color="#E4000000" />
+          <StaticResource x:Key="ColorControlDefaultSelectorBrush" ResourceKey="ThemeForegroundBrush" />
+        </ResourceDictionary>
+      </ResourceDictionary.ThemeDictionaries>
+
       <!-- Shared Resources -->
       <VisualBrush x:Key="ColorControlCheckeredBackgroundBrush"
                    TileMode="Tile"
@@ -27,15 +40,6 @@
           </Image>
         </VisualBrush.Visual>
       </VisualBrush>
-
-      <!-- TODO: Enable the commented-out resources below once Avalonia supports extending light/dark resource dictionaries -->
-      <SolidColorBrush x:Key="ColorControlLightSelectorBrush" Color="#FFFFFFFF" />
-      <SolidColorBrush x:Key="ColorControlDarkSelectorBrush" Color="#E4000000" />
-      <!--<DynamicResource x:Key="ColorControlDefaultSelectorBrush" ResourceKey="SystemControlForegroundBaseHighBrush" />-->
-      <SolidColorBrush x:Key="ColorViewContentBackgroundBrush" Color="Transparent" />
-      <SolidColorBrush x:Key="ColorViewContentBorderBrush" Color="Transparent" />
-      <!--<DynamicResource x:Key="ColorViewTabBackgroundBrush" ResourceKey="SystemControlBackgroundBaseLowBrush" />-->
-      <SolidColorBrush x:Key="ColorViewTabBorderBrush" Color="Transparent" />
 
       <!-- Shared Converters -->
       <converters:EnumToBoolConverter x:Key="EnumToBoolConverter" />

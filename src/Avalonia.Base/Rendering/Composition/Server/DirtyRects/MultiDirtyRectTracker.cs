@@ -87,4 +87,18 @@ internal partial class MultiDirtyRectTracker : IDirtyRectTracker
     public IReadOnlyList<LtrbRect> InflatedRects => _inflatedRects;
 
     public DirtyRectWorkingSet GetWorkingSet() => new(this, DirtyRectSpaceMapping.Identity);
+
+    public void CopyRects(List<PixelRect> rects)
+    {
+        rects.Clear();
+        foreach (var rect in _clipRegion.Rects)
+            rects.Add(rect.ToPixelRect());
+    }
+
+    public void CopyUninflatedRects(List<LtrbRect> rects)
+    {
+        rects.Clear();
+        foreach (var rect in _regions.GetUninflatedDirtyRegions())
+            rects.Add(rect);
+    }
 }

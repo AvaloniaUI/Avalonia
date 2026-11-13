@@ -22,6 +22,7 @@ namespace Avalonia.OpenGL.Egl
         }
 
         public override bool IsInvalid => handle == IntPtr.Zero;
+        //TODO13: replace SwapBuffers on SwapBuffersChecked
         public void SwapBuffers() => _egl.SwapBuffers(_display.Handle, handle);
     }
 }
