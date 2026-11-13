@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Media;
+using Avalonia.Rendering.Composition;
 using Xunit;
 
 namespace Avalonia.Base.UnitTests.Rendering;
@@ -129,6 +130,86 @@ public class CompositorInvalidationTests : CompositorTestsBase
             s.Events.Rects.Clear();
             control.IsVisible = false;
             s.AssertRects(new Rect(40, 60, 20, 10));
+        }
+    }
+
+    [Fact]
+    public void Changes_To_Child_Of_Invisible_Control_Should_Not_Invalidate()
+    {
+        using (var s = new CompositorCanvas())
+        {
+            var child = new Border()
+            {
+                Width = 20, Height = 10,
+                Background = Brushes.Red
+            };
+            var control = new Decorator()
+            {
+                [Canvas.LeftProperty] = 30, [Canvas.TopProperty] = 50,
+                Padding = new Thickness(10),
+                Child = child
+            };
+            s.Canvas.Children.Add(control);
+            s.RunJobs();
+            control.IsVisible = false;
+            s.RunJobs();
+            s.Events.Rects.Clear();
+            child.Background = Brushes.Blue;
+            s.AssertRects();
+        }
+    }
+
+    [Fact]
+    public void Composition_Translation_Of_Child_Of_Invisible_Control_Should_Not_Invalidate()
+    {
+        using (var s = new CompositorCanvas())
+        {
+            var child = new Border()
+            {
+                Width = 20, Height = 10,
+                Background = Brushes.Red
+            };
+            var control = new Decorator()
+            {
+                [Canvas.LeftProperty] = 30, [Canvas.TopProperty] = 50,
+                Padding = new Thickness(10),
+                Child = child
+            };
+            s.Canvas.Children.Add(control);
+            s.RunJobs();
+            control.IsVisible = false;
+            s.RunJobs();
+            s.Events.Rects.Clear();
+            ElementComposition.GetElementVisual(child)!.Translation = new Vector3D(5, 0, 0);
+            s.AssertRects();
+        }
+    }
+
+    [Fact]
+    public void Control_Should_Invalidate_Updated_Child_Rects_When_Becomes_Visible()
+    {
+        using (var s = new CompositorCanvas())
+        {
+            var child = new Border()
+            {
+                Width = 20, Height = 10,
+                Background = Brushes.Red
+            };
+            var control = new Decorator()
+            {
+                [Canvas.LeftProperty] = 30, [Canvas.TopProperty] = 50,
+                Padding = new Thickness(10),
+                Child = child
+            };
+            s.Canvas.Children.Add(control);
+            s.RunJobs();
+            control.IsVisible = false;
+            s.RunJobs();
+            ElementComposition.GetElementVisual(child)!.Translation = new Vector3D(5, 0, 0);
+            s.RunJobs();
+            s.Events.Rects.Clear();
+            control.IsVisible = true;
+            s.AssertRects(new Rect(45, 60, 20, 10));
         }
     }
 }
