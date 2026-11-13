@@ -1137,6 +1137,119 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         }
 
         [Fact]
+        public void Should_Wrap_At_Script_Boundary_Between_Runs()
+        {
+            using (Start())
+            {
+                var defaultRunProperties = new GenericTextRunProperties(Typeface.Default);
+                var paragraphProperties = new GenericTextParagraphProperties(defaultRunProperties, textWrapping: TextWrapping.Wrap);
+
+                // Han and Hiragana shape into separate runs, producing a wrap opportunity at the run boundary.
+                const string text = "漢字漢字ひらがな漢字漢字";
+                const int fittingLength = 8;
+
+                var textSource = new SingleBufferTextSource(text, defaultRunProperties);
+
+                var unwrapped = TextFormatter.Current.FormatLine(textSource, 0, double.PositiveInfinity, paragraphProperties);
+
+                Assert.NotNull(unwrapped);
+                Assert.True(unwrapped.TextRuns.Count > 2);
+
+                var paragraphWidth = unwrapped.GetDistanceFromCharacterHit(new CharacterHit(fittingLength)) + 1;
+
+                var textLine = TextFormatter.Current.FormatLine(textSource, 0, paragraphWidth, paragraphProperties);
+
+                Assert.NotNull(textLine);
+                Assert.Equal(fittingLength, textLine.Length);
+            }
+        }
+
+        [Fact]
+        public void Should_Wrap_At_Opportunity_Between_Text_Characters()
+        {
+            using (Start())
+            {
+                var defaultRunProperties = new GenericTextRunProperties(Typeface.Default);
+                var paragraphProperties = new GenericTextParagraphProperties(defaultRunProperties, textWrapping: TextWrapping.Wrap);
+
+                var textSource = new ListTextSource(
+                    new TextCharacters("漢字漢字", defaultRunProperties),
+                    new TextCharacters("漢字漢字", defaultRunProperties));
+
+                var unwrapped = TextFormatter.Current.FormatLine(textSource, 0, double.PositiveInfinity, paragraphProperties);
+
+                Assert.NotNull(unwrapped);
+
+                var paragraphWidth = unwrapped.GetDistanceFromCharacterHit(new CharacterHit(4)) + 1;
+
+                var textLine = TextFormatter.Current.FormatLine(textSource, 0, paragraphWidth, paragraphProperties);
+
+                Assert.NotNull(textLine);
+                Assert.Equal(4, textLine.Length);
+            }
+        }
+
+        [Fact]
+        public void Should_Not_Wrap_Inside_Word_Split_Across_Text_Characters()
+        {
+            using (Start())
+            {
+                var defaultRunProperties = new GenericTextRunProperties(Typeface.Default);
+                var paragraphProperties = new GenericTextParagraphProperties(defaultRunProperties, textWrapping: TextWrapping.Wrap);
+
+                var textSource = new ListTextSource(
+                    new TextCharacters("foo Hello", defaultRunProperties),
+                    new TextCharacters("World bar", defaultRunProperties));
+
+                var unwrapped = TextFormatter.Current.FormatLine(textSource, 0, double.PositiveInfinity, paragraphProperties);
+
+                Assert.NotNull(unwrapped);
+
+                var paragraphWidth = unwrapped.GetDistanceFromCharacterHit(new CharacterHit(12)) + 1;
+
+                var textLine = TextFormatter.Current.FormatLine(textSource, 0, paragraphWidth, paragraphProperties);
+
+                Assert.NotNull(textLine);
+                Assert.Equal("foo ".Length, textLine.Length);
+            }
+        }
+
+        [Theory]
+        [InlineData(new[] { "foo ", " bar" }, 3)]
+        [InlineData(new[] { "foo 1", ")", "$xyz bar" }, 6)]
+        [InlineData(new[] { "c ab", "-", "x yz" }, 5)]
+        [InlineData(new[] { "foo 1̃", ")", "$xyz bar" }, 7)]
+        [InlineData(new[] { "foo x", "“ ", "abc" }, 7)]
+        [InlineData(new[] { "a—", "b" }, 2)]
+        [InlineData(new[] { "x 1.", ")$z y" }, 5)]
+        [InlineData(new[] { "a— ", " —b c" }, 2)]
+        public void Should_Wrap_Text_Split_Across_Text_Characters_Like_Unsplit_Text(string[] parts, int fittingLength)
+        {
+            using (Start())
+            {
+                var defaultRunProperties = new GenericTextRunProperties(Typeface.Default);
+                var paragraphProperties = new GenericTextParagraphProperties(defaultRunProperties, textWrapping: TextWrapping.Wrap);
+
+                var text = string.Concat(parts);
+                var unsplitSource = new SingleBufferTextSource(text, defaultRunProperties);
+                var splitSource = new ListTextSource(parts.Select(part => new TextCharacters(part, defaultRunProperties)));
+
+                var unwrapped = TextFormatter.Current.FormatLine(unsplitSource, 0, double.PositiveInfinity, paragraphProperties);
+
+                Assert.NotNull(unwrapped);
+
+                var paragraphWidth = unwrapped.GetDistanceFromCharacterHit(new CharacterHit(fittingLength)) + 1;
+
+                var expected = TextFormatter.Current.FormatLine(unsplitSource, 0, paragraphWidth, paragraphProperties);
+                var actual = TextFormatter.Current.FormatLine(splitSource, 0, paragraphWidth, paragraphProperties);
+
+                Assert.NotNull(expected);
+                Assert.NotNull(actual);
+                Assert.Equal(expected.Length, actual.Length);
+            }
+        }
+
+        [Fact]
         public void Should_MatchCharacter_For_Spacing_CombiningMark()
         {
             using (Start())
@@ -1432,7 +1545,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             public override int Length { get; }
         }
 
-        private class RecordingTextShaper : ITextShaperImpl
+        internal class RecordingTextShaper : ITextShaperImpl
         {
             private readonly ITextShaperImpl _inner;
 
