@@ -28,7 +28,7 @@ internal class AssemblyDescriptorResolver: IAssemblyDescriptorResolver
         {
             var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
             // Select assembly by ManifestModule.ScopeName instead of GetName().Name to avoid CultureInfo dependency.
-            var match = loadedAssemblies.Where(a => a.ManifestModule.ScopeName.StartsWith(name, StringComparison.InvariantCultureIgnoreCase)).OrderBy(a => a.ManifestModule.ScopeName.Length).FirstOrDefault();
+            var match = loadedAssemblies.FirstOrDefault(a => IsScopeNameOf(a.ManifestModule.ScopeName, name));
             if (match != null)
             {
                 return new AssemblyDescriptor(match);
@@ -47,6 +47,23 @@ internal class AssemblyDescriptorResolver: IAssemblyDescriptorResolver
             }
         });
     }
+    /// <summary>
+    /// Whether <paramref name="scopeName"/>, the name of an assembly's manifest module, belongs to the assembly
+    /// <paramref name="name"/>: it is the file name of the module ("Lib.dll"), or the assembly name itself when the
+    /// module has no file. A longer name which merely starts with <paramref name="name"/> ("Lib.Tests.dll") doesn't.
+    /// </summary>
+    internal static bool IsScopeNameOf(string scopeName, string name)
+    {
+        if (!scopeName.StartsWith(name, StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        var extensionLength = scopeName.Length - name.Length;
+        return extensionLength == 0
+               || (extensionLength == 4
+                   && (string.Compare(scopeName, name.Length, ".dll", 0, 4, StringComparison.OrdinalIgnoreCase) == 0
+                       || string.Compare(scopeName, name.Length, ".exe", 0, 4, StringComparison.OrdinalIgnoreCase) == 0));
+    }
+
     public void InvalidateAssemblyCache(string name)
     {
         _assemblyNameCache.TryRemove(name, out _);
