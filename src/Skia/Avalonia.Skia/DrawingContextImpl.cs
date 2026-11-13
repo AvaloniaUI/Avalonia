@@ -42,6 +42,7 @@ namespace Avalonia.Skia
         private readonly SKPaint _boxShadowPaint = SKPaintCache.Shared.Get();
         private static SKShader? s_acrylicNoiseShader;
         private readonly ISkiaGpuRenderSession? _session;
+        private readonly IPartialPresentationFeature? _partialPresentation;
         private bool _leased;
         private bool _useOpacitySaveLayer;
         // Number of open intermediate layers (effect, opacity mask, PushLayer, opacity). Plain clip and
@@ -82,6 +83,11 @@ namespace Avalonia.Skia
             /// GPU-accelerated context (optional)
             /// </summary>
             public GRContext? GrContext;
+
+            /// <summary>
+            /// Partial presentation of a framebuffer (optional)
+            /// </summary>
+            public IPartialPresentationFeature? PartialPresentation;
 
             /// <summary>
             /// Skia GPU provider context (optional)
@@ -201,6 +207,8 @@ namespace Avalonia.Skia
             Surface = createInfo.Surface;
 
             _session = createInfo.CurrentSession;
+            _partialPresentation = createInfo.PartialPresentation
+                                   ?? (_session as ISkiaGpuRenderSessionWithPartialPresentation)?.PartialPresentation;
 
             
             if (createInfo.ScaleDrawingToDpi && !createInfo.Dpi.NearlyEquals(SkiaPlatform.DefaultDpi))
@@ -902,7 +910,7 @@ namespace Avalonia.Skia
         public object? GetFeature(Type t)
         {
             if (t == typeof(IPartialPresentationFeature))
-                return (_session as ISkiaGpuRenderSessionWithPartialPresentation)?.PartialPresentation;
+                return _partialPresentation;
             if (t == typeof(ISkiaSharpApiLeaseFeature))
                 return new SkiaLeaseFeature(this);
             return null;
