@@ -173,6 +173,7 @@ namespace Avalonia.Media.TextFormatting
                                             // backwards when appending to collapsedRuns, which restores
                                             // LOGICAL order. FinalizeLine handles the visual re-bidi.
                                             reversedSuffix = objectPool.TextRunLists.Rent();
+                                            var stopWalk = false;
 
                                             for (var i = effectivePostSplitRuns.Count - 1; i >= 0; i--)
                                             {
@@ -194,6 +195,7 @@ namespace Avalonia.Media.TextFormatting
                                                                 var splitSuffix = endShapedRun.Split(splitAt);
 
                                                                 reversedSuffix.Add(splitSuffix.Second!);
+                                                                stopWalk = true;
                                                             }
                                                             else if (suffixCount > 0)
                                                             {
@@ -201,11 +203,23 @@ namespace Avalonia.Media.TextFormatting
                                                                 // split is needed; use the run as-is. (Calling Split(0) throws.)
                                                                 reversedSuffix.Add(endShapedRun);
                                                             }
-                                                            // else: suffixCount == 0, nothing of this run survives.
+                                                            else
+                                                            {
+                                                                stopWalk = true;
+                                                            }
+                                                        }
+                                                        else
+                                                        {
+                                                            stopWalk = true;
                                                         }
 
                                                         break;
                                                     }
+                                                }
+
+                                                if (stopWalk)
+                                                {
+                                                    break;
                                                 }
                                             }
 
