@@ -752,7 +752,7 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         protected override void OnGotFocus(FocusChangedEventArgs e)
         {
-            if (TextBox is not null && TextBoxSelectionLength <= 0)
+            if (TextBox is not null && TextBoxSelectionLength <= 0 && !IsInsideDropDown(e.NewFocusedElement))
             {
                 TextBox.Focus();
                 TextBox.SelectAll();
