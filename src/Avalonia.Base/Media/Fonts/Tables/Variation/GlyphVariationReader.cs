@@ -79,6 +79,50 @@ namespace Avalonia.Media.Fonts.Tables.Variation
             ReadOnlySpan<short> originalY,
             Span<float> xDeltas,
             Span<float> yDeltas)
+            => AccumulateDeltas(
+                gvar, glyphIndex, activeCoords, originalX.Length, endPtsOfContours, originalX, originalY,
+                xDeltas, yDeltas, default, default);
+
+        /// <summary>
+        /// Accumulates the deltas the glyph's tuple variations apply to its four phantom points,
+        /// which carry the varied metrics: left side bearing, advance width, top origin and
+        /// advance height, in that order. <paramref name="xDeltas"/> and
+        /// <paramref name="yDeltas"/> hold one value per phantom point, must be
+        /// zero-initialized by the caller, and are only added to.
+        /// </summary>
+        /// <param name="gvar">The font's gvar table.</param>
+        /// <param name="glyphIndex">The glyph to look up.</param>
+        /// <param name="activeCoords">Normalized variation coordinates in axis order.</param>
+        /// <param name="pointCount">
+        /// The number of points that precede the phantom points: the contour point count of a
+        /// simple glyph, the component count of a composite glyph.
+        /// </param>
+        /// <param name="xDeltas">Output: accumulated x deltas of the four phantom points.</param>
+        /// <param name="yDeltas">Output: accumulated y deltas of the four phantom points.</param>
+        /// <returns><c>true</c> if any tuple contributed; otherwise <c>false</c>.</returns>
+        public static bool TryGetPhantomDeltas(
+            GvarTable gvar,
+            int glyphIndex,
+            ReadOnlySpan<float> activeCoords,
+            int pointCount,
+            Span<float> xDeltas,
+            Span<float> yDeltas)
+            => AccumulateDeltas(
+                gvar, glyphIndex, activeCoords, pointCount, default, default, default,
+                default, default, xDeltas, yDeltas);
+
+        private static bool AccumulateDeltas(
+            GvarTable gvar,
+            int glyphIndex,
+            ReadOnlySpan<float> activeCoords,
+            int contourPointCount,
+            ReadOnlySpan<ushort> endPtsOfContours,
+            ReadOnlySpan<short> originalX,
+            ReadOnlySpan<short> originalY,
+            Span<float> xDeltas,
+            Span<float> yDeltas,
+            Span<float> phantomXDeltas,
+            Span<float> phantomYDeltas)
         {
             if (!gvar.TryGetGlyphVariationData(glyphIndex, out var entryMem))
             {
@@ -91,11 +135,13 @@ namespace Avalonia.Media.Fonts.Tables.Variation
                 return false;
             }
 
-            var contourPointCount = originalX.Length;
-            // gvar's point space includes 4 phantom points appended after the contour
-            // points (left/right side-bearing + top/bottom advance). We need them to
-            // correctly parse packed point numbers (which can reference them) but never
-            // apply deltas to them because they don't appear in the geometry.
+            // gvar's point space appends 4 phantom points after the contour points (left
+            // side bearing, advance width, top origin, advance height). Packed point numbers
+            // can reference them, so they are always part of the point count; their deltas
+            // are only collected when the caller asks for them, as they are not part of the
+            // outline.
+            var applyToContours = !xDeltas.IsEmpty;
+            var applyToPhantoms = !phantomXDeltas.IsEmpty;
             var totalPointCount = contourPointCount + 4;
 
             var tupleVariationCountRaw = BinaryPrimitives.ReadUInt16BigEndian(entry);
@@ -120,6 +166,8 @@ namespace Avalonia.Media.Fonts.Tables.Variation
             Span<float> peak = stackalloc float[axisCount];
             Span<float> intermediateStart = stackalloc float[axisCount];
             Span<float> intermediateEnd = stackalloc float[axisCount];
+            Span<float> phantomTupleX = stackalloc float[4];
+            Span<float> phantomTupleY = stackalloc float[4];
 
             // The tuple variation headers run from offset 4 (after tvCount + dataOffset)
             // up to dataOffsetFromEntryStart. The serialized per-tuple data follows
@@ -279,6 +327,30 @@ namespace Avalonia.Media.Fonts.Tables.Variation
                         tuplePointsIsAll = true;
                     }
 
+                    if (tuplePointsIsAll && !applyToContours)
+                    {
+                        // Only the phantom points at the tail can be needed, so the contour
+                        // deltas are walked without being stored.
+                        if (!TryReadPackedDeltaTail(
+                                entry, ref dataPos, tupleDataEnd, tuplePointCount, contourPointCount, phantomTupleX) ||
+                            !TryReadPackedDeltaTail(
+                                entry, ref dataPos, tupleDataEnd, tuplePointCount, contourPointCount, phantomTupleY))
+                        {
+                            dataPos = tupleDataEnd;
+                            continue;
+                        }
+
+                        for (var i = 0; applyToPhantoms && i < 4; i++)
+                        {
+                            phantomXDeltas[i] += scaler * phantomTupleX[i];
+                            phantomYDeltas[i] += scaler * phantomTupleY[i];
+                        }
+
+                        appliedAny = true;
+                        dataPos = tupleDataEnd;
+                        continue;
+                    }
+
                     // Read packed x and y deltas. There are tuplePointCount values for
                     // each axis. We rent buffers sized for the worst case (totalPointCount)
                     // and reuse across tuples.
@@ -308,13 +380,42 @@ namespace Avalonia.Media.Fonts.Tables.Variation
                     // Apply deltas to the accumulators.
                     if (tuplePointsIsAll)
                     {
-                        // tupleDeltasX/Y are indexed 0..totalPointCount-1 (including
-                        // phantom points at the tail). Apply only to the contour points.
-                        var n = Math.Min(contourPointCount, tupleDeltasX.Length);
-                        for (var i = 0; i < n; i++)
+                        // tupleDeltasX/Y are indexed 0..totalPointCount-1, contour points
+                        // first and the phantom points at the tail.
+                        if (applyToContours)
                         {
-                            xDeltas[i] += scaler * tupleDeltasX[i];
-                            yDeltas[i] += scaler * tupleDeltasY[i];
+                            var n = Math.Min(contourPointCount, tupleDeltasX.Length);
+                            for (var i = 0; i < n; i++)
+                            {
+                                xDeltas[i] += scaler * tupleDeltasX[i];
+                                yDeltas[i] += scaler * tupleDeltasY[i];
+                            }
+                        }
+
+                        if (applyToPhantoms)
+                        {
+                            for (var i = 0; i < 4 && contourPointCount + i < tupleDeltasX.Length; i++)
+                            {
+                                phantomXDeltas[i] += scaler * tupleDeltasX[contourPointCount + i];
+                                phantomYDeltas[i] += scaler * tupleDeltasY[contourPointCount + i];
+                            }
+                        }
+                    }
+                    else if (!applyToContours)
+                    {
+                        // IUP only interpolates along contours, so a phantom point the tuple
+                        // does not reference keeps a zero delta and only the phantom points
+                        // are needed here. A glyph without contour points reaches this branch
+                        // from the outline path too, which asks for no phantom deltas.
+                        for (var i = 0; applyToPhantoms && i < tuplePointCount; i++)
+                        {
+                            var phantomIndex = tuplePoints![i] - contourPointCount;
+
+                            if ((uint)phantomIndex < 4u)
+                            {
+                                phantomXDeltas[phantomIndex] += scaler * tupleDeltasX[i];
+                                phantomYDeltas[phantomIndex] += scaler * tupleDeltasY[i];
+                            }
                         }
                     }
                     else
@@ -347,11 +448,17 @@ namespace Avalonia.Media.Fonts.Tables.Variation
                         {
                             var pointIndex = tuplePoints![i];
 
-                            // Phantom points (index >= contourPointCount) — record their
-                            // deltas would be needed for HVAR/VVAR but not for geometry,
-                            // so skip.
+                            // Phantom points (index >= contourPointCount) take no part in IUP.
                             if ((uint)pointIndex >= (uint)contourPointCount)
                             {
+                                var phantomIndex = pointIndex - contourPointCount;
+
+                                if (applyToPhantoms && (uint)phantomIndex < 4u)
+                                {
+                                    phantomXDeltas[phantomIndex] += scaler * tupleDeltasX[i];
+                                    phantomYDeltas[phantomIndex] += scaler * tupleDeltasY[i];
+                                }
+
                                 continue;
                             }
 
@@ -693,6 +800,65 @@ namespace Avalonia.Media.Fonts.Tables.Variation
                     }
                     written = runEnd;
                 }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Walks <paramref name="count"/> packed deltas like <see cref="TryReadPackedDeltas"/>, but
+        /// decodes only the ones at indices <paramref name="skip"/> to
+        /// <paramref name="skip"/> + <c>output.Length</c> - 1 into <paramref name="output"/>; the
+        /// others are stepped over. Output entries no delta reaches stay zero.
+        /// </summary>
+        private static bool TryReadPackedDeltaTail(
+            ReadOnlySpan<byte> data,
+            ref int pos,
+            int end,
+            int count,
+            int skip,
+            Span<float> output)
+        {
+            output.Clear();
+
+            var index = 0;
+
+            while (index < count)
+            {
+                if (pos >= end)
+                {
+                    return false;
+                }
+
+                var control = data[pos++];
+                var runCount = Math.Min((control & DeltaRunCountMask) + 1, count - index);
+
+                if ((control & DeltasAreZeroFlag) != 0)
+                {
+                    index += runCount;
+                    continue;
+                }
+
+                var size = (control & DeltasAreWordsFlag) != 0 ? 2 : 1;
+
+                if (pos + runCount * size > end)
+                {
+                    return false;
+                }
+
+                var last = Math.Min(index + runCount, skip + output.Length);
+
+                for (var i = Math.Max(index, skip); i < last; i++)
+                {
+                    var at = pos + (i - index) * size;
+
+                    output[i - skip] = size == 2
+                        ? BinaryPrimitives.ReadInt16BigEndian(data.Slice(at, 2))
+                        : (sbyte)data[at];
+                }
+
+                pos += runCount * size;
+                index += runCount;
             }
 
             return true;
