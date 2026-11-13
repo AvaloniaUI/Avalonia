@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.JavaScript;
 using System.Threading;
 using Avalonia.Browser.Interop;
@@ -16,13 +17,23 @@ namespace Avalonia.Browser;
 
 internal class BrowserWindowingPlatform : IWindowingPlatform
 {
-    internal static ManualRawEventGrouperDispatchQueue? EventGrouperDispatchQueue;
+    /// <summary>
+    /// Process-wide queue shared by every top level's <see cref="RawEventGrouper"/>.
+    /// Pumped by <see cref="ManagedDispatcherImpl"/> when the managed dispatcher is used,
+    /// otherwise an <see cref="AutomaticRawEventGrouperDispatchQueue"/> posting to the dispatcher at Input priority.
+    /// </summary>
+    internal static IRawEventGrouperDispatchQueue EventGrouperDispatchQueue =>
+        s_eventGrouperDispatchQueue ?? throw new InvalidOperationException("BrowserWindowingPlatform not registered.");
+
+    /// <summary>
+    /// The grouper queue when running without the managed dispatcher; null otherwise.
+    /// </summary>
+    internal static AutomaticRawEventGrouperDispatchQueue? AutomaticEventGrouperDispatchQueue { get; private set; }
+
+    private static IRawEventGrouperDispatchQueue? s_eventGrouperDispatchQueue;
+    internal static BrowserAtomicsWakeupEvent? WakeupEvent;
 
     internal static readonly bool IsThreadingEnabled = DetectThreadSupport();
-
-    internal static bool IsManagedDispatcherEnabled =>
-        IsThreadingEnabled &&
-        AvaloniaLocator.Current.GetService<BrowserPlatformOptions>()?.PreferManagedThreadDispatcher != false; 
 
     // Capture initial GlobalThis, so we can use it as a contextual bridge between threads.
     private static JSObject? s_globalThis;
@@ -32,9 +43,11 @@ internal class BrowserWindowingPlatform : IWindowingPlatform
         set => s_globalThis = value;
     }
 
-    static bool DetectThreadSupport()
+    private static bool DetectThreadSupport()
     {
-        // TODO Replace with public API https://github.com/dotnet/runtime/issues/77541.
+#if NET11_0_OR_GREATER
+        return RuntimeFeature.IsMultithreadingSupported;
+#else
         var prop = typeof(System.Threading.Thread).GetProperty("IsThreadStartSupported",
             BindingFlags.Static | BindingFlags.NonPublic);
         if (prop != null && prop.GetValue(null) is bool value)
@@ -51,7 +64,7 @@ internal class BrowserWindowingPlatform : IWindowingPlatform
         {
             return false;
         }
-
+#endif
     }
     
     private static KeyboardDevice? s_keyboard;
@@ -94,21 +107,37 @@ internal class BrowserWindowingPlatform : IWindowingPlatform
             .Bind<IScreenImpl>().ToSingleton<BrowserScreens>()
             .Bind<IWindowingPlatform>().ToConstant(instance)
             .Bind<IPlatformIconLoader>().ToSingleton<IconLoaderStub>()
-            .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
-            .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new Dictionary<Key, string>() { }))
             .Bind<IActivatableLifetime>().ToSingleton<BrowserActivatableLifetime>();
-        
-        if (IsManagedDispatcherEnabled)
+
+        if (AvaloniaModule.IsApplePlatform())
         {
-            EventGrouperDispatchQueue = new();
-            Dispatcher.InitializeUIThreadDispatcher(
-                new ManagedDispatcherImpl(
-                    new ManualRawEventGrouperDispatchQueueDispatcherInputProvider(EventGrouperDispatchQueue)));
+            AvaloniaLocator.CurrentMutable
+                .Bind<PlatformHotkeyConfiguration>().ToConstant(PlatformHotkeyConfiguration.Apple)
+                .Bind<KeyGestureFormatInfo>().ToConstant(KeyGestureFormatInfo.Apple);
         }
         else
         {
-            Dispatcher.InitializeUIThreadDispatcher(new BrowserDispatcherImpl());
+            AvaloniaLocator.CurrentMutable
+                .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
+                .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new Dictionary<Key, string>()));
         }
+
+        if (IsThreadingEnabled)
+        {
+            var queue = new ManualRawEventGrouperDispatchQueue();
+            s_eventGrouperDispatchQueue = queue;
+            Dispatcher.InitializeUIThreadDispatcher(new ManagedDispatcherImpl(
+                new BrowserQueueDispatcherInputProvider(queue),
+                WakeupEvent ?? throw new InvalidOperationException("Browser backend wasn't initialized. WakeupEvent is null.")));
+        }
+        else
+        {
+            Dispatcher.InitializeUIThreadDispatcher(new BrowserSingleThreadedDispatcherImpl());
+            AutomaticEventGrouperDispatchQueue = new AutomaticRawEventGrouperDispatchQueue(Dispatcher.UIThread);
+            s_eventGrouperDispatchQueue = AutomaticEventGrouperDispatchQueue;
+        }
+
+        BrowserInputQueue.Initialize();
 
         // GC thread is the same as the main one when MT is disabled
         if (IsThreadingEnabled)

@@ -173,6 +173,41 @@ namespace Avalonia.Skia.RenderTests
         }
 
         [Fact]
+        public async Task ConicGradientBrush_Transform_Applies_After_Angle()
+        {
+            // The angle belongs to the gradient itself, so the brush transform acts on the swept
+            // pattern rather than the other way round: the output is the same gradient centred
+            // 30px right and 20px down, and not one whose translation has been turned by the angle.
+            Decorator target = new Decorator
+            {
+                Width = 200,
+                Height = 200,
+                Child = new Border
+                {
+                    Background = new ConicGradientBrush
+                    {
+                        GradientStops =
+                        {
+                            new GradientStop { Color = Colors.Red, Offset = 0 },
+                            new GradientStop { Color = Colors.Yellow, Offset = 0.1667 },
+                            new GradientStop { Color = Colors.Lime, Offset = 0.3333 },
+                            new GradientStop { Color = Colors.Aqua, Offset = 0.5000 },
+                            new GradientStop { Color = Colors.Blue, Offset = 0.6667 },
+                            new GradientStop { Color = Colors.Magenta, Offset = 0.8333 },
+                            new GradientStop { Color = Colors.Red, Offset = 1 },
+                        },
+                        Center = new RelativePoint(100, 100, RelativeUnit.Absolute),
+                        Angle = 45,
+                        Transform = new TranslateTransform(30, 20)
+                    }
+                }
+            };
+
+            await RenderToFile(target);
+            CompareImages();
+        }
+
+        [Fact]
         public async Task ConicGradientBrush_DrawingContext()
         {
             var brush = new ConicGradientBrush

@@ -251,17 +251,20 @@ namespace Avalonia.Controls.Presenters
                 return scrollable.BringIntoView(control, targetRect);
             }
 
-            var transform = target.TransformToVisual(this);
-
-            if (transform == null)
+            // The `viewport` rectangle computed below is in extent coordinates, so transform
+            // `targetRect` into that space too. Going via Child rather than via this + Offset
+            // keeps the result independent of Offset, which may have changed since the last
+            // arrange.
+            if (target.TransformToVisual(Child) is not { } transform)
             {
                 return false;
             }
 
-            transform *= Matrix.CreateTranslation(Offset);
-
-            var rectangle = targetRect.TransformToAABB(transform.Value);
-            Rect viewport = new Rect(Offset.X, Offset.Y, Viewport.Width, Viewport.Height);
+            var childPadding = GetChildPadding();
+            var childMargin = GetChildMargin();
+            var childContentOrigin = new Vector(childPadding.Left + childMargin.Left, childPadding.Top + childMargin.Top);
+            var rectangle = targetRect.TransformToAABB(transform).Translate(childContentOrigin);
+            var viewport = new Rect(Offset.X, Offset.Y, Viewport.Width, Viewport.Height);
 
             double minX = ComputeScrollOffsetWithMinimalScroll(viewport.Left, viewport.Right, rectangle.Left, rectangle.Right);
             double minY = ComputeScrollOffsetWithMinimalScroll(viewport.Top, viewport.Bottom, rectangle.Top, rectangle.Bottom);
@@ -327,6 +330,18 @@ namespace Avalonia.Controls.Presenters
             AttachToScrollViewer();
         }
 
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnDetachedFromVisualTree(e);
+
+            // A replaced template no longer has the ScrollViewer as an ancestor and must
+            // release its content. Keep the bindings when the entire owner is detached.
+            if (this.FindAncestorOfType<ScrollViewer>() == null)
+            {
+                DetachFromScrollViewer();
+            }
+        }
+
         /// <summary>
         /// Locates the first <see cref="ScrollViewer"/> ancestor and binds to it. Properties which have been set through other means are not bound.
         /// </summary>
@@ -339,9 +354,7 @@ namespace Avalonia.Controls.Presenters
 
             if (owner == null)
             {
-                _owner = null;
-                _ownerSubscriptions?.Dispose();
-                _ownerSubscriptions = null;
+                DetachFromScrollViewer();
                 return;
             }
 
@@ -367,6 +380,16 @@ namespace Avalonia.Controls.Presenters
             static bool NotDisabled(ScrollBarVisibility v) => v != ScrollBarVisibility.Disabled;
 
             IDisposable? IfUnset<T>(T property, Func<T, IDisposable> func) where T : AvaloniaProperty => IsSet(property) ? null : func(property);
+        }
+
+        /// <summary>
+        /// Clears the owning <see cref="ScrollViewer"/> and disposes the bindings to it.
+        /// </summary>
+        private void DetachFromScrollViewer()
+        {
+            _owner = null;
+            _ownerSubscriptions?.Dispose();
+            _ownerSubscriptions = null;
         }
 
         /// <inheritdoc/>
@@ -528,15 +551,25 @@ namespace Avalonia.Controls.Presenters
             return padding + borderThickness;
         }
 
-        private Size ComputeExtent(Size viewportSize, Thickness padding)
+        private Thickness GetChildMargin()
         {
-            var childMargin = Child!.Margin;
+            if (Child is not { } child)
+                return default;
+
+            var margin = child.Margin;
 
             if (Child.UseLayoutRounding)
             {
                 var scale = LayoutHelper.GetLayoutScale(Child);
-                childMargin = LayoutHelper.RoundLayoutThickness(childMargin, scale);
+                margin = LayoutHelper.RoundLayoutThickness(margin, scale);
             }
+
+            return margin;
+        }
+
+        private Size ComputeExtent(Size viewportSize, Thickness padding)
+        {
+            var childMargin = GetChildMargin();
 
             var extent = Child!.Bounds.Size.Inflate(childMargin).Inflate(padding);
 

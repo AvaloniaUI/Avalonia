@@ -12,7 +12,8 @@ namespace Avalonia.Animation
         Animatable control,
         IClock? clock,
         Action? onComplete,
-        bool shouldPauseOnInvisible)
+        bool shouldPauseOnInvisible,
+        Visual? visualTarget)
         : IObserver<bool>, IDisposable
     {
         private IDisposable? _lastInstance;
@@ -41,7 +42,13 @@ namespace Avalonia.Animation
 
                 if (matchVal)
                 {
-                    _lastInstance = animator.Run(animation, control, clock, onComplete, shouldPauseOnInvisible);
+                    _lastInstance = animator.Run(
+                        animation,
+                        control,
+                        clock,
+                        onComplete,
+                        shouldPauseOnInvisible,
+                        visualTarget);
                 }
                 else
                 {

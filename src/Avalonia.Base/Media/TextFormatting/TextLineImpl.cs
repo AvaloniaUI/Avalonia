@@ -240,21 +240,30 @@ namespace Avalonia.Media.TextFormatting
 
             distance -= Start;
 
+            var firstIndex = 0;
             var lastIndex = _textRuns.Length - 1;
 
-            if (_textRuns[lastIndex] is TextEndOfLine)
+            // The end of line run has no width and is never hit. It sits at the visual end of the
+            // paragraph direction, so it is the first run of a right-to-left line.
+            var endOfLineIndex = GetEndOfLineRunIndex();
+
+            if (endOfLineIndex == lastIndex)
             {
                 lastIndex--;
             }
+            else if (endOfLineIndex == firstIndex)
+            {
+                firstIndex++;
+            }
 
-            if (lastIndex < 0)
+            if (lastIndex < firstIndex)
             {
                 return new CharacterHit(FirstTextSourceIndex);
             }
 
             if (distance <= 0)
             {
-                return GetRunCharacterHit(_textRuns[0], GetRunTextSourcePosition(0), 0);
+                return GetRunCharacterHit(_textRuns[firstIndex], GetRunTextSourcePosition(firstIndex), 0);
             }
 
             if (distance >= WidthIncludingTrailingWhitespace)
@@ -265,9 +274,9 @@ namespace Avalonia.Media.TextFormatting
             // process hit that happens within the line
             var characterHit = new CharacterHit();
             var currentDistance = 0.0;
-            var currentVisualIndex = 0;
+            var currentVisualIndex = firstIndex;
 
-            for (var i = 0; i <= lastIndex; i++)
+            for (var i = firstIndex; i <= lastIndex; i++)
             {
                 var currentRun = _textRuns[i];
                 currentVisualIndex = i;
@@ -389,18 +398,6 @@ namespace Avalonia.Media.TextFormatting
 
             var currentPosition = FirstTextSourceIndex;
 
-            static FlowDirection GetDirection(TextRun textRun, FlowDirection currentDirection)
-            {
-                if (textRun is ShapedTextRun shapedTextRun)
-                {
-                    return shapedTextRun.ShapedBuffer.IsLeftToRight ?
-                        FlowDirection.LeftToRight :
-                        FlowDirection.RightToLeft;
-                }
-
-                return currentDirection;
-            }
-
             IndexedTextRun FindIndexedRun(out int index)
             {
                 index = 0;
@@ -475,7 +472,7 @@ namespace Avalonia.Media.TextFormatting
             var directionalWidth = 0.0;
             var firstRunIndex = currentIndexedRun.RunIndex;
 
-            var currentDirection = GetDirection(currentTextRun, _resolvedFlowDirection);
+            var currentDirection = GetRunDirection(currentIndexedRun);
 
             var currentX = Start + GetPreceedingDistance(currentIndexedRun.RunIndex);
 
@@ -577,16 +574,17 @@ namespace Avalonia.Media.TextFormatting
             return GetPreviousCharacterHit(characterHit, true);
         }
 
-        private static FlowDirection GetRunDirection(TextRun? textRun, FlowDirection currentDirection)
+        /// <summary>
+        /// Gets the direction of a run from the bidi level it was reordered with.
+        /// </summary>
+        /// <remarks>
+        /// Runs without glyphs must report the direction they were placed with. The visual walk over a
+        /// directional span assumes visual order matches logical order for that direction, so a run that
+        /// borrows its neighbour's direction gets consumed out of order and shifts every index after it.
+        /// </remarks>
+        private static FlowDirection GetRunDirection(IndexedTextRun indexedTextRun)
         {
-            if (textRun is ShapedTextRun shapedTextRun)
-            {
-                return shapedTextRun.ShapedBuffer.IsLeftToRight ?
-                    FlowDirection.LeftToRight :
-                    FlowDirection.RightToLeft;
-            }
-
-            return currentDirection;
+            return (indexedTextRun.BidiLevel & 1) == 0 ? FlowDirection.LeftToRight : FlowDirection.RightToLeft;
         }
 
         /// <summary>
@@ -652,7 +650,7 @@ namespace Avalonia.Media.TextFormatting
                     break;
                 }
 
-                var nextDirection = GetRunDirection(nextRun, flowDirection);
+                var nextDirection = GetRunDirection(nextIndexedRun);
 
                 if (nextDirection != flowDirection)
                 {
@@ -674,7 +672,7 @@ namespace Avalonia.Media.TextFormatting
         {
             if (textLength == 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(textLength), textLength, $"{nameof(textLength)} ('0') must be a non-zero value. ");
+                return [];
             }
 
             if (_indexedTextRuns is null || _indexedTextRuns.Count == 0)
@@ -689,7 +687,7 @@ namespace Avalonia.Media.TextFormatting
             if (firstTextSourceIndex + textLength < FirstTextSourceIndex)
             {
                 var indexedTextRun = _indexedTextRuns[0];
-                var currentDirection = GetRunDirection(indexedTextRun.TextRun, _resolvedFlowDirection);
+                var currentDirection = GetRunDirection(indexedTextRun);
 
                 return [new TextBounds(new Rect(0, 0, 0, Height), currentDirection, [])];
             }
@@ -698,7 +696,7 @@ namespace Avalonia.Media.TextFormatting
             if (firstTextSourceIndex >= FirstTextSourceIndex + Length)
             {
                 var indexedTextRun = _indexedTextRuns[_indexedTextRuns.Count - 1];
-                var currentDirection = GetRunDirection(indexedTextRun.TextRun, _resolvedFlowDirection);
+                var currentDirection = GetRunDirection(indexedTextRun);
 
                 return [new TextBounds(new Rect(WidthIncludingTrailingWhitespace, 0, 0, Height), currentDirection, [])];
             }
@@ -723,7 +721,7 @@ namespace Avalonia.Media.TextFormatting
                     break;
                 }
 
-                var currentDirection = GetRunDirection(currentTextRun, _resolvedFlowDirection);
+                var currentDirection = GetRunDirection(currentIndexedRun);
 
                 if (currentIndexedRun.TextSourceCharacterIndex + currentTextRun.Length <= firstTextSourceIndex)
                 {
@@ -834,7 +832,10 @@ namespace Avalonia.Media.TextFormatting
                     return false;
                 }
 
-                if (currentBounds.Rectangle.Left == lastBounds.Rectangle.Right)
+                // The two edges are computed by summing glyph advances along different paths, so
+                // abutting bounds can land an ULP apart - compare them the way the rest of layout
+                // compares coordinates, or a single directional span gets reported as two.
+                if (MathUtilities.AreClose(currentBounds.Rectangle.Left, lastBounds.Rectangle.Right))
                 {
                     foreach (var runBounds in currentBounds.TextRunBounds)
                     {
@@ -846,7 +847,7 @@ namespace Avalonia.Media.TextFormatting
                     return true;
                 }
 
-                if (currentBounds.Rectangle.Right == lastBounds.Rectangle.Left)
+                if (MathUtilities.AreClose(currentBounds.Rectangle.Right, lastBounds.Rectangle.Left))
                 {
                     for (int i = 0; i < currentBounds.TextRunBounds.Count; i++)
                     {
@@ -1219,10 +1220,30 @@ namespace Avalonia.Media.TextFormatting
 
             _textLineMetrics = CreateLineMetrics();
 
-            if (_textLineBreak is null && _textRuns.Length > 1 && _textRuns[_textRuns.Length - 1] is TextEndOfLine textEndOfLine)
+            if (_textLineBreak is null && _textRuns.Length > 1 && GetEndOfLineRunIndex() is var endOfLineIndex and >= 0)
             {
-                _textLineBreak = new TextLineBreak(textEndOfLine);
+                _textLineBreak = new TextLineBreak((TextEndOfLine)_textRuns[endOfLineIndex]);
             }
+        }
+
+        /// <summary>
+        /// Gets the visual index of the <see cref="TextEndOfLine"/> run that ends the line.
+        /// </summary>
+        /// <remarks>
+        /// <see cref="_textRuns"/> is in visual order, so its last run is not the end of the line when the
+        /// paragraph flows right to left. The logical order in <see cref="_indexedTextRuns"/> is used instead.
+        /// </remarks>
+        /// <returns>The visual index of the end of line run, or -1 when the line does not end with one.</returns>
+        private int GetEndOfLineRunIndex()
+        {
+            if (_indexedTextRuns is null || _indexedTextRuns.Count == 0)
+            {
+                return -1;
+            }
+
+            var lastIndexedRun = _indexedTextRuns[_indexedTextRuns.Count - 1];
+
+            return lastIndexedRun.TextRun is TextEndOfLine ? lastIndexedRun.RunIndex : -1;
         }
 
         /// <summary>

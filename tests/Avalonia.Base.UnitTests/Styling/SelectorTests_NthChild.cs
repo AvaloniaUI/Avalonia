@@ -3,10 +3,11 @@ using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Styling;
 using Xunit;
+using Avalonia.UnitTests;
 
 namespace Avalonia.Base.UnitTests.Styling
 {
-    public class SelectorTests_NthChild
+    public class SelectorTests_NthChild : ScopedTestBase
     {
         [Theory]
         [InlineData(2, 0, ":nth-child(2n)")]

@@ -1,10 +1,11 @@
 using Xunit;
+using Avalonia.UnitTests;
 
 #nullable enable
 
 namespace Avalonia.Base.UnitTests.PropertyStore
 {
-    public class ValueStoreTests_Inheritance
+    public class ValueStoreTests_Inheritance : ScopedTestBase
     {
         [Fact]
         public void InheritanceAncestor_Is_Initially_Null()

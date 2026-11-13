@@ -103,7 +103,7 @@
                     IsEnabled="{TemplateBinding IsEnabled}"
                     Theme="{StaticResource SimpleTimePickerFlyoutButton}">
 
-              <Grid Name="PART_FlyoutButtonContentGrid" VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
+              <Grid Name="PART_FlyoutButtonContentGrid">
                 <!--  Ignore col defs here, set in code  -->
                 <Border x:Name="PART_FirstPickerHost"
                         Grid.Column="0"
@@ -191,6 +191,10 @@
 
     <Style Selector="^:disabled /template/ Rectangle">
       <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}" />
+    </Style>
+    
+    <Style Selector="^ /template/ Button#PART_FlyoutButton TextBlock">
+      <Setter Property="VerticalAlignment" Value="{TemplateBinding VerticalContentAlignment}"/>
     </Style>
 
     <Style Selector="^:hasnotime /template/ Button#PART_FlyoutButton TextBlock">

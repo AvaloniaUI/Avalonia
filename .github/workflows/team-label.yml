@@ -1,0 +1,33 @@
+name: Label team PRs
+
+on:
+  pull_request:
+    types: [opened, reopened]
+
+permissions: {}
+
+jobs:
+  label:
+    name: Add team label
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+
+    permissions:
+      pull-requests: write
+
+    steps:
+      - name: Add label
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        # Some same-repo PRs (e.g. Dependabot) get a read-only token; skip them
+        run: |
+          if ! out=$(gh api --method POST "repos/$GH_REPO/issues/$PR_NUMBER/labels" -f "labels[]=team" 2>&1); then
+            if grep -q "HTTP 403" <<< "$out"; then
+              echo "Token is read-only, skipping"
+              exit 0
+            fi
+            echo "$out" >&2
+            exit 1
+          fi

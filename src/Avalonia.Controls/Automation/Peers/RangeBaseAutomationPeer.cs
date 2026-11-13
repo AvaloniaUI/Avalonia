@@ -19,7 +19,7 @@ namespace Avalonia.Automation.Peers
         public double SmallChange => Owner.SmallChange;
         public double LargeChange => Owner.LargeChange;
         
-        public void SetValue(double value) => Owner.Value = value;
+        public void SetValue(double value) => Owner.SetCurrentValue(RangeBase.ValueProperty, value);
 
         protected virtual void OwnerPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {

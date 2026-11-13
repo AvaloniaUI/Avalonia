@@ -25,6 +25,29 @@ namespace Avalonia.X11
 
         public const IntPtr AnyPropertyType = 0;
 
+        [DllImport(libX11Ext, SetLastError = true)]
+        public static extern int XShmQueryExtension(IntPtr display);
+
+        [DllImport(libX11Ext, SetLastError = true)]
+        public static extern int XShmQueryVersion(IntPtr display, out int major, out int minor, out bool pixmaps);
+
+        [DllImport(libX11Ext, SetLastError = true)]
+        public static extern int XShmGetEventBase(IntPtr display);
+
+        [DllImport(libX11Ext, SetLastError = true)]
+        public static extern int XShmPutImage(IntPtr display, IntPtr drawable, IntPtr gc, XImage* image, int src_x, int src_y,
+            int dst_x, int dst_y, uint src_width, uint src_height, bool send_event);
+
+        [DllImport(libX11Ext, SetLastError = true)]
+        public static extern int XShmAttach(IntPtr display, XShmSegmentInfo* shminfo);
+
+        [DllImport(libX11Ext, SetLastError = true)]
+        public static extern int XShmDetach(IntPtr display, XShmSegmentInfo* shminfo);
+
+        [DllImport(libX11Ext, SetLastError = true)]
+        public static extern XImage* XShmCreateImage(IntPtr display, IntPtr visual, uint depth, int format, IntPtr data,
+            XShmSegmentInfo* shminfo, uint width, uint height);
+
         [DllImport(libX11)]
         public static extern IntPtr XOpenDisplay(IntPtr display);
 
@@ -95,6 +118,9 @@ namespace Avalonia.X11
 
         [DllImport(libX11)]
         public static extern int XFlush(IntPtr display);
+
+        [DllImport(libX11)]
+        public static extern IntPtr XNextRequest(IntPtr display);
 
         [DllImport(libX11)]
         public static extern int XSetWMName(IntPtr display, IntPtr window, ref XTextProperty text_prop);
@@ -454,10 +480,18 @@ namespace Avalonia.X11
         
         [DllImport(libX11)]
         public static extern int XDestroyImage(ref XImage image);
+        
+        [DllImport(libX11)]
+        public static extern int XDestroyImage(XImage* image);
 
         [DllImport(libX11)]
         public static extern int XPutImage(IntPtr display, IntPtr drawable, IntPtr gc, ref XImage image,
             int srcx, int srcy, int destx, int desty, uint width, uint height);
+
+        [DllImport(libX11)]
+        public static extern int XPutImage(IntPtr display, IntPtr drawable, IntPtr gc, XImage* image,
+            int srcx, int srcy, int destx, int desty, uint width, uint height);
+
         [DllImport(libX11)]
         public static extern int XSync(IntPtr display, bool discard);
         
@@ -662,7 +696,7 @@ namespace Avalonia.X11
         public static extern IntPtr* XRRListOutputProperties(IntPtr dpy, IntPtr output, out int count);
 
         [DllImport(libX11Randr)]
-        public static extern int XRRGetOutputProperty(IntPtr dpy, IntPtr output, IntPtr atom, int offset, int length, bool _delete, bool pending, IntPtr req_type, out IntPtr actual_type, out int actual_format, out int nitems, out long bytes_after, out IntPtr prop);
+        public static extern int XRRGetOutputProperty(IntPtr dpy, IntPtr output, IntPtr atom, IntPtr offset, IntPtr length, bool _delete, bool pending, IntPtr req_type, out IntPtr actual_type, out int actual_format, out IntPtr nitems, out IntPtr bytes_after, out IntPtr prop);
             
         [DllImport(libX11Randr)]
         public static extern void XRRSelectInput(IntPtr dpy, IntPtr window, RandrEventMask mask);

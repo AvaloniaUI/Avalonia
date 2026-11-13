@@ -1,0 +1,84 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:ControlCatalog.Controls"
+             x:Class="ControlCatalog.Pages.TextBoxTextLayoutPage">
+  <ScrollViewer Padding="24,20,24,28">
+    <StackPanel Spacing="16">
+
+      <controls:SampleSection Header="Alignment, wrapping and line height"
+                              Description="TextAlignment places each line inside the box, TextWrapping decides whether a long line breaks or scrolls sideways, and LineHeight fixes the distance between baselines."
+                              StageMinHeight="190">
+        <StackPanel Spacing="8">
+          <TextBox Name="LayoutBox"
+                   AcceptsReturn="True"
+                   TextWrapping="Wrap"
+                   LineHeight="20"
+                   MinLines="4"
+                   MaxLines="8"
+                   Width="{Binding #LayoutWidthSlider.Value}"
+                   HorizontalAlignment="Left"
+                   Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa." />
+          <TextBlock Classes="sample-caption"
+                     Text="{Binding #LayoutBox.LineHeight, StringFormat='LineHeight: {0:F0}'}" />
+        </StackPanel>
+        <controls:SampleSection.Options>
+          <StackPanel Spacing="8">
+            <TextBlock Text="Box width" Classes="sample-caption" />
+            <Slider Name="LayoutWidthSlider" Minimum="140" Maximum="460" Value="300" />
+            <TextBlock Text="TextAlignment" Classes="sample-caption" />
+            <ComboBox SelectedItem="{Binding #LayoutBox.TextAlignment}" HorizontalAlignment="Stretch">
+              <TextAlignment>Left</TextAlignment>
+              <TextAlignment>Center</TextAlignment>
+              <TextAlignment>Right</TextAlignment>
+              <TextAlignment>Justify</TextAlignment>
+              <TextAlignment>Start</TextAlignment>
+              <TextAlignment>End</TextAlignment>
+              <TextAlignment>DetectFromContent</TextAlignment>
+            </ComboBox>
+            <TextBlock Text="TextWrapping" Classes="sample-caption" />
+            <ComboBox SelectedItem="{Binding #LayoutBox.TextWrapping}" HorizontalAlignment="Stretch">
+              <TextWrapping>NoWrap</TextWrapping>
+              <TextWrapping>Wrap</TextWrapping>
+              <TextWrapping>WrapWithOverflow</TextWrapping>
+            </ComboBox>
+            <TextBlock Text="LineHeight" Classes="sample-caption" />
+            <Slider Value="{Binding #LayoutBox.LineHeight}" Minimum="14" Maximum="48" />
+          </StackPanel>
+        </controls:SampleSection.Options>
+        <controls:SampleSection.Code><x:String xml:space="preserve"><![CDATA[<TextBox AcceptsReturn="True"
+         TextWrapping="Wrap"
+         TextAlignment="Justify"
+         LineHeight="32" />]]></x:String></controls:SampleSection.Code>
+      </controls:SampleSection>
+
+      <controls:SampleSection Header="MinLines and MaxLines"
+                              Description="MinLines and MaxLines size the box to a range of visible lines instead of a fixed Height, so it grows with the text and then scrolls."
+                              StageMinHeight="190">
+        <StackPanel Spacing="8">
+          <TextBox Name="LinesBox"
+                   AcceptsReturn="True"
+                   TextWrapping="Wrap"
+                   MinLines="2"
+                   MaxLines="6"
+                   Width="300"
+                   HorizontalAlignment="Left"
+                   PlaceholderText="Press Enter to add lines"
+                   Text="One&#xD;Two&#xD;Three" />
+          <TextBlock Classes="sample-caption"
+                     TextWrapping="Wrap"
+                     Text="Set both to 0 to let the box size itself from its content and layout constraints." />
+        </StackPanel>
+        <controls:SampleSection.Options>
+          <StackPanel Spacing="8">
+            <TextBlock Text="MinLines" Classes="sample-caption" />
+            <NumericUpDown Value="{Binding #LinesBox.MinLines}" Minimum="0" Maximum="10" Increment="1" FormatString="0" />
+            <TextBlock Text="MaxLines" Classes="sample-caption" />
+            <NumericUpDown Value="{Binding #LinesBox.MaxLines}" Minimum="0" Maximum="10" Increment="1" FormatString="0" />
+          </StackPanel>
+        </controls:SampleSection.Options>
+        <controls:SampleSection.Code><x:String xml:space="preserve"><![CDATA[<TextBox AcceptsReturn="True" MinLines="2" MaxLines="6" />]]></x:String></controls:SampleSection.Code>
+      </controls:SampleSection>
+
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

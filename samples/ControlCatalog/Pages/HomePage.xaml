@@ -1,0 +1,66 @@
+<ContentPage Theme="{StaticResource ScrollPage}"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:viewModels="using:ControlCatalog.ViewModels"
+             xmlns:controlCatalog="using:ControlCatalog"
+             xmlns:models="clr-namespace:ControlCatalog.Models"
+             xmlns:controls="using:ControlCatalog.Controls"
+             x:Class="ControlCatalog.Pages.HomePage"
+             Header="Home">
+
+  <StackPanel Spacing="28" Margin="0,0,15,20" HorizontalAlignment="Stretch"
+              DataContext="{Binding $parent[controlCatalog:MainView].((viewModels:MainWindowViewModel)DataContext)}">
+
+    <!-- Hero banner (1:1 from the Accelerate demo dashboard) -->
+    <Border CornerRadius="20" ClipToBounds="True" HorizontalAlignment="Stretch" Height="220">
+      <Grid ClipToBounds="True">
+        <Image Source="/Assets/banner-bg.png"
+               Stretch="UniformToFill" />
+        <Canvas IsHitTestVisible="False">
+          <Image x:Name="BannerLogo1"
+                 Source="/Assets/logo1.png"
+                 Width="230"
+                 Stretch="Uniform"
+                 Canvas.Left="-60"
+                 Canvas.Bottom="-50" />
+          <Image x:Name="BannerLogo2"
+                 Source="/Assets/logo2.png"
+                 Width="150"
+                 Stretch="Uniform"
+                 Canvas.Left="240"
+                 Canvas.Top="-60" />
+          <Image x:Name="BannerLogo3"
+                 Source="/Assets/logo3.png"
+                 Width="210"
+                 Stretch="Uniform"
+                 Canvas.Right="-70"
+                 Canvas.Top="-50" />
+          <Image x:Name="BannerLogo4"
+                 Source="/Assets/logo4.png"
+                 Width="170"
+                 Stretch="Uniform"
+                 Canvas.Right="40"
+                 Canvas.Bottom="-60" />
+        </Canvas>
+        <Image Source="/Assets/banner-logo.png"
+               Width="220"
+               HorizontalAlignment="Center"
+               VerticalAlignment="Center" />
+      </Grid>
+    </Border>
+
+    <!-- Card sections -->
+    <ItemsControl ItemsSource="{Binding HomeSections}">
+      <ItemsControl.ItemTemplate>
+        <DataTemplate DataType="models:HomeSection">
+          <StackPanel Spacing="14">
+            <TextBlock Text="{Binding Title}"
+                       FontSize="19" FontWeight="Bold" />
+            <controls:SectionControl DataContext="{Binding}" />
+          </StackPanel>
+        </DataTemplate>
+      </ItemsControl.ItemTemplate>
+    </ItemsControl>
+
+  </StackPanel>
+</ContentPage>

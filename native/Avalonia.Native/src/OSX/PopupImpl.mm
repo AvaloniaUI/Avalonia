@@ -13,7 +13,7 @@
 #import "WindowProtocol.h"
 #import <AppKit/AppKit.h>
 
-class PopupImpl : public virtual WindowBaseImpl, public IAvnPopup
+class PopupImpl : public virtual WindowBaseImpl, public virtual MicroComImpl<IAvnPopup>
 {
 private:
     BEGIN_INTERFACE_MAP()
@@ -22,12 +22,17 @@ private:
     END_INTERFACE_MAP()
     virtual ~PopupImpl(){}
     ComPtr<IAvnWindowEvents> WindowEvents;
-    PopupImpl(IAvnWindowEvents* events) : TopLevelImpl(events), WindowBaseImpl(events)
+    PopupImpl(const ComPtr<IAvnWindowEvents>& events) : TopLevelImpl(events), WindowBaseImpl(events)
     {
         WindowEvents = events;
-        [Window setLevel:NSPopUpMenuWindowLevel];
+        UpdateWindowLevel();
     }
 protected:
+    virtual NSWindowLevel GetBaseWindowLevel() override
+    {
+        return NSPopUpMenuWindowLevel;
+    }
+
     virtual NSWindowStyleMask CalculateStyleMask() override
     {
         return NSWindowStyleMaskBorderless;
@@ -45,13 +50,8 @@ public:
     
     virtual HRESULT SetHitTestVisible(bool value) override
     {
-        START_COM_CALL;
-
-        @autoreleasepool
-        {
-            [Window setIgnoresMouseEvents:!value];
-            return S_OK;
-        }
+        [Window setIgnoresMouseEvents:!value];
+        return S_OK;
     }
 
     virtual bool ShouldTakeFocusOnShow() override
@@ -66,11 +66,7 @@ public:
 };
 
 
-extern IAvnPopup* CreateAvnPopup(IAvnWindowEvents*events)
+extern ComPtr<IAvnPopup> CreateAvnPopup(const ComPtr<IAvnWindowEvents>& events)
 {
-    @autoreleasepool
-    {
-        IAvnPopup* ptr = dynamic_cast<IAvnPopup*>(new PopupImpl(events));
-        return ptr;
-    }
+    return comnew<PopupImpl>(events);
 }

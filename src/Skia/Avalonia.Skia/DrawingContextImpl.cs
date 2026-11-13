@@ -663,12 +663,12 @@ namespace Avalonia.Skia
             // Get a round rect from the cache.
             var roundRect = SKRoundRectCache.Shared.Get();
 
-            roundRect.SetRectRadii(rc,
-                new[]
-                {
-                    clip.RadiiTopLeft.ToSKPoint(), clip.RadiiTopRight.ToSKPoint(),
-                    clip.RadiiBottomRight.ToSKPoint(), clip.RadiiBottomLeft.ToSKPoint(),
-                });
+            Span<SKPoint> radii = stackalloc SKPoint[4]
+            {
+                clip.RadiiTopLeft.ToSKPoint(), clip.RadiiTopRight.ToSKPoint(),
+                clip.RadiiBottomRight.ToSKPoint(), clip.RadiiBottomLeft.ToSKPoint(),
+            };
+            roundRect.SetRectRadii(rc, radii);
 
             Canvas.ClipRoundRect(roundRect, antialias:true);
 
@@ -836,10 +836,12 @@ namespace Avalonia.Skia
         {
             CheckLease();
 
-            var paint = SKPaintCache.Shared.Get();
+            Canvas.SaveLayer(bounds.ToSKRect(), null);
 
-            Canvas.SaveLayer(bounds.ToSKRect(), paint);
-            _maskStack.Push((Canvas.TotalMatrix, CreatePaint(paint, mask, bounds)));
+            // Mask paints are a plain color or shader, so DstIn applies the mask straight to the layer.
+            var maskPaint = CreatePaint(SKPaintCache.Shared.Get(), mask, bounds);
+            maskPaint.Paint.BlendMode = SKBlendMode.DstIn;
+            _maskStack.Push((Canvas.TotalMatrix, maskPaint));
         }
 
         /// <inheritdoc />
@@ -847,12 +849,6 @@ namespace Avalonia.Skia
         {
             CheckLease();
 
-            var paint = SKPaintCache.Shared.Get();
-            paint.BlendMode = SKBlendMode.DstIn;
-            
-            Canvas.SaveLayer(paint);
-            SKPaintCache.Shared.ReturnReset(paint);
-            
             var (transform, paintWrapper) = _maskStack.Pop();
             Canvas.SetMatrix(transform);
             using (paintWrapper)
@@ -861,8 +857,6 @@ namespace Avalonia.Skia
             }
             // Return the paint wrapper's paint less the reset since the paint is already reset in the Dispose method above.
             SKPaintCache.Shared.Return(paintWrapper.Paint);
-
-            RestoreCanvas();
 
             RestoreCanvas();
         }
@@ -896,9 +890,35 @@ namespace Avalonia.Skia
 
         public object? GetFeature(Type t)
         {
+            if (t == typeof(IPartialPresentationFeature))
+                return (_session as ISkiaGpuRenderSessionWithPartialPresentation)?.PartialPresentation;
             if (t == typeof(ISkiaSharpApiLeaseFeature))
                 return new SkiaLeaseFeature(this);
             return null;
+        }
+
+        /// <summary>
+        /// The relative transform of a brush conjugated into target space: the
+        /// unit square maps onto <paramref name="targetRect"/>, the matrix acts
+        /// inside that space, before the absolute brush transform.
+        /// </summary>
+        private static Matrix? GetRelativeTransform(IBrush brush, Rect targetRect)
+        {
+            if (brush.RelativeTransform is not { } relativeTransform
+                || targetRect.Width <= 0 || targetRect.Height <= 0)
+            {
+                return null;
+            }
+
+            var matrix = relativeTransform.Value;
+            if (matrix.IsIdentity)
+                return null;
+
+            return Matrix.CreateTranslation(-targetRect.X, -targetRect.Y)
+                   * Matrix.CreateScale(1 / targetRect.Width, 1 / targetRect.Height)
+                   * matrix
+                   * Matrix.CreateScale(targetRect.Width, targetRect.Height)
+                   * Matrix.CreateTranslation(targetRect.X, targetRect.Y);
         }
 
         /// <summary>
@@ -920,26 +940,22 @@ namespace Avalonia.Skia
                         var start = linearGradient.StartPoint.ToPixels(targetRect).ToSKPoint();
                         var end = linearGradient.EndPoint.ToPixels(targetRect).ToSKPoint();
 
-                        // would be nice to cache these shaders possibly?
-                        if (linearGradient.Transform is null)
-                        {
-                            using (var shader =
-                                SKShader.CreateLinearGradient(start, end, stopColors, stopOffsets, tileMode))
-                            {
-                                paintWrapper.Paint.Shader = shader;
-                            }
-                        }
-                        else
+                        var transform = GetRelativeTransform(linearGradient, targetRect);
+                        if (linearGradient.Transform is { } absoluteTransform)
                         {
                             var transformOrigin = linearGradient.TransformOrigin.ToPixels(targetRect);
                             var offset = Matrix.CreateTranslation(transformOrigin);
-                            var transform = (-offset) * linearGradient.Transform.Value * (offset);
+                            var absolute = (-offset) * absoluteTransform.Value * (offset);
+                            transform = transform.HasValue ? transform.Value * absolute : absolute;
+                        }
 
-                            using (var shader =
-                                SKShader.CreateLinearGradient(start, end, stopColors, stopOffsets, tileMode, transform.ToSKMatrix()))
-                            {
-                                paintWrapper.Paint.Shader = shader;
-                            }
+                        // would be nice to cache these shaders possibly?
+                        using (var shader = transform.HasValue
+                                   ? SKShader.CreateLinearGradient(start, end, stopColors, stopOffsets, tileMode,
+                                       transform.Value.ToSKMatrix())
+                                   : SKShader.CreateLinearGradient(start, end, stopColors, stopOffsets, tileMode))
+                        {
+                            paintWrapper.Paint.Shader = shader;
                         }
 
                         break;
@@ -962,6 +978,8 @@ namespace Avalonia.Skia
                                 * Matrix.CreateScale(1, radiusY / radiusX)
                                 * Matrix.CreateTranslation(centerPoint);
 
+                        if (GetRelativeTransform(radialGradient, targetRect) is { } relative)
+                            transform = transform.HasValue ? transform * relative : relative;
 
                         if (radialGradient.Transform != null)
                         {
@@ -993,6 +1011,14 @@ namespace Avalonia.Skia
                                     (originPoint.Y - centerPoint.Y) * radiusX / radiusY + centerPoint.Y);
 
                             var origin = originPoint.ToSKPoint();
+
+                            // Skia leaves the area that no gradient circle reaches unpainted, which only
+                            // happens when the origin is outside the circle. Everywhere else the gradient
+                            // covers the whole area, and a backdrop would show through its transparent parts.
+                            var originOffsetX = originPoint.X - centerPoint.X;
+                            var originOffsetY = originPoint.Y - centerPoint.Y;
+                            var originIsOutside =
+                                originOffsetX * originOffsetX + originOffsetY * originOffsetY >= radiusX * radiusX;
 
                             var endOffset = stopOffsets[stopOffsets.Length - 1];
 
@@ -1034,16 +1060,16 @@ namespace Avalonia.Skia
                                 stopOffsets = reversedStops;
                             }
 
-                            // compose with a background colour of the final stop to match D2D's behaviour of filling with the final color
-                            using (var shader = SKShader.CreateCompose(
-                                       SKShader.CreateColor(stopColors[0]),
-                                       transform.HasValue
-                                           ? SKShader.CreateTwoPointConicalGradient(start, radiusStart, end, radiusEnd,
-                                              stopColors, stopOffsets, tileMode, transform.Value.ToSKMatrix())
-                                           : SKShader.CreateTwoPointConicalGradient(start, radiusStart, end, radiusEnd,
-                                              stopColors, stopOffsets, tileMode)
-                                        )
-                                    )
+                            // Fill that unpainted area with the colour the gradient clamps to, like D2D does.
+                            var gradient = transform.HasValue
+                                ? SKShader.CreateTwoPointConicalGradient(start, radiusStart, end, radiusEnd,
+                                    stopColors, stopOffsets, tileMode, transform.Value.ToSKMatrix())
+                                : SKShader.CreateTwoPointConicalGradient(start, radiusStart, end, radiusEnd,
+                                    stopColors, stopOffsets, tileMode);
+
+                            using (var shader = originIsOutside
+                                       ? SKShader.CreateCompose(SKShader.CreateColor(stopColors[0]), gradient)
+                                       : gradient)
                             {
                                 paintWrapper.Paint.Shader = shader;
                             }
@@ -1060,15 +1086,17 @@ namespace Avalonia.Skia
                         var angle = (float)(conicGradient.Angle - 90);
                         var rotation = SKMatrix.CreateRotationDegrees(angle, center.X, center.Y);
 
-                        if (conicGradient.Transform is { })
+                        var transform = GetRelativeTransform(conicGradient, targetRect);
+                        if (conicGradient.Transform is { } absoluteTransform)
                         {
-
                             var transformOrigin = conicGradient.TransformOrigin.ToPixels(targetRect);
                             var offset = Matrix.CreateTranslation(transformOrigin);
-                            var transform = (-offset) * conicGradient.Transform.Value * (offset);
-
-                            rotation = rotation.PreConcat(transform.ToSKMatrix());
+                            var absolute = (-offset) * absoluteTransform.Value * (offset);
+                            transform = transform.HasValue ? transform.Value * absolute : absolute;
                         }
+
+                        if (transform.HasValue)
+                            rotation = rotation.PostConcat(transform.Value.ToSKMatrix());
 
                         using (var shader =
                             SKShader.CreateSweepGradient(center, stopColors, stopOffsets, rotation))
@@ -1147,18 +1175,23 @@ namespace Avalonia.Skia
                 tileTransform,
                 SKMatrix.CreateScale((float)(96.0 / _intermediateSurfaceDpi.X), (float)(96.0 / _intermediateSurfaceDpi.Y)));
 
+            if (tileBrush.DestinationRect.Unit == RelativeUnit.Relative)
+                paintTransform =
+                    paintTransform.PreConcat(SKMatrix.CreateTranslation((float)targetBox.X, (float)targetBox.Y));
+
+            // Both brush transforms act on the tile once it sits in target space, the relative one
+            // first.
+            if (GetRelativeTransform(tileBrush, targetBox) is { } relativeTransform)
+                paintTransform = paintTransform.PostConcat(relativeTransform.ToSKMatrix());
+
             if (tileBrush.Transform is { })
             {
                 var origin = tileBrush.TransformOrigin.ToPixels(targetBox);
                 var offset = Matrix.CreateTranslation(origin);
                 var transform = (-offset) * tileBrush.Transform.Value * (offset);
 
-                paintTransform = paintTransform.PreConcat(transform.ToSKMatrix());
+                paintTransform = paintTransform.PostConcat(transform.ToSKMatrix());
             }
-
-            if (tileBrush.DestinationRect.Unit == RelativeUnit.Relative)
-                paintTransform =
-                    paintTransform.PreConcat(SKMatrix.CreateTranslation((float)targetBox.X, (float)targetBox.Y));
 
             using (var shader = image.ToShader(tileX, tileY, paintTransform))
             {
@@ -1268,19 +1301,22 @@ namespace Avalonia.Skia
             
             // If there is no BrushTransform and destinationRect is at (0,0) we don't need any transforms
             Matrix shaderTransform = Matrix.Identity;
-            
-            // Apply Brush.Transform to SKShader
+
+            // Apply destinationRect position
+            if (destinationRect.Position != default)
+                shaderTransform = Matrix.CreateTranslation(destinationRect.X, destinationRect.Y);
+
+            // Apply Brush.RelativeTransform and Brush.Transform to SKShader, in that order
+            if (GetRelativeTransform(content, targetRect) is { } relativeTransform)
+                shaderTransform *= relativeTransform;
+
             if (content.Transform != null)
             {
                 
                 var transformOrigin = content.TransformOrigin.ToPixels(targetRect);
                 var offset = Matrix.CreateTranslation(transformOrigin);
-                shaderTransform = (-offset) * content.Transform.Value * (offset);
+                shaderTransform *= (-offset) * content.Transform.Value * (offset);
             }
-
-            // Apply destinationRect position
-            if (destinationRect.Position != default)
-                shaderTransform *= Matrix.CreateTranslation(destinationRect.X, destinationRect.Y);
             
             // Create shader
             var (tileX, tileY) = GetTileModes(content.Brush.TileMode);

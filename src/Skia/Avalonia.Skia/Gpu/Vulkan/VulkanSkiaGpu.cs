@@ -48,7 +48,7 @@ internal class VulkanSkiaGpu : ISkiaGpu
                 GetProcedureAddress = GetProcAddressWrapper
             };
 
-            var avoidStencilBuffers = useStencilBuffers == false;
+            var avoidStencilBuffers = SkiaOptions.ShouldAvoidStencilBuffers(useStencilBuffers);
             
             GrContext = GRContext.CreateVulkan(ctx, new GRContextOptions { AvoidStencilBuffers = avoidStencilBuffers }) ??
                          throw new VulkanException("Unable to create GrContext from IVulkanDevice");

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0.
 // Ported from: https://github.com/SixLabors/Fonts/blob/034a440aece357341fcc6b02db58ffbe153e54ef/src/SixLabors.Fonts
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Avalonia.Utilities;
@@ -130,28 +131,60 @@ namespace Avalonia.Media.Fonts.Tables.Name
                 return null;
             }
 
-            var reader = new BigEndianBinaryReader(table.Span);
-
-            reader.ReadUInt16();
-            var count = reader.ReadUInt16();
-            var storageOffset = reader.ReadUInt16();
-
-            var names = new NameRecord[count];
-
-            for (var i = 0; i < count; i++)
+            try
             {
-                var platform = reader.ReadUInt16<PlatformID>();
-                var encodingId = reader.ReadUInt16<EncodingIDs>();
-                var encoding = encodingId.AsEncoding();
-                var languageID = reader.ReadUInt16();
-                var nameID = reader.ReadUInt16<KnownNameIds>();
-                var length = reader.ReadUInt16();
-                var offset = reader.ReadUInt16();
+                var reader = new BigEndianBinaryReader(table.Span);
 
-                names[i] = new NameRecord(table.Slice(storageOffset), platform, languageID, nameID, offset, length, encoding);
+                reader.ReadUInt16();
+                var count = reader.ReadUInt16();
+                var storageOffset = reader.ReadUInt16();
+
+                const int headerSize = 6;
+                const int recordSize = 12;
+
+                if (table.Length < headerSize)
+                {
+                    return null;
+                }
+
+                var recordsSize = count * recordSize;
+                if (recordsSize > table.Length - headerSize)
+                {
+                    return null;
+                }
+
+                if (storageOffset > table.Length)
+                {
+                    return null;
+                }
+
+                var nameStorage = table.Slice(storageOffset);
+
+                var names = new NameRecord[count];
+
+                for (var i = 0; i < count; i++)
+                {
+                    var platform = reader.ReadUInt16<PlatformID>();
+                    var encodingId = reader.ReadUInt16<EncodingIDs>();
+                    var encoding = encodingId.AsEncoding();
+                    var languageID = reader.ReadUInt16();
+                    var nameID = reader.ReadUInt16<KnownNameIds>();
+                    var length = reader.ReadUInt16();
+                    var offset = reader.ReadUInt16();
+
+                    names[i] = new NameRecord(nameStorage, platform, languageID, nameID, offset, length, encoding);
+                }
+
+                return new NameTable(names);
             }
-
-            return new NameTable(names);
+            catch (Exception ex) when (ex is InvalidOperationException or ArgumentOutOfRangeException)
+            {
+                // A present-but-malformed 'name' table must not deny the font; callers fall back to a
+                // default family name, the same outcome as an absent 'name'. Only the parsing-related
+                // exceptions are swallowed (end-of-span from BigEndianBinaryReader, out-of-range from
+                // Memory.Slice) so genuine/fatal failures still surface.
+                return null;
+            }
         }
 
         public IEnumerator<NameRecord> GetEnumerator()

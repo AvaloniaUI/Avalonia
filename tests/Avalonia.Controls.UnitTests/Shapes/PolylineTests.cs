@@ -88,4 +88,23 @@ public class PolylineTests : ScopedTestBase
         var geometry = Assert.IsType<PolylineGeometry>(target.DefiningGeometry);
         Assert.False(geometry.IsFilled);
     }
+
+    [Fact]
+    public void Polyline_Should_Invalidate_Geometry_When_Points_Collection_Changes()
+    {
+        using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+        var points = new Points { new Point(0, 0) };
+        var target = new Polyline { Points = points };
+        target.Measure(Size.Infinity);
+
+        var geometry = target.DefiningGeometry;
+        Assert.NotNull(geometry);
+        var invalidated = false;
+        geometry!.Changed += (_, _) => invalidated = true;
+
+        points.Add(new Point(10, 10));
+
+        Assert.True(invalidated);
+    }
 }

@@ -90,5 +90,77 @@ namespace Avalonia.Skia.RenderTests
             await RenderToFile(target);
             CompareImages();
         }
+
+        [Fact]
+        public async Task Nested_Opacity_Masks_Are_Combined()
+        {
+            var target = new Canvas
+            {
+                // Fades out from left to right.
+                OpacityMask = new LinearGradientBrush
+                {
+                    StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative),
+                    EndPoint = new RelativePoint(1, 0, RelativeUnit.Relative),
+                    GradientStops =
+                    {
+                        new GradientStop(Color.FromUInt32(0xffffffff), 0),
+                        new GradientStop(Color.FromUInt32(0x00ffffff), 1)
+                    }
+                },
+                Width = 120,
+                Height = 120,
+                Background = Brushes.Transparent,
+                Children =
+                {
+                    new Border
+                    {
+                        // Fades out from top to bottom, on top of the parent's mask.
+                        OpacityMask = new LinearGradientBrush
+                        {
+                            StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative),
+                            EndPoint = new RelativePoint(0, 1, RelativeUnit.Relative),
+                            GradientStops =
+                            {
+                                new GradientStop(Color.FromUInt32(0xffffffff), 0),
+                                new GradientStop(Color.FromUInt32(0x00ffffff), 1)
+                            }
+                        },
+                        Width = 80,
+                        Height = 50,
+                        [Canvas.LeftProperty] = 20,
+                        [Canvas.TopProperty] = 10,
+                        Background = Brushes.Red,
+                        Child = new Border
+                        {
+                            // Hides the left half of its content, on top of both ancestor masks.
+                            OpacityMask = new LinearGradientBrush
+                            {
+                                StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative),
+                                EndPoint = new RelativePoint(1, 0, RelativeUnit.Relative),
+                                GradientStops =
+                                {
+                                    new GradientStop(Color.FromUInt32(0x00ffffff), 0.5),
+                                    new GradientStop(Color.FromUInt32(0xffffffff), 0.5)
+                                }
+                            },
+                            Margin = new Thickness(10),
+                            Background = Brushes.Blue
+                        }
+                    },
+                    new Border
+                    {
+                        // Drawn after the nested masks are popped: only the parent's mask applies.
+                        Width = 80,
+                        Height = 40,
+                        [Canvas.LeftProperty] = 20,
+                        [Canvas.TopProperty] = 70,
+                        Background = Brushes.Green
+                    }
+                }
+            };
+
+            await RenderToFile(target);
+            CompareImages();
+        }
     }
 }
