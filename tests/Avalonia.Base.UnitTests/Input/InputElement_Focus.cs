@@ -668,6 +668,49 @@ namespace Avalonia.Base.UnitTests.Input
             Assert.Same(outerButton, focusManager.GetFocusedElement());
         }
 
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void Removing_Or_Hiding_Focus_Scope_Clears_Focus_When_Root_Focus_Scope_Element_Is_Disabled(bool remove)
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealFocus);
+            Button innerButton, outerButton;
+            TestFocusScope innerScope;
+            var root = new TestRoot
+            {
+                Child = new StackPanel
+                {
+                    Children =
+                    {
+                        (innerScope = new TestFocusScope
+                        {
+                            Children =
+                            {
+                                (innerButton = new Button()),
+                            }
+                        }),
+                        (outerButton = new Button()),
+                    }
+                }
+            };
+
+            // e.g. a button whose command is running while it waits for a choice in a popup.
+            outerButton.Focus();
+            innerButton.Focus();
+            outerButton.IsEnabled = false;
+
+            if (remove)
+                ((Panel)innerScope.Parent!).Children.Remove(innerScope);
+            else
+                innerScope.IsVisible = false;
+
+            // Focus can't return to the disabled button, but must not stay on the removed/hidden control.
+            var focusManager = Assert.IsType<FocusManager>(root.FocusManager);
+            Assert.False(innerButton.IsFocused);
+            Assert.Null(focusManager.GetFocusedElement());
+            Assert.Null(KeyboardDevice.Instance!.FocusedElement);
+        }
+
         [Fact]
         public void Switching_Focus_Scope_Changes_Focus()
         {

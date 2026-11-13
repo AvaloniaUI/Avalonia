@@ -1,0 +1,130 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    x:ClassModifier="internal">
+
+  <ControlTheme x:Key="{x:Type TableViewRow}" TargetType="TableViewRow" BasedOn="{StaticResource DefaultTableViewRowTheme}"/>
+
+  <ControlTheme x:Key="DefaultTableViewRowTheme" TargetType="TableViewRow">
+    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="MinHeight" Value="{DynamicResource TableViewRowMinHeight}" />
+    <Setter Property="Background" Value="{DynamicResource TabularSurfaceRowBackground}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource TabularSurfaceGridLine}" />
+    <Setter Property="BorderThickness" Value="0,0,0,1" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Grid>
+          <Border x:Name="RootBorder"
+                  Background="{TemplateBinding Background}"
+                  BorderThickness="{TemplateBinding BorderThickness}"
+                  Padding="{TemplateBinding Padding}">
+            <Grid>
+              <ContentPresenter x:Name="CellForegroundPresenter"
+                                Background="Transparent"
+                                Foreground="{TemplateBinding Foreground}"
+                                HorizontalContentAlignment="Stretch"
+                                VerticalContentAlignment="Stretch">
+                <Grid>
+                  <TableViewCellsPresenter x:Name="PART_CellsPresenter"
+                                           HorizontalAlignment="Left" />
+                </Grid>
+
+              </ContentPresenter>
+              <Rectangle x:Name="PART_SelectionIndicator"
+                         Width="3"
+                         Height="16"
+                         RadiusX="1.5"
+                         RadiusY="1.5"
+                         Fill="{DynamicResource TabularSurfaceSelectionIndicatorFill}"
+                         HorizontalAlignment="Left"
+                         VerticalAlignment="Center"
+                         Margin="2,0,0,0"
+                         IsHitTestVisible="False"
+                         Opacity="0">
+                <Rectangle.Transitions>
+                  <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="{StaticResource ControlFasterAnimationDuration}"/>
+                  </Transitions>
+                </Rectangle.Transitions>
+              </Rectangle>
+            </Grid>
+          </Border>
+
+          <Border x:Name="GridLineBorder"
+                  BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}"
+                  IsHitTestVisible="False" />
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+
+    <!-- Disabled -->
+    <Style Selector="^:disabled /template/ Border#RootBorder">
+      <Setter Property="Background" Value="{DynamicResource TabularSurfaceRowBackgroundDisabled}" />
+    </Style>
+    <Style Selector="^:disabled /template/ ContentPresenter#CellForegroundPresenter">
+      <Setter Property="Foreground" Value="{DynamicResource TabularSurfaceRowForegroundDisabled}" />
+    </Style>
+
+    <!-- PointerOver -->
+    <Style Selector="^:pointerover /template/ Border#RootBorder">
+      <Setter Property="Background" Value="{DynamicResource TabularSurfaceRowBackgroundPointerOver}" />
+    </Style>
+    <Style Selector="^:pointerover /template/ ContentPresenter#CellForegroundPresenter">
+      <Setter Property="Foreground" Value="{DynamicResource TabularSurfaceRowForegroundPointerOver}" />
+    </Style>
+
+    <!-- Pressed -->
+    <Style Selector="^:pressed /template/ Border#RootBorder">
+      <Setter Property="Background" Value="{DynamicResource TabularSurfaceRowBackgroundPressed}" />
+    </Style>
+    <Style Selector="^:pressed /template/ ContentPresenter#CellForegroundPresenter">
+      <Setter Property="Foreground" Value="{DynamicResource TabularSurfaceRowForegroundPressed}" />
+    </Style>
+
+    <!-- Selected -->
+    <Style Selector="^:selected">
+
+      <Style Selector="^ /template/ Border#RootBorder">
+        <Setter Property="Background" Value="{DynamicResource TabularSurfaceRowBackgroundSelected}" />
+      </Style>
+      <Style Selector="^ /template/ ContentPresenter#CellForegroundPresenter">
+        <Setter Property="Foreground" Value="{DynamicResource TabularSurfaceRowForegroundSelected}" />
+      </Style>
+      <Style Selector="^ /template/ Rectangle#PART_SelectionIndicator">
+        <Setter Property="Opacity" Value="1" />
+      </Style>
+
+      <!-- Selected PointerOver  -->
+      <Style Selector="^:pointerover /template/ Border#RootBorder">
+        <Setter Property="Background" Value="{DynamicResource TabularSurfaceRowBackgroundSelectedPointerOver}" />
+      </Style>
+      <Style Selector="^:pointerover /template/ ContentPresenter#CellForegroundPresenter">
+        <Setter Property="Foreground" Value="{DynamicResource TabularSurfaceRowForegroundSelectedPointerOver}" />
+      </Style>
+
+      <!-- Selected Pressed  -->
+      <Style Selector="^:pressed /template/ Border#RootBorder">
+        <Setter Property="Background" Value="{DynamicResource TabularSurfaceRowBackgroundSelectedPressed}" />
+      </Style>
+      <Style Selector="^:pressed /template/ ContentPresenter#CellForegroundPresenter">
+        <Setter Property="Foreground" Value="{DynamicResource TabularSurfaceRowForegroundSelectedPressed}" />
+      </Style>
+
+      <!-- Selected Disabled  -->
+      <Style Selector="^:disabled /template/ Border#RootBorder">
+        <Setter Property="Background" Value="{DynamicResource TabularSurfaceRowBackgroundDisabled}" />
+      </Style>
+      <Style Selector="^:disabled /template/ ContentPresenter#CellForegroundPresenter">
+        <Setter Property="Foreground" Value="{DynamicResource TabularSurfaceRowForegroundDisabled}" />
+      </Style>
+      <Style Selector="^:disabled /template/ Rectangle#PART_SelectionIndicator">
+        <Setter Property="Opacity" Value="1" />
+        <Setter Property="Fill" Value="{DynamicResource TabularSurfaceSelectionIndicatorFillDisabled}" />
+      </Style>
+
+    </Style>
+
+  </ControlTheme>
+
+</ResourceDictionary>

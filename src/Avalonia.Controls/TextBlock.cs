@@ -61,6 +61,12 @@ namespace Avalonia.Controls
             TextElement.FontStretchProperty.AddOwner<TextBlock>();
 
         /// <summary>
+        /// Defines the <see cref="FontVariations"/> property.
+        /// </summary>
+        public static readonly StyledProperty<FontVariationSettings?> FontVariationsProperty =
+            TextElement.FontVariationsProperty.AddOwner<TextBlock>();
+
+        /// <summary>
         /// Defines the <see cref="Foreground"/> property.
         /// </summary>
         public static readonly StyledProperty<IBrush?> ForegroundProperty =
@@ -195,7 +201,15 @@ namespace Avalonia.Controls
             // queued measure, or a read of this property - so it cannot rely on the measure pass
             // having brought the complex content up to date.
             EnsureTextRuns();
-            MeasureEmbeddedControls(GetMaxSizeFromConstraint());
+
+            // A block whose measure is invalid at render time is one layout cannot reach, such as
+            // one under a hidden ancestor. Measuring its embedded controls here would apply their
+            // templates inside the render pass, which must not attach visuals. The pending measure
+            // pass measures them once the block becomes reachable.
+            if (IsMeasureValid)
+            {
+                MeasureEmbeddedControls(GetMaxSizeFromConstraint());
+            }
 
             return CreateTextLayout(Text);
         }
@@ -270,6 +284,16 @@ namespace Avalonia.Controls
         {
             get => GetValue(FontStretchProperty);
             set => SetValue(FontStretchProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the variable-font axis values (e.g. <c>wght=700</c>) used to draw
+        /// the control's text. <c>null</c> means the font's design defaults.
+        /// </summary>
+        public FontVariationSettings? FontVariations
+        {
+            get => GetValue(FontVariationsProperty);
+            set => SetValue(FontVariationsProperty, value);
         }
 
         /// <summary>
@@ -670,7 +694,7 @@ namespace Avalonia.Controls
         /// <returns>A <see cref="TextLayout"/> object.</returns>
         protected virtual TextLayout CreateTextLayout(string? text)
         {
-            var typeface = new Typeface(FontFamily, FontStyle, FontWeight, FontStretch);
+            var typeface = new Typeface(FontFamily, FontStyle, FontWeight, FontStretch, FontVariations);
 
             var defaultProperties = new GenericTextRunProperties(
                 typeface,
@@ -932,6 +956,7 @@ namespace Avalonia.Controls
                 case nameof(FontStyle):
                 case nameof(FontFamily):
                 case nameof(FontStretch):
+                case nameof(FontVariations):
                 case nameof(FlowDirection):
                 case nameof(LetterSpacing):
                 case nameof(Text):

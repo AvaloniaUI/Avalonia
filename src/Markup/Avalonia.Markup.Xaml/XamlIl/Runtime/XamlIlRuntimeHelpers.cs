@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Data.Core;
 using Avalonia.Platform;
 
 // ReSharper disable UnusedMember.Global
@@ -20,6 +21,56 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
     {
         [ThreadStatic] private static List<IResourceNode>? s_resourceNodeBuffer;
         [ThreadStatic] private static LastParentStack? s_lastParentStack;
+
+        /// <summary>
+        /// Creates or retrieves a property info backed by generated accessors.
+        /// </summary>
+        /// <remarks>
+        /// <paramref name="getter"/> represents a <c>delegate* managed&lt;object, object?&gt;</c> and
+        /// <paramref name="setter"/> represents a <c>delegate* managed&lt;object, object?, void&gt;</c>.
+        /// The parameters use <see cref="IntPtr"/> because Reflection.Emit cannot emit calls to generic methods
+        /// with function pointer parameters. See https://github.com/dotnet/runtime/issues/100020.
+        /// </remarks>
+        /// <typeparam name="THelper">The generated helper type, retained while the accessors are in use.</typeparam>
+        /// <typeparam name="TValue">The property value type.</typeparam>
+        /// <param name="field">The cached property info.</param>
+        /// <param name="name">The property name.</param>
+        /// <param name="getter">The getter pointer, or <see cref="IntPtr.Zero"/> when absent.</param>
+        /// <param name="setter">The setter pointer, or <see cref="IntPtr.Zero"/> when absent.</param>
+        /// <returns>The cached or newly created property info.</returns>
+        public static unsafe IPropertyInfo GetPropertyInfoFromPointers<THelper, TValue>(
+            ref IPropertyInfo? field, string name, IntPtr getter, IntPtr setter)
+            where THelper : class
+            => field ??= new FunctionPointerPropertyInfo(name,
+                (delegate* managed<object, object?>)getter.ToPointer(),
+                (delegate* managed<object, object?, void>)setter.ToPointer(),
+                typeof(TValue), typeof(THelper));
+
+        /// <summary>
+        /// Creates or retrieves a typed property info backed by generated accessors.
+        /// </summary>
+        /// <remarks>
+        /// <paramref name="getter"/> represents a <c>delegate* managed&lt;TSource, TValue&gt;</c> and
+        /// <paramref name="setter"/> represents a <c>delegate* managed&lt;TSource, TValue, void&gt;</c>.
+        /// The parameters use <see cref="IntPtr"/> because Reflection.Emit cannot emit calls to generic methods
+        /// with function pointer parameters. See https://github.com/dotnet/runtime/issues/100020.
+        /// </remarks>
+        /// <typeparam name="THelper">The generated helper type, retained while the accessors are in use.</typeparam>
+        /// <typeparam name="TSource">The property owner type.</typeparam>
+        /// <typeparam name="TValue">The property value type.</typeparam>
+        /// <param name="field">The cached property info.</param>
+        /// <param name="name">The property name.</param>
+        /// <param name="getter">The getter pointer, or <see cref="IntPtr.Zero"/> when absent.</param>
+        /// <param name="setter">The setter pointer, or <see cref="IntPtr.Zero"/> when absent.</param>
+        /// <returns>The cached or newly created typed property info.</returns>
+        public static unsafe IPropertyInfo<TSource, TValue> GetTypedPropertyInfoFromPointers<THelper, TSource, TValue>(
+            ref IPropertyInfo<TSource, TValue>? field, string name, IntPtr getter, IntPtr setter)
+            where THelper : class
+            where TSource : class
+            => field ??= new FunctionPointerPropertyInfo<TSource, TValue>(name,
+                (delegate* managed<TSource, TValue>)getter.ToPointer(),
+                (delegate* managed<TSource, TValue, void>)setter.ToPointer(),
+                typeof(THelper));
 
         public static Func<IServiceProvider, object> DeferredTransformationFactoryV1(Func<IServiceProvider, object> builder,
             IServiceProvider provider)

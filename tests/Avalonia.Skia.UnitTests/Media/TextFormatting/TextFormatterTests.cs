@@ -157,15 +157,16 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal(14, textLine.Length);
 
-                var first = textLine.TextRuns[0] as ShapedTextRun;
+                // The paragraph end takes the paragraph level, so it is visually first in a right-to-left line.
+                var first = textLine.TextRuns[0] as TextEndOfParagraph;
 
-                var last = textLine.TextRuns[4] as TextEndOfParagraph;
+                var second = textLine.TextRuns[1] as ShapedTextRun;
 
                 Assert.NotNull(first);
 
-                Assert.NotNull(last);
+                Assert.NotNull(second);
 
-                Assert.Equal("Hello".AsMemory(), first.Text);
+                Assert.Equal("Hello".AsMemory(), second.Text);
             }
         }
 
@@ -247,6 +248,36 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 Assert.Equal(1, first.BidiLevel);
 
                 Assert.Equal(0, second.BidiLevel);
+            }
+        }
+
+        [Theory]
+        [InlineData("\u202Eabc\u202C", 1)] // RLO ... PDF
+        [InlineData("\u202Babc\u202C", 2)] // RLE ... PDF
+        [InlineData("\u2067abc\u2069", 2)] // RLI ... PDI
+        public void Should_Resolve_Explicit_Formatting_After_Another_Paragraph(string text, int expectedLevel)
+        {
+            using (Start())
+            {
+                var defaultProperties =
+                    new GenericTextRunProperties(Typeface.Default, 12, foregroundBrush: Brushes.Black);
+
+                var paragraphProperties = new GenericTextParagraphProperties(defaultProperties);
+
+                var formatter = new TextFormatterImpl();
+
+                formatter.FormatLine(new SingleBufferTextSource("abc", defaultProperties), 0,
+                    double.PositiveInfinity, paragraphProperties);
+
+                var textLine = formatter.FormatLine(new SingleBufferTextSource(text, defaultProperties), 0,
+                    double.PositiveInfinity, paragraphProperties);
+
+                Assert.NotNull(textLine);
+
+                var textRun = textLine.TextRuns.OfType<ShapedTextRun>()
+                    .Single(x => x.Text.Span.IndexOf('a') >= 0);
+
+                Assert.Equal(expectedLevel, textRun.BidiLevel);
             }
         }
 
@@ -1106,6 +1137,119 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         }
 
         [Fact]
+        public void Should_Wrap_At_Script_Boundary_Between_Runs()
+        {
+            using (Start())
+            {
+                var defaultRunProperties = new GenericTextRunProperties(Typeface.Default);
+                var paragraphProperties = new GenericTextParagraphProperties(defaultRunProperties, textWrapping: TextWrapping.Wrap);
+
+                // Han and Hiragana shape into separate runs, producing a wrap opportunity at the run boundary.
+                const string text = "漢字漢字ひらがな漢字漢字";
+                const int fittingLength = 8;
+
+                var textSource = new SingleBufferTextSource(text, defaultRunProperties);
+
+                var unwrapped = TextFormatter.Current.FormatLine(textSource, 0, double.PositiveInfinity, paragraphProperties);
+
+                Assert.NotNull(unwrapped);
+                Assert.True(unwrapped.TextRuns.Count > 2);
+
+                var paragraphWidth = unwrapped.GetDistanceFromCharacterHit(new CharacterHit(fittingLength)) + 1;
+
+                var textLine = TextFormatter.Current.FormatLine(textSource, 0, paragraphWidth, paragraphProperties);
+
+                Assert.NotNull(textLine);
+                Assert.Equal(fittingLength, textLine.Length);
+            }
+        }
+
+        [Fact]
+        public void Should_Wrap_At_Opportunity_Between_Text_Characters()
+        {
+            using (Start())
+            {
+                var defaultRunProperties = new GenericTextRunProperties(Typeface.Default);
+                var paragraphProperties = new GenericTextParagraphProperties(defaultRunProperties, textWrapping: TextWrapping.Wrap);
+
+                var textSource = new ListTextSource(
+                    new TextCharacters("漢字漢字", defaultRunProperties),
+                    new TextCharacters("漢字漢字", defaultRunProperties));
+
+                var unwrapped = TextFormatter.Current.FormatLine(textSource, 0, double.PositiveInfinity, paragraphProperties);
+
+                Assert.NotNull(unwrapped);
+
+                var paragraphWidth = unwrapped.GetDistanceFromCharacterHit(new CharacterHit(4)) + 1;
+
+                var textLine = TextFormatter.Current.FormatLine(textSource, 0, paragraphWidth, paragraphProperties);
+
+                Assert.NotNull(textLine);
+                Assert.Equal(4, textLine.Length);
+            }
+        }
+
+        [Fact]
+        public void Should_Not_Wrap_Inside_Word_Split_Across_Text_Characters()
+        {
+            using (Start())
+            {
+                var defaultRunProperties = new GenericTextRunProperties(Typeface.Default);
+                var paragraphProperties = new GenericTextParagraphProperties(defaultRunProperties, textWrapping: TextWrapping.Wrap);
+
+                var textSource = new ListTextSource(
+                    new TextCharacters("foo Hello", defaultRunProperties),
+                    new TextCharacters("World bar", defaultRunProperties));
+
+                var unwrapped = TextFormatter.Current.FormatLine(textSource, 0, double.PositiveInfinity, paragraphProperties);
+
+                Assert.NotNull(unwrapped);
+
+                var paragraphWidth = unwrapped.GetDistanceFromCharacterHit(new CharacterHit(12)) + 1;
+
+                var textLine = TextFormatter.Current.FormatLine(textSource, 0, paragraphWidth, paragraphProperties);
+
+                Assert.NotNull(textLine);
+                Assert.Equal("foo ".Length, textLine.Length);
+            }
+        }
+
+        [Theory]
+        [InlineData(new[] { "foo ", " bar" }, 3)]
+        [InlineData(new[] { "foo 1", ")", "$xyz bar" }, 6)]
+        [InlineData(new[] { "c ab", "-", "x yz" }, 5)]
+        [InlineData(new[] { "foo 1̃", ")", "$xyz bar" }, 7)]
+        [InlineData(new[] { "foo x", "“ ", "abc" }, 7)]
+        [InlineData(new[] { "a—", "b" }, 2)]
+        [InlineData(new[] { "x 1.", ")$z y" }, 5)]
+        [InlineData(new[] { "a— ", " —b c" }, 2)]
+        public void Should_Wrap_Text_Split_Across_Text_Characters_Like_Unsplit_Text(string[] parts, int fittingLength)
+        {
+            using (Start())
+            {
+                var defaultRunProperties = new GenericTextRunProperties(Typeface.Default);
+                var paragraphProperties = new GenericTextParagraphProperties(defaultRunProperties, textWrapping: TextWrapping.Wrap);
+
+                var text = string.Concat(parts);
+                var unsplitSource = new SingleBufferTextSource(text, defaultRunProperties);
+                var splitSource = new ListTextSource(parts.Select(part => new TextCharacters(part, defaultRunProperties)));
+
+                var unwrapped = TextFormatter.Current.FormatLine(unsplitSource, 0, double.PositiveInfinity, paragraphProperties);
+
+                Assert.NotNull(unwrapped);
+
+                var paragraphWidth = unwrapped.GetDistanceFromCharacterHit(new CharacterHit(fittingLength)) + 1;
+
+                var expected = TextFormatter.Current.FormatLine(unsplitSource, 0, paragraphWidth, paragraphProperties);
+                var actual = TextFormatter.Current.FormatLine(splitSource, 0, paragraphWidth, paragraphProperties);
+
+                Assert.NotNull(expected);
+                Assert.NotNull(actual);
+                Assert.Equal(expected.Length, actual.Length);
+            }
+        }
+
+        [Fact]
         public void Should_MatchCharacter_For_Spacing_CombiningMark()
         {
             using (Start())
@@ -1191,6 +1335,44 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 Assert.Equal(expectedHeight, textLine.Height);
 
                 Assert.Equal(expectedBaseline, textLine.Baseline);
+            }
+        }
+
+        [Fact]
+        public void Runs_Shaped_Together_Should_Dispose_The_Buffer_They_Were_Split_From()
+        {
+            using (Start())
+            {
+                var shaper = new RecordingTextShaper(AvaloniaLocator.Current.GetRequiredService<ITextShaperImpl>());
+
+                AvaloniaLocator.CurrentMutable.Bind<TextShaper>().ToConstant(new TextShaper(shaper));
+
+                // Neighbouring slices of one text, same typeface and size, different brushes: shaped
+                // as one buffer, then split between the runs.
+                var text = "abcdef".AsMemory();
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default, foregroundBrush: Brushes.Red);
+                var textSource = new ListTextSource(
+                    new TextCharacters(text.Slice(0, 2), defaultProperties),
+                    new TextCharacters(text.Slice(2, 2), new GenericTextRunProperties(Typeface.Default, foregroundBrush: Brushes.Green)),
+                    new TextCharacters(text.Slice(4, 2), new GenericTextRunProperties(Typeface.Default, foregroundBrush: Brushes.Blue)));
+
+                using var textLine = new TextFormatterImpl().FormatLine(textSource, 0, double.PositiveInfinity,
+                    new GenericTextParagraphProperties(defaultProperties));
+
+                Assert.NotNull(textLine);
+
+                var shapedBuffer = Assert.Single(shaper.ShapedBuffers);
+
+                var shapedBuffers = textLine.TextRuns.Select(x => ((ShapedTextRun)x).ShapedBuffer).ToList();
+
+                Assert.Equal(new[] { 2, 2, 2 }, shapedBuffers.Select(x => x.Length));
+
+                // A disposed buffer has given its glyphs back.
+                Assert.Equal(0, shapedBuffer.Length);
+
+                // The second half of each split is split again and never reaches the shaper. Only the
+                // runs on the line may still reference the shared glyph storage.
+                Assert.All(shapedBuffers, x => Assert.Equal(shapedBuffers.Count, x.GlyphStorageRefCount));
             }
         }
 
@@ -1361,6 +1543,29 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 Length = length;
             }
             public override int Length { get; }
+        }
+
+        private class RecordingTextShaper : ITextShaperImpl
+        {
+            private readonly ITextShaperImpl _inner;
+
+            public RecordingTextShaper(ITextShaperImpl inner)
+            {
+                _inner = inner;
+            }
+
+            public List<ShapedBuffer> ShapedBuffers { get; } = new();
+
+            public ShapedBuffer ShapeText(ReadOnlyMemory<char> text, TextShaperOptions options)
+            {
+                var shapedBuffer = _inner.ShapeText(text, options);
+
+                ShapedBuffers.Add(shapedBuffer);
+
+                return shapedBuffer;
+            }
+
+            public ITextShaperTypeface CreateTypeface(GlyphTypeface glyphTypeface) => _inner.CreateTypeface(glyphTypeface);
         }
 
         public static IDisposable Start()

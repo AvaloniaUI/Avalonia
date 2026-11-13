@@ -6,6 +6,8 @@ namespace ControlCatalog.ViewModels
     public class NotificationViewModel
     {
         public WindowNotificationManager? NotificationManager { get; set; }
+        private int MaxNotificationType = (int)NotificationType.Error + 1;
+        private int CurrentNotificationType = 0;
 
         public NotificationViewModel()
         {
@@ -16,7 +18,9 @@ namespace ControlCatalog.ViewModels
 
             ShowManagedNotificationCommand = MiniCommand.Create(() =>
             {
-                NotificationManager?.Show(new Avalonia.Controls.Notifications.Notification("Welcome", "Avalonia now supports Notifications.", NotificationType.Information));
+                var notificationType = (NotificationType)CurrentNotificationType;
+                CurrentNotificationType = (++CurrentNotificationType) % MaxNotificationType;
+                NotificationManager?.Show(new Avalonia.Controls.Notifications.Notification("Welcome", "Avalonia now supports Notifications.", notificationType));
             });
 
             YesCommand = MiniCommand.Create(() =>

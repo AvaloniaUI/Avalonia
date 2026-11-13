@@ -18,7 +18,7 @@ namespace Avalonia.Skia
             path.MoveTo(p1.ToSKPoint());
             path.LineTo(p2.ToSKPoint());
 
-            StrokePath = path;
+            StrokePath = CachePathBounds(path);
             Bounds = new Rect(
                 new Point(Math.Min(p1.X, p2.X), Math.Min(p1.Y, p2.Y)), 
                 new Point(Math.Max(p1.X, p2.X), Math.Max(p1.Y, p2.Y)));

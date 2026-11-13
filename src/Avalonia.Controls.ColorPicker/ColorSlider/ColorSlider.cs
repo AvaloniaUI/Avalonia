@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Buffers;
 using Avalonia.Collections.Pooled;
 using Avalonia.Controls.Metadata;
 using Avalonia.Layout;
@@ -32,6 +31,7 @@ namespace Avalonia.Controls.Primitives
         /// </remarks>
         private const double MaxHue = 359;
 
+        // TODO-13: Convert this to a protected property with PascalCase name or make private
         protected bool ignorePropertyChanged = false;
 
         private Bitmap? _backgroundBitmap;

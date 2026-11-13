@@ -153,6 +153,7 @@ namespace Avalonia.Controls.Primitives
         private bool _ignoreIsOpenChanged;
         private bool _isUsingOverlayLayer;
         private PopupOpenState? _openState;
+        private Point? _pointerPosition;
         private Action<IPopupHost?>? _popupHostChangedHandler;
         private List<Popup>? _openedPopups;
 
@@ -722,6 +723,12 @@ namespace Avalonia.Controls.Primitives
 
         private void UpdateHostPosition(IPopupHost popupHost, Control placementTarget)
         {
+            // Pointer placement stays at the pointer position from when it was first applied (#22359).
+            if (Placement != PlacementMode.Pointer)
+                _pointerPosition = null;
+            else if (_pointerPosition is null && TopLevel.GetTopLevel(placementTarget) is { } topLevel)
+                _pointerPosition = topLevel.PointToClient(topLevel.LastPointerPosition ?? default);
+
             popupHost.ConfigurePosition(new PopupPositionRequest(
                 placementTarget,
                 Placement,
@@ -730,7 +737,8 @@ namespace Avalonia.Controls.Primitives
                 PlacementGravity,
                 PlacementConstraintAdjustment,
                 PlacementRect ?? new Rect(default, placementTarget.Bounds.Size),
-                CustomPopupPlacementCallback));
+                CustomPopupPlacementCallback,
+                _pointerPosition));
         }
 
         private void UpdateHostSizing(IPopupHost popupHost, TopLevel topLevel, Control placementTarget)
@@ -741,7 +749,7 @@ namespace Avalonia.Controls.Primitives
             if (InheritsTransform && placementTarget.TransformToVisual(topLevel) is { } m)
             {
                 scaleX = Math.Sqrt(m.M11 * m.M11 + m.M12 * m.M12);
-                scaleY = Math.Sqrt(m.M11 * m.M11 + m.M12 * m.M12);
+                scaleY = Math.Sqrt(m.M21 * m.M21 + m.M22 * m.M22);
 
                 // Ideally we'd only assign a ScaleTransform here when the scale != 1, but there's
                 // an issue with LayoutTransformControl in that it sets its LayoutTransform property
@@ -856,6 +864,7 @@ namespace Avalonia.Controls.Primitives
 
             _openState.Dispose();
             _openState = null;
+            _pointerPosition = null;
 
             _popupHostChangedHandler?.Invoke(null);
 

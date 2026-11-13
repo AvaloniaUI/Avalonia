@@ -7,10 +7,11 @@ using Avalonia.Styling;
 using Avalonia.VisualTree;
 using Moq;
 using Xunit;
+using Avalonia.UnitTests;
 
 namespace Avalonia.Base.UnitTests.Styling
 {
-    public class SelectorTests_Template
+    public class SelectorTests_Template : ScopedTestBase
     {
         [Fact]
         public void Control_In_Template_Is_Matched_With_Template_Selector()

@@ -2,10 +2,11 @@ using Avalonia.Controls;
 using Avalonia.Styling;
 using Moq;
 using Xunit;
+using Avalonia.UnitTests;
 
 namespace Avalonia.Base.UnitTests.Styling
 {
-    public class SelectorTests_OfType
+    public class SelectorTests_OfType : ScopedTestBase
     {
         [Fact]
         public void OfType_Matches_Control_Of_Correct_Type()

@@ -78,6 +78,8 @@ namespace Avalonia.Win32
         private readonly FramebufferManager _framebuffer;
         private readonly IPlatformRenderSurface? _glSurface;
         private readonly bool _wmPointerEnabled;
+        private Action? _pendingDrag;
+        private bool _dragRequestedFromPointer;
 
         private readonly Win32NativeControlHost _nativeControlHost;
         private readonly IStorageProvider _storageProvider;
@@ -106,6 +108,7 @@ namespace Avalonia.Win32
         private bool _hiddenWindowIsParent;
         private uint _langid;
         internal bool _ignoreWmChar;
+        private bool _deadCharPending;
         private WindowTransparencyLevel _transparencyLevel;
         private readonly WindowTransparencyLevel _defaultTransparencyLevel;
         private WindowCornerPreference _cornerPreference;
@@ -202,7 +205,7 @@ namespace Avalonia.Win32
 
         public Action<RawInputEventArgs>? Input { get; set; }
 
-        public Action<Rect>? Paint { get; set; }
+        public Action<ITopLevelImpl.PaintOptions?>? Paint { get; set; }
 
         public Action<Size, WindowResizeReason>? Resized { get; set; }
 
@@ -529,7 +532,7 @@ namespace Avalonia.Win32
                     0,
                     SetWindowPosFlags.SWP_NOSIZE | SetWindowPosFlags.SWP_NOACTIVATE | SetWindowPosFlags.SWP_NOZORDER);
 
-                if (ShCoreAvailable && Win32Platform.WindowsVersion >= PlatformConstants.Windows8_1)
+                if (GetDpiForMonitorAvailable)
                 {
                     var monitor = MonitorFromWindow(Handle.Handle, MONITOR.MONITOR_DEFAULTTONEAREST);
 
@@ -771,15 +774,29 @@ namespace Avalonia.Win32
                 throw new InvalidOperationException("BeginMoveDrag Failed");
             }
 
+            _dragRequestedFromPointer = e.Pointer.Type != PointerType.Mouse;
+
             Dispatcher.UIThread.Post(() =>
             {
-                // SendMessage's return value is dependent on the message send.  WM_SYSCOMMAND
-                // and WM_LBUTTONUP return value just signify whether the WndProc handled the
-                // message or not, so they are not interesting
-
-                SendMessage(_hwnd, (int)WindowsMessage.WM_SYSCOMMAND, (IntPtr)SC_MOUSEMOVE, IntPtr.Zero);
-                SendMessage(_hwnd, (int)WindowsMessage.WM_LBUTTONUP, IntPtr.Zero, IntPtr.Zero);
+                if (e.Pointer.Type != PointerType.Mouse && GetKeyState(VirtualKeyStates.VK_LBUTTON) >= 0)
+                {
+                    _pendingDrag = StartMoveDrag;
+                }
+                else
+                {
+                    StartMoveDrag();
+                }
             }, DispatcherPriority.Send);
+        }
+
+        private void StartMoveDrag()
+        {
+            // SendMessage's return value is dependent on the message send.  WM_SYSCOMMAND
+            // and WM_LBUTTONUP return value just signify whether the WndProc handled the
+            // message or not, so they are not interesting
+
+            SendMessage(_hwnd, (int)WindowsMessage.WM_SYSCOMMAND, (IntPtr)SC_MOUSEMOVE, IntPtr.Zero);
+            SendMessage(_hwnd, (int)WindowsMessage.WM_LBUTTONUP, IntPtr.Zero, IntPtr.Zero);
         }
 
         public void BeginResizeDrag(WindowEdge edge, PointerPressedEventArgs e)
@@ -790,10 +807,24 @@ namespace Avalonia.Win32
                 _managedDrag.BeginResizeDrag(edge, ScreenToClient(MouseDevice.Position.ToPoint(_scaling)));
 #else
                 e.Pointer.Capture(null);
-                DefWindowProc(_hwnd, (int)WindowsMessage.WM_NCLBUTTONDOWN,
-                    new IntPtr((int)s_edgeLookup[edge]), IntPtr.Zero);
+
+                if (e.Pointer.Type != PointerType.Mouse && GetKeyState(VirtualKeyStates.VK_LBUTTON) >= 0)
+                {
+                    _dragRequestedFromPointer = true;
+                    _pendingDrag = () => StartResizeDrag(edge);
+                }
+                else
+                {
+                    StartResizeDrag(edge);
+                }
 #endif
             }
+        }
+
+        private void StartResizeDrag(WindowEdge edge)
+        {
+            DefWindowProc(_hwnd, (int)WindowsMessage.WM_NCLBUTTONDOWN,
+                new IntPtr((int)s_edgeLookup[edge]), IntPtr.Zero);
         }
 
         public void SetTitle(string? title)
@@ -1019,7 +1050,7 @@ namespace Avalonia.Win32
 
             RegisterTouchWindow(_hwnd, 0);
 
-            if (ShCoreAvailable && Win32Platform.WindowsVersion >= PlatformConstants.Windows8_1)
+            if (GetDpiForMonitorAvailable)
             {
                 var monitor = MonitorFromWindow(
                     _hwnd,

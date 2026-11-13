@@ -136,7 +136,7 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
     public double RenderScaling => _savedScaling;
     public IPlatformRenderSurface[] Surfaces => _surfaces ?? [];
     public Action<RawInputEventArgs>? Input { get; set; }
-    public Action<Rect>? Paint { get; set; }
+    public Action<ITopLevelImpl.PaintOptions?>? Paint { get; set; }
     public Action<Size, WindowResizeReason>? Resized { get; set; }
     public Action<double>? ScalingChanged { get; set; }
     public Action<WindowTransparencyLevel>? TransparencyLevelChanged { get; set; }
@@ -197,7 +197,10 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
         AvnInputModifiers modifiers,
         AvnKey key,
         AvnPhysicalKey physicalKey,
-        string keySymbol)
+        string keySymbol,
+        IAvnString? keyText,
+        IAvnString? alternateKeyText,
+        AvnKeyEventInfo info)
     {
         if (_inputRoot is null)
             return false;
@@ -217,7 +220,21 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
             (Key)key,
             (RawInputModifiers)modifiers,
             (PhysicalKey)physicalKey,
-            keySymbol);
+            keySymbol)
+        {
+            KeyText = keyText?.String,
+            AlternateKeyText = alternateKeyText?.String,
+            ConsumedModifiers = info.HasConsumedModifiers.FromComBool() ?
+                (RawInputModifiers)info.ConsumedModifiers :
+                null,
+            PlatformKeyInfo = info.HasNativeKeyCode.FromComBool() ?
+                new PlatformKeyInfo(KnownPlatformKeyInfoFormats.MacOS)
+                {
+                    ScanCode = (uint)info.NativeKeyCode,
+                    Modifiers = info.NativeModifiers
+                } :
+                null
+        };
 
         Input?.Invoke(args);
 
@@ -426,7 +443,6 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
             }
             finally
             {
-
                 _parent?.Dispose();
                 n?.Dispose();
             }
@@ -434,9 +450,8 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
 
         void IAvnTopLevelEvents.Paint()
         {
-            Dispatcher.UIThread.RunJobs(DispatcherPriority.UiThreadRender);
-            var s = _parent.ClientSize;
-            _parent.Paint?.Invoke(new Rect(0, 0, s.Width, s.Height));
+            // Called from updateLayer, so dispatcher jobs must not run here
+            _parent.Paint?.Invoke(new ITopLevelImpl.PaintOptions { FlushRenderPass = true });
         }
 
         void IAvnTopLevelEvents.Resized(AvnSize* size, AvnPlatformResizeReason reason)
@@ -456,9 +471,11 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
             _parent.RawMouseEvent(type, pointerDeviceType, timeStamp, modifiers, point, delta, pressure, xTilt, yTilt);
         }
 
-        int IAvnTopLevelEvents.RawKeyEvent(AvnRawKeyEventType type, ulong timeStamp, AvnInputModifiers modifiers, AvnKey key, AvnPhysicalKey physicalKey, string keySymbol)
+        int IAvnTopLevelEvents.RawKeyEvent(AvnRawKeyEventType type, ulong timeStamp, AvnInputModifiers modifiers, AvnKey key, AvnPhysicalKey physicalKey, string keySymbol,
+            IAvnString? keyText, IAvnString? alternateKeyText, AvnKeyEventInfo info)
         {
-            return _parent.RawKeyEvent(type, timeStamp, modifiers, key, physicalKey, keySymbol).AsComBool();
+            return _parent.RawKeyEvent(type, timeStamp, modifiers, key, physicalKey, keySymbol,
+                keyText, alternateKeyText, info).AsComBool();
         }
 
         int IAvnTopLevelEvents.RawTextInputEvent(ulong timeStamp, string text)
@@ -470,11 +487,6 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
         {
             _parent._savedScaling = scaling;
             _parent.ScalingChanged?.Invoke(scaling);
-        }
-
-        void IAvnTopLevelEvents.RunRenderPriorityJobs()
-        {
-            Dispatcher.UIThread.RunJobs(DispatcherPriority.UiThreadRender);
         }
 
         void IAvnTopLevelEvents.LostFocus()

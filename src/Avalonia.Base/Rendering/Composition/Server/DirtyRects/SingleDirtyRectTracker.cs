@@ -47,4 +47,18 @@ internal class SingleDirtyRectTracker : IDirtyRectTracker
     }
 
     public LtrbRect CombinedRect => _extendedRect;
+
+    public void CopyRects(List<PixelRect> rects)
+    {
+        rects.Clear();
+        if (!IsEmpty)
+            rects.Add(LtrbPixelRect.FromRectUnscaled(_extendedRect).ToPixelRect());
+    }
+
+    public void CopyUninflatedRects(List<LtrbRect> rects)
+    {
+        rects.Clear();
+        if (!IsEmpty && _rect.HasValue)
+            rects.Add(_rect.Value);
+    }
 }

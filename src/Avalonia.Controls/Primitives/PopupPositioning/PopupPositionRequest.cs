@@ -12,7 +12,7 @@ public class PopupPositionRequest
         Placement = placement;
     }
 
-    internal PopupPositionRequest(Visual target, PlacementMode placement, Point offset, PopupAnchor anchor, PopupGravity gravity, PopupPositionerConstraintAdjustment constraintAdjustment, Rect? anchorRect, CustomPopupPlacementCallback? placementCallback)
+    internal PopupPositionRequest(Visual target, PlacementMode placement, Point offset, PopupAnchor anchor, PopupGravity gravity, PopupPositionerConstraintAdjustment constraintAdjustment, Rect? anchorRect, CustomPopupPlacementCallback? placementCallback, Point? pointerPosition = null)
         : this(target, placement)
     {
         Offset = offset;
@@ -21,6 +21,7 @@ public class PopupPositionRequest
         ConstraintAdjustment = constraintAdjustment;
         AnchorRect = anchorRect;
         PlacementCallback = placementCallback;
+        PointerPosition = pointerPosition;
     }
 
     public Visual Target { get; }
@@ -31,4 +32,5 @@ public class PopupPositionRequest
     public PopupPositionerConstraintAdjustment ConstraintAdjustment {get;}
     public Rect? AnchorRect {get;}
     public CustomPopupPlacementCallback? PlacementCallback {get;}
+    internal Point? PointerPosition { get; }
 }

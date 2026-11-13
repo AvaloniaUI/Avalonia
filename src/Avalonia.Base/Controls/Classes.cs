@@ -106,7 +106,7 @@ namespace Avalonia.Controls
         {
             for (var i = Count - 1; i >= 0; --i)
             {
-                if (!this[i].StartsWith(":"))
+                if (!this[i].StartsWith(':'))
                 {
                     RemoveAt(i);
                 }
@@ -263,7 +263,7 @@ namespace Avalonia.Controls
 
             foreach (var name in this)
             {
-                if (!name.StartsWith(":"))
+                if (!name.StartsWith(':'))
                 {
                     toRemove ??= new List<string>();
 
@@ -322,7 +322,7 @@ namespace Avalonia.Controls
 
         private static void ThrowIfPseudoclass(string name, string operation)
         {
-            if (name.StartsWith(":"))
+            if (name.StartsWith(':'))
             {
                 throw new ArgumentException(
                     $"The pseudoclass '{name}' may only be {operation} by the control itself.");

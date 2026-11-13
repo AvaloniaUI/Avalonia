@@ -9,6 +9,7 @@ using Avalonia.OpenGL.Egl;
 using Avalonia.OpenGL.Surfaces;
 using Avalonia.Platform;
 using Avalonia.Rendering.Composition;
+using Avalonia.Utilities;
 using static Avalonia.LinuxFramebuffer.NativeUnsafeMethods;
 using static Avalonia.LinuxFramebuffer.Output.LibDrm;
 
@@ -114,73 +115,31 @@ namespace Avalonia.LinuxFramebuffer.Output
         [DllImport("libEGL.so.1")]
         static extern IntPtr eglGetProcAddress(string proc);
 
-        private GbmBoUserDataDestroyCallbackDelegate FbDestroyDelegate;
         private drmModeModeInfo _mode;
+        private IntPtr _gbmDevice;
         private EglDisplay _eglDisplay;
-        private EglSurface _eglSurface;
         private EglContext _deferredContext;
-        private IntPtr _currentBo;
-        private IntPtr _gbmTargetSurface;
+        private IRef<GbmEglSwapchain> _renderSwapchain;
+        private GbmEglSwapchain.FrontBuffer? _scanoutBuffer;
+        private GbmEglSwapchain.FrontBuffer? _pendingBuffer;
+        private GCHandle _pendingFlipHandle;
+        private volatile bool _pageFlipCompleted;
         private uint _crtcId;
-        private int _rotationFbo;
-        private int _rotationTexture;
-        private PixelSize _rotatedSize;
-        private int _rotationProgram;
-        private int _rotationVbo;
-        private int _rotationVao;
 
-        void FbDestroyCallback(IntPtr bo, IntPtr userData)
-        {
-            drmModeRmFB(_card.Fd, userData.ToInt32());
-        }
-
-        uint GetFbIdForBo(IntPtr bo)
-        {
-            if (bo == IntPtr.Zero)
-                throw new ArgumentException("bo is 0");
-            var data = gbm_bo_get_user_data(bo);
-            if (data != IntPtr.Zero)
-                return (uint)data.ToInt32();
-
-            var w = gbm_bo_get_width(bo);
-            var h = gbm_bo_get_height(bo);
-            var stride = gbm_bo_get_stride(bo);
-            var handle = gbm_bo_get_handle(bo).u32;
-            var format = gbm_bo_get_format(bo);
-
-            // prepare for the new ioctl call
-            var handles = new uint[] { handle, 0, 0, 0 };
-            var pitches = new uint[] { stride, 0, 0, 0 };
-            var offsets = new uint[4];
-
-            var ret = drmModeAddFB2(_card.Fd, w, h, format, handles, pitches,
-                                    offsets, out var fbHandle, 0);
-
-            if (ret != 0)
+        private static readonly DrmEventPageFlipHandlerDelegate s_pageFlipHandler =
+            (_, _, _, _, userData) =>
             {
-                // legacy fallback
-                ret = drmModeAddFB(_card.Fd, w, h, 24, 32, stride, (uint)handle,
-                                   out fbHandle);
-
-                if (ret != 0)
-                    throw new Win32Exception(ret, $"drmModeAddFb failed {ret}");
-            }
-
-            gbm_bo_set_user_data(bo, new IntPtr((int)fbHandle), FbDestroyDelegate);
-
-
-            return fbHandle;
-        }
+                var output = (DrmOutput)GCHandle.FromIntPtr((IntPtr)userData).Target!;
+                output._pageFlipCompleted = true;
+            };
 
         [MemberNotNull(nameof(_card))]
         [MemberNotNull(nameof(PlatformGraphics))]
-        [MemberNotNull(nameof(FbDestroyDelegate))]
         [MemberNotNull(nameof(_eglDisplay))]
-        [MemberNotNull(nameof(_eglSurface))]
+        [MemberNotNull(nameof(_renderSwapchain))]
         [MemberNotNull(nameof(_deferredContext))]
         void Init(DrmCard card, DrmResources resources, DrmConnector connector, DrmModeInfo modeInfo)
         {
-            FbDestroyDelegate = FbDestroyCallback;
             _card = card;
             uint GetCrtc()
             {
@@ -203,192 +162,159 @@ namespace Avalonia.LinuxFramebuffer.Output
             }
 
             _crtcId = GetCrtc();
-            var device = gbm_create_device(card.Fd);
-            _gbmTargetSurface = gbm_surface_create(device, modeInfo.Resolution.Width, modeInfo.Resolution.Height,
-                GbmColorFormats.GBM_FORMAT_XRGB8888, GbmBoFlags.GBM_BO_USE_SCANOUT | GbmBoFlags.GBM_BO_USE_RENDERING);
-            if (_gbmTargetSurface == IntPtr.Zero)
-                throw new InvalidOperationException("Unable to create GBM surface");
+            _gbmDevice = gbm_create_device(card.Fd);
+            if (_gbmDevice == IntPtr.Zero)
+                throw new Win32Exception(Marshal.GetLastWin32Error(), "Unable to create GBM device");
 
             _eglDisplay = new EglDisplay(
                 new EglDisplayCreationOptions
                 {
                     Egl = new EglInterface(eglGetProcAddress),
                     PlatformType = 0x31D7,
-                    PlatformDisplay = device,
+                    PlatformDisplay = _gbmDevice,
                     SupportsMultipleContexts = true,
                     SupportsContextSharing = true
                 });
 
-            var surface = _eglDisplay.EglInterface.CreateWindowSurface(_eglDisplay.Handle, _eglDisplay.Config, _gbmTargetSurface, new[] { EglConsts.EGL_NONE, EglConsts.EGL_NONE });
-
-            _eglSurface = new EglSurface(_eglDisplay, surface);
-
             _deferredContext = _eglDisplay.CreateContext(null);
             PlatformGraphics = new SharedContextGraphics(_deferredContext);
+            _renderSwapchain = RefCountable.Create(
+                new GbmEglSwapchain(_card, _gbmDevice, _eglDisplay, modeInfo.Resolution));
 
             var initialBufferSwappingColorR = _outputOptions.InitialBufferSwappingColor.R / 255.0f;
             var initialBufferSwappingColorG = _outputOptions.InitialBufferSwappingColor.G / 255.0f;
             var initialBufferSwappingColorB = _outputOptions.InitialBufferSwappingColor.B / 255.0f;
             var initialBufferSwappingColorA = _outputOptions.InitialBufferSwappingColor.A / 255.0f;
-            using (_deferredContext.MakeCurrent(_eglSurface))
+            using (_deferredContext.MakeCurrent(_renderSwapchain.Item.EglSurface))
             {
                 _deferredContext.GlInterface.ClearColor(initialBufferSwappingColorR, initialBufferSwappingColorG,
                     initialBufferSwappingColorB, initialBufferSwappingColorA);
                 _deferredContext.GlInterface.Clear(GlConsts.GL_COLOR_BUFFER_BIT | GlConsts.GL_STENCIL_BUFFER_BIT);
-                _eglSurface.SwapBuffers();
+                _renderSwapchain.Item.EglSurface.SwapBuffers();
             }
 
-            var bo = gbm_surface_lock_front_buffer(_gbmTargetSurface);
-            var fbId = GetFbIdForBo(bo);
+            var buffer = GbmEglSwapchain.LockFrontBuffer(_renderSwapchain);
             var connectorId = connector.Id;
             var mode = modeInfo.Mode;
-
-
-            var res = drmModeSetCrtc(_card.Fd, _crtcId, fbId, 0, 0, &connectorId, 1, &mode);
-            if (res != 0)
-                throw new Win32Exception(res, "drmModeSetCrtc failed");
-
+            try
+            {
+                var result = drmModeSetCrtc(_card.Fd, _crtcId, buffer.FramebufferId,
+                    0, 0, &connectorId, 1, &mode);
+                if (result != 0)
+                    throw new Win32Exception(Marshal.GetLastWin32Error(), "drmModeSetCrtc failed");
+                _scanoutBuffer = buffer;
+            }
+            catch
+            {
+                buffer.Dispose();
+                throw;
+            }
             _mode = mode;
-            _currentBo = bo;
-            
-            // Initialize FBO for rotation if needed
-            var needsRotation = _outputOptions.Orientation != SurfaceOrientation.Rotation0;
-            if (needsRotation)
-            {
-                // For 90/270 rotation, swap width and height
-                _rotatedSize = (_outputOptions.Orientation == SurfaceOrientation.Rotation90 || 
-                               _outputOptions.Orientation == SurfaceOrientation.Rotation270)
-                    ? new PixelSize(modeInfo.Resolution.Height, modeInfo.Resolution.Width)
-                    : modeInfo.Resolution;
-                    
-                using (_deferredContext.MakeCurrent(_eglSurface))
-                {
-                    var gl = _deferredContext.GlInterface;
-                    _rotationFbo = gl.GenFramebuffer();
-                    _rotationTexture = gl.GenTexture();
-                    
-                    gl.BindTexture(GlConsts.GL_TEXTURE_2D, _rotationTexture);
-                    gl.TexImage2D(GlConsts.GL_TEXTURE_2D, 0, GlConsts.GL_RGBA, _rotatedSize.Width, _rotatedSize.Height, 0,
-                        GlConsts.GL_RGBA, GlConsts.GL_UNSIGNED_BYTE, IntPtr.Zero);
-                    gl.TexParameteri(GlConsts.GL_TEXTURE_2D, GlConsts.GL_TEXTURE_MIN_FILTER, GlConsts.GL_LINEAR);
-                    gl.TexParameteri(GlConsts.GL_TEXTURE_2D, GlConsts.GL_TEXTURE_MAG_FILTER, GlConsts.GL_LINEAR);
-                    
-                    gl.BindFramebuffer(GlConsts.GL_FRAMEBUFFER, _rotationFbo);
-                    gl.FramebufferTexture2D(GlConsts.GL_FRAMEBUFFER, GlConsts.GL_COLOR_ATTACHMENT0,
-                        GlConsts.GL_TEXTURE_2D, _rotationTexture, 0);
-                    gl.BindFramebuffer(GlConsts.GL_FRAMEBUFFER, 0);
-                    
-                    // Create shader program for textured quad
-                    const string vertexShader = @"
-                        attribute vec2 aPos;
-                        attribute vec2 aTexCoord;
-                        varying vec2 vTexCoord;
-                        void main() {
-                            gl_Position = vec4(aPos, 0.0, 1.0);
-                            vTexCoord = aTexCoord;
-                        }";
-                    
-                    const string fragmentShader = @"
-                        precision mediump float;
-                        varying vec2 vTexCoord;
-                        uniform sampler2D uTexture;
-                        void main() {
-                            gl_FragColor = texture2D(uTexture, vTexCoord);
-                        }";
-                    
-                    var vs = gl.CreateShader(GlConsts.GL_VERTEX_SHADER);
-                    gl.ShaderSourceString(vs, vertexShader);
-                    gl.CompileShader(vs);
-                    
-                    var fs = gl.CreateShader(GlConsts.GL_FRAGMENT_SHADER);
-                    gl.ShaderSourceString(fs, fragmentShader);
-                    gl.CompileShader(fs);
-                    
-                    _rotationProgram = gl.CreateProgram();
-                    gl.AttachShader(_rotationProgram, vs);
-                    gl.AttachShader(_rotationProgram, fs);
-                    gl.LinkProgram(_rotationProgram);
-                    gl.DeleteShader(vs);
-                    gl.DeleteShader(fs);
-                    
-                    // Create VBO with quad vertices - texture coords depend on rotation
-                    // Format: x, y, u, v
-                    float[] vertices = _outputOptions.Orientation switch
-                    {
-                        SurfaceOrientation.Rotation90 => new float[] {
-                            // 90° clockwise rotation
-                            -1.0f, -1.0f,        1.0f, 0.0f,  // Bottom-left -> Bottom-right of texture
-                             1.0f, -1.0f,        1.0f, 1.0f,  // Bottom-right -> Top-right of texture
-                             1.0f,  1.0f,        0.0f, 1.0f,  // Top-right -> Top-left of texture
-                            -1.0f,  1.0f,        0.0f, 0.0f   // Top-left -> Bottom-left of texture
-                        },
-                        SurfaceOrientation.Rotation180 => new float[] {
-                            // 180° rotation
-                            -1.0f, -1.0f,        1.0f, 1.0f,  // Bottom-left -> Top-right of texture
-                             1.0f, -1.0f,        0.0f, 1.0f,  // Bottom-right -> Top-left of texture
-                             1.0f,  1.0f,        0.0f, 0.0f,  // Top-right -> Bottom-left of texture
-                            -1.0f,  1.0f,        1.0f, 0.0f   // Top-left -> Bottom-right of texture
-                        },
-                        SurfaceOrientation.Rotation270 => new float[] {
-                            // 270° clockwise (90° counter-clockwise) rotation
-                            -1.0f, -1.0f,        0.0f, 1.0f,  // Bottom-left -> Top-left of texture
-                             1.0f, -1.0f,        0.0f, 0.0f,  // Bottom-right -> Bottom-left of texture
-                             1.0f,  1.0f,        1.0f, 0.0f,  // Top-right -> Bottom-right of texture
-                            -1.0f,  1.0f,        1.0f, 1.0f   // Top-left -> Top-right of texture
-                        },
-                        _ => new float[] {
-                            // No rotation (shouldn't reach here but fallback)
-                            -1.0f, -1.0f,        0.0f, 0.0f,
-                             1.0f, -1.0f,        1.0f, 0.0f,
-                             1.0f,  1.0f,        1.0f, 1.0f,
-                            -1.0f,  1.0f,        0.0f, 1.0f
-                        }
-                    };
-
-                    _rotationVbo = gl.GenBuffer();
-                    _rotationVao = gl.GenVertexArray();
-                    
-                    gl.BindVertexArray(_rotationVao);
-                    gl.BindBuffer(GlConsts.GL_ARRAY_BUFFER, _rotationVbo);
-                    
-                    fixed (float* ptr = vertices)
-                    {
-                        gl.BufferData(GlConsts.GL_ARRAY_BUFFER, new IntPtr(vertices.Length * sizeof(float)), 
-                            new IntPtr(ptr), GlConsts.GL_STATIC_DRAW);
-                    }
-                    
-                    var posAttrib = gl.GetAttribLocationString(_rotationProgram, "aPos");
-                    gl.EnableVertexAttribArray(posAttrib);
-                    gl.VertexAttribPointer(posAttrib, 2, GlConsts.GL_FLOAT, 0, 4 * sizeof(float), IntPtr.Zero);
-                    
-                    var texAttrib = gl.GetAttribLocationString(_rotationProgram, "aTexCoord");
-                    gl.EnableVertexAttribArray(texAttrib);
-                    gl.VertexAttribPointer(texAttrib, 2, GlConsts.GL_FLOAT, 0, 4 * sizeof(float), new IntPtr(2 * sizeof(float)));
-                    
-                    gl.BindVertexArray(0);
-                }
-            }
-            else
-            {
-                // No rotation needed
-                _rotatedSize = modeInfo.Resolution;
-            }
 
             if (_outputOptions.EnableInitialBufferSwapping)
             {
                 //Go through two cycles of buffer swapping (there are render artifacts otherwise)
+                using var renderTarget = CreateGlRenderTarget();
                 for (var c = 0; c < 2; c++)
-                    using (CreateGlRenderTarget().BeginDraw(new IRenderTarget.RenderTargetSceneInfo(PixelSize, 1, CompositionTransparencyLevel.None)))
+                    using (var session = renderTarget.BeginDraw(new IRenderTarget.RenderTargetSceneInfo(PixelSize, 1, CompositionTransparencyLevel.None)))
                     {
                         _deferredContext.GlInterface.ClearColor(initialBufferSwappingColorR, initialBufferSwappingColorG,
                             initialBufferSwappingColorB, initialBufferSwappingColorA);
                         _deferredContext.GlInterface.Clear(GlConsts.GL_COLOR_BUFFER_BIT | GlConsts.GL_STENCIL_BUFFER_BIT);
+                        (session as IGlPlatformSurfaceRenderingSessionWithPartialPresentation)?.PartialPresentation?.Succeeded();
                     }
             }
 
         }
 
-        public IGlPlatformSurfaceRenderTarget CreateGlRenderTarget() => new RenderTarget(this);
+        private void PageFlip(IRef<GbmEglSwapchain> swapchain)
+        {
+            var next = GbmEglSwapchain.LockFrontBuffer(swapchain);
+            var handle = default(GCHandle);
+            var submitted = false;
+            try
+            {
+                // Wait for the previous flip after acquiring the newly rendered frame.
+                WaitForPageFlip();
+                _pageFlipCompleted = false;
+                handle = GCHandle.Alloc(this);
+                if (drmModePageFlip(_card.Fd, _crtcId, next.FramebufferId,
+                        DrmModePageFlip.Event, (void*)GCHandle.ToIntPtr(handle)) != 0)
+                    throw new Win32Exception(Marshal.GetLastWin32Error(), "drmModePageFlip failed");
+
+                _pendingBuffer = next;
+                _pendingFlipHandle = handle;
+                submitted = true;
+            }
+            finally
+            {
+                if (!submitted)
+                {
+                    if (handle.IsAllocated)
+                        handle.Free();
+                    next.Dispose();
+                }
+            }
+            // Render ahead while the queued flip waits for vblank, unless the pool is exhausted.
+            if (!swapchain.Item.HasFreeBuffers)
+                WaitForPageFlip();
+        }
+
+        private void WaitForPageFlip()
+        {
+            if (_pendingBuffer == null)
+                return;
+
+            var context = new DrmEventContext
+            {
+                version = 4,
+                page_flip_handler = Marshal.GetFunctionPointerForDelegate(s_pageFlipHandler)
+            };
+            // Keep both leases pinned if waiting fails: KMS may have accepted the new buffer.
+            while (!_pageFlipCompleted)
+            {
+                var pfd = new PollFd { events = 1, fd = _card.Fd };
+                if (poll(&pfd, new IntPtr(1), -1) < 0)
+                {
+                    var error = Marshal.GetLastWin32Error();
+                    if (error == 4) // EINTR
+                        continue;
+                    throw new Win32Exception(error, "Waiting for DRM page flip failed");
+                }
+                if ((pfd.revents & (8 | 16 | 32)) != 0) // POLLERR | POLLHUP | POLLNVAL
+                    throw new InvalidOperationException("DRM page flip event source is unavailable");
+                if (drmHandleEvent(_card.Fd, &context) != 0)
+                {
+                    var error = Marshal.GetLastWin32Error();
+                    if (error == 4) // EINTR
+                        continue;
+                    throw new Win32Exception(error, "Reading DRM page flip event failed");
+                }
+            }
+
+            var previous = _scanoutBuffer;
+            _scanoutBuffer = _pendingBuffer;
+            _pendingBuffer = null;
+            _pendingFlipHandle.Free();
+            // Release through the buffer's original surface, after KMS has stopped scanning it.
+            previous?.Dispose();
+        }
+
+        private bool UsePartialPresentation => _outputOptions.UsePartialPresentation == true;
+
+        public IGlPlatformSurfaceRenderTarget CreateGlRenderTarget()
+        {
+            if (_renderSwapchain.Item.IsCorrupted)
+            {
+                var replacement = RefCountable.Create(
+                    new GbmEglSwapchain(_card, _gbmDevice, _eglDisplay, _mode.Resolution));
+                var previous = _renderSwapchain;
+                _renderSwapchain = replacement;
+                // The old scanout lease keeps its surfaces alive until a replacement flip completes.
+                previous.Dispose();
+            }
+            return new RenderTarget(this, _renderSwapchain.Clone());
+        }
 
 
         public IGlPlatformSurfaceRenderTarget CreateGlRenderTarget(IGlContext context)
@@ -399,138 +325,65 @@ namespace Avalonia.LinuxFramebuffer.Output
             return CreateGlRenderTarget();
         }
 
-        class RenderTarget : IGlPlatformSurfaceRenderTarget
+        private sealed class RenderTarget : EglPlatformSurfaceRenderTargetBase
         {
             private readonly DrmOutput _parent;
+            private readonly IRef<GbmEglSwapchain> _swapchain;
+            private readonly Action _pageFlip;
+            private bool _disposed;
 
-            public RenderTarget(DrmOutput parent)
+            public RenderTarget(DrmOutput parent, IRef<GbmEglSwapchain> swapchain) : base(parent._deferredContext)
             {
                 _parent = parent;
+                _swapchain = swapchain;
+                _pageFlip = () => parent.PageFlip(_swapchain);
             }
 
-            public PlatformRenderTargetState State => PlatformRenderTargetState.Ready;
-
-            public void Dispose()
+            protected override RenderTargetProperties Properties => base.Properties with
             {
-                // We are wrapping GBM buffer chain associated with CRTC, and don't free it on a whim
+                RequiredRotationForOrientation = _parent.Orientation
+            };
+
+            protected override bool UsePartialPresentation => _parent.UsePartialPresentation;
+            protected override bool SkipWaits => true;
+            public override bool IsCorrupted => _disposed || base.IsCorrupted || _swapchain.Item.IsCorrupted;
+
+            public override void Dispose()
+            {
+                if (_disposed)
+                    return;
+                _disposed = true;
+                try
+                {
+                    if (base.IsCorrupted)
+                        _swapchain.Item.IsCorrupted = true;
+                    base.Dispose();
+                }
+                finally
+                {
+                    _swapchain.Dispose();
+                }
             }
 
-            class RenderSession : IGlPlatformSurfaceRenderingSession
+            public override IGlPlatformSurfaceRenderingSession BeginDrawCore(IRenderTarget.RenderTargetSceneInfo sceneInfo)
             {
-                private readonly DrmOutput _parent;
-                private readonly IDisposable _clearContext;
-
-                public RenderSession(DrmOutput parent, IDisposable clearContext)
+                var swapchain = _swapchain.Item;
+                // Retire completed flips without blocking; wait only if EGL needs a buffer released.
+                if (_parent._pendingBuffer != null &&
+                    (_parent._pageFlipCompleted || !swapchain.HasFreeBuffers))
+                    _parent.WaitForPageFlip();
+                var size = swapchain.Size;
+                var session = base.BeginDraw(swapchain.EglSurface, size, _parent.Scaling, onFinish: _pageFlip);
+                try
                 {
-                    _parent = parent;
-                    _clearContext = clearContext;
+                    Context.GlInterface.Viewport(0, 0, size.Width, size.Height);
+                    return session;
                 }
-
-                public void Dispose()
+                catch
                 {
-                    var gl = _parent._deferredContext.GlInterface;
-                    
-                    if (_parent._outputOptions.Orientation != SurfaceOrientation.Rotation0)
-                    {
-                        // Rotation enabled - blit from FBO to screen
-                        // Unbind FBO to render to default framebuffer
-                        gl.BindFramebuffer(GlConsts.GL_FRAMEBUFFER, 0);
-                        gl.Viewport(0, 0, _parent._mode.Resolution.Width, _parent._mode.Resolution.Height);
-                        
-                        // Clear the screen
-                        gl.ClearColor(0, 0, 0, 1);
-                        gl.Clear(GlConsts.GL_COLOR_BUFFER_BIT);
-                        
-                        // Use the shader program
-                        gl.UseProgram(_parent._rotationProgram);
-                        
-                        // Bind the FBO texture
-                        gl.ActiveTexture(GlConsts.GL_TEXTURE0);
-                        gl.BindTexture(GlConsts.GL_TEXTURE_2D, _parent._rotationTexture);
-                        
-                        // Set texture uniform (texture unit 0)
-                        var texLoc = gl.GetUniformLocationString(_parent._rotationProgram, "uTexture");
-                        gl.Uniform1i(texLoc, 0);
-                        
-                        // Draw the rotated quad
-                        gl.BindVertexArray(_parent._rotationVao);
-                        gl.DrawArrays(GlConsts.GL_TRIANGLE_FAN, 0, 4);
-                        gl.BindVertexArray(0);
-                        
-                        gl.UseProgram(0);
-                    }
-                    
-                    gl.Flush();
-                    _parent._eglSurface.SwapBuffers();
-
-                    var nextBo = gbm_surface_lock_front_buffer(_parent._gbmTargetSurface);
-                    if (nextBo == IntPtr.Zero)
-                    {
-                        // Not sure what else can be done
-                        Console.WriteLine("gbm_surface_lock_front_buffer failed");
-                    }
-                    else
-                    {
-
-                        var fb = _parent.GetFbIdForBo(nextBo);
-                        bool waitingForFlip = true;
-
-                        drmModePageFlip(_parent._card.Fd, _parent._crtcId, fb, DrmModePageFlip.Event, null);
-
-                        DrmEventPageFlipHandlerDelegate flipCb =
-                            (int fd, uint sequence, uint tv_sec, uint tv_usec, void* user_data) =>
-                            {
-                                waitingForFlip = false;
-                            };
-                        var cbHandle = GCHandle.Alloc(flipCb);
-                        var ctx = new DrmEventContext
-                        {
-                            version = 4,
-                            page_flip_handler = Marshal.GetFunctionPointerForDelegate(flipCb)
-                        };
-                        while (waitingForFlip)
-                        {
-                            var pfd = new PollFd {events = 1, fd = _parent._card.Fd};
-                            poll(&pfd, new IntPtr(1), -1);
-                            drmHandleEvent(_parent._card.Fd, &ctx);
-                        }
-
-                        cbHandle.Free();
-                        gbm_surface_release_buffer(_parent._gbmTargetSurface, _parent._currentBo);
-                        _parent._currentBo = nextBo;
-                    }
-                    _clearContext.Dispose();
+                    session.Dispose();
+                    throw;
                 }
-
-
-                public IGlContext Context => _parent._deferredContext;
-
-                public PixelSize Size => _parent._rotatedSize;
-
-                public double Scaling => _parent.Scaling;
-
-                public bool IsYFlipped => false;
-            }
-
-            public IGlPlatformSurfaceRenderingSession BeginDraw(IRenderTarget.RenderTargetSceneInfo sceneInfo)
-            {
-                var clearContext = _parent._deferredContext.MakeCurrent(_parent._eglSurface);
-                var gl = _parent._deferredContext.GlInterface;
-                
-                if (_parent._outputOptions.Orientation != SurfaceOrientation.Rotation0)
-                {
-                    // Bind FBO for rendering when rotation is enabled
-                    gl.BindFramebuffer(GlConsts.GL_FRAMEBUFFER, _parent._rotationFbo);
-                    gl.Viewport(0, 0, _parent._rotatedSize.Width, _parent._rotatedSize.Height);
-                }
-                else
-                {
-                    // Render directly to screen when no rotation
-                    gl.BindFramebuffer(GlConsts.GL_FRAMEBUFFER, 0);
-                    gl.Viewport(0, 0, _parent._mode.Resolution.Width, _parent._mode.Resolution.Height);
-                }
-                
-                return new RenderSession(_parent, clearContext);
             }
         }
 

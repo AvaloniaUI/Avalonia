@@ -21,4 +21,18 @@
   <ItemGroup>
     <Folder Include="Properties\" />
   </ItemGroup>
+  <!--
+    Embed the variable-font test fonts the Variation benchmarks need. We
+    explicitly Link them under Assets\ so the embedded-resource manifest name
+    is "Avalonia.Benchmarks.Assets.<file>", matching the resm URI the
+    benchmarks load through.
+  -->
+  <ItemGroup>
+    <EmbeddedResource Include="..\Avalonia.RenderTests\Assets\Inter-Regular.ttf">
+      <Link>Assets\Inter-Regular.ttf</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\Avalonia.RenderTests\Assets\InterVariable.ttf">
+      <Link>Assets\InterVariable.ttf</Link>
+    </EmbeddedResource>
+  </ItemGroup>
 </Project>

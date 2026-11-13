@@ -3,10 +3,11 @@ using System.Reactive.Subjects;
 using Avalonia.Controls;
 using Avalonia.Data;
 using Xunit;
+using Avalonia.UnitTests;
 
 namespace Avalonia.Base.UnitTests
 {
-    public class AvaloniaObjectTests_Validation
+    public class AvaloniaObjectTests_Validation : ScopedTestBase
     {
         [Fact]
         public void Registration_Throws_If_DefaultValue_Fails_Validation()

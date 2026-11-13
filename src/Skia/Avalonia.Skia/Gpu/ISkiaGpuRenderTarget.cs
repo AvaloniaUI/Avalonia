@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Metadata;
 using Avalonia.Platform;
 
 namespace Avalonia.Skia
@@ -8,6 +9,9 @@ namespace Avalonia.Skia
     /// </summary>
     public interface ISkiaGpuRenderTarget : IDisposable
     {
+        [PrivateApi]
+        RenderTargetProperties Properties => default;
+
         /// <summary>
         /// Start rendering to this render target.
         /// </summary>
