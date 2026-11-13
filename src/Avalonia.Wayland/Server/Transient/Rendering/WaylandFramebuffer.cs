@@ -17,7 +17,10 @@ class WaylandFramebuffer(IWaylandFramebufferSurface surface) : IFramebufferPlatf
         private readonly WaylandFramebuffer _p;
         // Buffers are reused once the compositor releases them.
         private readonly List<ShmBuffer> _buffers = new();
+        private readonly List<PixelRect> _frameDirtyRects = new();
         private PixelSize _size;
+        private PixelSize _presentedSize;
+        private bool _damageAll = true;
         private bool _disposed;
 
         public RenderTarget(WaylandFramebuffer p)
@@ -47,14 +50,26 @@ class WaylandFramebuffer(IWaylandFramebufferSurface surface) : IFramebufferPlatf
 
             var buffer = AcquireBuffer(size);
             var wlBuffer = buffer.WlBuffer!;
+            var session = SupportsPartialPresentation ? new PartialPresentationSession(this, buffer.Contents) : null;
 
-            properties = default;
+            properties = new FramebufferLockProperties { PartialPresentation = session };
             return new LockedFramebuffer(buffer.Address, size, buffer.Stride,
                 new Vector(96 * sceneInfo.Scaling, 96 * sceneInfo.Scaling),
                 PixelFormats.Bgra8888, AlphaFormat.Premul, () =>
                 {
-                    if (!State.IsReady)
+                    if (session is { IsSucceeded: false })
+                    {
+                        buffer.InvalidateContents();
+                        _damageAll = true;
                         return;
+                    }
+
+                    if (!State.IsReady)
+                    {
+                        // The compositor still shows an older frame.
+                        _damageAll = true;
+                        return;
+                    }
 
                     // Stage per-frame state (frame callback +
                     // ack_configure + geometry + viewport/scale +
@@ -64,8 +79,19 @@ class WaylandFramebuffer(IWaylandFramebufferSurface surface) : IFramebufferPlatf
                     // commit itself.
                     _p._surface.OnBeforeNewBufferAttached(sceneInfo);
                     _p._surface.WlSurface!.Attach(wlBuffer, 0, 0);
-                    // TODO: Support "damage" regions
-                    _p._surface.WlSurface.DamageBuffer(0, 0, size.Width, size.Height);
+                    if (session is { HasDirtyRects: true } && !_damageAll && _presentedSize == size)
+                    {
+                        foreach (var rect in _frameDirtyRects)
+                        {
+                            var damage = rect.Intersect(new PixelRect(size));
+                            if (damage.Width > 0 && damage.Height > 0)
+                                _p._surface.WlSurface.DamageBuffer(damage.X, damage.Y, damage.Width, damage.Height);
+                        }
+                    }
+                    else
+                        _p._surface.WlSurface.DamageBuffer(0, 0, size.Width, size.Height);
+                    _damageAll = false;
+                    _presentedSize = size;
                     buffer.Busy = true;
                     _p._surface.WlSurface.Commit();
                 });
@@ -106,6 +132,13 @@ class WaylandFramebuffer(IWaylandFramebufferSurface surface) : IFramebufferPlatf
             return created;
         }
 
+        public void SetFrameDirtyRects(ReadOnlySpan<PixelRect> rects)
+        {
+            _frameDirtyRects.Clear();
+            foreach (var rect in rects)
+                _frameDirtyRects.Add(rect);
+        }
+
         private void OnBufferReleased(ShmBuffer buffer)
         {
             buffer.Busy = false;
@@ -117,8 +150,35 @@ class WaylandFramebuffer(IWaylandFramebufferSurface surface) : IFramebufferPlatf
 
         public bool RetainsFrameContents => false;
 
+        public bool SupportsPartialPresentation => _p._surface.Globals?.UsePartialPresentation == true;
+
         public PlatformRenderTargetState State =>
             _disposed ? PlatformRenderTargetState.Disposed : _p._surface.State;
+    }
+
+    sealed class PartialPresentationSession(RenderTarget target, IPartialPresentationBuffer buffer)
+        : IPartialPresentationFeature
+    {
+        public IPartialPresentationBuffer Buffer => buffer;
+        public bool HasDirtyRects { get; private set; }
+        public bool IsSucceeded { get; private set; }
+
+        public void SetDirtyRects(ReadOnlySpan<PixelRect> frameDirtyRects, ReadOnlySpan<PixelRect> bufferDirtyRects)
+        {
+            if (HasDirtyRects)
+                throw new InvalidOperationException("Dirty rectangles can only be declared once per frame.");
+            HasDirtyRects = true;
+            target.SetFrameDirtyRects(frameDirtyRects);
+        }
+
+        public void Succeeded() => IsSucceeded = true;
+    }
+
+    // Identifies the contents of a buffer; replaced when the contents become unknown.
+    sealed class BufferContents : IPartialPresentationBuffer
+    {
+        public bool IsValid { get; set; } = true;
+        public bool Equals(IPartialPresentationBuffer? other) => ReferenceEquals(this, other);
     }
 
     class ShmBuffer : IDisposable
@@ -138,6 +198,13 @@ class WaylandFramebuffer(IWaylandFramebufferSurface surface) : IFramebufferPlatf
         public int Stride { get; }
         public WlBuffer? WlBuffer { get; private set; }
         public bool Busy { get; set; }
+        public BufferContents Contents { get; private set; } = new();
+
+        public void InvalidateContents()
+        {
+            Contents.IsValid = false;
+            Contents = new BufferContents();
+        }
 
         public static ShmBuffer Create(WlShm shm, PixelSize size, Action<ShmBuffer> onReleased)
         {
@@ -191,6 +258,7 @@ class WaylandFramebuffer(IWaylandFramebufferSurface surface) : IFramebufferPlatf
 
         public void Dispose()
         {
+            Contents.IsValid = false;
             if (WlBuffer != null)
             {
                 WlBuffer.Destroy();
