@@ -30,7 +30,7 @@ namespace Avalonia.Media.TextFormatting
 
         public ListPool<UnshapedTextRun> UnshapedTextRunLists { get; } = new();
 
-        public ListPool<TextLine> TextLines { get; } = new();
+        public ListPool<TextLineImpl> TextLines { get; } = new();
 
         [Conditional("DEBUG")]
         public void VerifyAllReturned()

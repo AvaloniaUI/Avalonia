@@ -16,10 +16,10 @@ namespace Avalonia.Media.TextFormatting
     /// Ref-counted: the initial constructor call establishes one reference. Call
     /// <see cref="AddRef"/> when taking an additional reference (e.g., when a
     /// <see cref="TextRunCache"/> stores a shaped run a formatter is also about to use),
-    /// and <see cref="Dispose"/> to release. The underlying shaped buffer is disposed only
+    /// and <see cref="Dispose()"/> to release. The underlying shaped buffer is disposed only
     /// when the last reference is released.
     /// </remarks>
-    public sealed class ShapedTextRun : DrawableTextRun, IDisposable
+    public class ShapedTextRun : DrawableTextRun, IDisposable
     {
         private GlyphRun? _glyphRun;
         private int _refCount = 1;
@@ -31,31 +31,41 @@ namespace Avalonia.Media.TextFormatting
             TextMetrics = new TextMetrics(properties.CachedGlyphTypeface, properties.FontRenderingEmSize);
         }
 
+        public ShapedTextRun(ShapedTextRun baseRun, TextRenderOverrides renderOverrides)
+        {
+            ShapedBuffer = baseRun.ShapedBuffer;
+            Properties = baseRun.Properties;
+            TextMetrics = baseRun.TextMetrics;
+            RenderOverrides = baseRun.RenderOverrides | renderOverrides;
+        }
+
+        public TextRenderOverrides? RenderOverrides { get; set; }
+
         public sbyte BidiLevel => ShapedBuffer.BidiLevel;
 
         public ShapedBuffer ShapedBuffer { get; }
 
         /// <inheritdoc/>
-        public override ReadOnlyMemory<char> Text
+        public sealed override ReadOnlyMemory<char> Text
             => ShapedBuffer.Text;
 
         /// <inheritdoc/>
         public override TextRunProperties Properties { get; }
 
         /// <inheritdoc/>
-        public override int Length
+        public sealed override int Length
             => ShapedBuffer.Text.Length;
 
         public TextMetrics TextMetrics { get; }
 
         public override double Baseline => -TextMetrics.Ascent + TextMetrics.LineGap * 0.5;
 
-        public override Size Size => GlyphRun.Bounds.Size;
+        public sealed override Size Size => GlyphRun.Bounds.Size;
 
         public GlyphRun GlyphRun => _glyphRun ??= CreateGlyphRun();
 
         /// <summary>
-        /// Takes an additional reference to this run. Must be paired with <see cref="Dispose"/>.
+        /// Takes an additional reference to this run. Must be paired with <see cref="Dispose()"/>.
         /// </summary>
         internal ShapedTextRun AddRef()
         {
@@ -78,26 +88,29 @@ namespace Avalonia.Media.TextFormatting
                     return;
                 }
 
-                if (Properties.ForegroundBrush == null)
+                var foregroundBrush = RenderOverrides?.Run?.Foreground ?? Properties.ForegroundBrush;
+                if (foregroundBrush == null)
                 {
                     return;
                 }
 
-                if (Properties.BackgroundBrush != null)
+                var backgroundBrush = RenderOverrides?.Run?.Background ?? Properties.BackgroundBrush;
+                if (backgroundBrush != null)
                 {
-                    drawingContext.DrawRectangle(Properties.BackgroundBrush, null, GlyphRun.Bounds);
+                    drawingContext.DrawRectangle(backgroundBrush, null, GlyphRun.Bounds);
                 }
 
-                drawingContext.DrawGlyphRun(Properties.ForegroundBrush, GlyphRun);
+                drawingContext.DrawGlyphRun(foregroundBrush, GlyphRun);
 
-                if (Properties.TextDecorations == null)
+                var textDecorations = RenderOverrides?.Run?.TextDecorations ?? Properties.TextDecorations;
+                if (textDecorations == null)
                 {
                     return;
                 }
 
-                foreach (var textDecoration in Properties.TextDecorations)
+                foreach (var textDecoration in textDecorations)
                 {
-                    textDecoration.Draw(drawingContext, GlyphRun, TextMetrics, Properties.ForegroundBrush);
+                    textDecoration.Draw(drawingContext, GlyphRun, TextMetrics, foregroundBrush);
                 }
             }
         }
@@ -143,7 +156,7 @@ namespace Avalonia.Media.TextFormatting
             var splitBuffer = ShapedBuffer.Split(length);
 
             // first cannot be null as length > 0
-            var first = new ShapedTextRun(splitBuffer.First!, Properties);
+            var first = new ShapedTextRun(splitBuffer.First!, Properties) { RenderOverrides = RenderOverrides };
 
             if (first.Length < length)
             {
@@ -155,7 +168,7 @@ namespace Avalonia.Media.TextFormatting
                 return new SplitResult<ShapedTextRun>(first, null);
             }
 
-            var second = new ShapedTextRun(splitBuffer.Second, Properties);
+            var second = new ShapedTextRun(splitBuffer.Second, Properties) { RenderOverrides = RenderOverrides };
 
             return new SplitResult<ShapedTextRun>(first, second);
         }
@@ -172,11 +185,19 @@ namespace Avalonia.Media.TextFormatting
 
         public void Dispose()
         {
-            if (Interlocked.Decrement(ref _refCount) != 0)
+            GC.SuppressFinalize(this);
+            if (Interlocked.Decrement(ref _refCount) == 0)
             {
-                return;
+                Dispose(true);
             }
+        }
 
+        /// <summary>
+        /// This method is executed only when a call to <see cref="Dispose()"/> drops the reference
+        /// count to zero.
+        /// </summary>
+        protected virtual void Dispose(bool disposing)
+        {
             _glyphRun?.Dispose();
             ShapedBuffer.Dispose();
         }

@@ -1,6 +1,5 @@
 ﻿// ReSharper disable ForCanBeConvertedToForeach
 using System;
-using System.Collections.Generic;
 using Avalonia.Utilities;
 using static Avalonia.Media.TextFormatting.FormattingObjectPool;
 
@@ -77,6 +76,7 @@ namespace Avalonia.Media.TextFormatting
                 var totalBudget = Width - shapedSymbol.Size.Width;
                 var availableWidth = totalBudget;
                 var charsBeforeCurrentRun = 0;
+                int collapseSymbolIndex = -1;
 
                 for (var runIndex = 0; runIndex < logicalRuns.Count; runIndex++)
                 {
@@ -97,90 +97,97 @@ namespace Avalonia.Media.TextFormatting
 
                                     var totalFitChars = charsBeforeCurrentRun + measuredLength;
 
-                                    if (totalFitChars > 0)
+                                    if (totalFitChars == 0)
                                     {
-                                        var collapsedRuns = objectPool.TextRunLists.Rent();
+                                        return [new CollapseSymbolRun(logicalRuns, shapedSymbol)];
+                                    }
 
-                                        RentedList<TextRun>? rentedPreSplitRuns = null;
-                                        RentedList<TextRun>? rentedPostSplitRuns = null;
-                                        RentedList<TextRun>? reversedSuffix = null;
+                                    var collapsedRuns = objectPool.TextRunLists.Rent();
 
-                                        try
+                                    RentedList<TextRun>? rentedPreSplitRuns = null;
+                                    RentedList<TextRun>? rentedPostSplitRuns = null;
+                                    RentedList<TextRun>? reversedSuffix = null;
+                                    RentedList<TextRun>? removedRuns = null;
+
+                                    try
+                                    {
+                                        RentedList<TextRun>? effectivePostSplitRuns;
+
+                                        // Split at GLOBAL character index totalFitChars-capped-by-prefixLength.
+                                        // (Previously this used `Math.Min(_prefixLength, measuredLength)`
+                                        //  treating per-run `measuredLength` as a global offset, which
+                                        //  produced a prefix from the wrong characters on multi-run lines.)
+                                        var prefixCutoff = Math.Min(_prefixLength, totalFitChars);
+
+                                        if (prefixCutoff > 0)
                                         {
-                                            IReadOnlyList<TextRun>? effectivePostSplitRuns;
+                                            (rentedPreSplitRuns, rentedPostSplitRuns) = TextFormatterImpl.SplitTextRuns(
+                                                logicalRuns, prefixCutoff, objectPool);
 
-                                            // Split at GLOBAL character index totalFitChars-capped-by-prefixLength.
-                                            // (Previously this used `Math.Min(_prefixLength, measuredLength)`
-                                            //  treating per-run `measuredLength` as a global offset, which
-                                            //  produced a prefix from the wrong characters on multi-run lines.)
-                                            var prefixCutoff = Math.Min(_prefixLength, totalFitChars);
-
-                                            if (prefixCutoff > 0)
-                                            {
-                                                (rentedPreSplitRuns, rentedPostSplitRuns) = TextFormatterImpl.SplitTextRuns(
-                                                    logicalRuns, prefixCutoff, objectPool);
-
-                                                effectivePostSplitRuns = rentedPostSplitRuns;
-
-                                                if (rentedPreSplitRuns is not null)
-                                                {
-                                                    foreach (var preSplitRun in rentedPreSplitRuns)
-                                                    {
-                                                        collapsedRuns.Add(preSplitRun);
-                                                    }
-                                                }
-                                            }
-                                            else
-                                            {
-                                                effectivePostSplitRuns = logicalRuns;
-                                            }
-
-                                            collapsedRuns.Add(shapedSymbol);
-
-                                            if (totalFitChars <= _prefixLength || effectivePostSplitRuns is null)
-                                            {
-                                                return collapsedRuns.ToArray();
-                                            }
-
-                                            // Suffix budget = total budget minus the actual prefix width.
-                                            // (Previously this used the loop's `availableWidth` which had
-                                            //  over-subtracted: it assumed entire fully-fitting runs went
-                                            //  to the prefix, even when prefixLength capped the prefix
-                                            //  partway through one of them. Deriving from the actual
-                                            //  preSplit run widths gives the correct remaining budget.)
-                                            var availableSuffixWidth = totalBudget;
+                                            effectivePostSplitRuns = rentedPostSplitRuns;
 
                                             if (rentedPreSplitRuns is not null)
                                             {
-                                                foreach (var run in rentedPreSplitRuns)
+                                                foreach (var preSplitRun in rentedPreSplitRuns)
                                                 {
-                                                    switch (run)
-                                                    {
-                                                        case ShapedTextRun preShaped:
-                                                            availableSuffixWidth -= preShaped.Size.Width;
-                                                            break;
-                                                        case DrawableTextRun preDrawable:
-                                                            availableSuffixWidth -= preDrawable.Size.Width;
-                                                            break;
-                                                    }
+                                                    collapsedRuns.Add(preSplitRun);
                                                 }
                                             }
+                                        }
+                                        else
+                                        {
+                                            effectivePostSplitRuns = logicalRuns;
+                                        }
 
-                                            // Walk the post-split runs from the logical tail back toward the
-                                            // prefix, fitting trailing characters into availableSuffixWidth.
-                                            // We collect each split into reversedSuffix here (so the LAST
-                                            // logical run lands at index 0) and then drain reversedSuffix
-                                            // backwards when appending to collapsedRuns, which restores
-                                            // LOGICAL order. FinalizeLine handles the visual re-bidi.
-                                            reversedSuffix = objectPool.TextRunLists.Rent();
+                                        collapseSymbolIndex = collapsedRuns.Count;
+                                        collapsedRuns.Add(shapedSymbol);
 
-                                            for (var i = effectivePostSplitRuns.Count - 1; i >= 0; i--)
+                                        if (totalFitChars <= _prefixLength || effectivePostSplitRuns is null)
+                                        {
+                                            collapsedRuns[collapseSymbolIndex] = new CollapseSymbolRun(logicalRuns[collapseSymbolIndex..], shapedSymbol);
+                                            return collapsedRuns.ToArray();
+                                        }
+
+                                        // Suffix budget = total budget minus the actual prefix width.
+                                        // (Previously this used the loop's `availableWidth` which had
+                                        //  over-subtracted: it assumed entire fully-fitting runs went
+                                        //  to the prefix, even when prefixLength capped the prefix
+                                        //  partway through one of them. Deriving from the actual
+                                        //  preSplit run widths gives the correct remaining budget.)
+                                        var availableSuffixWidth = totalBudget;
+
+                                        if (rentedPreSplitRuns is not null)
+                                        {
+                                            foreach (var run in rentedPreSplitRuns)
                                             {
-                                                var run = effectivePostSplitRuns[i];
-
                                                 switch (run)
                                                 {
-                                                    case ShapedTextRun endShapedRun:
+                                                    case ShapedTextRun preShaped:
+                                                        availableSuffixWidth -= preShaped.Size.Width;
+                                                        break;
+                                                    case DrawableTextRun preDrawable:
+                                                        availableSuffixWidth -= preDrawable.Size.Width;
+                                                        break;
+                                                }
+                                            }
+                                        }
+
+                                        // Walk the post-split runs from the logical tail back toward the
+                                        // prefix, fitting trailing characters into availableSuffixWidth.
+                                        // We collect each split into reversedSuffix here (so the LAST
+                                        // logical run lands at index 0) and then drain reversedSuffix
+                                        // backwards when appending to collapsedRuns, which restores
+                                        // LOGICAL order. FinalizeLine handles the visual re-bidi.
+                                        reversedSuffix = objectPool.TextRunLists.Rent();
+                                        removedRuns = objectPool.TextRunLists.Rent();
+
+                                        for (var i = effectivePostSplitRuns.Count - 1; i >= 0; i--)
+                                        {
+                                            var run = effectivePostSplitRuns[i];
+
+                                            switch (run)
+                                            {
+                                                case ShapedTextRun endShapedRun:
                                                     {
                                                         if (endShapedRun.TryMeasureCharactersBackwards(availableSuffixWidth,
                                                                 out var suffixCount, out var suffixWidth))
@@ -194,6 +201,7 @@ namespace Avalonia.Media.TextFormatting
                                                                 var splitSuffix = endShapedRun.Split(splitAt);
 
                                                                 reversedSuffix.Add(splitSuffix.Second!);
+                                                                removedRuns.Insert(0, splitSuffix.First!);
                                                             }
                                                             else if (suffixCount > 0)
                                                             {
@@ -201,31 +209,39 @@ namespace Avalonia.Media.TextFormatting
                                                                 // split is needed; use the run as-is. (Calling Split(0) throws.)
                                                                 reversedSuffix.Add(endShapedRun);
                                                             }
-                                                            // else: suffixCount == 0, nothing of this run survives.
+                                                            else
+                                                            {
+                                                                // suffixCount == 0, nothing of this run survives.
+                                                                removedRuns.Insert(0, endShapedRun);
+                                                            }
+                                                        }
+                                                        else
+                                                        {
+                                                            removedRuns.Insert(0, endShapedRun);
                                                         }
 
                                                         break;
                                                     }
-                                                }
                                             }
-
-                                            for (var i = reversedSuffix.Count - 1; i >= 0; i--)
-                                            {
-                                                collapsedRuns.Add(reversedSuffix[i]);
-                                            }
-
-                                            return collapsedRuns.ToArray();
                                         }
-                                        finally
+
+                                        for (var i = reversedSuffix.Count - 1; i >= 0; i--)
                                         {
-                                            objectPool.TextRunLists.Return(ref rentedPreSplitRuns);
-                                            objectPool.TextRunLists.Return(ref rentedPostSplitRuns);
-                                            objectPool.TextRunLists.Return(ref reversedSuffix);
-                                            objectPool.TextRunLists.Return(ref collapsedRuns);
+                                            collapsedRuns.Add(reversedSuffix[i]);
                                         }
-                                    }
 
-                                    return new TextRun[] { shapedSymbol };
+                                        collapsedRuns[collapseSymbolIndex] = new CollapseSymbolRun([.. removedRuns], shapedSymbol);
+
+                                        return collapsedRuns.ToArray();
+                                    }
+                                    finally
+                                    {
+                                        objectPool.TextRunLists.Return(ref rentedPreSplitRuns);
+                                        objectPool.TextRunLists.Return(ref rentedPostSplitRuns);
+                                        objectPool.TextRunLists.Return(ref reversedSuffix);
+                                        objectPool.TextRunLists.Return(ref collapsedRuns);
+                                        objectPool.TextRunLists.Return(ref removedRuns);
+                                    }
                                 }
 
                                 availableWidth -= shapedRun.Size.Width;
