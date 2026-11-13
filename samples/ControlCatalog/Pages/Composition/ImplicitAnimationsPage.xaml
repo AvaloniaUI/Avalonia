@@ -1,0 +1,55 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             xmlns:controls="using:ControlCatalog.Controls"
+             xmlns:models="using:ControlCatalog.Models"
+             xmlns:composition="using:ControlCatalog.Pages.Composition"
+             xmlns:viewModels="using:ControlCatalog.ViewModels"
+             x:DataType="viewModels:CompositionAnimationViewModel"
+             x:Class="ControlCatalog.Pages.Composition.ImplicitAnimationsPage">
+  <StackPanel>
+    <Grid Margin="0,0,40,0" ColumnDefinitions="*,10,40">
+      <ItemsControl x:Name="Items"
+                    ItemsSource="{Binding ColorItems}">
+        <ItemsControl.ItemsPanel>
+          <ItemsPanelTemplate>
+            <WrapPanel />
+          </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ItemsControl.DataTemplates>
+          <DataTemplate DataType="models:CompositionPageColorItem">
+            <Border
+              Width="100"
+              Height="100"
+              Margin="10"
+              Padding="10"
+              composition:ImplicitAnimationsPage.EnableAnimations="True"
+              Background="{Binding ColorBrush}"
+              BorderBrush="Gray"
+              BorderThickness="2">
+              <TextBlock Text="{Binding ColorHexValue}" />
+            </Border>
+          </DataTemplate>
+        </ItemsControl.DataTemplates>
+      </ItemsControl>
+      <GridSplitter
+        Grid.Column="1"
+        Margin="2"
+        Background="#e0e0e0"
+        BorderBrush="Gray"
+        BorderThickness="1"
+        ResizeBehavior="PreviousAndNext"
+        ResizeDirection="Columns" />
+      <Border Grid.Column="2">
+        <LayoutTransformControl MinWidth="30" HorizontalAlignment="Center">
+          <LayoutTransformControl.LayoutTransform>
+            <RotateTransform Angle="90" />
+          </LayoutTransformControl.LayoutTransform>
+          <TextBlock>Resize me</TextBlock>
+        </LayoutTransformControl>
+      </Border>
+    </Grid>
+  </StackPanel>
+</UserControl>

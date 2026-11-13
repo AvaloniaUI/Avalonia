@@ -122,14 +122,14 @@
     </Setter>
   </ControlTheme>
   <!--
-    Catalog sample format.
-    SamplePage:        scrolling page, description under the shell title, SampleSections stacked inside.
-    SampleSection:     one example: title, description, live content on a stage, optional options panel that
-                       docks right on wide layouts and drops below the stage when the section is narrow.
-    SampleGalleryPage: a scroll page of sample cards for controls with many samples; a card pushes its sample
-                       on the host NavigationPage, so the shell keeps a single navigation bar.
-    Everything here uses the Catalog* brushes above so it renders correctly under Fluent and Simple, light and dark.
-    Pages stay transparent so window transparency shows through.
+  Catalog sample format.
+  SamplePage:        scrolling page, description under the shell title, SampleSections stacked inside.
+  SampleSection:     one example: title, description, live content on a stage, optional options panel that
+  docks right on wide layouts and drops below the stage when the section is narrow.
+  SampleGalleryPage: a scroll page of sample cards for controls with many samples; a card pushes its sample
+  on the host NavigationPage, so the shell keeps a single navigation bar.
+  Everything here uses the Catalog* brushes above so it renders correctly under Fluent and Simple, light and dark.
+  Pages stay transparent so window transparency shows through.
   -->
   <ControlTheme x:Key="{x:Type controls:SamplePage}" TargetType="controls:SamplePage">
     <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
@@ -310,6 +310,17 @@
                 </StackPanel>
               </Border>
               <DockPanel Name="PART_Main" VerticalSpacing="12">
+                <ItemsControl Name="PART_Codes"
+                              IsVisible="False"
+                              DockPanel.Dock="Bottom"
+                              ItemsSource="{TemplateBinding Codes}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="controls:Code">
+                      <controls:CodeBlock Code="{Binding Text}" Language="{Binding Language}" />
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
                 <controls:CodeBlock Name="PART_Code"
                                     DockPanel.Dock="Bottom"
                                     IsVisible="False"
@@ -336,6 +347,10 @@
     </Setter>
 
     <Style Selector="^:has-code /template/ controls|CodeBlock#PART_Code">
+      <Setter Property="IsVisible" Value="True" />
+    </Style>
+
+    <Style Selector="^:has-codes /template/ ItemsControl#PART_Codes">
       <Setter Property="IsVisible" Value="True" />
     </Style>
 
@@ -377,7 +392,7 @@
                          Text="{TemplateBinding Description}"
                          IsVisible="{TemplateBinding Description, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
               <!-- ContentPage applies the safe area padding to this presenter. Its content has no templated
-                   parent, so it binds through $parent. -->
+              parent, so it binds through $parent. -->
               <ContentPresenter Name="PART_ContentPresenter" HorizontalContentAlignment="Stretch">
                 <ItemsControl ItemsSource="{Binding $parent[controls:SampleGalleryPage].Groups}">
                   <ItemsControl.ItemsPanel>
