@@ -33,6 +33,11 @@ namespace Avalonia.Win32.DirectX
 
         private IDXGIOutput? _output;
 
+        // The active window's monitor, whose output the loop waits on.
+        private IntPtr _pacingWindow;
+        private volatile IntPtr _wantedMonitor;
+        private volatile bool _reselect;
+
         private Stopwatch? _stopwatch;
         private const string LogArea = "DXGI";
 
@@ -97,6 +102,14 @@ namespace Avalonia.Win32.DirectX
 
                     lock (_syncLock)
                     {
+                        if (_reselect)
+                        {
+                            _reselect = false;
+                            _output?.Dispose();
+                            _output = null;
+                            GetBestOutputToVWaitOn();
+                        }
+
                         if (_output is not null)
                         {
                             try
@@ -130,10 +143,38 @@ namespace Avalonia.Win32.DirectX
             }
         }
 
-        // Note: Defining best as display with highest refresh rate on 
+        // Waiting on another output than the window's lets the ticks drift through the window's
+        // vblanks when the rates differ slightly (59.95 vs 60 Hz: once every 20 s).
+        internal static void FollowWindow(IntPtr hwnd, bool activated)
+        {
+            if (AvaloniaLocator.Current.GetService<IWindowsSurfaceFactory>() is not DxgiConnection connection)
+                return;
+            if (activated)
+                connection._pacingWindow = hwnd;
+            else if (hwnd != connection._pacingWindow)
+                return;
+
+            var monitor = MonitorFromWindow(hwnd, MONITOR.MONITOR_DEFAULTTONEAREST);
+            if (monitor != connection._wantedMonitor)
+            {
+                connection._wantedMonitor = monitor;
+                connection._reselect = true;
+            }
+        }
+
+        internal static void DisplaysChanged()
+        {
+            if (AvaloniaLocator.Current.GetService<IWindowsSurfaceFactory>() is DxgiConnection connection)
+                connection._reselect = true;
+        }
+
+        // The output of the active window's monitor; the highest refresh rate before any window
+        // was active or when that monitor has no output.
         private void GetBestOutputToVWaitOn()
         {
             double highestRefreshRate = 0.0d;
+            var wantedMonitor = _wantedMonitor;
+            var found = false;
 
             // IDXGIFactory Guid: [Guid("7B7166EC-21C7-44AE-B21A-C9AE321AE369")]
             Guid factoryGuid = MicroComRuntime.GetGuidFor(typeof(IDXGIFactory));
@@ -160,12 +201,19 @@ namespace Avalonia.Win32.DirectX
 
                     var hMonitor = new HMONITOR(outputDesc.Monitor.Value);
 
+                    if (!found && wantedMonitor != IntPtr.Zero && (IntPtr)outputDesc.Monitor.Value == wantedMonitor)
+                    {
+                        _output?.Dispose();
+                        _output = MicroComRuntime.CloneReference(output);
+                        found = true;
+                    }
+
                     var frequency =
                         monitorFrequencies.TryGetValue(hMonitor, out uint frequencyValue) ?
                             frequencyValue :
                             highestRefreshRate;
 
-                    if (highestRefreshRate < frequency)
+                    if (!found && highestRefreshRate < frequency)
                     {
                         // ooh I like this output! 
                         if (_output is not null)
