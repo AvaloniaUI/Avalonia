@@ -106,9 +106,7 @@ internal class Win32DispatcherImpl : IControlledDispatcherImpl
         // The token is only checked between messages, so wake GetMessage when it's
         // cancelled from another thread. Otherwise an idle loop keeps waiting until
         // the next message arrives, which may never happen.
-        using var registration = cancellationToken.CanBeCanceled
-            ? cancellationToken.Register(WakeUp)
-            : default;
+        using var registration = cancellationToken.Register(WakeUp);
 
         var result = 0;
         while (!cancellationToken.IsCancellationRequested 
