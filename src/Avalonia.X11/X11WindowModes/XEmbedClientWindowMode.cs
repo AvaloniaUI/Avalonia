@@ -181,7 +181,7 @@ partial class X11Window
             _suppressConfigureEvents = true;
             Window._realSize = size;
             Window.Resized?.Invoke(Window.ClientSize, WindowResizeReason.User);
-            Window.Paint?.Invoke(new(Window.ClientSize));
+            Window.Paint?.Invoke(null);
         }
 
         PixelVector GetWindowOffset()

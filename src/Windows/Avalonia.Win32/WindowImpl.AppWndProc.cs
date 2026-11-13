@@ -715,10 +715,7 @@ namespace Avalonia.Win32
                         {
                             if (BeginPaint(_hwnd, out PAINTSTRUCT ps) != IntPtr.Zero)
                             {
-                                var f = RenderScaling;
-                                var r = ps.rcPaint;
-                                Paint?.Invoke(new Rect(r.left / f, r.top / f, (r.right - r.left) / f,
-                                    (r.bottom - r.top) / f));
+                                Paint?.Invoke(null);
                                 EndPaint(_hwnd, ref ps);
                             }
                         }
@@ -906,6 +903,9 @@ namespace Avalonia.Win32
                     {
                         _deadCharPending = false;
                         UpdateInputMethod(lParam);
+                        // A layout added after startup has no table yet. Build it before the first key in that
+                        // layout, which can be a dead key.
+                        KeyboardLayoutTable.Get(lParam);
                         // call DefWindowProc to pass to all children
                         break;
                     }

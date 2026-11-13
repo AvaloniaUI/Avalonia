@@ -836,10 +836,12 @@ namespace Avalonia.Skia
         {
             CheckLease();
 
-            var paint = SKPaintCache.Shared.Get();
+            Canvas.SaveLayer(bounds.ToSKRect(), null);
 
-            Canvas.SaveLayer(bounds.ToSKRect(), paint);
-            _maskStack.Push((Canvas.TotalMatrix, CreatePaint(paint, mask, bounds)));
+            // Mask paints are a plain color or shader, so DstIn applies the mask straight to the layer.
+            var maskPaint = CreatePaint(SKPaintCache.Shared.Get(), mask, bounds);
+            maskPaint.Paint.BlendMode = SKBlendMode.DstIn;
+            _maskStack.Push((Canvas.TotalMatrix, maskPaint));
         }
 
         /// <inheritdoc />
@@ -847,12 +849,6 @@ namespace Avalonia.Skia
         {
             CheckLease();
 
-            var paint = SKPaintCache.Shared.Get();
-            paint.BlendMode = SKBlendMode.DstIn;
-            
-            Canvas.SaveLayer(paint);
-            SKPaintCache.Shared.ReturnReset(paint);
-            
             var (transform, paintWrapper) = _maskStack.Pop();
             Canvas.SetMatrix(transform);
             using (paintWrapper)
@@ -861,8 +857,6 @@ namespace Avalonia.Skia
             }
             // Return the paint wrapper's paint less the reset since the paint is already reset in the Dispose method above.
             SKPaintCache.Shared.Return(paintWrapper.Paint);
-
-            RestoreCanvas();
 
             RestoreCanvas();
         }
@@ -896,6 +890,8 @@ namespace Avalonia.Skia
 
         public object? GetFeature(Type t)
         {
+            if (t == typeof(IPartialPresentationFeature))
+                return (_session as ISkiaGpuRenderSessionWithPartialPresentation)?.PartialPresentation;
             if (t == typeof(ISkiaSharpApiLeaseFeature))
                 return new SkiaLeaseFeature(this);
             return null;
