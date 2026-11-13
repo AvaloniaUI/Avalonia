@@ -19,14 +19,14 @@
 
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
-      <StaticResource x:Key="ToolTipForeground" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="ToolTipForeground" ResourceKey="TextFillColorPrimaryBrush" />
       <StaticResource x:Key="ToolTipBackground" ResourceKey="SystemControlBackgroundChromeMediumLowBrush" />
-      <StaticResource x:Key="ToolTipBorderBrush" ResourceKey="SurfaceStrokeColorFlyout" />
+      <StaticResource x:Key="ToolTipBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
-      <StaticResource x:Key="ToolTipForeground" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="ToolTipForeground" ResourceKey="TextFillColorPrimaryBrush" />
       <StaticResource x:Key="ToolTipBackground" ResourceKey="SystemControlBackgroundChromeMediumLowBrush" />
-      <StaticResource x:Key="ToolTipBorderBrush" ResourceKey="SurfaceStrokeColorFlyout" />
+      <StaticResource x:Key="ToolTipBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 

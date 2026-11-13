@@ -91,7 +91,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public Action<RawInputEventArgs>? Input { get; set; }
 
-        public Action<Rect>? Paint { get; set; }
+        public Action<ITopLevelImpl.PaintOptions?>? Paint { get; set; }
 
         public Action<Size, WindowResizeReason>? Resized { get; set; }
 
@@ -215,7 +215,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             public override void SurfaceRedrawNeeded(ISurfaceHolder holder)
             {
                 // Compositor Renderer handles Paint event in-sync, which is perfect for sync SurfaceRedrawNeeded
-                _tl.Paint?.Invoke(new Rect(new Point(), Size.ToSize(Scaling)));
+                _tl.Paint?.Invoke(null);
                 base.SurfaceRedrawNeeded(holder);
             }
 

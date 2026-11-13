@@ -2,10 +2,11 @@ using Avalonia.Controls;
 using Avalonia.Styling;
 using Moq;
 using Xunit;
+using Avalonia.UnitTests;
 
 namespace Avalonia.Base.UnitTests.Styling
 {
-    public class StylesTests
+    public class StylesTests : ScopedTestBase
     {
         [Fact]
         public void Adding_Style_Should_Set_Owner()

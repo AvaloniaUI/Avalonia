@@ -163,4 +163,20 @@ public class CalendarDayButtonAutomationPeerTests : ScopedTestBase
 
         Assert.Empty(calendar.SelectedDates);
     }
+
+    [Fact]
+    public void Select_Preserves_Style_Binding()
+    {
+        var (calendar, _, provider) = CreateTarget(CalendarSelectionMode.SingleDate);
+
+        AutomationPeerAssert.PreservesStyleBinding(calendar, Calendar.SelectedDateProperty, null, Date1, provider.Select);
+    }
+
+    [Fact]
+    public void AddToSelection_Preserves_Style_Binding_In_SingleDate_Mode()
+    {
+        var (calendar, _, provider) = CreateTarget(CalendarSelectionMode.SingleDate);
+
+        AutomationPeerAssert.PreservesStyleBinding(calendar, Calendar.SelectedDateProperty, null, Date1, provider.AddToSelection);
+    }
 }

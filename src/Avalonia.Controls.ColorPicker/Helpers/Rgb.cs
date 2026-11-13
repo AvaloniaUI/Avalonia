@@ -12,7 +12,7 @@ namespace Avalonia.Controls.Primitives
     /// Contains and allows modification of 64bit floating point Red, Green and Blue components.
     /// </summary>
     /// <remarks>
-    ///   The is a specialized struct optimized for performance, memory and high bit-depth:
+    ///   This is a specialized struct optimized for performance, memory and high bit-depth:
     ///   <list type="bullet">
     ///     <item>High bit-depth per component (64bit floating point instead of 8 bit) to avoid conversion/calculation losses.</item>
     ///     <item>This is not a read-only struct like <see cref="Color"/> and allows editing the fields.</item>
