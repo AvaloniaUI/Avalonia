@@ -25,6 +25,7 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
     private BindingError? _error;
     private ImmediateValueFrame? _frame;
     private bool _isDefaultValueInitialized;
+    private bool _isPublishingValue;
     private bool _isRunning;
     private bool _produceValue;
     private IBindingExpressionSink? _sink;
@@ -70,6 +71,12 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
     /// the expression should be converted to.
     /// </summary>
     public Type TargetType { get; private set; }
+
+    /// <summary>
+    /// Gets a value indicating whether the binding expression is currently publishing a value to
+    /// its target.
+    /// </summary>
+    private protected bool IsPublishingValue => _isPublishingValue;
 
     /// <summary>
     /// Terminates the binding.
@@ -398,7 +405,7 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
 
         if (Dispatcher.UIThread.CheckAccess())
         {
-            _sink.OnChanged(this, hasValueChanged, hasErrorChanged);
+            NotifySink(_sink, hasValueChanged, hasErrorChanged);
         }
         else
         {
@@ -407,7 +414,22 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
             var sink = _sink;
             var vc = hasValueChanged;
             var ec = hasErrorChanged;
-            Dispatcher.UIThread.Post(() => sink.OnChanged(this, vc, ec));
+            Dispatcher.UIThread.Post(() => NotifySink(sink, vc, ec));
+        }
+    }
+
+    private void NotifySink(IBindingExpressionSink sink, bool hasValueChanged, bool hasErrorChanged)
+    {
+        var wasPublishingValue = _isPublishingValue;
+        _isPublishingValue = hasValueChanged;
+
+        try
+        {
+            sink.OnChanged(this, hasValueChanged, hasErrorChanged);
+        }
+        finally
+        {
+            _isPublishingValue = wasPublishingValue;
         }
     }
 
