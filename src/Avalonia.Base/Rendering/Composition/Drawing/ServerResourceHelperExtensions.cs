@@ -63,7 +63,7 @@ static class ServerResourceHelperExtensions
         if (transform is ImmutableTransform immutable)
             return immutable;
         if (transform is ICompositionRenderResource<ITransform> resource)
-            resource.GetForCompositor(compositor);
+            return resource.GetForCompositor(compositor);
         return new ImmutableTransform(transform.Value);
     }
 
