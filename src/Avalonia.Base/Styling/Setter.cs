@@ -82,7 +82,7 @@ namespace Avalonia.Styling
             if (Value is BindingBase binding)
                 return SetBinding((StyleInstance)instance, ao, binding);
             else if (Value is ITemplate template && !typeof(ITemplate).IsAssignableFrom(Property.PropertyType))
-                return new PropertySetterTemplateInstance(Property, template);
+                return new PropertySetterTemplateInstance(Property, template, target);
             else if (!Property.IsValidValue(Value))
                 throw new InvalidCastException($"Setter value '{Value}' is not a valid value for property '{Property}'.");
             else if (Property.IsDirect)
