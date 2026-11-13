@@ -75,6 +75,12 @@ namespace Avalonia.Media
         // on static fonts. Horizontal text never reads it.
         private readonly VvarTable? _vvarTable;
 
+        // STAT table — style names of axis values, read only to group and name the instances of
+        // a variable font. Parsed on first access on the source typeface; clones read the source's.
+        // Parsing twice under a race is harmless (the results are equal), so no lock is taken.
+        private StatTable? _statTable;
+        private volatile bool _statTableLoaded;
+
         // Source typeface for variation clones. Null for default-instance typefaces
         // (the source) — every WithVariation clone points back to its source so all
         // variations of the same font share a single cache and resource owner.
@@ -1117,6 +1123,163 @@ namespace Avalonia.Media
         /// </para>
         /// </remarks>
         internal NormalizedVariationPosition VariationPosition => _variationPosition;
+
+        /// <summary>
+        /// Gets the font's STAT table, or <c>null</c> when the font has none or it is malformed.
+        /// </summary>
+        internal StatTable? StatTable
+        {
+            get
+            {
+                var source = _sourceTypeface ?? this;
+
+                if (!source._statTableLoaded)
+                {
+                    Fonts.Tables.Variation.StatTable.TryLoad(source, out var statTable);
+
+                    // Publish the table before the flag so a reader that sees the flag sees it.
+                    source._statTable = statTable;
+                    source._statTableLoaded = true;
+                }
+
+                return source._statTable;
+            }
+        }
+
+        /// <summary>
+        /// Composes the family and style name of this variable font's instance at the user-space
+        /// <paramref name="userCoordinates"/>, such as a named instance's coordinates.
+        /// </summary>
+        /// <returns>
+        /// <c>false</c> for static fonts, and for coordinates that are no named instance of a font
+        /// without STAT axis values.
+        /// </returns>
+        internal bool TryGetInstanceNames(
+            IReadOnlyDictionary<OpenTypeTag, float> userCoordinates,
+            out FontInstanceNames names)
+        {
+            if (_fvarTable is null)
+            {
+                names = default;
+                return false;
+            }
+
+            var nameTable = _nameTable;
+            var familyName = string.IsNullOrEmpty(TypographicFamilyName) ? FamilyName : TypographicFamilyName;
+
+            return VariableFontNaming.TryGetInstanceNames(
+                StatTable,
+                _fvarTable.Axes,
+                _fvarTable.Instances,
+                familyName,
+                userCoordinates,
+                nameId => nameTable?.GetNameById((ushort)CultureInfo.InvariantCulture.LCID, nameId),
+                out names);
+        }
+
+        /// <summary>
+        /// Adds the family names of this variable font's instance at the user-space
+        /// <paramref name="userCoordinates"/> to <paramref name="familyNames"/>: the invariant name
+        /// <see cref="TryGetInstanceNames(IReadOnlyDictionary{OpenTypeTag, float}, out FontInstanceNames)"/>
+        /// composes, then one per language that localizes the typographic family name.
+        /// </summary>
+        /// <remarks>
+        /// A localized family is composed from that language's typographic family name (or its
+        /// family name, for a font without typographic names) and that language's STAT value names,
+        /// each falling back to its en-US record the way the invariant name does.
+        /// </remarks>
+        internal void GetInstanceFamilyNames(
+            IReadOnlyDictionary<OpenTypeTag, float> userCoordinates,
+            ICollection<string> familyNames)
+        {
+            if (_fvarTable is null || !TryGetInstanceNames(userCoordinates, out var names))
+            {
+                return;
+            }
+
+            AddName(names.FamilyName);
+
+            if (_nameTable is not { } nameTable)
+            {
+                return;
+            }
+
+            const ushort USEnglish = 0x0409;
+
+            Dictionary<ushort, (string? Typographic, string? Family)>? localized = null;
+            var hasTypographicFamily = false;
+
+            foreach (var record in nameTable)
+            {
+                var isTypographic = record.NameID == KnownNameIds.TypographicFamilyName;
+
+                if (record.Platform != Fonts.Tables.PlatformID.Windows ||
+                    (!isTypographic && record.NameID != KnownNameIds.FontFamilyName))
+                {
+                    continue;
+                }
+
+                hasTypographicFamily |= isTypographic;
+
+                if (record.LanguageID == 0 || record.LanguageID == USEnglish)
+                {
+                    continue;
+                }
+
+                localized ??= new Dictionary<ushort, (string?, string?)>();
+                localized.TryGetValue(record.LanguageID, out var entry);
+
+                if (isTypographic)
+                {
+                    entry.Typographic ??= record.GetValue();
+                }
+                else
+                {
+                    entry.Family ??= record.GetValue();
+                }
+
+                localized[record.LanguageID] = entry;
+            }
+
+            if (localized is null)
+            {
+                return;
+            }
+
+            foreach (var language in localized)
+            {
+                // The name ID 1 family of a font with typographic names is its legacy
+                // four-style family, which a localized typographic family is not derived from.
+                var familyName = hasTypographicFamily ? language.Value.Typographic : language.Value.Family;
+
+                if (string.IsNullOrEmpty(familyName))
+                {
+                    continue;
+                }
+
+                var languageId = language.Key;
+
+                if (VariableFontNaming.TryGetInstanceNames(
+                        StatTable,
+                        _fvarTable.Axes,
+                        _fvarTable.Instances,
+                        familyName,
+                        userCoordinates,
+                        nameId => nameTable.GetNameById(languageId, nameId),
+                        out var localizedNames))
+                {
+                    AddName(localizedNames.FamilyName);
+                }
+            }
+
+            void AddName(string name)
+            {
+                if (!string.IsNullOrEmpty(name) && !familyNames.Contains(name))
+                {
+                    familyNames.Add(name);
+                }
+            }
+        }
 
         /// <summary>
         /// Gets the variation axes declared by the font's <c>fvar</c> table, in declaration

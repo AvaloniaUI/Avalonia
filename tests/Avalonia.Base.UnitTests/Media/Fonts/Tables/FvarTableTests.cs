@@ -136,6 +136,34 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
         }
 
         [Fact]
+        public void Instance_SubfamilyNameId_Points_At_The_Instance_Name()
+        {
+            // Inter Variable's instances name themselves through IDs 258 (Thin) to 274 (Black),
+            // two apart because each is followed by its PostScript name ID.
+            var typeface = LoadTypeface(InterVariableAsset);
+            var nameTable = NameTable.Load(typeface);
+            Assert.True(FvarTable.TryLoad(typeface, nameTable, out var fvar));
+
+            Assert.Equal(258, fvar!.Instances[0].SubfamilyNameId);
+            Assert.Equal(274, fvar.Instances[8].SubfamilyNameId);
+
+            foreach (var instance in fvar.Instances)
+            {
+                Assert.Equal(instance.Name, nameTable!.GetNameById(1033, instance.SubfamilyNameId));
+            }
+        }
+
+        [Fact]
+        public void Instance_SubfamilyNameId_Is_Kept_Without_A_Name_Table()
+        {
+            var typeface = LoadTypeface(InterVariableAsset);
+            Assert.True(FvarTable.TryLoad(typeface, nameTable: null, out var fvar));
+
+            Assert.Equal(string.Empty, fvar!.Instances[6].Name);
+            Assert.Equal(270, fvar.Instances[6].SubfamilyNameId);
+        }
+
+        [Fact]
         public void Instances_Have_Sequential_Indices()
         {
             // Index uniquely identifies an instance within a font — used as the lookup key
