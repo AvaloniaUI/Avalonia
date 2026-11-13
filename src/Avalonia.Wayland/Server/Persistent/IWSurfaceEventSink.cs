@@ -30,8 +30,14 @@ internal interface IWSurfaceEventSink
     void OnTouchUp(ulong timestamp, int touchId, Point position);
     void OnTouchCancel(int touchId, Point position);
 
-    void OnKeyDown(ulong timestamp, Key key, RawInputModifiers modifiers, PhysicalKey physicalKey, string? keySymbol);
-    void OnKeyUp(ulong timestamp, Key key, RawInputModifiers modifiers, PhysicalKey physicalKey, string? keySymbol);
+    void OnKeyDown(ulong timestamp, RawInputModifiers modifiers, WaylandKeyInfo key);
+    void OnKeyUp(ulong timestamp, RawInputModifiers modifiers, WaylandKeyInfo key);
+
+    /// <summary>
+    /// The key that is held down resolves to different values after a modifier change.
+    /// Repeated key presses use the new values.
+    /// </summary>
+    void OnHeldKeyChanged(RawInputModifiers modifiers, WaylandKeyInfo key);
     void OnKeyboardLeave();
     void OnKeyRepeatInfo(int rate, int delay);
 

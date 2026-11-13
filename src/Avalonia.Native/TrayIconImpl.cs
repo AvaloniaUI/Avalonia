@@ -48,7 +48,8 @@ namespace Avalonia.Native
 
         public void SetToolTipText(string? text)
         {
-            _native.SetToolTipText(text);
+            // The MicroCom string marshalling throws on null; an empty text clears the tooltip, like on Windows
+            _native.SetToolTipText(text ?? "");
         }
 
         public void SetIsVisible(bool visible)
