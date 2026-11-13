@@ -82,7 +82,7 @@ namespace Avalonia.Media.TextFormatting
 
                                 collapsedLength += measuredLength;
 
-                                return TextCollapsingProperties.CreateCollapsedRuns(textLine, collapsedLength, shapedSymbol);
+                                return TextCollapsingProperties.CreateOwnedCollapsedRuns(textLine, collapsedLength, shapedSymbol);
                             }
 
                             availableWidth -= textRunWidth;
@@ -95,7 +95,7 @@ namespace Avalonia.Media.TextFormatting
                             //The whole run needs to fit into available space
                             if (drawableRun.Size.Width > availableWidth)
                             {
-                                return TextCollapsingProperties.CreateCollapsedRuns(textLine, collapsedLength, shapedSymbol);
+                                return TextCollapsingProperties.CreateOwnedCollapsedRuns(textLine, collapsedLength, shapedSymbol);
                             }
 
                             availableWidth -= drawableRun.Size.Width;

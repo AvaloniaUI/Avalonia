@@ -681,6 +681,87 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         }
 
         [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Custom_Collapsing_Can_Return_Runs_Of_The_Source_Line(bool useCreateCollapsedRuns)
+        {
+            using (Start())
+            {
+                const string text = "AAAA BBBB CCCC DDDD EEEE FFFF";
+
+                var spans = new List<ValueSpan<TextRunProperties>>();
+
+                for (var i = 0; i < text.Length; i += 5)
+                {
+                    var brush = i % 10 == 0 ? Brushes.Red : Brushes.Blue;
+
+                    spans.Add(new ValueSpan<TextRunProperties>(i, 5,
+                        new GenericTextRunProperties(Typeface.Default, 12, foregroundBrush: brush)));
+                }
+
+                var width = new TextLayout(text, Typeface.Default, 12, Brushes.Black).Width;
+
+                // The layout replaces the source line with the collapsed line and disposes the
+                // source line, so the runs the collapsed line reuses must stay alive.
+                var layout = new TextLayout(text, Typeface.Default, 12, Brushes.Black,
+                    textTrimming: new CustomTrimming(useCreateCollapsedRuns), maxWidth: width * 0.6,
+                    textStyleOverrides: spans);
+
+                var collapsedLine = Assert.Single(layout.TextLines);
+
+                Assert.True(collapsedLine.HasCollapsed);
+
+                var shapedRuns = collapsedLine.TextRuns.OfType<ShapedTextRun>().ToList();
+
+                Assert.True(shapedRuns.Count > 2, "The collapsed line must reuse several runs.");
+                Assert.All(shapedRuns, run => Assert.NotEqual(0, run.ShapedBuffer.Length));
+
+                layout.Dispose();
+
+                Assert.All(shapedRuns, run => Assert.Equal(0, run.ShapedBuffer.Length));
+            }
+        }
+
+        private sealed class CustomTrimming(bool useCreateCollapsedRuns) : TextTrimming
+        {
+            public override TextCollapsingProperties CreateCollapsingProperties(TextCollapsingCreateInfo createInfo)
+                => new CustomCollapsingProperties(createInfo, useCreateCollapsedRuns);
+        }
+
+        /// <summary>
+        /// Either puts a symbol in front of the line and keeps every run of the line as it is,
+        /// or keeps a prefix that ends inside a run, built with
+        /// <see cref="TextCollapsingProperties.CreateCollapsedRuns"/>.
+        /// </summary>
+        private sealed class CustomCollapsingProperties : TextCollapsingProperties
+        {
+            private readonly bool _useCreateCollapsedRuns;
+
+            public CustomCollapsingProperties(TextCollapsingCreateInfo createInfo, bool useCreateCollapsedRuns)
+            {
+                _useCreateCollapsedRuns = useCreateCollapsedRuns;
+                Width = createInfo.Width;
+                Symbol = new TextCharacters("…", createInfo.TextRunProperties);
+                FlowDirection = createInfo.FlowDirection;
+            }
+
+            public override double Width { get; }
+
+            public override TextRun Symbol { get; }
+
+            public override FlowDirection FlowDirection { get; }
+
+            public override TextRun[] Collapse(TextLine textLine)
+            {
+                var symbol = TextFormatter.CreateSymbol(Symbol, FlowDirection);
+
+                return _useCreateCollapsedRuns
+                    ? CreateCollapsedRuns(textLine, 17, symbol)
+                    : [symbol, .. textLine.TextRuns];
+            }
+        }
+
+        [Theory]
         [MemberData(nameof(MaxLinesEllipsisData))]
         public void Should_Add_Ellipsis_When_MaxLines_Cuts_Short_Wrapped_Line(TextTrimming trimming)
         {

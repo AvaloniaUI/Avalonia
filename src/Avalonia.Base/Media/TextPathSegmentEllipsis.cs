@@ -40,6 +40,9 @@ namespace Avalonia.Media
 
         public override FlowDirection FlowDirection { get; }
 
+        /// <inheritdoc/>
+        internal override bool ReturnsOwnedRuns => true;
+
         public override TextRun[]? Collapse(TextLine textLine)
         {
             if (textLine.TextRuns.Count == 0)
