@@ -1220,7 +1220,7 @@ namespace Avalonia.Controls
 
             if (MaxLength > 0 && newLength > MaxLength)
             {
-                input = input.Remove(Math.Max(0, input.Length - (newLength - MaxLength)));
+                input = input.Remove(GetGraphemeAlignedLength(input, Math.Max(0, input.Length - (newLength - MaxLength))));
                 newLength = MaxLength;
             }
 
@@ -1295,6 +1295,20 @@ namespace Avalonia.Controls
             }
 
             return text;
+        }
+
+        // Returns the length of the longest prefix of text that fits in maxLength without splitting a grapheme.
+        private static int GetGraphemeAlignedLength(string text, int maxLength)
+        {
+            var length = 0;
+            var graphemeEnumerator = new GraphemeEnumerator(text.AsSpan());
+
+            while (graphemeEnumerator.MoveNext(out var grapheme) && length + grapheme.Length <= maxLength)
+            {
+                length += grapheme.Length;
+            }
+
+            return length;
         }
 
         /// <summary>
