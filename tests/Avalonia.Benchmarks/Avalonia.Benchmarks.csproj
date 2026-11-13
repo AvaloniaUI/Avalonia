@@ -41,5 +41,9 @@
     <EmbeddedResource Include="..\Avalonia.RenderTests\Assets\AdobeVFPrototype-Subset.otf">
       <Link>Assets\AdobeVFPrototype-Subset.otf</Link>
     </EmbeddedResource>
+    <!-- Static math font for the MATH table benchmarks. -->
+    <EmbeddedResource Include="..\Avalonia.RenderTests\Assets\STIXTwoMath-Subset.otf">
+      <Link>Assets\STIXTwoMath-Subset.otf</Link>
+    </EmbeddedResource>
   </ItemGroup>
 </Project>
