@@ -30,6 +30,7 @@ namespace Avalonia.Controls
                                      string iconResource = "",
                                      bool isExported = false,
                                      bool isLauncher = false,
+                                     bool isMultiWindow = false,
                                      int configChanges = DefaultConfigChanges,
                                      AndroidSceneLaunchMode launchMode = AndroidSceneLaunchMode.Multiple,
                                      string[]? actions = null,
@@ -43,6 +44,7 @@ namespace Avalonia.Controls
             IconResource = iconResource;
             IsExported = isExported;
             IsLauncher = isLauncher;
+            IsMultiWindow = isMultiWindow;
             LaunchMode = launchMode;
             Actions = actions;
             Categories = categories;
@@ -56,6 +58,7 @@ namespace Avalonia.Controls
         public string IconResource { get; }
         public bool IsExported { get; }
         public bool IsLauncher { get; }
+        public bool IsMultiWindow { get; }
         public AndroidSceneLaunchMode LaunchMode { get; }
         public string[]? Actions { get; }
         public string[]? Categories { get; }
