@@ -140,6 +140,6 @@ namespace Avalonia.Controls
             return LayoutHelper.ArrangeChild(Child, finalSize, Padding);
         }
 
-        public CornerRadius ClipToBoundsRadius => CornerRadius;
+        CornerRadius IVisualWithRoundRectClip.ClipToBoundsRadius => CornerRadius;
     }
 }

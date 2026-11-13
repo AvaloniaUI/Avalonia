@@ -812,6 +812,6 @@ namespace Avalonia.Controls.Presenters
             };
         }
 
-        public CornerRadius ClipToBoundsRadius => CornerRadius;
+        CornerRadius IVisualWithRoundRectClip.ClipToBoundsRadius => CornerRadius;
     }
 }
