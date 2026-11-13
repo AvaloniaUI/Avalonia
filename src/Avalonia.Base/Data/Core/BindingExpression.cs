@@ -525,6 +525,13 @@ internal class BindingExpression : UntypedBindingExpressionBase, IDescription, I
         if (e.Property != TargetProperty)
             return;
 
+        // Don't write a value that this binding has just published back to the source: the
+        // converter may not round-trip it (#22673). This includes UnsetValue, for which the target
+        // falls back to its default value. A value changed by the target, e.g. through coercion,
+        // differs from the published value and is still written back.
+        if (IsPublishingValue && IsPublishedValue(e.Property))
+            return;
+
         if (_uncommon?._delay is not { Ticks: > 0 } delay)
         {
             // The value must be read from the target object instead of using the value from the event
@@ -539,6 +546,19 @@ internal class BindingExpression : UntypedBindingExpressionBase, IDescription, I
             delayTimer = _uncommon._delayTimer = new DispatcherTimer(delay, DispatcherPriority.Normal, OnDelayTimerTick) { Tag = this };
 
         delayTimer.Start();
+    }
+
+    private bool IsPublishedValue(AvaloniaProperty property)
+    {
+        // The binding can be stopped by a handler of the change it is publishing.
+        if (!IsRunning)
+            return false;
+
+        var value = GetValue();
+
+        return value == AvaloniaProperty.UnsetValue ||
+            (TryGetTarget(out var target) &&
+             TypeUtilities.IdentityEquals(target.GetValue(property), value, TargetType));
     }
 
     // This is a static method so that the same delegate object can be reused by all expression instances
