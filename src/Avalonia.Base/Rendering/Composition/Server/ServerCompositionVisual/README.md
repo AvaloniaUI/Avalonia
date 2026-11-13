@@ -199,12 +199,17 @@ written.
 
 ## Backdrop rules
 
-- Outside of the layer there are no pixels. Both modes see transparent there. This matters for a backdrop visual
-  that is partly outside of the layer (for example in a scroll viewer).
+- Outside of the layer there are no pixels. For a backdrop visual that is partly outside of the layer, the bounds
+  that the effect uses end at the edge of the layer, so the effect sees that edge like an edge of the bounds
+  (Chrome does the same). The layer's area is a rectangle in the visual's local space only without a rotation. For
+  a rotated visual that is partly outside of the layer, its bounding box is used, which usually changes nothing.
+  The two modes then differ: retained sees the edge pixels of the layer repeated (as in Chrome), volatile sees
+  transparent pixels. This is a limit of the Skia backend, see the TODO in `DrawVolatileBackdropEffect`.
 - A backdrop visual reads the backdrop only inside its own backdrop bounds. The effect sees the content mirrored
   at the edges of the bounds. So a change outside of the AABB never changes the output.
-- Retained and volatile produce the same pixels, except under an intermediate layer (see below). Apart from that the
-  mode is a performance choice only.
+- Retained and volatile produce the same pixels, with two exceptions that are described below: under an
+  intermediate layer, and for a rotated visual that is partly outside of the layer. Apart from that the mode is a
+  performance choice only.
 - Every layer has its own backdrop. A backdrop visual inside a bitmap cache reads the bitmap cache layer and never
   sees dirty rects of the layer around it. The cached visual's own backdrop effect is the exception: it is drawn into
   the outer layer and reads from it.

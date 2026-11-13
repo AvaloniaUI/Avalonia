@@ -102,6 +102,9 @@ partial class DrawingContextImpl
         // The SaveLayer bounds are only a size hint. Without the clip, filter output outside of them (e.g. a
         // drop-shadow offset) would be drawn, unlike CSS backdrop-filter, which clips to the border box.
         // The visual's content is drawn after the restore, so the clip does not apply to it.
+        // TODO: For a rotated visual that is partly outside of the layer, SaveLayer reads transparent pixels
+        // outside of the layer, and the retained path reads repeated edge pixels. This needs the backdrop tile
+        // mode of SaveLayerRec (not in SkiaSharp), or pixels that are read from a surface of our own.
         using var filter = CreateBackdropEffect(effect, bounds.ToSKRect());
         var paint = SKPaintCache.Shared.Get();
         // Applied when the SaveLayer is restored.
@@ -162,9 +165,10 @@ partial class DrawingContextImpl
             return;
 
         using var filter = CreateBackdropEffect(effect, bounds.ToSKRect()); // null filter: plain copy
-        // The snapshot ends where the layer ends. There are no pixels beyond that, same as for the volatile path.
+        // The snapshot ends where the layer ends. The bounds end there too, except for a rotated visual that is
+        // partly outside of the layer. That one sees the edge pixels of the layer repeated, as in Chrome.
         using var shader = SKShader.CreateImage(
-            image, SKShaderTileMode.Decal, SKShaderTileMode.Decal, localMatrix.ToSKMatrix());
+            image, SKShaderTileMode.Clamp, SKShaderTileMode.Clamp, localMatrix.ToSKMatrix());
 
         var paint = SKPaintCache.Shared.Get();
         var savedCount = Canvas.Save();

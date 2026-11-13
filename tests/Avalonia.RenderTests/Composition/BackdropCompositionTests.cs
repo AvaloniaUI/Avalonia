@@ -571,12 +571,15 @@ public class BackdropCompositionTests : TestBase
         volatileHarness.Frame();
 
         AssertSimilar(retained.Fb, volatileHarness.Fb);
-        // The bottom rows are where the layer ends inside of the backdrop bounds.
+        // The bottom row is where the layer ends inside of the backdrop bounds. The effect is mirrored there,
+        // so the row is blurred like the rows above it, in both modes.
         for (var x = 45; x < 155; x += 5)
         {
             var expected = volatileHarness.Px(x, 199);
             var actual = retained.Px(x, 199);
             Assert.True(Math.Abs(expected.Red - actual.Red) <= 8, $"x={x}: volatile {expected}, retained {actual}");
+            var above = retained.Px(x, 170);
+            Assert.True(Math.Abs(above.Red - actual.Red) <= 8, $"x={x}: row 170 {above}, row 199 {actual}");
         }
     }
 

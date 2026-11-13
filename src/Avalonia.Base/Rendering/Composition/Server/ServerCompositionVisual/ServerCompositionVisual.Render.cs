@@ -201,7 +201,18 @@ partial class ServerCompositionVisual
                 : visual._subTreeBounds;
             if (localBounds is not { IsZeroSize: false } boundsRect)
                 return;
-            var bounds = boundsRect.ToRect();
+
+            // The layer has no pixels outside of its surface. Limit the bounds to the layer's area, so that the
+            // effect sees the edge of the layer as it sees the edge of the bounds. Under a rotation this is the
+            // bounding box of the layer's area in local space, which can be larger than the area itself.
+            var layerSize = state.Layer?.LayerPixelSize ?? visual.Root?.PixelSize ?? default;
+            if (!_canvas.Transform.TryInvert(out var layerPixelsToLocal))
+                return;
+            var layerAreaInLocal = new LtrbRect(0, 0, layerSize.Width, layerSize.Height)
+                .TransformToAABB(layerPixelsToLocal);
+            if (boundsRect.IntersectOrNull(layerAreaInLocal) is not { IsZeroSize: false } visibleBounds)
+                return;
+            var bounds = visibleBounds.ToRect();
 
             if (state.IsRetained)
             {
@@ -213,9 +224,7 @@ partial class ServerCompositionVisual
                     return;
                 }
 
-                // The layer has no pixels outside of its surface, so the snapshot covers only the part of the
-                // AABB that is inside.
-                var layerSize = state.Layer?.LayerPixelSize ?? visual.Root?.PixelSize ?? default;
+                // The snapshot covers only the part of the AABB that is inside of the layer.
                 var snapshotBounds = new LtrbPixelRect(
                     Math.Max(aabbInLayerPixels.Left, 0), Math.Max(aabbInLayerPixels.Top, 0),
                     Math.Min(aabbInLayerPixels.Right, layerSize.Width),
