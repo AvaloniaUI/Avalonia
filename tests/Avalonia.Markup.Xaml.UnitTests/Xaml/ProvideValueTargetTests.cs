@@ -4,8 +4,8 @@ using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Controls.Documents;
 using Avalonia.Data;
-using Avalonia.Data.Core;
 using Avalonia.Markup.Xaml.MarkupExtensions;
+using Avalonia.Markup.Xaml.XamlIl.Runtime;
 using Avalonia.Media;
 using Avalonia.UnitTests;
 using Xunit;
@@ -43,7 +43,7 @@ public class ProvideValueTargetTests : XamlTestBase
             item =>
             {
                 Assert.IsAssignableFrom<CompiledBindingExtension>(item.TargetObject);
-                var prop = Assert.IsType<ClrPropertyInfo>(item.TargetProperty);
+                var prop = Assert.IsType<FunctionPointerPropertyInfo>(item.TargetProperty);
                 Assert.Equal(nameof(Binding.Source), prop.Name);
             },
             item =>
