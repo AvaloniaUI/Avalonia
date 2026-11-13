@@ -45,6 +45,9 @@ namespace Avalonia.Controls
         ILogicalRoot,
         IThemeVariantRoot
     {
+        // Prototype only: the public preparation/deferral contract needs core-team agreement.
+        internal Action<PopupRoot, Action>? NativePopupShowRequested { get; set; }
+
         /// <summary>
         /// Defines the <see cref="ClientSize"/> property.
         /// </summary>
