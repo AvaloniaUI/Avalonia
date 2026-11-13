@@ -14,7 +14,7 @@ using Xunit;
 
 namespace Avalonia.Base.UnitTests.Styling
 {
-    public class StyledElementTests
+    public class StyledElementTests : ScopedTestBase
     {
         [Fact]
         public void Classes_Should_Initially_Be_Empty()

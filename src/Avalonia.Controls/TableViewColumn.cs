@@ -45,6 +45,18 @@ public class TableViewColumn : StyledElement, IHeadered
         AvaloniaProperty.Register<TableViewColumn, GridLength>(nameof(Width), new GridLength(1, GridUnitType.Star));
 
     /// <summary>
+    /// Defines the <see cref="MinWidth"/> property.
+    /// </summary>
+    public static readonly StyledProperty<double> MinWidthProperty =
+        Layoutable.MinWidthProperty.AddOwner<TableViewColumn>();
+
+    /// <summary>
+    /// Defines the <see cref="MaxWidth"/> property.
+    /// </summary>
+    public static readonly StyledProperty<double> MaxWidthProperty =
+        Layoutable.MaxWidthProperty.AddOwner<TableViewColumn>();
+
+    /// <summary>
     /// Defines the <see cref="CellTheme"/> property.
     /// </summary>
     public static readonly StyledProperty<ControlTheme?> CellThemeProperty =
@@ -139,6 +151,40 @@ public class TableViewColumn : StyledElement, IHeadered
         get => GetValue(WidthProperty);
         set => SetValue(WidthProperty, value);
     }
+
+    /// <summary>
+    /// Gets or sets the minimum column width, in device independent pixels. The default is 0.
+    /// </summary>
+    /// <remarks>
+    /// Applies to pixel, star and auto sizing, and interactive resizing.
+    /// Must be finite and non-negative. Takes precedence over <see cref="MaxWidth"/> if the limits conflict.
+    /// Layout rounding can adjust the resulting width to device pixel boundaries.
+    /// </remarks>
+    public double MinWidth
+    {
+        get => GetValue(MinWidthProperty);
+        set => SetValue(MinWidthProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the maximum column width, in device independent pixels.
+    /// The default is <see cref="double.PositiveInfinity"/>.
+    /// </summary>
+    /// <remarks>
+    /// Applies to pixel, star and auto sizing, and interactive resizing.
+    /// Must be non-negative. Column limits take precedence over the resize handle's minimum width.
+    /// Star columns redistribute space when a column reaches a limit; they can leave unused space
+    /// if all maxima are reached, or overflow if their minima exceed the available space.
+    /// Layout rounding can adjust the resulting width to device pixel boundaries.
+    /// </remarks>
+    public double MaxWidth
+    {
+        get => GetValue(MaxWidthProperty);
+        set => SetValue(MaxWidthProperty, value);
+    }
+
+    internal double ClampWidth(double width)
+        => Math.Max(MinWidth, Math.Min(MaxWidth, width));
 
     /// <summary>
     /// Gets or sets the theme to apply to the cells.
@@ -247,7 +293,8 @@ public class TableViewColumn : StyledElement, IHeadered
     {
         base.OnPropertyChanged(change);
 
-        if (change.Property == WidthProperty || change.Property == IsVisibleProperty)
+        if (change.Property == WidthProperty || change.Property == IsVisibleProperty ||
+            change.Property == MinWidthProperty || change.Property == MaxWidthProperty)
             TableView?.OnColumnsSizeChanged();
 
         if (change.Property == CanUserResizeProperty)

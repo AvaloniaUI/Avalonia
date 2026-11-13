@@ -99,7 +99,7 @@ namespace Avalonia.Controls
 
                 var transformMatrix = this.TransformToVisual(root) ?? Matrix.Identity;
 
-                var translatedRect = Bounds.TransformToAABB(transformMatrix);
+                var translatedRect = new Rect(Bounds.Size).TransformToAABB(transformMatrix);
 
                 var intersect = occludedRect.Intersect(translatedRect);
                 CurrentInputPanePadding = intersect.Height;

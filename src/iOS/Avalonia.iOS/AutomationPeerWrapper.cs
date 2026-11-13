@@ -4,7 +4,9 @@ using System.Linq;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
+using Avalonia.Controls.Automation.Peers;
 using Avalonia.Input;
+using Avalonia.Platform;
 using CoreGraphics;
 using Foundation;
 using UIKit;
@@ -66,7 +68,7 @@ namespace Avalonia.iOS
 
         private readonly AutomationPeerWrapper? _parent;
 
-        private readonly List<AutomationPeer> _childrenList;
+        private readonly List<NSObject> _childrenElements;
 
         private readonly Dictionary<AutomationPeer, AutomationPeerWrapper> _childrenMap;
 
@@ -88,7 +90,7 @@ namespace Avalonia.iOS
                 IsAccessibilityElement = false;
             }
 
-            _childrenList = new();
+            _childrenElements = new();
             _childrenMap = new();
         }
 
@@ -108,7 +110,7 @@ namespace Avalonia.iOS
                 IsAccessibilityElement = false;
             }
 
-            _childrenList = new();
+            _childrenElements = new();
             _childrenMap = new();
         }
 
@@ -116,26 +118,28 @@ namespace Avalonia.iOS
         public nint AccessibilityElementCount()
         {
             UpdateChildren();
-            return _childrenList.Count;
+            return _childrenElements.Count;
         }
 
         [Export("accessibilityElementAtIndex:")]
         public NSObject GetAccessibilityElementAt(nint index)
         {
-            AutomationPeer child = _childrenList[(int)index];
-            return _childrenMap[child];
+            return index >= 0 && index < _childrenElements.Count ? _childrenElements[(int)index] : null!;
         }
 
         [Export("indexOfAccessibilityElement:")]
         public nint GetIndexOfAccessibilityElement(NSObject element)
         {
-            if (element is not AutomationPeerWrapper wrapper)
-            {
-                return NSRange.NotFound;
-            }
-
-            int indexOf = _childrenList.IndexOf(wrapper._peer);
+            int indexOf = _childrenElements.IndexOf(element);
             return indexOf < 0 ? NSRange.NotFound : indexOf;
+        }
+
+        // Without this list, VoiceOver can't swipe out of a native control's view; count/index alone aren't enough.
+        [Export("accessibilityElements")]
+        public NSObject GetAccessibilityElements()
+        {
+            UpdateChildren();
+            return NSArray.FromNSObjects(_childrenElements.ToArray());
         }
 
         [Export("accessibilityContainerType")]
@@ -146,10 +150,21 @@ namespace Avalonia.iOS
             UpdateAllProperties();
             UpdateTraits();
 
-            List<AutomationPeer> children = new();
+            List<NSObject> elements = new();
             HashSet<AutomationPeer> retainedChildren = new();
             foreach (AutomationPeer child in _peer.GetChildren())
             {
+                // A native control's peer throws from most members, so its view is listed instead of a wrapper.
+                if (child is InteropAutomationPeer interop)
+                {
+                    if (FindNativeControlView(interop.NativeControlHandle) is { } nativeView)
+                    {
+                        elements.Add(nativeView);
+                    }
+
+                    continue;
+                }
+
                 if (child.IsOffscreen())
                 {
                     continue;
@@ -161,7 +176,7 @@ namespace Avalonia.iOS
                     _childrenMap.Add(child, wrapper);
                 }
 
-                children.Add(child);
+                elements.Add(wrapper);
                 retainedChildren.Add(child);
                 wrapper.UpdateAllProperties();
                 wrapper.UpdateTraits();
@@ -176,8 +191,27 @@ namespace Avalonia.iOS
                 }
             }
 
-            _childrenList.Clear();
-            _childrenList.AddRange(children);
+            _childrenElements.Clear();
+            _childrenElements.AddRange(elements);
+        }
+
+        // Attached native views are subviews of the AvaloniaView; detached or hidden ones are not listed.
+        private UIView? FindNativeControlView(IPlatformHandle handle)
+        {
+            if (handle.HandleDescriptor != UIViewControlHandle.UIViewDescriptor || handle.Handle == IntPtr.Zero)
+            {
+                return null;
+            }
+
+            foreach (UIView subview in _view.Subviews)
+            {
+                if (subview.Handle.Handle == handle.Handle)
+                {
+                    return subview.Hidden ? null : subview;
+                }
+            }
+
+            return null;
         }
 
         private static void UpdateAutomationId(AutomationPeerWrapper self)
@@ -471,7 +505,7 @@ namespace Avalonia.iOS
                     child.Dispose();
                 }
 
-                _childrenList.Clear();
+                _childrenElements.Clear();
                 _childrenMap.Clear();
             }
 

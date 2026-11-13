@@ -23,6 +23,54 @@ namespace Avalonia.Controls.UnitTests
     {
         MouseTestHelper _helper = new MouseTestHelper();
 
+        [Fact]
+        public void Item_Marked_As_Selected_Is_Selected_Before_The_DropDown_Is_Opened()
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var target = new ComboBox
+            {
+                Items =
+                {
+                    new ComboBoxItem { Content = "Item 1", IsSelected = true },
+                    new ComboBoxItem { Content = "Item 2" }
+                }
+            };
+
+            var window = new Window { Content = target };
+            window.Show();
+            window.LayoutManager.ExecuteInitialLayoutPass();
+
+            Assert.Equal(0, target.SelectedIndex);
+            Assert.Same(target.Items[0], target.SelectedItem);
+        }
+
+        [Fact]
+        public void Item_Marked_As_Selected_Stays_Selected_When_The_DropDown_Is_Opened()
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var target = new ComboBox
+            {
+                Items =
+                {
+                    new ComboBoxItem { Content = "Item 1", IsSelected = true },
+                    new ComboBoxItem { Content = "Item 2" }
+                }
+            };
+
+            var window = new Window { Content = target };
+            window.Show();
+            window.LayoutManager.ExecuteInitialLayoutPass();
+
+            target.IsDropDownOpen = true;
+            window.LayoutManager.ExecuteLayoutPass();
+            target.IsDropDownOpen = false;
+            window.LayoutManager.ExecuteLayoutPass();
+
+            Assert.Equal(0, target.SelectedIndex);
+        }
+
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
@@ -82,6 +130,25 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Losing_Pointer_Capture_Should_Clear_Pressed_PseudoClass()
+        {
+            var target = new ComboBox
+            {
+                ItemsSource = new[] { "Foo", "Bar" },
+            };
+
+            _helper.Down(target);
+            Assert.True(target.Classes.Contains(ComboBox.pcPressed));
+
+            // For example a context menu opening takes the pointer, so the release never reaches the ComboBox.
+            var pointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);
+            target.RaiseEvent(new PointerCaptureLostEventArgs(target, pointer));
+
+            Assert.False(target.Classes.Contains(ComboBox.pcPressed));
+            Assert.False(target.IsDropDownOpen);
+        }
+
+        [Fact]
         public void Clicking_On_Control_PseudoClass()
         {
             var target = new ComboBox
@@ -138,6 +205,96 @@ namespace Avalonia.Controls.UnitTests
                     Key = Key.Down,
                 });
                 Assert.Equal(target.SelectedIndex, 0);
+            }
+        }
+
+        [Fact]
+        public void WrapSelection_With_Empty_Items_Does_Not_Throw()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var target = new ComboBox
+                {
+                    Template = GetTemplate(),
+                    WrapSelection = true
+                };
+                var root = new TestRoot(target);
+                target.ApplyTemplate();
+                target.Presenter!.ApplyTemplate();
+                target.Focus();
+                Assert.True(target.IsFocused);
+
+                target.RaiseEvent(new KeyEventArgs
+                {
+                    RoutedEvent = InputElement.KeyDownEvent,
+                    Key = Key.Down,
+                });
+                target.RaiseEvent(new KeyEventArgs
+                {
+                    RoutedEvent = InputElement.KeyDownEvent,
+                    Key = Key.Up,
+                });
+
+                Assert.Equal(-1, target.SelectedIndex);
+            }
+        }
+
+        [Fact(Timeout = 2000)]
+        public void WrapSelection_With_All_Items_Disabled_Does_Not_Hang()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var target = new ComboBox
+                {
+                    Items =
+                    {
+                        new ComboBoxItem { Content = "a", IsEnabled = false },
+                        new ComboBoxItem { Content = "b", IsEnabled = false },
+                        new ComboBoxItem { Content = "c", IsEnabled = false }
+                    },
+                    Template = GetTemplate(),
+                    WrapSelection = true
+                };
+                var root = new TestRoot(target);
+                target.ApplyTemplate();
+                target.Presenter!.ApplyTemplate();
+                target.Focus();
+                Assert.True(target.IsFocused);
+
+                target.RaiseEvent(new KeyEventArgs
+                {
+                    RoutedEvent = InputElement.KeyDownEvent,
+                    Key = Key.Down,
+                });
+
+                Assert.Equal(-1, target.SelectedIndex);
+            }
+        }
+
+        [Fact]
+        public void WrapSelection_On_Single_Item_With_Nothing_Selected_Does_Not_Throw()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var target = new ComboBox
+                {
+                    Items = { new ComboBoxItem { Content = "only" } },
+                    Template = GetTemplate(),
+                    WrapSelection = true
+                };
+                var root = new TestRoot(target);
+                target.ApplyTemplate();
+                target.Presenter!.ApplyTemplate();
+                target.Focus();
+                Assert.True(target.IsFocused);
+
+                target.RaiseEvent(new KeyEventArgs
+                {
+                    RoutedEvent = InputElement.KeyDownEvent,
+                    Key = Key.Up,
+                });
+
+                Assert.Equal(0, target.SelectedIndex);
             }
         }
 

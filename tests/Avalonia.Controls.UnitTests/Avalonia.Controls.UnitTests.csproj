@@ -9,7 +9,6 @@
   <Import Project="..\..\build\XUnit.props" />
   <Import Project="..\..\build\Base.props" />
   <Import Project="..\..\build\SharedVersion.props" />
-  <Import Project="..\..\build\HarfBuzzSharp.props" />
   <Import Project="..\..\build\NullableEnable.props" />
   <ItemGroup>
     <PackageReference Include="Microsoft.Reactive.Testing" />
@@ -17,6 +16,7 @@
     <PackageReference Include="System.Reactive" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Avalonia.FreeDesktop.AtSpi\Avalonia.FreeDesktop.AtSpi.csproj" />
     <ProjectReference Include="..\..\src\HarfBuzz\Avalonia.HarfBuzz\Avalonia.HarfBuzz.csproj" />
     <ProjectReference Include="..\..\src\Markup\Avalonia.Markup.Xaml.Loader\Avalonia.Markup.Xaml.Loader.csproj" />
     <ProjectReference Include="..\..\src\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />

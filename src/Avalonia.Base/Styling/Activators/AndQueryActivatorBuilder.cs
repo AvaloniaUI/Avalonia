@@ -11,13 +11,13 @@ namespace Avalonia.Styling.Activators
     /// </remarks>
     internal struct AndQueryActivatorBuilder
     {
-        private readonly Visual _visual;
+        private readonly StyledElement _target;
         private IStyleActivator? _single;
         private AndQueryActivator? _multiple;
 
-        public AndQueryActivatorBuilder(Visual visual) : this()
+        public AndQueryActivatorBuilder(StyledElement target) : this()
         {
-            _visual = visual;
+            _target = target;
         }
 
         public int Count => _multiple?.Count ?? (_single is object ? 1 : 0);
@@ -37,7 +37,7 @@ namespace Avalonia.Styling.Activators
             {
                 if (_multiple is null)
                 {
-                    _multiple = new AndQueryActivator(_visual);
+                    _multiple = new AndQueryActivator(_target);
                     _multiple.Add(_single!);
                     _single = null;
                 }

@@ -1,0 +1,123 @@
+name: Publish PR NuGet Packages
+
+# Publishes the packages built by the Build workflow for a pull request, including pull requests from forks,
+# so that contributors can directly test their changes.
+#
+# This runs in the context of the main repository with access to secrets, while the packages were built
+# from untrusted pull request code. That is accepted because each pull request gets its own isolated feed.
+# NEVER check out or execute anything from the pull request here: only download the artifacts and push them.
+# (The publish action itself is checked out from main.)
+
+on:
+  workflow_run:
+    workflows: [Build]
+    types: [completed]
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  publish:
+    name: Publish PR NuGet Packages
+    if: >-
+      github.repository == 'AvaloniaUI/Avalonia'
+      && github.event.workflow_run.event == 'pull_request'
+      && github.event.workflow_run.conclusion == 'success'
+      && vars.PR_FEED_INDEX_URL_PATTERN != ''
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: read
+    outputs:
+      pr-number: ${{ steps.pr.outputs.number }}
+      feed-url: ${{ steps.pr.outputs.feed-url }}
+      version: ${{ steps.publish.outputs.version }}
+
+    steps:
+      - name: Find Pull Request
+        id: pr
+        uses: actions/github-script@v7
+        env:
+          HEAD_OWNER: ${{ github.event.workflow_run.head_repository.owner.login }}
+          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          URL_PATTERN: ${{ vars.PR_FEED_INDEX_URL_PATTERN }}
+        with:
+          script: |
+            const { HEAD_OWNER, HEAD_BRANCH, HEAD_SHA, URL_PATTERN } = process.env;
+            const { owner, repo } = context.repo;
+
+            // The workflow_run payload doesn't list pull requests from forks, so look the pull request up
+            // from its head branch. If the head has moved on, a newer build supersedes this one, so skip it.
+            const { data: pulls } = await github.rest.pulls.list({
+              owner, repo, state: 'open', head: `${HEAD_OWNER}:${HEAD_BRANCH}`,
+            });
+            const pr = pulls.find(p => p.head.sha === HEAD_SHA);
+            if (!pr) {
+              core.warning(`No open pull request found for ${HEAD_OWNER}:${HEAD_BRANCH} at ${HEAD_SHA}.`);
+              return;
+            }
+
+            core.setOutput('number', String(pr.number));
+            core.setOutput('feed-url', URL_PATTERN.replaceAll('{pr-number}', String(pr.number)));
+
+      - name: Checkout Actions
+        if: steps.pr.outputs.number != ''
+        uses: actions/checkout@v7
+        with:
+          ref: main
+          sparse-checkout: .github/actions
+          persist-credentials: false
+
+      - name: Publish NuGet Packages
+        id: publish
+        if: steps.pr.outputs.number != ''
+        uses: ./.github/actions/publish-nuget
+        with:
+          feed-url: ${{ steps.pr.outputs.feed-url }}
+          api-key: ${{ secrets.PR_FEED_API_KEY }}
+          run-id: ${{ github.event.workflow_run.id }}
+
+  comment:
+    name: Comment on Pull Request
+    needs: publish
+    if: needs.publish.outputs.pr-number != ''
+    runs-on: ubuntu-24.04
+    permissions:
+      pull-requests: write
+
+    steps:
+      - name: Post Package Version
+        uses: actions/github-script@v7
+        env:
+          PR_NUMBER: ${{ needs.publish.outputs.pr-number }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          VERSION: ${{ needs.publish.outputs.version }}
+          RUN_URL: ${{ github.event.workflow_run.html_url }}
+          FEED_URL: ${{ needs.publish.outputs.feed-url }}
+        with:
+          script: |
+            const { PR_NUMBER, HEAD_SHA, VERSION, RUN_URL, FEED_URL } = process.env;
+            const { owner, repo } = context.repo;
+            const issue_number = Number(PR_NUMBER);
+
+            const marker = '<!-- pr-nuget-bot -->';
+            const body =
+              `${marker}\n### NuGet packages\n\n` +
+              `The packages for this pull request have been published ([workflow run](${RUN_URL})):\n\n` +
+              `- Commit: ${HEAD_SHA}\n` +
+              `- Version: \`${VERSION}\`\n` +
+              `- Feed URL: ${FEED_URL}`;
+
+            // Update the existing comment (from a previous push) or create a new one.
+            const { data: comments } = await github.rest.issues.listComments({
+              owner, repo, issue_number, per_page: 100,
+            });
+            const existing = comments.find(c => c.user?.login === 'github-actions[bot]' && c.body?.startsWith(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
+            } else {
+              await github.rest.issues.createComment({ owner, repo, issue_number, body });
+            }
