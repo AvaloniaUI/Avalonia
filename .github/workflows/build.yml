@@ -106,6 +106,9 @@ jobs:
         run: dotnet workload install android ios tvos maccatalyst macos wasm-tools
 
       - name: Run Build
+        env:
+          # Lets the Win32 keyboard tests load the keyboard layouts that they need
+          AVALONIA_CI_RUN: "1"
         run: ./build.cmd --target CiWindows --configuration Release
 
       - name: Upload NuGet Packages

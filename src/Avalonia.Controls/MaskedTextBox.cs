@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
+using Avalonia.Controls.Utils;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Logging;
@@ -220,13 +221,9 @@ namespace Avalonia.Controls
                 {
                     text = await clipboard.TryGetTextAsync();
                 }
-                catch (TimeoutException)
+                catch (Exception ex) when (ClipboardHelper.IsExpectedClipboardException(ex))
                 {
-                    // Silently ignore.
-                }
-                catch (UnauthorizedAccessException uex)
-                {
-                    Logger.TryGet(LogEventLevel.Warning, LogArea.Control)?.Log(this, "Failed to read text from clipboard: {Error}", uex);
+                    Logger.TryGet(LogEventLevel.Warning, LogArea.Control)?.Log(this, "Failed to read text from clipboard: {Error}", ex);
                 }
 
                 if (text == null)

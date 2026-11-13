@@ -906,13 +906,51 @@ namespace Avalonia.Media.TextFormatting
         /// Enumerating the whole run would scan all remaining text for every line of a long unbroken run.
         /// </summary>
         /// <param name="text">The text of the run.</param>
-        /// <param name="measuredLength">The number of characters of the run that fit the line.</param>
-        private static LineBreakEnumerator CreateLineBreakEnumerator(ReadOnlySpan<char> text, int measuredLength)
+        /// <param name="preceding">
+        /// The end context of the previous run's enumerator, which the rules see before the first character of
+        /// the run, or <c>default</c> if the run starts the text.
+        /// </param>
+        /// <param name="following">
+        /// The first code point of the next run, which decides whether the end of the run is an opportunity,
+        /// or <c>null</c> if the end of the run is the end of text.
+        /// </param>
+        /// <param name="measuredLength">
+        /// The number of characters of the run that fit the line. It is negative for a run past the fitting
+        /// length, which then has only what is left of the lookahead shared by all runs of the line.
+        /// </param>
+        private static LineBreakEnumerator CreateLineBreakEnumerator(ReadOnlySpan<char> text,
+            LineBreakEnumerator.LineBreakContext preceding, Codepoint? following, int measuredLength)
         {
-            var limit = (long)Math.Max(measuredLength, 0) + MaxBreakLookahead;
+            var limit = Math.Max((long)measuredLength + MaxBreakLookahead, 0);
+            var textLimit = limit < text.Length ? (int)limit : int.MaxValue;
 
-            return new LineBreakEnumerator(text, limit < text.Length ? (int)limit : int.MaxValue);
+            return new LineBreakEnumerator(text, preceding, following, textLimit);
         }
+
+        /// <summary>
+        /// Finds where the whitespace that ends the text starts, so whitespace continued from a previous run
+        /// is measured as hanging whitespace of the line.
+        /// </summary>
+        /// <returns>The index of the first trailing space, or the text length if the text does not end in a space.</returns>
+        private static int FindTrailingWhitespaceStart(ReadOnlySpan<char> text)
+        {
+            var position = text.Length;
+
+            while (position > 0)
+            {
+                var codepoint = Codepoint.ReadAt(text, position - 1, out var count);
+
+                if (codepoint.LineBreakClass != LineBreakClass.Space)
+                {
+                    break;
+                }
+
+                position -= count;
+            }
+
+            return position;
+        }
+
 
         /// <summary>
         /// Performs text wrapping returns a list of text lines.
@@ -976,6 +1014,10 @@ namespace Avalonia.Media.TextFormatting
 
             var currentPosition = 0;
 
+            // Where the whitespace that ends the previous runs starts, and the line break state they end with.
+            var whitespaceStart = 0;
+            var precedingContext = default(LineBreakEnumerator.LineBreakContext);
+
             var wrappingMode = paragraphProperties.TextWrapping;
             var runCount = textRuns.Count;
 
@@ -990,13 +1032,32 @@ namespace Avalonia.Media.TextFormatting
                 {
                     case ShapedTextRun:
                         {
+                            // Shaping splits runs at every script change, which in Japanese text happens
+                            // between nearly every Han and kana character. The enumeration continues from the
+                            // state the previous run ended with, and sees the next run's first code point, so a
+                            // break at the end of the run is a real opportunity rather than the end of text,
+                            // decided by the characters on both sides.
+                            Codepoint? following = null;
+
+                            if (index < runCount - 1 && textRuns[index + 1] is ShapedTextRun nextRun &&
+                                !nextRun.Text.IsEmpty)
+                            {
+                                following = Codepoint.ReadAt(nextRun.Text.Span, 0, out _);
+                            }
+
+                            var endIsOpportunity = following.HasValue;
+
                             var lineBreaker = CreateLineBreakEnumerator(
-                                currentRun.Text.Span, measuredLength - currentLength);
+                                currentRun.Text.Span, precedingContext, following, measuredLength - currentLength);
 
                             while (lineBreaker.MoveNext(out var lineBreak))
                             {
-                                if (lineBreak.Required &&
-                                    currentLength + lineBreak.PositionMeasure <= measuredLength)
+                                // Whitespace from the start of the run continues the whitespace of the previous runs.
+                                var measurePosition = lineBreak.PositionMeasure == 0
+                                    ? whitespaceStart
+                                    : currentLength + lineBreak.PositionMeasure;
+
+                                if (lineBreak.Required && measurePosition <= measuredLength)
                                 {
                                     //Explicit break found
                                     breakFound = true;
@@ -1006,7 +1067,7 @@ namespace Avalonia.Media.TextFormatting
                                     break;
                                 }
 
-                                if (currentLength + lineBreak.PositionMeasure > measuredLength)
+                                if (measurePosition > measuredLength)
                                 {
                                     if (wrappingMode == TextWrapping.WrapWithOverflow)
                                     {
@@ -1022,7 +1083,7 @@ namespace Avalonia.Media.TextFormatting
                                         //Find next possible wrap position (overflow)
                                         if (index < runCount - 1)
                                         {
-                                            if (lineBreak.PositionWrap != currentRunLength)
+                                            if (endIsOpportunity || lineBreak.PositionWrap != currentRunLength)
                                             {
                                                 //We already found the next possible wrap position.
                                                 breakFound = true;
@@ -1077,7 +1138,8 @@ namespace Avalonia.Media.TextFormatting
                                     break;
                                 }
 
-                                if (lineBreak.PositionMeasure != lineBreak.PositionWrap || lineBreak.PositionWrap != currentRunLength)
+                                if (endIsOpportunity || lineBreak.PositionMeasure != lineBreak.PositionWrap ||
+                                    lineBreak.PositionWrap != currentRunLength)
                                 {
                                     lastWrapPosition = currentLength + lineBreak.PositionWrap;
                                 }
@@ -1091,12 +1153,37 @@ namespace Avalonia.Media.TextFormatting
                                 breakFound = true;
                             }
 
+                            // Empty unless the enumeration reached the next run's first code point.
+                            precedingContext = lineBreaker.EndContext;
+
+                            break;
+                        }
+
+                    default:
+                        {
+                            precedingContext = default;
+
                             break;
                         }
                 }
 
                 if (!breakFound)
                 {
+                    if (currentRun is ShapedTextRun)
+                    {
+                        var trailingWhitespaceStart = FindTrailingWhitespaceStart(currentRun.Text.Span);
+
+                        // A run of only whitespace leaves the whitespace start of the previous runs in place.
+                        if (trailingWhitespaceStart > 0)
+                        {
+                            whitespaceStart = currentLength + trailingWhitespaceStart;
+                        }
+                    }
+                    else
+                    {
+                        whitespaceStart = currentLength + currentRunLength;
+                    }
+
                     currentLength += currentRunLength;
 
                     continue;
