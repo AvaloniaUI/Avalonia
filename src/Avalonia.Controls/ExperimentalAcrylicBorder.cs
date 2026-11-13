@@ -114,10 +114,7 @@ namespace Avalonia.Controls
 
         private protected override CompositionDrawListVisual CreateCompositionVisual(Compositor compositor)
         {
-            var v = new CompositionExperimentalAcrylicVisual(compositor, this)
-            {
-                CornerRadius = CornerRadius
-            };
+            var v = new CompositionExperimentalAcrylicVisual(compositor, this);
             SyncMaterial(v);
 
             return v;
