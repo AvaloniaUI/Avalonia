@@ -285,13 +285,14 @@ namespace Avalonia.Media.TextFormatting
             }
 
             // process hit that happens within the line
-            var characterHit = new CharacterHit();
+            var currentRun = _textRuns[firstIndex];
             var currentDistance = 0.0;
+            var runDistance = distance;
             var currentVisualIndex = firstIndex;
 
             for (var i = firstIndex; i <= lastIndex; i++)
             {
-                var currentRun = _textRuns[i];
+                currentRun = _textRuns[i];
                 currentVisualIndex = i;
 
                 if (currentRun is ShapedTextRun shapedRun && !shapedRun.ShapedBuffer.IsLeftToRight)
@@ -338,7 +339,7 @@ namespace Avalonia.Media.TextFormatting
                     }
                 }
 
-                characterHit = GetRunCharacterHit(currentRun, GetRunTextSourcePosition(currentVisualIndex), distance - currentDistance);
+                runDistance = distance - currentDistance;
 
                 if (currentRun is DrawableTextRun drawableTextRun)
                 {
@@ -357,7 +358,7 @@ namespace Avalonia.Media.TextFormatting
                 break;
             }
 
-            return characterHit;
+            return GetRunCharacterHit(currentRun, GetRunTextSourcePosition(currentVisualIndex), runDistance);
         }
 
         private static CharacterHit GetRunCharacterHit(TextRun run, int currentPosition, double distance)
@@ -411,47 +412,9 @@ namespace Avalonia.Media.TextFormatting
 
             var currentPosition = FirstTextSourceIndex;
 
-            IndexedTextRun FindIndexedRun(out int index)
-            {
-                index = 0;
-
-                IndexedTextRun currentIndexedRun = _indexedTextRuns[index];
-
-                while (currentIndexedRun.TextSourceCharacterIndex != currentPosition)
-                {
-                    if (index + 1 == _indexedTextRuns.Count)
-                    {
-                        break;
-                    }
-
-                    index++;
-
-                    currentIndexedRun = _indexedTextRuns[index];
-                }
-
-                return currentIndexedRun;
-            }
-
-            double GetPreceedingDistance(int firstIndex)
-            {
-                var distance = 0.0;
-
-                for (var i = 0; i < firstIndex; i++)
-                {
-                    var currentRun = _textRuns[i];
-
-                    if (currentRun is DrawableTextRun drawableTextRun)
-                    {
-                        distance += drawableTextRun.Size.Width;
-                    }
-                }
-
-                return distance;
-            }
-
             TextRun? currentTextRun = null;
 
-            var currentIndexedRun = FindIndexedRun(out var indexedRunIndex);
+            var currentIndexedRun = FindIndexedRun(_indexedTextRuns, currentPosition, out var indexedRunIndex);
 
             while (currentPosition < FirstTextSourceIndex + Length)
             {
@@ -468,7 +431,7 @@ namespace Avalonia.Media.TextFormatting
                     {
                         currentPosition += currentTextRun.Length;
 
-                        currentIndexedRun = FindIndexedRun(out indexedRunIndex);
+                        currentIndexedRun = FindIndexedRun(_indexedTextRuns, currentPosition, out indexedRunIndex);
 
                         continue;
                     }
@@ -487,7 +450,7 @@ namespace Avalonia.Media.TextFormatting
 
             var currentDirection = GetRunDirection(currentIndexedRun);
 
-            var currentX = Start + GetPreceedingDistance(currentIndexedRun.RunIndex);
+            var currentX = Start + GetPrecedingDistance(currentIndexedRun.RunIndex);
 
             if (currentTextRun is DrawableTextRun currentDrawable)
             {
@@ -629,6 +592,66 @@ namespace Avalonia.Media.TextFormatting
         }
 
         /// <summary>
+        /// Gets the first logical run that starts at a text source position, or the last run when no run starts there.
+        /// </summary>
+        private static IndexedTextRun FindIndexedRun(IReadOnlyList<IndexedTextRun> indexedTextRuns, int textSourcePosition, out int index)
+        {
+            var low = 0;
+            var high = indexedTextRuns.Count - 1;
+
+            while (low < high)
+            {
+                var middle = low + (high - low) / 2;
+
+                if (indexedTextRuns[middle].TextSourceCharacterIndex < textSourcePosition)
+                {
+                    low = middle + 1;
+                }
+                else
+                {
+                    high = middle;
+                }
+            }
+
+            index = indexedTextRuns[low].TextSourceCharacterIndex == textSourcePosition ? low : indexedTextRuns.Count - 1;
+
+            return indexedTextRuns[index];
+        }
+
+        private double GetPrecedingDistance(int visualRunIndex)
+        {
+            var distance = 0.0;
+
+            for (var i = 0; i < visualRunIndex; i++)
+            {
+                if (_textRuns[i] is DrawableTextRun drawableTextRun)
+                {
+                    distance += drawableTextRun.Size.Width;
+                }
+            }
+
+            return distance;
+        }
+
+        private double[] GetPrecedingDistances()
+        {
+            var distances = new double[_textRuns.Length];
+            var distance = 0.0;
+
+            for (var i = 0; i < _textRuns.Length; i++)
+            {
+                distances[i] = distance;
+
+                if (_textRuns[i] is DrawableTextRun drawableTextRun)
+                {
+                    distance += drawableTextRun.Size.Width;
+                }
+            }
+
+            return distances;
+        }
+
+        /// <summary>
         /// Get the last consecutive visual run index that shares the same direction as the current direction.
         /// </summary>
         /// <param name="indexedRunIndex">The current logical run's index.</param>
@@ -717,10 +740,11 @@ namespace Avalonia.Media.TextFormatting
             var result = new List<TextBounds>();
 
             TextBounds? lastBounds = null;
+            double[]? precedingDistances = null;
 
             while (remainingLength > 0 && currentPosition < FirstTextSourceIndex + Length)
             {
-                var currentIndexedRun = FindIndexedRun(out var indexedRunIndex);
+                var currentIndexedRun = FindIndexedRun(_indexedTextRuns, currentPosition, out var indexedRunIndex);
 
                 if (currentIndexedRun == null)
                 {
@@ -743,7 +767,10 @@ namespace Avalonia.Media.TextFormatting
                     continue;
                 }
 
-                var currentX = Start + GetPreceedingDistance(currentIndexedRun.RunIndex);
+                // Right-to-left runs yield one bounds each, in descending visual order.
+                var currentX = Start + (lastBounds is null
+                    ? GetPrecedingDistance(currentIndexedRun.RunIndex)
+                    : (precedingDistances ??= GetPrecedingDistances())[currentIndexedRun.RunIndex]);
                 var directionalWidth = 0.0;
 
                 if (currentTextRun is DrawableTextRun currentDrawable)
@@ -799,44 +826,6 @@ namespace Avalonia.Media.TextFormatting
             result.Sort(TextBoundsComparer);
 
             return result;
-
-            IndexedTextRun FindIndexedRun(out int index)
-            {
-                index = 0;
-
-                var currentIndexedRun = _indexedTextRuns[index];
-
-                while (currentIndexedRun.TextSourceCharacterIndex != currentPosition)
-                {
-                    if (index + 1 == _indexedTextRuns.Count)
-                    {
-                        break;
-                    }
-
-                    index++;
-
-                    currentIndexedRun = _indexedTextRuns[index];
-                }
-
-                return currentIndexedRun;
-            }
-
-            double GetPreceedingDistance(int firstIndex)
-            {
-                var distance = 0.0;
-
-                for (var i = 0; i < firstIndex; i++)
-                {
-                    var currentRun = _textRuns[i];
-
-                    if (currentRun is DrawableTextRun drawableTextRun)
-                    {
-                        distance += drawableTextRun.Size.Width;
-                    }
-                }
-
-                return distance;
-            }
 
             bool TryMergeWithLastBounds(TextBounds currentBounds, TextBounds lastBounds)
             {
