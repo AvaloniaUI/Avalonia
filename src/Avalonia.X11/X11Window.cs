@@ -255,7 +255,8 @@ namespace Avalonia.X11
             
             if (egl != null)
                 surfaces.Insert(0,
-                    new EglGlPlatformSurface(new SurfaceInfo(this, _x11.DeferredDisplay, _handle, _renderHandle)));
+                    new EglGlPlatformSurface(new SurfaceInfo(this, _x11.DeferredDisplay, _handle, _renderHandle),
+                        _platform.Options.UsePartialPresentation ?? false));
             if (glx != null)
                 surfaces.Insert(0, new GlxGlPlatformSurface(new SurfaceInfo(this, _x11.DeferredDisplay, _handle, _renderHandle)));
 
@@ -529,7 +530,7 @@ namespace Avalonia.X11
 
         public IPlatformRenderSurface[] Surfaces { get; }
         public Action<RawInputEventArgs>? Input { get; set; }
-        public Action<Rect>? Paint { get; set; }
+        public Action<ITopLevelImpl.PaintOptions?>? Paint { get; set; }
         public Action<Size, WindowResizeReason>? Resized { get; set; }
         //TODO
         public Action<double>? ScalingChanged { get; set; }
@@ -1122,7 +1123,7 @@ namespace Avalonia.X11
 
         private void DoPaint()
         {
-            Paint?.Invoke(new Rect());
+            Paint?.Invoke(null);
             if (_xSyncCounter != IntPtr.Zero && _xSyncState == XSyncState.WaitPaint)
             {
                 _xSyncState = XSyncState.None;

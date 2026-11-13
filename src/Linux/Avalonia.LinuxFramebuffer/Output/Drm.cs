@@ -208,7 +208,7 @@ namespace Avalonia.LinuxFramebuffer.Output
 
 
         [DllImport(libdrm, SetLastError = true)]
-        public static extern void drmHandleEvent(int fd, DrmEventContext* context);
+        public static extern int drmHandleEvent(int fd, DrmEventContext* context);
 
         [DllImport(libgbm, SetLastError = true)]
         public static extern IntPtr gbm_create_device(int fd);
@@ -246,10 +246,12 @@ namespace Avalonia.LinuxFramebuffer.Output
 
         [DllImport(libgbm, SetLastError = true)]
         public static extern IntPtr gbm_surface_create(IntPtr device, int width, int height, uint format, GbmBoFlags flags);
+        [DllImport(libgbm)]
+        public static extern void gbm_surface_destroy(IntPtr surface);
         [DllImport(libgbm, SetLastError = true)]
         public static extern IntPtr gbm_surface_lock_front_buffer(IntPtr surface);
         [DllImport(libgbm, SetLastError = true)]
-        public static extern int gbm_surface_release_buffer(IntPtr surface, IntPtr bo);
+        public static extern void gbm_surface_release_buffer(IntPtr surface, IntPtr bo);
         [DllImport(libgbm, SetLastError = true)]
         public static extern int gbm_surface_has_free_buffers(IntPtr surface);
         [DllImport(libgbm, SetLastError = true)]
@@ -259,7 +261,7 @@ namespace Avalonia.LinuxFramebuffer.Output
         public delegate void GbmBoUserDataDestroyCallbackDelegate(IntPtr bo, IntPtr data);
 
         [DllImport(libgbm, SetLastError = true)]
-        public static extern IntPtr gbm_bo_set_user_data(IntPtr bo, IntPtr userData,
+        public static extern void gbm_bo_set_user_data(IntPtr bo, IntPtr userData,
             GbmBoUserDataDestroyCallbackDelegate onFree);
 
         [DllImport(libgbm, SetLastError = true)]

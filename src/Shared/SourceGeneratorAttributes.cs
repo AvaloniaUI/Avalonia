@@ -20,6 +20,9 @@ namespace Avalonia.SourceGenerator
     [AttributeUsage(AttributeTargets.Method)]
     internal sealed class GetProcAddressAttribute : Attribute
     {
+        // Include this entry point in an internal I<ClassName> interface.
+        public bool GenerateInterface { get; set; }
+
         public GetProcAddressAttribute(string proc)
         {
             

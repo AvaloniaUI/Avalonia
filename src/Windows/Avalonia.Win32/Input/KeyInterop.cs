@@ -563,6 +563,22 @@ namespace Avalonia.Win32.Input
         }
 
         /// <summary>
+        /// Gets whether a dead key is pending, without changing the dead-key state. Needs Windows 10 1607 or later:
+        /// older versions end the pending dead key.
+        /// </summary>
+        internal static unsafe bool IsDeadKeyPending(IntPtr layout)
+        {
+            const uint doNotChangeKeyboardState = 1U << 2;
+            const int bufferSize = 8;
+            var keyStates = stackalloc byte[256];
+            var buffer = stackalloc char[bufferSize];
+            new Span<byte>(keyStates, 256).Clear();
+            var length = ToUnicodeEx((uint)VK_SPACE, MapVirtualKeyEx((uint)VK_SPACE, 0, layout), keyStates, buffer,
+                bufferSize, doNotChangeKeyboardState, layout);
+            return length != 1 || buffer[0] != ' ';
+        }
+
+        /// <summary>
         /// Gets whether a character is a C0 control character or DEL.
         /// </summary>
         internal static bool IsControlChar(char c) => c < 0x20 || c == 0x7F;
