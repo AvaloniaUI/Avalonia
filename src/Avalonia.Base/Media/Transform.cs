@@ -45,6 +45,7 @@ namespace Avalonia.Media
         /// </summary>
         protected void RaiseChanged()
         {
+            _resource.RegisterForInvalidationOnAllCompositors(this);
             Changed?.Invoke(this, EventArgs.Empty);
         }
 

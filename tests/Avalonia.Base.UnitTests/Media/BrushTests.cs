@@ -106,5 +106,86 @@ namespace Avalonia.Base.UnitTests.Media
 
             RenderResourceTestHelper.AssertResourceInvalidation(target, () => { target.Opacity = 0.5; });
         }
+
+        [Fact]
+        public void Changing_Transform_Angle_Updates_Server_Brush_Transform()
+        {
+            var transform = new RotateTransform(0);
+            var brush = new SolidColorBrush(Colors.Red) { Transform = transform };
+            using var helper = new RenderResourceTestHelper();
+            helper.AddToCompositor(brush);
+            helper.Compositor.Commit();
+            helper.Compositor.Server.Render(false);
+
+            var serverBrush = (Avalonia.Rendering.Composition.Server.ServerCompositionSimpleBrush)((Avalonia.Rendering.Composition.ICompositorSerializable)brush).TryGetServer(helper.Compositor)!;
+            Assert.Equal(Matrix.Identity, serverBrush.Transform?.Value);
+
+            transform.Angle = 90;
+            helper.Compositor.Commit();
+            helper.Compositor.Server.Render(false);
+
+            Assert.Equal(transform.Value, serverBrush.Transform?.Value);
+        }
+
+        [Fact]
+        public void Changing_Transform_Scale_Updates_Server_Brush_Transform()
+        {
+            var transform = new ScaleTransform(1, 1);
+            var brush = new SolidColorBrush(Colors.Red) { Transform = transform };
+            using var helper = new RenderResourceTestHelper();
+            helper.AddToCompositor(brush);
+            helper.Compositor.Commit();
+            helper.Compositor.Server.Render(false);
+
+            var serverBrush = (Avalonia.Rendering.Composition.Server.ServerCompositionSimpleBrush)((Avalonia.Rendering.Composition.ICompositorSerializable)brush).TryGetServer(helper.Compositor)!;
+            Assert.Equal(Matrix.Identity, serverBrush.Transform?.Value);
+
+            transform.ScaleX = 2;
+            helper.Compositor.Commit();
+            helper.Compositor.Server.Render(false);
+
+            Assert.Equal(transform.Value, serverBrush.Transform?.Value);
+        }
+
+        [Fact]
+        public void Changing_Transform_Translate_Updates_Server_Brush_Transform()
+        {
+            var transform = new TranslateTransform(0, 0);
+            var brush = new SolidColorBrush(Colors.Red) { Transform = transform };
+            using var helper = new RenderResourceTestHelper();
+            helper.AddToCompositor(brush);
+            helper.Compositor.Commit();
+            helper.Compositor.Server.Render(false);
+
+            var serverBrush = (Avalonia.Rendering.Composition.Server.ServerCompositionSimpleBrush)((Avalonia.Rendering.Composition.ICompositorSerializable)brush).TryGetServer(helper.Compositor)!;
+            Assert.Equal(Matrix.Identity, serverBrush.Transform?.Value);
+
+            transform.X = 15;
+            helper.Compositor.Commit();
+            helper.Compositor.Server.Render(false);
+
+            Assert.Equal(transform.Value, serverBrush.Transform?.Value);
+        }
+
+        [Fact]
+        public void Changing_TransformGroup_Child_Updates_Server_Brush_Transform()
+        {
+            var rotate = new RotateTransform(0);
+            var group = new TransformGroup { Children = { rotate } };
+            var brush = new SolidColorBrush(Colors.Red) { Transform = group };
+            using var helper = new RenderResourceTestHelper();
+            helper.AddToCompositor(brush);
+            helper.Compositor.Commit();
+            helper.Compositor.Server.Render(false);
+
+            var serverBrush = (Avalonia.Rendering.Composition.Server.ServerCompositionSimpleBrush)((Avalonia.Rendering.Composition.ICompositorSerializable)brush).TryGetServer(helper.Compositor)!;
+            Assert.Equal(Matrix.Identity, serverBrush.Transform?.Value);
+
+            rotate.Angle = 90;
+            helper.Compositor.Commit();
+            helper.Compositor.Server.Render(false);
+
+            Assert.Equal(group.Value, serverBrush.Transform?.Value);
+        }
     }
 }
