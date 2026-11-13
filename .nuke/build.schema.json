@@ -36,7 +36,6 @@
         "DownloadApiBaselinePackages",
         "EmbedSbom",
         "GenerateUnicodeData",
-        "InitDnx",
         "OutputApiDiff",
         "Package",
         "RunCoreLibsTests",

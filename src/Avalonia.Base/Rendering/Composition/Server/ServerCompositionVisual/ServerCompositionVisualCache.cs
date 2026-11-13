@@ -40,6 +40,13 @@ internal class ServerCompositionVisualCache
         _layerCreatedWithContext = null;
     }
 
+    // Layer space to layer pixels mapping of this bitmap cache layer, same as in DirtyRectCollectorProxy.
+    // Usable after the first draw, which sets the offset and the scale.
+    public PixelSize LayerPixelSize => _layer?.PixelSize ?? default;
+
+    public DirtyRectSpaceMapping GetDirtyRectSpaceMapping() =>
+        new(_drawAtOffset, _scaleX, _scaleY);
+
 
     public void InvalidateProperties()
     {
@@ -63,13 +70,16 @@ internal class ServerCompositionVisualCache
         public void AddRect(LtrbRect rect)
         {
             parent._needToFinalizeFrame = true;
-            
+
             // scale according to our render transform, since those values come in local space of the visual
             parent._dirtyRectTracker.AddRect(new LtrbRect((rect.Left + parent._drawAtOffset.X) * parent._scaleX,
                 (rect.Top + parent._drawAtOffset.Y) * parent._scaleY,
                 (rect.Right + parent._drawAtOffset.X) * parent._scaleX,
                 (rect.Bottom + parent._drawAtOffset.Y) * parent._scaleY));
         }
+
+        public DirtyRectWorkingSet GetWorkingSet() => new(parent._dirtyRectTracker,
+            new DirtyRectSpaceMapping(parent._drawAtOffset, parent._scaleX, parent._scaleY));
     }
     
     private readonly IDirtyRectTracker _dirtyRectTracker = new SingleDirtyRectTracker();
@@ -164,7 +174,7 @@ internal class ServerCompositionVisualCache
                 return default;
             }
             
-            _layer = renderContext.CreateOffscreenRenderTarget(_desiredLayerSize, new Vector(_scaleX, _scaleX),
+            _layer = renderContext.CreateOffscreenRenderTarget(_desiredLayerSize, new Vector(_scaleX, _scaleY),
                 EnableClearType);
             _layerHasTextAntialiasing = EnableClearType;
             _layerCreatedWithContext = renderContext;
@@ -179,6 +189,9 @@ internal class ServerCompositionVisualCache
         {
             ResetDirtyRects();
             DirtyRectCollector.AddRect(LtrbRect.Infinite);
+            // A full redraw of the bitmap cache layer: the snapshots of the retained backdrop visuals inside
+            // need a full refresh. Done here to cover every reason for a full redraw.
+            TargetVisual.Root?.InvalidateRetainedBackdropInputs(this);
         }
 
         // Compute the final dirty rect set that accounts for antialiasing effects

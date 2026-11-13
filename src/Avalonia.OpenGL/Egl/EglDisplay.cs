@@ -22,6 +22,10 @@ namespace Avalonia.OpenGL.Egl
         public IntPtr Config => _config.Config;
         internal bool SingleContext => !_options.SupportsMultipleContexts;
         private readonly List<EglContext> _contexts = new();
+        internal bool SupportsBufferAge { get; }
+        internal bool SupportsPartialUpdate { get; }
+        internal bool SupportsSwapBuffersWithDamageKhr { get; }
+        internal bool SupportsSwapBuffersWithDamageExt { get; }
         
         public EglDisplay() : this(new EglDisplayCreationOptions
         {
@@ -47,6 +51,14 @@ namespace Avalonia.OpenGL.Egl
 
             _config = EglDisplayUtils.InitializeAndGetConfig(_egl, display, options.GlVersions, options.ProbeConfig,
                 options.AllowPbufferOnlyConfigs);
+            var extensions = new HashSet<string>(
+                (_egl.QueryString(display, EGL_EXTENSIONS) ?? "").Split(' ', StringSplitOptions.RemoveEmptyEntries));
+            SupportsBufferAge = extensions.Contains("EGL_EXT_buffer_age");
+            SupportsPartialUpdate = extensions.Contains("EGL_KHR_partial_update") && _egl.IsSetDamageRegionKhrAvailable;
+            SupportsSwapBuffersWithDamageKhr = extensions.Contains("EGL_KHR_swap_buffers_with_damage") &&
+                                              _egl.IsSwapBuffersWithDamageKhrAvailable;
+            SupportsSwapBuffersWithDamageExt = extensions.Contains("EGL_EXT_swap_buffers_with_damage") &&
+                                              _egl.IsSwapBuffersWithDamageExtAvailable;
         }
         
         public EglInterface EglInterface => _egl;

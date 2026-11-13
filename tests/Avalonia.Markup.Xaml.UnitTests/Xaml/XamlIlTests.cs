@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Avalonia.Controls;
 using Avalonia.Data.Converters;
-using Avalonia.Data.Core;
+using Avalonia.Markup.Xaml.XamlIl.Runtime;
 using Avalonia.Markup.Xaml.UnitTests.Xaml;
 using Avalonia.Media;
 using Avalonia.Threading;
@@ -567,7 +567,7 @@ namespace Avalonia.Markup.Xaml.UnitTests
         public object ProvideValue(IServiceProvider prov)
         {
             var pvt = prov.GetRequiredService<IProvideValueTarget>();
-            var info = (ClrPropertyInfo)pvt.TargetProperty;
+            var info = Assert.IsType<FunctionPointerPropertyInfo>(pvt.TargetProperty);
             var v = (int)info.Get(pvt.TargetObject)!;
             return v + 1;
         }
