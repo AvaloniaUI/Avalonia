@@ -748,7 +748,9 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void TextBox_CaretIndex_Persists_When_Focus_Lost()
         {
-            using (UnitTestApplication.Start(FocusServices.With(assetLoader: new StandardAssetLoader())))
+            using (UnitTestApplication.Start(FocusServices.With(
+                       assetLoader: new StandardAssetLoader(),
+                       renderInterface: new HeadlessPlatformRenderInterface())))
             {
                 var target1 = new TextBox
                 {
