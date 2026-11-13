@@ -2,6 +2,8 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia.Controls;
+using Avalonia.Media;
 using Avalonia.Threading;
 
 namespace Avalonia.Headless.UnitTests;
@@ -42,5 +44,39 @@ public class HeadlessUnitTestSessionTests
 
         Assert.That(result, Is.EqualTo(42));
     }
+
+#if PERTEST
+    // PerTest only: a shared PerAssembly session keeps its services in the root locator, which other sessions inherit.
+    [Test]
+    public async Task Sessions_On_Different_Threads_Should_Render_Predefined_TextDecorations()
+    {
+        await using var first = HeadlessUnitTestSession.StartNew(typeof(TestApplication));
+        await using var second = HeadlessUnitTestSession.StartNew(typeof(TestApplication));
+
+        // Both sessions are alive at the same time, so their dispatch loops run on different threads.
+        var firstThreadId = await first.Dispatch(RenderUnderlinedText, CancellationToken.None)
+            .WaitAsync(TimeSpan.FromSeconds(10));
+        var secondThreadId = await second.Dispatch(RenderUnderlinedText, CancellationToken.None)
+            .WaitAsync(TimeSpan.FromSeconds(10));
+
+        Assert.That(secondThreadId, Is.Not.EqualTo(firstThreadId));
+
+        static int RenderUnderlinedText()
+        {
+            var window = new Window
+            {
+                Content = new TextBlock { Text = "Hello, World!", TextDecorations = TextDecorations.Underline },
+                Width = 100,
+                Height = 100
+            };
+
+            window.Show();
+
+            AssertHelper.NotNull(window.CaptureRenderedFrame());
+
+            return Environment.CurrentManagedThreadId;
+        }
+    }
+#endif
 }
 #endif
