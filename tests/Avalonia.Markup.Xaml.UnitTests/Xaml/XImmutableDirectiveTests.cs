@@ -1,0 +1,674 @@
+using System;
+using System.Linq;
+using Avalonia.Controls;
+using Avalonia.Media;
+using Avalonia.Media.Immutable;
+using Avalonia.Styling;
+using Avalonia.UnitTests;
+using Xunit;
+
+namespace Avalonia.Markup.Xaml.UnitTests.Xaml;
+
+public class XImmutableDirectiveTests : XamlTestBase
+{
+    [Fact]
+    public void Literal_SolidColorBrush_Is_Created_As_Immutable_Without_Deferral()
+    {
+        var resources = (ResourceDictionary)AvaloniaRuntimeXamlLoader.Load("""
+            <ResourceDictionary xmlns="https://github.com/avaloniaui"
+                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                <SolidColorBrush x:Key="Brush" x:Immutable="True" Color="#80FF0000" Opacity="0.5" />
+                <SolidColorBrush x:Key="ColorOnly" x:Immutable="True" Color="Blue" />
+            </ResourceDictionary>
+            """);
+
+        // Enumerator returns raw values, without resolving deferred content.
+        var brush = Assert.IsType<ImmutableSolidColorBrush>(resources.Single(r => "Brush".Equals(r.Key)).Value);
+        Assert.Equal(Color.Parse("#80FF0000"), brush.Color);
+        Assert.Equal(0.5, brush.Opacity);
+        Assert.Null(brush.Transform);
+        Assert.Null(brush.RelativeTransform);
+
+        var colorOnly = Assert.IsType<ImmutableSolidColorBrush>(resources.Single(r => "ColorOnly".Equals(r.Key)).Value);
+        Assert.Equal(Colors.Blue, colorOnly.Color);
+        Assert.Equal(1, colorOnly.Opacity);
+    }
+
+    [Fact]
+    public void Text_Content_SolidColorBrush_Is_Created_As_Immutable_Without_Deferral()
+    {
+        var resources = (ResourceDictionary)AvaloniaRuntimeXamlLoader.Load("""
+            <ResourceDictionary xmlns="https://github.com/avaloniaui"
+                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                <SolidColorBrush x:Key="Brush" x:Immutable="True" Opacity="0.5">Red</SolidColorBrush>
+            </ResourceDictionary>
+            """);
+
+        var brush = Assert.IsType<ImmutableSolidColorBrush>(resources.Single(r => "Brush".Equals(r.Key)).Value);
+        Assert.Equal(Colors.Red, brush.Color);
+        Assert.Equal(0.5, brush.Opacity);
+    }
+
+    [Fact]
+    public void Literal_SolidColorBrush_Respects_Explicit_XShared_True()
+    {
+        var resources = (ResourceDictionary)AvaloniaRuntimeXamlLoader.Load("""
+            <ResourceDictionary xmlns="https://github.com/avaloniaui"
+                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                <SolidColorBrush x:Key="Brush" x:Immutable="True" x:Shared="True" Color="{StaticResource Accent}" />
+                <Color x:Key="Accent">Red</Color>
+            </ResourceDictionary>
+            """);
+
+        Assert.Same(resources["Brush"], resources["Brush"]);
+    }
+
+    [Fact]
+    public void Literal_SolidColorBrush_Respects_XShared()
+    {
+        var resources = (ResourceDictionary)AvaloniaRuntimeXamlLoader.Load("""
+            <ResourceDictionary xmlns="https://github.com/avaloniaui"
+                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                <SolidColorBrush x:Key="Brush" x:Immutable="True" x:Shared="False" Color="Red" />
+            </ResourceDictionary>
+            """);
+
+        var brush1 = Assert.IsType<ImmutableSolidColorBrush>(resources["Brush"]);
+        var brush2 = Assert.IsType<ImmutableSolidColorBrush>(resources["Brush"]);
+        Assert.NotSame(brush1, brush2);
+        Assert.Equal(Colors.Red, brush1.Color);
+    }
+
+    [Fact]
+    public void SolidColorBrush_With_StaticResource_Is_Deferred()
+    {
+        var resources = (ResourceDictionary)AvaloniaRuntimeXamlLoader.Load("""
+            <ResourceDictionary xmlns="https://github.com/avaloniaui"
+                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                <Color x:Key="Accent">Green</Color>
+                <SolidColorBrush x:Key="Brush" x:Immutable="True" Color="{StaticResource Accent}" Opacity="0.25" />
+            </ResourceDictionary>
+            """);
+
+        // StaticResource is resolved lazily.
+        Assert.IsAssignableFrom<IDeferredContent>(resources.Single(r => "Brush".Equals(r.Key)).Value);
+
+        var brush = Assert.IsType<ImmutableSolidColorBrush>(resources["Brush"]);
+        Assert.Equal(Colors.Green, brush.Color);
+        Assert.Equal(0.25, brush.Opacity);
+    }
+
+    [Fact]
+    public void SolidColorBrush_With_Transform_Is_Created_As_Immutable_Without_Deferral()
+    {
+        var resources = (ResourceDictionary)AvaloniaRuntimeXamlLoader.Load("""
+            <ResourceDictionary xmlns="https://github.com/avaloniaui"
+                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                <SolidColorBrush x:Key="Brush" x:Immutable="True" Color="Red">
+                    <SolidColorBrush.Transform>
+                        <RotateTransform Angle="45" />
+                    </SolidColorBrush.Transform>
+                </SolidColorBrush>
+            </ResourceDictionary>
+            """);
+
+        var brush = Assert.IsType<ImmutableSolidColorBrush>(resources.Single(r => "Brush".Equals(r.Key)).Value);
+        Assert.Equal(Colors.Red, brush.Color);
+        Assert.Equal(Matrix.CreateRotation(Matrix.ToRadians(45)), Assert.IsType<ImmutableTransform>(brush.Transform).Value);
+    }
+
+    [Fact]
+    public void SolidColorBrush_With_TransformOrigin_Uses_ToImmutable()
+    {
+        var resources = (ResourceDictionary)AvaloniaRuntimeXamlLoader.Load("""
+            <ResourceDictionary xmlns="https://github.com/avaloniaui"
+                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                <SolidColorBrush x:Key="Brush" x:Immutable="True" Color="Red" TransformOrigin="50%,50%" />
+            </ResourceDictionary>
+            """);
+
+        Assert.IsAssignableFrom<IDeferredContent>(resources.Single(r => "Brush".Equals(r.Key)).Value);
+        var brush = Assert.IsType<ImmutableSolidColorBrush>(resources["Brush"]);
+        Assert.Equal(Colors.Red, brush.Color);
+    }
+
+    [Fact]
+    public void LinearGradientBrush_Uses_ToImmutable()
+    {
+        var resources = (ResourceDictionary)AvaloniaRuntimeXamlLoader.Load("""
+            <ResourceDictionary xmlns="https://github.com/avaloniaui"
+                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                <LinearGradientBrush x:Key="Brush" x:Immutable="True" StartPoint="0%,0%" EndPoint="100%,0%">
+                    <GradientStop Offset="0" Color="Red" />
+                    <GradientStop Offset="1" Color="Blue" />
+                </LinearGradientBrush>
+            </ResourceDictionary>
+            """);
+
+        // ToImmutable is called on a mutable brush, which is deferred as any other resource.
+        Assert.IsAssignableFrom<IDeferredContent>(resources.Single(r => "Brush".Equals(r.Key)).Value);
+
+        var brush = Assert.IsType<ImmutableLinearGradientBrush>(resources["Brush"]);
+        Assert.Equal(new RelativePoint(0, 0, RelativeUnit.Relative), brush.StartPoint);
+        Assert.Equal(new RelativePoint(1, 0, RelativeUnit.Relative), brush.EndPoint);
+        Assert.Equal(1, brush.Opacity);
+        Assert.Equal(GradientSpreadMethod.Pad, brush.SpreadMethod);
+        Assert.Equal(RelativePoint.TopLeft, brush.TransformOrigin);
+        Assert.Null(brush.Transform);
+        Assert.Equal(2, brush.GradientStops.Count);
+        Assert.Equal(0, brush.GradientStops[0].Offset);
+        Assert.Equal(Colors.Red, brush.GradientStops[0].Color);
+        Assert.Equal(1, brush.GradientStops[1].Offset);
+        Assert.Equal(Colors.Blue, brush.GradientStops[1].Color);
+    }
+
+    [Fact]
+    public void LinearGradientBrush_Defaults_Match_Mutable_Brush()
+    {
+        var resources = (ResourceDictionary)AvaloniaRuntimeXamlLoader.Load("""
+            <ResourceDictionary xmlns="https://github.com/avaloniaui"
+                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                <LinearGradientBrush x:Key="Brush" x:Immutable="True">
+                    <GradientStop />
+                </LinearGradientBrush>
+            </ResourceDictionary>
+            """);
+
+        var brush = Assert.IsType<ImmutableLinearGradientBrush>(resources["Brush"]);
+        var mutable = new LinearGradientBrush { GradientStops = { new GradientStop() } };
+        Assert.Equal(mutable.StartPoint, brush.StartPoint);
+        Assert.Equal(mutable.EndPoint, brush.EndPoint);
+        Assert.Equal(mutable.Opacity, brush.Opacity);
+        Assert.Equal(mutable.SpreadMethod, brush.SpreadMethod);
+        Assert.Equal(mutable.GradientStops[0].Offset, brush.GradientStops[0].Offset);
+        Assert.Equal(mutable.GradientStops[0].Color, brush.GradientStops[0].Color);
+    }
+
+    [Fact]
+    public void LinearGradientBrush_With_StaticResource_Stops_And_Transform_Uses_ToImmutable()
+    {
+        var resources = (ResourceDictionary)AvaloniaRuntimeXamlLoader.Load("""
+            <ResourceDictionary xmlns="https://github.com/avaloniaui"
+                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                <Color x:Key="First">Red</Color>
+                <Color x:Key="Second">Blue</Color>
+                <LinearGradientBrush x:Key="Brush" x:Immutable="True" StartPoint="0,0" EndPoint="0,3"
+                                     TransformOrigin="50%,50%" SpreadMethod="Reflect" Opacity="0.5">
+                    <LinearGradientBrush.Transform>
+                        <ScaleTransform ScaleY="-1" />
+                    </LinearGradientBrush.Transform>
+                    <LinearGradientBrush.GradientStops>
+                        <GradientStop Offset="0.33" Color="{StaticResource First}" />
+                        <GradientStop Offset="1.0" Color="{StaticResource Second}" />
+                    </LinearGradientBrush.GradientStops>
+                </LinearGradientBrush>
+            </ResourceDictionary>
+            """);
+
+        Assert.IsAssignableFrom<IDeferredContent>(resources.Single(r => "Brush".Equals(r.Key)).Value);
+
+        var brush = Assert.IsType<ImmutableLinearGradientBrush>(resources["Brush"]);
+        Assert.Equal(new RelativePoint(0, 0, RelativeUnit.Absolute), brush.StartPoint);
+        Assert.Equal(new RelativePoint(0, 3, RelativeUnit.Absolute), brush.EndPoint);
+        Assert.Equal(new RelativePoint(0.5, 0.5, RelativeUnit.Relative), brush.TransformOrigin);
+        Assert.Equal(GradientSpreadMethod.Reflect, brush.SpreadMethod);
+        Assert.Equal(0.5, brush.Opacity);
+        Assert.Equal(Matrix.CreateScale(1, -1), Assert.IsType<ImmutableTransform>(brush.Transform).Value);
+        Assert.Equal(0.33, brush.GradientStops[0].Offset);
+        Assert.Equal(Colors.Red, brush.GradientStops[0].Color);
+        Assert.Equal(Colors.Blue, brush.GradientStops[1].Color);
+    }
+
+    [Fact]
+    public void Pen_Uses_ToImmutable()
+    {
+        var resources = (ResourceDictionary)AvaloniaRuntimeXamlLoader.Load("""
+            <ResourceDictionary xmlns="https://github.com/avaloniaui"
+                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                <Pen x:Key="Pen" x:Immutable="True" Brush="Red" Thickness="2">
+                    <Pen.DashStyle>
+                        <DashStyle Dashes="2,2" />
+                    </Pen.DashStyle>
+                </Pen>
+            </ResourceDictionary>
+            """);
+
+        var pen = Assert.IsType<ImmutablePen>(resources["Pen"]);
+        Assert.Equal(2, pen.Thickness);
+        Assert.IsType<ImmutableDashStyle>(pen.DashStyle);
+    }
+
+    [Fact]
+    public void Inline_Property_Value_Is_Immutable()
+    {
+        using (UnitTestApplication.Start(TestServices.StyledWindow))
+        {
+            var border = (Border)AvaloniaRuntimeXamlLoader.Load("""
+                <Border xmlns="https://github.com/avaloniaui"
+                        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                    <Border.Background>
+                        <SolidColorBrush x:Immutable="True" Color="Red" />
+                    </Border.Background>
+                    <Border.BorderBrush>
+                        <SolidColorBrush x:Immutable="True" Color="Red">
+                            <SolidColorBrush.Transform>
+                                <RotateTransform Angle="45" />
+                            </SolidColorBrush.Transform>
+                        </SolidColorBrush>
+                    </Border.BorderBrush>
+                </Border>
+                """);
+
+            Assert.IsType<ImmutableSolidColorBrush>(border.Background);
+            Assert.IsType<ImmutableSolidColorBrush>(border.BorderBrush);
+        }
+    }
+
+    [Fact]
+    public void False_Keeps_Mutable_Object()
+    {
+        var resources = (ResourceDictionary)AvaloniaRuntimeXamlLoader.Load("""
+            <ResourceDictionary xmlns="https://github.com/avaloniaui"
+                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                <SolidColorBrush x:Key="Brush" x:Immutable="False" Color="Red" />
+            </ResourceDictionary>
+            """);
+
+        Assert.IsType<SolidColorBrush>(resources["Brush"]);
+    }
+
+    [Fact]
+    public void DynamicResource_Is_Not_Allowed()
+    {
+        AssertThrows(() => AvaloniaRuntimeXamlLoader.Load("""
+            <ResourceDictionary xmlns="https://github.com/avaloniaui"
+                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                <SolidColorBrush x:Key="Brush" x:Immutable="True" Color="{DynamicResource Accent}" />
+            </ResourceDictionary>
+            """), "dynamic resources");
+    }
+
+    [Fact]
+    public void Unsupported_Type_Is_Not_Allowed()
+    {
+        AssertThrows(() => AvaloniaRuntimeXamlLoader.Load("""
+            <ResourceDictionary xmlns="https://github.com/avaloniaui"
+                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                <Button x:Key="Button" x:Immutable="True" />
+            </ResourceDictionary>
+            """), "not supported");
+
+        AssertThrows(() => AvaloniaRuntimeXamlLoader.Load("""
+            <Styles xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    x:Immutable="True" />
+            """), "not supported");
+    }
+
+    [Fact]
+    public void ResourceDictionary_Scope_Makes_Supported_Values_Immutable()
+    {
+        var resources = (ResourceDictionary)AvaloniaRuntimeXamlLoader.Load("""
+            <ResourceDictionary xmlns="https://github.com/avaloniaui"
+                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                                x:Immutable="True">
+                <Color x:Key="Accent">Red</Color>
+                <SolidColorBrush x:Key="Literal" Color="Red" />
+                <SolidColorBrush x:Key="Static" Color="{StaticResource Accent}" />
+                <SolidColorBrush x:Key="Text">Red</SolidColorBrush>
+                <LinearGradientBrush x:Key="Gradient">
+                    <GradientStop Offset="0" Color="Red" />
+                </LinearGradientBrush>
+                <Pen x:Key="Pen" Brush="Red" Thickness="2" />
+            </ResourceDictionary>
+            """);
+
+        Assert.IsType<ImmutableSolidColorBrush>(resources.Single(r => "Literal".Equals(r.Key)).Value);
+        Assert.IsType<ImmutableSolidColorBrush>(resources.Single(r => "Text".Equals(r.Key)).Value);
+        Assert.IsType<ImmutableSolidColorBrush>(resources["Static"]);
+        Assert.IsType<ImmutableLinearGradientBrush>(resources["Gradient"]);
+        Assert.IsType<ImmutablePen>(resources["Pen"]);
+        Assert.Equal(Colors.Red, resources["Accent"]);
+    }
+
+    [Fact]
+    public void ResourceDictionary_Scope_Skips_Unsupported_Values()
+    {
+        var resources = (ResourceDictionary)AvaloniaRuntimeXamlLoader.Load("""
+            <ResourceDictionary xmlns="https://github.com/avaloniaui"
+                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                                x:Immutable="True">
+                <SolidColorBrush x:Key="Dynamic" Color="{DynamicResource Accent}" />
+                <LinearGradientBrush x:Key="DynamicGradient">
+                    <GradientStop Offset="0" Color="{DynamicResource Accent}" />
+                </LinearGradientBrush>
+                <SolidColorBrush x:Key="OptOut" x:Immutable="False" Color="Red" />
+                <ColumnDefinitions x:Key="Unsupported">*,Auto</ColumnDefinitions>
+                <ControlTheme x:Key="Theme" TargetType="Border">
+                    <Setter Property="Background">
+                        <SolidColorBrush Color="Red" />
+                    </Setter>
+                </ControlTheme>
+            </ResourceDictionary>
+            """);
+
+        Assert.IsType<SolidColorBrush>(resources["Dynamic"]);
+        Assert.IsType<LinearGradientBrush>(resources["DynamicGradient"]);
+        Assert.IsType<SolidColorBrush>(resources["OptOut"]);
+        Assert.IsType<ColumnDefinitions>(resources["Unsupported"]);
+
+        // Scope applies only to resource dictionary values, not to their nested objects.
+        var theme = Assert.IsType<ControlTheme>(resources["Theme"]);
+        Assert.IsType<SolidColorBrush>(Assert.IsType<Setter>(Assert.Single(theme.Setters)).Value);
+    }
+
+    [Fact]
+    public void ResourceDictionary_Scope_Applies_To_Theme_And_Merged_Dictionaries()
+    {
+        var resources = (ResourceDictionary)AvaloniaRuntimeXamlLoader.Load("""
+            <ResourceDictionary xmlns="https://github.com/avaloniaui"
+                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                                x:Immutable="True">
+                <ResourceDictionary.ThemeDictionaries>
+                    <ResourceDictionary x:Key="Light">
+                        <SolidColorBrush x:Key="Themed" Color="White" />
+                    </ResourceDictionary>
+                    <ResourceDictionary x:Key="Dark" x:Immutable="False">
+                        <SolidColorBrush x:Key="Themed" Color="Black" />
+                    </ResourceDictionary>
+                </ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary.MergedDictionaries>
+                    <ResourceDictionary>
+                        <SolidColorBrush x:Key="Merged" Color="Red" />
+                    </ResourceDictionary>
+                </ResourceDictionary.MergedDictionaries>
+            </ResourceDictionary>
+            """);
+
+        Assert.True(resources.TryGetResource("Themed", ThemeVariant.Light, out var light));
+        Assert.IsType<ImmutableSolidColorBrush>(light);
+        Assert.True(resources.TryGetResource("Themed", ThemeVariant.Dark, out var dark));
+        Assert.IsType<SolidColorBrush>(dark);
+        Assert.True(resources.TryGetResource("Merged", null, out var merged));
+        Assert.IsType<ImmutableSolidColorBrush>(merged);
+    }
+
+    [Fact]
+    public void Non_Brush_Types_With_ToImmutable_Are_Not_Allowed()
+    {
+        AssertThrows(() => AvaloniaRuntimeXamlLoader.Load("""
+            <ResourceDictionary xmlns="https://github.com/avaloniaui"
+                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                <GradientStops x:Key="Stops" x:Immutable="True">
+                    <GradientStop Offset="0" Color="Red" />
+                </GradientStops>
+            </ResourceDictionary>
+            """), "Only brushes and pens");
+
+        AssertThrows(() => AvaloniaRuntimeXamlLoader.Load("""
+            <ResourceDictionary xmlns="https://github.com/avaloniaui"
+                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                <ExperimentalAcrylicMaterial x:Key="Material" x:Immutable="True" TintColor="Red" />
+            </ResourceDictionary>
+            """), "Only brushes and pens");
+    }
+
+    [Fact]
+    public void ResourceDictionary_Scope_Skips_Non_Brush_Types_With_ToImmutable()
+    {
+        var resources = (ResourceDictionary)AvaloniaRuntimeXamlLoader.Load("""
+            <ResourceDictionary xmlns="https://github.com/avaloniaui"
+                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                                x:Immutable="True">
+                <GradientStops x:Key="Stops">
+                    <GradientStop Offset="0" Color="Red" />
+                </GradientStops>
+                <ExperimentalAcrylicMaterial x:Key="Material" TintColor="Red" />
+                <RotateTransform x:Key="Transform" Angle="45" />
+            </ResourceDictionary>
+            """);
+
+        Assert.IsType<GradientStops>(resources["Stops"]);
+        Assert.IsType<ExperimentalAcrylicMaterial>(resources["Material"]);
+        Assert.IsType<RotateTransform>(resources["Transform"]);
+    }
+
+    [Fact]
+    public void False_On_Unsupported_Type_Is_Ignored()
+    {
+        var resources = (ResourceDictionary)AvaloniaRuntimeXamlLoader.Load("""
+            <ResourceDictionary xmlns="https://github.com/avaloniaui"
+                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                                x:Immutable="True">
+                <x:Double x:Key="Double" x:Immutable="False">1</x:Double>
+                <Thickness x:Key="Thickness" x:Immutable="False">1</Thickness>
+                <Button x:Key="Button" x:Immutable="False" />
+            </ResourceDictionary>
+            """);
+
+        Assert.Equal(1.0, resources["Double"]);
+        Assert.Equal(new Thickness(1), resources["Thickness"]);
+        Assert.IsType<Button>(resources["Button"]);
+    }
+
+    [Fact]
+    public void Literal_SolidColorBrush_Ignores_Other_Directives()
+    {
+        var resources = (ResourceDictionary)AvaloniaRuntimeXamlLoader.Load("""
+            <ResourceDictionary xmlns="https://github.com/avaloniaui"
+                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                <SolidColorBrush x:Key="Brush" x:Immutable="True" x:DataType="x:String" Color="Red" />
+            </ResourceDictionary>
+            """);
+
+        var brush = Assert.IsType<ImmutableSolidColorBrush>(resources.Single(r => "Brush".Equals(r.Key)).Value);
+        Assert.Equal(Colors.Red, brush.Color);
+    }
+
+    [Fact]
+    public void Literal_SolidColorBrush_With_XShared_True_Is_Created_Without_Deferral()
+    {
+        var resources = (ResourceDictionary)AvaloniaRuntimeXamlLoader.Load("""
+            <ResourceDictionary xmlns="https://github.com/avaloniaui"
+                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                <SolidColorBrush x:Key="Brush" x:Immutable="True" x:Shared="True" Color="Red" />
+            </ResourceDictionary>
+            """);
+
+        Assert.IsType<ImmutableSolidColorBrush>(resources.Single(r => "Brush".Equals(r.Key)).Value);
+        Assert.Same(resources["Brush"], resources["Brush"]);
+    }
+
+    [Fact]
+    public void ResourceDictionary_Is_ReadOnly()
+    {
+        var resources = (ResourceDictionary)AvaloniaRuntimeXamlLoader.Load("""
+            <ResourceDictionary xmlns="https://github.com/avaloniaui"
+                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                                x:Immutable="True">
+                <Color x:Key="Accent">Red</Color>
+                <SolidColorBrush x:Key="Brush" Color="Red" />
+                <ResourceDictionary.ThemeDictionaries>
+                    <ResourceDictionary x:Key="Light">
+                        <SolidColorBrush x:Key="Themed" Color="White" />
+                    </ResourceDictionary>
+                    <ResourceDictionary x:Key="Dark" x:Immutable="False">
+                        <SolidColorBrush x:Key="Themed" Color="Black" />
+                    </ResourceDictionary>
+                </ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary.MergedDictionaries>
+                    <ResourceDictionary>
+                        <SolidColorBrush x:Key="Merged" Color="Red" />
+                    </ResourceDictionary>
+                </ResourceDictionary.MergedDictionaries>
+                <!-- Content after property elements is populated before the dictionary is made read-only. -->
+                <SolidColorBrush x:Key="Last" Color="Blue" />
+            </ResourceDictionary>
+            """);
+
+        Assert.True(resources.IsReadOnly);
+        Assert.Equal(3, resources.Count);
+        Assert.Equal(Colors.Red, resources["Accent"]);
+        Assert.IsType<ImmutableSolidColorBrush>(resources["Last"]);
+        Assert.Throws<NotSupportedException>(() => resources.Add("New", Colors.Blue));
+        Assert.Throws<NotSupportedException>(() => resources.MergedDictionaries.Clear());
+
+        Assert.True(((ResourceDictionary)resources.ThemeDictionaries[ThemeVariant.Light]).IsReadOnly);
+        Assert.False(((ResourceDictionary)resources.ThemeDictionaries[ThemeVariant.Dark]).IsReadOnly);
+        Assert.True(((ResourceDictionary)Assert.Single(resources.MergedDictionaries)).IsReadOnly);
+        Assert.True(resources.TryGetResource("Themed", ThemeVariant.Dark, out var dark));
+        Assert.IsType<SolidColorBrush>(dark);
+        Assert.True(resources.TryGetResource("Merged", null, out var merged));
+        Assert.IsType<ImmutableSolidColorBrush>(merged);
+    }
+
+    [Fact]
+    public void ResourceDictionary_Is_Writable_Without_XImmutable()
+    {
+        var resources = (ResourceDictionary)AvaloniaRuntimeXamlLoader.Load("""
+            <ResourceDictionary xmlns="https://github.com/avaloniaui"
+                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                                x:Immutable="False">
+                <SolidColorBrush x:Key="Brush" Color="Red" />
+                <ResourceDictionary.MergedDictionaries>
+                    <ResourceDictionary />
+                </ResourceDictionary.MergedDictionaries>
+            </ResourceDictionary>
+            """);
+
+        Assert.False(resources.IsReadOnly);
+        Assert.False(((ResourceDictionary)resources.MergedDictionaries[0]).IsReadOnly);
+        resources.Add("New", Colors.Blue);
+    }
+
+    [Fact]
+    public void Resources_Property_ResourceDictionary_Is_ReadOnly()
+    {
+        using (UnitTestApplication.Start(TestServices.StyledWindow))
+        {
+            var border = (Border)AvaloniaRuntimeXamlLoader.Load("""
+                <Border xmlns="https://github.com/avaloniaui"
+                        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                    <Border.Resources>
+                        <ResourceDictionary x:Immutable="True">
+                            <SolidColorBrush x:Key="Brush" Color="Red" />
+                        </ResourceDictionary>
+                    </Border.Resources>
+                </Border>
+                """);
+
+            var resources = Assert.IsType<ResourceDictionary>(border.Resources);
+            Assert.True(resources.IsReadOnly);
+            Assert.IsType<ImmutableSolidColorBrush>(border.FindResource("Brush"));
+        }
+    }
+
+    [Fact]
+    public void MergeResourceInclude_Of_Immutable_Dictionary_Keeps_Parent_Writable()
+    {
+        var documents = new[]
+        {
+            new RuntimeXamlLoaderDocument(new Uri("avares://Tests/Resources.xaml"), """
+                <ResourceDictionary xmlns="https://github.com/avaloniaui"
+                                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                                    x:Immutable="True">
+                    <SolidColorBrush x:Key="Merged" Color="Red" />
+                    <ResourceDictionary.ThemeDictionaries>
+                        <ResourceDictionary x:Key="Dark">
+                            <SolidColorBrush x:Key="MergedThemed" Color="Black" />
+                        </ResourceDictionary>
+                    </ResourceDictionary.ThemeDictionaries>
+                </ResourceDictionary>
+                """),
+            new RuntimeXamlLoaderDocument("""
+                <ResourceDictionary xmlns="https://github.com/avaloniaui"
+                                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                    <SolidColorBrush x:Key="Own" Color="Blue" />
+                    <ResourceDictionary.ThemeDictionaries>
+                        <ResourceDictionary x:Key="Dark">
+                            <SolidColorBrush x:Key="OwnThemed" Color="White" />
+                        </ResourceDictionary>
+                    </ResourceDictionary.ThemeDictionaries>
+                    <ResourceDictionary.MergedDictionaries>
+                        <MergeResourceInclude Source="avares://Tests/Resources.xaml" />
+                    </ResourceDictionary.MergedDictionaries>
+                </ResourceDictionary>
+                """)
+        };
+
+        var resources = Assert.IsType<ResourceDictionary>(AvaloniaRuntimeXamlLoader.LoadGroup(documents)[1]);
+
+        Assert.False(resources.IsReadOnly);
+        Assert.IsType<ImmutableSolidColorBrush>(resources["Merged"]);
+        Assert.IsType<SolidColorBrush>(resources["Own"]);
+        resources.Remove("Own");
+
+        // Theme dictionaries with the same key are merged into the parent's one, which is writable.
+        var dark = (ResourceDictionary)resources.ThemeDictionaries[ThemeVariant.Dark];
+        Assert.False(dark.IsReadOnly);
+        Assert.IsType<ImmutableSolidColorBrush>(dark["MergedThemed"]);
+        Assert.IsType<SolidColorBrush>(dark["OwnThemed"]);
+    }
+
+    [Fact]
+    public void MergeResourceInclude_Into_Immutable_Dictionary_Is_ReadOnly_After_Merge()
+    {
+        var documents = new[]
+        {
+            new RuntimeXamlLoaderDocument(new Uri("avares://Tests/Resources.xaml"), """
+                <ResourceDictionary xmlns="https://github.com/avaloniaui"
+                                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                    <SolidColorBrush x:Key="Merged" Color="Red" />
+                    <ResourceDictionary.ThemeDictionaries>
+                        <ResourceDictionary x:Key="Dark">
+                            <SolidColorBrush x:Key="MergedThemed" Color="Black" />
+                        </ResourceDictionary>
+                    </ResourceDictionary.ThemeDictionaries>
+                </ResourceDictionary>
+                """),
+            new RuntimeXamlLoaderDocument("""
+                <ResourceDictionary xmlns="https://github.com/avaloniaui"
+                                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                                    x:Immutable="True">
+                    <SolidColorBrush x:Key="Own" Color="Blue" />
+                    <ResourceDictionary.ThemeDictionaries>
+                        <ResourceDictionary x:Key="Dark">
+                            <SolidColorBrush x:Key="OwnThemed" Color="White" />
+                        </ResourceDictionary>
+                    </ResourceDictionary.ThemeDictionaries>
+                    <ResourceDictionary.MergedDictionaries>
+                        <MergeResourceInclude Source="avares://Tests/Resources.xaml" />
+                    </ResourceDictionary.MergedDictionaries>
+                </ResourceDictionary>
+                """)
+        };
+
+        var resources = Assert.IsType<ResourceDictionary>(AvaloniaRuntimeXamlLoader.LoadGroup(documents)[1]);
+
+        Assert.True(resources.IsReadOnly);
+        Assert.Equal(2, resources.Count);
+        Assert.IsType<SolidColorBrush>(resources["Merged"]);
+        Assert.IsType<ImmutableSolidColorBrush>(resources["Own"]);
+
+        var dark = (ResourceDictionary)resources.ThemeDictionaries[ThemeVariant.Dark];
+        Assert.True(dark.IsReadOnly);
+        Assert.Equal(2, dark.Count);
+    }
+
+    [Fact]
+    public void Non_Literal_Value_Is_Not_Allowed()
+    {
+        AssertThrows(() => AvaloniaRuntimeXamlLoader.Load("""
+            <ResourceDictionary xmlns="https://github.com/avaloniaui"
+                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                <SolidColorBrush x:Key="Brush" x:Immutable="{x:Null}" Color="Red" />
+            </ResourceDictionary>
+            """), "literal boolean");
+    }
+
+    private static void AssertThrows(System.Action action, string message)
+    {
+        var ex = Assert.ThrowsAny<System.Xml.XmlException>(action);
+        Assert.Contains(message, ex.Message);
+    }
+}

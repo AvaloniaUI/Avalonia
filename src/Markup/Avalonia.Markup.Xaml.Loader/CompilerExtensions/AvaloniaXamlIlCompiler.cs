@@ -59,6 +59,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             );
 
             InsertBefore<ContentConvertTransformer>(
+                new AvaloniaXamlIlImmutableTransformer(),
                 new AvaloniaXamlIlControlThemeTransformer(),
                 new AvaloniaXamlIlSelectorTransformer(),
                 new AvaloniaXamlIlQueryTransformer(),
@@ -97,6 +98,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             Transformers.Add(new AvaloniaXamlIlControlTemplatePriorityTransformer());
             Transformers.Add(new AvaloniaXamlIlMetadataRemover());
             Transformers.Add(new AvaloniaXamlIlEnsureResourceDictionaryCapacityTransformer());
+            Transformers.Add(new AvaloniaXamlIlResourceDictionaryReadOnlyTransformer());
             Transformers.Add(new AvaloniaXamlIlRootObjectScope());
 
             Transformers.Add(_addSourceInfoTransformer = new AvaloniaXamlIlAddSourceInfoTransformer());

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Templates;
@@ -17,6 +18,9 @@ namespace Avalonia.Controls
         private Dictionary<object, object?>? _inner;
         private AvaloniaList<IResourceProvider>? _mergedDictionaries;
         private AvaloniaDictionary<ThemeVariant, IThemeVariantProvider>? _themeDictionary;
+        private ReadOnlyCollection<IResourceProvider>? _readOnlyMergedDictionaries;
+        private ReadOnlyDictionary<ThemeVariant, IThemeVariantProvider>? _readOnlyThemeDictionary;
+        private bool _isReadOnly;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ResourceDictionary"/> class.
@@ -39,6 +43,7 @@ namespace Avalonia.Controls
             }
             set
             {
+                ThrowIfReadOnly();
                 Inner[key] = value;
                 RaiseResourcesChanged();
             }
@@ -51,6 +56,11 @@ namespace Avalonia.Controls
         {
             get
             {
+                if (_isReadOnly)
+                {
+                    return _readOnlyMergedDictionaries ??= new((IList<IResourceProvider>?)_mergedDictionaries ?? new List<IResourceProvider>());
+                }
+
                 if (_mergedDictionaries == null)
                 {
                     _mergedDictionaries = new AvaloniaList<IResourceProvider>();
@@ -81,6 +91,13 @@ namespace Avalonia.Controls
         {
             get
             {
+                if (_isReadOnly)
+                {
+                    return _readOnlyThemeDictionary ??= new(
+                        (IDictionary<ThemeVariant, IThemeVariantProvider>?)_themeDictionary
+                        ?? new Dictionary<ThemeVariant, IThemeVariantProvider>());
+                }
+
                 if (_themeDictionary == null)
                 {
                     _themeDictionary = new AvaloniaDictionary<ThemeVariant, IThemeVariantProvider>(2);
@@ -131,12 +148,19 @@ namespace Avalonia.Controls
             }
         }
 
-        bool ICollection<KeyValuePair<object, object?>>.IsReadOnly => false;
+        /// <summary>
+        /// Gets a value indicating whether the dictionary is read-only.
+        /// </summary>
+        /// <remarks>
+        /// A read-only dictionary throws <see cref="NotSupportedException"/> on any attempt to change its resources.
+        /// </remarks>
+        public bool IsReadOnly => _isReadOnly;
 
         private Dictionary<object, object?> Inner => _inner ??= new();
         
         public void Add(object key, object? value)
         {
+            ThrowIfReadOnly();
             Inner.Add(key, value);
             RaiseResourcesChanged();
         }
@@ -152,6 +176,8 @@ namespace Avalonia.Controls
 
         public void SetItems(IEnumerable<KeyValuePair<object, object?>> values)
         {
+            ThrowIfReadOnly();
+
             try
             {
                 foreach (var value in values)
@@ -165,6 +191,8 @@ namespace Avalonia.Controls
         
         public void Clear()
         {
+            ThrowIfReadOnly();
+
             if (_inner?.Count > 0)
             {
                 _inner.Clear();
@@ -176,6 +204,8 @@ namespace Avalonia.Controls
 
         public bool Remove(object key)
         {
+            ThrowIfReadOnly();
+
             if (_inner?.Remove(key) == true)
             {
                 RaiseResourcesChanged();
@@ -314,6 +344,8 @@ namespace Avalonia.Controls
 
         bool ICollection<KeyValuePair<object, object?>>.Remove(KeyValuePair<object, object?> item)
         {
+            ThrowIfReadOnly();
+
             if ((_inner as ICollection<KeyValuePair<object, object?>>)?.Remove(item) == true)
             {
                 RaiseResourcesChanged();
@@ -324,6 +356,53 @@ namespace Avalonia.Controls
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        /// <summary>
+        /// Makes the dictionary read-only. This can't be undone.
+        /// </summary>
+        public void MakeReadOnly()
+        {
+            if (_isReadOnly)
+            {
+                return;
+            }
+
+            _isReadOnly = true;
+
+            if (_mergedDictionaries is not null)
+            {
+                foreach (var mergedDictionary in _mergedDictionaries)
+                {
+                    MakeReadOnly(mergedDictionary);
+                }
+            }
+
+            if (_themeDictionary is not null)
+            {
+                foreach (var themeDictionary in _themeDictionary.Values)
+                {
+                    MakeReadOnly(themeDictionary);
+                }
+            }
+
+            static void MakeReadOnly(IResourceProvider provider)
+            {
+                if (provider is IResourceInclude include)
+                {
+                    provider = include.Loaded;
+                }
+
+                (provider as ResourceDictionary)?.MakeReadOnly();
+            }
+        }
+
+        private void ThrowIfReadOnly()
+        {
+            if (_isReadOnly)
+            {
+                throw new NotSupportedException("ResourceDictionary is read-only.");
+            }
+        }
 
         internal bool ContainsDeferredKey(object key)
         {

@@ -2,7 +2,8 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:sys="using:System"
                     xmlns:converters="using:Avalonia.Controls.Converters"
-                    x:ClassModifier="internal">
+                    x:ClassModifier="internal"
+                    x:Immutable="True">
   <FontFamily x:Key="ContentControlThemeFontFamily">fonts:Inter#Inter, $Default</FontFamily>
   <sys:Double x:Key="ControlContentThemeFontSize">14</sys:Double>
 
