@@ -82,52 +82,31 @@ namespace Avalonia.Skia.UnitTests.Media
         [InlineData(FontSimulations.Bold, (int)SKFontStyleWeight.Normal)]
         [InlineData(FontSimulations.Oblique, (int)SKFontStyleWeight.Bold)]
         [InlineData(FontSimulations.Bold | FontSimulations.Oblique, (int)SKFontStyleWeight.Normal)]
-        public void Should_Match_The_Designed_Face_Of_A_Colour_Font_The_Platform_Simulated(
+        public void Should_Request_The_Designed_Face_Of_A_Typeface_The_Platform_Simulated(
             FontSimulations platformSimulations, int expectedWeight)
-        {
-            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
-            {
-                var matched = LoadTypeface(ArefBoldUri);
-                var familyName = matched.FamilyName;
-                var width = matched.FontWidth;
-                var requests = new List<(string FamilyName, SKFontStyle Style)>();
-                SKTypeface? designed = null;
-
-                // A weight the platform did not simulate is the face's own and is asked for again.
-                var result = FontManagerImpl.MatchDesignedColourFace(matched, platformSimulations, (name, fontStyle) =>
-                    {
-                        requests.Add((name, fontStyle));
-
-                        return designed = LoadTypeface(ArefRegularUri);
-                    });
-
-                var request = Assert.Single(requests);
-
-                Assert.Equal(familyName, request.FamilyName);
-                Assert.Equal(expectedWeight, request.Style.Weight);
-                Assert.Equal(SKFontStyleSlant.Upright, request.Style.Slant);
-                Assert.Equal(width, request.Style.Width);
-
-                Assert.Same(designed, result);
-
-                // The first match is replaced, so nothing else releases its native typeface.
-                Assert.Equal(IntPtr.Zero, matched.Handle);
-
-                result.Dispose();
-            }
-        }
-
-        [Fact]
-        public void Should_Keep_A_Colour_Font_Face_The_Platform_Did_Not_Simulate()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
                 using var matched = LoadTypeface(ArefBoldUri);
 
-                var result = FontManagerImpl.MatchDesignedColourFace(matched, FontSimulations.None,
-                    (_, _) => throw new InvalidOperationException("Unexpected platform match."));
+                Assert.True(FontManagerImpl.TryGetDesignedFaceStyle(matched, platformSimulations,
+                    out var designedStyle));
 
-                Assert.Same(matched, result);
+                // A weight the platform did not simulate is the face's own and is requested again.
+                Assert.Equal(expectedWeight, designedStyle.Weight);
+                Assert.Equal(SKFontStyleSlant.Upright, designedStyle.Slant);
+                Assert.Equal(matched.FontWidth, designedStyle.Width);
+            }
+        }
+
+        [Fact]
+        public void Should_Not_Request_Another_Face_For_A_Typeface_The_Platform_Did_Not_Simulate()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                using var matched = LoadTypeface(ArefBoldUri);
+
+                Assert.False(FontManagerImpl.TryGetDesignedFaceStyle(matched, FontSimulations.None, out _));
             }
         }
 
@@ -141,7 +120,7 @@ namespace Avalonia.Skia.UnitTests.Media
                 var bold = LoadTypeface(ArefBoldUri);
 
                 using var typeface = FontManagerImpl.CreatePlatformTypeface(bold, style, FontWeight.Bold,
-                    FontStretch.Normal, (_, _) => throw new InvalidOperationException("Unexpected platform match."));
+                    FontStretch.Normal);
 
                 Assert.Same(bold, typeface.SKTypeface);
                 Assert.Equal(FontWeight.Bold, typeface.Weight);
@@ -161,7 +140,7 @@ namespace Avalonia.Skia.UnitTests.Media
                 var regular = LoadTypeface(ArefRegularUri);
 
                 using var typeface = FontManagerImpl.CreatePlatformTypeface(regular, style, (FontWeight)weight,
-                    FontStretch.Normal, (_, _) => throw new InvalidOperationException("Unexpected platform match."));
+                    FontStretch.Normal);
 
                 Assert.Same(regular, typeface.SKTypeface);
                 Assert.Equal(expectedSimulations, typeface.FontSimulations);

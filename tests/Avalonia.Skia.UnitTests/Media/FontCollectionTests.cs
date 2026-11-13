@@ -820,9 +820,7 @@ namespace Avalonia.Skia.UnitTests.Media
                     Assert.Equal(expectedSimulations, glyphTypeface.FontSimulations);
                 }
 
-                // The platform answers with the face as designed, so it is not asked again for it.
                 Assert.Equal(1, fontManager.CharacterMatches);
-                Assert.Equal(0, fontManager.RegularColourFaceMatches);
             }
         }
 
@@ -1161,10 +1159,6 @@ namespace Avalonia.Skia.UnitTests.Media
             /// <summary>Number of character matches asked of the platform.</summary>
             public int CharacterMatches { get; private set; }
 
-            /// <summary>Number of family matches a character match asked of the platform to replace a
-            /// colour font face the platform simulated with the face as designed.</summary>
-            public int RegularColourFaceMatches { get; private set; }
-
             /// <summary>The typeface the latest family match returned.</summary>
             public SKTypeface? LastFamilyMatch { get; private set; }
 
@@ -1273,17 +1267,8 @@ namespace Avalonia.Skia.UnitTests.Media
 
                     if (skTypeface.ContainsGlyph(codepoint))
                     {
-                        var matchedUri = uri;
-
-                        // Each installed face here is the only face of its family, so the family
-                        // match asked for a designed colour face is that same face.
                         platformTypeface = FontManagerImpl.CreatePlatformTypeface(skTypeface, fontStyle, fontWeight,
-                            fontStretch, (_, _) =>
-                            {
-                                RegularColourFaceMatches++;
-
-                                return LoadTypeface(matchedUri);
-                            });
+                            fontStretch);
 
                         return true;
                     }

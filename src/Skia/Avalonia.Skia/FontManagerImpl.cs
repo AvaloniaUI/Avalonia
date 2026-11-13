@@ -17,12 +17,6 @@ namespace Avalonia.Skia
     internal class FontManagerImpl : IFontManagerImpl
     {
         private SKFontManager _skFontManager = SKFontManager.Default;
-        private readonly Func<string, SKFontStyle, SKTypeface?> _matchFamily;
-
-        public FontManagerImpl()
-        {
-            _matchFamily = (familyName, fontStyle) => _skFontManager.MatchFamily(familyName, fontStyle);
-        }
 
         public string GetDefaultFontFamilyName()
         {
@@ -58,7 +52,7 @@ namespace Avalonia.Skia
                 return false;
             }
 
-            platformTypeface = CreatePlatformTypeface(skTypeface, fontStyle, fontWeight, fontStretch, _matchFamily);
+            platformTypeface = CreateMatchedTypeface(skTypeface, fontStyle, fontWeight, fontStretch);
 
             return true;
 
@@ -118,9 +112,43 @@ namespace Avalonia.Skia
                 return false;
             }
 
-            platformTypeface = CreatePlatformTypeface(skTypeface, style, weight, stretch, _matchFamily);
+            platformTypeface = CreateMatchedTypeface(skTypeface, style, weight, stretch);
 
             return true;
+        }
+
+        /// <summary>
+        /// Wraps a typeface the platform matched like <see cref="CreatePlatformTypeface(SKTypeface, FontStyle,
+        /// FontWeight, FontStretch)"/>, after replacing a colour font face the platform simulated with the face
+        /// of its family as designed.
+        /// </summary>
+        /// <remarks>
+        /// DirectWrite and fontconfig embolden or slant inside the typeface they match, which applies to
+        /// every glyph, colour glyphs included. The face as designed takes the simulations when it is
+        /// drawn instead, where the renderer decides what they do to colour glyphs.
+        /// </remarks>
+        private SkiaTypeface CreateMatchedTypeface(SKTypeface skTypeface, FontStyle style, FontWeight weight,
+            FontStretch stretch)
+        {
+            var typeface = CreatePlatformTypeface(skTypeface, style, weight, stretch);
+
+            if (typeface.PlatformSimulations == FontSimulations.None || !SkiaTypeface.IsColorFont(skTypeface) ||
+                !TryGetDesignedFaceStyle(skTypeface, typeface.PlatformSimulations, out var designedStyle))
+            {
+                return typeface;
+            }
+
+            var designed = _skFontManager.MatchFamily(skTypeface.FamilyName, designedStyle);
+
+            // SkiaSharp hands out the same wrapper for a native typeface it already wraps.
+            if (designed is null || ReferenceEquals(designed, skTypeface))
+            {
+                return typeface;
+            }
+
+            typeface.Dispose();
+
+            return CreatePlatformTypeface(designed, style, weight, stretch);
         }
 
         /// <summary>
@@ -132,35 +160,14 @@ namespace Avalonia.Skia
         /// <param name="style">The requested style.</param>
         /// <param name="weight">The requested weight.</param>
         /// <param name="stretch">The requested stretch.</param>
-        /// <param name="matchFamily">
-        /// Matches a family name and style on the platform, used to replace a colour font face the
-        /// platform simulated with the face as designed. When <c>null</c>, the matched typeface is used
-        /// as it is.
-        /// </param>
         internal static SkiaTypeface CreatePlatformTypeface(SKTypeface skTypeface, FontStyle style, FontWeight weight,
-            FontStretch stretch, Func<string, SKFontStyle, SKTypeface?>? matchFamily = null)
+            FontStretch stretch)
         {
-            SkiaTypeface.ReadTableDirectory(skTypeface, out var isColorFont, out var hasFvar);
-
-            var platformSimulations = GetPlatformSimulations(skTypeface, hasFvar);
-
-            if (isColorFont && matchFamily is not null)
-            {
-                var designed = MatchDesignedColourFace(skTypeface, platformSimulations, matchFamily);
-
-                if (!ReferenceEquals(designed, skTypeface))
-                {
-                    skTypeface = designed;
-
-                    SkiaTypeface.ReadTableDirectory(skTypeface, out _, out hasFvar);
-
-                    platformSimulations = GetPlatformSimulations(skTypeface, hasFvar);
-                }
-            }
+            SkiaTypeface.ReadTableDirectory(skTypeface, out _, out var hasFvar);
 
             return CreatePlatformTypeface(skTypeface, skTypeface.FontStyle.Slant.ToAvalonia(),
-                (FontWeight)skTypeface.FontWeight, (FontStretch)skTypeface.FontWidth, platformSimulations, style,
-                weight, stretch);
+                (FontWeight)skTypeface.FontWeight, (FontStretch)skTypeface.FontWidth,
+                GetPlatformSimulations(skTypeface, hasFvar), style, weight, stretch);
         }
 
         /// <param name="skTypeface">The typeface the platform matched.</param>
@@ -298,23 +305,22 @@ namespace Avalonia.Skia
         }
 
         /// <summary>
-        /// Replaces a colour font face the platform simulated with the face of its family as designed.
+        /// Gets the style of the face as designed that a typeface the platform simulated stands for: the
+        /// regular weight in place of a simulated bold and upright in place of a simulated slant, with
+        /// the weight, slant and width the platform did not simulate kept as the typeface reports them.
         /// </summary>
-        /// <remarks>
-        /// DirectWrite and fontconfig embolden or slant inside the typeface they match, which applies
-        /// to every glyph, colour glyphs included. The face as designed takes the simulations when it
-        /// is drawn instead, where only its outline glyphs are simulated. A face the platform did not
-        /// simulate, a designed Bold or Italic face included, is kept.
-        /// </remarks>
-        /// <param name="skTypeface">The colour font face the platform matched. Disposed when it is replaced.</param>
+        /// <param name="skTypeface">The typeface the platform matched.</param>
         /// <param name="platformSimulations">The simulations the platform applied inside <paramref name="skTypeface"/>.</param>
-        /// <param name="matchFamily">Matches a family name and style on the platform.</param>
-        internal static SKTypeface MatchDesignedColourFace(SKTypeface skTypeface, FontSimulations platformSimulations,
-            Func<string, SKFontStyle, SKTypeface?> matchFamily)
+        /// <param name="designedStyle">The style to request the face as designed with.</param>
+        /// <returns><c>false</c> when the platform simulated nothing, so the typeface is the face as designed.</returns>
+        internal static bool TryGetDesignedFaceStyle(SKTypeface skTypeface, FontSimulations platformSimulations,
+            out SKFontStyle designedStyle)
         {
             if (platformSimulations == FontSimulations.None)
             {
-                return skTypeface;
+                designedStyle = SKFontStyle.Normal;
+
+                return false;
             }
 
             var weight = (platformSimulations & FontSimulations.Bold) != 0 ?
@@ -324,18 +330,9 @@ namespace Avalonia.Skia
                 SKFontStyleSlant.Upright :
                 skTypeface.FontStyle.Slant;
 
-            var designed = matchFamily(skTypeface.FamilyName,
-                new SKFontStyle(weight, (SKFontStyleWidth)skTypeface.FontWidth, slant));
+            designedStyle = new SKFontStyle(weight, (SKFontStyleWidth)skTypeface.FontWidth, slant);
 
-            // SkiaSharp hands out the same wrapper for a native typeface it already wraps.
-            if (designed is null || ReferenceEquals(designed, skTypeface))
-            {
-                return skTypeface;
-            }
-
-            skTypeface.Dispose();
-
-            return designed;
+            return true;
         }
 
         public bool TryCreateGlyphTypeface(Stream stream, FontSimulations fontSimulations, [NotNullWhen(true)] out IPlatformTypeface? platformTypeface)
