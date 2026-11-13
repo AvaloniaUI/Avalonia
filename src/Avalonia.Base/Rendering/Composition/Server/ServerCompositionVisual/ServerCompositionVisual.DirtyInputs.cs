@@ -117,8 +117,8 @@ partial class ServerCompositionVisual
         if (property == s_IdOfSizeProperty)
         {
             SizeChanged();
-            // The layout rect is part of the own content bounds of a backdrop visual.
-            if (BackdropEffect != null)
+            // The layout rect is part of the own content bounds of a layout-bounds backdrop visual.
+            if (BackdropEffect != null && BackdropEffectBoundsSource == Media.BackdropEffectBoundsSource.Layout)
                 EnqueueForOwnBoundsRecompute();
         }
 
