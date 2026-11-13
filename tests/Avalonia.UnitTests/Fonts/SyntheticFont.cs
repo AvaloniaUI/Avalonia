@@ -66,6 +66,12 @@ namespace Avalonia.UnitTests
 
             /// <summary>Variable CFF2 <c>.otf</c> (blend / vstore).</summary>
             public const string AdobeVfPrototype = Prefix + "AdobeVFPrototype-Subset.otf" + Suffix;
+
+            /// <summary>Static CFF math font with a <c>MATH</c> table (subset of STIX Two Math).</summary>
+            public const string StixTwoMath = Prefix + "STIXTwoMath-Subset.otf" + Suffix;
+
+            /// <summary>Static CFF math font with a <c>MATH</c> table (subset of Latin Modern Math).</summary>
+            public const string LatinModernMath = Prefix + "LatinModernMath-Subset.otf" + Suffix;
         }
 
         /// <summary>Loads and parses one of the embedded test font assets.</summary>
