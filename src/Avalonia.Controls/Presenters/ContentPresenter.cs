@@ -179,7 +179,6 @@ namespace Avalonia.Controls.Presenters
         private IRecyclingDataTemplate? _recyclingDataTemplate;
         private (bool IsSet, object? Value) _overrideDataContext;
         private readonly BorderRenderHelper _borderRenderer = new BorderRenderHelper();
-        private CompositionBorderVisual? _borderVisual;
 
         /// <summary>
         /// Initializes static members of the <see cref="ContentPresenter"/> class.
@@ -481,7 +480,10 @@ namespace Avalonia.Controls.Presenters
                     _layoutThickness = null;
                     break;
                 case nameof(CornerRadius):
-                    _borderVisual?.CornerRadius = CornerRadius;
+                    if (CompositionVisual is CompositionBorderVisual borderVisual)
+                    {
+                        borderVisual.CornerRadius = CornerRadius;
+                    }
                     break;
             }
         }
@@ -806,7 +808,7 @@ namespace Avalonia.Controls.Presenters
 
         private protected override CompositionDrawListVisual CreateCompositionVisual(Compositor compositor)
         {
-            return _borderVisual = new CompositionBorderVisual(compositor, this)
+            return new CompositionBorderVisual(compositor, this)
             {
                 CornerRadius = CornerRadius
             };
