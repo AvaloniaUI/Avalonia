@@ -385,6 +385,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 yield return CreateData("01234 01234 01234", 120, TextTrimming.PrefixCharacterEllipsis, "01234 01\u20264 01234");
                 yield return CreateData("01234 01234", 58, TextTrimming.CharacterEllipsis, "01234 0\u2026");
                 yield return CreateData("01234 01234", 58, TextTrimming.WordEllipsis, "01234\u2026");
+                yield return CreateData("01234     01234", 68, TextTrimming.CharacterEllipsis, "01234\u2026");
                 yield return CreateData("01234", 9, TextTrimming.CharacterEllipsis, "\u2026");
                 yield return CreateData("01234", 2, TextTrimming.CharacterEllipsis, "");
 
@@ -432,6 +433,43 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 {
                     Assert.Equal(expected[i], trimmedText[i]);
                 }
+            }
+        }
+
+        [Fact]
+        public void CharacterEllipsis_Should_Not_Follow_Whitespace_At_The_End_Of_A_Previous_Run()
+        {
+            using (Start())
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+
+                var followedByText = FormatRuns(
+                    new TextCharacters("01234 ", defaultProperties),
+                    new TextCharacters("    01234", defaultProperties));
+                var followedByInline = FormatRuns(
+                    new TextCharacters("01234 ", defaultProperties),
+                    new CustomDrawableRun(),
+                    new TextCharacters("01234", defaultProperties));
+
+                Assert.Equal("01234\u2026", CollapseWithCharacterEllipsis(followedByText, 54));
+                Assert.Equal("01234\u2026", CollapseWithCharacterEllipsis(followedByInline, 54));
+            }
+        }
+
+        [Fact]
+        public void Collapse_Should_Leave_The_Original_Line_Usable()
+        {
+            using (Start())
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+
+                var textLine = FormatRuns(
+                    new TextCharacters("01234 ", defaultProperties),
+                    new TextCharacters("    01234", defaultProperties));
+
+                Assert.Equal("0\u2026", CollapseWithCharacterEllipsis(textLine, 18));
+                Assert.All(textLine.TextRuns.OfType<ShapedTextRun>(), x => Assert.NotEqual(0, x.ShapedBuffer.Length));
+                Assert.Equal("01234\u2026", CollapseWithCharacterEllipsis(textLine, 54));
             }
         }
 
@@ -1405,6 +1443,24 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             {
 
             }
+        }
+
+        private static TextLine FormatRuns(params TextRun[] textRuns)
+        {
+            var textLine = new TextFormatterImpl().FormatLine(new CustomTextBufferTextSource(textRuns), 0,
+                double.PositiveInfinity, new GenericTextParagraphProperties(new GenericTextRunProperties(Typeface.Default)));
+
+            Assert.NotNull(textLine);
+
+            return textLine;
+        }
+
+        private static string CollapseWithCharacterEllipsis(TextLine textLine, double width)
+        {
+            var collapsingProperties = TextTrimming.CharacterEllipsis.CreateCollapsingProperties(
+                new TextCollapsingCreateInfo(width, new GenericTextRunProperties(Typeface.Default), FlowDirection.LeftToRight));
+
+            return string.Concat(textLine.Collapse(collapsingProperties).TextRuns.Select(x => x.Text.ToString()));
         }
 
         private static bool IsRightToLeft(TextLine textLine)
