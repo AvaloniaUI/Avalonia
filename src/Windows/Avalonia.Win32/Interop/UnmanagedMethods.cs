@@ -2671,6 +2671,7 @@ namespace Avalonia.Win32.Interop
         public const uint DV_E_FORMATETC = 0x80040064;
         public const uint OLE_E_ADVISENOTSUPPORTED = 0x80040003;
         public const uint COR_E_OBJECTDISPOSED = 0x80131622;
+        public const uint CLIPBRD_E_CANT_OPEN = 0x800401D0;
         public const int STATFLAG_NONAME = 1;
 
         [StructLayout(LayoutKind.Sequential)]
