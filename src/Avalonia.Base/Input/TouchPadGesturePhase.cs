@@ -14,20 +14,20 @@ public enum TouchPadGesturePhase
     /// <summary>
     /// The gesture has begun.
     /// </summary>
-    Began,
+    Started,
 
     /// <summary>
     /// The gesture is in progress and its value has changed.
     /// </summary>
-    Changed,
+    Updated,
 
     /// <summary>
     /// The gesture has ended normally.
     /// </summary>
-    Ended,
+    Completed,
 
     /// <summary>
     /// The gesture has been cancelled by the system.
     /// </summary>
-    Cancelled
+    Canceled
 }

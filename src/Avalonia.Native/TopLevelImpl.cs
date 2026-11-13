@@ -244,10 +244,10 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
     private static TouchPadGesturePhase ToGesturePhase(AvnTouchPadGesturePhase phase)
         => phase switch
         {
-            AvnTouchPadGesturePhase.AvnTouchPadGesturePhaseBegan => TouchPadGesturePhase.Began,
-            AvnTouchPadGesturePhase.AvnTouchPadGesturePhaseChanged => TouchPadGesturePhase.Changed,
-            AvnTouchPadGesturePhase.AvnTouchPadGesturePhaseEnded => TouchPadGesturePhase.Ended,
-            AvnTouchPadGesturePhase.AvnTouchPadGesturePhaseCancelled => TouchPadGesturePhase.Cancelled,
+            AvnTouchPadGesturePhase.AvnTouchPadGesturePhaseBegan => TouchPadGesturePhase.Started,
+            AvnTouchPadGesturePhase.AvnTouchPadGesturePhaseChanged => TouchPadGesturePhase.Updated,
+            AvnTouchPadGesturePhase.AvnTouchPadGesturePhaseEnded => TouchPadGesturePhase.Completed,
+            AvnTouchPadGesturePhase.AvnTouchPadGesturePhaseCancelled => TouchPadGesturePhase.Canceled,
             _ => TouchPadGesturePhase.None
         };
 
