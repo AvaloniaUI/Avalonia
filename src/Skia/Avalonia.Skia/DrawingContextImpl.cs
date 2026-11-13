@@ -18,7 +18,8 @@ namespace Avalonia.Skia
     /// </summary>
     internal partial class DrawingContextImpl : IDrawingContextImpl,
         IDrawingContextWithAcrylicLikeSupport,
-        IDrawingContextImplWithEffects
+        IDrawingContextImplWithEffects,
+        IDrawingContextImplWithBackdropSupport
     {
         private IDisposable?[]? _disposables;
         // TODO: Get rid of this value, it's currently used to calculate intermediate sizes for tile brushes
@@ -43,6 +44,9 @@ namespace Avalonia.Skia
         private readonly ISkiaGpuRenderSession? _session;
         private bool _leased;
         private bool _useOpacitySaveLayer;
+        // Number of open intermediate layers (effect, opacity mask, PushLayer, opacity). Plain clip and
+        // transform saves are not counted. See IsBackdropSamplingSafe.
+        private int _intermediateLayerDepth;
 
         /// <summary>
         /// Context create info.
@@ -663,12 +667,12 @@ namespace Avalonia.Skia
             // Get a round rect from the cache.
             var roundRect = SKRoundRectCache.Shared.Get();
 
-            roundRect.SetRectRadii(rc,
-                new[]
-                {
-                    clip.RadiiTopLeft.ToSKPoint(), clip.RadiiTopRight.ToSKPoint(),
-                    clip.RadiiBottomRight.ToSKPoint(), clip.RadiiBottomLeft.ToSKPoint(),
-                });
+            Span<SKPoint> radii = stackalloc SKPoint[4]
+            {
+                clip.RadiiTopLeft.ToSKPoint(), clip.RadiiTopRight.ToSKPoint(),
+                clip.RadiiBottomRight.ToSKPoint(), clip.RadiiBottomLeft.ToSKPoint(),
+            };
+            roundRect.SetRectRadii(rc, radii);
 
             Canvas.ClipRoundRect(roundRect, antialias:true);
 
@@ -701,12 +705,14 @@ namespace Avalonia.Skia
         {
             CheckLease();
             Canvas.SaveLayer(bounds.ToSKRect(), null!);
+            _intermediateLayerDepth++;
         }
 
         public void PopLayer()
         {
             CheckLease();
             RestoreCanvas();
+            _intermediateLayerDepth--;
         }
 
         /// <inheritdoc />
@@ -733,6 +739,8 @@ namespace Avalonia.Skia
                 {
                     Canvas.SaveLayer(new SKPaint { ColorF = new SKColorF(0, 0, 0, (float)opacity) });
                 }
+
+                _intermediateLayerDepth++;
             }
             else
             {
@@ -750,6 +758,7 @@ namespace Avalonia.Skia
             if (useOpacitySaveLayer)
             {
                 RestoreCanvas();
+                _intermediateLayerDepth--;
             }
 
             _currentOpacity = _opacityStack.Pop();
@@ -836,10 +845,13 @@ namespace Avalonia.Skia
         {
             CheckLease();
 
-            var paint = SKPaintCache.Shared.Get();
+            Canvas.SaveLayer(bounds.ToSKRect(), null);
+            _intermediateLayerDepth++;
 
-            Canvas.SaveLayer(bounds.ToSKRect(), paint);
-            _maskStack.Push((Canvas.TotalMatrix, CreatePaint(paint, mask, bounds)));
+            // Mask paints are a plain color or shader, so DstIn applies the mask straight to the layer.
+            var maskPaint = CreatePaint(SKPaintCache.Shared.Get(), mask, bounds);
+            maskPaint.Paint.BlendMode = SKBlendMode.DstIn;
+            _maskStack.Push((Canvas.TotalMatrix, maskPaint));
         }
 
         /// <inheritdoc />
@@ -847,12 +859,6 @@ namespace Avalonia.Skia
         {
             CheckLease();
 
-            var paint = SKPaintCache.Shared.Get();
-            paint.BlendMode = SKBlendMode.DstIn;
-            
-            Canvas.SaveLayer(paint);
-            SKPaintCache.Shared.ReturnReset(paint);
-            
             var (transform, paintWrapper) = _maskStack.Pop();
             Canvas.SetMatrix(transform);
             using (paintWrapper)
@@ -863,8 +869,7 @@ namespace Avalonia.Skia
             SKPaintCache.Shared.Return(paintWrapper.Paint);
 
             RestoreCanvas();
-
-            RestoreCanvas();
+            _intermediateLayerDepth--;
         }
 
         /// <inheritdoc />
@@ -896,6 +901,8 @@ namespace Avalonia.Skia
 
         public object? GetFeature(Type t)
         {
+            if (t == typeof(IPartialPresentationFeature))
+                return (_session as ISkiaGpuRenderSessionWithPartialPresentation)?.PartialPresentation;
             if (t == typeof(ISkiaSharpApiLeaseFeature))
                 return new SkiaLeaseFeature(this);
             return null;

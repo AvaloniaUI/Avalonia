@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Avalonia.Media;
 using Avalonia.Utilities;
 using Avalonia.Metadata;
@@ -219,6 +220,48 @@ namespace Avalonia.Platform
         void PopEffect();
     }
 
+    [PrivateApi]
+    public interface IDrawingContextImplWithBackdropSupport : IDrawingContextImpl
+    {
+        /// <summary>
+        /// Whether the context can read back what it has drawn. A backend that implements this interface can
+        /// still return false for some contexts (e.g. a recording context without a surface).
+        /// </summary>
+        bool SupportsBackdrop { get; }
+
+        /// <summary>
+        /// Whether <see cref="DrawRetainedBackdropEffect"/> can read the backdrop right now. False while an
+        /// intermediate layer (effect, opacity mask, opacity) is open and the backend cannot read it back.
+        /// <see cref="DrawVolatileBackdropEffect"/> is not affected.
+        /// </summary>
+        bool IsBackdropSamplingSafe { get; }
+
+        /// <summary>
+        /// Creates a backdrop snapshot of <paramref name="size"/> layer pixels for
+        /// <see cref="DrawRetainedBackdropEffect"/>. The caller disposes it.
+        /// </summary>
+        IDrawingContextBackdropSnapshotImpl CreateBackdropSnapshot(PixelSize size);
+
+        /// <summary>
+        /// Applies <paramref name="effect"/> to what is already drawn (read through open intermediate layers)
+        /// and draws the result, clipped to <paramref name="bounds"/>. The bounds are in the current coordinate
+        /// space, so the clip follows the current transform.
+        /// </summary>
+        void DrawVolatileBackdropEffect(Rect bounds, IEffect effect);
+
+        /// <summary>
+        /// Refreshes <paramref name="snapshot"/> from the layer in <paramref name="dirtyRects"/>, then draws it
+        /// through <paramref name="effect"/>, clipped to <paramref name="bounds"/> (current coordinate space).
+        /// </summary>
+        /// <param name="snapshot">Created by <see cref="CreateBackdropSnapshot"/> of this context.</param>
+        /// <param name="snapshotBounds">The area that the snapshot covers, in layer pixels.</param>
+        /// <param name="dirtyRects">In layer pixels. Empty to draw without a refresh.</param>
+        /// <param name="effect">The backdrop effect.</param>
+        /// <param name="bounds">The backdrop bounds.</param>
+        void DrawRetainedBackdropEffect(IDrawingContextBackdropSnapshotImpl snapshot, PixelRect snapshotBounds,
+            IReadOnlyList<PixelRect> dirtyRects, IEffect effect, Rect bounds);
+    }
+
     public static class DrawingContextImplExtensions
     {
         /// <summary>
@@ -226,6 +269,15 @@ namespace Avalonia.Platform
         /// </summary>
         public static T? GetFeature<T>(this IDrawingContextImpl context) where T : class =>
             (T?)context.GetFeature(typeof(T));
+    }
+
+    /// <summary>
+    /// A backdrop snapshot, see <see cref="IDrawingContextImplWithBackdropSupport.CreateBackdropSnapshot"/>.
+    /// The compositor tracks its size, so the handle only has to be disposable.
+    /// </summary>
+    [PrivateApi]
+    public interface IDrawingContextBackdropSnapshotImpl : IDisposable
+    {
     }
 
     public interface IDrawingContextLayerImpl : IBitmapImpl

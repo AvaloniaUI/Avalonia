@@ -1452,7 +1452,9 @@ namespace Avalonia.Controls.Primitives
 
             UpdateContainerSelection();
 
-            if (SelectedIndex != -1)
+            // During initialization SelectedIndex returns the pending index, which isn't selected in the model yet:
+            // it is applied, and SelectionChanged raised for it, when the update ends.
+            if (model.SelectedIndex != -1)
             {
                 RaiseEvent(new SelectionChangedEventArgs(
                     SelectionChangedEvent,

@@ -651,7 +651,7 @@ namespace Avalonia.Media.TextFormatting
 
                     if (hasOverflowed && _textTrimming != TextTrimming.None)
                     {
-                        textLine = (TextLineImpl)textLine.Collapse(GetCollapsingProperties(MaxWidth));
+                        textLine = Collapse(textLine, GetCollapsingProperties(MaxWidth));
                     }
 
                     textLines.Add(textLine);
@@ -781,7 +781,24 @@ namespace Avalonia.Media.TextFormatting
                 return line;
             }
 
-            return (TextLineImpl)line.Collapse(collapsingProperties);
+            return Collapse(line, collapsingProperties);
+        }
+
+        /// <summary>
+        /// Collapses <paramref name="line"/> and releases it when the collapsed line replaces it.
+        /// The collapsed line holds its own references to the runs it reuses, so the layout,
+        /// which keeps only the collapsed line, has to release the original.
+        /// </summary>
+        private static TextLineImpl Collapse(TextLineImpl line, TextCollapsingProperties? collapsingProperties)
+        {
+            var collapsedLine = (TextLineImpl)line.Collapse(collapsingProperties);
+
+            if (!ReferenceEquals(collapsedLine, line))
+            {
+                line.Dispose();
+            }
+
+            return collapsedLine;
         }
 
         public void Dispose()

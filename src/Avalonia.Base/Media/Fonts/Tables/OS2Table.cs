@@ -160,12 +160,50 @@ namespace Avalonia.Media.Fonts.Tables
                 return false;
             }
 
-            var binaryReader = new BigEndianBinaryReader(table.Span);
+            return TryLoad(table.Span, out os2Table);
+        }
+
+        /// <summary>
+        /// Parses the content of an OS/2 table.
+        /// </summary>
+        /// <param name="data">The table data.</param>
+        /// <param name="os2Table">The parsed table.</param>
+        /// <returns>
+        /// <c>true</c> if the table was parsed; <c>false</c> if it is shorter than its version requires.
+        /// </returns>
+        internal static bool TryLoad(ReadOnlySpan<byte> data, out OS2Table os2Table)
+        {
+            os2Table = default;
+
+            if (data.Length < sizeof(ushort))
+            {
+                return false;
+            }
+
+            var version = (ushort)((data[0] << 8) | data[1]);
+
+            if (data.Length < GetMinimumLength(version))
+            {
+                return false;
+            }
+
+            var binaryReader = new BigEndianBinaryReader(data);
 
             os2Table = Load(ref binaryReader);
 
             return true;
         }
+
+        // The byte length of the fields Load reads for a table version: version 0 ends at usWinDescent,
+        // version 1 adds the code page ranges, versions 2 to 4 add sxHeight to usMaxContext and
+        // version 5 adds the optical point sizes.
+        private static int GetMinimumLength(ushort version) => version switch
+        {
+            0 => 78,
+            1 => 86,
+            < 5 => 96,
+            _ => 100
+        };
 
         private static OS2Table Load(ref BigEndianBinaryReader reader)
         {
