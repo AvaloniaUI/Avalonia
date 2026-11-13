@@ -157,7 +157,7 @@ namespace Avalonia.Controls
             // This is important for native controls to align correctly with Avalonia's visual tree.
             if (UseLayoutRounding)
             {
-                var scale = LayoutHelper.GetLayoutScale(this);
+                var scale = _currentRoot.LayoutScaling;
                 var left = LayoutHelper.RoundLayoutValue(transformedRect.X, scale);
                 var top = LayoutHelper.RoundLayoutValue(transformedRect.Y, scale);
                 var right = LayoutHelper.RoundLayoutValue(transformedRect.Right, scale);

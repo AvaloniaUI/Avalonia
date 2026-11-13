@@ -1,5 +1,8 @@
+using System;
 using Avalonia.Controls.Shapes;
+using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Media.Transformation;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -311,6 +314,168 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(m.M31, res.M31, 3);
             Assert.Equal(m.M32, res.M32, 3);
         }
+
+        [Theory]
+        [InlineData(1.15, 1)]
+        [InlineData(1.3, 1)]
+        [InlineData(0.85, 1)]
+        [InlineData(1.15, 1.5)]
+        public void Child_Layout_Is_Rounded_To_Device_Pixels_Under_Uniform_Scale(double scale, double layoutScaling)
+        {
+            Border row1, row2;
+            var panel = new StackPanel
+            {
+                Children =
+                {
+                    (row1 = new Border { Height = 7.3 }),
+                    (row2 = new Border { Height = 7.3 }),
+                }
+            };
+            var root = CreateRoot(layoutScaling, new LayoutTransformControl
+            {
+                LayoutTransform = new ScaleTransform(scale, scale),
+                Child = new Border { BorderThickness = new Thickness(1), Child = panel }
+            });
+
+            AssertOnDevicePixels(root, panel);
+            AssertOnDevicePixels(root, row1);
+            AssertOnDevicePixels(root, row2);
+        }
+
+        [Theory]
+        [InlineData(1.15, 1)]
+        [InlineData(1.3, 1)]
+        [InlineData(0.85, 1.25)]
+        public void Grid_Cells_Are_Rounded_To_Device_Pixels_Under_Uniform_Scale(double scale, double layoutScaling)
+        {
+            var grid = new Grid { ColumnDefinitions = ColumnDefinitions.Parse("*,*,*") };
+
+            for (var i = 0; i < 3; ++i)
+            {
+                var cell = new Border();
+                Grid.SetColumn(cell, i);
+                grid.Children.Add(cell);
+            }
+
+            var root = CreateRoot(layoutScaling, new LayoutTransformControl
+            {
+                LayoutTransform = new ScaleTransform(scale, scale),
+                Child = grid
+            });
+
+            foreach (var column in grid.ColumnDefinitions)
+            {
+                var deviceWidth = column.ActualWidth * scale * layoutScaling;
+                Assert.Equal(Math.Round(deviceWidth), deviceWidth, 6);
+            }
+
+            foreach (var cell in grid.Children)
+                AssertOnDevicePixels(root, cell);
+        }
+
+        [Fact]
+        public void Changing_Scale_Rounds_Content_With_Unchanged_Constraint_Again()
+        {
+            var content = new Border { Width = 7.3, Height = 7.3 };
+            var target = new LayoutTransformControl
+            {
+                LayoutTransform = new ScaleTransform(1.15, 1.15),
+                Child = new Canvas { Children = { content } }
+            };
+            var root = CreateRoot(1, target);
+
+            target.LayoutTransform = new ScaleTransform(1.3, 1.3);
+            root.LayoutManager.ExecuteLayoutPass();
+
+            AssertOnDevicePixels(root, content);
+        }
+
+        [Fact]
+        public void Centered_Child_Is_Positioned_On_Device_Pixels()
+        {
+            var child = new Border
+            {
+                Width = 29,
+                Height = 29,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center
+            };
+            var root = CreateRoot(1, new LayoutTransformControl
+            {
+                LayoutTransform = new ScaleTransform(2, 2),
+                Child = child
+            });
+
+            AssertOnDevicePixels(root, child);
+        }
+
+        [Fact]
+        public void Child_Layout_Scale_Includes_Uniform_Scale()
+        {
+            var child = new Border();
+            var target = new LayoutTransformControl
+            {
+                LayoutTransform = new ScaleTransform(1.15, 1.15),
+                Child = child
+            };
+            CreateRoot(1.5, target);
+
+            Assert.Equal(1.5, LayoutHelper.GetLayoutScale(target));
+            Assert.Equal(1.725, LayoutHelper.GetLayoutScale(child), 8);
+        }
+
+        [Theory]
+        [InlineData("scale(1.15, 1.3)")]
+        [InlineData("rotate(45deg)")]
+        [InlineData("skewX(10deg)")]
+        public void Child_Layout_Scale_Ignores_Other_Transforms(string transform)
+        {
+            var child = new Border();
+            CreateRoot(1.5, new LayoutTransformControl
+            {
+                LayoutTransform = TransformOperations.Parse(transform),
+                Child = child
+            });
+
+            Assert.Equal(1.5, LayoutHelper.GetLayoutScale(child));
+        }
+
+        [Fact]
+        public void Child_Layout_Scale_Includes_Nested_Uniform_Scales()
+        {
+            var child = new Border();
+            var outer = new LayoutTransformControl
+            {
+                LayoutTransform = new ScaleTransform(1.15, 1.15),
+                Child = new LayoutTransformControl
+                {
+                    LayoutTransform = new ScaleTransform(2, 2),
+                    Child = child
+                }
+            };
+            CreateRoot(1, outer);
+
+            Assert.Equal(2.3, LayoutHelper.GetLayoutScale(child), 8);
+
+            outer.LayoutTransform = new ScaleTransform(1.3, 1.3);
+
+            Assert.Equal(2.6, LayoutHelper.GetLayoutScale(child), 8);
+        }
+
+        [Fact]
+        public void Removed_Child_Layout_Scale_Does_Not_Include_Scale()
+        {
+            var child = new Border();
+            var target = new LayoutTransformControl
+            {
+                LayoutTransform = new ScaleTransform(1.15, 1.15),
+                Child = child
+            };
+
+            target.Child = null;
+
+            Assert.Equal(1, LayoutHelper.GetLayoutScale(child));
+        }
         
         [Fact]
         public void Should_Apply_Transform_On_Attach_To_VisualTree()
@@ -389,6 +554,27 @@ namespace Avalonia.Controls.UnitTests
             lt.Arrange(new Rect(lt.DesiredSize));
 
             return lt;
+        }
+
+        private static TestRoot CreateRoot(double layoutScaling, LayoutTransformControl target)
+        {
+            target.Width = 400;
+            target.Height = 300;
+
+            var root = new TestRoot { LayoutScaling = layoutScaling, Child = target };
+            root.LayoutManager.ExecuteInitialLayoutPass();
+            return root;
+        }
+
+        private static void AssertOnDevicePixels(TestRoot root, Control control)
+        {
+            var topLeft = control.TranslatePoint(default, root)!.Value * root.LayoutScaling;
+            var bottomRight = control.TranslatePoint(new Point(control.Bounds.Width, control.Bounds.Height), root)!.Value * root.LayoutScaling;
+
+            Assert.Equal(Math.Round(topLeft.X), topLeft.X, 6);
+            Assert.Equal(Math.Round(topLeft.Y), topLeft.Y, 6);
+            Assert.Equal(Math.Round(bottomRight.X), bottomRight.X, 6);
+            Assert.Equal(Math.Round(bottomRight.Y), bottomRight.Y, 6);
         }
     }
 }
