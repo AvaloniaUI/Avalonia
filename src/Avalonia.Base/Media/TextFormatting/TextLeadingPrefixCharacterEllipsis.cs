@@ -47,6 +47,9 @@ namespace Avalonia.Media.TextFormatting
 
         public override FlowDirection FlowDirection { get; }
 
+        /// <inheritdoc/>
+        internal override bool ReturnsOwnedRuns => true;
+
         /// <inheritdoc />
         public override TextRun[]? Collapse(TextLine textLine)
         {
@@ -69,6 +72,8 @@ namespace Avalonia.Media.TextFormatting
 
                 if (MathUtilities.LessThan(Width, shapedSymbol.GlyphRun.Bounds.Width))
                 {
+                    shapedSymbol.Dispose();
+
                     return Array.Empty<TextRun>();
                 }
 
@@ -101,13 +106,16 @@ namespace Avalonia.Media.TextFormatting
                                     {
                                         var collapsedRuns = objectPool.TextRunLists.Rent();
 
+                                        // One reference per shaped run. Each one either moves into
+                                        // the result or is released below.
+                                        RentedList<TextRun>? ownedRuns = RentLogicalRuns(textLine, objectPool);
                                         RentedList<TextRun>? rentedPreSplitRuns = null;
                                         RentedList<TextRun>? rentedPostSplitRuns = null;
                                         RentedList<TextRun>? reversedSuffix = null;
 
                                         try
                                         {
-                                            IReadOnlyList<TextRun>? effectivePostSplitRuns;
+                                            RentedList<TextRun>? effectivePostSplitRuns;
 
                                             // Split at GLOBAL character index totalFitChars-capped-by-prefixLength.
                                             // (Previously this used `Math.Min(_prefixLength, measuredLength)`
@@ -117,8 +125,9 @@ namespace Avalonia.Media.TextFormatting
 
                                             if (prefixCutoff > 0)
                                             {
+                                                // The split takes over the references held by ownedRuns.
                                                 (rentedPreSplitRuns, rentedPostSplitRuns) = TextFormatterImpl.SplitTextRuns(
-                                                    logicalRuns, prefixCutoff, objectPool);
+                                                    ownedRuns, prefixCutoff, objectPool);
 
                                                 effectivePostSplitRuns = rentedPostSplitRuns;
 
@@ -132,13 +141,15 @@ namespace Avalonia.Media.TextFormatting
                                             }
                                             else
                                             {
-                                                effectivePostSplitRuns = logicalRuns;
+                                                effectivePostSplitRuns = ownedRuns;
                                             }
 
                                             collapsedRuns.Add(shapedSymbol);
 
                                             if (totalFitChars <= _prefixLength || effectivePostSplitRuns is null)
                                             {
+                                                Release(effectivePostSplitRuns);
+
                                                 return collapsedRuns.ToArray();
                                             }
 
@@ -193,6 +204,10 @@ namespace Avalonia.Media.TextFormatting
                                                             {
                                                                 var splitSuffix = endShapedRun.Split(splitAt);
 
+                                                                // Only the trailing half survives in the suffix.
+                                                                splitSuffix.First?.Dispose();
+                                                                endShapedRun.Dispose();
+
                                                                 reversedSuffix.Add(splitSuffix.Second!);
                                                             }
                                                             else if (suffixCount > 0)
@@ -201,7 +216,15 @@ namespace Avalonia.Media.TextFormatting
                                                                 // split is needed; use the run as-is. (Calling Split(0) throws.)
                                                                 reversedSuffix.Add(endShapedRun);
                                                             }
-                                                            // else: suffixCount == 0, nothing of this run survives.
+                                                            else
+                                                            {
+                                                                // Nothing of this run survives.
+                                                                endShapedRun.Dispose();
+                                                            }
+                                                        }
+                                                        else
+                                                        {
+                                                            endShapedRun.Dispose();
                                                         }
 
                                                         break;
@@ -218,6 +241,7 @@ namespace Avalonia.Media.TextFormatting
                                         }
                                         finally
                                         {
+                                            objectPool.TextRunLists.Return(ref ownedRuns);
                                             objectPool.TextRunLists.Return(ref rentedPreSplitRuns);
                                             objectPool.TextRunLists.Return(ref rentedPostSplitRuns);
                                             objectPool.TextRunLists.Return(ref reversedSuffix);
@@ -242,6 +266,8 @@ namespace Avalonia.Media.TextFormatting
 
                     charsBeforeCurrentRun += currentRun.Length;
                 }
+
+                shapedSymbol.Dispose();
 
                 return null;
             }

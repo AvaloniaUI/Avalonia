@@ -187,12 +187,16 @@ namespace Avalonia.Media.Imaging
         public void Save(Stream stream, int? quality = null)
         {
             PlatformImpl.Item.Save(stream, PngBitmapEncoderOptions.Default);
+            GC.KeepAlive(this);
         }
 
         /// <inheritdoc />
         public void Save(Stream stream, BitmapEncoderOptions options)
         {
             PlatformImpl.Item.Save(stream, options);
+
+            // The finalizer of PlatformImpl disposes the bitmap, which would free its pixels while they are encoded.
+            GC.KeepAlive(this);
         }
 
         public virtual PixelFormat? Format => (PlatformImpl.Item as IReadableBitmapImpl)?.Format;
