@@ -1,14 +1,14 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Media.Fonts;
 using Avalonia.Platform;
-using Avalonia.Skia;
 using Avalonia.UnitTests;
-using SkiaSharp;
 using Xunit;
 
 namespace Avalonia.Skia.RenderTests
@@ -33,6 +33,37 @@ namespace Avalonia.Skia.RenderTests
         // composite assembled with ARGS_ARE_XY_VALUES clear, i.e. by point matching.
         private const string PointMatchAsset =
             "resm:Avalonia.Skia.RenderTests.Assets.PointMatch.ttf?assembly=Avalonia.Skia.RenderTests";
+
+        // Synthetic non-CID CFF (PostScript / Type 2) font: 'I' / 'L' are line-only glyphs, 'O' is a
+        // donut (outer + inner contour from cubic curves) exercising the charstring interpreter.
+        private const string CffAsset =
+            "resm:Avalonia.Skia.RenderTests.Assets.CffTest.otf?assembly=Avalonia.Skia.RenderTests";
+
+        // A subset of Adobe Source Code Pro (OFL) — a real, widely-shipped vendor CFF font. Its
+        // charstrings use real hinting and 20 local / 26 global subroutines, so matching its bounds
+        // exercises the interpreter's subr + bias and hint-skip paths against production data.
+        private const string SourceCodeProAsset =
+            "resm:Avalonia.Skia.RenderTests.Assets.SourceCodePro-Subset.otf?assembly=Avalonia.Skia.RenderTests";
+
+        // NISC18030 carries embedded bitmaps (bdat/bloc) and no vector outline table — OutlineType None.
+        private const string BitmapFontAsset =
+            "resm:Avalonia.Skia.RenderTests.Assets.NISC18030.ttf?assembly=Avalonia.Skia.RenderTests";
+
+        // A CID-keyed CFF font (ROS + FDArray + FDSelect): the glyph's Font DICT / Local Subrs are
+        // selected through FDSelect. Same 'I'/'O' shapes as the non-CID synthetic font.
+        private const string CidCffAsset =
+            "resm:Avalonia.Skia.RenderTests.Assets.CidTest.otf?assembly=Avalonia.Skia.RenderTests";
+
+        // A subset of Adobe's AdobeVFPrototype (OFL) — a real CFF2 (variable PostScript) font with a
+        // wght axis. Exercises the charstring blend / vsindex operators and the shared ItemVariationStore.
+        private const string Cff2Asset =
+            "resm:Avalonia.Skia.RenderTests.Assets.AdobeVFPrototype-Subset.otf?assembly=Avalonia.Skia.RenderTests";
+
+        // Synthetic non-CID CFF font with operator-level fixtures. Its 'C' is one cubic,
+        // (100,0) (200,200) (300,200) (400,0), whose control points reach y = 200 while the curve
+        // itself peaks at y = 150, so the control box and the tight box differ.
+        private const string CffOpsAsset =
+            "resm:Avalonia.Skia.RenderTests.Assets.CffOpsTest.otf?assembly=Avalonia.Skia.RenderTests";
 
         public GlyphOutlineRenderTests()
             : base(@"Media\GlyphOutline")
@@ -66,6 +97,192 @@ namespace Avalonia.Skia.RenderTests
             // at the origin instead of the rectangle's corner, which the image diff would catch.
             await RenderToFile(BuildTarget(LoadGlyphTypeface(PointMatchAsset), 'P'));
             CompareImages();
+        }
+
+        [Fact]
+        public async Task Should_Render_Cff_Glyph()
+        {
+            // 'O' from a CFF (PostScript / Type 2) font: a donut whose hole exercises non-zero
+            // winding, built from cubic curves decoded by the Type 2 charstring interpreter. This is
+            // the PostScript counterpart to the glyf render tests, proving GetGlyphOutline returns
+            // real geometry for OTF/CFF fonts through the full Skia pipeline.
+            await RenderToFile(BuildTarget(LoadGlyphTypeface(CffAsset), 'O'));
+            CompareImages();
+        }
+
+        [Fact]
+        public void Cff_Glyph_Outlines_Have_Expected_Design_Bounds()
+        {
+            // Ground-truth design-unit bounds (computed from the font's own charstrings) verify the
+            // CFF interpreter produces correctly positioned and scaled geometry end-to-end. 'I' / 'L'
+            // cover the line operators; 'O' covers the curve operators (vhcurveto), the leading-width
+            // drop, and a second contour started by hmoveto.
+            var gt = LoadGlyphTypeface(CffAsset);
+            AssertGlyphBounds(gt, 'I', left: 400, top: 0, right: 600, bottom: 700);
+            AssertGlyphBounds(gt, 'L', left: 200, top: 0, right: 600, bottom: 700);
+            AssertGlyphBounds(gt, 'O', left: 100, top: 50, right: 700, bottom: 650);
+        }
+
+        [Fact]
+        public async Task Should_Render_SourceCodePro_Glyph()
+        {
+            // 'a' from Adobe Source Code Pro (a real, major-vendor CFF font): a double-story glyph
+            // with a bowl counter, decoded from production charstrings — real subroutines and hints —
+            // through the full Skia pipeline.
+            await RenderToFile(BuildTarget(LoadGlyphTypeface(SourceCodeProAsset), 'a'));
+            CompareImages();
+        }
+
+        [Fact]
+        public void SourceCodePro_Outlines_Have_Expected_Design_Bounds()
+        {
+            // Ground-truth design-unit bounds from the font's own charstrings (computed by an
+            // independent CFF implementation). Matching them validates the interpreter on real Adobe
+            // charstrings — subroutine calls (20 local / 26 global), hint masks, and a descender
+            // ('g', yMin -224). Tolerance absorbs any control-point vs tight-bounds difference.
+            var gt = LoadGlyphTypeface(SourceCodeProAsset);
+            AssertGlyphBounds(gt, 'H', 79, 0, 521, 656, tolerance: 5);
+            AssertGlyphBounds(gt, 'O', 48, -12, 552, 668, tolerance: 5);
+            AssertGlyphBounds(gt, 'o', 60, -12, 540, 498, tolerance: 5);
+            AssertGlyphBounds(gt, 'a', 81, -12, 515, 498, tolerance: 5);
+            AssertGlyphBounds(gt, 'e', 68, -12, 538, 498, tolerance: 5);
+            AssertGlyphBounds(gt, 'g', 72, -224, 566, 498, tolerance: 5);
+            AssertGlyphBounds(gt, 'B', 99, 0, 547, 656, tolerance: 5);
+        }
+
+        [Fact]
+        public void Cid_Cff_Glyph_Outlines_Have_Expected_Design_Bounds()
+        {
+            // CID-keyed CFF: the glyph's Local Subrs are resolved through FDSelect → FDArray rather
+            // than a single shared INDEX. Matching the design bounds validates the full CID load and
+            // per-glyph Font-DICT dispatch path end-to-end.
+            var gt = LoadGlyphTypeface(CidCffAsset);
+            Assert.Equal(GlyphOutlineType.Cff, gt.OutlineType);
+            AssertGlyphBounds(gt, 'I', 400, 0, 600, 700);
+            AssertGlyphBounds(gt, 'O', 100, 50, 700, 650);
+        }
+
+        [Fact]
+        public async Task Should_Render_Cff2_Glyph()
+        {
+            // 'A' from a real CFF2 (variable PostScript) font at its default instance — the charstring
+            // blends evaluate to the default master through the full Skia pipeline.
+            await RenderToFile(BuildTarget(LoadGlyphTypeface(Cff2Asset), 'A'));
+            CompareImages();
+        }
+
+        [Fact]
+        public void Cff2_Default_Instance_Outlines_Have_Expected_Design_Bounds()
+        {
+            // CFF2 charstrings reach the default master by evaluating their blends at the origin.
+            // Ground-truth bounds come from the font's own (independent) CFF2 interpreter.
+            var gt = LoadGlyphTypeface(Cff2Asset);
+            Assert.Equal(GlyphOutlineType.Cff2, gt.OutlineType);
+            AssertGlyphBounds(gt, 'H', 45, 0, 745, 670, tolerance: 5);
+            AssertGlyphBounds(gt, 'A', 5, 0, 653, 675, tolerance: 5);
+            AssertGlyphBounds(gt, 'o', 46, -13, 502, 487, tolerance: 5);
+        }
+
+        [Fact]
+        public void Cff2_Varied_Outlines_Reflect_The_Blend_At_wght_900()
+        {
+            // WithVariation(wght=900) feeds active coordinates to the CFF2 blend operator, deforming
+            // the outline. The varied bounds match the font's own wght=900 instance — and differ from
+            // the default, proving the blend actually ran.
+            var gt = LoadGlyphTypeface(Cff2Asset);
+            var black = gt.WithVariation(WghtPosition(gt, 900));
+
+            AssertGlyphBounds(black, 'H', 28, 0, 728, 652, tolerance: 5);
+            AssertGlyphBounds(black, 'A', 10, 0, 665, 652, tolerance: 5);
+            AssertGlyphBounds(black, 'o', 22, -16, 550, 503, tolerance: 5);
+
+            var glyph = gt.CharacterToGlyphMap['H'];
+            Assert.NotEqual(gt.GetGlyphOutline(glyph)!.Bounds, black.GetGlyphOutline(glyph)!.Bounds);
+        }
+
+        [Fact]
+        public void Cff_Ink_Box_Is_The_Control_Box_When_The_Outline_Is_Built_First()
+        {
+            var gt = LoadGlyphTypeface(CffOpsAsset);
+            var glyph = gt.CharacterToGlyphMap['C'];
+
+            Assert.NotNull(gt.GetGlyphOutline(glyph));
+
+            AssertCurveGlyphControlBox(gt, glyph);
+        }
+
+        [Fact]
+        public void Cff_Ink_Box_Is_The_Control_Box_When_The_Metrics_Are_Read_First()
+        {
+            var gt = LoadGlyphTypeface(CffOpsAsset);
+            var glyph = gt.CharacterToGlyphMap['C'];
+
+            AssertCurveGlyphControlBox(gt, glyph);
+
+            Assert.NotNull(gt.GetGlyphOutline(glyph));
+
+            AssertCurveGlyphControlBox(gt, glyph);
+        }
+
+        // The metrics ink box is the control-point box regardless of which path filled the cache
+        // entry: 100 0 rmoveto 100 200 100 0 100 -200 rrcurveto spans x 100..400 and y 0..200.
+        private static void AssertCurveGlyphControlBox(GlyphTypeface gt, ushort glyph)
+        {
+            Assert.True(gt.TryGetGlyphMetrics(glyph, out var metrics));
+            Assert.Equal(100, metrics.XBearing);
+            Assert.Equal(200, metrics.YBearing);
+            Assert.Equal(300, metrics.Width);
+            Assert.Equal(200, metrics.Height);
+        }
+
+        [Fact]
+        public void OutlineType_Reports_The_Font_Outline_Technology()
+        {
+            // The outline technology is reported up front, so a caller (e.g. an outline-driven glyph
+            // run fallback) can tell whether outlines exist without probing individual glyphs.
+            Assert.Equal(GlyphOutlineType.TrueType, LoadGlyphTypeface(InterRegularAsset).OutlineType);
+            Assert.Equal(GlyphOutlineType.Cff, LoadGlyphTypeface(CffAsset).OutlineType);
+            Assert.Equal(GlyphOutlineType.Cff, LoadGlyphTypeface(SourceCodeProAsset).OutlineType);
+            Assert.Equal(GlyphOutlineType.None, LoadGlyphTypeface(BitmapFontAsset).OutlineType);
+        }
+
+        [Fact]
+        public void GetGlyphOutline_Memoises_Per_Glyph_And_Per_Instance()
+        {
+            // Repeated reads of the same glyph return the one memoised, immutable instance — the build
+            // (dominated by platform geometry construction) is paid once.
+            var gt = LoadGlyphTypeface(SourceCodeProAsset);
+            var glyph = gt.CharacterToGlyphMap['H'];
+
+            var first = gt.GetGlyphOutline(glyph);
+            Assert.NotNull(first);
+            Assert.Same(first, gt.GetGlyphOutline(glyph));
+
+            // The memo is per typeface instance: a CFF2 variation clone caches the outline at its own
+            // variation point, so it must not return the source instance's geometry.
+            var cff2 = LoadGlyphTypeface(Cff2Asset);
+            var black = cff2.WithVariation(WghtPosition(cff2, 900));
+            var hGlyph = cff2.CharacterToGlyphMap['H'];
+
+            var defaultOutline = cff2.GetGlyphOutline(hGlyph);
+            var blackOutline = black.GetGlyphOutline(hGlyph);
+
+            Assert.NotNull(defaultOutline);
+            Assert.NotNull(blackOutline);
+            Assert.NotSame(defaultOutline, blackOutline);
+            Assert.Same(blackOutline, black.GetGlyphOutline(hGlyph));
+        }
+
+        private static void AssertGlyphBounds(GlyphTypeface gt, char ch,
+            double left, double top, double right, double bottom, double tolerance = 1.5)
+        {
+            var glyph = gt.CharacterToGlyphMap[ch];
+            var bounds = gt.GetGlyphOutline(glyph)!.Bounds;
+
+            Assert.True(Math.Abs(bounds.Left - left) < tolerance, $"'{ch}' Left: expected {left}, got {bounds.Left}");
+            Assert.True(Math.Abs(bounds.Top - top) < tolerance, $"'{ch}' Top: expected {top}, got {bounds.Top}");
+            Assert.True(Math.Abs(bounds.Right - right) < tolerance, $"'{ch}' Right: expected {right}, got {bounds.Right}");
+            Assert.True(Math.Abs(bounds.Bottom - bottom) < tolerance, $"'{ch}' Bottom: expected {bottom}, got {bounds.Bottom}");
         }
 
         [Fact]
@@ -265,13 +482,12 @@ namespace Avalonia.Skia.RenderTests
             using var stream = loader.Open(new Uri(assetUri));
             using var memory = new MemoryStream();
             stream.CopyTo(memory);
-            // Copy the bytes into Skia-owned memory so the typeface's table reads keep
-            // working after the source stream is disposed. SKTypeface.FromStream's
-            // lifetime story varies by font; SKData.CreateCopy is bulletproof.
-            var skData = SKData.CreateCopy(memory.ToArray());
-            var skTypeface = SKTypeface.FromData(skData)
-                ?? throw new InvalidOperationException("SkiaSharp failed to load the font.");
-            return new GlyphTypeface(new SkiaTypeface(skTypeface, FontSimulations.None));
+
+            // Load through a custom IPlatformTypeface that reads the sfnt tables directly, not via a
+            // SkiaSharp typeface, so GetGlyphOutline exercises this repo's own table parsers and the
+            // charstring interpreter end to end against the raw font bytes. (Skia is still the
+            // geometry backend the resulting outline's bounds and rasterization depend on.)
+            return new GlyphTypeface(new CustomPlatformTypeface(memory.ToArray()));
         }
 
         private static Border BuildTarget(GlyphTypeface glyphTypeface, char ch)
@@ -320,6 +536,62 @@ namespace Avalonia.Skia.RenderTests
                 {
                     context.DrawGeometry(Brushes.Black, null, _outline);
                 }
+            }
+        }
+
+        /// <summary>
+        /// An <see cref="IPlatformTypeface"/> that serves the font's sfnt tables straight from the file
+        /// bytes — no SkiaSharp typeface. Enough for <see cref="GlyphTypeface"/> to parse the font and
+        /// for <see cref="GlyphTypeface.GetGlyphOutline(ushort)"/> to build outlines.
+        /// </summary>
+        private sealed class CustomPlatformTypeface : IPlatformTypeface
+        {
+            private readonly byte[] _data;
+            private readonly Dictionary<OpenTypeTag, (int Offset, int Length)> _tables = new();
+
+            public CustomPlatformTypeface(byte[] data)
+            {
+                _data = data;
+
+                // sfnt offset table: sfntVersion(4), numTables(2), ... then 16-byte table records of
+                // { tag(4), checksum(4), offset(4), length(4) }.
+                int numTables = (data[4] << 8) | data[5];
+                int record = 12;
+                for (int i = 0; i < numTables; i++, record += 16)
+                {
+                    var tag = OpenTypeTag.Parse(Encoding.ASCII.GetString(data, record, 4));
+                    int offset = (data[record + 8] << 24) | (data[record + 9] << 16) | (data[record + 10] << 8) | data[record + 11];
+                    int length = (data[record + 12] << 24) | (data[record + 13] << 16) | (data[record + 14] << 8) | data[record + 15];
+                    _tables[tag] = (offset, length);
+                }
+            }
+
+            public FontWeight Weight => FontWeight.Normal;
+            public FontStyle Style => FontStyle.Normal;
+            public FontStretch Stretch => FontStretch.Normal;
+            public string FamilyName => "Custom";
+            public FontSimulations FontSimulations => FontSimulations.None;
+
+            public bool TryGetTable(OpenTypeTag tag, out ReadOnlyMemory<byte> table)
+            {
+                if (_tables.TryGetValue(tag, out var loc) && (long)loc.Offset + loc.Length <= _data.Length)
+                {
+                    table = new ReadOnlyMemory<byte>(_data, loc.Offset, loc.Length);
+                    return true;
+                }
+
+                table = default;
+                return false;
+            }
+
+            public bool TryGetStream([NotNullWhen(true)] out Stream? stream)
+            {
+                stream = new MemoryStream(_data, writable: false);
+                return true;
+            }
+
+            public void Dispose()
+            {
             }
         }
     }
