@@ -543,7 +543,7 @@
                     auto point = [self translateLocalPoint:avnPoint];
                     AvnVector delta = { 0, 0 };
 
-                    parent->BaseEvents->RawMouseEvent(NonClientLeftButtonDown, AvnPointerDeviceType::Mouse, static_cast<uint64>([event timestamp] * 1000), AvnInputModifiersNone, point, delta, .5f, .0f, .0f);
+                    parent->BaseEvents->RawMouseEvent(NonClientLeftButtonDown, AvnPointerDeviceType::Mouse, static_cast<uint64>([event timestamp] * 1000), AvnInputModifiersNone, point, delta, .5f, .0f, .0f, AvnTouchPadGesturePhaseNone);
                 }
                 
                 if(!_isTransitioningToFullScreen)
