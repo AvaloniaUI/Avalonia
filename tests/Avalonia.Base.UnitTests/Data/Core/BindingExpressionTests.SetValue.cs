@@ -178,6 +178,34 @@ public abstract partial class BindingExpressionTests
     }
 
     [Fact]
+    public void TwoWay_Binding_Should_Not_Write_Back_To_Source_When_Source_Loses_Its_DataContext()
+    {
+        var data = new ViewModel { StringValue = "foo" };
+        var host = CreateTarget<ViewModel, string?>(
+            o => o.StringValue,
+            dataContext: data,
+            mode: BindingMode.TwoWay);
+        var converter = new EqualsParameterConverter();
+        var target = CreateTargetWithSource(
+            host,
+            o => o.String,
+            converter: converter,
+            converterParameter: "foo",
+            mode: BindingMode.TwoWay,
+            targetProperty: TargetClass.BoolProperty);
+
+        Assert.True(target.Bool);
+
+        host.DataContext = null;
+
+        Assert.False(target.Bool);
+        Assert.Equal("foo", data.StringValue);
+        Assert.Equal(0, converter.ConvertBackCount);
+
+        GC.KeepAlive(data);
+    }
+
+    [Fact]
     public void Setter_Should_Convert_Double_To_String()
     {
         var data = new ViewModel { StringValue = $"{5.6}" };

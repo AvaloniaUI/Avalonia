@@ -550,6 +550,10 @@ internal class BindingExpression : UntypedBindingExpressionBase, IDescription, I
 
     private bool IsPublishedValue(AvaloniaProperty property)
     {
+        // The binding can be stopped by a handler of the change it is publishing.
+        if (!IsRunning)
+            return false;
+
         var value = GetValue();
 
         return value == AvaloniaProperty.UnsetValue ||

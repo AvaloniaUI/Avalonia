@@ -421,7 +421,7 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
     private void NotifySink(IBindingExpressionSink sink, bool hasValueChanged, bool hasErrorChanged)
     {
         var wasPublishingValue = _isPublishingValue;
-        _isPublishingValue = true;
+        _isPublishingValue = hasValueChanged;
 
         try
         {
