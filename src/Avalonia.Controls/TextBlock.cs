@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
@@ -203,10 +203,11 @@ namespace Avalonia.Controls
             EnsureTextRuns();
 
             // A block whose measure is invalid at render time is one layout cannot reach, such as
-            // one under a hidden ancestor. Measuring its embedded controls here would apply their
-            // templates inside the render pass, which must not attach visuals. The pending measure
-            // pass measures them once the block becomes reachable.
-            if (IsMeasureValid)
+            // one under a hidden ancestor or one that is not effectively visible. Measuring its
+            // embedded controls here would apply their templates inside the render pass, which
+            // must not attach visuals. The pending measure pass measures them once the block
+            // becomes reachable.
+            if (IsEffectivelyVisible && IsMeasureValid)
             {
                 MeasureEmbeddedControls(GetMaxSizeFromConstraint());
             }
