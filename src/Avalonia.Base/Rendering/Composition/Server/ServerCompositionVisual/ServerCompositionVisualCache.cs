@@ -164,7 +164,7 @@ internal class ServerCompositionVisualCache
                 return default;
             }
             
-            _layer = renderContext.CreateOffscreenRenderTarget(_desiredLayerSize, new Vector(_scaleX, _scaleX),
+            _layer = renderContext.CreateOffscreenRenderTarget(_desiredLayerSize, new Vector(_scaleX, _scaleY),
                 EnableClearType);
             _layerHasTextAntialiasing = EnableClearType;
             _layerCreatedWithContext = renderContext;

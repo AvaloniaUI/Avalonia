@@ -57,7 +57,9 @@ namespace Avalonia.Skia
         {
             try
             {
-                var asset = SKTypeface.OpenStream();
+                // SKStream.Read doesn't keep the stream alive across its native call in SkiaSharp 3.x. Without
+                // the using, the finalizer can destroy the native stream while it's still being read.
+                using var asset = SKTypeface.OpenStream();
                 var size = asset.Length;
                 var buffer = new byte[size];
 

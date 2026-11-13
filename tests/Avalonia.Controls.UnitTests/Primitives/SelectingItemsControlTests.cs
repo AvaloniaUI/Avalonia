@@ -196,6 +196,34 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.Equal("B", listBox.SelectedItem);
         }
 
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Setting_SelectedIndex_During_Initialize_Raises_SelectionChanged_Once(bool comboBox)
+        {
+            // The order XAML uses: rooted, SelectedIndex set and inline items added before EndInit
+            SelectingItemsControl target = comboBox ? new ComboBox() : new ListBox();
+            var first = "first";
+            var second = "second";
+            var raised = new List<(object[] Added, object[] Removed)>();
+            var root = new TestRoot();
+
+            root.BeginInit();
+            target.BeginInit();
+            root.Child = target;
+            target.SelectedIndex = 0;
+            target.SelectionChanged += (_, e) => raised.Add((e.AddedItems.Cast<object>().ToArray(), e.RemovedItems.Cast<object>().ToArray()));
+            target.Items.Add(first);
+            target.Items.Add(second);
+            target.EndInit();
+            root.EndInit();
+
+            var change = Assert.Single(raised);
+            Assert.Equal(new object[] { first }, change.Added);
+            Assert.Empty(change.Removed);
+            Assert.Same(first, target.SelectedItem);
+        }
+
         [Fact]
         public void Setting_SelectedIndex_Before_Initialize_Should_Retain_Selection()
         {

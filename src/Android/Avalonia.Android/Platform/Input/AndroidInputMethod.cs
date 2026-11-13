@@ -181,7 +181,8 @@ namespace Avalonia.Android.Platform.Input
                     TextInputContentType.Digits => InputTypes.ClassPhone,
                     TextInputContentType.Url => InputTypes.ClassText | InputTypes.TextVariationUri,
                     TextInputContentType.Name => InputTypes.ClassText | InputTypes.TextVariationPersonName,
-                    // Alpha/Normal/Social/Search have no dedicated Android keyboard
+                    TextInputContentType.Search => InputTypes.ClassText | InputTypes.TextVariationFilter,
+                    // Alpha/Normal/Social have no dedicated Android keyboard
                     _ => InputTypes.ClassText
                 };
 
@@ -212,9 +213,6 @@ namespace Avalonia.Android.Platform.Input
                     (outAttrs.InputType & InputTypes.MaskClass) == InputTypes.ClassText)
                 {
                     outAttrs.InputType |= InputTypes.TextFlagNoSuggestions;
-
-                    if ((outAttrs.InputType & InputTypes.MaskVariation) == InputTypes.TextVariationNormal)
-                        outAttrs.InputType |= InputTypes.TextVariationVisiblePassword;
                 }
 
                 if (options.IsSensitive)

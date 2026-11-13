@@ -8,7 +8,8 @@ internal static class TableViewLayoutHelper
 {
     /// <summary>
     /// Distributes <paramref name="availableWidth"/> among the columns.
-    /// Pixel columns take their fixed size; remaining space is split proportionally among star columns.
+    /// Pixel columns take their clamped fixed size; remaining space is split proportionally among star columns,
+    /// redistributing space when a star column reaches a minimum or maximum.
     /// Auto is treated as 1*.
     /// </summary>
     public static bool UpdateActualWidths(
@@ -23,6 +24,7 @@ internal static class TableViewLayoutHelper
         var fixedTotal = 0.0;
         var starTotal = 0.0;
         var modified = false;
+        var hasStarLimits = false;
 
         for (var i = 0; i < columns.Count; i++)
         {
@@ -39,7 +41,7 @@ internal static class TableViewLayoutHelper
             var width = columns[i].Width;
             if (width.IsAbsolute)
             {
-                var actualWidth = width.Value;
+                var actualWidth = columns[i].ClampWidth(width.Value);
 
                 if (useLayoutRounding)
                     actualWidth = LayoutHelper.RoundLayoutValue(actualWidth, layoutScale);
@@ -56,6 +58,7 @@ internal static class TableViewLayoutHelper
             {
                 // Star or Auto — treat both as star
                 starTotal += width.IsStar ? width.Value : 1.0;
+                hasStarLimits |= columns[i].MinWidth > 0 || !double.IsPositiveInfinity(columns[i].MaxWidth);
             }
         }
 
@@ -70,9 +73,15 @@ internal static class TableViewLayoutHelper
         else
             starBudget = Math.Max(0.0, availableWidth - fixedTotal);
 
+        Span<double> starWidths = hasStarLimits
+            ? columns.Count <= 64 ? stackalloc double[columns.Count] : new double[columns.Count]
+            : Span<double>.Empty;
+        if (hasStarLimits)
+            ResolveStarWidths(columns, starBudget, starWidths);
+
         // Distribute the star budget by rounding the cumulative right edge of each star column rather than each width in
         // isolation. This spreads the sub-pixel remainders across the columns instead of letting them accumulate, so the
-        // sum of the rounded star widths equals the rounded star budget and the final layout matches the available width.
+        // sum of the rounded star widths equals the rounded allocation, which fills the budget when limits permit.
         var unroundedEdge = 0.0;
         var roundedEdge = 0.0;
 
@@ -85,7 +94,9 @@ internal static class TableViewLayoutHelper
             if (!width.IsAbsolute)
             {
                 var share = width.IsStar ? width.Value : 1.0;
-                unroundedEdge += starTotal > 0 ? share / starTotal * starBudget : 0;
+                unroundedEdge += hasStarLimits
+                    ? starWidths[i]
+                    : starTotal > 0 ? share / starTotal * starBudget : 0;
 
                 var actualWidth = unroundedEdge - roundedEdge;
 
@@ -107,6 +118,82 @@ internal static class TableViewLayoutHelper
         }
 
         return modified;
+    }
+
+    private static void ResolveStarWidths(
+        AvaloniaList<TableViewColumn> columns,
+        double budget,
+        Span<double> widths)
+    {
+        widths.Fill(double.NaN);
+        var originalBudget = budget;
+
+        while (true)
+        {
+            var maxWeight = 0.0;
+            for (var i = 0; i < columns.Count; ++i)
+            {
+                if (columns[i].IsVisible && !columns[i].Width.IsAbsolute && double.IsNaN(widths[i]))
+                    maxWeight = Math.Max(maxWeight, columns[i].Width.IsStar ? columns[i].Width.Value : 1);
+            }
+
+            var totalWeight = 0.0;
+            for (var i = 0; i < columns.Count; ++i)
+            {
+                if (columns[i].IsVisible && !columns[i].Width.IsAbsolute && double.IsNaN(widths[i]))
+                    totalWeight += Weight(columns[i]);
+            }
+
+            var clampedTotal = 0.0;
+            for (var i = 0; i < columns.Count; ++i)
+            {
+                if (columns[i].IsVisible && !columns[i].Width.IsAbsolute && double.IsNaN(widths[i]))
+                    clampedTotal += columns[i].ClampWidth(Share(columns[i]));
+            }
+
+            // If floors overfill the budget, resolve only floors; otherwise resolve only ceilings.
+            // Freezing both at once can leave a feasible distribution with unused space.
+            var resolved = false;
+            for (var i = 0; i < columns.Count; ++i)
+            {
+                var column = columns[i];
+                if (!column.IsVisible || column.Width.IsAbsolute || !double.IsNaN(widths[i]))
+                    continue;
+
+                var share = Share(column);
+                if ((clampedTotal > budget && share < column.MinWidth) ||
+                    (clampedTotal < budget && share > Math.Max(column.MinWidth, column.MaxWidth)))
+                {
+                    widths[i] = column.ClampWidth(share);
+                    resolved = true;
+                }
+            }
+
+            if (!resolved)
+            {
+                for (var i = 0; i < columns.Count; ++i)
+                {
+                    if (columns[i].IsVisible && !columns[i].Width.IsAbsolute && double.IsNaN(widths[i]))
+                        widths[i] = columns[i].ClampWidth(Share(columns[i]));
+                }
+                return;
+            }
+
+            // Recompute instead of subtracting weights to avoid cancellation with very unequal weights.
+            budget = 0;
+            for (var i = 0; i < columns.Count; ++i)
+            {
+                if (!double.IsNaN(widths[i]))
+                    budget += widths[i];
+            }
+            budget = Math.Max(0, originalBudget - budget);
+
+            double Share(TableViewColumn column)
+                => totalWeight > 0 ? Weight(column) / totalWeight * budget : 0;
+
+            double Weight(TableViewColumn column)
+                => maxWeight > 0 ? (column.Width.IsStar ? column.Width.Value : 1) / maxWeight : 0;
+        }
     }
 
     /// <remarks>
