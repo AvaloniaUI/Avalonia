@@ -3,6 +3,7 @@ using System.Globalization;
 using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
+using Avalonia.Data.Core;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -272,6 +273,63 @@ public abstract partial class BindingExpressionTests
         Assert.Equal(9.8, data.DoubleValue);
 
         GC.KeepAlive(data);
+    }
+
+    [Fact]
+    public void OneWayToSource_Binding_Should_Write_Value_Set_By_Target_While_Data_Validation_Error_Is_Published()
+    {
+        var data = new ExceptionViewModel();
+        var target = CreateTargetWithSource(
+            data,
+            o => o.MustBePositive,
+            enableDataValidation: true,
+            mode: BindingMode.OneWayToSource);
+
+        target.Int = 5;
+
+        Assert.Equal(5, data.MustBePositive);
+        Assert.False(DataValidationErrors.GetHasErrors(target));
+
+        target.PropertyChanged += (_, e) =>
+        {
+            if (e.Property == DataValidationErrors.HasErrorsProperty && e.NewValue is true)
+                target.Int = 7;
+        };
+
+        target.Int = -5;
+
+        Assert.Equal(7, target.Int);
+        Assert.Equal(7, data.MustBePositive);
+
+        GC.KeepAlive(data);
+    }
+
+    [Fact]
+    public void Disposing_TwoWay_Binding_While_It_Publishes_A_Value_Should_Not_Throw()
+    {
+        var source = new SourceControl { StringValue = "foo" };
+        var target = new TargetClass();
+        BindingExpression? expression = null;
+
+        // Subscribed before the binding is, so this runs before the binding's own handler for the target property.
+        target.PropertyChanged += (_, e) =>
+        {
+            if (e.Property == TargetClass.StringProperty)
+                expression?.Dispose();
+        };
+
+        (_, expression) = CreateTargetAndExpression<SourceControl, string?>(
+            o => o.StringValue,
+            mode: BindingMode.TwoWay,
+            source: source,
+            target: target);
+
+        Assert.Equal("foo", target.String);
+
+        source.StringValue = "bar";
+
+        Assert.Null(target.String);
+        Assert.Equal("bar", source.StringValue);
     }
 
     [Fact]
