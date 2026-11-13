@@ -729,10 +729,12 @@ namespace Avalonia.Controls.Primitives
             else if (_pointerPosition is null && TopLevel.GetTopLevel(placementTarget) is { } topLevel)
                 _pointerPosition = topLevel.PointToClient(topLevel.LastPointerPosition ?? default);
 
+            TryGetInheritedScale(TopLevel.GetTopLevel(placementTarget), placementTarget, out var scaleX, out var scaleY);
+
             popupHost.ConfigurePosition(new PopupPositionRequest(
                 placementTarget,
                 Placement,
-                new Point(HorizontalOffset, VerticalOffset),
+                new Point(HorizontalOffset * scaleX, VerticalOffset * scaleY),
                 PlacementAnchor,
                 PlacementGravity,
                 PlacementConstraintAdjustment,
@@ -741,16 +743,24 @@ namespace Avalonia.Controls.Primitives
                 _pointerPosition));
         }
 
-        private void UpdateHostSizing(IPopupHost popupHost, TopLevel topLevel, Control placementTarget)
+        private bool TryGetInheritedScale(TopLevel? topLevel, Control placementTarget, out double scaleX, out double scaleY)
         {
-            var scaleX = 1.0;
-            var scaleY = 1.0;
-
-            if (InheritsTransform && placementTarget.TransformToVisual(topLevel) is { } m)
+            if (InheritsTransform && topLevel is not null && placementTarget.TransformToVisual(topLevel) is { } m)
             {
                 scaleX = Math.Sqrt(m.M11 * m.M11 + m.M12 * m.M12);
                 scaleY = Math.Sqrt(m.M21 * m.M21 + m.M22 * m.M22);
+                return true;
+            }
 
+            scaleX = 1.0;
+            scaleY = 1.0;
+            return false;
+        }
+
+        private void UpdateHostSizing(IPopupHost popupHost, TopLevel topLevel, Control placementTarget)
+        {
+            if (TryGetInheritedScale(topLevel, placementTarget, out var scaleX, out var scaleY))
+            {
                 // Ideally we'd only assign a ScaleTransform here when the scale != 1, but there's
                 // an issue with LayoutTransformControl in that it sets its LayoutTransform property
                 // with LocalValue priority in ArrangeOverride in certain cases when LayoutTransform
