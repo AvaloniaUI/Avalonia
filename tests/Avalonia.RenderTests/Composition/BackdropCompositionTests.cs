@@ -479,6 +479,31 @@ public class BackdropCompositionTests : TestBase
         AssertSimilar(h.Fb, reference.Fb);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Layout_Bounds_Backdrop_Visual_Without_Content_Draws_The_Effect(bool retained)
+    {
+        using var h = new Harness(200, 200);
+        h.Root.Children.Add(h.Rect(Colors.White, 0, 0, 200, 200));
+        h.Root.Children.Add(h.Rect(Colors.Black, 0, 0, 100, 200)); // hard edge at x = 100
+
+        // No content and no children: only the layout rect says where the effect is.
+        var backdropVisual = h.Compositor.CreateContainerVisual();
+        backdropVisual.Offset = new Vector3D(60, 60, 0);
+        backdropVisual.Size = new Vector(80, 80);
+        backdropVisual.BackdropEffect = Blur(8);
+        backdropVisual.BackdropEffectCache = MakeBackdropCacheMode(h.Compositor, retained);
+        h.Root.Children.Add(backdropVisual);
+        h.Frame();
+        h.Frame();
+
+        var edge = h.Px(100, 100);
+        Assert.InRange((int)edge.Red, 60, 200);
+        // Outside of the layout rect the edge stays hard.
+        Assert.True(h.Px(98, 30).Red < 10 && h.Px(101, 30).Red > 245, $"{h.Px(98, 30)} {h.Px(101, 30)}");
+    }
+
     [Fact]
     public void Volatile_Overlap_Equals_Full_Redraw()
     {

@@ -89,7 +89,8 @@ See "Frame pipeline" for the order and the details.
   content and children are drawn on top.
 - **backdrop bounds**: where the effect is visible, in the backdrop visual's local space. The layout rect or the
   subtree bounds, see `BackdropEffectBoundsSource`. The effect is clipped to them, so they follow the visual's
-  transform.
+  transform. The layout rect counts as own content of the visual (`_ownContentBounds`), so a backdrop visual
+  without content of its own is still drawn. With subtree bounds, a visual without content has no backdrop bounds.
 - **backdrop AABB**: the pixel-aligned, axis-aligned box around the backdrop bounds, in layer space. Everything that
   needs an axis-aligned area uses it: the backdrop snapshot and the dirty rect tests.
 - **input** / **output**: the part of the backdrop that a backdrop visual reads (inside its AABB) and the pixels the

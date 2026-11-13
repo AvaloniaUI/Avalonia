@@ -289,6 +289,40 @@ public class CompositorBackdropInvalidationTests : CompositorTestsBase
     }
 
     [Fact]
+    public void Layout_Rect_Is_Own_Content_Of_A_Layout_Bounds_Backdrop_Visual()
+    {
+        using var s = new CompositorTestServices();
+        var c = s.Compositor;
+        var panel = Panel(c);
+        ElementComposition.SetElementChildVisual(s.TopLevel, panel);
+
+        // No content and no children.
+        var empty = c.CreateContainerVisual();
+        empty.Size = new Vector(40, 50);
+        panel.Children.Add(empty);
+        s.RunJobs();
+        Assert.Null(empty.Server.SubTreeBounds);
+
+        empty.BackdropEffect = Blur(5);
+        s.RunJobs();
+        Assert.Equal(new LtrbRect(0, 0, 40, 50), empty.Server.SubTreeBounds);
+
+        // With subtree bounds the layout rect does not count.
+        empty.BackdropEffectBoundsSource = BackdropEffectBoundsSource.Subtree;
+        s.RunJobs();
+        Assert.Null(empty.Server.SubTreeBounds);
+
+        empty.BackdropEffectBoundsSource = BackdropEffectBoundsSource.Layout;
+        empty.Size = new Vector(60, 50);
+        s.RunJobs();
+        Assert.Equal(new LtrbRect(0, 0, 60, 50), empty.Server.SubTreeBounds);
+
+        empty.BackdropEffect = null;
+        s.RunJobs();
+        Assert.Null(empty.Server.SubTreeBounds);
+    }
+
+    [Fact]
     public void Subtree_Bounds_Use_Descendant_Bounds()
     {
         using var s = new CompositorTestServices();

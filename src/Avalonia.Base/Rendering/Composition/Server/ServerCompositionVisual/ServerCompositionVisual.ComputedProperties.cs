@@ -124,6 +124,10 @@ partial class ServerCompositionVisual
         if (_ownBoundsDirty)
         {
             _ownContentBounds = ComputeOwnContentBounds()?.NullIfZeroSize();
+            // The backdrop effect is drawn in the layout rect, also when the visual has no content there.
+            if (BackdropEffect != null && BackdropEffectBoundsSource == BackdropEffectBoundsSource.Layout
+                                       && Size.X > 0 && Size.Y > 0)
+                _ownContentBounds = LtrbRect.FullUnion(_ownContentBounds, new LtrbRect(0, 0, Size.X, Size.Y));
             setDirtyForRender = setDirtyBounds = true;
         }
 

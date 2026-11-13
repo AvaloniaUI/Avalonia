@@ -27,7 +27,9 @@ partial class ServerCompositionVisual
         | CompositionVisualChangedFields.ClipToBoundsAnimated
         | CompositionVisualChangedFields.Size
         | CompositionVisualChangedFields.SizeAnimated
-        | CompositionVisualChangedFields.Effect;
+        | CompositionVisualChangedFields.Effect
+        | CompositionVisualChangedFields.BackdropEffect
+        | CompositionVisualChangedFields.BackdropEffectBoundsSource;
 
     private const CompositionVisualChangedFields CombinedTransformFieldsMask =
         CompositionVisualChangedFields.Size
@@ -113,7 +115,12 @@ partial class ServerCompositionVisual
            ) TriggerClipSizeDirty();
 
         if (property == s_IdOfSizeProperty)
+        {
             SizeChanged();
+            // The layout rect is part of the own content bounds of a backdrop visual.
+            if (BackdropEffect != null)
+                EnqueueForOwnBoundsRecompute();
+        }
 
         if (property == s_IdOfVisibleProperty)
             TriggerVisibleDirty();
