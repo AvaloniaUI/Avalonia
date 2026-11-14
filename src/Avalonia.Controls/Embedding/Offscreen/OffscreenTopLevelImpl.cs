@@ -85,6 +85,12 @@ namespace Avalonia.Controls.Embedding.Offscreen
 
         public WindowTransparencyLevel TransparencyLevel => WindowTransparencyLevel.None;
 
+        public PixelPoint Position { get; } = default;
+
+        public Action<PixelPoint>? PositionChanged { get; set; }
+        public Action? Deactivated { get; set; }
+        public Action? Activated { get; set; }
+
         public IPopupImpl? CreatePopup() => null;
         
         public virtual object? TryGetFeature(Type featureType) => null;
