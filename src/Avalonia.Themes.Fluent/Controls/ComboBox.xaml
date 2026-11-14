@@ -129,6 +129,7 @@
                      Text="{TemplateBinding Text, Mode=TwoWay}"
                      PlaceholderText="{TemplateBinding PlaceholderText}"
                      BorderThickness="0"
+                     IsReadOnly="{TemplateBinding IsReadOnly}"
                      IsVisible="{TemplateBinding IsEditable}">
               <TextBox.Resources>
                 <SolidColorBrush x:Key="TextControlBackgroundFocused">Transparent</SolidColorBrush>
