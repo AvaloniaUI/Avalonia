@@ -22,7 +22,12 @@
     auto instance = peer->GetNode().dynamicCast<AvnAutomationNode>();
     
     if (instance != nullptr)
-        return instance->GetOwner();
+    {
+        auto owner = instance->GetOwner();
+        if (owner != nil)
+            return owner;
+        return [[AvnAccessibilityElement alloc] initWithPeer:peer node:instance];
+    }
     
     if (peer->IsInteropPeer())
     {
@@ -56,6 +61,15 @@
     _peer = peer;
     _node = comnew<AvnAutomationNode>(self);
     _peer->SetNode(_node);
+    return self;
+}
+
+- (AvnAccessibilityElement *)initWithPeer:(const ComPtr<IAvnAutomationPeer>&)peer node:(const ComPtr<AvnAutomationNode>&)node
+{
+    self = [super init];
+    _peer = peer;
+    _node = node;
+    _node->SetOwner(self);
     return self;
 }
 

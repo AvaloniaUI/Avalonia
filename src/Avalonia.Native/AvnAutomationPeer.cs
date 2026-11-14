@@ -9,6 +9,7 @@ using Avalonia.Automation.Provider;
 using Avalonia.Controls;
 using Avalonia.Controls.Automation.Peers;
 using Avalonia.Native.Interop;
+using MicroCom.Runtime;
 
 namespace Avalonia.Native
 {
@@ -40,8 +41,6 @@ namespace Avalonia.Native
                 root.FocusChanged += (_, _) => Node?.FocusChanged(); 
         }
 
-        ~AvnAutomationPeer() => Node?.Dispose();
-        
         public IAvnAutomationNode? Node { get; private set; }
         public IAvnString? AcceleratorKey => _inner.GetAcceleratorKey().ToAvnString();
         public IAvnString? AccessKey => _inner.GetAccessKey().ToAvnString();
@@ -77,7 +76,7 @@ namespace Avalonia.Native
         {
             if (Node is not null)
                 throw new InvalidOperationException("The AvnAutomationPeer already has a node.");
-            Node = node;
+            Node = node.CloneReference();
         }
 
         public int IsInteropPeer() => (_inner is InteropAutomationPeer).AsComBool();
