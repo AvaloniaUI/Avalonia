@@ -260,6 +260,10 @@ namespace Avalonia.Controls
             impl.ExtendClientAreaToDecorationsChanged = ExtendClientAreaToDecorationsChanged;
             impl.AllowedWindowActionsChanged = OnAllowedWindowActionsChanged;
             _allowedWindowActions = impl.AllowedWindowActions;
+
+            if (impl is IMacOSOptionsTopLevelImpl macOSImpl)
+                MacOSTrafficLightLayout.Attach(this, macOSImpl);
+
             this.GetObservable(ClientSizeProperty).Skip(1).Subscribe(x =>
             {
                 ResizePlatformImpl(x, WindowResizeReason.Application);

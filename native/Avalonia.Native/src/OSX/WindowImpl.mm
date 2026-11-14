@@ -10,6 +10,51 @@
 #include "WindowProtocol.h"
 #include "WindowImpl.h"
 
+// Tells WindowImpl when AppKit moves the standard window buttons. AppKit retiles the titlebar from many
+// code paths, including deferred layout passes, so frame notifications are the only reliable hook.
+@interface AvnTrafficLightFrameObserver : NSObject
+-(AvnTrafficLightFrameObserver*) initWithParent: (const ComPtr<WindowImpl>&) parent;
+-(void) observeViews: (NSArray<NSView*>*) views;
+@end
+
+@implementation AvnTrafficLightFrameObserver
+{
+    ComObjectWeakPtr<WindowImpl> _parent;
+    NSArray<NSView*>* _views;
+}
+
+-(AvnTrafficLightFrameObserver*) initWithParent: (const ComPtr<WindowImpl>&) parent
+{
+    self = [super init];
+    _parent = parent;
+    return self;
+}
+
+-(void) observeViews: (NSArray<NSView*>*) views
+{
+    // AppKit recreates the standard buttons when the style mask changes.
+    if ([views isEqualToArray:_views]) {
+        return;
+    }
+
+    auto center = [NSNotificationCenter defaultCenter];
+    [center removeObserver:self name:NSViewFrameDidChangeNotification object:nil];
+    _views = views;
+
+    for (NSView* view in views) {
+        [center addObserver:self selector:@selector(viewFrameDidChange:) name:NSViewFrameDidChangeNotification object:view];
+    }
+}
+
+-(void) viewFrameDidChange: (NSNotification*) notification
+{
+    auto parent = _parent.tryGet();
+    if (parent) {
+        parent->InvalidateTrafficLightLayout();
+    }
+}
+@end
+
 WindowImpl::WindowImpl(const ComPtr<IAvnWindowEvents>& events) : TopLevelImpl(events), WindowBaseImpl(events, false) {
     _isEnabled = true;
     _isClientAreaExtended = false;
@@ -23,6 +68,12 @@ WindowImpl::WindowImpl(const ComPtr<IAvnWindowEvents>& events) : TopLevelImpl(ev
     _lastWindowState = Normal;
     _actualWindowState = Normal;
     _lastTitle = @"";
+    _trafficLightState = TrafficLightState::System;
+    _isUpdatingTrafficLightLayout = false;
+    _trafficLightPosition = { 0, 0 };
+    _trafficLightSize = { 0, 0 };
+    _trafficLightGroup = {};
+    _trafficLightFrameObserver = [[AvnTrafficLightFrameObserver alloc] initWithParent:comself(this)];
     Parent = nullptr;
     WindowEvents = events;
 
@@ -403,6 +454,31 @@ HRESULT WindowImpl::SetExtendTitleBarHeight(double value) {
     }
 }
 
+HRESULT WindowImpl::SetTrafficLightPosition(AvnPoint position, bool useCustomLayout) {
+    @autoreleasepool {
+        _trafficLightPosition = position;
+        TransitionTrafficLightState(useCustomLayout ? ResolveRequestedTrafficLightState() : TrafficLightState::System);
+        return S_OK;
+    }
+}
+
+HRESULT WindowImpl::GetTrafficLightSize(AvnSize* ret) {
+    @autoreleasepool {
+        if (ret == nullptr) {
+            return E_POINTER;
+        }
+
+        *ret = CalculateTrafficLightSize();
+        return S_OK;
+    }
+}
+
+AvnFlowDirection WindowImpl::GetTitlebarFlowDirection() {
+    return Window.windowTitlebarLayoutDirection == NSUserInterfaceLayoutDirectionRightToLeft
+        ? AvnFlowDirectionRightToLeft
+        : AvnFlowDirectionLeftToRight;
+}
+
 void WindowImpl::EnterFullScreenMode() {
     _fullScreenActive = true;
 
@@ -582,6 +658,182 @@ void WindowImpl::UpdateAppearance() {
     [miniaturizeButton setEnabled:_isEnabled && _canMinimize];
     [zoomButton setHidden:!hasTrafficLights];
     [zoomButton setEnabled:CanZoom() || (([Window styleMask] & NSWindowStyleMaskFullScreen) != 0 && _isEnabled)];
+
+    // Style and button visibility changes can make AppKit lay out the titlebar again.
+    UpdateTrafficLightLayout();
+}
+
+void WindowImpl::InvalidateTrafficLightLayout() {
+    // Only moved buttons need to be put back, and our own frame changes also post notifications.
+    if (_trafficLightState != TrafficLightState::Custom || _isUpdatingTrafficLightLayout) {
+        return;
+    }
+
+    // AppKit ignores frame changes made while a view posts its own frame notification, so the layout is
+    // reapplied in the next layout pass. The content view is laid out after the titlebar and before display.
+    [View setNeedsLayout:YES];
+}
+
+void WindowImpl::UpdateTrafficLightLayout() {
+    // Window state changes and AppKit retiles keep the requested position.
+    TransitionTrafficLightState(_trafficLightState == TrafficLightState::System
+        ? TrafficLightState::System
+        : ResolveRequestedTrafficLightState());
+}
+
+void WindowImpl::TransitionTrafficLightState(TrafficLightState state) {
+    if (Window == nil) {
+        return;
+    }
+
+    _isUpdatingTrafficLightLayout = true;
+
+    TrafficLightViews views;
+    bool hasViews = TryGetTrafficLightViews(&views);
+    if (!hasViews && state == TrafficLightState::Custom) {
+        // The position stays requested until AppKit creates the buttons.
+        state = TrafficLightState::Suspended;
+    }
+
+    if (hasViews) {
+        [_trafficLightFrameObserver observeViews:@[views.Container, views.Close, views.Miniaturize, views.Zoom]];
+
+        // AppKit retiles one button at a time, so the group is only measured while AppKit owns the buttons.
+        if (_trafficLightState != TrafficLightState::Custom) {
+            _trafficLightGroup = MeasureTrafficLightGroup(views);
+        }
+
+        if (state == TrafficLightState::Custom) {
+            ApplyCustomTrafficLightLayout(views);
+        } else if (_trafficLightState == TrafficLightState::Custom) {
+            RestoreSystemTrafficLightLayout(views);
+        }
+    }
+
+    _trafficLightState = state;
+    _isUpdatingTrafficLightLayout = false;
+
+    // Notify after the update, so a handler can set a new position.
+    AvnSize size = CalculateTrafficLightSize();
+    if (size.Width != _trafficLightSize.Width || size.Height != _trafficLightSize.Height) {
+        _trafficLightSize = size;
+        WindowEvents->TrafficLightSizeChanged(size);
+    }
+}
+
+WindowImpl::TrafficLightState WindowImpl::ResolveRequestedTrafficLightState() {
+    return CanCustomizeTrafficLightLayout() ? TrafficLightState::Custom : TrafficLightState::Suspended;
+}
+
+bool WindowImpl::CanCustomizeTrafficLightLayout() {
+    // The buttons can only be placed inside the client area of an extended, fully decorated window.
+    // AppKit owns them in every other state, including native fullscreen.
+    return _isClientAreaExtended &&
+        _decorations == SystemDecorationsFull &&
+        ([Window styleMask] & NSWindowStyleMaskFullScreen) == 0;
+}
+
+WindowImpl::TrafficLightGroup WindowImpl::MeasureTrafficLightGroup(const TrafficLightViews& views) {
+    // Measure the native group instead of assuming fixed button sizes or spacing.
+    NSRect groupFrame = NSUnionRect(views.Close.frame,
+        NSUnionRect(views.Miniaturize.frame, views.Zoom.frame));
+    auto originInGroup = [&](NSButton* button) {
+        return NSMakePoint(NSMinX(button.frame) - NSMinX(groupFrame), NSMinY(button.frame) - NSMinY(groupFrame));
+    };
+
+    return {
+        groupFrame.size,
+        originInGroup(views.Close),
+        originInGroup(views.Miniaturize),
+        originInGroup(views.Zoom)
+    };
+}
+
+AvnSize WindowImpl::CalculateTrafficLightSize() {
+    TrafficLightViews views;
+    if (!CanCustomizeTrafficLightLayout() || !TryGetTrafficLightViews(&views)) {
+        return {};
+    }
+
+    // AppKit retiles one button at a time, so live frames are only consistent while AppKit owns the buttons.
+    auto group = _trafficLightState == TrafficLightState::Custom
+        ? _trafficLightGroup
+        : MeasureTrafficLightGroup(views);
+    return { group.Size.width, group.Size.height };
+}
+
+void WindowImpl::ApplyCustomTrafficLightLayout(const TrafficLightViews& views) {
+    NSRect containerFrame = views.Container.frame;
+    // Equal bottom padding keeps the titlebar tracking geometry around the moved buttons.
+    containerFrame.size.height = _trafficLightGroup.Size.height + 2 * _trafficLightPosition.Y;
+    containerFrame.origin.y = NSHeight(Window.frame) - NSHeight(containerFrame);
+    [views.Container setFrame:containerFrame];
+
+    // Write absolute origins from the measured group shape. AppKit may be midway through retiling,
+    // so the current frames can't be used as a reference.
+    NSRect titlebarBounds = views.Titlebar.bounds;
+    bool isRightToLeft = GetTitlebarFlowDirection() == AvnFlowDirectionRightToLeft;
+    NSPoint groupOrigin = NSMakePoint(
+        isRightToLeft
+            ? NSWidth(titlebarBounds) - _trafficLightPosition.X - _trafficLightGroup.Size.width
+            : _trafficLightPosition.X,
+        NSHeight(titlebarBounds) - _trafficLightPosition.Y - _trafficLightGroup.Size.height);
+    auto moveButton = [&](NSButton* button, NSPoint originInGroup) {
+        [button setFrameOrigin:NSMakePoint(groupOrigin.x + originInGroup.x, groupOrigin.y + originInGroup.y)];
+    };
+
+    moveButton(views.Close, _trafficLightGroup.CloseOrigin);
+    moveButton(views.Miniaturize, _trafficLightGroup.MiniaturizeOrigin);
+    moveButton(views.Zoom, _trafficLightGroup.ZoomOrigin);
+
+    UpdateTrafficLightTrackingAreas(views);
+}
+
+void WindowImpl::RestoreSystemTrafficLightLayout(const TrafficLightViews& views) {
+    // Changing the title visibility makes AppKit retile the titlebar for the current window size.
+    // Cached frames would be stale after a resize.
+    NSWindowTitleVisibility visibility = Window.titleVisibility;
+    Window.titleVisibility = visibility == NSWindowTitleVisible ? NSWindowTitleHidden : NSWindowTitleVisible;
+    Window.titleVisibility = visibility;
+
+    UpdateTrafficLightTrackingAreas(views);
+}
+
+bool WindowImpl::TryGetTrafficLightViews(TrafficLightViews* views) {
+    if (Window == nil || views == nullptr) {
+        return false;
+    }
+
+    // Standard buttons can be removed and recreated, so always fetch the live views.
+    NSButton* closeButton = [Window standardWindowButton:NSWindowCloseButton];
+    NSButton* miniaturizeButton = [Window standardWindowButton:NSWindowMiniaturizeButton];
+    NSButton* zoomButton = [Window standardWindowButton:NSWindowZoomButton];
+    NSView* titlebar = closeButton.superview;
+
+    if (closeButton == nil ||
+        miniaturizeButton == nil ||
+        zoomButton == nil ||
+        titlebar == nil ||
+        miniaturizeButton.superview != titlebar ||
+        zoomButton.superview != titlebar ||
+        titlebar.superview == nil) {
+        return false;
+    }
+
+    views->Container = titlebar.superview;
+    views->Titlebar = titlebar;
+    views->Close = closeButton;
+    views->Miniaturize = miniaturizeButton;
+    views->Zoom = zoomButton;
+    return true;
+}
+
+void WindowImpl::UpdateTrafficLightTrackingAreas(const TrafficLightViews& views) {
+    // Moving frames alone can leave AppKit's hover and hit-test geometry stale.
+    [views.Container updateTrackingAreas];
+    [views.Close updateTrackingAreas];
+    [views.Miniaturize updateTrackingAreas];
+    [views.Zoom updateTrackingAreas];
 }
 
 extern ComPtr<IAvnWindow> CreateAvnWindow(const ComPtr<IAvnWindowEvents>& events)
