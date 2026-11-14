@@ -4,7 +4,7 @@ using Avalonia.Metadata;
 namespace Avalonia.Input.Platform
 {
     /// <summary>
-    /// The PlatformHotkeyConfiguration class represents a configuration for platform-specific hotkeys in an Avalonia application. 
+    /// The PlatformHotkeyConfiguration class represents a configuration for platform-specific hotkeys in an Avalonia application.
     /// </summary>
     public sealed class PlatformHotkeyConfiguration
     {
@@ -14,10 +14,29 @@ namespace Avalonia.Input.Platform
             get
             {
                 var hotkeys = new PlatformHotkeyConfiguration(KeyModifiers.Meta, wholeWordTextActionModifiers: KeyModifiers.Alt);
+
+                hotkeys.MoveCursorToTheStartOfLine.Clear();
                 hotkeys.MoveCursorToTheStartOfLine.Add(new KeyGesture(Key.Left, hotkeys.CommandModifiers));
+                hotkeys.MoveCursorToTheStartOfLineWithSelection.Clear();
                 hotkeys.MoveCursorToTheStartOfLineWithSelection.Add(new KeyGesture(Key.Left, hotkeys.CommandModifiers | hotkeys.SelectionModifiers));
+                hotkeys.MoveCursorToTheEndOfLine.Clear();
                 hotkeys.MoveCursorToTheEndOfLine.Add(new KeyGesture(Key.Right, hotkeys.CommandModifiers));
+                hotkeys.MoveCursorToTheEndOfLineWithSelection.Clear();
                 hotkeys.MoveCursorToTheEndOfLineWithSelection.Add(new KeyGesture(Key.Right, hotkeys.CommandModifiers | hotkeys.SelectionModifiers));
+                hotkeys.MoveCursorToTheStartOfDocument.Clear();
+                hotkeys.MoveCursorToTheStartOfDocument.Add(new KeyGesture(Key.Up, hotkeys.CommandModifiers));
+                hotkeys.MoveCursorToTheStartOfDocumentWithSelection.Clear();
+                hotkeys.MoveCursorToTheStartOfDocumentWithSelection.Add(new KeyGesture(Key.Up, KeyModifiers.Shift | hotkeys.CommandModifiers | hotkeys.SelectionModifiers));
+                hotkeys.MoveCursorToTheEndOfDocument.Clear();
+                hotkeys.MoveCursorToTheEndOfDocument.Add(new KeyGesture(Key.Down, hotkeys.CommandModifiers));
+                hotkeys.MoveCursorToTheEndOfDocumentWithSelection.Clear();
+                hotkeys.MoveCursorToTheEndOfDocumentWithSelection.Add(new KeyGesture(Key.Down, KeyModifiers.Shift | hotkeys.CommandModifiers | hotkeys.SelectionModifiers));
+
+                hotkeys.ScrollToTheStartOfDocument.Add(new KeyGesture(Key.Home));
+                hotkeys.ScrollToTheEndOfDocument.Add(new KeyGesture(Key.End));
+                hotkeys.ExtendSelectionToTheStartOfDocument.Add(new KeyGesture(Key.Home, KeyModifiers.Shift | hotkeys.SelectionModifiers));
+                hotkeys.ExtendSelectionToTheEndOfDocument.Add(new KeyGesture(Key.End, KeyModifiers.Shift | hotkeys.SelectionModifiers));
+
                 return hotkeys;
             }
         }
@@ -95,6 +114,10 @@ namespace Avalonia.Input.Platform
             {
                 new KeyGesture(Key.End, commandModifiers | selectionModifiers)
             };
+            ScrollToTheStartOfDocument = new List<KeyGesture>();
+            ScrollToTheEndOfDocument = new List<KeyGesture>();
+            ExtendSelectionToTheStartOfDocument = new List<KeyGesture>();
+            ExtendSelectionToTheEndOfDocument = new List<KeyGesture>();
             OpenContextMenu = new List<KeyGesture>
             {
                 new KeyGesture(Key.Apps)
@@ -144,5 +167,11 @@ namespace Avalonia.Input.Platform
         public List<KeyGesture> PageDown { get; set; }
         public List<KeyGesture> PageRight { get; set; }
         public List<KeyGesture> PageLeft { get; set; }
+        // These explicitly do not alter caret position or selection. They are a standard Apple ecosystem behaviour.
+        public List<KeyGesture> ScrollToTheStartOfDocument { get; set; }
+        public List<KeyGesture> ScrollToTheEndOfDocument { get; set; }
+        // These extend selection relative to the selection bundaries, irrespective of direction.
+        public List<KeyGesture> ExtendSelectionToTheStartOfDocument { get; set; }
+        public List<KeyGesture> ExtendSelectionToTheEndOfDocument { get; set; }
     }
 }

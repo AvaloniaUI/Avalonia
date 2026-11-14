@@ -374,6 +374,25 @@ namespace Avalonia.Controls
             InternalSynchronization,
         }
 
+        internal enum HomeEndBehaviors
+        {
+            // Windows & Linux standard behaviour: Wherever the caret has been left, Home/End move it
+            // from that position, and drag selection end along if Shift is pressed.
+            RelativeToCaret,
+            // Apple standard behaviour:
+            // - If Shift is not pressed, then Home moves the caret to the start of the line containing
+            //   the start of the selection region, and End moves the caret to the end of the line
+            //   containing the end of the selection region. Selection is cleared (set to the caret).
+            // - If Shift _is_ pressed, then:
+            //     * The caret is moved to the start (Home) or end (End) of the line it's on.
+            //     * If that position is within the selection region and the line boundary is a word
+            //       wrap, then the caret is moved to the start/end of the next line in the same
+            //       direction, and then the selection region is contracted to that position.
+            //     * Otherwise, the end of the selection region that the caret just jumped over is
+            //       moved to the caret, expanding the other side of the selection region.
+            RelativeToSelectionBoundaries,
+        }
+
         private TextPresenter? _presenter;
         private ScrollViewer? _scrollViewer;
         private readonly TextBoxTextInputMethodClient _imClient = new();
@@ -388,6 +407,7 @@ namespace Avalonia.Controls
         private static readonly string[] invalidCharacters = new String[1] { "\u007f" };
         private bool _canUndo;
         private bool _canRedo;
+        internal static HomeEndBehaviors HomeEndBehavior = InferHomeEndBehavior();
 
         private int _wordSelectionStart = -1;
         private (int Start, int End) _selectionAtPointerPress;
@@ -401,6 +421,13 @@ namespace Avalonia.Controls
         private bool _isInTouchCaretMode;
         private bool _hasTouchSelection;
         private const int _maxCharsBeforeUndoSnapshot = 7;
+
+        private static HomeEndBehaviors InferHomeEndBehavior()
+        {
+            return OperatingSystem.IsMacOS() || OperatingSystem.IsIOS()
+                ? HomeEndBehaviors.RelativeToSelectionBoundaries
+                : HomeEndBehaviors.RelativeToCaret;
+        }
 
         static TextBox()
         {
@@ -488,17 +515,20 @@ namespace Avalonia.Controls
 
         private void OnCaretIndexChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            UndoRedoState state;
-            if (IsUndoEnabled && _undoRedoHelper.TryGetLastState(out state) && state.Text == Text)
-                _undoRedoHelper.UpdateLastState();
+            if (!_inSetSelectionRange)
+            {
+                UndoRedoState state;
+                if (IsUndoEnabled && _undoRedoHelper.TryGetLastState(out state) && state.Text == Text)
+                    _undoRedoHelper.UpdateLastState();
 
-            using var _ = _imClient.BeginChange();
+                using var _ = _imClient.BeginChange();
 
-            var newValue = e.GetNewValue<int>();
-            SetCurrentValue(SelectionStartProperty, newValue);
-            SetCurrentValue(SelectionEndProperty, newValue);
+                var newValue = e.GetNewValue<int>();
+                SetCurrentValue(SelectionStartProperty, newValue);
+                SetCurrentValue(SelectionEndProperty, newValue);
 
-            _presenter?.SetCurrentValue(TextPresenter.CaretIndexProperty, newValue);
+                _presenter?.SetCurrentValue(TextPresenter.CaretIndexProperty, newValue);
+            }
         }
 
         /// <summary>
@@ -564,12 +594,15 @@ namespace Avalonia.Controls
 
         private void OnSelectionStartChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            UpdateCommandStates();
-
-            var value = e.GetNewValue<int>();
-            if (SelectionEnd == value && CaretIndex != value)
+            if (!_inSetSelectionRange)
             {
-                SetCurrentValue(CaretIndexProperty, value);
+                UpdateCommandStates();
+
+                var value = e.GetNewValue<int>();
+                if (SelectionEnd == value && CaretIndex != value)
+                {
+                    SetCurrentValue(CaretIndexProperty, value);
+                }
             }
         }
 
@@ -588,12 +621,15 @@ namespace Avalonia.Controls
 
         private void OnSelectionEndChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            UpdateCommandStates();
-
-            var value = e.GetNewValue<int>();
-            if (SelectionStart == value && CaretIndex != value)
+            if (!_inSetSelectionRange)
             {
-                SetCurrentValue(CaretIndexProperty, value);
+                UpdateCommandStates();
+
+                var value = e.GetNewValue<int>();
+                if (SelectionStart == value && CaretIndex != value)
+                {
+                    SetCurrentValue(CaretIndexProperty, value);
+                }
             }
         }
 
@@ -1483,7 +1519,7 @@ namespace Avalonia.Controls
             }
             else if (Match(keymap.MoveCursorToTheStartOfDocument))
             {
-                MoveHome(true);
+                MoveHome(document: true, withSelection: false);
                 movement = true;
                 selection = false;
                 handled = true;
@@ -1491,7 +1527,7 @@ namespace Avalonia.Controls
             }
             else if (Match(keymap.MoveCursorToTheEndOfDocument))
             {
-                MoveEnd(true);
+                MoveEnd(document: true, withSelection: false);
                 movement = true;
                 selection = false;
                 handled = true;
@@ -1499,7 +1535,7 @@ namespace Avalonia.Controls
             }
             else if (Match(keymap.MoveCursorToTheStartOfLine))
             {
-                MoveHome(false);
+                MoveHome(document: false, withSelection: false);
                 movement = true;
                 selection = false;
                 handled = true;
@@ -1507,7 +1543,7 @@ namespace Avalonia.Controls
             }
             else if (Match(keymap.MoveCursorToTheEndOfLine))
             {
-                MoveEnd(false);
+                MoveEnd(document: false, withSelection: false);
                 movement = true;
                 selection = false;
                 handled = true;
@@ -1515,39 +1551,60 @@ namespace Avalonia.Controls
             }
             else if (Match(keymap.MoveCursorToTheStartOfDocumentWithSelection))
             {
-                SetCurrentValue(SelectionStartProperty, caretIndex);
-                MoveHome(true);
-                SetCurrentValue(SelectionEndProperty, _presenter.CaretIndex);
+                MoveHome(document: true, withSelection: true);
                 movement = true;
                 selection = true;
                 handled = true;
             }
             else if (Match(keymap.MoveCursorToTheEndOfDocumentWithSelection))
             {
-                SetCurrentValue(SelectionStartProperty, caretIndex);
-                MoveEnd(true);
-                SetCurrentValue(SelectionEndProperty, _presenter.CaretIndex);
+                MoveEnd(document: true, withSelection: true);
+                movement = true;
+                selection = true;
+                handled = true;
+            }
+            else if (Match(keymap.ExtendSelectionToTheStartOfDocument))
+            {
+                // Always extend selection from the start, leaving the end anchored.
+                SetCurrentValue(SelectionEndProperty, Math.Max(SelectionStart, SelectionEnd));
+                MoveHome(document: true, withSelection: true);
+                movement = true;
+                selection = true;
+                handled = true;
+            }
+            else if (Match(keymap.ExtendSelectionToTheEndOfDocument))
+            {
+                // Always extend selection from the end, leaving the start anchored.
+                SetCurrentValue(SelectionStartProperty, Math.Min(SelectionStart, SelectionEnd));
+                MoveEnd(document: true, withSelection: true);
                 movement = true;
                 selection = true;
                 handled = true;
             }
             else if (Match(keymap.MoveCursorToTheStartOfLineWithSelection))
             {
-                SetCurrentValue(SelectionStartProperty, caretIndex);
-                MoveHome(false);
-                SetCurrentValue(SelectionEndProperty, _presenter.CaretIndex);
+                MoveHome(document: false, withSelection: true);
                 movement = true;
                 selection = true;
                 handled = true;
-
             }
             else if (Match(keymap.MoveCursorToTheEndOfLineWithSelection))
             {
-                SetCurrentValue(SelectionStartProperty, caretIndex);
-                MoveEnd(false);
-                SetCurrentValue(SelectionEndProperty, _presenter.CaretIndex);
+                MoveEnd(document: false, withSelection: true);
                 movement = true;
                 selection = true;
+                handled = true;
+            }
+            else if (Match(keymap.ScrollToTheStartOfDocument))
+            {
+                // This is an Apple ecosystem gesture which does not alter caret position or selection.
+                _scrollViewer?.ScrollToHome();
+                handled = true;
+            }
+            else if (Match(keymap.ScrollToTheEndOfDocument))
+            {
+                // This is an Apple ecosystem gesture which does not alter caret position or selection.
+                _scrollViewer?.ScrollToEnd();
                 handled = true;
             }
             else if (Match(keymap.PageLeft))
@@ -2171,6 +2228,23 @@ namespace Avalonia.Controls
                     // The pointer gesture changed the selection, publish it to the primary selection.
                     _ = PrimarySelectionHelper.PublishTextAsync(this, GetSelection);
                 }
+
+                // In HomeEndBehaviors.RelativeToSelectionBoundaries mode, mouse selection always
+                // leaves the caret at the end of the region, even if the gesture created the
+                // selection in reverse order.
+                if (HomeEndBehavior == HomeEndBehaviors.RelativeToSelectionBoundaries)
+                {
+                    if (SelectionStart > SelectionEnd)
+                    {
+                        _presenter.MoveCaretToTextPosition(end);
+
+                        // Set SelectionEnd before SelectionStart, because otherwise SelectionStart getting
+                        // set equal to SelectionEnd will automatically reset CaretIndex.
+                        SetCurrentValue(SelectionEndProperty, end);
+                        SetCurrentValue(SelectionStartProperty, start);
+                        SetCurrentValue(CaretIndexProperty, _presenter.CaretIndex);
+                    }
+                }
             }
 
             _isInTouchSelectionMode = false;
@@ -2337,14 +2411,44 @@ namespace Avalonia.Controls
             }
         }
 
-        private void MoveHome(bool document)
+        private void MoveHome(bool document, bool withSelection)
         {
             if (_presenter is null)
             {
                 return;
             }
 
-            var caretIndex = CaretIndex;
+            var caretIndex = _presenter.CaretIndex;
+
+            int newSelectionStart = SelectionStart < 0 ? caretIndex : SelectionStart;
+            int newSelectionEnd = SelectionEnd < 0 ? caretIndex : SelectionEnd;
+
+            int relativeToCharacterIndex;
+
+            switch (HomeEndBehavior)
+            {
+                default:
+                case HomeEndBehaviors.RelativeToCaret:
+                {
+                    relativeToCharacterIndex = caretIndex;
+                    break;
+                }
+                case HomeEndBehaviors.RelativeToSelectionBoundaries:
+                {
+                    if (withSelection)
+                        relativeToCharacterIndex = caretIndex;
+                    else
+                    {
+                        relativeToCharacterIndex = Math.Min(newSelectionStart, newSelectionEnd);
+                        newSelectionStart = Math.Max(newSelectionStart, newSelectionEnd);
+                    }
+
+                    break;
+                }
+            }
+
+            var textLines = _presenter.TextLayout.TextLines;
+            int lineIndex = 0;
 
             if (document)
             {
@@ -2352,37 +2456,183 @@ namespace Avalonia.Controls
             }
             else
             {
-                var textLines = _presenter.TextLayout.TextLines;
-                var lineIndex = _presenter.TextLayout.GetLineIndexFromCharacterIndex(caretIndex, false);
+                lineIndex = _presenter.TextLayout.GetLineIndexFromCharacterIndex(relativeToCharacterIndex, false);
+
                 var textLine = textLines[lineIndex];
 
                 _presenter.MoveCaretToTextPosition(textLine.FirstTextSourceIndex);
             }
+
+            if (!withSelection)
+            {
+                // Since we're processing cursor movement without selection, OnKeyDown is going to call ClearSelection,
+                // which will override our results. So, we explicitly collapse the selection here ahead of time to
+                // defuse ClearSelection.
+                caretIndex = _presenter.CaretIndex;
+
+                SetSelectionRangeCore(caretIndex, caretIndex);
+            }
+            else
+            {
+                switch (HomeEndBehavior)
+                {
+                    case HomeEndBehaviors.RelativeToCaret:
+                    {
+                        newSelectionEnd = _presenter.CaretIndex;
+                        break;
+                    }
+                    case HomeEndBehaviors.RelativeToSelectionBoundaries:
+                    {
+                        int oldCaretIndex = caretIndex;
+
+                        caretIndex = _presenter.CaretIndex;
+
+                        var (normalizedStart, normalizedEnd) = GetSelectionRange();
+
+                        bool caretIsInSelection = (normalizedStart < caretIndex) && (caretIndex <= normalizedEnd);
+
+                        if (!caretIsInSelection || (lineIndex <= 0))
+                        {
+                            newSelectionStart = Math.Max(newSelectionStart, newSelectionEnd);
+                            newSelectionEnd = caretIndex;
+                        }
+                        else if (caretIndex != newSelectionStart)
+                        {
+                            var textLine = textLines[lineIndex];
+                            var prevLine = textLines[lineIndex - 1];
+
+                            if (prevLine.TextLineBreak?.IsSplit != true)
+                                newSelectionEnd = textLine.FirstTextSourceIndex;
+                            else if (oldCaretIndex == textLine.FirstTextSourceIndex)
+                                newSelectionEnd = prevLine.FirstTextSourceIndex;
+                            else
+                                newSelectionEnd = prevLine.FirstTextSourceIndex + prevLine.Length - prevLine.TrailingWhitespaceLength;
+
+                            _presenter.MoveCaretToTextPosition(newSelectionEnd);
+                        }
+
+                        break;
+                    }
+                }
+
+                SetSelectionRangeCore(newSelectionStart, newSelectionEnd);
+            }
         }
 
-        private void MoveEnd(bool document)
+        private void MoveEnd(bool document, bool withSelection)
         {
             if (_presenter is null)
             {
                 return;
             }
 
-            var text = Text ?? string.Empty;
-            var caretIndex = CaretIndex;
+            var caretIndex = _presenter.CaretIndex;
+
+            int newSelectionStart = SelectionStart < 0 ? caretIndex : SelectionStart;
+            int newSelectionEnd = SelectionEnd < 0 ? caretIndex : SelectionEnd;
+
+            int relativeToCharacterIndex;
+
+            switch (HomeEndBehavior)
+            {
+                default:
+                case HomeEndBehaviors.RelativeToCaret:
+                {
+                    relativeToCharacterIndex = caretIndex;
+                    break;
+                }
+                case HomeEndBehaviors.RelativeToSelectionBoundaries:
+                {
+                    if (withSelection)
+                        relativeToCharacterIndex = caretIndex;
+                    else
+                    {
+                        relativeToCharacterIndex = Math.Max(newSelectionStart, newSelectionEnd);
+                        newSelectionStart = Math.Min(newSelectionStart, newSelectionEnd);
+                    }
+
+                    break;
+                }
+            }
+
+            var textLines = _presenter.TextLayout.TextLines;
+            int lineIndex = 0;
 
             if (document)
             {
+                var text = Text ?? string.Empty;
+
                 _presenter.MoveCaretToTextPosition(text.Length, true);
             }
             else
             {
-                var textLines = _presenter.TextLayout.TextLines;
-                var lineIndex = _presenter.TextLayout.GetLineIndexFromCharacterIndex(caretIndex, false);
+                lineIndex = _presenter.TextLayout.GetLineIndexFromCharacterIndex(relativeToCharacterIndex, false);
+
                 var textLine = textLines[lineIndex];
 
                 var textPosition = textLine.FirstTextSourceIndex + textLine.Length - textLine.NewLineLength;
 
+                if (textLine.TextLineBreak?.IsSplit == true)
+                {
+                    textPosition -= textLine.TrailingWhitespaceLength;
+                }
+
                 _presenter.MoveCaretToTextPosition(textPosition, true);
+            }
+
+            if (!withSelection)
+            {
+                // Since we're processing cursor movement without selection, OnKeyDown is going to call ClearSelection,
+                // which will override our results. So, we explicitly collapse the selection here ahead of time to
+                // defuse ClearSelection.
+                caretIndex = _presenter.CaretIndex;
+
+                SetSelectionRangeCore(caretIndex, caretIndex);
+            }
+            else
+            {
+                switch (HomeEndBehavior)
+                {
+                    case HomeEndBehaviors.RelativeToCaret:
+                    {
+                        newSelectionEnd = _presenter.CaretIndex;
+                        break;
+                    }
+                    case HomeEndBehaviors.RelativeToSelectionBoundaries:
+                    {
+                        int oldCaretIndex = caretIndex;
+
+                        caretIndex = _presenter.CaretIndex;
+
+                        var (normalizedStart, normalizedEnd) = GetSelectionRange();
+
+                        bool caretIsInSelection = (normalizedStart <= caretIndex) && (caretIndex < normalizedEnd);
+
+                        if (!caretIsInSelection || (lineIndex + 1 >= textLines.Count))
+                        {
+                            newSelectionStart = Math.Min(newSelectionStart, newSelectionEnd);
+                            newSelectionEnd = caretIndex;
+                        }
+                        else
+                        {
+                            var textLine = textLines[lineIndex];
+                            var nextLine = textLines[lineIndex + 1];
+
+                            newSelectionEnd = textLine.FirstTextSourceIndex + textLine.Length;
+
+                            if (textLine.TextLineBreak?.IsSplit != true)
+                            {
+                                newSelectionEnd = newSelectionEnd - textLine.TrailingWhitespaceLength;
+                            }
+
+                            _presenter.MoveCaretToTextPosition(newSelectionEnd);
+                        }
+
+                        break;
+                    }
+                }
+
+                SetSelectionRangeCore(newSelectionStart, newSelectionEnd);
             }
         }
 
@@ -2447,6 +2697,23 @@ namespace Avalonia.Controls
 
             SetCurrentValue(SelectionStartProperty, 0);
             SetCurrentValue(SelectionEndProperty, Text?.Length ?? 0);
+        }
+
+        private bool _inSetSelectionRange;
+
+        private void SetSelectionRangeCore(int start, int end)
+        {
+            _inSetSelectionRange = true;
+
+            try
+            {
+                SetCurrentValue(SelectionStartProperty, start);
+                SetCurrentValue(SelectionEndProperty, end);
+            }
+            finally
+            {
+                _inSetSelectionRange = false;
+            }
         }
 
         private (int start, int end) GetSelectionRange()
