@@ -31,10 +31,17 @@ abstract class WaylandCursor : IWaylandCursor
 /// resolves the themed surface on demand from <see cref="WaylandCursorManager"/>, so it doesn't
 /// need to be a persistent object.
 /// </summary>
-sealed class WaylandStandardCursor(StandardCursorType cursorType) : WaylandCursor
+sealed class WaylandStandardCursor : WaylandCursor
 {
+    public StandardCursorType CursorType { get; }
+
+    public WaylandStandardCursor(StandardCursorType cursorType)
+    {
+        CursorType = cursorType;
+    }
+
     public override WaylandCursorImage? Resolve(WaylandGlobals globals)
-        => globals.CursorManager.GetCursor(cursorType) is { } c
+        => globals.CursorManager.GetCursor(CursorType) is { } c
             ? new WaylandCursorImage(c.Surface, c.HotspotX, c.HotspotY)
             : null;
 
