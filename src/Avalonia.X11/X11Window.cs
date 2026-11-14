@@ -372,7 +372,16 @@ namespace Avalonia.X11
                 || _windowDecorations == WindowDecorations.None) 
                 decorations = 0;
 
-            var isDisabled = !IsEnabled;
+            // Disabling the owner while a modal dialog is open must not remove its maximize
+            // capabilities nor pin its size: window managers (openbox, for one) treat
+            // "cannot maximize" + "PMinSize == PMaxSize" as a request to leave the maximized
+            // state, so a maximized owner is restored to its previous geometry while keeping
+            // the maximized size, and then reports WindowState.Normal even though the user
+            // never asked for it. Blocking input is already expressed by WM_HINTS.input in
+            // UpdateWMHints(), so no geometry restrictions are needed for a disabled window
+            // that is currently maximized or fullscreen.
+            var isDisabled = !IsEnabled &&
+                             _lastWindowState is not (WindowState.Maximized or WindowState.FullScreen);
 
             if (!_canResize || isDisabled)
             {
