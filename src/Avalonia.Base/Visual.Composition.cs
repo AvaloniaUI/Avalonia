@@ -36,6 +36,10 @@ public partial class Visual
                 
             CompositionVisual.DrawList = null;
             CompositionVisual.OpacityMask = null;
+            // A composition visual is queued when it's created, so the render thread hasn't seen one that was never
+            // serialized. Nothing is committed while frames aren't rendering, and until then the queue keeps it
+            // and this visual alive.
+            CompositionVisual.UnregisterIfNeverSerialized();
             CompositionVisual = null;
         }
     }
