@@ -67,13 +67,9 @@ namespace Avalonia.Input
                 return ce;
 
             IInputElement? result;
-            if (direction is NavigationDirection.Next)
+            if (direction is NavigationDirection.Next or NavigationDirection.Previous)
             {
-                result = TabNavigation.GetNextTab(elementOrOwner, false);
-            }
-            else if (direction is NavigationDirection.Previous)
-            {
-                result = TabNavigation.GetPrevTab(elementOrOwner, null, false);
+                result = FocusManager.FindNextTabStop(elementOrOwner, direction is NavigationDirection.Previous);
             }
             else if (direction is NavigationDirection.Up or NavigationDirection.Down
                      or NavigationDirection.Left or NavigationDirection.Right)
@@ -81,7 +77,7 @@ namespace Avalonia.Input
                 // HACK: a window should always have some element focused,
                 // it seems to be a difference between UWP and Avalonia focus manager implementations.
                 result = element is null
-                    ? TabNavigation.GetNextTab(elementOrOwner, true)
+                    ? FocusManager.FindNextTabStop(elementOrOwner, false)
                     : XYFocus.TryDirectionalFocus(direction, element, owner, null, keyDeviceType);
             }
             else
@@ -162,10 +158,10 @@ namespace Avalonia.Input
                     return true;
                 }
 
-                var r = direction switch
+                var r = customHandler is not IInputElement container ? null : direction switch
                 {
-                    NavigationDirection.Next => TabNavigation.GetNextTabOutside(customHandler),
-                    NavigationDirection.Previous => TabNavigation.GetPrevTabOutside(customHandler),
+                    NavigationDirection.Next => FocusManager.FindNextTabStopAfter(container),
+                    NavigationDirection.Previous => FocusManager.FindPreviousTabStopBefore(container),
                     _ => null
                 };
 
