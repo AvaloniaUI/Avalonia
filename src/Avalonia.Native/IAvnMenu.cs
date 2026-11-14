@@ -159,7 +159,11 @@ namespace Avalonia.Native.Interop.Impl
         {
             if (menu != ManagedMenu)
             {
-                throw new ArgumentException("The menu being updated does not match.", nameof(menu));
+                // The managed menu can be replaced (e.g. NativeMenu.SetMenu called again, or with null).
+                // Retarget this native menu; the loop below reconciles the native items with the new ones.
+                ((INotifyCollectionChanged)ManagedMenu.Items).CollectionChanged -= OnMenuItemsChanged;
+                ManagedMenu = menu;
+                ((INotifyCollectionChanged)ManagedMenu.Items).CollectionChanged += OnMenuItemsChanged;
             }
 
             for (int i = 0; i < menu.Items.Count; i++)
