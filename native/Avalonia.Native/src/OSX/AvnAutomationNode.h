@@ -8,11 +8,21 @@ class AvnAutomationNode : public ComSingleObject<IAvnAutomationNode, &IID_IAvnAu
 public:
     FORWARD_IUNKNOWN()
     AvnAutomationNode(id <AvnAccessibility> owner) { _owner = owner; }
+
+    static void Bind(const ComPtr<IAvnAutomationPeer>& peer, id <AvnAccessibility> owner)
+    {
+        auto node = peer->GetNode().dynamicCast<AvnAutomationNode>();
+        if (node != nullptr)
+            node->_owner = owner;
+        else
+            peer->SetNode(comnew<AvnAutomationNode>(owner));
+    }
+
     AvnAccessibilityElement* GetOwner() { return _owner; }
     virtual void Dispose() override { _owner = nil; }
     virtual void ChildrenChanged () override { [_owner raiseChildrenChanged]; }
     virtual void PropertyChanged (AvnAutomationProperty property) override { [_owner raisePropertyChanged:property]; }
     virtual void FocusChanged () override { [_owner raiseFocusChanged]; }
 private:
-    __strong id <AvnAccessibility> _owner;
+    __weak id <AvnAccessibility> _owner;
 };
