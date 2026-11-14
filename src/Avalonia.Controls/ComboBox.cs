@@ -48,6 +48,12 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<ComboBox, bool>(nameof(IsEditable));
 
         /// <summary>
+        /// Defines the <see cref="IsReadOnly"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> IsReadOnlyProperty =
+            TextBox.IsReadOnlyProperty.AddOwner<ComboBox>();
+
+        /// <summary>
         /// Defines the <see cref="MaxDropDownHeight"/> property.
         /// </summary>
         public static readonly StyledProperty<double> MaxDropDownHeightProperty =
@@ -152,6 +158,19 @@ namespace Avalonia.Controls
         {
             get => GetValue(IsEditableProperty);
             set => SetValue(IsEditableProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the text in the editable portion of the control is read-only.
+        /// </summary>
+        /// <remarks>
+        /// This property only affects the editable portion of the control, i.e. when <see cref="IsEditable"/> is true.
+        /// The user can still select items from the drop-down list.
+        /// </remarks>
+        public bool IsReadOnly
+        {
+            get => GetValue(IsReadOnlyProperty);
+            set => SetValue(IsReadOnlyProperty, value);
         }
 
         /// <summary>
