@@ -630,6 +630,52 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
+        public void Light_Dismiss_Overlay_In_Offset_VisualLayerManager_Should_Pass_Through_To_InputPassThroughElement()
+        {
+            using (CreateServices())
+            {
+                var compositor = RendererMocks.CreateDummyCompositor();
+                var platform = AvaloniaLocator.Current.GetRequiredService<IWindowingPlatform>();
+                var windowImpl = Mock.Get(platform.CreateWindow());
+                windowImpl.Setup(x => x.Compositor).Returns(compositor);
+                var hitTester = new Mock<IHitTester>();
+
+                var item = new Border { Width = 50, Height = 20 };
+                var passThrough = new Border { Child = item };
+                var layerManager = new VisualLayerManager { Child = new Panel { Children = { passThrough } } };
+                var window = new Window(windowImpl.Object)
+                {
+                    HitTesterOverride = hitTester.Object,
+                    Content = new Border { Margin = new Thickness(16), Child = layerManager },
+                };
+                window.ApplyStyling();
+                window.ApplyTemplate();
+                window.Show();
+
+                var target = new Popup()
+                {
+                    PlacementTarget = passThrough,
+                    IsLightDismissEnabled = true,
+                    OverlayInputPassThroughElement = passThrough,
+                };
+
+                hitTester.Setup(x =>
+                    x.HitTestFirst(new Point(26, 26), (Visual)window.VisualRoot!, It.IsAny<Func<Visual, bool>>()))
+                    .Returns(item);
+
+                target.Open();
+                Assert.True(target.IsOpen);
+
+                var overlay = LightDismissOverlayLayer.GetLightDismissOverlayLayer(passThrough);
+                Assert.NotNull(overlay);
+                Assert.Same(layerManager.LightDismissOverlayLayer, overlay);
+                Assert.Equal(new Point(26, 26), overlay.TranslatePoint(new Point(10, 10), window));
+
+                Assert.False(overlay.HitTest(new Point(10, 10)));
+            }
+        }
+
+        [Fact]
         public void Focusable_Controls_In_Popup_Should_Get_Focus()
         {
             using (CreateServicesWithFocus())
