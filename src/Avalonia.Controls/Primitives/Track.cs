@@ -49,7 +49,7 @@ namespace Avalonia.Controls.Primitives
             AvaloniaProperty.Register<Track, bool>(nameof(DeferThumbDrag));
 
         private VectorEventArgs? _deferredThumbDrag;
-        private Vector _lastDrag;
+        private Vector _appliedDragSinceArrange;
 
         static Track()
         {
@@ -294,7 +294,7 @@ namespace Avalonia.Controls.Primitives
                 ThumbCenterOffset = offset.X + (thumbLength * 0.5);
             }
 
-            _lastDrag = default;
+            _appliedDragSinceArrange = default;
             return arrangeSize;
         }
 
@@ -318,7 +318,7 @@ namespace Avalonia.Controls.Primitives
         private Vector CalculateThumbAdjustment(Thumb thumb, Rect newThumbBounds)
         {
             var thumbDelta = newThumbBounds.Position - thumb.Bounds.Position;
-            return _lastDrag - thumbDelta;
+            return _appliedDragSinceArrange - thumbDelta;
         }
 
         private static void CoerceLength(ref double componentLength, double trackLength)
@@ -428,6 +428,7 @@ namespace Avalonia.Controls.Primitives
 
             if (oldThumb != null)
             {
+                oldThumb.DragStarted -= ThumbDragStarted;
                 oldThumb.DragDelta -= ThumbDragged;
                 oldThumb.DragCompleted -= ThumbDragCompleted;
                 LogicalChildren.Remove(oldThumb);
@@ -436,6 +437,7 @@ namespace Avalonia.Controls.Primitives
 
             if (newThumb != null)
             {
+                newThumb.DragStarted += ThumbDragStarted;
                 newThumb.DragDelta += ThumbDragged;
                 newThumb.DragCompleted += ThumbDragCompleted;
                 LogicalChildren.Add(newThumb);
@@ -461,6 +463,8 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
+        private void ThumbDragStarted(object? sender, VectorEventArgs e) => _appliedDragSinceArrange = default;
+
         private void ThumbDragged(object? sender, VectorEventArgs e)
         {
             if (IgnoreThumbDrag)
@@ -480,8 +484,13 @@ namespace Avalonia.Controls.Primitives
 
         private void ApplyThumbDrag(VectorEventArgs e)
         {
-            var delta = ValueFromDistance(e.Vector.X, e.Vector.Y);
-            var factor = e.Vector / delta;
+            // Until arrange moves the thumb, its drag vector still includes movement already applied.
+            var drag = e.Vector - _appliedDragSinceArrange;
+            var delta = ValueFromDistance(drag.X, drag.Y);
+            if (delta == 0)
+                return;
+
+            var factor = drag / delta;
             var oldValue = Value;
 
             SetCurrentValue(ValueProperty, MathUtilities.Clamp(
@@ -489,9 +498,9 @@ namespace Avalonia.Controls.Primitives
                 Minimum,
                 Maximum));
 
-            // Record the part of the drag that actually had effect as the last drag delta.
+            // Accumulate the part of the drag that actually had effect since the last arrange.
             // Due to clamping, we need to compare the two values instead of using the drag delta.
-            _lastDrag = (Value - oldValue) * factor;
+            _appliedDragSinceArrange += (Value - oldValue) * factor;
         }
 
         private void ThumbDragCompleted(object? sender, EventArgs e) => ApplyDeferredThumbDrag();
