@@ -13,11 +13,10 @@ internal class GlibDispatcherImpl : GlibDispatcherImplBase, IX11PlatformDispatch
     {
         _platform = platform;
         _x11Events = new X11EventDispatcher(platform);
-        var unixFdId = g_unix_fd_add_full(G_PRIORITY_DEFAULT, _x11Events.Fd, GIOCondition.G_IO_IN,
-            X11SourceCallback);
-        // We can trigger a nested event loop when handling X11 events, so we need to mark the source as recursive
-        var unixFdSource = g_main_context_find_source_by_id(IntPtr.Zero, unixFdId);
-        g_source_set_can_recurse(unixFdSource, 1);
+        // A synchronous Xlib call can leave an event queued with no data on the fd.
+        // Check that queue before GLib sleeps so the event does not need another wakeup.
+        AddBufferedUnixFdSource(G_PRIORITY_DEFAULT, _x11Events.Fd,
+            () => _x11Events.IsPending, X11SourceCallback, HandleException);
     }
 
     protected override void Flush() => _x11Events.Flush();
