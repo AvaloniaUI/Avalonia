@@ -231,7 +231,7 @@
       <StaticResource x:Key="MenuFlyoutItemKeyboardAcceleratorTextForegroundDisabled"
                       ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
       <Thickness x:Key="MenuFlyoutItemThemePadding">11,9,11,10</Thickness>
-      <Thickness x:Key="MenuFlyoutItemThemePaddingNarrow">11,4,11,7</Thickness>
+      <Thickness x:Key="MenuFlyoutItemThemePaddingNarrow">11,5,11,5</Thickness>
       <StaticResource x:Key="MenuFlyoutPresenterBackground" ResourceKey="SystemControlTransientBackgroundBrush" />
       <StaticResource x:Key="MenuFlyoutPresenterBorderBrush" ResourceKey="SystemControlTransientBorderBrush" />
       <Thickness x:Key="MenuFlyoutPresenterBorderThemeThickness">1</Thickness>
@@ -1080,7 +1080,7 @@
       <StaticResource x:Key="MenuFlyoutItemKeyboardAcceleratorTextForegroundDisabled"
                       ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
       <Thickness x:Key="MenuFlyoutItemThemePadding">11,9,11,10</Thickness>
-      <Thickness x:Key="MenuFlyoutItemThemePaddingNarrow">11,4,11,7</Thickness>
+      <Thickness x:Key="MenuFlyoutItemThemePaddingNarrow">11,5,11,5</Thickness>
       <StaticResource x:Key="MenuFlyoutPresenterBackground" ResourceKey="SystemControlTransientBackgroundBrush" />
       <StaticResource x:Key="MenuFlyoutPresenterBorderBrush" ResourceKey="SystemControlTransientBorderBrush" />
       <Thickness x:Key="MenuFlyoutPresenterBorderThemeThickness">1</Thickness>
