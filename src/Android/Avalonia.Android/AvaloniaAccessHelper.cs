@@ -47,32 +47,34 @@ namespace Avalonia.Android
                 AutomationControlType.Window,
             };
 
-        private static readonly Dictionary<Type, string?> s_roles = new Dictionary<Type, string?>()
+        private static readonly Dictionary<AutomationControlType, string?> s_roles = new Dictionary<AutomationControlType, string?>()
         {
-            { typeof(Button), Class.FromType(typeof(global::Android.Widget.Button)).Name },
-            { typeof(CalendarDatePicker), Class.FromType(typeof(global::Android.Widget.DatePicker)).Name },
-            { typeof(CheckBox), Class.FromType(typeof(global::Android.Widget.CheckBox)).Name },
-            { typeof(ComboBox), Class.FromType(typeof(global::Android.Widget.Spinner)).Name },
-            { typeof(CommandBarButton), Class.FromType(typeof(global::Android.Widget.Button)).Name },
-            { typeof(CommandBarToggleButton), Class.FromType(typeof(global::Android.Widget.ToggleButton)).Name },
-            { typeof(DatePicker), Class.FromType(typeof(global::Android.Widget.DatePicker)).Name },
-            { typeof(DropDownButton), Class.FromType(typeof(global::Android.Widget.Button)).Name },
-            { typeof(HyperlinkButton), Class.FromType(typeof(global::Android.Widget.Button)).Name },
-            { typeof(Image), Class.FromType(typeof(global::Android.Widget.ImageView)).Name },
-            { typeof(ListBox), Class.FromType(typeof(global::Android.Widget.ListView)).Name },
-            { typeof(NumericUpDown), Class.FromType(typeof(global::Android.Widget.NumberPicker)).Name },
-            { typeof(ProgressBar), Class.FromType(typeof(global::Android.Widget.ProgressBar)).Name },
-            { typeof(RadioButton), Class.FromType(typeof(global::Android.Widget.RadioButton)).Name },
-            { typeof(RepeatButton), Class.FromType(typeof(global::Android.Widget.Button)).Name },
-            { typeof(ScrollViewer), Class.FromType(typeof(global::Android.Widget.ScrollView)).Name },
-            { typeof(Slider), Class.FromType(typeof(global::Android.Widget.SeekBar)).Name },
-            { typeof(SplitButton), Class.FromType(typeof(global::Android.Widget.Button)).Name },
-            { typeof(TabControl), Class.FromType(typeof(global::Android.Widget.TabWidget)).Name },
-            { typeof(TextBox), Class.FromType(typeof(global::Android.Widget.EditText)).Name },
-            { typeof(TimePicker), Class.FromType(typeof(global::Android.Widget.TimePicker)).Name },
-            { typeof(ToggleButton), Class.FromType(typeof(global::Android.Widget.ToggleButton)).Name },
-            { typeof(ToggleSplitButton), Class.FromType(typeof(global::Android.Widget.ToggleButton)).Name },
-            { typeof(ToggleSwitch), Class.FromType(typeof(global::Android.Widget.Switch)).Name },
+            { AutomationControlType.Button, "android.widget.Button" },
+            { AutomationControlType.Calendar, "android.widget.DatePicker" },
+            { AutomationControlType.CheckBox, "android.widget.CheckBox" },
+            { AutomationControlType.ComboBox, "android.widget.Spinner" },
+            { AutomationControlType.Image, "android.widget.ImageView" },
+            { AutomationControlType.List, "android.widget.ListView" },
+            { AutomationControlType.ListItem, "android.widget.ListView" },
+            { AutomationControlType.ProgressBar, "android.widget.ProgressBar" },
+            { AutomationControlType.RadioButton, "android.widget.RadioButton" },
+            { AutomationControlType.ScrollViewer, "android.widget.ScrollView" },
+            { AutomationControlType.Slider, "android.widget.SeekBar" },
+            { AutomationControlType.SplitButton, "android.widget.Button" },
+            { AutomationControlType.Tab, "android.widget.TabWidget" },
+            { AutomationControlType.TabItem, "android.widget.TabWidget" },
+            { AutomationControlType.Text, "android.widget.EditText" },
+        };
+
+        private static readonly Dictionary<Type, string?> s_typeRoles = new Dictionary<Type, string?>()
+        {
+            { typeof(CalendarDatePicker), "android.widget.DatePicker" },
+            { typeof(DatePicker), "android.widget.DatePicker" },
+            { typeof(ListBox), "android.widget.ListView" },
+            { typeof(NumericUpDown), "android.widget.NumberPicker" },
+            { typeof(TimePicker), "android.widget.TimePicker" },
+            { typeof(ToggleButton), "android.widget.ToggleButton" },
+            { typeof(ToggleSwitch), "android.widget.Switch" },
         };
 
         private readonly Dictionary<int, AutomationPeer> _peers;
@@ -290,7 +292,6 @@ namespace Avalonia.Android
 
         private static string? GetClassName(AutomationPeer peer)
         {
-
             if (peer is ControlAutomationPeer controlPeer)
             {
                 if (AutomationProperties.GetClassNameOverride(controlPeer.Owner) is string classNameOverride)
@@ -298,8 +299,22 @@ namespace Avalonia.Android
                     return classNameOverride;
                 }
 
-                Type controlType = controlPeer.Owner.GetType();
-                if (s_roles.TryGetValue(controlType, out string? role))
+                var controlType = controlPeer.Owner.GetType();
+
+                string? role;
+
+                do
+                {
+                    if (s_typeRoles.TryGetValue(controlType, out role))
+                    {
+                        return role;
+                    }
+                    controlType = controlType.BaseType;
+
+                } while (controlType != null && controlType != typeof(Visual));
+
+                var automationType = peer.GetAutomationControlType();
+                if (s_roles.TryGetValue(automationType, out role))
                 {
                     return role;
                 }
