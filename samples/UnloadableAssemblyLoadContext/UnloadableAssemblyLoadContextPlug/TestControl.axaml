@@ -9,7 +9,10 @@
     <!-- Set Defaults -->
     <Setter Property="Template">
       <ControlTemplate>
-        <TextBlock Text="Templated Control" />
+        <StackPanel Spacing="8">
+          <TextBlock Text="{TemplateBinding Text}" />
+          <TextBlock Text="{TemplateBinding Count}" />
+        </StackPanel>
       </ControlTemplate>
     </Setter>
   </Style>
