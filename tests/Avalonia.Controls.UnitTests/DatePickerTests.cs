@@ -10,6 +10,9 @@ using Avalonia.Harfbuzz;
 using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.Platform;
+using Avalonia.Themes.Simple;
+using Avalonia.Themes.Fluent;
+using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
@@ -598,5 +601,25 @@ namespace Avalonia.Controls.UnitTests
             Dispatcher.UIThread.RunJobs();
         }
 
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Spacers_Are_Filled_In_Built_In_Themes(bool fluent)
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow.With(
+                theme: () => fluent ? new FluentTheme() : new SimpleTheme()));
+            var target = new DatePicker();
+            var window = new Window { Content = target };
+            window.Show();
+            window.LayoutManager.ExecuteInitialLayoutPass();
+
+            var spacers = target.GetTemplateDescendants().OfType<Rectangle>()
+                .Where(x => x.Name is "PART_FirstSpacer" or "PART_SecondSpacer")
+                .ToList();
+
+            Assert.Equal(2, spacers.Count);
+            Assert.All(spacers, x => Assert.NotNull(x.Fill));
+            window.Close();
+        }
     }
 }
