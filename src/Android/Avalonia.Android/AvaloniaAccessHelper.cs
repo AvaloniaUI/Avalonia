@@ -57,7 +57,7 @@ namespace Avalonia.Android
         /// and reusing it would hand out an ID that is still in use.
         /// </remarks>
         private int _nextPeerViewId;
-
+        private int _focusedViewId;
         private readonly AvaloniaView _view;
 
         public AvaloniaAccessHelper(AvaloniaView view) : base(view)
@@ -69,7 +69,40 @@ namespace Avalonia.Android
             AutomationPeer rootPeer = ControlAutomationPeer.CreatePeerForElement(view.TopLevel!);
             GetOrCreateNodeInfoProvidersFromPeer(rootPeer, out int _);
 
+            if(rootPeer is IEmbeddedRootProvider rootProvider)
+            {
+                rootProvider.FocusChanged += RootProvider_FocusChanged;
+            }
+
             _view = view;
+        }
+
+        private void RootProvider_FocusChanged(object? sender, EventArgs e)
+        {
+            if (sender is IEmbeddedRootProvider embeddedRoot)
+            {
+                var focusedView = embeddedRoot.GetFocus();
+                int viewid = _focusedViewId;
+                if (viewid != -1)
+                {
+                    InvalidateVirtualView(viewid);
+                    SendEventForVirtualView(viewid, AccessibilityEventCompat.TypeViewAccessibilityFocusCleared);
+                }
+
+                viewid = -1;
+                if (focusedView is { })
+                {
+                    var _ = GetOrCreateNodeInfoProvidersFromPeer(focusedView, out viewid);
+
+                    if (viewid != -1)
+                    {
+                        InvalidateVirtualView(viewid);
+                        SendEventForVirtualView(viewid, AccessibilityEventCompat.TypeViewAccessibilityFocused);
+                    }
+                }
+
+                _focusedViewId = viewid;
+            }
         }
 
         private HashSet<INodeInfoProvider>? GetNodeInfoProvidersFromVirtualViewId(int virtualViewId)
