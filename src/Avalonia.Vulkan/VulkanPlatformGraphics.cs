@@ -16,14 +16,14 @@ public class VulkanPlatformGraphics : IPlatformGraphics
     }
 
     public IPlatformGraphicsContext CreateContext() =>
-        new VulkanContext(_factory.CreateDevice(_platformOptions), _platformOptions.PlatformFeatures);
+        new VulkanContext(_factory.CreateDevice(_platformOptions), _platformOptions.PlatformFeatures, ownsDevice: true);
 
     public IPlatformGraphicsContext GetSharedContext()
     {
         if (_currentSharedContext?.IsLost == true)
             _currentSharedContext = null;
         return _currentSharedContext =
-            new VulkanContext(_factory.GetSharedDevice(_platformOptions), _platformOptions.PlatformFeatures);
+            new VulkanContext(_factory.GetSharedDevice(_platformOptions), _platformOptions.PlatformFeatures, ownsDevice: false);
     }
     
     public bool UsesSharedContext => _factory.UsesShadedDevice;
