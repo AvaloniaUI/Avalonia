@@ -1,5 +1,8 @@
 using System;
 using System.Linq;
+using Avalonia.Data;
+using Avalonia.Markup.Xaml.MarkupExtensions;
+using Avalonia.Styling;
 using Avalonia.Themes.Fluent;
 using Avalonia.Themes.Fluent2;
 using Avalonia.Themes.Simple;
@@ -39,6 +42,36 @@ public abstract class ResourceDictionaryTests(Type typeEntryPoint) : ThemeTestBa
                 .ToHashSet();
 
             Assert.All(variantResourceKeys, k => Assert.Contains(k, otherResourceKeys));
+        });
+    }
+
+    [Fact]
+    public void Should_Define_Resources_With_Valid_Dynamic_Resources()
+    {
+        // Validate that resources such as <SolidColorBrush Color="{DynamicResource}"> point to an actually defined resource.
+
+        var theme = CreateAttachedTheme();
+        var resources = theme.EnumerateResources().ToArray();
+        var resourceKeysPerVariant = resources.GroupBy(r => r.ThemeVariant)
+            .ToDictionary(g => g.Key, g => g.Select(r => r.Key).ToHashSet());
+
+        Assert.All(resources.Where(r => r.Value is AvaloniaObject and not ControlTheme), resource =>
+        {
+            var value = (AvaloniaObject)resource.Value!;
+            var dynamicResourceKeys = AvaloniaPropertyRegistry.Instance.GetRegistered(value)
+                .Select(prop => BindingOperations.GetBindingExpressionBase(value, prop))
+                .OfType<DynamicResourceExpression>()
+                .Select(expr => expr.ResourceKey)
+                .ToArray();
+
+            // Can be empty
+            Assert.All(dynamicResourceKeys, key =>
+            {
+                Assert.True(
+                    resourceKeysPerVariant[resource.ThemeVariant].Contains(key)
+                    || resourceKeysPerVariant[ThemeVariant.Default].Contains(key),
+                    $"Resource \"{resource.Key}\" references undefined resource \"{key}\"");
+            });
         });
     }
 }
