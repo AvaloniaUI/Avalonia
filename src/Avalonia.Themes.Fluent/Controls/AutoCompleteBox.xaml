@@ -37,6 +37,7 @@
             <TextBox Name="PART_TextBox"
                      PlaceholderText="{TemplateBinding PlaceholderText}"
                      PlaceholderForeground="{TemplateBinding PlaceholderForeground}"
+                     UseFloatingPlaceholder="{TemplateBinding UseFloatingPlaceholder}"
                      Width="{TemplateBinding Width}"
                      Foreground="{TemplateBinding Foreground}"
                      Background="{TemplateBinding Background}"
