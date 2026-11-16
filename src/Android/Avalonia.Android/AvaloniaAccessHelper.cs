@@ -47,7 +47,7 @@ namespace Avalonia.Android
                 AutomationControlType.Window,
             };
 
-        private static readonly Dictionary<AutomationControlType, string?> s_roles = new Dictionary<AutomationControlType, string?>()
+        private static readonly Dictionary<AutomationControlType, string> s_roles = new()
         {
             { AutomationControlType.Button, "android.widget.Button" },
             { AutomationControlType.Calendar, "android.widget.DatePicker" },
@@ -66,7 +66,7 @@ namespace Avalonia.Android
             { AutomationControlType.Text, "android.widget.EditText" },
         };
 
-        private static readonly Dictionary<Type, string?> s_typeRoles = new Dictionary<Type, string?>()
+        private static readonly Dictionary<Type, string> s_typeRoles = new()
         {
             { typeof(CalendarDatePicker), "android.widget.DatePicker" },
             { typeof(DatePicker), "android.widget.DatePicker" },
