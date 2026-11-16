@@ -86,6 +86,15 @@ public class XkbKeyTransformTests : IDisposable
     }
 
     [Fact]
+    public void Keypad_Begin_Maps_To_Clear()
+    {
+        // Keypad 5 with Num Lock off. Windows reports it as VK_CLEAR.
+        const uint KP_Begin = 0xff9d;
+
+        Assert.Equal(Key.Clear, XkbKeyTransform.KeyFromKeysym(KP_Begin));
+    }
+
+    [Fact]
     public void Ctrl_Letter_Gives_Control_Char_And_Plain_Letter()
     {
         var (key, keySymbol, keyText, alternateKeyText) = Resolve(KeyA, Control);
