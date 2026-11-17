@@ -2,10 +2,11 @@ using Avalonia.Controls;
 using Avalonia.Styling;
 using Moq;
 using Xunit;
+using Avalonia.UnitTests;
 
 namespace Avalonia.Base.UnitTests.Styling
 {
-    public class SelectorTests_Name
+    public class SelectorTests_Name : ScopedTestBase
     {
         [Fact]
         public void Name_Matches_Control_With_Correct_Name()

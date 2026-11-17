@@ -16,8 +16,10 @@ public partial class Dispatcher
     private long? _dueTimeForBackgroundProcessing;
     private long? _osTimerSetTo;
 
-    private readonly Func<long> _timeProvider;
-    internal long Now => _timeProvider();
+    // Keeps Now continuous when the implementation is replaced. Due times are stored on this
+    // clock, but each implementation reads the ones it is given against its own.
+    private long _clockOffset;
+    internal long Now => _impl.Now + _clockOffset;
 
     private void UpdateOSTimer()
     {
@@ -29,7 +31,8 @@ public partial class Dispatcher
         if (_osTimerSetTo == nextDueTime)
             return;
 
-        _impl.UpdateTimer(_osTimerSetTo = nextDueTime);
+        _osTimerSetTo = nextDueTime;
+        _impl.UpdateTimer(nextDueTime - _clockOffset);
     }
 
     internal void RescheduleTimers()

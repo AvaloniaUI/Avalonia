@@ -3,6 +3,7 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>$(AvsCurrentTargetFramework)</TargetFramework>
     <IsPackable>false</IsPackable>
+    <IsTestingPlatformApplication>false</IsTestingPlatformApplication>
   </PropertyGroup>
   <ItemGroup>
     <Compile Update="**\*.xaml.cs">

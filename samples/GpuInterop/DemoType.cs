@@ -1,7 +1,8 @@
-﻿namespace GpuInterop;
+namespace GpuInterop;
 
 public enum DemoType
 {
     Vulkan,
-    D3D11
+    D3D11,
+    VulkanDmaBuf
 }

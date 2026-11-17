@@ -43,6 +43,16 @@ namespace Avalonia
         {
             iOSRenderingMode.Metal, iOSRenderingMode.OpenGl
         };
+
+        /// <summary>
+        /// Gets or sets whether rendering follows the display refresh rate, up to 120 Hz on ProMotion displays.
+        /// The default value is true.
+        /// </summary>
+        /// <remarks>
+        /// On iPhone, rates above 60 Hz also need CADisableMinimumFrameDurationOnPhone set to true in the app's Info.plist.
+        /// Set this to false to keep the system's default rate, for example if the app can't sustain high frame rates.
+        /// </remarks>
+        public bool EnableHighRefreshRate { get; set; } = true;
     }
 
     public static class IOSApplicationExtensions
@@ -85,14 +95,8 @@ namespace Avalonia.iOS
                 .Bind<IPlatformSettings>().ToSingleton<PlatformSettings>()
                 .Bind<IPlatformIconLoader>().ToConstant(new PlatformIconLoaderStub())
                 .Bind<IScreenImpl>().ToSingleton<iOSScreens>()
-                .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
-                .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new Dictionary<Key, string>()
-                    {
-                        { Key.Back , "⌫" }, { Key.Down , "↓" }, { Key.End , "↘" }, { Key.Escape , "⎋" },
-                        { Key.Home , "↖" }, { Key.Left , "←" }, { Key.Return , "↩" }, { Key.PageDown , "⇟" },
-                        { Key.PageUp , "⇞" }, { Key.Right , "→" }, { Key.Space , "␣" }, { Key.Tab , "⇥" },
-                        { Key.Up , "↑" }
-                    }, ctrl: "⌃", meta: "⌘", shift: "⇧", alt: "⌥"))
+                .Bind<PlatformHotkeyConfiguration>().ToConstant(PlatformHotkeyConfiguration.Apple)
+                .Bind<KeyGestureFormatInfo>().ToConstant(KeyGestureFormatInfo.Apple)
                 .Bind<IRenderLoop>().ToConstant(RenderLoop.FromTimer(Timer))
                 .Bind<IKeyboardDevice>().ToConstant(keyboard);
 

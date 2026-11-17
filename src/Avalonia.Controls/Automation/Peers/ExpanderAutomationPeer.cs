@@ -17,8 +17,8 @@ namespace Avalonia.Controls.Automation.Peers
 
         public ExpandCollapseState ExpandCollapseState => ToState(Owner.IsExpanded);
         public bool ShowsMenu => false;
-        public void Collapse() => Owner.IsExpanded = false;
-        public void Expand() => Owner.IsExpanded = true;
+        public void Collapse() => Owner.SetCurrentValue(Expander.IsExpandedProperty, false);
+        public void Expand() => Owner.SetCurrentValue(Expander.IsExpandedProperty, true);
 
         protected override AutomationControlType GetAutomationControlTypeCore()
         {

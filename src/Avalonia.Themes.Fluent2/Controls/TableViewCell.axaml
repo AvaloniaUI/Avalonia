@@ -1,0 +1,13 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    x:ClassModifier="internal">
+
+  <ControlTheme x:Key="{x:Type TableViewCell}" TargetType="TableViewCell" BasedOn="{StaticResource DefaultTableViewCellTheme}"/>
+  <ControlTheme x:Key="DefaultTableViewCellTheme" TargetType="TableViewCell">
+    <Setter Property="Padding" Value="{DynamicResource TableViewCellPadding}" />
+    <Setter Property="FontSize" Value="{DynamicResource TableViewCellFontSize}" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="HorizontalContentAlignment" Value="Left" />
+  </ControlTheme>
+
+</ResourceDictionary>

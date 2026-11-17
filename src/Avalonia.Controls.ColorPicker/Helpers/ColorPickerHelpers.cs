@@ -4,7 +4,6 @@
 // Licensed to The Avalonia Project under the MIT License.
 
 using System;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia.Collections.Pooled;
 using Avalonia.Layout;

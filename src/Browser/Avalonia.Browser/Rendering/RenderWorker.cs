@@ -27,7 +27,7 @@ internal partial class RenderWorker
         {
             try
             {
-                await AvaloniaModule.ImportMainToCurrentContext();
+                await AvaloniaModule.ImportMainToWorkerContext();
                 InitializeRenderTargets();
                 WorkerThreadId = pthread_self();
                 BrowserSharedRenderLoop.RenderTimer.StartOnThisThread();

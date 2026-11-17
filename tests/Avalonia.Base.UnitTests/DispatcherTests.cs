@@ -184,6 +184,47 @@ public partial class DispatcherTests
     }
 
     [Fact]
+    public void DispatcherTimerDueTimeIsOnTheClockOfTheNewImplementation()
+    {
+        var impl = new SimpleDispatcherWithBackgroundProcessingImpl { Now = 1_000_000 };
+        Dispatcher.InitializeUIThreadDispatcher(impl);
+
+        var ticks = 0;
+        var timer = new DispatcherTimer(TimeSpan.FromMilliseconds(100), DispatcherPriority.Normal, _uiThread,
+            (_, _) => ticks++);
+        timer.Start();
+
+        Assert.Equal(1_000_100, impl.NextTimer);
+
+        impl.ExecuteTimer();
+        impl.ExecuteSignal();
+        timer.Stop();
+
+        Assert.Equal(1, ticks);
+    }
+
+    [Fact]
+    public void DispatcherTimerStartedBeforeInitializationKeepsItsDueTimeOnTheNewImplementation()
+    {
+        var ticks = 0;
+        var timer = new DispatcherTimer(TimeSpan.FromSeconds(10), DispatcherPriority.Normal, _uiThread,
+            (_, _) => ticks++);
+        timer.Start();
+
+        var impl = new SimpleDispatcherWithBackgroundProcessingImpl { Now = 1_000_000 };
+        Dispatcher.InitializeUIThreadDispatcher(impl);
+
+        // Remaining interval carried over, less the time between Start and Initialize
+        Assert.InRange(impl.NextTimer!.Value, 1_009_000, 1_010_000);
+
+        impl.ExecuteTimer();
+        impl.ExecuteSignal();
+        timer.Stop();
+
+        Assert.Equal(1, ticks);
+    }
+
+    [Fact]
     public void DispatcherStopsItemProcessingWhenInteractivityDeadlineIsReached()
     {
         var impl = new SimpleDispatcherImpl();
@@ -306,6 +347,7 @@ public partial class DispatcherTests
         {
             _scope = AvaloniaLocator.EnterScope();
             Dispatcher.ResetForUnitTests();
+            Dispatcher.InitializeUIThreadDispatcher(impl);
             SynchronizationContext.SetSynchronizationContext(null);
         }
 
@@ -382,12 +424,19 @@ public partial class DispatcherTests
                 Dispatcher.UIThread.MainLoop(CancellationToken.None);
                 actions.Add("Nested frame exited");
             });
+
+            var criticalFrame = new DispatcherFrame(false);
+            disp.Post(() =>
+            {
+                actions.Add("Critical frame");
+                Dispatcher.UIThread.PushFrame(criticalFrame);
+                actions.Add("Critical frame exited");
+            });
             disp.Post(() =>
             {
                 actions.Add("Shutdown");
                 disp.BeginInvokeShutdown(DispatcherPriority.Normal);
             });
-
             disp.Post(() =>
             {
                 actions.Add("Nested frame after shutdown");
@@ -395,19 +444,11 @@ public partial class DispatcherTests
                 Dispatcher.UIThread.MainLoop(CancellationToken.None);
                 actions.Add("Nested frame after shutdown exited");
             });
-
-            var criticalFrameAfterShutdown = new DispatcherFrame(false);
-            disp.Post(() =>
-            {
-                actions.Add("Critical frame after shutdown");
-
-                Dispatcher.UIThread.PushFrame(criticalFrameAfterShutdown);
-                actions.Add("Critical frame after shutdown exited");
-            });
+            disp.Post(() => actions.Add("Job in critical frame"));
             disp.Post(() =>
             {
                 actions.Add("Stop critical frame");
-                criticalFrameAfterShutdown.Continue = false;
+                criticalFrame.Continue = false;
             });
 
             disp.MainLoop(CancellationToken.None);
@@ -415,11 +456,12 @@ public partial class DispatcherTests
             Assert.Equal(new[]
             {
                 "Nested frame",
+                "Critical frame",
                 "Shutdown",
                 // Normal nested frames are supposed to exit immediately
                 "Nested frame after shutdown", "Nested frame after shutdown exited",
                 // if frame is configured to not answer dispatcher requests, it should be allowed to run
-                "Critical frame after shutdown", "Stop critical frame", "Critical frame after shutdown exited",
+                "Job in critical frame", "Stop critical frame", "Critical frame exited",
                 // After 3-rd level frames have exited, the normal nested frame exits too
                 "Nested frame exited"
             }, actions);
@@ -429,6 +471,112 @@ public partial class DispatcherTests
             Assert.Throws<InvalidOperationException>(() => disp.MainLoop(CancellationToken.None));
             Assert.Empty(actions);
         }
+    }
+
+    public enum TestDispatcherImplKind
+    {
+        Simple,
+        SimpleWithBackgroundProcessing,
+        SimpleControlled,
+        Managed
+    }
+
+    private static IDispatcherImpl CreateDispatcherImpl(TestDispatcherImplKind kind) => kind switch
+    {
+        TestDispatcherImplKind.Simple => new SimpleDispatcherImpl(),
+        TestDispatcherImplKind.SimpleWithBackgroundProcessing => new SimpleDispatcherWithBackgroundProcessingImpl(),
+        TestDispatcherImplKind.SimpleControlled => new SimpleControlledDispatcherImpl(),
+        TestDispatcherImplKind.Managed => new ManagedDispatcherImpl(null),
+        _ => throw new ArgumentOutOfRangeException(nameof(kind))
+    };
+
+    [Theory]
+    [InlineData(TestDispatcherImplKind.Simple)]
+    [InlineData(TestDispatcherImplKind.SimpleWithBackgroundProcessing)]
+    [InlineData(TestDispatcherImplKind.SimpleControlled)]
+    [InlineData(TestDispatcherImplKind.Managed)]
+    public void ShutdownFromOperationAbortsQueuedOperationsWithoutRunningThem(TestDispatcherImplKind kind)
+    {
+        var impl = CreateDispatcherImpl(kind);
+        using var services = new DispatcherServices(impl);
+        var disp = Dispatcher.UIThread;
+
+        var actions = new List<string>();
+        disp.ShutdownFinished += (_, _) => actions.Add("ShutdownFinished");
+
+        var op1 = disp.InvokeAsync(() =>
+        {
+            actions.Add("op1");
+            disp.InvokeShutdown();
+        }, DispatcherPriority.Send, TestContext.Current.CancellationToken);
+        var op2 = disp.InvokeAsync(() => actions.Add("op2"), DispatcherPriority.Send, TestContext.Current.CancellationToken);
+
+        if (impl is IControlledDispatcherImpl)
+        {
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            disp.MainLoop(timeout.Token);
+        }
+        else
+        {
+            var simple = (SimpleDispatcherImpl)impl;
+            Assert.True(simple.AskedForSignal);
+            simple.ExecuteSignal();
+        }
+
+        Assert.Equal(new[] { "op1", "ShutdownFinished" }, actions);
+        Assert.Equal(DispatcherOperationStatus.Completed, op1.Status);
+        Assert.Equal(DispatcherOperationStatus.Aborted, op2.Status);
+    }
+
+    [Theory]
+    [InlineData(TestDispatcherImplKind.SimpleControlled)]
+    [InlineData(TestDispatcherImplKind.Managed)]
+    public void OperationsAreOnlyAbortedAfterLastFrameExits(TestDispatcherImplKind kind)
+    {
+        var impl = CreateDispatcherImpl(kind);
+        using var services = new DispatcherServices(impl);
+        var disp = Dispatcher.UIThread;
+
+        var actions = new List<string>();
+        disp.ShutdownFinished += (_, _) => actions.Add("ShutdownFinished");
+
+        var criticalFrame = new DispatcherFrame(false);
+        DispatcherOperation? op2 = null, op3 = null, op4 = null;
+        disp.InvokeAsync(() =>
+        {
+            actions.Add("op1");
+            disp.InvokeShutdown();
+
+            // Frames are still on the stack, so nothing has been aborted yet
+            Assert.Equal(DispatcherOperationStatus.Pending, op2!.Status);
+            Assert.Equal(DispatcherOperationStatus.Pending, op3!.Status);
+
+            // Explicit RunJobs and synchronous Invoke still dispatch pending operations
+            disp.RunJobs(DispatcherPriority.Normal);
+            Assert.Equal(DispatcherOperationStatus.Completed, op2.Status);
+            Assert.Equal(DispatcherOperationStatus.Pending, op3.Status);
+            disp.Invoke(() => actions.Add("invoke"), DispatcherPriority.Normal, TestContext.Current.CancellationToken);
+            Assert.Equal(DispatcherOperationStatus.Pending, op3.Status);
+
+            // A frame that ignores exit requests still pumps the remaining operations
+            disp.PushFrame(criticalFrame);
+            Assert.Equal(DispatcherOperationStatus.Completed, op3.Status);
+
+            op4 = disp.InvokeAsync(() => actions.Add("op4"), DispatcherPriority.Normal, TestContext.Current.CancellationToken);
+            Assert.Equal(DispatcherOperationStatus.Pending, op4.Status);
+        }, DispatcherPriority.Normal, TestContext.Current.CancellationToken);
+        op2 = disp.InvokeAsync(() => actions.Add("op2"), DispatcherPriority.Normal, TestContext.Current.CancellationToken);
+        op3 = disp.InvokeAsync(() =>
+        {
+            actions.Add("op3");
+            criticalFrame.Continue = false;
+        }, DispatcherPriority.Background, TestContext.Current.CancellationToken);
+
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        disp.MainLoop(timeout.Token);
+
+        Assert.Equal(new[] { "op1", "op2", "invoke", "op3", "ShutdownFinished" }, actions);
+        Assert.Equal(DispatcherOperationStatus.Aborted, op4!.Status);
     }
 
     class WaitHelper : SynchronizationContext, NonPumpingLockHelper.IHelperImpl
@@ -667,7 +815,6 @@ public partial class DispatcherTests
     {
         var impl = new SimpleDispatcherWithBackgroundProcessingImpl();
         using var services = new DispatcherServices(impl);
-        Dispatcher.InitializeUIThreadDispatcher(impl);
 
         var testObject = new AsyncLocalTestClass();
         string? test = "Not measured";
@@ -695,7 +842,6 @@ public partial class DispatcherTests
     {
         var impl = new SimpleDispatcherWithBackgroundProcessingImpl();
         using var services = new DispatcherServices(impl);
-        Dispatcher.InitializeUIThreadDispatcher(impl);
 
         var testObject = new AsyncLocalTestClass();
         string? test = "Not measured";

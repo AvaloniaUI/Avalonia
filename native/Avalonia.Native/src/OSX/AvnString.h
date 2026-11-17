@@ -9,12 +9,11 @@
 #ifndef AvnString_h
 #define AvnString_h
 
-extern IAvnString* CreateAvnString(NSString* string);
-extern IAvnStringArray* CreateAvnStringArray(NSArray<NSString*>* array);
-extern IAvnStringArray* CreateAvnStringArray(NSArray<NSURL*>* array);
-extern IAvnStringArray* CreateAvnStringArray(NSString* string);
-extern IAvnString* CreateByteArray(void* data, int len);
-extern NSString* GetNSStringAndRelease(IAvnString* s);
-extern NSString* GetNSStringWithoutRelease(IAvnString* s);
-extern NSArray<NSString*>* GetNSArrayOfStringsAndRelease(IAvnStringArray* array);
+extern ComPtr<IAvnString> CreateAvnString(NSString* string);
+extern ComPtr<IAvnStringArray> CreateAvnStringArray(NSArray<NSString*>* array);
+extern ComPtr<IAvnStringArray> CreateAvnStringArray(NSArray<NSURL*>* array);
+extern ComPtr<IAvnStringArray> CreateAvnStringArray(NSString* string);
+extern ComPtr<IAvnString> CreateByteArray(void* data, int len);
+extern NSString* GetNSString(const ComPtr<IAvnString>& s);
+extern NSArray<NSString*>* GetNSArrayOfStrings(const ComPtr<IAvnStringArray>& array);
 #endif /* AvnString_h */

@@ -68,7 +68,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static LineBreakClass GetLineBreakClass(uint codepoint)
         {
-            return (LineBreakClass)((UnicodeDataTrie.Trie.Get(codepoint) >> LINEBREAK_SHIFT) & LINEBREAK_MASK);
+            return (LineBreakClass)((SegmentationTrie.Trie.Get(codepoint) >> LINEBREAK_SHIFT) & LINEBREAK_MASK);
         }
 
         /// <summary>
@@ -79,7 +79,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static WordBreakClass GetWordBreakClass(uint codepoint)
         {
-            return (WordBreakClass)((UnicodeDataTrie.Trie.Get(codepoint) >> WORDBREAK_SHIFT) & WORDBREAK_MASK);
+            return (WordBreakClass)((SegmentationTrie.Trie.Get(codepoint) >> WORDBREAK_SHIFT) & WORDBREAK_MASK);
         }
 
         /// <summary>
@@ -90,7 +90,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static GraphemeBreakClass GetGraphemeClusterBreak(uint codepoint)
         {
-            return (GraphemeBreakClass)(GraphemeBreakTrie.Trie.Get(codepoint) & GRAPHEMEBREAK_MASK);
+            return (GraphemeBreakClass)(SegmentationTrie.Trie.Get(codepoint) & GRAPHEMEBREAK_MASK);
         }
 
         /// <summary>
@@ -101,7 +101,18 @@ namespace Avalonia.Media.TextFormatting.Unicode
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static IndicConjunctBreakClass GetIndicConjunctBreakClass(uint codepoint)
         {
-            return (IndicConjunctBreakClass)((GraphemeBreakTrie.Trie.Get(codepoint) >> INDICCONJUNCTBREAK_SHIFT) & INDICCONJUNCTBREAK_MASK);
+            return (IndicConjunctBreakClass)((SegmentationTrie.Trie.Get(codepoint) >> INDICCONJUNCTBREAK_SHIFT) & INDICCONJUNCTBREAK_MASK);
+        }
+
+        /// <summary>
+        /// Gets the sentence break class for the Unicode codepoint (UAX #29).
+        /// </summary>
+        /// <param name="codepoint">The codepoint in question.</param>
+        /// <returns>The code point's sentence break class.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static SentenceBreakClass GetSentenceBreakClass(uint codepoint)
+        {
+            return (SentenceBreakClass)((SegmentationTrie.Trie.Get(codepoint) >> SENTENCEBREAK_SHIFT) & SENTENCEBREAK_MASK);
         }
 
         /// <summary>
@@ -111,7 +122,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool GetIsEmoji(uint codepoint)
         {
-            return (GraphemeBreakTrie.Trie.Get(codepoint) & EMOJI_FLAG) != 0;
+            return (SegmentationTrie.Trie.Get(codepoint) & EMOJI_FLAG) != 0;
         }
 
         /// <summary>
@@ -122,7 +133,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool GetHasEmojiPresentation(uint codepoint)
         {
-            return (GraphemeBreakTrie.Trie.Get(codepoint) & EMOJIPRESENTATION_FLAG) != 0;
+            return (SegmentationTrie.Trie.Get(codepoint) & EMOJIPRESENTATION_FLAG) != 0;
         }
 
         /// <summary>
@@ -132,7 +143,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool GetIsDefaultIgnorable(uint codepoint)
         {
-            return (GraphemeBreakTrie.Trie.Get(codepoint) & DEFAULTIGNORABLE_FLAG) != 0;
+            return (SegmentationTrie.Trie.Get(codepoint) & DEFAULTIGNORABLE_FLAG) != 0;
         }
 
         /// <summary>

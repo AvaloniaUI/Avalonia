@@ -162,6 +162,83 @@ public class MergeResourceIncludeTests : XamlTestBase
         Assert.Equal(Colors.White, ((ISolidColorBrush)resources["brush6"]!).Color);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void MergeResourceInclude_Works_With_Nested_MergeResourceInclude(bool parentFirst)
+    {
+        var nested = new RuntimeXamlLoaderDocument(new Uri("avares://Tests/Nested.xaml"), @"
+<ResourceDictionary xmlns='https://github.com/avaloniaui'
+                    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <ResourceDictionary.MergedDictionaries>
+        <MergeResourceInclude Source='avares://Tests/Leaf.xaml'/>
+    </ResourceDictionary.MergedDictionaries>
+    <SolidColorBrush x:Key='brush2'>Blue</SolidColorBrush>
+    <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key='Dark'>
+            <SolidColorBrush x:Key='brush3'>Green</SolidColorBrush>
+        </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
+</ResourceDictionary>");
+        var leaf = new RuntimeXamlLoaderDocument(new Uri("avares://Tests/Leaf.xaml"), @"
+<ResourceDictionary xmlns='https://github.com/avaloniaui'
+                    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <SolidColorBrush x:Key='brush1'>Red</SolidColorBrush>
+    <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key='Dark'>
+            <SolidColorBrush x:Key='brush4'>Yellow</SolidColorBrush>
+        </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
+</ResourceDictionary>");
+        var parent = new RuntimeXamlLoaderDocument(@"
+<ResourceDictionary xmlns='https://github.com/avaloniaui'
+                    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <ResourceDictionary.MergedDictionaries>
+        <MergeResourceInclude Source='avares://Tests/Nested.xaml'/>
+    </ResourceDictionary.MergedDictionaries>
+    <SolidColorBrush x:Key='brush5'>Black</SolidColorBrush>
+</ResourceDictionary>");
+
+        // Group transformers visit documents in order, the parent can be transformed before the documents it merges.
+        var documents = parentFirst ? new[] { parent, nested, leaf } : new[] { leaf, nested, parent };
+        var objects = AvaloniaRuntimeXamlLoader.LoadGroup(documents);
+        var resources = Assert.IsType<ResourceDictionary>(objects[parentFirst ? 0 : 2]);
+
+        Assert.Empty(resources.MergedDictionaries);
+        Assert.Equal(Colors.Red, ((ISolidColorBrush)resources["brush1"]!).Color);
+        Assert.Equal(Colors.Blue, ((ISolidColorBrush)resources["brush2"]!).Color);
+        Assert.Equal(Colors.Black, ((ISolidColorBrush)resources["brush5"]!).Color);
+
+        var dark = Assert.IsType<ResourceDictionary>(Assert.Single(resources.ThemeDictionaries).Value);
+        Assert.Equal(Colors.Green, ((ISolidColorBrush)dark["brush3"]!).Color);
+        Assert.Equal(Colors.Yellow, ((ISolidColorBrush)dark["brush4"]!).Color);
+    }
+
+    [Fact]
+    public void MergeResourceInclude_Fails_With_Circular_Reference()
+    {
+        var documents = new[]
+        {
+            new RuntimeXamlLoaderDocument(new Uri("avares://Tests/Resources1.xaml"), @"
+<ResourceDictionary xmlns='https://github.com/avaloniaui'
+                    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <ResourceDictionary.MergedDictionaries>
+        <MergeResourceInclude Source='avares://Tests/Resources2.xaml'/>
+    </ResourceDictionary.MergedDictionaries>
+</ResourceDictionary>"),
+            new RuntimeXamlLoaderDocument(new Uri("avares://Tests/Resources2.xaml"), @"
+<ResourceDictionary xmlns='https://github.com/avaloniaui'
+                    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <ResourceDictionary.MergedDictionaries>
+        <MergeResourceInclude Source='avares://Tests/Resources1.xaml'/>
+    </ResourceDictionary.MergedDictionaries>
+</ResourceDictionary>")
+        };
+
+        var exception = Assert.ThrowsAny<XmlException>(() => AvaloniaRuntimeXamlLoader.LoadGroup(documents));
+        Assert.Contains("circular reference", exception.Message);
+    }
+
     [Fact]
     public void MergeResourceInclude_Works_With_ThemeDictionaries()
     {

@@ -16,7 +16,7 @@ namespace Avalonia.Base.UnitTests.Animation
 {
     using Animation = Avalonia.Animation.Animation;
 
-    public class AnimationIterationTests
+    public class AnimationIterationTests : ScopedTestBase
     {
         [Fact]
         public void Check_KeyTime_Correctly_Converted_To_Cue()

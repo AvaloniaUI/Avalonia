@@ -4,10 +4,11 @@ using Avalonia.Controls.Templates;
 using Avalonia.Styling;
 using Avalonia.Styling.Activators;
 using Xunit;
+using Avalonia.UnitTests;
 
 namespace Avalonia.Base.UnitTests.Styling
 {
-    public class SelectorTests_Nesting
+    public class SelectorTests_Nesting : ScopedTestBase
     {
         [Fact]
         public void Nesting_Class_Doesnt_Match_Parent_OfType_Selector()

@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Threading;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
@@ -14,11 +14,12 @@ using MicroCom.Runtime;
 
 namespace Avalonia.Native
 {
-    class AvaloniaNativePlatform : IWindowingPlatform
+    internal sealed class AvaloniaNativePlatform : IWindowingPlatform, IDisposable
     {
         private readonly IAvaloniaNativeFactory _factory;
         private AvaloniaNativePlatformOptions? _options;
         private IPlatformGraphics? _platformGraphics;
+        private int _isDisposed;
 
         [DllImport("libAvaloniaNative")]
         static extern IntPtr CreateAvaloniaNative();
@@ -94,7 +95,7 @@ namespace Avalonia.Native
         {
             _options = options;
 
-            var applicationPlatform = new AvaloniaNativeApplicationPlatform();
+            var applicationPlatform = new AvaloniaNativeApplicationPlatform(this);
 
             var macOpts = AvaloniaLocator.Current.GetService<MacOSPlatformOptions>() ?? new MacOSPlatformOptions();
             
@@ -130,21 +131,8 @@ namespace Avalonia.Native
                 .Bind<IActivatableLifetime>().ToSingleton<MacOSActivatableLifetime>()
                 .Bind<IStorageProviderFactory>().ToConstant(new StorageProviderApi(_factory.CreateStorageProvider(), options.AppSandboxEnabled));
 
-            var hotkeys = new PlatformHotkeyConfiguration(KeyModifiers.Meta, wholeWordTextActionModifiers: KeyModifiers.Alt);
-            hotkeys.MoveCursorToTheStartOfLine.Add(new KeyGesture(Key.Left, hotkeys.CommandModifiers));
-            hotkeys.MoveCursorToTheStartOfLineWithSelection.Add(new KeyGesture(Key.Left, hotkeys.CommandModifiers | hotkeys.SelectionModifiers));
-            hotkeys.MoveCursorToTheEndOfLine.Add(new KeyGesture(Key.Right, hotkeys.CommandModifiers));
-            hotkeys.MoveCursorToTheEndOfLineWithSelection.Add(new KeyGesture(Key.Right, hotkeys.CommandModifiers | hotkeys.SelectionModifiers));
-
-            AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(hotkeys);
-
-            AvaloniaLocator.CurrentMutable.Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new Dictionary<Key, string>()
-                    {
-                        { Key.Back , "⌫" }, { Key.Down , "↓" }, { Key.End , "↘" }, { Key.Escape , "⎋" },
-                        { Key.Home , "↖" }, { Key.Left , "←" }, { Key.Return , "↩" }, { Key.PageDown , "⇟" },
-                        { Key.PageUp , "⇞" }, { Key.Right , "→" }, { Key.Space , "␣" }, { Key.Tab , "⇥" },
-                        { Key.Up , "↑" }
-                    }, ctrl: "⌃", meta: "⌘", shift: "⇧", alt: "⌥"));
+            AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(PlatformHotkeyConfiguration.Apple);
+            AvaloniaLocator.CurrentMutable.Bind<KeyGestureFormatInfo>().ToConstant(KeyGestureFormatInfo.Apple);
 
             foreach (var mode in _options.RenderingMode)
             {
@@ -191,6 +179,15 @@ namespace Avalonia.Native
 
         private void OnProcessExit(object? sender, EventArgs e)
         {
+            // Self-dispose on exit, ensuring COM objects are properly released before the CLR shuts down.
+            Dispose();
+        }
+
+        public void Dispose()
+        {
+            if (Interlocked.CompareExchange(ref _isDisposed, 1, 0) != 0)
+                return;
+
             AppDomain.CurrentDomain.ProcessExit -= OnProcessExit;
             _factory.Dispose();
         }

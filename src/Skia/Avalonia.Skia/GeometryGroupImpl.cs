@@ -32,7 +32,7 @@ namespace Avalonia.Skia
 
                 stroke = strokeBuilder.Detach();
                 stroke.FillType = fillType;
-                StrokePath = stroke;
+                StrokePath = CachePathBounds(stroke);
 
                 if (requiresFillPass)
                 {
@@ -46,7 +46,7 @@ namespace Avalonia.Skia
 
                     var fill = fillBuilder.Detach();
                     fill.FillType = fillType;
-                    FillPath = fill;
+                    FillPath = CachePathBounds(fill);
                 }
                 else
                     FillPath = stroke;

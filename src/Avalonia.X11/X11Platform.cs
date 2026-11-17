@@ -83,8 +83,10 @@ namespace Avalonia.X11
                ? new UiThreadRenderTimer(DefaultFps)
                : new SleepLoopRenderTimer(DefaultFps);
 
-            var clipboardImpl = new X11ClipboardImpl(this);
+            var clipboardImpl = new X11ClipboardImpl(this, Info.Atoms.CLIPBOARD);
             var clipboard = new Input.Platform.Clipboard(clipboardImpl);
+            var primarySelection = new Input.Platform.Clipboard(new X11ClipboardImpl(this, Info.Atoms.PRIMARY));
+            var clipboardManager = new PlatformClipboardManager(clipboard, primarySelection);
 
             AvaloniaLocator.CurrentMutable.BindToSelf(this)
                 .Bind<IWindowingPlatform>().ToConstant(this);
@@ -100,6 +102,7 @@ namespace Avalonia.X11
                 .Bind<ICursorFactory>().ToConstant(new X11CursorFactory(Display))
                 .Bind<IClipboardImpl>().ToConstant(clipboardImpl)
                 .Bind<IClipboard>().ToConstant(clipboard)
+                .Bind<IPlatformClipboardManagerImpl>().ToConstant(clipboardManager)
                 .Bind<IPlatformDragSource>().ToConstant(new X11DragSource(this))
                 .Bind<IPlatformSettings>().ToSingleton<DBusPlatformSettings>()
                 .Bind<IPlatformIconLoader>().ToConstant(new X11IconLoader())
@@ -420,6 +423,13 @@ namespace Avalonia
         {
             X11RenderingMode.Glx, X11RenderingMode.Software
         };
+
+        /// <summary>
+        /// Enables partial presentation when supported by the rendering backend.
+        /// Currently supported with <see cref="X11RenderingMode.Egl"/>.
+        /// When <c>null</c>, uses the platform default, which is currently disabled.
+        /// </summary>
+        public bool? UsePartialPresentation { get; set; }
 
         /// <summary>
         /// Embeds popups to the window when set to true. The default value is false.

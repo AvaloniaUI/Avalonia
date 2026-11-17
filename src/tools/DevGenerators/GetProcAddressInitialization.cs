@@ -36,6 +36,10 @@ public class GetProcAddressInitializationGenerator : IIncrementalGenerator
         {
             foreach (var typeGroup in methods.GroupBy<IMethodSymbol,ISymbol>(f => f.ContainingType, SymbolEqualityComparer.Default))
             {
+                var interfaceMethods = typeGroup.Where(m => m.GetAttributes().Any(a =>
+                    a.AttributeClass?.HasFullyQualifiedName(GetProcAddressFullName) == true
+                    && a.NamedArguments.Any(p => p.Key == "GenerateInterface" && p.Value.Value is true))).ToArray();
+                var interfaceName = "I" + typeGroup.Key.Name;
                 var nextContext = 0;
                 var contexts = new Dictionary<string, int>();
 
@@ -59,8 +63,10 @@ public class GetProcAddressInitializationGenerator : IIncrementalGenerator
                         .AppendLine(";");
                 classBuilder
                     .Append("unsafe partial class ")
-                    .AppendLine(typeGroup.Key.Name)
-                    .AppendLine("{");
+                    .Append(typeGroup.Key.Name);
+                if (interfaceMethods.Length != 0)
+                    classBuilder.Append(" : ").Append(interfaceName);
+                classBuilder.AppendLine().AppendLine("{");
                 var initializeBody = new StringBuilder()
                     .Pad(2)
                     .AppendLine("var addr = IntPtr.Zero;");
@@ -262,6 +268,29 @@ public class GetProcAddressInitializationGenerator : IIncrementalGenerator
                 classBuilder.Append(initializeBody.ToString());
                 classBuilder.Append("}\n}");
 
+                if (interfaceMethods.Length != 0)
+                {
+                    var implementations = new StringBuilder();
+                    classBuilder.AppendLine().Append("internal unsafe interface ")
+                        .AppendLine(interfaceName).AppendLine("{");
+                    foreach (var method in interfaceMethods)
+                    {
+                        var parameters = string.Join(", ", method.Parameters.Select(p =>
+                            AppendRefKind(new StringBuilder(), p.RefKind)
+                                .Append(p.Type.GetFullyQualifiedName()).Append(" @").Append(p.Name)));
+                        var arguments = string.Join(", ", method.Parameters.Select(p =>
+                            AppendRefKind(new StringBuilder(), p.RefKind).Append('@').Append(p.Name)));
+                        var returnType = method.ReturnType.GetFullyQualifiedName();
+                        classBuilder.Pad(1).Append(returnType).Append(' ').Append(method.Name)
+                            .Append('(').Append(parameters).AppendLine(");");
+                        implementations.Pad(1).Append(returnType).Append(' ').Append(interfaceName)
+                            .Append('.').Append(method.Name).Append('(').Append(parameters).Append(") => ")
+                            .Append(method.Name).Append('(').Append(arguments).AppendLine(");");
+                    }
+                    classBuilder.AppendLine("}").Append("unsafe partial class ")
+                        .AppendLine(typeGroup.Key.Name).AppendLine("{")
+                        .Append(implementations).AppendLine("}");
+                }
 
                 context.AddSource(typeGroup.Key.GetFullyQualifiedName().Replace(":", ""), classBuilder.ToString());
             }

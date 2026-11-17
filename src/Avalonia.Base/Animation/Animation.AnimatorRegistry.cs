@@ -43,6 +43,7 @@ partial class Animation
         RegisterAnimator<IBrush?, BaseBrushAnimator>();
         RegisterAnimator<CornerRadius, CornerRadiusAnimator>();
         RegisterAnimator<Color, ColorAnimator>();
+        RegisterAnimator<FontVariationSettings?, FontVariationSettingsAnimator>();
         RegisterAnimator<Vector, VectorAnimator>();
         RegisterAnimator<Point, PointAnimator>();
         RegisterAnimator<Rect, RectAnimator>();

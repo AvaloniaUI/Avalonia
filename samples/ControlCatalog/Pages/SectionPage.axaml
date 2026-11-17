@@ -1,0 +1,15 @@
+<ContentPage Theme="{StaticResource ScrollPage}"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:ControlCatalog.Controls"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewModels="using:ControlCatalog.ViewModels"
+             mc:Ignorable="d"
+             d:DesignWidth="800"
+             d:DesignHeight="450"
+             Header="{Binding HomeSection.Title}"
+             x:DataType="viewModels:SectionViewModel"
+             x:Class="ControlCatalog.Pages.SectionPage">
+  <controls:SectionControl DataContext="{Binding HomeSection}" />
+</ContentPage>

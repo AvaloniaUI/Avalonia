@@ -1,9 +1,10 @@
 using Avalonia.Media;
 using Xunit;
+using Avalonia.UnitTests;
 
 namespace Avalonia.Base.UnitTests.Media
 {
-    public class PathSegmentTests
+    public class PathSegmentTests : ScopedTestBase
     {
         [Fact]
         public void PathSegment_Triggers_Invalidation_On_Property_Change()

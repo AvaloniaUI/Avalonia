@@ -9,8 +9,10 @@
         Height="480">
   <Grid>
     <TextBox Name="CurrentPosition"
-             Grid.Column="1"
-             Grid.Row="3"
+             VerticalAlignment="Top"
+             IsReadOnly="True" />
+    <TextBox Name="CurrentOrder"
+             VerticalAlignment="Bottom"
              IsReadOnly="True" />
     <Button HorizontalAlignment="Center" Name="MoveButton" VerticalAlignment="Center" Click="Button_OnClick">Move</Button>
   </Grid>

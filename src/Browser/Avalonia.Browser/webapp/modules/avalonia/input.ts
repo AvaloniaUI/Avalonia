@@ -2,25 +2,8 @@ import { CaretHelper } from "./caretHelper";
 import { JsExports } from "./jsExports";
 import { IMemoryView } from "../../types/dotnet";
 import { StorageItem } from "../storage/storageItem";
-
-enum RawInputModifiers {
-    None = 0,
-    Alt = 1,
-    Control = 2,
-    Shift = 4,
-    Meta = 8,
-
-    LeftMouseButton = 16,
-    RightMouseButton = 32,
-    MiddleMouseButton = 64,
-    XButton1MouseButton = 128,
-    XButton2MouseButton = 256,
-    KeyboardMask = Alt | Control | Shift | Meta,
-
-    PenInverted = 512,
-    PenEraser = 1024,
-    PenBarrelButton = 2048
-}
+import { InputQueue } from "./inputQueue";
+import { RecordType } from "./inputLayout.g";
 
 /*
 * This is a hack to handle older Firefox (before v127 from June 2024) clipboard events in a more convenient way for framework users.
@@ -30,7 +13,8 @@ enum RawInputModifiers {
 * which will un-handle KeyDown event, basically allowing browser to pass a Paste event properly.
 * On actual Paste event we execute promise callbacks, resuming async operation, and returning pasted text to the app.
 * Note #1, on every KeyUp event we will reset all the state and reject pending promises if any, as this event it expected to come after Paste.
-* Note #2, whole this code will be executed only on older browsers where clipboard.read/readText is not available.
+* Note #2, whole this code will be executed only on older browsers where clipboard.read/readText is not available,
+* or in non-secure contexts where navigator.clipboard is undefined.
 * Note #3, with all of these hacks Clipboard.ReadText will still work only on actual "paste" gesture initiated by user.
 * */
 enum ClipboardState {
@@ -89,7 +73,8 @@ export class InputHelper {
                 return;
             }
 
-            const items = this.getDataTransferItems(args.clipboardData);
+            // The event's DataTransfer becomes inaccessible once the event ends, so copy it now.
+            const items = args.clipboardData == null ? [] : this.getDataTransferItems(this.copyDataTransfer(args.clipboardData));
             this.resolveClipboard({ result: items.map((item) => ({ type: "dataTransferItem", value: item }))} as ClipboardResult);
         });
         this.clipboardState = ClipboardState.Ready;
@@ -100,8 +85,24 @@ export class InputHelper {
         return dataTransferList == null ? [] : Array.from(dataTransferList);
     }
 
+    private static copyDataTransfer(dataTransfer: DataTransfer): DataTransfer {
+        const copy = new DataTransfer();
+        for (const item of this.getDataTransferItems(dataTransfer)) {
+            if (item.kind === "string") {
+                copy.setData(item.type, dataTransfer.getData(item.type));
+            } else if (item.kind === "file") {
+                const file = item.getAsFile();
+                if (file != null) {
+                    copy.items.add(file);
+                }
+            }
+        }
+        return copy;
+    }
+
     public static isClipboardFormatSupported(format: string): boolean {
-        if (ClipboardItem.supports) {
+        // ClipboardItem only exists in secure contexts.
+        if (typeof ClipboardItem !== "undefined" && ClipboardItem.supports) {
             return ClipboardItem.supports(format);
         }
 
@@ -131,10 +132,11 @@ export class InputHelper {
         const clipboard = window.navigator.clipboard;
 
         try {
-            if (clipboard.read) {
+            // navigator.clipboard only exists in secure contexts.
+            if (clipboard?.read) {
                 const clipboardItems = await clipboard.read();
                 return { result: clipboardItems.map((item) => ({ type: "clipboardItem", value: item })) } as ClipboardResult;
-            } else if (clipboard.readText) {
+            } else if (clipboard?.readText) {
                 const item: ReadableDataItem = {
                     type: "string",
                     value: await clipboard.readText()
@@ -163,6 +165,11 @@ export class InputHelper {
     }
 
     public static async writeClipboard(window: Window, source?: WriteableClipboardSource | null): Promise<string> {
+        // navigator.clipboard only exists in secure contexts.
+        if (!window.navigator.clipboard) {
+            return "denied";
+        }
+
         try {
             const items = source?.items ?? [];
             if (items.length === 0) {
@@ -345,23 +352,23 @@ export class InputHelper {
     }
 
     public static subscribeKeyEvents(element: HTMLInputElement, topLevelId: number) {
+        // Key events go through the input queue and are flushed synchronously, so Avalonia's handled
+        // state is known before the browser applies the default action. Only handled keys suppress it;
+        // when the state isn't known (multithreaded runtime) the default is always suppressed.
         const keyDownHandler = (args: KeyboardEvent) => {
-            JsExports.InputHelper.OnKeyDown(topLevelId, args.code, args.key, this.getModifiers(args))
-                .then((handled: boolean) => {
-                    if (!handled || this.clipboardState !== ClipboardState.Pending) {
-                        args.preventDefault();
-                    }
-                });
+            const handled = InputQueue.postKey(RecordType.KeyDown, topLevelId, args);
+            // A pending clipboard read needs the browser's paste action, which follows an unprevented keydown.
+            if (handled !== false && this.clipboardState !== ClipboardState.Pending) {
+                args.preventDefault();
+            }
         };
         element.addEventListener("keydown", keyDownHandler);
 
         const keyUpHandler = (args: KeyboardEvent) => {
-            JsExports.InputHelper.OnKeyUp(topLevelId, args.code, args.key, this.getModifiers(args))
-                .then((handled: boolean) => {
-                    if (!handled) {
-                        args.preventDefault();
-                    }
-                });
+            const handled = InputQueue.postKey(RecordType.KeyUp, topLevelId, args);
+            if (handled !== false) {
+                args.preventDefault();
+            }
 
             if (this.rejectClipboard) {
                 this.rejectClipboard();
@@ -379,12 +386,16 @@ export class InputHelper {
     public static subscribeTextEvents(
         element: HTMLInputElement,
         topLevelId: number) {
+        // Text events bypass the input queue; flushing first keeps them ordered after queued input.
         const compositionStartHandler = (args: CompositionEvent) => {
+            InputQueue.flush();
             JsExports.InputHelper.OnCompositionStart(topLevelId);
         };
         element.addEventListener("compositionstart", compositionStartHandler);
 
         const beforeInputHandler = (args: InputEvent) => {
+            InputQueue.flush();
+
             const ranges = args.getTargetRanges();
             let start = -1;
             let end = -1;
@@ -403,12 +414,14 @@ export class InputHelper {
         element.addEventListener("beforeinput", beforeInputHandler);
 
         const compositionUpdateHandler = (args: CompositionEvent) => {
+            InputQueue.flush();
             JsExports.InputHelper.OnCompositionUpdate(topLevelId, args.data);
         };
         element.addEventListener("compositionupdate", compositionUpdateHandler);
 
         const compositionEndHandler = (args: CompositionEvent) => {
-            JsExports.InputHelper.OnCompositionEnd(topLevelId, args.data);
+            InputQueue.flush();
+            JsExports.InputHelper.OnCompositionEnd(topLevelId, args.timeStamp, args.data);
             args.preventDefault();
         };
         element.addEventListener("compositionend", compositionEndHandler);
@@ -424,36 +437,34 @@ export class InputHelper {
         element: HTMLInputElement,
         topLevelId: number
     ) {
+        // Pointer and wheel events are encoded into the input queue and consumed by C# in one batch
+        // per burst; pointer presses are flushed synchronously on the single-threaded runtime.
+        // The browser default action of moves and wheel is always suppressed. A mouse or pen press lets it through
+        // when Avalonia left the press unhandled, unless the hidden text input has focus, which the default action
+        // (compatibility mousedown) would take away. Touch presses are always suppressed: touch input doesn't
+        // report a handled state.
+        const pointerPressHandler = (type: RecordType.PointerDown | RecordType.PointerUp, args: PointerEvent) => {
+            const handled = InputQueue.postPointer(type, topLevelId, args);
+            if (handled !== false || args.pointerType === "touch" || InputQueue.isTextInputFocused()) {
+                args.preventDefault();
+            }
+        };
+
         const pointerMoveHandler = (args: PointerEvent) => {
-            JsExports.InputHelper.OnPointerMove(
-                topLevelId, args.pointerType, args.pointerId, args.offsetX, args.offsetY,
-                args.pressure, args.tiltX, args.tiltY, args.twist, this.getModifiers(args), args);
+            InputQueue.postPointer(RecordType.PointerMove, topLevelId, args);
             args.preventDefault();
         };
 
-        const pointerDownHandler = (args: PointerEvent) => {
-            JsExports.InputHelper.OnPointerDown(
-                topLevelId, args.pointerType, args.pointerId, args.button, args.offsetX, args.offsetY,
-                args.pressure, args.tiltX, args.tiltY, args.twist, this.getModifiers(args));
-            args.preventDefault();
-        };
+        const pointerDownHandler = (args: PointerEvent) => pointerPressHandler(RecordType.PointerDown, args);
 
-        const pointerUpHandler = (args: PointerEvent) => {
-            JsExports.InputHelper.OnPointerUp(
-                topLevelId, args.pointerType, args.pointerId, args.button, args.offsetX, args.offsetY,
-                args.pressure, args.tiltX, args.tiltY, args.twist, this.getModifiers(args));
-            args.preventDefault();
-        };
+        const pointerUpHandler = (args: PointerEvent) => pointerPressHandler(RecordType.PointerUp, args);
 
         const pointerCancelHandler = (args: PointerEvent) => {
-            JsExports.InputHelper.OnPointerCancel(
-                topLevelId, args.pointerType, args.pointerId, args.offsetX, args.offsetY,
-                args.pressure, args.tiltX, args.tiltY, args.twist, this.getModifiers(args));
+            InputQueue.postPointer(RecordType.PointerCancel, topLevelId, args);
         };
 
         const wheelHandler = (args: WheelEvent) => {
-            JsExports.InputHelper.OnWheel(
-                topLevelId, args.offsetX, args.offsetY, args.deltaX, args.deltaY, this.getModifiers(args));
+            InputQueue.postWheel(topLevelId, args);
             args.preventDefault();
         };
 
@@ -464,7 +475,7 @@ export class InputHelper {
         element.addEventListener("pointercancel", pointerCancelHandler);
 
         return () => {
-            element.removeEventListener("pointerover", pointerMoveHandler);
+            element.removeEventListener("pointermove", pointerMoveHandler);
             element.removeEventListener("pointerdown", pointerDownHandler);
             element.removeEventListener("pointerup", pointerUpHandler);
             element.removeEventListener("pointercancel", pointerCancelHandler);
@@ -485,7 +496,9 @@ export class InputHelper {
             const items: ReadableDataItem[] =
                 this.getDataTransferItems(dataTransfer).map((item) => ({ type: "dataTransferItem", value: item }));
 
-            JsExports.InputHelper.OnDragDrop(topLevelId, args.type, args.offsetX, args.offsetY, this.getModifiers(args), dataTransfer, items);
+            // Drag events bypass the input queue; flushing first keeps them ordered after queued input.
+            InputQueue.flush();
+            JsExports.InputHelper.OnDragDrop(topLevelId, args.type, args.offsetX, args.offsetY, InputQueue.getKeyModifiers(args), args.buttons, dataTransfer, items);
         };
         const overAndDropHandler = (args: DragEvent) => {
             args.preventDefault();
@@ -502,11 +515,6 @@ export class InputHelper {
             element.removeEventListener("dragleave", handler);
             element.removeEventListener("drop", overAndDropHandler);
         };
-    }
-
-    public static getCoalescedEvents(pointerEvent: PointerEvent): number[] {
-        return pointerEvent.getCoalescedEvents()
-            .flatMap(e => [e.offsetX, e.offsetY, e.pressure, e.tiltX, e.tiltY, e.twist]);
     }
 
     public static subscribeKeyboardGeometryChange(
@@ -577,27 +585,6 @@ export class InputHelper {
         inputElement.setSelectionRange(start, end);
         inputElement.style.width = "20px";
         inputElement.style.width = `${inputElement.scrollWidth}px`;
-    }
-
-    private static getModifiers(args: KeyboardEvent | PointerEvent | WheelEvent | DragEvent): number {
-        let modifiers = RawInputModifiers.None;
-
-        if (args.ctrlKey) { modifiers |= RawInputModifiers.Control; }
-        if (args.altKey) { modifiers |= RawInputModifiers.Alt; }
-        if (args.shiftKey) { modifiers |= RawInputModifiers.Shift; }
-        if (args.metaKey) { modifiers |= RawInputModifiers.Meta; }
-
-        const buttons = (args as PointerEvent).buttons;
-        if (buttons) {
-            if (buttons & 1) { modifiers |= RawInputModifiers.LeftMouseButton; }
-            if (buttons & 2) { modifiers |= (args.type === "pen" ? RawInputModifiers.PenBarrelButton : RawInputModifiers.RightMouseButton); }
-            if (buttons & 4) { modifiers |= RawInputModifiers.MiddleMouseButton; }
-            if (buttons & 8) { modifiers |= RawInputModifiers.XButton1MouseButton; }
-            if (buttons & 16) { modifiers |= RawInputModifiers.XButton2MouseButton; }
-            if (buttons & 32) { modifiers |= RawInputModifiers.PenEraser; }
-        }
-
-        return modifiers;
     }
 
     public static setPointerCapture(containerElement: HTMLInputElement, pointerId: number): void {

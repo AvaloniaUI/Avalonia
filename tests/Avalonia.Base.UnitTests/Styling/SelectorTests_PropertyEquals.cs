@@ -3,10 +3,11 @@ using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Styling;
 using Xunit;
+using Avalonia.UnitTests;
 
 namespace Avalonia.Base.UnitTests.Styling
 {
-    public class SelectorTests_PropertyEquals
+    public class SelectorTests_PropertyEquals : ScopedTestBase
     {
         static SelectorTests_PropertyEquals()
         {

@@ -327,7 +327,8 @@ namespace Avalonia.Media
                 }
 
                 var newProps = new GenericTextRunProperties(
-                    new Typeface(fontFamily, oldTypeface.Style, oldTypeface.Weight),
+                    new Typeface(fontFamily, oldTypeface.Style, oldTypeface.Weight,
+                        FontStretch.Normal, oldTypeface.FontVariations),
                     runProps.FontRenderingEmSize,
                     runProps.TextDecorations,
                     runProps.ForegroundBrush,
@@ -509,7 +510,8 @@ namespace Avalonia.Media
                 }
 
                 var newProps = new GenericTextRunProperties(
-                    new Typeface(oldTypeface.FontFamily, oldTypeface.Style, weight),
+                    new Typeface(oldTypeface.FontFamily, oldTypeface.Style, weight,
+                        FontStretch.Normal, oldTypeface.FontVariations),
                     runProps.FontRenderingEmSize,
                     runProps.TextDecorations,
                     runProps.ForegroundBrush,
@@ -566,7 +568,8 @@ namespace Avalonia.Media
                 }
 
                 var newProps = new GenericTextRunProperties(
-                    new Typeface(oldTypeface.FontFamily, style, oldTypeface.Weight),
+                    new Typeface(oldTypeface.FontFamily, style, oldTypeface.Weight,
+                        FontStretch.Normal, oldTypeface.FontVariations),
                     runProps.FontRenderingEmSize,
                     runProps.TextDecorations,
                     runProps.ForegroundBrush,

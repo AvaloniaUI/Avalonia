@@ -10,7 +10,7 @@
 #include "WindowProtocol.h"
 #include "WindowImpl.h"
 
-WindowImpl::WindowImpl(IAvnWindowEvents *events) : TopLevelImpl(events), WindowBaseImpl(events, false) {
+WindowImpl::WindowImpl(const ComPtr<IAvnWindowEvents>& events) : TopLevelImpl(events), WindowBaseImpl(events, false) {
     _isEnabled = true;
     _isClientAreaExtended = false;
     _fullScreenActive = false;
@@ -48,8 +48,6 @@ void WindowImpl::OnInitialiseNSWindow(){
 }
 
 HRESULT WindowImpl::Show(bool activate, bool isDialog) {
-    START_COM_CALL;
-
     @autoreleasepool {
         _isModal = isDialog;
 
@@ -65,8 +63,6 @@ HRESULT WindowImpl::Show(bool activate, bool isDialog) {
 }
 
 HRESULT WindowImpl::SetEnabled(bool enable) {
-    START_COM_CALL;
-
     @autoreleasepool {
         _isEnabled = enable;
         [GetWindowProtocol() setEnabled:enable];
@@ -196,8 +192,6 @@ void WindowImpl::DoZoom() {
 }
 
 HRESULT WindowImpl::SetCanResize(bool value) {
-    START_COM_CALL;
-
     @autoreleasepool {
         _canResize = value;
         UpdateAppearance();
@@ -206,24 +200,18 @@ HRESULT WindowImpl::SetCanResize(bool value) {
 }
 
 HRESULT WindowImpl::SetCanMinimize(bool value) {
-    START_COM_ARP_CALL;
-
     _canMinimize = value;
     UpdateAppearance();
     return S_OK;
 }
 
 HRESULT WindowImpl::SetCanMaximize(bool value) {
-    START_COM_ARP_CALL;
-
     _canMaximize = value;
     UpdateAppearance();
     return S_OK;
 }
 
 HRESULT WindowImpl::SetDecorations(SystemDecorations value) {
-    START_COM_CALL;
-
     @autoreleasepool {
         auto currentWindowState = _lastWindowState;
         _decorations = value;
@@ -285,8 +273,6 @@ HRESULT WindowImpl::SetDecorations(SystemDecorations value) {
 }
 
 HRESULT WindowImpl::SetTitle(char *utf8title) {
-    START_COM_CALL;
-
     @autoreleasepool {
         _lastTitle = [NSString stringWithUTF8String:(const char *) utf8title];
         [Window setTitle:_lastTitle];
@@ -296,8 +282,6 @@ HRESULT WindowImpl::SetTitle(char *utf8title) {
 }
 
 HRESULT WindowImpl::SetTitleBarColor(AvnColor color) {
-    START_COM_CALL;
-
     @autoreleasepool {
         float a = (float) color.Alpha / 255.0f;
         float r = (float) color.Red / 255.0f;
@@ -322,8 +306,6 @@ HRESULT WindowImpl::SetTitleBarColor(AvnColor color) {
 }
 
 HRESULT WindowImpl::GetWindowState(AvnWindowState *ret) {
-    START_COM_CALL;
-
     @autoreleasepool {
         if (ret == nullptr) {
             return E_POINTER;
@@ -351,7 +333,6 @@ HRESULT WindowImpl::GetWindowState(AvnWindowState *ret) {
 }
 
 HRESULT WindowImpl::GetWindowZOrder(long* zOrder) {
-    START_COM_CALL;
     @autoreleasepool {
         if (zOrder == nullptr) {
             return E_POINTER;
@@ -365,8 +346,6 @@ HRESULT WindowImpl::GetWindowZOrder(long* zOrder) {
 }
 
 HRESULT WindowImpl::TakeFocusFromChildren() {
-    START_COM_CALL;
-
     @autoreleasepool {
         if (Window == nil)
             return S_OK;
@@ -378,8 +357,6 @@ HRESULT WindowImpl::TakeFocusFromChildren() {
 }
 
 HRESULT WindowImpl::SetExtendClientArea(bool enable) {
-    START_COM_CALL;
-
     @autoreleasepool {
         _isClientAreaExtended = enable;
 
@@ -408,8 +385,6 @@ HRESULT WindowImpl::SetExtendClientArea(bool enable) {
 }
 
 HRESULT WindowImpl::GetExtendTitleBarHeight(double *ret) {
-    START_COM_CALL;
-
     @autoreleasepool {
         if (ret == nullptr) {
             return E_POINTER;
@@ -422,8 +397,6 @@ HRESULT WindowImpl::GetExtendTitleBarHeight(double *ret) {
 }
 
 HRESULT WindowImpl::SetExtendTitleBarHeight(double value) {
-    START_COM_CALL;
-
     @autoreleasepool {
         [StandardContainer SetTitleBarHeightHint:value];
         return S_OK;
@@ -450,8 +423,6 @@ HRESULT WindowImpl::SetWindowState(AvnWindowState state) {
 }
 
 HRESULT WindowImpl::SetWindowState(AvnWindowState state, bool shouldResize) {
-    START_COM_CALL;
-
     @autoreleasepool {
         auto currentState = _actualWindowState;
         _lastWindowState = state;
@@ -613,11 +584,7 @@ void WindowImpl::UpdateAppearance() {
     [zoomButton setEnabled:CanZoom() || (([Window styleMask] & NSWindowStyleMaskFullScreen) != 0 && _isEnabled)];
 }
 
-extern IAvnWindow* CreateAvnWindow(IAvnWindowEvents*events)
+extern ComPtr<IAvnWindow> CreateAvnWindow(const ComPtr<IAvnWindowEvents>& events)
 {
-    @autoreleasepool
-    {
-        IAvnWindow* ptr = (IAvnWindow*)new WindowImpl(events);
-        return ptr;
-    }
+    return comnew<WindowImpl>(events);
 }

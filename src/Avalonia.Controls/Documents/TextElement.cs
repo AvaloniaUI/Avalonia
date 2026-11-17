@@ -68,6 +68,14 @@ namespace Avalonia.Controls.Documents
                 defaultValue: FontStretch.Normal);
 
         /// <summary>
+        /// Defines the <see cref="FontVariations"/> property.
+        /// </summary>
+        public static readonly AttachedProperty<FontVariationSettings?> FontVariationsProperty =
+            AvaloniaProperty.RegisterAttached<TextElement, TextElement, FontVariationSettings?>(
+                nameof(FontVariations),
+                inherits: true);
+
+        /// <summary>
         /// Defines the <see cref="Foreground"/> property.
         /// </summary>
         public static readonly AttachedProperty<IBrush?> ForegroundProperty =
@@ -154,6 +162,18 @@ namespace Avalonia.Controls.Documents
         {
             get => GetValue(FontStretchProperty);
             set => SetValue(FontStretchProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the variable-font axis values in user space, e.g.
+        /// <c>wght=700, wdth=85</c>. <c>null</c> means the font's design defaults.
+        /// Fonts that are not variable ignore the settings; variable fonts clamp each
+        /// value to their own axis range.
+        /// </summary>
+        public FontVariationSettings? FontVariations
+        {
+            get => GetValue(FontVariationsProperty);
+            set => SetValue(FontVariationsProperty, value);
         }
 
         /// <summary>
@@ -315,6 +335,26 @@ namespace Avalonia.Controls.Documents
         }
 
         /// <summary>
+        /// Gets the value of the attached <see cref="FontVariationsProperty"/> on a control.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <returns>The font variation settings.</returns>
+        public static FontVariationSettings? GetFontVariations(Control control)
+        {
+            return control.GetValue(FontVariationsProperty);
+        }
+
+        /// <summary>
+        /// Sets the value of the attached <see cref="FontVariationsProperty"/> on a control.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="value">The property value to set.</param>
+        public static void SetFontVariations(Control control, FontVariationSettings? value)
+        {
+            control.SetValue(FontVariationsProperty, value);
+        }
+
+        /// <summary>
         /// Gets the value of the attached <see cref="ForegroundProperty"/> on a control.
         /// </summary>
         /// <param name="control">The control.</param>
@@ -362,6 +402,7 @@ namespace Avalonia.Controls.Documents
                 case nameof(FontStyle):
                 case nameof(FontWeight):
                 case nameof(FontStretch):
+                case nameof(FontVariations):
                 case nameof(Foreground):
                     InlineHost?.Invalidate();
                     break;
