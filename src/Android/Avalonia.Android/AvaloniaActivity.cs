@@ -7,12 +7,11 @@ using Android.Content.PM;
 using Android.OS;
 using Android.Runtime;
 using Android.Views;
-using Android.Window;
 using AndroidX.AppCompat.App;
 using Avalonia.Android.Platform;
 using Avalonia.Android.Platform.Storage;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Platform;
+using Avalonia.Controls.Platform;
 
 namespace Avalonia.Android;
 
@@ -130,6 +129,18 @@ public class AvaloniaActivity : AppCompatActivity, IAvaloniaActivity
         base.OnNewIntent(intent);
 
         HandleIntent(intent);
+    }
+
+    public override void OnWindowFocusChanged(bool hasFocus)
+    {
+        if (hasFocus)
+        {
+            _onActivated?.Invoke(this, new ActivatedEventArgs(ActivationKind.Background));
+        }
+        else
+        {
+            _onDeactivated?.Invoke(this, new ActivatedEventArgs(ActivationKind.Background));
+        }
     }
 
     protected override void OnStop()

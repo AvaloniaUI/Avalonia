@@ -117,6 +117,13 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
 
     public IAvnTopLevel? Native => _handle?.Native;
     public IPlatformHandle? Handle => _handle;
+
+    public Size? FrameSize => null;
+    public PixelPoint Position { get; } = default;
+
+    public Action<PixelPoint>? PositionChanged { get; set; }
+    public Action? Deactivated { get; set; }
+    public Action? Activated { get; set; }
     public AvaloniaNativeTextInputMethod? InputMethod { get; protected set; }
     public Size ClientSize
     {

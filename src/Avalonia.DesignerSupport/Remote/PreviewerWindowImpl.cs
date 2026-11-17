@@ -38,10 +38,6 @@ namespace Avalonia.DesignerSupport.Remote
         }
 
         public override double DesktopScaling => 1.0;
-        public PixelPoint Position { get; set; }
-        public Action<PixelPoint> PositionChanged { get; set; }
-        public Action Deactivated { get; set; }
-        public Action Activated { get; set; }
         public Func<WindowCloseReason, bool> Closing { get; set; }
         public WindowState WindowState { get; set; }
         public bool WindowStateGetterIsUsable => false;

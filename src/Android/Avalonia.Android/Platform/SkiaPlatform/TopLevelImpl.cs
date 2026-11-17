@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Android.App;
 using Android.Content;
+using Android.Content.Res;
 using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.OS;
@@ -9,6 +10,7 @@ using Android.Runtime;
 using Android.Views;
 using AndroidX.AppCompat.App;
 using AndroidX.Core.View;
+using AndroidX.Window.Layout;
 using Avalonia.Android.Platform.Input;
 using Avalonia.Android.Platform.Specific.Helpers;
 using Avalonia.Android.Platform.Storage;
@@ -44,6 +46,8 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         private readonly AndroidPlatformFeedback _feedback;
         private SurfaceViewImpl? _view;
         private WindowTransparencyLevel _transparencyLevel;
+        private PixelPoint _position;
+        private Size? _frameSize;
 
         public TopLevelImpl(AvaloniaView avaloniaView, bool placeOnTop = false)
         {
@@ -80,6 +84,24 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             var framebuffer = new FramebufferManager(this);
             Surfaces = [gl, framebuffer, _view];
             Handle = new AndroidViewControlHandle(_view);
+
+            if (_context is IAvaloniaActivity avaloniaActivity)
+            {
+                avaloniaActivity.Activated += AvaloniaActivity_Activated;
+                avaloniaActivity.Deactivated += AvaloniaActivity_Deactivated;
+            }
+
+            OnConfigurationChanged(_view.Context?.Resources?.Configuration);
+        }
+
+        private void AvaloniaActivity_Deactivated(object? sender, Controls.ApplicationLifetimes.ActivatedEventArgs e)
+        {
+            Deactivated?.Invoke();
+        }
+
+        private void AvaloniaActivity_Activated(object? sender, Controls.ApplicationLifetimes.ActivatedEventArgs e)
+        {
+            Activated?.Invoke();
         }
 
         public IInputRoot? InputRoot { get; private set; }
@@ -142,6 +164,12 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             _view?.Dispose();
             _view = null;
             (DragDrop as IDisposable)?.Dispose();
+
+            if (_context is IAvaloniaActivity avaloniaActivity)
+            {
+                avaloniaActivity.Activated -= AvaloniaActivity_Activated;
+                avaloniaActivity.Deactivated -= AvaloniaActivity_Deactivated;
+            }
         }
 
         protected void OnResized(Size size)
@@ -224,6 +252,37 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 _tl.Compositor.RequestCompositionUpdate(drawingFinished.Run);
                 base.SurfaceRedrawNeededAsync(holder, drawingFinished);
             }
+
+            protected override void OnConfigurationChanged(Configuration? newConfig)
+            {
+                base.OnConfigurationChanged(newConfig);
+
+                _tl.OnConfigurationChanged(newConfig);
+            }
+        }
+
+        private void OnConfigurationChanged(Configuration? newConfig)
+        {
+            if (_context is Activity activity)
+            {
+                var metricsCalc = WindowMetricsCalculator.Companion.OrCreate;
+                var windowMetrics = metricsCalc.ComputeCurrentWindowMetrics(activity);
+                var windowBounds = windowMetrics.Bounds;
+                var bounds = new PixelRect(new PixelPoint(windowBounds.Left, windowBounds.Top), new PixelPoint(windowBounds.Right, windowBounds.Bottom));
+
+                var oldPosiiton = _position;
+                _position = bounds.Position;
+                _frameSize = bounds.Size.ToSize(RenderScaling);
+
+                var display = _view?.Display;
+
+                var positionChanged = oldPosiiton != _position;
+
+                if (positionChanged)
+                {
+                    PositionChanged?.Invoke(_position);
+                }
+            }
         }
 
         public IPopupImpl? CreatePopup() => null;
@@ -278,6 +337,13 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         internal AndroidInsetsManager? InsetsManager => _insetsManager;
         internal AndroidKeyboardEventsHelper<TopLevelImpl> KeyboardHelper => _keyboardHelper;
         internal AndroidMotionEventsHelper PointerHelper => _pointerHelper;
+        public Size? FrameSize => _frameSize;
+
+        public PixelPoint Position => _position;
+
+        public Action<PixelPoint>? PositionChanged { get; set; }
+        public Action? Deactivated { get; set; }
+        public Action? Activated { get; set; }
 
         public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevels)
         {

@@ -270,6 +270,7 @@ namespace Avalonia.Controls
             });
 
             ClientSize = impl.ClientSize;
+            FrameSize = impl.FrameSize;
 
             var stylingParent = ((IStyleHost)this).StylingParent;
 
@@ -744,6 +745,7 @@ namespace Avalonia.Controls
         /// <param name="reason">The reason for the resize.</param>
         internal virtual void HandleResized(Size clientSize, WindowResizeReason reason)
         {
+            FrameSize = PlatformImpl?.FrameSize;
             ClientSize = clientSize;
             Width = clientSize.Width;
             Height = clientSize.Height;

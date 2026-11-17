@@ -57,6 +57,11 @@ using Avalonia.Rendering.Composition;
         public IPlatformHandle? Handle => null;
         public Size ClientSize => ScaledSize;
         public Size? FrameSize => null;
+        public PixelPoint Position { get; } = default;
+
+        public Action<PixelPoint>? PositionChanged { get; set; }
+        public Action? Deactivated { get; set; }
+        public Action? Activated { get; set; }
         public IMouseDevice MouseDevice { get; } = new MouseDevice();
         public IPopupImpl? CreatePopup() => null;
 

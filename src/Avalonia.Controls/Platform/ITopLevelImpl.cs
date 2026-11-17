@@ -165,6 +165,32 @@ namespace Avalonia.Platform
         AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; }
 
         /// <summary>
+        /// Gets the total size of the toplevel, excluding shadows.
+        /// </summary>
+        Size? FrameSize { get; }
+
+        /// <summary> 
+        /// Gets the position of the window in device pixels. 
+        /// </summary> 
+        PixelPoint Position { get; }
+
+        /// <summary>
+        /// Gets or sets a method called when the window's position changes.
+        /// </summary>
+        Action<PixelPoint>? PositionChanged { get; set; }
+
+        /// <summary>
+        /// Gets or sets a method called when the window is deactivated (loses focus).
+        /// </summary>
+        Action? Deactivated { get; set; }
+
+        /// <summary>
+        /// Gets or sets a method called when the window is activated (receives focus).
+        /// </summary>
+        Action? Activated { get; set; }
+
+
+        /// <summary>
         /// Sets the <see cref="PlatformThemeVariant"/> on the frame if it should be dark or light.
         /// Also applies for the mobile status bar.
         /// </summary>

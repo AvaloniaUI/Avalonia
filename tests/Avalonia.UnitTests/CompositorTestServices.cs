@@ -225,7 +225,15 @@ public class CompositorTestServices : IDisposable
         }
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels => new(1, 1, 1);
-        
+
+        public Size? FrameSize { get; }
+
+        public PixelPoint Position { get; } = default;
+
+        public Action<PixelPoint>? PositionChanged { get; set; }
+        public Action? Deactivated { get; set; }
+        public Action? Activated { get; set; }
+
         public object? TryGetFeature(Type featureType) => null;
     }
 }

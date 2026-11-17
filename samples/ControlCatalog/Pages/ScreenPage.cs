@@ -3,6 +3,7 @@ using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
+using Avalonia.Platform;
 using Avalonia.Threading;
 
 namespace ControlCatalog.Pages
@@ -155,10 +156,10 @@ namespace ControlCatalog.Pages
                     currentHeight += 30;
                 }
 
-                if (topLevel is Window w)
+                if (topLevel.PlatformImpl is ITopLevelImpl tpImpl)
                 {
-                    var wPos = w.Position;
-                    var wSize = PixelSize.FromSize(w.FrameSize ?? w.ClientSize, w.DesktopScaling);
+                    var wPos = tpImpl.Position;
+                    var wSize = PixelSize.FromSize(tpImpl.FrameSize ?? tpImpl.ClientSize, tpImpl.DesktopScaling);
                     context.DrawRectangle(_activePen,
                         new Rect(wPos.X / 10f + Math.Abs(_leftMost), wPos.Y / 10f + Math.Abs(_topMost),
                             wSize.Width / 10d, wSize.Height / 10d));
