@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Concurrent;
-using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
@@ -18,7 +17,8 @@ namespace Avalonia.Win32.Input
     {
         private const int Shift = 1, Control = 2, Alt = 4, CapsLock = 8, StateCount = 16;
 
-        private static readonly ConcurrentDictionary<IntPtr, Lazy<KeyboardLayoutTable?>> s_tables = new();
+        private static readonly ConcurrentDictionary<IntPtr, KeyboardLayoutTable?> s_tables = new();
+        private static readonly object s_buildLock = new();
 
         private readonly string?[] _entries = new string?[256 * StateCount];
 
@@ -44,11 +44,29 @@ namespace Avalonia.Win32.Input
         }
 
         /// <summary>
-        /// Gets the table of a layout, or null if it could not be built.
+        /// Gets the table of a layout, or null if it could not be built or has to wait for a pending dead key.
         /// </summary>
         public static KeyboardLayoutTable? Get(IntPtr layout)
-            => s_tables.GetOrAdd(layout, l => new Lazy<KeyboardLayoutTable?>(() => Create(l),
-                LazyThreadSafetyMode.ExecutionAndPublication)).Value;
+        {
+            if (s_tables.TryGetValue(layout, out var table))
+                return table;
+
+            lock (s_buildLock)
+            {
+                if (s_tables.TryGetValue(layout, out table))
+                    return table;
+
+                // A pending dead key would combine with every entry, and ending it would lose the key that the user
+                // just pressed, so the table is built on a later call. Older versions can't check without ending it.
+                if (Win32Platform.WindowsVersion >= PlatformConstants.Windows10_1607
+                    && KeyInterop.IsDeadKeyPending(layout))
+                    return null;
+
+                table = Create(layout);
+                s_tables[layout] = table;
+                return table;
+            }
+        }
 
         public static KeyboardLayoutTable? Current => Get(GetKeyboardLayout(0));
 
@@ -118,7 +136,8 @@ namespace Avalonia.Win32.Input
             var buffer = stackalloc char[bufferSize];
 
             // A pending dead key would combine with every entry
-            KeyInterop.EndPendingDeadKey(layout);
+            if (changesState)
+                KeyInterop.EndPendingDeadKey(layout);
 
             for (var vk = 1; vk < 256; vk++)
             {

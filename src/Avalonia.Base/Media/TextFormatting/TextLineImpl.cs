@@ -178,6 +178,19 @@ namespace Avalonia.Media.TextFormatting
                 return this;
             }
 
+            if (!collapsingProperties.ReturnsOwnedRuns)
+            {
+                // Both lines dispose their runs, so the collapsed line needs its own reference
+                // to each run it shares with this line. Any other run passes to it as it is.
+                foreach (var run in collapsedRuns)
+                {
+                    if (run is ShapedTextRun shapedRun && TextCollapsingProperties.IsSourceRun(this, shapedRun))
+                    {
+                        shapedRun.AddRef();
+                    }
+                }
+            }
+
             var collapsedLine = new TextLineImpl(collapsedRuns, FirstTextSourceIndex, Length, _paragraphWidth, _paragraphProperties,
                 _resolvedFlowDirection, TextLineBreak, true);
 

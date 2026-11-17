@@ -22,17 +22,6 @@
     <ProjectReference Include="../../HarfBuzz/Avalonia.HarfBuzz/Avalonia.HarfBuzz.csproj" />
   </ItemGroup>
 
-  <!-- .NET 11 requires Skia/HarfBuzz compiled with EMSDK 5.0.6 -->
-  <!-- These Skia/HarfBuzz versions are newer than what we ship with Avalonia.Skia and Avalonia.HarfBuzz -->
-  <ItemGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net11.0'))">
-    <PackageReference Include="SkiaSharp" VersionOverride="4.151.2" />
-    <PackageReference Include="SkiaSharp.NativeAssets.Linux" VersionOverride="4.151.2" />
-    <PackageReference Include="SkiaSharp.NativeAssets.WebAssembly" VersionOverride="4.151.2" />
-    <PackageReference Include="HarfBuzzSharp" VersionOverride="14.2.1.200" />
-    <PackageReference Include="HarfBuzzSharp.NativeAssets.Linux" VersionOverride="14.2.1.200" />
-    <PackageReference Include="HarfBuzzSharp.NativeAssets.WebAssembly" VersionOverride="14.2.1.200" />
-  </ItemGroup>
-
   <!--
     inputLayout.g.ts is generated from BrowserInputLayout.cs before the web app build. The task assembly links the
     layout types and runs in its own process (TaskHostFactory), so a rebuilt task is picked up without locking.

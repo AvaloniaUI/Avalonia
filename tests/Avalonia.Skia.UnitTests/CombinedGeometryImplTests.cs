@@ -8,11 +8,12 @@ public class CombinedGeometryImplTests
     [Fact]
     public void Combining_Fill_With_Empty_Stroke_Returns_Fill_Bounds()
     {
-        var fill = new SKPath();
-        fill.LineTo(100, 0);
-        fill.LineTo(100, 100);
-        fill.LineTo(0, 100);
-        fill.Close();
+        using var builder = new SKPathBuilder();
+        builder.LineTo(100, 0);
+        builder.LineTo(100, 100);
+        builder.LineTo(0, 100);
+        builder.Close();
+        var fill = builder.Detach();
 
         var stroke = new SKPath();
 

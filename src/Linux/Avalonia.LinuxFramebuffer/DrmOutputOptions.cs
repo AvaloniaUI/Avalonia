@@ -21,6 +21,12 @@ namespace Avalonia.LinuxFramebuffer
         public SurfaceOrientation Orientation { get; set; } = SurfaceOrientation.Rotation0;
 
         /// <summary>
+        /// Enables partial presentation when supported by EGL, including rotated outputs.
+        /// When <c>null</c>, uses the platform default, which is currently disabled.
+        /// </summary>
+        public bool? UsePartialPresentation { get; set; }
+
+        /// <summary>
         /// If true an two cycle buffer swapping is processed at init.
         /// Default: True
         /// </summary>

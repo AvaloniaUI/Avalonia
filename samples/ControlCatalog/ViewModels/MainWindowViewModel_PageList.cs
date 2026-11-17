@@ -83,6 +83,7 @@ partial class MainWindowViewModel
         Section("Media & Graphics", Icons.Media, s =>
         {
             s.Add<AcrylicPage>("Acrylic", Icons.Blur, "Translucent acrylic window materials");
+            s.Add<BackdropEffectPage>("BackdropEffect", Icons.Blur, "Displays backdrop effects under visuals");
             s.Add<BitmapCachePage>("BitmapCache", Icons.Lightning, "Cache visuals as bitmaps for performance");
             s.Add<CompositionPage>("Composition", Icons.Layers, "Composition-layer animations and effects");
             s.Add<CustomDrawing>("Custom Drawing", Icons.Brush, "Render custom geometry in code");

@@ -24,11 +24,13 @@ namespace Avalonia.Skia
         public PlatformRenderTargetState State => _surface.State;
         public RenderTargetProperties Properties => _surface.Properties;
 
-        class GlGpuSession : ISkiaGpuRenderSession
+        class GlGpuSession : ISkiaGpuRenderSessionWithPartialPresentation, IPartialPresentationFeature
         {
             private readonly GRBackendRenderTarget _backendRenderTarget;
             private readonly SKSurface _surface;
             private readonly IGlPlatformSurfaceRenderingSession _glSession;
+            private readonly IPartialPresentationFeature? _partialPresentation;
+            private bool _succeeded;
 
             public GlGpuSession(GRContext grContext,
                 GRBackendRenderTarget backendRenderTarget,
@@ -39,17 +41,37 @@ namespace Avalonia.Skia
                 _backendRenderTarget = backendRenderTarget;
                 _surface = surface;
                 _glSession = glSession;
+                _partialPresentation =
+                    (glSession as IGlPlatformSurfaceRenderingSessionWithPartialPresentation)?.PartialPresentation;
                 
                 SurfaceOrigin = glSession.IsYFlipped ? GRSurfaceOrigin.TopLeft : GRSurfaceOrigin.BottomLeft;
             }
             public void Dispose()
             {
-                _surface.Canvas.Flush();
-                _surface.Dispose();
-                _backendRenderTarget.Dispose();
-                GrContext.Flush();
-                _glSession.Dispose();
+                try
+                {
+                    using (_backendRenderTarget)
+                    using (_surface)
+                        _surface.Canvas.Flush();
+                    GrContext.Flush();
+                    // Flush can fail during disposal, after the caller finished drawing.
+                    if (_succeeded)
+                        _partialPresentation?.Succeeded();
+                }
+                finally
+                {
+                    _glSession.Dispose();
+                }
             }
+
+            public IPartialPresentationFeature? PartialPresentation => _partialPresentation != null ? this : null;
+
+            public IPartialPresentationBuffer? Buffer => _partialPresentation?.Buffer;
+
+            public void SetDirtyRects(ReadOnlySpan<PixelRect> frameDirtyRects, ReadOnlySpan<PixelRect> bufferDirtyRects) =>
+                _partialPresentation!.SetDirtyRects(frameDirtyRects, bufferDirtyRects);
+
+            public void Succeeded() => _succeeded = true;
             
             public GRSurfaceOrigin SurfaceOrigin { get; }
 
@@ -74,7 +96,6 @@ namespace Avalonia.Skia
                 var scaling = glSession.Scaling;
                 if (size.Width <= 0 || size.Height <= 0 || scaling < 0)
                 {
-                    glSession.Dispose();
                     throw new InvalidOperationException(
                         $"Can't create drawing context for surface with {size} size and {scaling} scaling");
                 }
@@ -93,6 +114,11 @@ namespace Avalonia.Skia
                     var surface = SKSurface.Create(_grContext, renderTarget,
                         glSession.IsYFlipped ? GRSurfaceOrigin.TopLeft : GRSurfaceOrigin.BottomLeft,
                         colorType, _surfaceProperties);
+                    if (surface == null)
+                    {
+                        renderTarget.Dispose();
+                        throw new InvalidOperationException("Unable to wrap the OpenGL framebuffer.");
+                    }
 
                     success = true;
 

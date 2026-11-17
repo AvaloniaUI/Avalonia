@@ -34,9 +34,10 @@ public abstract partial class BindingExpressionTests : ScopedTestBase
             Optional<TIn> source,
             object? targetNullValue,
             string? stringFormat,
-            UpdateSourceTrigger updateSourceTrigger)
+            UpdateSourceTrigger updateSourceTrigger,
+            TargetClass? target)
         {
-            var target = new TargetClass { DataContext = dataContext };
+            target ??= new TargetClass { DataContext = dataContext };
             var (path, resolver) = BindingPathFromExpressionBuilder.Build(expression);
             var fallback = fallbackValue.HasValue ? fallbackValue.Value : AvaloniaProperty.UnsetValue;
             List<ExpressionNode>? nodes = null;
@@ -90,9 +91,10 @@ public abstract partial class BindingExpressionTests : ScopedTestBase
             Optional<TIn> source,
             object? targetNullValue,
             string? stringFormat,
-            UpdateSourceTrigger updateSourceTrigger)
+            UpdateSourceTrigger updateSourceTrigger,
+            TargetClass? target)
         {
-            var target = new TargetClass { DataContext = dataContext };
+            target ??= new TargetClass { DataContext = dataContext };
             var nodes = new List<ExpressionNode>();
             var fallback = fallbackValue.HasValue ? fallbackValue.Value : AvaloniaProperty.UnsetValue;
             var path = BindingExpressionVisitor<TIn>.BuildPath(expression);
@@ -198,7 +200,8 @@ public abstract partial class BindingExpressionTests : ScopedTestBase
         Optional<TIn> source = default,
         object? targetNullValue = null,
         string? stringFormat = null,
-        UpdateSourceTrigger updateSourceTrigger = UpdateSourceTrigger.PropertyChanged)
+        UpdateSourceTrigger updateSourceTrigger = UpdateSourceTrigger.PropertyChanged,
+        TargetClass? target = null)
             where TIn : class?
     {
         targetProperty ??= typeof(TOut) switch
@@ -223,7 +226,8 @@ public abstract partial class BindingExpressionTests : ScopedTestBase
             source,
             targetNullValue,
             stringFormat,
-            updateSourceTrigger);
+            updateSourceTrigger,
+            target);
     }
 
     private protected abstract (TargetClass, BindingExpression) CreateTargetCore<TIn, TOut>(
@@ -239,7 +243,8 @@ public abstract partial class BindingExpressionTests : ScopedTestBase
         Optional<TIn> source,
         object? targetNullValue,
         string? stringFormat,
-        UpdateSourceTrigger updateSourceTrigger)
+        UpdateSourceTrigger updateSourceTrigger,
+        TargetClass? target)
             where TIn : class?;
 
     private static IDisposable StartWithFocusSupport()

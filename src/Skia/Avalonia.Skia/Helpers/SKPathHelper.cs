@@ -17,25 +17,25 @@ internal static class SKPathHelper
         using var iter = path.CreateIterator(true);
         SKPathVerb verb;
         var points = new SKPoint[4];
-        var rv = new SKPath();
+        using var builder = new SKPathBuilder();
         while ((verb = iter.Next(points)) != SKPathVerb.Done)
         {
             if (verb == SKPathVerb.Move)
-                rv.MoveTo(points[0]);
+                builder.MoveTo(points[0]);
             else if (verb == SKPathVerb.Line)
-                rv.LineTo(points[1]);
+                builder.LineTo(points[1]);
             else if (verb == SKPathVerb.Close)
-                rv.Close();
+                builder.Close();
             else if (verb == SKPathVerb.Quad)
-                rv.QuadTo(points[1], points[2]);
+                builder.QuadTo(points[1], points[2]);
             else if (verb == SKPathVerb.Cubic)
-                rv.CubicTo(points[1], points[2], points[3]);
+                builder.CubicTo(points[1], points[2], points[3]);
             else if (verb == SKPathVerb.Conic)
-                rv.ConicTo(points[1], points[2], iter.ConicWeight());
+                builder.ConicTo(points[1], points[2], iter.ConicWeight());
 
         }
 
-        return rv;
+        return builder.Detach();
     }
 
     /// <summary>
@@ -59,10 +59,10 @@ internal static class SKPathHelper
         if (DrawingContextHelper.TryCreateDashEffect(pen, out var dashEffect))
             paint.PathEffect = dashEffect;
 
-        var result = new SKPath();
-        paint.GetFillPath(path, result);
+        using var resultBuilder = new SKPathBuilder();
+        paint.GetFillPath(path, resultBuilder);
         paint.PathEffect?.Dispose();
         SKPaintCache.Shared.ReturnReset(paint);
-        return result;
+        return resultBuilder.Detach();
     }
 }

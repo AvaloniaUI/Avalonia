@@ -13,10 +13,10 @@ namespace Avalonia.Skia
 
         public EllipseGeometryImpl(Rect rect)
         {
-            var path = new SKPath();
-            path.AddOval(rect.ToSKRect());
+            using var builder = new SKPathBuilder();
+            builder.AddOval(rect.ToSKRect());
 
-            StrokePath = path;
+            StrokePath = builder.Detach();
             Bounds = rect;
         }
     }
