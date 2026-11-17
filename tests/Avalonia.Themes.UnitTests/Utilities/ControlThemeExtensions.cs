@@ -8,7 +8,6 @@ using Avalonia.Controls.Templates;
 using Avalonia.LogicalTree;
 using Avalonia.Styling;
 using Avalonia.VisualTree;
-using Xunit;
 
 namespace Avalonia.Themes.UnitTests.Utilities;
 
