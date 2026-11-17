@@ -22,12 +22,9 @@
     <ProjectReference Include="../../HarfBuzz/Avalonia.HarfBuzz/Avalonia.HarfBuzz.csproj" />
   </ItemGroup>
 
-  <!-- .NET 11 requires Skia/HarfBuzz compiled with EMSDK 5.0.6 -->
-  <!-- These Skia/HarfBuzz versions are newer than what we ship with Avalonia.Skia and Avalonia.HarfBuzz -->
+  <!-- .NET 11 requires HarfBuzz compiled with EMSDK 5.0.6 -->
+  <!-- These HarfBuzz versions are newer than what we ship with Avalonia.HarfBuzz -->
   <ItemGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net11.0'))">
-    <PackageReference Include="SkiaSharp" VersionOverride="4.151.2" />
-    <PackageReference Include="SkiaSharp.NativeAssets.Linux" VersionOverride="4.151.2" />
-    <PackageReference Include="SkiaSharp.NativeAssets.WebAssembly" VersionOverride="4.151.2" />
     <PackageReference Include="HarfBuzzSharp" VersionOverride="14.2.1.200" />
     <PackageReference Include="HarfBuzzSharp.NativeAssets.Linux" VersionOverride="14.2.1.200" />
     <PackageReference Include="HarfBuzzSharp.NativeAssets.WebAssembly" VersionOverride="14.2.1.200" />
