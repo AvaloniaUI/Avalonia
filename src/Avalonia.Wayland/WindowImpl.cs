@@ -38,6 +38,9 @@ internal partial class WindowImpl : WindowBaseImpl, IWindowImpl, IWaylandOptions
     private string? _title;
     private string? _appId;
     private FallbackStorageProvider? _storageProvider;
+    private readonly string? _sessionName = WaylandSession.Take();
+    // the size restored from the compositor session, kept over the window's requested size until shown
+    private Size? _restoredSize;
 
     public WindowImpl(WaylandWorkerClient client) : base(client)
     {
@@ -186,6 +189,7 @@ internal partial class WindowImpl : WindowBaseImpl, IWindowImpl, IWaylandOptions
             // TODO: Re-apply window state
             CurrentSink = new Sink(this, true);
         }
+        _restoredSize = null;
 
         Client.AnyThreadWakeupRenderLoop();
     }
@@ -361,6 +365,12 @@ internal partial class WindowImpl : WindowBaseImpl, IWindowImpl, IWaylandOptions
         if (SizeNearlyEquals(clientSize.Width, ClientSize.Width) &&
             SizeNearlyEquals(clientSize.Height, ClientSize.Height))
             return;
+        // Window adopts a size reported while it is being shown
+        if (_restoredSize is { } restored)
+        {
+            Resized?.Invoke(restored, reason);
+            return;
+        }
         try
         {
             _resizeStackDepth++;

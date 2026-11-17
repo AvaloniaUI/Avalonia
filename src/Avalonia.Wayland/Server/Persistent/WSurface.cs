@@ -13,6 +13,7 @@ using NWayland.Protocols.FractionalScaleV1;
 using NWayland.Protocols.Viewporter;
 using NWayland.Protocols.Wayland;
 using NWayland.Protocols.XdgDecorationUnstableV1;
+using NWayland.Protocols.XdgSessionManagementV1;
 using NWayland.Protocols.XdgShell;
 
 namespace Avalonia.Wayland.Server.Persistent;
@@ -648,9 +649,14 @@ class WXdgTopLevel : WXdgShellSurface, IWXdgTopLevel
     // TODO: Wait for V2 version of the protocol to gain more adoption and implement it on our side
     private bool _csdSticky;
 
-    public WXdgTopLevel(WaylandWorker worker, WXdgTopLevelEventSinkProxy eventSink) : base(worker, eventSink)
+    private readonly string? _sessionName;
+    private XdgToplevelSessionV1? _toplevelSession;
+
+    public WXdgTopLevel(WaylandWorker worker, WXdgTopLevelEventSinkProxy eventSink, string? sessionName)
+        : base(worker, eventSink)
     {
         _topLevelEventSink = eventSink;
+        _sessionName = sessionName;
     }
 
     public override void OnConnected(WaylandConnection connection, WaylandGlobals globals)
@@ -660,6 +666,9 @@ class WXdgTopLevel : WXdgShellSurface, IWXdgTopLevel
             throw new AvaloniaWaylandException("Expected at least one wl_output at this point");
         _pendingBatch = new();
         _xdgTopLevel = XdgSurface!.GetToplevel(new TopLevelListener(this));
+        // xdg-session-management: must precede the toplevel's first commit
+        if (_sessionName != null && Globals!.Session is { } session)
+            _toplevelSession = session.Restore(_xdgTopLevel, _sessionName, () => _pendingBatch.SessionRestored = true);
         if (!_csdSticky && Globals.XdgDecorationManager is { } decoMgr)
         {
             _decoration = decoMgr.GetToplevelDecoration(
@@ -861,6 +870,8 @@ class WXdgTopLevel : WXdgShellSurface, IWXdgTopLevel
         _activeExports.Clear();
         _decoration?.Destroy();
         _decoration = null;
+        _toplevelSession?.Destroy();
+        _toplevelSession = null;
         _xdgTopLevel?.Destroy();
         _xdgTopLevel = null;
         _pendingBatch = new();
