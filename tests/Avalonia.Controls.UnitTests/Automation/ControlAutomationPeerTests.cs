@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
@@ -260,6 +262,54 @@ namespace Avalonia.Controls.UnitTests.Automation
         private static AutomationPeer CreatePeer(Control control)
         {
             return ControlAutomationPeer.CreatePeerForElement(control);
+        }
+
+        public class CustomRoles : ScopedTestBase
+        {
+            private static readonly Dictionary<AutomationControlType, string> s_customRoles = new()
+            {
+                { AutomationControlType.Button, "CustomButton" },
+                { AutomationControlType.CheckBox, "CustomCheckBox" },
+                { AutomationControlType.Calendar, "CustomCalendar" },
+                { AutomationControlType.ComboBox, "CustomSpinner" },
+            };
+
+            /// <summary>
+            /// A test to simulate custom role lookups currently used in our Android backup  
+            /// </summary>
+            [Theory()]
+            [InlineData("Button", "CustomButton")]
+            [InlineData("ToggleButton", "CustomToggleButton")]
+            [InlineData("CheckBox", "CustomCheckBox")]
+            [InlineData("Calendar", "CustomCalendar")]
+            [InlineData("TimePicker", "CustomTimePicker")]
+            public void Custom_Role_For_Peer_Is_Prioritized(string controlName, string customRole)
+            {
+                Control? control = controlName switch
+                {
+                    "ToggleButton" => new ToggleButton(),
+                    "CheckBox" => new CheckBox(),
+                    "Button" => new Button(),
+                    "Calendar" => new Calendar(),
+                    "TimePicker" => new TimePicker(),
+                    _ => null
+                };
+                Assert.NotNull(control);
+                var peer = CreatePeer(control);
+                var automationType = peer.GetAutomationControlType();
+                s_customRoles.TryGetValue(automationType, out var role);
+                var type = control.GetType();
+
+                role = automationType switch
+                {
+                    AutomationControlType.Button when type.IsAssignableTo(typeof(ToggleButton)) => "CustomToggleButton",
+                    AutomationControlType.Button when type.IsAssignableTo(typeof(ToggleSwitch)) => "CustomToggleSwitch",
+                    AutomationControlType.Custom when type.IsAssignableTo(typeof(TimePicker)) => "CustomTimePicker",
+                    _ => role
+                };
+
+                Assert.Equal(customRole, role);
+            }
         }
     }
 }
