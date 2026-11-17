@@ -194,6 +194,30 @@ namespace Avalonia.Controls.UnitTests.Automation
                 parentPeer = Assert.IsAssignableFrom<ControlAutomationPeer>(target.GetParent());
                 Assert.Same(root2, parentPeer.Owner);
             }
+
+            [Fact]
+            public void Parent_Kept_When_New_Parent_Reads_Children_Before_Old_Parent()
+            {
+                var border = new Border();
+                var oldParent = new Decorator { Child = border };
+                var newParent = new Decorator();
+                var root = new StackPanel { Children = { oldParent, newParent } };
+                var oldParentPeer = CreatePeer(oldParent);
+                var newParentPeer = CreatePeer(newParent);
+                var target = CreatePeer(border);
+
+                CreatePeer(root).GetChildren();
+                Assert.Same(oldParentPeer, target.GetParent());
+
+                oldParent.Child = null;
+                newParent.Child = border;
+
+                // An automation client may read the new parent's children before the old parent's.
+                Assert.Contains(target, newParentPeer.GetChildren());
+                Assert.DoesNotContain(target, oldParentPeer.GetChildren());
+
+                Assert.Same(newParentPeer, target.GetParent());
+            }
         }
 
         public class AutomationIdNotifications : ScopedTestBase
