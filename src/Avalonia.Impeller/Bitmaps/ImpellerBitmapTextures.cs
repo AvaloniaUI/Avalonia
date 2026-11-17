@@ -79,7 +79,7 @@ internal static class ImpellerBitmapTextures
             Mip_count = 1
         };
         // Without a release callback Impeller copies the contents.
-        return context.ImpellerContext.TextureCreateWithContentsNew(descriptor, pixels, IntPtr.Zero);
+        return context.ImpellerContext.TextureCreateWithContentsNew(descriptor, pixels);
     }
 
     private sealed unsafe class NativePixels : IImpellerUnmanagedMemory, IDisposable

@@ -23,16 +23,17 @@ internal static class ImpellerGlyphRuns
         using var font = run.Typeface.CreateSKFont((float)run.FontRenderingEmSize);
         font.Hinting = SKFontHinting.None;
 
-        using var path = new SKPath();
+        using var builder = new SKPathBuilder();
         var glyphs = run.GlyphIndices;
         var positions = run.GlyphPositions;
         for (var i = 0; i < glyphs.Length; i++)
         {
             using var glyph = font.GetGlyphPath(glyphs[i]);
             if (glyph is { IsEmpty: false })
-                path.AddPath(glyph, positions[i].X, positions[i].Y);
+                builder.AddPath(glyph, positions[i].X, positions[i].Y);
         }
 
+        using var path = builder.Detach();
         return ImpellerPaths.Convert(path);
     }
 }

@@ -181,9 +181,10 @@ internal sealed partial class ImpellerDrawingContext : IDrawingContextImpl, IDra
 
     private void FillDashedLineOutline(Point p1, Point p2, IPen pen)
     {
-        using var line = new SKPath();
-        line.MoveTo(p1.ToSKPoint());
-        line.LineTo(p2.ToSKPoint());
+        using var builder = new SKPathBuilder();
+        builder.MoveTo(p1.ToSKPoint());
+        builder.LineTo(p2.ToSKPoint());
+        using var line = builder.Detach();
         using var outline = ImpellerPaths.CreateDashedOutline(line, pen);
         using var fill = ImpellerPaintBuilder.CreateFill(pen.Brush, new Rect(p1, p2), this);
         if (outline is not null && fill is { } fl)

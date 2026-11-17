@@ -53,14 +53,14 @@ internal sealed class ImpellerDashedOutlineCache : IDisposable
 
     private static SKPath Build(RoundedRect shape, bool isOval)
     {
-        var path = new SKPath();
+        using var builder = new SKPathBuilder();
         if (isOval)
-            path.AddOval(shape.Rect.ToSKRect());
+            builder.AddOval(shape.Rect.ToSKRect());
         else if (shape.IsRounded)
-            path.AddRoundRect(shape.ToSKRoundRect());
+            builder.AddRoundRect(shape.ToSKRoundRect());
         else
-            path.AddRect(shape.Rect.ToSKRect());
-        return path;
+            builder.AddRect(shape.Rect.ToSKRect());
+        return builder.Detach();
     }
 
     private static int DashesHash(IReadOnlyList<double>? dashes)
