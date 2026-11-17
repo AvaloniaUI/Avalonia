@@ -66,17 +66,6 @@ namespace Avalonia.Android
             { AutomationControlType.Text, "android.widget.EditText" },
         };
 
-        private static readonly Dictionary<Type, string> s_typeRoles = new()
-        {
-            { typeof(CalendarDatePicker), "android.widget.DatePicker" },
-            { typeof(DatePicker), "android.widget.DatePicker" },
-            { typeof(ListBox), "android.widget.ListView" },
-            { typeof(NumericUpDown), "android.widget.NumberPicker" },
-            { typeof(TimePicker), "android.widget.TimePicker" },
-            { typeof(ToggleButton), "android.widget.ToggleButton" },
-            { typeof(ToggleSwitch), "android.widget.Switch" },
-        };
-
         private readonly Dictionary<int, AutomationPeer> _peers;
         private readonly Dictionary<AutomationPeer, int> _peerIds;
 
@@ -297,27 +286,22 @@ namespace Avalonia.Android
                 if (AutomationProperties.GetClassNameOverride(controlPeer.Owner) is string classNameOverride)
                 {
                     return classNameOverride;
-                }
+                };
 
                 var controlType = controlPeer.Owner.GetType();
-
-                string? role;
-
-                do
-                {
-                    if (s_typeRoles.TryGetValue(controlType, out role))
-                    {
-                        return role;
-                    }
-                    controlType = controlType.BaseType;
-
-                } while (controlType != null && controlType != typeof(Visual));
-
                 var automationType = peer.GetAutomationControlType();
-                if (s_roles.TryGetValue(automationType, out role))
+                s_roles.TryGetValue(automationType, out var role);
+
+                return automationType switch
                 {
-                    return role;
-                }
+                    AutomationControlType.Button when controlType.IsAssignableTo(typeof(ToggleSwitch)) => "android.widget.Switch",
+                    AutomationControlType.Button when controlType.IsAssignableTo(typeof(ToggleButton)) => "android.widget.ToggleButton",
+                    AutomationControlType.Spinner when controlType.IsAssignableTo(typeof(NumericUpDown)) => "android.widget.NumberPicker",
+                    AutomationControlType.Custom when controlType.IsAssignableTo(typeof(DatePicker)) => "android.widget.DatePicker",
+                    AutomationControlType.Button when controlType.IsAssignableTo(typeof(CalendarDatePicker)) => "android.widget.DatePicker",
+                    AutomationControlType.Custom when controlType.IsAssignableTo(typeof(TimePicker)) => "android.widget.TimePicker",
+                    _ => role
+                };
             }
             return peer.GetClassName();
         }
