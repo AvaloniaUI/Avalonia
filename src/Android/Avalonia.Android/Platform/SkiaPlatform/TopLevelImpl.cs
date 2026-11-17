@@ -44,6 +44,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         private readonly AndroidPlatformFeedback _feedback;
         private SurfaceViewImpl? _view;
         private WindowTransparencyLevel _transparencyLevel;
+        private PixelPoint _position;
 
         public TopLevelImpl(AvaloniaView avaloniaView, bool placeOnTop = false)
         {
@@ -80,6 +81,18 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             var framebuffer = new FramebufferManager(this);
             Surfaces = [gl, framebuffer, _view];
             Handle = new AndroidViewControlHandle(_view);
+
+            avaloniaView.LayoutChange += AvaloniaView_LayoutChange;
+        }
+
+        private void AvaloniaView_LayoutChange(object? sender, View.LayoutChangeEventArgs e)
+        {
+            if (_context is global::Android.App.Activity activity)
+            {
+                int[] position = new int[2];
+                _view?.GetLocationOnScreen(position);
+                _position = new PixelPoint(position[0], position[1]);
+            }
         }
 
         public IInputRoot? InputRoot { get; private set; }
@@ -113,12 +126,14 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public Point PointToClient(PixelPoint point)
         {
-            return point.ToPoint(RenderScaling);
+            var translatedPoint = point - _position;
+            return translatedPoint.ToPoint(RenderScaling);
         }
 
         public PixelPoint PointToScreen(Point point)
         {
-            return PixelPoint.FromPoint(point, RenderScaling);
+            var pixelPoint = PixelPoint.FromPoint(point, RenderScaling);
+            return _position + pixelPoint;
         }
 
         public void SetCursor(ICursorImpl? cursor)
