@@ -451,7 +451,8 @@ namespace Avalonia.Controls
         /// <inheritdoc />
         protected override string? CoerceText(string? text)
         {
-            if (!_ignoreTextChanges && MaskProvider is { } maskProvider)
+            // The display string can hold password characters, which some masks accept as input.
+            if (!_ignoreTextChanges && MaskProvider is { } maskProvider && text != maskProvider.ToDisplayString())
             {
                 if (string.IsNullOrEmpty(text))
                     maskProvider.Clear();

@@ -515,6 +515,50 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Theory]
+        [InlineData("&&&&")]
+        [InlineData("CCCC")]
+        public void Changing_PasswordChar_Should_Keep_Text_When_Mask_Accepts_PasswordChar(string mask)
+        {
+            using (Start())
+            {
+                var target = new MaskedTextBox
+                {
+                    Template = CreateTemplate(),
+                    Mask = mask,
+                    Text = "abcd",
+                    PasswordChar = '*'
+                };
+
+                Assert.Equal("****", target.Text);
+
+                target.PasswordChar = '\0';
+
+                Assert.Equal("abcd", target.Text);
+            }
+        }
+
+        [Fact]
+        public void Backspace_With_PasswordChar_Should_Keep_Text_When_Mask_Accepts_PasswordChar()
+        {
+            using (Start())
+            {
+                var target = new MaskedTextBox
+                {
+                    Template = CreateTemplate(),
+                    Mask = "&&&&",
+                    Text = "abcd",
+                    PasswordChar = '*'
+                };
+
+                target.CaretIndex = 4;
+                RaiseKeyEvent(target, Key.Back, KeyModifiers.None);
+                target.PasswordChar = '\0';
+
+                Assert.Equal("abc_", target.Text);
+            }
+        }
+
+        [Theory]
         [InlineData("00/00/0000", "12102000", "12/10/2000")]
         [InlineData("LLLL", "дбs", "дбs_")]
         [InlineData("AA#00", "S2 33", "S2_33")]
