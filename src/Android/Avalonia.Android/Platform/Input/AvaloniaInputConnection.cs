@@ -12,7 +12,7 @@ using Java.Lang;
 
 namespace Avalonia.Android.Platform.Input
 {
-    internal class AvaloniaInputConnection : Object, IInputConnection
+    internal partial class AvaloniaInputConnection : Object, IInputConnection
     {
         private readonly TopLevelImpl _toplevel;
         private readonly IAndroidInputMethod _inputMethod;
@@ -27,6 +27,11 @@ namespace Avalonia.Android.Platform.Input
             _inputMethod = inputMethod;
             _editBuffer = new TextEditBuffer(_inputMethod, toplevel);
             _commandQueue = new ConcurrentQueue<EditCommand>();
+
+            if (inputMethod.Client is IStructuredTextInput structured)
+            {
+                AttachStructured(structured);
+            }
         }
 
         public int ExtractedTextToken { get; private set; }
@@ -46,6 +51,12 @@ namespace Avalonia.Android.Platform.Input
 
         internal void UpdateState()
         {
+            if (_structured is { } structured)
+            {
+                UpdateStructuredState(structured);
+                return;
+            }
+
             var selection = _editBuffer.Selection;
 
             if (IsInMonitorMode && InputMethod.Client is { } client)
@@ -62,6 +73,11 @@ namespace Avalonia.Android.Platform.Input
         {
             if (InputMethod.IsActive)
             {
+                if (_structured is { } structured)
+                {
+                    return StructuredSetComposingRegion(structured, start, end);
+                }
+
                 QueueCommand(new CompositionRegionCommand(start, end));
             }
             return InputMethod.IsActive;
@@ -76,6 +92,11 @@ namespace Avalonia.Android.Platform.Input
 
             if (InputMethod.IsActive)
             {
+                if (_structured is { } structured)
+                {
+                    return StructuredSetComposingText(structured, text.ToString() ?? string.Empty, newCursorPosition);
+                }
+
                 var compositionText = text.SubSequence(0, text.Length());
                 QueueCommand(new CompositionTextCommand(compositionText, newCursorPosition));
             }
@@ -87,6 +108,11 @@ namespace Avalonia.Android.Platform.Input
         {
             if (InputMethod.IsActive)
             {
+                if (_structured is { } structured)
+                {
+                    return StructuredSetSelection(structured, start, end);
+                }
+
                 if (IsInUpdate)
                     new SelectionCommand(start, end).Apply(EditBuffer);
                 else
@@ -116,7 +142,17 @@ namespace Avalonia.Android.Platform.Input
                 IsInUpdate = false;
             }
 
-            UpdateState();
+            // A structured client reports its state once, when the outermost batch ends, so the IME never
+            // sees the intermediate selections of one edit.
+            if (_structured is null)
+            {
+                UpdateState();
+            }
+            else if (!IsInBatchEdit && _structuredStatePending)
+            {
+                UpdateState();
+            }
+
             return IsInBatchEdit;
         }
 
@@ -129,6 +165,11 @@ namespace Avalonia.Android.Platform.Input
 
             if (InputMethod.IsActive)
             {
+                if (_structured is { } structured)
+                {
+                    return StructuredCommitText(structured, text.ToString() ?? string.Empty, newCursorPosition);
+                }
+
                 var committedText = text.SubSequence(0, text.Length());
                 QueueCommand(new CommitTextCommand(committedText, newCursorPosition));
             }
@@ -140,6 +181,11 @@ namespace Avalonia.Android.Platform.Input
         {
             if (InputMethod.IsActive)
             {
+                if (_structured is { } structured)
+                {
+                    return StructuredDeleteSurroundingText(structured, beforeLength, afterLength, inCodePoints: false);
+                }
+
                 QueueCommand(new DeleteRegionCommand(beforeLength, afterLength));
             }
 
@@ -187,13 +233,24 @@ namespace Avalonia.Android.Platform.Input
 
         public ExtractedText? GetExtractedText(ExtractedTextRequest? request, [GeneratedEnum] GetTextFlags flags)
         {
-            IsInMonitorMode = ((int)flags & (int)TextExtractFlags.Monitor) != 0;
+            // A one-off read leaves an established monitoring session in place; only a monitoring request
+            // starts one or replaces its token.
+            var monitor = ((int)flags & (int)TextExtractFlags.Monitor) != 0;
 
-            ExtractedTextToken = IsInMonitorMode ? request?.Token ?? 0 : ExtractedTextToken;
+            if (monitor)
+            {
+                IsInMonitorMode = true;
+                ExtractedTextToken = request?.Token ?? 0;
+            }
 
             if (!_inputMethod.IsActive)
             {
                 return null;
+            }
+
+            if (_structured is { } structured)
+            {
+                return StructuredGetExtractedText(structured, request, monitor);
             }
 
             return _editBuffer.ExtractedText;
@@ -231,6 +288,7 @@ namespace Avalonia.Android.Platform.Input
 
         public void CloseConnection()
         {
+            Detach();
             _commandQueue.Clear();
             _batchLevel = 0;
         }
@@ -254,6 +312,11 @@ namespace Avalonia.Android.Platform.Input
         {
             if (InputMethod.IsActive)
             {
+                if (_structured is { } structured)
+                {
+                    return StructuredDeleteSurroundingText(structured, beforeLength, afterLength, inCodePoints: true);
+                }
+
                 QueueCommand(new DeleteRegionInCodePointsCommand(beforeLength, afterLength));
             }
 
@@ -264,6 +327,11 @@ namespace Avalonia.Android.Platform.Input
         {
             if (InputMethod.IsActive)
             {
+                if (_structured is { } structured)
+                {
+                    return StructuredFinishComposingText(structured);
+                }
+
                 QueueCommand(new FinishComposingCommand());
             }
 
@@ -273,22 +341,42 @@ namespace Avalonia.Android.Platform.Input
         [return: GeneratedEnum]
         public CapitalizationMode GetCursorCapsMode([GeneratedEnum] CapitalizationMode reqModes)
         {
+            if (_structured is { } structured)
+            {
+                return StructuredGetCursorCapsMode(structured, reqModes);
+            }
+
             return TextUtils.GetCapsMode(_editBuffer.Text, _editBuffer.Selection.Start, reqModes);
         }
 
         public ICharSequence? GetSelectedTextFormatted([GeneratedEnum] GetTextFlags flags)
         {
+            if (_structured is { } structured)
+            {
+                return StructuredGetSelectedText(structured);
+            }
+
             return new Java.Lang.String(_editBuffer.SelectedText ?? "");
         }
 
         public ICharSequence? GetTextAfterCursorFormatted(int n, [GeneratedEnum] GetTextFlags flags)
         {
+            if (_structured is { } structured)
+            {
+                return StructuredGetTextAfterCursor(structured, n);
+            }
+
             var end = Math.Min(_editBuffer.Selection.End, _editBuffer.Text.Length);
             return SafeSubstring(_editBuffer.Text, end, Math.Min(n, _editBuffer.Text.Length - end));
         }
 
         public ICharSequence? GetTextBeforeCursorFormatted(int n, [GeneratedEnum] GetTextFlags flags)
         {
+            if (_structured is { } structured)
+            {
+                return StructuredGetTextBeforeCursor(structured, n);
+            }
+
             var start = Math.Max(0, _editBuffer.Selection.Start - n);
             var length = _editBuffer.Selection.Start - start;
             return SafeSubstring(_editBuffer.Text, start, length);

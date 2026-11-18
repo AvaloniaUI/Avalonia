@@ -23,6 +23,9 @@ namespace Avalonia.Android.Platform.Input
         public InputMethodManager IMM { get; }
 
         void OnBatchEditEnded();
+
+        /// <summary>Restarts input, so the IME asks for a new connection and re-reads the field.</summary>
+        void RestartInput();
     }
 
     enum CustomImeFlags
@@ -64,6 +67,8 @@ namespace Avalonia.Android.Platform.Input
 
         public InputMethodManager IMM => _imm;
 
+        public void RestartInput() => _imm.RestartInput(View);
+
         public void Reset()
         {
 
@@ -79,6 +84,9 @@ namespace Avalonia.Android.Platform.Input
             }
 
             _client = client;
+
+            // The connection served the previous client; it must not report this one's state.
+            _inputConnection?.Detach();
 
             if (IsActive)
             {
@@ -121,6 +129,13 @@ namespace Avalonia.Android.Platform.Input
         {
             if (Client is null || _inputConnection is null || _inputConnection.IsInUpdate)
             {
+                return;
+            }
+
+            // The connection reports a structured client's text, selection and composition itself.
+            if (Client is IStructuredTextInput)
+            {
+                _inputConnection.UpdateState();
                 return;
             }
 
@@ -170,7 +185,18 @@ namespace Avalonia.Android.Platform.Input
                     return null!;
                 }
 
-                _inputConnection = new AvaloniaInputConnection(topLevel, this);
+                _inputConnection?.Detach();
+                _inputConnection = new AvaloniaInputConnection(topLevel, this)
+                {
+                    IsMultiline = options.Multiline,
+                    IsSecure = options.ContentType is TextInputContentType.Password or TextInputContentType.Pin
+                        || options.IsSensitive
+                };
+
+                if (_client is IStructuredTextInput)
+                {
+                    (outAttrs.InitialSelStart, outAttrs.InitialSelEnd) = _inputConnection.InitialSelection;
+                }
 
                 outAttrs.InputType = options.ContentType switch
                 {
