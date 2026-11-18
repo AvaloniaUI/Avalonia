@@ -884,6 +884,26 @@ interface IAvnTextInputMethodClient : IUnknown
 {
     void SetPreeditText(char* preeditText);
     void SelectInSurroundingText(int start, int end);
+    // Non-zero when the client composes in its own document. The view then answers every
+    // NSTextInputClient query through the members below instead of from the surrounding text, and
+    // every offset is a UTF-16 offset in the text block around the selection.
+    int IsStructured();
+    int GetDocumentLength();
+    IAvnString* GetText(int start, int length);
+    void GetSelectedRange(int* start, int* length);
+    // start = -1 when there is no composition.
+    void GetMarkedRange(int* start, int* length);
+    // setMarkedText:selectedRange:replacementRange:. The selection is relative to the marked text;
+    // replacementStart = -1 when AppKit passed NSNotFound.
+    void SetMarkedText(char* text, int selectionStart, int selectionLength, int replacementStart, int replacementLength);
+    // insertText:replacementRange:. Returns non-zero when the text was applied as a composition commit or
+    // a replacement; zero leaves it to the view to deliver as typed text.
+    int InsertText(char* text, int replacementStart, int replacementLength);
+    void UnmarkText();
+    // The index of the character under point (top level coordinates), or -1.
+    int GetCharacterIndexFromPoint(AvnPoint point);
+    // The rectangle (top level coordinates) of the part of the range on its first line, and that part.
+    void GetFirstRectForRange(int start, int length, AvnRect* rect, int* actualStart, int* actualLength);
 }
 
 [uuid(1382a29f-e260-4c7a-b83f-c99fc72e27c2)]
