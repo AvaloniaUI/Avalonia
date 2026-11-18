@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Avalonia.Media.TextFormatting;
 
-public class CollapseSymbolRun(IEnumerable<TextRun> collapsedRuns, DrawableTextRun symbol) : DrawableTextRun
+public class CollapseSymbolRun(IEnumerable<TextRun> collapsedRuns, DrawableTextRun symbol) : DrawableTextRun, IDisposable
 {
     /// <summary>
     /// Gets the underlying symbol to draw.
@@ -26,4 +26,21 @@ public class CollapseSymbolRun(IEnumerable<TextRun> collapsedRuns, DrawableTextR
     public sealed override TextRunProperties? Properties => Symbol.Properties;
 
     public override void Draw(DrawingContext drawingContext, Point origin) => Symbol.Draw(drawingContext, origin);
+
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+        Dispose(true);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            foreach (var run in CollapsedRuns.Prepend(Symbol).OfType<IDisposable>())
+            {
+                run.Dispose();
+            }
+        }
+    }
 }

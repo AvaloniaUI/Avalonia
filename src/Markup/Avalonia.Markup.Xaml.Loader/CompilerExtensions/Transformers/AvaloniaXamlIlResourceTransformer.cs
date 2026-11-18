@@ -69,8 +69,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 }
                 else
                 {
+                    // On Mono the order of the Add methods can change, so pick Add(key, value) explicitly.
                     var adder = XamlTransformHelpers.FindPossibleAdders(context, types.IResourceDictionary)
-                        .FirstOrDefault() ?? throw new XamlTransformException("No suitable Add method found for IResourceDictionary.", node);
+                        .FirstOrDefault(m => m.Parameters.Count == 2
+                            && m.Parameters[0].Equals(types.XamlIlTypes.Object)
+                            && m.Parameters[1].Equals(types.XamlIlTypes.Object)) ?? throw new XamlTransformException("No suitable Add method found for IResourceDictionary.", node);
                     return (adder, valueNode);
                 }
             }

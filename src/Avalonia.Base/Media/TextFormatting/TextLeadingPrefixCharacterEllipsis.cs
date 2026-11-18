@@ -46,6 +46,9 @@ namespace Avalonia.Media.TextFormatting
 
         public override FlowDirection FlowDirection { get; }
 
+        /// <inheritdoc/>
+        internal override bool ReturnsOwnedRuns => true;
+
         /// <inheritdoc />
         public override TextRun[]? Collapse(TextLine textLine)
         {
@@ -68,6 +71,8 @@ namespace Avalonia.Media.TextFormatting
 
                 if (MathUtilities.LessThan(Width, shapedSymbol.GlyphRun.Bounds.Width))
                 {
+                    shapedSymbol.Dispose();
+
                     return Array.Empty<TextRun>();
                 }
 
@@ -144,6 +149,7 @@ namespace Avalonia.Media.TextFormatting
 
                                         if (totalFitChars <= _prefixLength || effectivePostSplitRuns is null)
                                         {
+                                            Release(effectivePostSplitRuns);
                                             collapsedRuns[collapseSymbolIndex] = new CollapseSymbolRun(logicalRuns[collapseSymbolIndex..], shapedSymbol);
                                             return collapsedRuns.ToArray();
                                         }
@@ -199,6 +205,10 @@ namespace Avalonia.Media.TextFormatting
                                                             if (splitAt > 0)
                                                             {
                                                                 var splitSuffix = endShapedRun.Split(splitAt);
+
+                                                                // Only the trailing half survives in the suffix.
+                                                                splitSuffix.First?.Dispose();
+                                                                endShapedRun.Dispose();
 
                                                                 reversedSuffix.Add(splitSuffix.Second!);
                                                                 removedRuns.Insert(0, splitSuffix.First!);
@@ -258,6 +268,8 @@ namespace Avalonia.Media.TextFormatting
 
                     charsBeforeCurrentRun += currentRun.Length;
                 }
+
+                shapedSymbol.Dispose();
 
                 return null;
             }

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
+using Avalonia.Platform;
 using Xunit;
 
 namespace Avalonia.Skia.UnitTests.Media.TextFormatting
@@ -515,6 +516,142 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 // The fully-fitting trailing run must survive in the logical-tail suffix.
                 Assert.Contains("B", text);
             }
+        }
+
+        public static TheoryData<string> CollapsingKinds => new()
+        {
+            "TrailingCharacter", "TrailingWord", "LeadingPrefix", "PathSegment"
+        };
+
+        [Theory]
+        [MemberData(nameof(CollapsingKinds))]
+        public void Collapse_Does_Not_Release_Runs_Owned_By_Source_Line(string kind)
+        {
+            // Collapsing borrows the source line's runs. Collapsing the same line repeatedly
+            // must not release them, and disposing the collapsed lines must leave the source
+            // line's shaped buffers alive.
+            using (TextFormatterTests.Start())
+            {
+                var props = new GenericTextRunProperties(Typeface.Default);
+                var sourceRuns = new TextRun[]
+                {
+                    new TextCharacters("alpha\\beta ", props),
+                    new TextCharacters("gamma\\delta ", props),
+                    new TextCharacters("epsilon\\file.txt", props),
+                };
+                var formatter = new TextFormatterImpl();
+                var line = formatter.FormatLine(new FixedRunsTextSource(sourceRuns), 0, double.PositiveInfinity,
+                    new GenericTextParagraphProperties(props));
+                Assert.NotNull(line);
+
+                var sourceShapedRuns = line!.TextRuns.OfType<ShapedTextRun>().ToArray();
+                Assert.True(sourceShapedRuns.Length >= 3, "The line must consist of several shaped runs.");
+
+                var expectedText = LogicalText(line);
+                var collapsedLines = new List<TextLine>();
+
+                for (var fraction = 0.2; fraction < 1.0; fraction += 0.1)
+                {
+                    var width = line.Width * fraction;
+                    var collapsingProperties = CreateCollapsingProperties(kind, width);
+
+                    var first = line.Collapse(collapsingProperties);
+                    var second = line.Collapse(collapsingProperties);
+
+                    Assert.Equal(LogicalText(first), LogicalText(second));
+                    Assert.Equal(expectedText, LogicalText(line));
+
+                    collapsedLines.Add(first);
+                    collapsedLines.Add(second);
+                }
+
+                foreach (var collapsedLine in collapsedLines)
+                {
+                    if (!ReferenceEquals(collapsedLine, line))
+                    {
+                        collapsedLine.Dispose();
+                    }
+                }
+
+                foreach (var run in sourceShapedRuns)
+                {
+                    Assert.True(run.ShapedBuffer.GlyphStorageRefCount > 0,
+                        "Disposing a collapsed line released a run the source line still owns.");
+                }
+
+                Assert.Equal(expectedText, LogicalText(line));
+
+                line.Dispose();
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(CollapsingKinds))]
+        public void Collapse_Releases_Runs_The_Collapsed_Line_Does_Not_Keep(string kind)
+        {
+            // Collapsing creates split halves and an ellipsis symbol. Whatever the collapsed line
+            // does not keep must be released during collapse, and the rest must be released with
+            // the collapsed line. The source runs share one glyph storage with every half split
+            // from them, so a leaked half keeps that storage's reference count raised.
+            using (TextFormatterTests.Start())
+            {
+                var props = new GenericTextRunProperties(Typeface.Default);
+                var sourceRuns = new TextRun[]
+                {
+                    new TextCharacters("alpha\\beta ", props),
+                    new TextCharacters("gamma\\delta ", props),
+                    new TextCharacters("epsilon\\file.txt", props),
+                };
+                var formatter = new TextFormatterImpl();
+                using var line = formatter.FormatLine(new FixedRunsTextSource(sourceRuns), 0, double.PositiveInfinity,
+                    new GenericTextParagraphProperties(props));
+                Assert.NotNull(line);
+
+                var sourceBuffers = line!.TextRuns.OfType<ShapedTextRun>().Select(x => x.ShapedBuffer).ToArray();
+                var storageRefCounts = sourceBuffers.Select(x => x.GlyphStorageRefCount).ToArray();
+
+                // Only the symbols are shaped from here on.
+                var shaper = new TextFormatterTests.RecordingTextShaper(
+                    AvaloniaLocator.Current.GetRequiredService<ITextShaperImpl>());
+                AvaloniaLocator.CurrentMutable.Bind<TextShaper>().ToConstant(new TextShaper(shaper));
+
+                // Covers the symbol-only, empty and uncollapsed results along with real collapses.
+                var widths = new List<double> { 0.001, line.Width * 2 };
+
+                for (var fraction = 0.1; fraction < 1.0; fraction += 0.1)
+                {
+                    widths.Add(line.Width * fraction);
+                }
+
+                foreach (var width in widths)
+                {
+                    var collapsed = line.Collapse(CreateCollapsingProperties(kind, width));
+
+                    if (!ReferenceEquals(collapsed, line))
+                    {
+                        collapsed.Dispose();
+                    }
+
+                    Assert.Equal(storageRefCounts, sourceBuffers.Select(x => x.GlyphStorageRefCount));
+                    Assert.All(shaper.ShapedBuffers, x => Assert.Equal(0, x.Length));
+                }
+
+                Assert.NotEmpty(shaper.ShapedBuffers);
+            }
+        }
+
+        private static TextCollapsingProperties CreateCollapsingProperties(string kind, double width)
+        {
+            var symbolProperties = new GenericTextRunProperties(Typeface.Default);
+
+            return kind switch
+            {
+                "TrailingCharacter" => TrailingChar(width, FlowDirection.LeftToRight),
+                "TrailingWord" => TrailingWord(width, FlowDirection.LeftToRight),
+                "LeadingPrefix" => LeadingPrefix(prefixLength: 8, width, FlowDirection.LeftToRight),
+                "PathSegment" => new TextPathSegmentEllipsis("…", width, symbolProperties, FlowDirection.LeftToRight),
+                _ => throw new System.ArgumentOutOfRangeException(nameof(kind), kind, null)
+            };
         }
 
         private static TextLine BuildLine(string text, FlowDirection flow)
