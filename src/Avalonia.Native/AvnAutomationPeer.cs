@@ -161,7 +161,8 @@ namespace Avalonia.Native
             return Wrap(result);
         }
 
-        public int IsExpandCollapseProvider() => IsProvider<IExpandCollapseProvider>();
+        public int IsExpandCollapseProvider() =>
+            (_inner.GetProvider<IExpandCollapseProvider>() is { ExpandCollapseState: not ExpandCollapseState.LeafNode }).AsComBool();
 
         public int ExpandCollapseProvider_GetIsExpanded() => ExpandCollapseProvider.ExpandCollapseState switch
         {
