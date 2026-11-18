@@ -425,6 +425,10 @@
     {
         _peer->ToggleProvider_Toggle();
     }
+    else if (_peer->IsSelectionItemProvider())
+    {
+        _peer->SelectionItemProvider_Select();
+    }
     return YES;
 }
 
@@ -509,7 +513,8 @@
     }
     else if (selector == @selector(accessibilityPerformPress))
     {
-        return _peer->IsInvokeProvider() || _peer->IsExpandCollapseProvider() || _peer->IsToggleProvider();
+        return _peer->IsInvokeProvider() || _peer->IsExpandCollapseProvider() || _peer->IsToggleProvider() ||
+               _peer->IsSelectionItemProvider();
     }
     else if (selector == @selector(setAccessibilitySelected:))
     {
