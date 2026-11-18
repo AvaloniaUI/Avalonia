@@ -25,7 +25,7 @@ jobs:
 
     steps:
       - name: Check maintainer permission
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const { data: permLevel } = await github.rest.repos.getCollaboratorPermissionLevel({
@@ -39,7 +39,7 @@ jobs:
             }
 
       - name: Add reaction to acknowledge command
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             await github.rest.reactions.createForIssueComment({
@@ -51,7 +51,7 @@ jobs:
 
       - name: Get PR branch info
         id: pr
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const { data: pr } = await github.rest.pulls.get({
@@ -67,13 +67,13 @@ jobs:
             core.setOutput('sha', pr.head.sha);
 
       - name: Checkout PR branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: ${{ steps.pr.outputs.sha }}
           submodules: recursive
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
 
@@ -82,7 +82,7 @@ jobs:
 
       - name: Post API diff as PR comment
         if: always() && steps.pr.outcome == 'success'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const fs = require('fs');
@@ -152,7 +152,7 @@ jobs:
 
       - name: Add success reaction
         if: success()
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             await github.rest.reactions.createForIssueComment({
@@ -164,7 +164,7 @@ jobs:
 
       - name: Report failure
         if: failure()
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             await github.rest.reactions.createForIssueComment({
