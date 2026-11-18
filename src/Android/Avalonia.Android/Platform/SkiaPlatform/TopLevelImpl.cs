@@ -156,7 +156,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         public virtual void Dispose()
         {
             _systemNavigationManager.Dispose();
-            _avaloniaView.LayoutChange -= AvaloniaView_LayoutChange;
+            _avaloniaView?.LayoutChange -= AvaloniaView_LayoutChange;
             _avaloniaView = null;
             _view?.Dispose();
             _view = null;
