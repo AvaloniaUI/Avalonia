@@ -57,7 +57,6 @@ namespace Avalonia.Android
         /// and reusing it would hand out an ID that is still in use.
         /// </remarks>
         private int _nextPeerViewId;
-        private int _focusedViewId;
         private readonly AvaloniaView _view;
 
         public AvaloniaAccessHelper(AvaloniaView view) : base(view)
@@ -81,27 +80,14 @@ namespace Avalonia.Android
         {
             if (sender is IEmbeddedRootProvider embeddedRoot)
             {
-                var focusedView = embeddedRoot.GetFocus();
-                int viewId = _focusedViewId;
-                if (viewId != -1)
+                if (embeddedRoot.GetFocus() is { } focused)
                 {
+                    GetOrCreateNodeInfoProvidersFromPeer(focused, out int viewId);
                     InvalidateVirtualView(viewId);
-                    ClearKeyboardFocusForVirtualView(_focusedViewId);
+                    RequestKeyboardFocusForVirtualView(viewId);
                 }
-
-                viewId = -1;
-                if (focusedView is { })
-                {
-                    var _ = GetOrCreateNodeInfoProvidersFromPeer(focusedView, out viewId);
-
-                    if (viewId != -1)
-                    {
-                        InvalidateVirtualView(viewId);
-                        RequestKeyboardFocusForVirtualView(_focusedViewId);
-                    }
-                }
-
-                _focusedViewId = viewId;
+                else if (KeyboardFocusedVirtualViewId != InvalidId)
+                    ClearKeyboardFocusForVirtualView(KeyboardFocusedVirtualViewId);
             }
         }
 
