@@ -1041,6 +1041,56 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             }
         }
 
+        [Theory]
+        [InlineData(2, "border1")]
+        public void ResolvesRelativeSourceBindingWithAncestorLevel(int ancestorLevel, string expected)
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = $@"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext'>
+    <Border Name='border1'>
+        <Border Name='border2'>
+            <TextBlock Text='{{CompiledBinding Name, RelativeSource={{RelativeSource AncestorType=Border, AncestorLevel={ancestorLevel}}}}}' x:Name='text'/>
+        </Border>
+    </Border>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var target = window.GetControl<TextBlock>("text");
+
+                window.ApplyTemplate();
+                window.Presenter!.ApplyTemplate();
+
+                Assert.Equal(expected, target.Text);
+            }
+        }
+
+        [Theory]
+        [InlineData("0")]
+        [InlineData("x")]
+        [InlineData("{x:Static sys:Int32.MaxValue}")]
+        public void ThrowsOnInvalidRelativeSourceAncestorLevel(string ancestorLevel)
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = $@"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:sys='clr-namespace:System;assembly=netstandard'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext'>
+    <TextBlock Text='{{CompiledBinding Title, RelativeSource={{RelativeSource AncestorType=Window, AncestorLevel={ancestorLevel}}}}}'/>
+</Window>";
+
+                var exception = Assert.ThrowsAny<XmlException>(() => AvaloniaRuntimeXamlLoader.Load(xaml));
+
+                Assert.Contains("AncestorLevel", exception.Message);
+            }
+        }
+
         [Fact]
         public void ResolvesRelativeSourceBindingFromTemplate()
         {
