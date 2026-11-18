@@ -5,9 +5,6 @@ using Avalonia.Interactivity;
 using Avalonia.Logging;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
-using Avalonia.PropertyStore;
-using Avalonia.Styling;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -57,7 +54,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public static readonly StyledProperty<FontFeatureCollection?> FontFeaturesProperty =
             TextElement.FontFeaturesProperty.AddOwner<TemplatedControl>();
-        
+
         /// <summary>
         /// Defines the <see cref="FontSize"/> property.
         /// </summary>
@@ -123,7 +120,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public static readonly RoutedEvent<TemplateAppliedEventArgs> TemplateAppliedEvent =
             RoutedEvent.Register<TemplatedControl, TemplateAppliedEventArgs>(
-                nameof(TemplateApplied), 
+                nameof(TemplateApplied),
                 RoutingStrategies.Direct);
 
         private IControlTemplate? _appliedTemplate;

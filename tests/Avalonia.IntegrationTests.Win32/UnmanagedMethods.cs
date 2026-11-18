@@ -36,12 +36,28 @@ internal static partial class UnmanagedMethods
     public static partial IntPtr LoadKeyboardLayout(string pwszKLID, uint flags);
 
     [LibraryImport("user32.dll")]
+    public static partial IntPtr GetKeyboardLayout(uint idThread);
+
+    [LibraryImport("user32.dll")]
     public static partial IntPtr ActivateKeyboardLayout(IntPtr hkl, uint flags);
 
     [LibraryImport("user32.dll")]
-    public static partial IntPtr GetKeyboardLayout(uint idThread);
+    public static partial int GetKeyboardLayoutList(int nBuff, IntPtr[]? lpList);
 
     public const uint KEYEVENTF_KEYUP = 0x2;
-    public const uint KLF_ACTIVATE = 0x1;
     public const uint KLF_NOTELLSHELL = 0x80;
+
+    public static readonly Guid CLSID_TF_InputProcessorProfiles = new("33C53A50-F456-4884-B049-85FD643ECFED");
+    public const uint TF_PROFILETYPE_KEYBOARDLAYOUT = 2;
+    public const uint TF_IPPMF_FORPROCESS = 0x10000000;
+    public const uint TF_IPPMF_DONTCARECURRENTINPUTLANGUAGE = 0x4;
+
+    [ComImport, Guid("71c6e74c-0f28-11d8-a82a-00065b84435c"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    public interface ITfInputProcessorProfileMgr
+    {
+        // Only the first method of the interface is declared
+        [PreserveSig]
+        int ActivateProfile(uint dwProfileType, ushort langid, ref Guid clsid, ref Guid guidProfile, IntPtr hkl,
+            uint dwFlags);
+    }
 }
