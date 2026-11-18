@@ -570,7 +570,8 @@ namespace Avalonia.Media.TextFormatting
 
             if (MathUtilities.IsZero(MaxWidth) || MathUtilities.IsZero(MaxHeight))
             {
-                var textLine = TextFormatterImpl.CreateEmptyTextLine(0, double.PositiveInfinity, _paragraphProperties);
+                var textLine = TextFormatterImpl.CreateEmptyTextLine(0, double.PositiveInfinity, _paragraphProperties,
+                    TextFormatterImpl.GetLineIndent(_paragraphProperties, null));
 
                 UpdateMetrics(textLine, ref first);
 
@@ -597,7 +598,8 @@ namespace Avalonia.Media.TextFormatting
                         if (previousLine != null && previousLine.NewLineLength > 0)
                         {
                             var emptyTextLine = TextFormatterImpl.CreateEmptyTextLine(_textSourceLength, MaxWidth,
-                                _paragraphProperties);
+                                _paragraphProperties,
+                                TextFormatterImpl.GetLineIndent(_paragraphProperties, previousLine.TextLineBreak));
 
                             textLines.Add(emptyTextLine);
 
@@ -651,7 +653,7 @@ namespace Avalonia.Media.TextFormatting
 
                     if (hasOverflowed && _textTrimming != TextTrimming.None)
                     {
-                        textLine = Collapse(textLine, GetCollapsingProperties(MaxWidth));
+                        textLine = Collapse(textLine, GetCollapsingProperties(MaxWidth - textLine.LineIndent));
                     }
 
                     textLines.Add(textLine);
@@ -668,7 +670,8 @@ namespace Avalonia.Media.TextFormatting
 
                 if (textLines.Count == 0)
                 {
-                    var textLine = TextFormatterImpl.CreateEmptyTextLine(0, MaxWidth, _paragraphProperties);
+                    var textLine = TextFormatterImpl.CreateEmptyTextLine(0, MaxWidth, _paragraphProperties,
+                        TextFormatterImpl.GetLineIndent(_paragraphProperties, null));
 
                     textLines.Add(textLine);
 
@@ -724,7 +727,8 @@ namespace Avalonia.Media.TextFormatting
 
             // 2) For the layout’s Width and WidthIncludingTrailingWhitespace,
             //    use the maximum of the line widths rather than the bounding box.
-            _metrics.Width = Math.Max(_metrics.Width, currentLine.Width);
+            //    An indented line occupies its indent as well, so a host sized to the layout fits it.
+            _metrics.Width = Math.Max(_metrics.Width, currentLine.LineIndent + currentLine.Width);
 
             // 3) Extent is the max black-pixel extent among lines.
             _metrics.Extent = Math.Max(_metrics.Extent, currentLine.Extent);
@@ -733,11 +737,11 @@ namespace Avalonia.Media.TextFormatting
             // We choose to update all related metrics at once (OverhangLeading, WidthIncludingTrailingWhitespace, OverhangTrailing)
             // if the current line has a larger text width.
             var previousTextWidth = _metrics.WidthIncludingTrailingWhitespace;
-            var textWidth = currentLine.WidthIncludingTrailingWhitespace;
+            var textWidth = currentLine.LineIndent + currentLine.WidthIncludingTrailingWhitespace;
 
             if (previousTextWidth < textWidth)
             {
-                _metrics.WidthIncludingTrailingWhitespace = currentLine.WidthIncludingTrailingWhitespace;
+                _metrics.WidthIncludingTrailingWhitespace = textWidth;
                 _metrics.OverhangLeading = currentLine.OverhangLeading;
                 _metrics.OverhangTrailing = currentLine.OverhangTrailing;
             }
