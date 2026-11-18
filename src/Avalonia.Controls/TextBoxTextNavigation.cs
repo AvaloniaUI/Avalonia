@@ -28,10 +28,17 @@ namespace Avalonia.Controls
         private long _version;
         private EventHandler<TextChange>? _textChanged;
         private (int Anchor, int Active, int Caret) _reportedSelection;
+        private readonly bool _segmentAsDrawn;
 
-        public TextBoxTextNavigation(TextBox textBox)
+        /// <param name="textBox">The control whose text is navigated.</param>
+        /// <param name="segmentAsDrawn">
+        /// Whether units are found in the text as drawn. Accessibility consumers need that, so a masked
+        /// password reveals nothing through its boundaries; an input method needs the real text it edits.
+        /// </param>
+        public TextBoxTextNavigation(TextBox textBox, bool segmentAsDrawn = true)
         {
             _textBox = textBox ?? throw new ArgumentNullException(nameof(textBox));
+            _segmentAsDrawn = segmentAsDrawn;
             _scope = new DocumentScope(this);
             _reportedSelection = CurrentSelection();
             _textBox.PropertyChanged += OnTextBoxPropertyChanged;
@@ -58,11 +65,11 @@ namespace Avalonia.Controls
 
         private string Text => _textBox.Text ?? string.Empty;
 
-        // Units are found in the text as drawn: segmenting the real text of a masked password would
-        // reveal its word and sentence structure through the unit boundaries.
-        private string SegmentationText =>
-            TextBoxAutomationPeer.GetDisplayedText(Text, _textBox.PasswordChar, _textBox.RevealPassword)
-            ?? string.Empty;
+        // For accessibility, units are found in the text as drawn: segmenting the real text of a masked
+        // password would reveal its word and sentence structure through the unit boundaries.
+        private string SegmentationText => _segmentAsDrawn
+            ? TextBoxAutomationPeer.GetDisplayedText(Text, _textBox.PasswordChar, _textBox.RevealPassword) ?? string.Empty
+            : Text;
 
         public ITextPointer GetPosition(ITextPointer origin, TextUnit unit, int count)
         {
@@ -302,10 +309,19 @@ namespace Avalonia.Controls
             return start <= end ? (start, end) : (end, start);
         }
 
-        private ITextPointer CreatePointer(int offset, LogicalDirection gravity = LogicalDirection.Forward) =>
+        // The control's own offsets, for code inside the control that already works in them (the input
+        // method client, the presenter's composition region). Consumers outside the control go through
+        // the linear scope instead.
+        internal ITextPointer CreatePointer(int offset, LogicalDirection gravity = LogicalDirection.Forward) =>
             new NavPointer(this, Math.Clamp(offset, 0, Text.Length), gravity);
 
-        private int OffsetOf(ITextPointer pointer)
+        // A range with inward gravity, so typing at its edges stays outside it.
+        internal ITextRange CreateRange(int start, int end)
+            => new NavRange(CreatePointer(start, LogicalDirection.Forward), CreatePointer(end, LogicalDirection.Backward));
+
+        internal (int Start, int End) SpanOf(ITextRange range) => Span(range);
+
+        internal int OffsetOf(ITextPointer pointer)
         {
             if (pointer is not NavPointer own || own.Owner != this)
             {

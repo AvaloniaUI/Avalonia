@@ -1418,6 +1418,69 @@ namespace Avalonia.Controls
             }
         }
 
+        /// <summary>
+        /// Replaces [<paramref name="start"/>, <paramref name="end"/>) with <paramref name="text"/> under
+        /// the rules typed text follows: nothing changes when the box is read-only, the text stops at its
+        /// first line break unless the box accepts returns, and it is cut to fit <see cref="MaxLength"/>.
+        /// </summary>
+        /// <param name="start">The start of the replaced text, clamped to the text.</param>
+        /// <param name="end">The end of the replaced text, exclusive, clamped to [start, text length].</param>
+        /// <param name="text">The text to insert.</param>
+        /// <param name="startsUndoStep">
+        /// Whether this edit begins a new undo step. An input method passes it for the first update of a
+        /// composition only, so the whole composition undoes at once.
+        /// </param>
+        /// <returns>The end of the inserted text, or null when the edit was refused.</returns>
+        internal int? ReplaceTextFromInput(int start, int end, string text, bool startsUndoStep)
+        {
+            if (IsReadOnly)
+            {
+                return null;
+            }
+
+            var currentText = Text ?? string.Empty;
+            start = Math.Clamp(start, 0, currentText.Length);
+            end = Math.Clamp(end, start, currentText.Length);
+
+            var input = SanitizeInputText(text) ?? string.Empty;
+            var newLength = currentText.Length - (end - start) + input.Length;
+
+            if (MaxLength > 0 && newLength > MaxLength)
+            {
+                input = input.Remove(Math.Max(0, input.Length - (newLength - MaxLength)));
+            }
+
+            var newText = currentText.Remove(start, end - start).Insert(start, input);
+
+            if (startsUndoStep)
+            {
+                SnapshotUndoRedo();
+                SetTextFromEdit(newText);
+
+                if (IsUndoEnabled)
+                {
+                    _undoRedoHelper.DiscardRedo();
+                }
+            }
+            else
+            {
+                // Later updates of one composition leave the undo history alone: the step taken when the
+                // composition began restores the text from before it.
+                SetTextFromInternalSynchronization(newText);
+
+                // With an empty history that step also recorded the text after it, the composition's first
+                // keystroke. That state follows the composition, or undo would stop at that keystroke.
+                if (IsUndoEnabled && _undoRedoHelper.TryGetLastState(out var last) && last.Text == currentText)
+                {
+                    _undoRedoHelper.UpdateLastState();
+                }
+            }
+
+            _presenter?.SetCurrentValue(TextPresenter.TextProperty, newText);
+
+            return start + input.Length;
+        }
+
         private string? SanitizeInputText(string? text)
         {
             if (text is null)
@@ -1565,7 +1628,9 @@ namespace Avalonia.Controls
                 return;
             }
 
-            if (!string.IsNullOrEmpty(_presenter.PreeditText))
+            // The IME owns the keyboard while a composition is active - both the
+            // in-document composition and a third-party presenter preedit overlay.
+            if (_imClient.HasActiveComposition || !string.IsNullOrEmpty(_presenter.PreeditText))
             {
                 return;
             }

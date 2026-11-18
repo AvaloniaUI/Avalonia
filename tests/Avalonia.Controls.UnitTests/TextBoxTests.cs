@@ -13,6 +13,7 @@ using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Input.TextInput;
 using Avalonia.Media;
+using Avalonia.Media.TextFormatting;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
@@ -2416,17 +2417,19 @@ namespace Avalonia.Controls.UnitTests
             topLevel.ApplyTemplate();
             topLevel.LayoutManager.ExecuteInitialLayoutPass();
 
-            var client = GetInputMethodClient(textBox);
             var presenter = textBox.FindDescendantOfType<TextPresenter>();
             Assert.NotNull(presenter);
 
             // A CaretBoundsChanged subscriber may synchronously invalidate the text layout
             // (the IME candidate window or a caret-following overlay forcing a layout pass
             // does exactly that). The preedit update must still complete against the layout
-            // it computed with instead of dereferencing the reentrantly cleared field.
+            // it computed with instead of dereferencing the reentrantly cleared field. The
+            // TextBox composes in its document, so the presenter's preedit overlay is driven
+            // directly here.
             presenter.CaretBoundsChanged += (_, _) => presenter.HideCaret();
 
-            client.SetPreeditText("かん", 2);
+            presenter.SetCurrentValue(TextPresenter.PreeditTextCursorPositionProperty, 2);
+            presenter.SetCurrentValue(TextPresenter.PreeditTextProperty, "かん");
 
             Assert.Equal("かん", presenter.PreeditText);
         }
@@ -2769,6 +2772,467 @@ namespace Avalonia.Controls.UnitTests
             return TestServices.StyledWindow.With(
                 windowingPlatform: new MockWindowingPlatform(() => windowImpl.Object));
         }
+
+        [Fact]
+        public void InputMethodClient_StructuredTextInput_Can_Read_Document_Range()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "Line1\nLine2", CaretIndex = 0 };
+            textBox.ApplyTemplate();
+
+            var structured = GetStructured(textBox);
+
+            Assert.Equal(0, ImeOffset(structured, structured.DocumentStart));
+            Assert.Equal(textBox.Text!.Length, ImeOffset(structured, structured.DocumentEnd));
+            Assert.Equal(textBox.Text, structured.GetText(structured.DocumentRange));
+
+            var backward = structured.GetLinearScope(structured.DocumentStart).GetPosition(2, LogicalDirection.Backward);
+            Assert.Equal(2, ImeOffset(structured, backward));
+            Assert.Equal(LogicalDirection.Backward, backward.Gravity);
+        }
+
+        [Fact]
+        public void InputMethodClient_StructuredTextInput_Composition_Mutates_Text_And_Commits()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "Hello", CaretIndex = 5 };
+            textBox.ApplyTemplate();
+            var structured = GetStructured(textBox);
+
+            structured.SetCompositionText("!", 1);
+
+            Assert.Equal("Hello!", textBox.Text);
+            Assert.NotNull(structured.CompositionRange);
+            Assert.Equal((5, 6), ImeSpan(structured, structured.CompositionRange!));
+
+            structured.CommitComposition(null);
+
+            Assert.Null(structured.CompositionRange);
+            Assert.Equal("Hello!", textBox.Text);
+        }
+
+        [Fact]
+        public void InputMethodClient_StructuredTextInput_Commit_With_A_Result_Replaces_The_Composition_Once()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "x", CaretIndex = 1 };
+            textBox.ApplyTemplate();
+            var structured = GetStructured(textBox);
+
+            structured.SetCompositionText("かな", 2);
+
+            var changes = 0;
+            structured.TextChanged += (_, _) => changes++;
+
+            structured.CommitComposition("仮名");
+
+            Assert.Equal("x仮名", textBox.Text);
+            Assert.Equal(1, changes);
+            Assert.Equal(3, textBox.CaretIndex);
+            Assert.Null(structured.CompositionRange);
+        }
+
+        [Fact]
+        public void InputMethodClient_StructuredTextInput_Commit_Without_A_Composition_Inserts_At_The_Selection()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "abcd", SelectionStart = 1, SelectionEnd = 3 };
+            textBox.ApplyTemplate();
+            var structured = GetStructured(textBox);
+
+            structured.CommitComposition("X");
+
+            Assert.Equal("aXd", textBox.Text);
+            Assert.Equal(2, textBox.CaretIndex);
+        }
+
+        [Fact]
+        public void InputMethodClient_StructuredTextInput_ReplaceText_Replaces_Selection()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "abcde", SelectionStart = 1, SelectionEnd = 4 };
+            textBox.ApplyTemplate();
+            var structured = GetStructured(textBox);
+
+            var selection = structured.Selection;
+            structured.ReplaceText(structured.GetRange(selection.Start, selection.End), "ZZ");
+
+            Assert.Equal("aZZe", textBox.Text);
+            Assert.Equal(3, textBox.SelectionStart);
+            Assert.Equal(3, textBox.SelectionEnd);
+        }
+
+        [Fact]
+        public void InputMethodClient_StructuredTextInput_ReplaceText_Raises_TextChanged()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "abc", CaretIndex = 3 };
+            textBox.ApplyTemplate();
+            var structured = GetStructured(textBox);
+
+            var eventCount = 0;
+            structured.TextChanged += (_, _) => eventCount++;
+
+            var end = structured.DocumentEnd;
+            structured.ReplaceText(structured.GetRange(end, end), "!");
+
+            Assert.Equal("abc!", textBox.Text);
+            Assert.Equal(1, eventCount);
+        }
+
+        [Fact]
+        public void InputMethodClient_StructuredTextInput_Edits_Follow_The_Input_Rules()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "ab", CaretIndex = 2, MaxLength = 4 };
+            textBox.ApplyTemplate();
+            var structured = GetStructured(textBox);
+
+            // As with typed text, input stops at a line break when the box does not accept returns.
+            structured.SetCompositionText("x\nyz", 4);
+            Assert.Equal("abx", textBox.Text);
+
+            // And it is cut to fit MaxLength.
+            structured.SetCompositionText("xyz", 3);
+            Assert.Equal("abxy", textBox.Text);
+
+            structured.CommitComposition(null);
+            textBox.IsReadOnly = true;
+
+            structured.SetCompositionText("q", 1);
+            structured.ReplaceText(structured.DocumentRange, "gone");
+            structured.CommitComposition("r");
+
+            Assert.Equal("abxy", textBox.Text);
+            Assert.Null(structured.CompositionRange);
+            Assert.True(structured.IsReadOnly);
+        }
+
+        [Fact]
+        public void InputMethodClient_StructuredTextInput_Reports_ReadOnly_Changes()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "ab" };
+            textBox.ApplyTemplate();
+            var structured = GetStructured(textBox);
+
+            var changes = 0;
+            structured.IsReadOnlyChanged += (_, _) => changes++;
+
+            Assert.False(structured.IsReadOnly);
+            textBox.IsReadOnly = true;
+
+            Assert.True(structured.IsReadOnly);
+            Assert.Equal(1, changes);
+        }
+
+        [Fact]
+        public void InputMethodClient_StructuredTextInput_A_Composition_Undoes_As_One_Step()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "", CaretIndex = 0 };
+            textBox.ApplyTemplate();
+            var structured = GetStructured(textBox);
+
+            // Text typed earlier stays undoable once a composition has been committed after it.
+            textBox.RaiseEvent(new TextInputEventArgs { RoutedEvent = InputElement.TextInputEvent, Text = "a" });
+
+            structured.SetCompositionText("k", 1);
+            structured.SetCompositionText("か", 1);
+            structured.SetCompositionText("かn", 2);
+            structured.CommitComposition("かん");
+            Assert.Equal("aかん", textBox.Text);
+
+            textBox.Undo();
+            Assert.Equal("a", textBox.Text);
+
+            textBox.Undo();
+            Assert.Equal(string.Empty, textBox.Text);
+        }
+
+        [Fact]
+        public void InputMethodClient_StructuredTextInput_A_First_Composition_Undoes_As_One_Step()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            // Setting Text clears the history, so the composition is the first edit to be recorded.
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "ab", CaretIndex = 2 };
+            textBox.ApplyTemplate();
+            var structured = GetStructured(textBox);
+
+            structured.SetCompositionText("k", 1);
+            structured.SetCompositionText("か", 1);
+            structured.SetCompositionText("かn", 2);
+            structured.CommitComposition("かん");
+            Assert.Equal("abかん", textBox.Text);
+
+            textBox.Undo();
+            Assert.Equal("ab", textBox.Text);
+
+            // A cancelled first composition leaves nothing to undo.
+            textBox.Text = "ab";
+            textBox.CaretIndex = 1;
+            structured.SetCompositionText("か", 1);
+            structured.SetCompositionText(null, 0);
+            Assert.Equal("ab", textBox.Text);
+
+            textBox.Undo();
+            Assert.Equal("ab", textBox.Text);
+        }
+
+        [Fact]
+        public void InputMethodClient_StructuredTextInput_Commit_Collapses_A_Clause_Selection()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "x", CaretIndex = 1 };
+            textBox.ApplyTemplate();
+            var structured = GetStructured(textBox);
+
+            // An input method selects the clause it converts, here the last one, so the selection's active
+            // end already sits where the commit puts the caret.
+            structured.SetCompositionText("漢字を書く", 3);
+            var scope = structured.GetLinearScope(structured.DocumentStart);
+            structured.Selection = new DirectedTextRange(scope.GetPosition(4, LogicalDirection.Forward),
+                scope.GetPosition(6, LogicalDirection.Forward));
+            Assert.Equal((4, 6), (textBox.SelectionStart, textBox.SelectionEnd));
+
+            structured.CommitComposition("漢字を書く");
+
+            Assert.Equal("x漢字を書く", textBox.Text);
+            Assert.Equal(6, textBox.CaretIndex);
+            Assert.Equal((6, 6), (textBox.SelectionStart, textBox.SelectionEnd));
+        }
+
+        [Fact]
+        public void InputMethodClient_StructuredTextInput_Cancelling_Restores_What_The_Composition_Replaced()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "a word here", CaretIndex = 0 };
+            textBox.ApplyTemplate();
+            var structured = GetStructured(textBox);
+
+            // Reconversion makes committed text the composition; cancelling must give it back, not delete it.
+            structured.CompositionRange = structured.GetLinearScope(structured.DocumentStart).GetRange(2, 4);
+            structured.SetCompositionText("ワード", 3);
+            Assert.Equal("a ワード here", textBox.Text);
+
+            structured.SetCompositionText(null, 0);
+
+            Assert.Equal("a word here", textBox.Text);
+            Assert.Null(structured.CompositionRange);
+
+            // A fresh composition that is cancelled leaves nothing behind.
+            textBox.CaretIndex = 0;
+            structured.SetCompositionText("x", 1);
+            structured.SetCompositionText(null, 0);
+            Assert.Equal("a word here", textBox.Text);
+        }
+
+        [Fact]
+        public void InputMethodClient_StructuredTextInput_The_Composition_Follows_Edits_Before_It()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "ab", CaretIndex = 2 };
+            textBox.ApplyTemplate();
+            var structured = GetStructured(textBox);
+
+            structured.SetCompositionText("cd", 2);
+            Assert.Equal((2, 4), ImeSpan(structured, structured.CompositionRange!));
+
+            // The composition grows with each update and keeps covering exactly its own text.
+            structured.SetCompositionText("cde", 3);
+            Assert.Equal((2, 5), ImeSpan(structured, structured.CompositionRange!));
+            Assert.Equal("cde", structured.GetText(structured.CompositionRange!));
+        }
+
+        [Fact]
+        public void InputMethodClient_StructuredTextInput_An_Outside_Edit_Ends_The_Composition()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "ab", CaretIndex = 2 };
+            textBox.ApplyTemplate();
+            var client = GetInputMethodClient(textBox);
+            var structured = (IStructuredTextInput)client;
+
+            var resets = 0;
+            client.ResetRequested += (_, _) => resets++;
+
+            structured.SetCompositionText("cd", 2);
+            textBox.Text = "replaced";
+
+            Assert.Null(structured.CompositionRange);
+            Assert.Equal(1, resets);
+        }
+
+        [Fact]
+        public void InputMethodClient_StructuredTextInput_SetCompositionText_Raises_CompositionChanged()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "text", CaretIndex = 4 };
+            textBox.ApplyTemplate();
+            var structured = GetStructured(textBox);
+
+            var eventCount = 0;
+            structured.CompositionChanged += (_, _) => eventCount++;
+
+            structured.SetCompositionText("!", 1);
+            structured.CommitComposition(null);
+
+            Assert.Equal("text!", textBox.Text);
+            Assert.Equal(2, eventCount);
+            Assert.Null(structured.CompositionRange);
+        }
+
+        [Fact]
+        public void InputMethodClient_StructuredTextInput_ReplaceText_Raises_One_CaretPositionChanged()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "abc", CaretIndex = 3 };
+            textBox.ApplyTemplate();
+            var structured = GetStructured(textBox);
+
+            var eventCount = 0;
+            structured.CaretPositionChanged += (_, _) => eventCount++;
+
+            var end = structured.DocumentEnd;
+            structured.ReplaceText(structured.GetRange(end, end), "!");
+
+            Assert.Equal("abc!", textBox.Text);
+            Assert.Equal(1, eventCount);
+        }
+
+        [Fact]
+        public void InputMethodClient_StructuredTextInput_Selection_Keeps_Its_Direction()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "abcdef", CaretIndex = 6 };
+            textBox.ApplyTemplate();
+            var structured = GetStructured(textBox);
+
+            var eventCount = 0;
+            structured.CaretPositionChanged += (_, _) => eventCount++;
+
+            var scope = structured.GetLinearScope(structured.DocumentStart);
+            structured.Selection = new DirectedTextRange(scope.GetPosition(4, LogicalDirection.Forward), scope.GetPosition(1, LogicalDirection.Forward));
+
+            Assert.Equal(4, textBox.SelectionStart);
+            Assert.Equal(1, textBox.SelectionEnd);
+            Assert.Equal(1, textBox.CaretIndex);
+            Assert.True(structured.Selection.IsReversed);
+            Assert.Equal(1, eventCount);
+        }
+
+        [Fact]
+        public void InputMethodClient_StructuredTextInput_Character_Hit_Covers_A_Whole_Character()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "\U0001F600" };
+
+            var impl = CreateMockTopLevelImpl();
+            var topLevel = new TestTopLevel(impl.Object) { Template = CreateTopLevelTemplate() };
+            topLevel.Content = textBox;
+            topLevel.ApplyTemplate();
+            topLevel.LayoutManager.ExecuteInitialLayoutPass();
+            textBox.Focus();
+            var structured = GetStructured(textBox);
+
+            var rect = structured.GetFirstRectForRange(structured.DocumentRange);
+            var hit = structured.GetCharacterRangeAtPoint(new Point(rect.X + 1, rect.Center.Y));
+
+            Assert.NotNull(hit);
+            Assert.Equal((0, 2), ImeSpan(structured, hit!));
+        }
+
+        [Fact]
+        public void SetPreeditText_Composes_In_Document()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "hello", CaretIndex = 5 };
+            textBox.ApplyTemplate();
+
+            var client = GetInputMethodClient(textBox);
+            var structured = Assert.IsAssignableFrom<IStructuredTextInput>(client);
+
+            client.SetPreeditText("かん", 2);
+
+            Assert.Equal("helloかん", textBox.Text);
+            Assert.Equal("かん", structured.GetText(structured.CompositionRange!));
+            Assert.Equal((5, 7), ImeSpan(structured, structured.CompositionRange!));
+            Assert.Equal(7, textBox.CaretIndex);
+
+            client.SetPreeditText(null, null);
+
+            Assert.Equal("hello", textBox.Text);
+            Assert.Null(structured.CompositionRange);
+        }
+
+        [Fact]
+        public void Composition_Commit_Keeps_Text_And_Clears_The_Region()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "", CaretIndex = 0 };
+            textBox.ApplyTemplate();
+
+            var client = GetInputMethodClient(textBox);
+            var structured = Assert.IsAssignableFrom<IStructuredTextInput>(client);
+
+            client.SetPreeditText("かん", 2);
+            structured.CommitComposition(null);
+
+            Assert.Equal("かん", textBox.Text);
+            Assert.Null(structured.CompositionRange);
+        }
+
+        [Fact]
+        public void Composition_Events_Flow_Text_Then_Composition_Then_Caret()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "hello", CaretIndex = 5 };
+            textBox.ApplyTemplate();
+
+            var client = GetInputMethodClient(textBox);
+            var structured = Assert.IsAssignableFrom<IStructuredTextInput>(client);
+
+            var events = new List<string>();
+            structured.TextChanged += (_, _) => events.Add("text");
+            structured.CompositionChanged += (_, _) => events.Add("composition");
+            structured.CaretPositionChanged += (_, _) => events.Add("caret");
+
+            client.SetPreeditText("かん", 2);
+
+            // The document mutates first (so every subsequent reader sees consistent
+            // text), then the composition region reports, then the caret, once.
+            Assert.Equal(new[] { "text", "composition", "caret" }, events);
+        }
+
+        private static IStructuredTextInput GetStructured(TextBox textBox)
+            => Assert.IsAssignableFrom<IStructuredTextInput>(GetInputMethodClient(textBox));
+
+        private static int ImeOffset(ITextNavigation nav, ITextPointer position)
+            => nav.GetLinearScope(position).GetOffset(position);
+
+        private static (int Start, int End) ImeSpan(ITextNavigation nav, ITextRange range)
+            => (ImeOffset(nav, range.Start), ImeOffset(nav, range.End));
 
         private static TestServices FocusServices => TestServices.MockThreadingInterface.With(
             keyboardDevice: () => new KeyboardDevice(),
