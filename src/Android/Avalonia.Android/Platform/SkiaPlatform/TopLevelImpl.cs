@@ -31,7 +31,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
     class TopLevelImpl : ITopLevelImpl, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfoWithWaitPolicy
     {
         private readonly Context _context;
-        private AvaloniaView _avaloniaView;
+        private AvaloniaView? _avaloniaView;
         private readonly AndroidKeyboardEventsHelper<TopLevelImpl> _keyboardHelper;
         private readonly AndroidMotionEventsHelper _pointerHelper;
         private readonly AndroidInputMethod<AvaloniaView> _textInputMethod;
