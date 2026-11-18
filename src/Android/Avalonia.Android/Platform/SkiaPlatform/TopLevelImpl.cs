@@ -31,6 +31,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
     class TopLevelImpl : ITopLevelImpl, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfoWithWaitPolicy
     {
         private readonly Context _context;
+        private AvaloniaView _avaloniaView;
         private readonly AndroidKeyboardEventsHelper<TopLevelImpl> _keyboardHelper;
         private readonly AndroidMotionEventsHelper _pointerHelper;
         private readonly AndroidInputMethod<AvaloniaView> _textInputMethod;
@@ -45,6 +46,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         private SurfaceViewImpl? _view;
         private WindowTransparencyLevel _transparencyLevel;
         private PixelPoint _position;
+        private int[] _positionArray = new int[2];
 
         public TopLevelImpl(AvaloniaView avaloniaView, bool placeOnTop = false)
         {
@@ -54,6 +56,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             }
 
             _context = context;
+            _avaloniaView = avaloniaView;
             _view = new SurfaceViewImpl(context, this, placeOnTop);
             _textInputMethod = new AndroidInputMethod<AvaloniaView>(avaloniaView);
             _keyboardHelper = new AndroidKeyboardEventsHelper<TopLevelImpl>(this);
@@ -89,9 +92,8 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         {
             if (_context is global::Android.App.Activity activity)
             {
-                int[] position = new int[2];
-                _view?.GetLocationOnScreen(position);
-                _position = new PixelPoint(position[0], position[1]);
+                _view?.GetLocationOnScreen(_positionArray);
+                _position = new PixelPoint(_positionArray[0], _positionArray[1]);
             }
         }
 
@@ -154,6 +156,8 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         public virtual void Dispose()
         {
             _systemNavigationManager.Dispose();
+            _avaloniaView.LayoutChange -= AvaloniaView_LayoutChange;
+            _avaloniaView = null;
             _view?.Dispose();
             _view = null;
             (DragDrop as IDisposable)?.Dispose();
