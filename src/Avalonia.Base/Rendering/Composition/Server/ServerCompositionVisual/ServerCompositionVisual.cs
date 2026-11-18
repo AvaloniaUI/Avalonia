@@ -28,6 +28,7 @@ namespace Avalonia.Rendering.Composition.Server
                 Root.RemoveVisual(this);
                 OnDetachedFromRoot(Root);
             }
+            Backdrop_OnRootChanging();
         }
 
         protected virtual void OnDetachedFromRoot(ServerCompositionTarget target)
@@ -43,6 +44,7 @@ namespace Avalonia.Rendering.Composition.Server
                 AdornerHelper_AttachedToRoot();
             }
             Cache?.FreeResources();
+            Backdrop_OnRootChanged();
         }
 
         protected virtual void OnAttachedToRoot(ServerCompositionTarget target)
@@ -51,15 +53,17 @@ namespace Avalonia.Rendering.Composition.Server
 
         partial void OnCacheModeChanging()
         {
+            Backdrop_OnCacheModeChanging();
             CacheMode?.Unsubscribe(this);
             Cache?.FreeResources();
             Cache = null;
         }
-        
+
         partial void OnCacheModeChanged()
         {
             Cache = CacheMode is ServerCompositionBitmapCache bitmapCache ? new ServerCompositionVisualCache(this, bitmapCache) : null;
             CacheMode?.Subscribe(this);
+            Backdrop_OnCacheModeChanged();
             OnCacheModeStateChanged();
         }
 
@@ -76,7 +80,7 @@ namespace Avalonia.Rendering.Composition.Server
 
         partial void Initialize()
         {
-            Children = new ServerCompositionVisualCollection(Compositor);
+            Children = new ServerCompositionVisualCollection(Compositor) { Owner = this };
         }
     }
 }

@@ -81,6 +81,13 @@ public class WaylandPlatformOptions
     public bool? UseDmabufSwapchain { get; set; }
 
     /// <summary>
+    /// Enables partial presentation when supported by the rendering backend.
+    /// Currently supported with the EGL window surface backend.
+    /// When <c>null</c>, uses the platform default, which is currently disabled.
+    /// </summary>
+    public bool? UsePartialPresentation { get; set; }
+
+    /// <summary>
     /// If this option is set to true, a GMainLoop and GSource based dispatcher implementation will be used for the
     /// UI thread instead of the default managed one.
     /// Use this if you need to use GLib-based libraries on the main thread.

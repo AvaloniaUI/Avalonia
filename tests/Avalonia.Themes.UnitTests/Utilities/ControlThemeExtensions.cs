@@ -5,6 +5,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Chrome;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.LogicalTree;
 using Avalonia.Styling;
 using Avalonia.VisualTree;
 
@@ -62,10 +63,12 @@ internal static class ControlThemeExtensions
 
         var templateRoot = (Control)templatedParent.GetVisualChildren().First();
 
-        // Use visual tree instead of logical tree for the most complete result.
-        // Because logical tree might not necessary 1to1 map to XAML.
-        // And we filter by the same TemplateParent anyway.
-        return templateRoot.GetVisualDescendants().Where(v => v.TemplatedParent == templatedParent).Prepend(templateRoot);
+        // We filter logical descendants by TemplatedParent to ensure these are part of the same template.
+        var descendantsCombined = templateRoot.GetLogicalDescendants()
+            .Concat(templateRoot.GetVisualDescendants())
+            .OfType<StyledElement>()
+            .Distinct();
+        return descendantsCombined.Where(v => v.TemplatedParent == templatedParent).Prepend(templateRoot);
     }
 
     private static IEnumerable<AvaloniaObject> EnumerateDecorationsChildren(IWindowDrawnDecorationsTemplate template)
