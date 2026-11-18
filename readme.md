@@ -79,6 +79,8 @@ See the [build instructions here](docs/build.md).
 
 This project exists thanks to all the people who contribute. Please read the [contribution guidelines](CONTRIBUTING.md) before submitting a pull request.
 
+New contributors need to be [vouched for](CONTRIBUTING.md#getting-vouched) by a maintainer before their pull requests are accepted.
+
 ### Code of Conduct
 
 This project has adopted the code of conduct defined by the Contributor Covenant to clarify expected behavior in our community.
