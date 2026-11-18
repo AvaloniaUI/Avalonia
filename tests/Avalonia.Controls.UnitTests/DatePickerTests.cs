@@ -258,7 +258,7 @@ namespace Avalonia.Controls.UnitTests
             => TestSelectorScrolling(selectorName, panel => panel.ScrollDown());
 
         [Theory]
-        [InlineData(false, 120d, 40d)]
+        [InlineData(false, 180d, 40d)]
         [InlineData(true, 12000d, 6040d)]
         public void Selector_ItemHeight_Change_Should_Update_Layout_State(
             bool shouldLoop,
@@ -339,6 +339,28 @@ namespace Avalonia.Controls.UnitTests
             panel.ScrollDown();
 
             Assert.Equal(10, panel.SelectedValue);
+        }
+
+        [Fact]
+        public void Looping_Selector_ScrollDown_Should_Wrap_From_Last_Item()
+        {
+            using var app = UnitTestApplication.Start(Services);
+
+            var panel = new DateTimePickerPanel
+            {
+                MinimumValue = 1,
+                MaximumValue = 10,
+                ShouldLoop = true,
+                ItemHeight = 40,
+            };
+
+            panel.Measure(new Size(100, 200));
+            panel.Arrange(new Rect(0, 0, 100, 200));
+            panel.SelectedValue = 10;
+
+            panel.ScrollDown();
+
+            Assert.Equal(1, panel.SelectedValue);
         }
 
         private static (TestRoot, ScrollViewer, DateTimePickerPanel) CreateNonLoopingSelector()
