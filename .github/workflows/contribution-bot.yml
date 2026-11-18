@@ -10,6 +10,7 @@ on:
 
 jobs:
   bot:
+    name: Contribution Bot
     uses: AvaloniaUI/Avalonia.ContributionBot/.github/workflows/contribution-bot.yml@v1
     with:
       client-id: ${{ vars.CONTRIBUTION_BOT_CLIENT_ID }}
@@ -17,5 +18,6 @@ jobs:
       command-prefix: "!contribution-bot"
       cla-url: https://github.com/AvaloniaUI/Avalonia/blob/main/CLA.md
       introduction-url: https://github.com/AvaloniaUI/Avalonia/discussions/new?category=introductions
+      closed-label: not-vouched
     secrets:
       private-key: ${{ secrets.CONTRIBUTION_BOT_PRIVATE_KEY }}
