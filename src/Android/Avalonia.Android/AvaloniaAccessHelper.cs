@@ -173,7 +173,7 @@ namespace Avalonia.Android
 
         protected override int GetVirtualViewAt(float x, float y)
         {
-            Point p = _view.TopLevelImpl.PointToClient(new PixelPoint((int)x, (int)y));
+            Point p = new PixelPoint((int)x, (int)y).ToPoint(_view.TopLevelImpl.RenderScaling);
             IEmbeddedRootProvider? embeddedRootProvider = _peers[0].GetProvider<IEmbeddedRootProvider>();
             AutomationPeer? peer = embeddedRootProvider?.GetPeerFromPoint(p);
             if (peer is not null)
