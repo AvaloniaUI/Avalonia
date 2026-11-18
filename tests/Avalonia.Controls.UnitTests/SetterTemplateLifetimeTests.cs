@@ -29,6 +29,36 @@ public class SetterTemplateLifetimeTests : ScopedTestBase
         GC.KeepAlive(root);
     }
 
+    [Fact]
+    public void Active_Setter_Does_Not_Retain_Removed_Panel_Subtree_And_Restores_Survivors()
+    {
+        var (root, target, content, retained, removedPanel, removedLeaf) = CreateRemovedPanelSubtree();
+
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+
+        Assert.False(removedPanel.TryGetTarget(out _));
+        Assert.False(removedLeaf.TryGetTarget(out _));
+        Assert.Same(target, retained.TemplatedParent);
+        Assert.Equal("Initial", retained.Text);
+
+        target.Classes.Remove("active");
+        Assert.Null(retained.TemplatedParent);
+        Assert.Null(retained.Text);
+        target.Tag = "Inactive";
+        Assert.Null(retained.Text);
+
+        target.Classes.Add("active");
+        Assert.Same(target, retained.TemplatedParent);
+        Assert.Equal("Inactive", retained.Text);
+        target.Tag = "Reactivated";
+        Assert.Equal("Reactivated", retained.Text);
+
+        GC.KeepAlive(root);
+        GC.KeepAlive(content);
+    }
+
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static (TestRoot, WeakReference<Control>) CreateRemovedContent(bool nested)
     {
@@ -48,6 +78,29 @@ public class SetterTemplateLifetimeTests : ScopedTestBase
         var removed = new WeakReference<Control>(content.Child!);
         content.Child = null;
         return (root, removed);
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static (TestRoot, ContentControl, StackPanel, TextBlock, WeakReference<Control>, WeakReference<Control>)
+        CreateRemovedPanelSubtree()
+    {
+        var target = CreateTarget();
+        target.Classes.Add("active");
+        var removedLeaf = new TextBlock();
+        var removedPanel = new StackPanel { Children = { removedLeaf } };
+        var retained = new TextBlock { [!TextBlock.TextProperty] = new TemplateBinding(Control.TagProperty) };
+        var content = new StackPanel { Children = { removedPanel, retained } };
+        var root = new TestRoot
+        {
+            Styles = { CreateStyle(() => content, activeClass: true) },
+            Child = target,
+        };
+        Assert.Same(target, retained.TemplatedParent);
+        Assert.Equal("Initial", retained.Text);
+
+        content.Children.Remove(removedPanel);
+
+        return (root, target, content, retained, new(removedPanel), new(removedLeaf));
     }
 
     [Fact]
@@ -349,6 +402,99 @@ public class SetterTemplateLifetimeTests : ScopedTestBase
 
         Assert.Same(text, entry.GetValue());
 
+        Assert.Same(newOwner, text.TemplatedParent);
+        newOwner.Tag = "Other owner changed";
+        Assert.Equal("Other owner changed", text.Text);
+    }
+
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    [InlineData(false, true)]
+    public void Unsubscribing_During_Restoration_Does_Not_Reattach_Descendants(
+        bool unsubscribeFromRoot, bool multipleDescendants)
+    {
+        var target = CreateTarget();
+        var textBlocks = multipleDescendants
+            ? new[] { BuildText(), BuildText() }
+            : new[] { BuildText() };
+        Control content = multipleDescendants
+            ? new Border { Child = new StackPanel { Children = { textBlocks[0], textBlocks[1] } } }
+            : new Border { Child = textBlocks[0] };
+        var entry = (IValueEntry)new PropertySetterTemplateInstance(ContentControl.ContentProperty,
+            new FuncTemplate<Control>(() => content), target);
+
+        Assert.Same(content, entry.GetValue());
+        foreach (var text in textBlocks)
+        {
+            Assert.Same(target, text.TemplatedParent);
+            Assert.Equal("Initial", text.Text);
+        }
+        entry.Unsubscribe();
+
+        var trigger = unsubscribeFromRoot ? (StyledElement)content : textBlocks[0];
+        var shouldUnsubscribe = true;
+        trigger.PropertyChanged += (_, e) =>
+        {
+            if (shouldUnsubscribe && e.Property == StyledElement.TemplatedParentProperty &&
+                ReferenceEquals(e.NewValue, target))
+            {
+                shouldUnsubscribe = false;
+                entry.Unsubscribe();
+            }
+        };
+
+        Assert.Same(content, entry.GetValue());
+
+        Assert.Null(((StyledElement)content).TemplatedParent);
+        Assert.False(((StyledElement)content).IsSetterTemplateChild);
+        foreach (var text in textBlocks)
+        {
+            Assert.Null(text.TemplatedParent);
+            Assert.False(text.IsSetterTemplateChild);
+            Assert.Null(text.Text);
+        }
+
+        target.Tag = "Inactive";
+        foreach (var text in textBlocks)
+            Assert.Null(text.Text);
+
+        Assert.Same(content, entry.GetValue());
+        Assert.Same(target, ((StyledElement)content).TemplatedParent);
+        foreach (var text in textBlocks)
+        {
+            Assert.Same(target, text.TemplatedParent);
+            Assert.Equal("Inactive", text.Text);
+        }
+
+        target.Tag = "Reactivated";
+        foreach (var text in textBlocks)
+            Assert.Equal("Reactivated", text.Text);
+    }
+
+    [Fact]
+    public void Restored_Child_Reassigned_During_Parent_Change_Is_Not_Marked_As_Setter_Child()
+    {
+        var target = CreateTarget();
+        var content = new Border { Child = BuildText() };
+        var entry = (IValueEntry)new PropertySetterTemplateInstance(ContentControl.ContentProperty,
+            new FuncTemplate<Control>(() => content), target);
+        var text = Assert.IsType<TextBlock>(content.Child);
+        var newOwner = new ContentControl { Tag = "Other owner" };
+
+        Assert.Same(content, entry.GetValue());
+        entry.Unsubscribe();
+        text.PropertyChanged += (_, e) =>
+        {
+            if (e.Property == StyledElement.TemplatedParentProperty && ReferenceEquals(e.NewValue, target))
+                text.TemplatedParent = newOwner;
+        };
+
+        Assert.Same(content, entry.GetValue());
+
+        Assert.Same(newOwner, text.TemplatedParent);
+        Assert.False(text.IsSetterTemplateChild);
+        entry.Unsubscribe();
         Assert.Same(newOwner, text.TemplatedParent);
         newOwner.Tag = "Other owner changed";
         Assert.Equal("Other owner changed", text.Text);

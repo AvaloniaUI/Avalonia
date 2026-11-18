@@ -81,6 +81,9 @@ namespace Avalonia.Styling
                 _isActive = true;
                 RestoreTemplatedParent(elementToRestore);
 
+                if (!_isActive)
+                    return _value;
+
                 if (_ownedTemplateChildren is WeakReference<StyledElement> single)
                 {
                     if (single.TryGetTarget(out var child))
@@ -90,6 +93,9 @@ namespace Avalonia.Styling
                 {
                     foreach (var reference in owned)
                     {
+                        if (!_isActive)
+                            break;
+
                         if (reference.TryGetTarget(out var child))
                             RestoreTemplatedParent(child);
                     }
@@ -143,10 +149,12 @@ namespace Avalonia.Styling
         /// </summary>
         private void RestoreTemplatedParent(StyledElement child)
         {
-            if (child.TemplatedParent is null)
+            if (_isActive && child.TemplatedParent is null)
             {
                 child.TemplatedParent = _target;
-                child.IsSetterTemplateChild = true;
+
+                if (_isActive && ReferenceEquals(child.TemplatedParent, _target))
+                    child.IsSetterTemplateChild = true;
             }
         }
 
