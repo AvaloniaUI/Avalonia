@@ -5,6 +5,7 @@ using System.Globalization;
 using Avalonia.Data.Converters;
 using Avalonia.Data.Core;
 using Avalonia.Logging;
+using Avalonia.Utilities;
 
 namespace Avalonia.Data;
 
@@ -173,11 +174,26 @@ internal class TemplateBindingExpression : UntypedBindingExpressionBase
         {
             OnTemplatedParentChanged();
         }
-        else if (!_isPublishingValue &&
-                 _mode is BindingMode.TwoWay or BindingMode.OneWayToSource && e.Property == TargetProperty)
+        else if (e.Property == TargetProperty &&
+                 _mode is BindingMode.TwoWay or BindingMode.OneWayToSource &&
+                 sender is AvaloniaObject target)
         {
-            WriteValueToSource(e.NewValue);
+            var value = target.GetValue(e.Property);
+
+            if (!_isPublishingValue || !IsPublishedValue(value))
+                WriteValueToSource(value);
         }
+    }
+
+    private bool IsPublishedValue(object? targetValue)
+    {
+        if (!IsRunning)
+            return false;
+
+        var value = GetValue();
+
+        return value == AvaloniaProperty.UnsetValue ||
+            TypeUtilities.IdentityEquals(targetValue, value, TargetType);
     }
 
     private bool TryGetTemplatedParent([NotNullWhen(true)] out AvaloniaObject? result)

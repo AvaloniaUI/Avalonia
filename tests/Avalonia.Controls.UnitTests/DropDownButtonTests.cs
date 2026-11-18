@@ -85,6 +85,45 @@ public class DropDownButtonTests : ScopedTestBase
     }
 
     [Fact]
+    public void Reopening_Templated_Flyout_Preserves_Ownership_Of_Setter_Created_Replacement()
+    {
+        using var services = CreateServicesWithoutTheme();
+        var original = new PathIcon();
+        var replacement = new PathIcon();
+        var flyout = new Flyout { Content = original };
+        var host = new ContentControl
+        {
+            Name = "host",
+            Template = new FuncControlTemplate<ContentControl>((_, _) => new DropDownButton { Flyout = flyout }),
+        };
+        var window = new Window { Content = host };
+        window.Styles.Add(new Style(x => x.OfType<ContentControl>().Template().OfType<PathIcon>())
+        {
+            Setters = { new Setter(PathIcon.ForegroundProperty, Brushes.Red) },
+        });
+        window.Styles.Add(new Style(x => x.OfType<ContentControl>().Name("host"))
+        {
+            Setters = { new Setter(ContentControl.ContentProperty, new FuncTemplate<Control>(() => replacement)) },
+        });
+        window.Show();
+        host.ApplyTemplate();
+        var dropDown = Assert.Single(host.GetVisualDescendants().OfType<DropDownButton>());
+        Assert.Same(host, replacement.TemplatedParent);
+        Assert.Equal(Brushes.Red, replacement.Foreground);
+
+        flyout.ShowAt(dropDown);
+        flyout.Hide();
+        flyout.Content = replacement;
+        flyout.ShowAt(dropDown);
+
+        var presenter = Assert.IsType<FlyoutPresenter>(flyout.Popup.Child);
+        Assert.Same(replacement, presenter.Content);
+        Assert.Contains(replacement, presenter.GetVisualDescendants().OfType<PathIcon>());
+        Assert.Same(host, replacement.TemplatedParent);
+        Assert.Equal(Brushes.Red, replacement.Foreground);
+    }
+
+    [Fact]
     public void Reopening_Templated_Flyout_Does_Not_Claim_Forwarded_Content()
     {
         using var services = CreateServicesWithoutTheme();

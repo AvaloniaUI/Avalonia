@@ -1,6 +1,7 @@
 using System;
 using System.Reactive.Linq;
 using System.Runtime.CompilerServices;
+using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
 using Avalonia.Data.Core;
@@ -80,7 +81,7 @@ public class TemplateBindingLifetimeTests : ScopedTestBase
             new TemplateBinding(Control.TagProperty)
             {
                 Mode = BindingMode.TwoWay,
-                Converter = new FuncValueConverter<object, string>(
+                Converter = new FuncValueConverter<object, string?>(
                     value => "Display " + value,
                     value => { ++writes; return "Edited"; }),
             });
@@ -96,6 +97,85 @@ public class TemplateBindingLifetimeTests : ScopedTestBase
         target.Text = "User input";
         Assert.Equal("Edited", owner.Tag);
         Assert.Equal(1, writes);
+    }
+
+    [Fact]
+    public void TwoWay_Binding_Writes_Back_Coerced_Slider_Value()
+    {
+        var owner = new Slider { Maximum = 100, Value = 50 };
+        var target = new Slider { Maximum = 10, TemplatedParent = owner };
+
+        using var binding = target.Bind(Slider.ValueProperty,
+            new TemplateBinding(Slider.ValueProperty) { Mode = BindingMode.TwoWay });
+
+        Assert.Equal(10, target.Value);
+        Assert.Equal(10, owner.Value);
+    }
+
+    [Fact]
+    public void TwoWay_Binding_Does_Not_Write_UnsetValue_Back_To_Source()
+    {
+        var owner = new ContentControl { Tag = "Initial" };
+        var target = new DirectTextTarget { TemplatedParent = owner };
+        var writes = 0;
+        using var binding = target.Bind(DirectTextTarget.TextProperty,
+            new TemplateBinding(Control.TagProperty)
+            {
+                Mode = BindingMode.TwoWay,
+                Converter = new FuncValueConverter<object, object>(
+                    _ => AvaloniaProperty.UnsetValue,
+                    _ => { ++writes; return "Edited"; }),
+            });
+
+        Assert.Null(target.Text);
+        Assert.Equal(0, writes);
+        owner.Tag = "Changed";
+        Assert.Null(target.Text);
+        Assert.Equal(0, writes);
+    }
+
+    [Fact]
+    public void TwoWay_Binding_Writes_Back_Reentrant_Target_Changes()
+    {
+        var owner = new ContentControl { Tag = "Initial" };
+        var target = new DirectTextTarget { TemplatedParent = owner };
+        var writes = 0;
+        target.PropertyChanged += (_, e) =>
+        {
+            if (e.Property == DirectTextTarget.TextProperty && e.NewValue as string == "Display Initial")
+                target.Text = "Reentrant";
+        };
+        using var binding = target.Bind(DirectTextTarget.TextProperty,
+            new TemplateBinding(Control.TagProperty)
+            {
+                Mode = BindingMode.TwoWay,
+                Converter = new FuncValueConverter<object, string>(
+                    value => "Display " + value,
+                    value => { ++writes; return value!; }),
+            });
+
+        Assert.Equal("Reentrant", owner.Tag);
+        Assert.Equal("Display Reentrant", target.Text);
+        Assert.Equal(1, writes);
+    }
+
+    [Fact]
+    public void TwoWay_Binding_Writes_Back_Latest_Value_After_Reentrant_Target_Change()
+    {
+        var owner = new ContentControl { Tag = "Initial" };
+        var target = new DirectTextTarget { TemplatedParent = owner };
+        target.PropertyChanged += (_, e) =>
+        {
+            if (e.Property == DirectTextTarget.TextProperty && e.NewValue as string == "Outer")
+                target.Text = "Inner";
+        };
+        using var binding = target.Bind(DirectTextTarget.TextProperty,
+            new TemplateBinding(Control.TagProperty) { Mode = BindingMode.TwoWay });
+
+        target.Text = "Outer";
+
+        Assert.Equal("Inner", target.Text);
+        Assert.Equal("Inner", owner.Tag);
     }
 
     private class DirectTextTarget : Control

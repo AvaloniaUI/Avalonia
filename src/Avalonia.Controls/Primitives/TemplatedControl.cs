@@ -336,8 +336,8 @@ namespace Avalonia.Controls.Primitives
                         if (child.IsSetterTemplateChild)
                             continue;
 
-                        child.TemplatedParent = null;
                         ((ISetLogicalParent)child).SetParent(null);
+                        child.TemplatedParent = null;
                     }
 
                     VisualChildren.Clear();

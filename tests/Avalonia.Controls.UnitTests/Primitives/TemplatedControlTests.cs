@@ -155,6 +155,43 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
+        public void Changing_Template_Removes_Old_Template_Root_Style_Only_Once()
+        {
+            var oldTemplateRoot = new Border();
+            var target = new TestTemplatedControl
+            {
+                Template = new FuncControlTemplate((_, __) => oldTemplateRoot),
+            };
+            var root = new TestRoot
+            {
+                Styles =
+                {
+                    new Style(x => x.OfType<TestTemplatedControl>().Template().OfType<Border>())
+                    {
+                        Setters = { new Setter(Control.TagProperty, "template") },
+                    },
+                },
+                Child = target,
+            };
+
+            target.ApplyTemplate();
+            Assert.Equal("template", oldTemplateRoot.Tag);
+            var tagChanges = 0;
+            oldTemplateRoot.PropertyChanged += (_, e) =>
+            {
+                if (e.Property == Control.TagProperty)
+                    ++tagChanges;
+            };
+
+            target.Template = new FuncControlTemplate((_, __) => new Border());
+            target.ApplyTemplate();
+
+            Assert.Equal(1, tagChanges);
+            Assert.Null(oldTemplateRoot.Parent);
+            GC.KeepAlive(root);
+        }
+
+        [Fact]
         public void Nested_Templated_Control_Should_Not_Have_Template_Applied()
         {
             var target = new Avalonia.Controls.Primitives.TemplatedControl

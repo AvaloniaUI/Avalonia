@@ -501,7 +501,32 @@ public class SetterTemplateLifetimeTests : ScopedTestBase
     }
 
     [Fact]
-    public void Reading_Value_During_Initialization_Does_Not_Activate_Partially_Built_Content()
+    public void Initially_Assigned_Child_Reassigned_During_Parent_Change_Is_Not_Marked_As_Setter_Child()
+    {
+        var target = CreateTarget();
+        var content = new Border { Child = BuildText() };
+        var entry = (IValueEntry)new PropertySetterTemplateInstance(ContentControl.ContentProperty,
+            new FuncTemplate<Control>(() => content), target);
+        var text = Assert.IsType<TextBlock>(content.Child);
+        var newOwner = new ContentControl { Tag = "Other owner" };
+        text.PropertyChanged += (_, e) =>
+        {
+            if (e.Property == StyledElement.TemplatedParentProperty && ReferenceEquals(e.NewValue, target))
+                text.TemplatedParent = newOwner;
+        };
+
+        Assert.Same(content, entry.GetValue());
+
+        Assert.Same(newOwner, text.TemplatedParent);
+        Assert.False(text.IsSetterTemplateChild);
+        entry.Unsubscribe();
+        Assert.Same(newOwner, text.TemplatedParent);
+        newOwner.Tag = "Other owner changed";
+        Assert.Equal("Other owner changed", text.Text);
+    }
+
+    [Fact]
+    public void Unsubscribing_During_Initialization_Clears_Parent_After_Build()
     {
         var target = CreateTarget();
         var content = Assert.IsType<Border>(BuildContent());
@@ -518,9 +543,74 @@ public class SetterTemplateLifetimeTests : ScopedTestBase
 
         Assert.Same(content, entry.GetValue());
 
+        Assert.Null(content.TemplatedParent);
+        Assert.Null(content.Child!.TemplatedParent);
+        Assert.Null(Assert.IsType<TextBlock>(content.Child).Text);
+    }
+
+    [Fact]
+    public void Reading_Value_During_Initialization_After_Unsubscribe_Leaves_Entry_Active()
+    {
+        var target = CreateTarget();
+        var content = Assert.IsType<Border>(BuildContent());
+        var text = Assert.IsType<TextBlock>(content.Child);
+        var entry = (IValueEntry)new PropertySetterTemplateInstance(ContentControl.ContentProperty,
+            new FuncTemplate<Control>(() => content), target);
+        var reenter = true;
+        content.PropertyChanged += (_, e) =>
+        {
+            if (reenter && e.Property == StyledElement.TemplatedParentProperty &&
+                ReferenceEquals(e.NewValue, target))
+            {
+                reenter = false;
+                entry.Unsubscribe();
+                Assert.Same(content, entry.GetValue());
+            }
+        };
+
+        Assert.Same(content, entry.GetValue());
+
         Assert.Same(target, content.TemplatedParent);
-        Assert.Same(target, content.Child!.TemplatedParent);
-        Assert.Equal("Initial", Assert.IsType<TextBlock>(content.Child).Text);
+        Assert.Same(target, text.TemplatedParent);
+        Assert.Equal("Initial", text.Text);
+        target.Tag = "Still active";
+        Assert.Equal("Still active", text.Text);
+    }
+
+    [Fact]
+    public void Removing_Style_During_Initialization_Clears_Template_Ownership()
+    {
+        var target = CreateTarget();
+        target.Classes.Add("active");
+        var content = Assert.IsType<Border>(BuildContent());
+        var text = Assert.IsType<TextBlock>(content.Child);
+        var removeStyle = true;
+        content.PropertyChanged += (_, e) =>
+        {
+            if (removeStyle && e.Property == StyledElement.TemplatedParentProperty &&
+                ReferenceEquals(e.NewValue, target))
+            {
+                removeStyle = false;
+                target.Classes.Remove("active");
+            }
+        };
+
+        var root = new TestRoot
+        {
+            Styles = { CreateStyle(() => content, activeClass: true) },
+            Child = target,
+        };
+
+        Assert.False(removeStyle);
+        target.InvalidateStyles(recurse: false);
+        target.ApplyStyling();
+
+        Assert.Null(content.TemplatedParent);
+        Assert.Null(text.TemplatedParent);
+        Assert.Null(text.Text);
+        target.Tag = "Changed after style removal";
+        Assert.Null(text.Text);
+        GC.KeepAlive(root);
     }
 
     [Fact]

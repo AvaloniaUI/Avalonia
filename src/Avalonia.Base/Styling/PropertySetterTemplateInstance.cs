@@ -15,6 +15,7 @@ namespace Avalonia.Styling
         private object? _ownedTemplateChildren;
         private bool _isUnsubscribing;
         private bool _isInitializing;
+        private bool _unsubscribeRequestedDuringInitialization;
         private bool _isBuilt;
         private bool _isActive;
 
@@ -30,6 +31,9 @@ namespace Avalonia.Styling
         public bool HasValue() => true;
         public object? GetValue()
         {
+            if (_isInitializing)
+                _unsubscribeRequestedDuringInitialization = false;
+
             if (!_isBuilt)
             {
                 _value = _template.Build();
@@ -42,13 +46,15 @@ namespace Avalonia.Styling
                     {
                         StyledElement.ApplyTemplatedParent(element, _target, ref children);
                         var enumerator = children.GetEnumerator();
-                        element.IsSetterTemplateChild = true;
+                        if (ReferenceEquals(element.TemplatedParent, _target))
+                            element.IsSetterTemplateChild = true;
 
                         if (children.Count == 1)
                         {
                             enumerator.MoveNext();
                             var child = enumerator.Current;
-                            child.IsSetterTemplateChild = true;
+                            if (ReferenceEquals(child.TemplatedParent, _target))
+                                child.IsSetterTemplateChild = true;
                             _ownedTemplateChildren = new WeakReference<StyledElement>(child);
                         }
                         else if (children.Count > 1)
@@ -58,7 +64,8 @@ namespace Avalonia.Styling
                             while (enumerator.MoveNext())
                             {
                                 var child = enumerator.Current;
-                                child.IsSetterTemplateChild = true;
+                                if (ReferenceEquals(child.TemplatedParent, _target))
+                                    child.IsSetterTemplateChild = true;
                                 owned[i++] = new(child);
                             }
                             _ownedTemplateChildren = owned;
@@ -71,6 +78,13 @@ namespace Avalonia.Styling
                     }
                 }
                 _isActive = true;
+
+                if (_unsubscribeRequestedDuringInitialization)
+                {
+                    _unsubscribeRequestedDuringInitialization = false;
+                    ((IValueEntry)this).Unsubscribe();
+                    return _value;
+                }
             }
 
             // Reuse only the original identities: bindings may have since forwarded user
@@ -114,6 +128,12 @@ namespace Avalonia.Styling
 
         void IValueEntry.Unsubscribe()
         {
+            if (_isInitializing)
+            {
+                _unsubscribeRequestedDuringInitialization = true;
+                return;
+            }
+
             if (!_isActive || _value is not StyledElement element)
                 return;
 
