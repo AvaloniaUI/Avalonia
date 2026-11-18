@@ -174,6 +174,46 @@ public class TreeViewItemAutomationPeerTests : ScopedTestBase
         AutomationPeerAssert.PreservesStyleBinding(target, TreeViewItem.IsSelectedProperty, true, false, peer.RemoveFromSelection);
     }
 
+    [Fact]
+    public void SelectionContainer_Is_The_Tree()
+    {
+        using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+        var item = new TreeViewItem { Header = "Item" };
+        var tree = new TreeView { Items = { item } };
+        var root = new TestRoot(tree);
+        root.LayoutManager.ExecuteInitialLayoutPass();
+
+        var provider = ControlAutomationPeer.CreatePeerForElement(item).GetProvider<ISelectionItemProvider>();
+        var treeProvider = ControlAutomationPeer.CreatePeerForElement(tree).GetProvider<ISelectionProvider>();
+
+        Assert.NotNull(provider);
+        Assert.NotNull(treeProvider);
+        Assert.Same(treeProvider, provider.SelectionContainer);
+    }
+
+    [Fact]
+    public void IsSelected_Change_Raises_PropertyChanged()
+    {
+        var item = new TreeViewItem();
+        var peer = ControlAutomationPeer.CreatePeerForElement(item);
+        var raised = new List<AutomationPropertyChangedEventArgs>();
+
+        peer.PropertyChanged += (_, e) =>
+        {
+            if (e.Property == SelectionItemPatternIdentifiers.IsSelectedProperty)
+                raised.Add(e);
+        };
+
+        item.IsSelected = true;
+        item.IsSelected = false;
+
+        Assert.Equal(2, raised.Count);
+        Assert.Equal(false, raised[0].OldValue);
+        Assert.Equal(true, raised[0].NewValue);
+        Assert.Equal(true, raised[1].OldValue);
+        Assert.Equal(false, raised[1].NewValue);
+    }
+
     private static TreeViewItem CreateParentItem() => new() { Items = { new TreeViewItem() } };
 
     private static List<AutomationPropertyChangedEventArgs> CollectStateChanges(TreeViewItem item)
