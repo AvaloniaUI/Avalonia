@@ -29,7 +29,7 @@ runs:
 
     # A token is only needed when downloading from another run.
     - name: Download Windows NuGet Packages
-      uses: actions/download-artifact@v7
+      uses: actions/download-artifact@v8
       with:
         name: nuget-windows
         path: nuget-windows
@@ -37,7 +37,7 @@ runs:
         github-token: ${{ (inputs.run-id && github.token) || '' }}
 
     - name: Download macOS NuGet Packages
-      uses: actions/download-artifact@v7
+      uses: actions/download-artifact@v8
       with:
         name: nuget-macos
         path: nuget-macos
