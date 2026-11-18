@@ -426,6 +426,94 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Changing_PasswordChar_Should_Keep_Text()
+        {
+            using (Start())
+            {
+                var target = new MaskedTextBox
+                {
+                    Template = CreateTemplate(),
+                    Mask = "000-000",
+                    Text = "123456",
+                    PasswordChar = '*'
+                };
+
+                Assert.Equal("***-***", target.Text);
+
+                target.PasswordChar = '#';
+
+                Assert.Equal("###-###", target.Text);
+
+                target.PasswordChar = '\0';
+
+                Assert.Equal("123-456", target.Text);
+            }
+        }
+
+        [Fact]
+        public void Changing_PasswordChar_Should_Keep_Partial_Text_When_ResetOnPrompt_Is_False()
+        {
+            using (Start())
+            {
+                var target = new MaskedTextBox
+                {
+                    Template = CreateTemplate(),
+                    Mask = "000-000",
+                    ResetOnPrompt = false,
+                    Text = "12"
+                };
+
+                target.PasswordChar = '*';
+
+                Assert.Equal("**_-___", target.Text);
+
+                target.PasswordChar = '\0';
+
+                Assert.Equal("12_-___", target.Text);
+            }
+        }
+
+        [Fact]
+        public void Changing_PromptChar_Should_Keep_Text()
+        {
+            using (Start())
+            {
+                var target = new MaskedTextBox
+                {
+                    Template = CreateTemplate(),
+                    Mask = "000-000",
+                    Text = "12"
+                };
+
+                Assert.Equal("12_-___", target.Text);
+
+                target.PromptChar = '#';
+
+                Assert.Equal("12#-###", target.Text);
+            }
+        }
+
+        [Fact]
+        public void Changing_AsciiOnly_With_PasswordChar_Should_Keep_Text()
+        {
+            using (Start())
+            {
+                var target = new MaskedTextBox
+                {
+                    Template = CreateTemplate(),
+                    Mask = "000-000",
+                    Text = "123456",
+                    PasswordChar = '*'
+                };
+
+                target.AsciiOnly = true;
+                target.PasswordChar = '\0';
+
+                Assert.Equal("123-456", target.Text);
+            }
+        }
+
         [Theory]
         [InlineData("00/00/0000", "12102000", "12/10/2000")]
         [InlineData("LLLL", "дбs", "дбs_")]

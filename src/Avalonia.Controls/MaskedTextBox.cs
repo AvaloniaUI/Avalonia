@@ -303,10 +303,12 @@ namespace Avalonia.Controls
         {
             void UpdateMaskProvider()
             {
+                // Text may hold password characters.
+                var text = MaskProvider is { } previous ? previous.ToString(true, true, true, 0, previous.Length) : Text;
                 MaskProvider = new MaskedTextProvider(Mask!, Culture, true, PromptChar, PasswordChar, AsciiOnly) { ResetOnSpace = ResetOnSpace, ResetOnPrompt = ResetOnPrompt };
-                if (Text != null)
+                if (text != null)
                 {
-                    MaskProvider.Set(Text);
+                    MaskProvider.Set(text);
                 }
                 RefreshText(MaskProvider, 0, isEdit: false);
             }
@@ -329,14 +331,16 @@ namespace Avalonia.Controls
             {
                 if (MaskProvider != null && MaskProvider.PasswordChar != PasswordChar)
                 {
-                    UpdateMaskProvider();
+                    MaskProvider.PasswordChar = PasswordChar;
+                    RefreshText(MaskProvider, 0, isEdit: false);
                 }
             }
             else if (change.Property == PromptCharProperty)
             {
                 if (MaskProvider != null && MaskProvider.PromptChar != PromptChar)
                 {
-                    UpdateMaskProvider();
+                    MaskProvider.PromptChar = PromptChar;
+                    RefreshText(MaskProvider, 0, isEdit: false);
                 }
             }
             else if (change.Property == ResetOnPromptProperty)
