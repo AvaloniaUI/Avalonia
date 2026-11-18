@@ -7,6 +7,8 @@ on:
     types: [created]
   discussion_comment:
     types: [created]
+  merge_group:
+    types: [checks_requested]
 
 jobs:
   bot:
