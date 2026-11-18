@@ -63,7 +63,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="Increment"/> property.
         /// </summary>
         public static readonly StyledProperty<decimal> IncrementProperty =
-            AvaloniaProperty.Register<NumericUpDown, decimal>(nameof(Increment), 1.0m, coerce: OnCoerceIncrement);
+            AvaloniaProperty.Register<NumericUpDown, decimal>(nameof(Increment), 1m, coerce: OnCoerceIncrement);
 
         /// <summary>
         /// Defines the <see cref="IsReadOnly"/> property.

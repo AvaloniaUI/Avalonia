@@ -65,6 +65,19 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Default_Increment_Does_Not_Add_Decimal_Places()
+        {
+            RunTest((control, textbox) =>
+            {
+                control.Value = 30;
+
+                GetSpinner(control).RaiseEvent(new SpinEventArgs(Spinner.SpinEvent, SpinDirection.Increase));
+
+                Assert.Equal("31", control.Text);
+            });
+        }
+
+        [Fact]
         public void FormatString_Is_Applied_Immediately()
         {
             RunTest((control, textbox) =>
