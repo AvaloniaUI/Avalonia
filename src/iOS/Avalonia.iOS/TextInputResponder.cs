@@ -459,9 +459,10 @@ partial class AvaloniaView
             // TODO: Query from the input client
             Logger.TryGet(LogEventLevel.Debug, ImeLog)?
                 .Log(null, "IUITextInput:GetCaretRectForPosition");
-            var rect = _client.CursorRectangle;
+            // Same TopLevel-space rect as GetFirstRectForRange; CursorRectangle is relative to the TextPresenter.
+            var r = _view._cursorRect;
 
-            return new CGRect(rect.X, rect.Y, rect.Width, rect.Height);
+            return new CGRect(r.Left, r.Top, r.Width, r.Height);
         }
 
         UITextPosition IUITextInput.GetClosestPositionToPoint(CGPoint point)
