@@ -69,7 +69,7 @@ namespace Avalonia.Android
             AutomationPeer rootPeer = ControlAutomationPeer.CreatePeerForElement(view.TopLevel!);
             GetOrCreateNodeInfoProvidersFromPeer(rootPeer, out int _);
 
-            if(rootPeer is IEmbeddedRootProvider rootProvider)
+            if (rootPeer.GetProvider<IEmbeddedRootProvider>() is { } rootProvider)
             {
                 rootProvider.FocusChanged += RootProvider_FocusChanged;
             }
@@ -82,26 +82,26 @@ namespace Avalonia.Android
             if (sender is IEmbeddedRootProvider embeddedRoot)
             {
                 var focusedView = embeddedRoot.GetFocus();
-                int viewid = _focusedViewId;
-                if (viewid != -1)
+                int viewId = _focusedViewId;
+                if (viewId != -1)
                 {
-                    InvalidateVirtualView(viewid);
-                    SendEventForVirtualView(viewid, AccessibilityEventCompat.TypeViewAccessibilityFocusCleared);
+                    InvalidateVirtualView(viewId);
+                    ClearKeyboardFocusForVirtualView(_focusedViewId);
                 }
 
-                viewid = -1;
+                viewId = -1;
                 if (focusedView is { })
                 {
-                    var _ = GetOrCreateNodeInfoProvidersFromPeer(focusedView, out viewid);
+                    var _ = GetOrCreateNodeInfoProvidersFromPeer(focusedView, out viewId);
 
-                    if (viewid != -1)
+                    if (viewId != -1)
                     {
-                        InvalidateVirtualView(viewid);
-                        SendEventForVirtualView(viewid, AccessibilityEventCompat.TypeViewAccessibilityFocused);
+                        InvalidateVirtualView(viewId);
+                        RequestKeyboardFocusForVirtualView(_focusedViewId);
                     }
                 }
 
-                _focusedViewId = viewid;
+                _focusedViewId = viewId;
             }
         }
 
