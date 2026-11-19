@@ -14,6 +14,7 @@ namespace Avalonia.Media.TextFormatting
         internal IReadOnlyList<IndexedTextRun>? _indexedTextRuns;
         private readonly TextRun[] _textRuns;
         private readonly double _paragraphWidth;
+        private readonly double _lineIndent;
         private readonly TextParagraphProperties _paragraphProperties;
         private TextLineMetrics _textLineMetrics;
         private TextLineBreak? _textLineBreak;
@@ -24,7 +25,7 @@ namespace Avalonia.Media.TextFormatting
 
         public TextLineImpl(TextRun[] textRuns, int firstTextSourceIndex, int length, double paragraphWidth,
             TextParagraphProperties paragraphProperties, FlowDirection resolvedFlowDirection = FlowDirection.LeftToRight,
-            TextLineBreak? lineBreak = null, bool hasCollapsed = false)
+            TextLineBreak? lineBreak = null, bool hasCollapsed = false, double lineIndent = 0)
         {
             FirstTextSourceIndex = firstTextSourceIndex;
             Length = length;
@@ -33,6 +34,7 @@ namespace Avalonia.Media.TextFormatting
 
             _textRuns = textRuns;
             _paragraphWidth = paragraphWidth;
+            _lineIndent = lineIndent;
             _paragraphProperties = paragraphProperties;
 
             _resolvedFlowDirection = resolvedFlowDirection;
@@ -40,6 +42,12 @@ namespace Avalonia.Media.TextFormatting
 
         /// <inheritdoc/>
         public override IReadOnlyList<TextRun> TextRuns => _textRuns;
+
+        /// <summary>
+        /// Gets the distance from the leading edge of the paragraph at which the line's box starts.
+        /// The line is aligned within the paragraph width minus this indent.
+        /// </summary>
+        internal double LineIndent => _lineIndent;
 
         /// <inheritdoc/>
         public override int FirstTextSourceIndex { get; }
@@ -192,7 +200,7 @@ namespace Avalonia.Media.TextFormatting
             }
 
             var collapsedLine = new TextLineImpl(collapsedRuns, FirstTextSourceIndex, Length, _paragraphWidth, _paragraphProperties,
-                _resolvedFlowDirection, TextLineBreak, true);
+                _resolvedFlowDirection, TextLineBreak, true, _lineIndent);
 
             if (collapsedRuns.Length > 0)
             {
@@ -1237,6 +1245,12 @@ namespace Avalonia.Media.TextFormatting
             {
                 _textLineBreak = new TextLineBreak((TextEndOfLine)_textRuns[endOfLineIndex]);
             }
+            else if (_textLineBreak is null && _textLineMetrics.NewlineLength > 0)
+            {
+                // A line that ends at a newline character continues its paragraph. Without a break the
+                // next line would look like the first line of a paragraph and take the first-line indent.
+                _textLineBreak = new TextLineBreak(null, _resolvedFlowDirection);
+            }
         }
 
         /// <summary>
@@ -1514,7 +1528,7 @@ namespace Avalonia.Media.TextFormatting
             var overhangLeading = inkBounds.Left;
             //The width of overhanging pixels at the end of the natural bounds. Positive value means we are inside.
             var overhangTrailing = widthIncludingWhitespace - inkBounds.Right;
-            var hasOverflowed = MathUtilities.GreaterThan(width, _paragraphWidth);
+            var hasOverflowed = MathUtilities.GreaterThan(width, _paragraphWidth - _lineIndent);
 
             var start = GetParagraphOffsetX(width, widthIncludingWhitespace);
 
@@ -1548,7 +1562,25 @@ namespace Avalonia.Media.TextFormatting
         /// <returns>The paragraph offset.</returns>
         private double GetParagraphOffsetX(double width, double widthIncludingTrailingWhitespace)
         {
-            if (double.IsPositiveInfinity(_paragraphWidth))
+            var paragraphFlowDirection = _paragraphProperties.FlowDirection;
+
+            // The indent narrows the box on the paragraph's leading side: a left-to-right box starts at the
+            // indent, a right-to-left box ends at the paragraph width minus the indent.
+            var leadingOffset = paragraphFlowDirection == FlowDirection.LeftToRight ? _lineIndent : 0;
+
+            return leadingOffset + GetAlignmentOffsetX(_paragraphWidth - _lineIndent, width, widthIncludingTrailingWhitespace);
+        }
+
+        /// <summary>
+        /// Gets the offset of the line within its box for the paragraph's text alignment.
+        /// </summary>
+        /// <param name="boxWidth">The width the line is aligned within.</param>
+        /// <param name="width">The line width.</param>
+        /// <param name="widthIncludingTrailingWhitespace">The line width including trailing whitespace.</param>
+        /// <returns>The offset from the start of the box.</returns>
+        private double GetAlignmentOffsetX(double boxWidth, double width, double widthIncludingTrailingWhitespace)
+        {
+            if (double.IsPositiveInfinity(boxWidth))
             {
                 return 0;
             }
@@ -1583,7 +1615,7 @@ namespace Avalonia.Media.TextFormatting
             switch (textAlignment)
             {
                 case TextAlignment.Center:
-                    var start = (_paragraphWidth - width) / 2;
+                    var start = (boxWidth - width) / 2;
 
                     if (paragraphFlowDirection == FlowDirection.RightToLeft)
                     {
@@ -1592,7 +1624,7 @@ namespace Avalonia.Media.TextFormatting
 
                     return Math.Max(0, start);
                 case TextAlignment.Right:
-                    return Math.Max(0, _paragraphWidth - widthIncludingTrailingWhitespace);
+                    return Math.Max(0, boxWidth - widthIncludingTrailingWhitespace);
                 default:
                     return 0;
             }
