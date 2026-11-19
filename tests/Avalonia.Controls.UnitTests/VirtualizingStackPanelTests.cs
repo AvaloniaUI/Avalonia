@@ -1687,6 +1687,88 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Theory]
+        [InlineData(6000d, 3d)]
+        [InlineData(12000d, 500d)]
+        public void Growing_Visible_Variable_Height_Item_Preserves_Viewport_Position(double offset, double growth)
+        {
+            using var app = App();
+
+            // Regression for #17635: resizing a realized item must not replace the
+            // known viewport anchor with an estimate based on the new average size.
+            var items = Enumerable.Range(0, 300)
+                .Select(i => new ItemWithHeight(i, 50 + i * 37 % 90))
+                .ToArray();
+            var (target, scroll, itemsControl) = CreateUnrootedTarget<ItemsControl>(
+                items: items, itemTemplate: CanvasWithHeightTemplate);
+            var root = CreateRoot(itemsControl, clientSize: new Size(100, 400));
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            scroll.Offset = new Vector(0, offset);
+            Layout(target);
+
+            // Grow an item in the middle of the viewport, leaving all preceding
+            // item heights unchanged. Its top should therefore stay in place.
+            var index = Enumerable.Range(target.FirstRealizedIndex,
+                    target.LastRealizedIndex - target.FirstRealizedIndex + 1)
+                .First(i =>
+                {
+                    var y = target.ContainerFromIndex(i)!.Bounds.Top - scroll.Offset.Y;
+                    return y >= 120 && y <= 300;
+                });
+            var container = Assert.IsType<ContentPresenter>(target.ContainerFromIndex(index));
+            var before = container.Bounds.Top - scroll.Offset.Y;
+            var offsetBefore = scroll.Offset.Y;
+
+            items[index].Height += growth;
+            Layout(target);
+
+            var resizedContainer = target.ContainerFromIndex(index);
+            Assert.True(resizedContainer is not null,
+                $"Item {index} left the realized range after growing by {growth}: " +
+                $"viewport top was {before}, scroll offset {offsetBefore} -> {scroll.Offset.Y}, " +
+                $"realized range is now {target.FirstRealizedIndex}..{target.LastRealizedIndex}.");
+            container = Assert.IsType<ContentPresenter>(resizedContainer);
+            Assert.Equal(items[index].Height, container.DesiredSize.Height);
+            var after = container.Bounds.Top - scroll.Offset.Y;
+            Assert.True(Math.Abs(before - after) <= 1,
+                $"Item {index} grew by {growth}: viewport top {before} -> {after}, " +
+                $"scroll offset {offsetBefore} -> {scroll.Offset.Y}.");
+        }
+
+        [Theory]
+        [InlineData(Orientation.Vertical)]
+        [InlineData(Orientation.Horizontal)]
+        public void Growing_Single_Visible_Item_Preserves_Viewport_Position(Orientation orientation)
+        {
+            using var app = App();
+            var horizontal = orientation == Orientation.Horizontal;
+            var items = Enumerable.Range(0, 100).Select(_ => new Canvas
+            {
+                Width = horizontal ? 500 : 100,
+                Height = horizontal ? 100 : 500,
+            }).ToArray();
+            var (target, scroll, itemsControl) = CreateUnrootedTarget<ItemsControl>(
+                items: items, itemTemplate: null, orientation: orientation);
+            var root = CreateRoot(itemsControl);
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            scroll.Offset = horizontal ? new Vector(25000, 0) : new Vector(0, 25000);
+            Layout(target);
+            Assert.Same(items[50], target.ContainerFromIndex(50));
+            var before = horizontal ? items[50].Bounds.Left - scroll.Offset.X : items[50].Bounds.Top - scroll.Offset.Y;
+
+            if (horizontal)
+                items[50].Width += 3;
+            else
+                items[50].Height += 3;
+            Layout(target);
+
+            Assert.Same(items[50], target.ContainerFromIndex(50));
+            var after = horizontal ? items[50].Bounds.Left - scroll.Offset.X : items[50].Bounds.Top - scroll.Offset.Y;
+            Assert.Equal(before, after);
+        }
+
+        [Theory]
         [InlineData(0d,
             4, 5,
             8, 11)]
