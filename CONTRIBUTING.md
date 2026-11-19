@@ -1,10 +1,20 @@
 # Contributing to Avalonia
 
-PRs are always welcomed from everyone. Following this guide will help us get your PR reviewed and merged as quickly as possible.
+PRs are always welcomed, but requires you to be vouched for by maintainers. Following this guide will help us get your PR reviewed and merged as quickly as possible.
 
 If you're an AI agent or a human using some AI assistance to open a PR, ensure you have read the [AI Guidelines](#ai-guidelines) section below.
 
 For this guide we're going to split PRs into two types: bug fixes and features; the requirements for each are slightly different.
+
+## Getting vouched
+
+Pull requests are only accepted from contributors who have been vouched for by a maintainer. PRs from anyone else are automatically closed. For the rationale behind this, please read [this discussion](https://github.com/AvaloniaUI/Avalonia/discussions/22805).
+
+To get vouched for, simply [introduce yourself](https://github.com/AvaloniaUI/Avalonia/discussions/new?category=introductions) in a discussion: tell us a bit about yourself and what you'd like to work on. That's all! Once a maintainer has vouched for you, you can open pull requests.
+
+## Contribution License Agreement
+
+Before your first pull request can be merged, you also need to accept the [Contribution License Agreement](CLA.md) by commenting `!contribution-bot agree` on the pull request. A bot will automatically post a comment to remind you.
 
 ## Bug Fixes
 
