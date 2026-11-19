@@ -79,12 +79,14 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
-        [Fact]
-        public void Line_After_Hard_Line_Break_Is_Not_Indented()
+        [Theory]
+        [InlineData(TextWrapping.Wrap)]
+        [InlineData(TextWrapping.NoWrap)]
+        public void Line_After_Hard_Line_Break_Is_Not_Indented(TextWrapping textWrapping)
         {
             using (Start())
             {
-                var layout = CreateLayout("aaaa\rbbbb", Indent, maxWidth: 500);
+                var layout = CreateLayout("aaaa\rbbbb", Indent, 500, textWrapping);
 
                 Assert.Equal(2, layout.TextLines.Count);
                 Assert.Equal(Indent, layout.TextLines[0].Start, Precision);
@@ -92,12 +94,14 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
-        [Fact]
-        public void Empty_Line_After_Trailing_Line_Break_Is_Not_Indented()
+        [Theory]
+        [InlineData(TextWrapping.Wrap)]
+        [InlineData(TextWrapping.NoWrap)]
+        public void Empty_Line_After_Trailing_Line_Break_Is_Not_Indented(TextWrapping textWrapping)
         {
             using (Start())
             {
-                var layout = CreateLayout("aaaa\r", Indent, maxWidth: 500);
+                var layout = CreateLayout("aaaa\r", Indent, 500, textWrapping);
 
                 Assert.Equal(2, layout.TextLines.Count);
                 Assert.Equal(Indent, layout.TextLines[0].Start, Precision);
@@ -105,34 +109,40 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
-        [Fact]
-        public void Indent_Is_Ignored_When_Not_First_Line_In_Paragraph()
+        [Theory]
+        [InlineData(TextWrapping.Wrap)]
+        [InlineData(TextWrapping.NoWrap)]
+        public void Indent_Is_Ignored_When_Not_First_Line_In_Paragraph(TextWrapping textWrapping)
         {
             using (Start())
             {
-                var layout = CreateLayout("aaaa", Indent, maxWidth: 500, firstLineInParagraph: false);
+                var layout = CreateLayout("aaaa", Indent, 500, textWrapping, firstLineInParagraph: false);
 
                 Assert.Equal(0, layout.TextLines[0].Start, Precision);
             }
         }
 
-        [Fact]
-        public void Empty_Paragraph_Places_Caret_At_Indent()
+        [Theory]
+        [InlineData(TextWrapping.Wrap)]
+        [InlineData(TextWrapping.NoWrap)]
+        public void Empty_Paragraph_Places_Caret_At_Indent(TextWrapping textWrapping)
         {
             using (Start())
             {
-                var layout = CreateLayout("", Indent, maxWidth: 500);
+                var layout = CreateLayout("", Indent, 500, textWrapping);
 
                 Assert.Equal(Indent, layout.HitTestTextPosition(0).X, Precision);
             }
         }
 
-        [Fact]
-        public void Hit_Test_Inside_Indent_Maps_To_First_Character()
+        [Theory]
+        [InlineData(TextWrapping.Wrap)]
+        [InlineData(TextWrapping.NoWrap)]
+        public void Hit_Test_Inside_Indent_Maps_To_First_Character(TextWrapping textWrapping)
         {
             using (Start())
             {
-                var layout = CreateLayout("aaaa bbbb", Indent, maxWidth: 500);
+                var layout = CreateLayout("aaaa bbbb", Indent, 500, textWrapping);
 
                 var result = layout.HitTestPoint(new Point(Indent / 2, layout.TextLines[0].Height / 2));
 
@@ -141,14 +151,16 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
-        [Fact]
-        public void Right_To_Left_Paragraph_Is_Indented_From_The_Right()
+        [Theory]
+        [InlineData(TextWrapping.Wrap)]
+        [InlineData(TextWrapping.NoWrap)]
+        public void Right_To_Left_Paragraph_Is_Indented_From_The_Right(TextWrapping textWrapping)
         {
             using (Start())
             {
                 const double maxWidth = 500;
 
-                var layout = CreateLayout("abcd", Indent, maxWidth, flowDirection: FlowDirection.RightToLeft,
+                var layout = CreateLayout("abcd", Indent, maxWidth, textWrapping, flowDirection: FlowDirection.RightToLeft,
                     textAlignment: TextAlignment.Start);
 
                 var line = layout.TextLines[0];
@@ -157,14 +169,16 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
-        [Fact]
-        public void Centered_First_Line_Is_Centered_In_Remaining_Width()
+        [Theory]
+        [InlineData(TextWrapping.Wrap)]
+        [InlineData(TextWrapping.NoWrap)]
+        public void Centered_First_Line_Is_Centered_In_Remaining_Width(TextWrapping textWrapping)
         {
             using (Start())
             {
                 const double maxWidth = 500;
 
-                var layout = CreateLayout("abcd", Indent, maxWidth, textAlignment: TextAlignment.Center);
+                var layout = CreateLayout("abcd", Indent, maxWidth, textWrapping, textAlignment: TextAlignment.Center);
 
                 var line = layout.TextLines[0];
 
@@ -191,10 +205,10 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         {
             using (Start())
             {
-                var unwrapped = CreateLayout(WrappingText, 0, double.PositiveInfinity);
+                var unwrapped = CreateLayout(WrappingText, 0, double.PositiveInfinity, TextWrapping.NoWrap);
                 var maxWidth = unwrapped.Width / 2;
 
-                var layout = CreateLayout(WrappingText, Indent, maxWidth, textWrapping: TextWrapping.NoWrap,
+                var layout = CreateLayout(WrappingText, Indent, maxWidth, TextWrapping.NoWrap,
                     textTrimming: TextTrimming.CharacterEllipsis);
 
                 var line = layout.TextLines[0];
@@ -204,12 +218,14 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
-        [Fact]
-        public void Layout_Width_Includes_Indent()
+        [Theory]
+        [InlineData(TextWrapping.Wrap)]
+        [InlineData(TextWrapping.NoWrap)]
+        public void Layout_Width_Includes_Indent(TextWrapping textWrapping)
         {
             using (Start())
             {
-                var layout = CreateLayout("abcd", Indent, double.PositiveInfinity);
+                var layout = CreateLayout("abcd", Indent, double.PositiveInfinity, textWrapping);
 
                 var line = layout.TextLines[0];
 
@@ -217,6 +233,54 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 Assert.Equal(Indent + line.Width, layout.Width, Precision);
                 Assert.Equal(Indent + line.WidthIncludingTrailingWhitespace, layout.WidthIncludingTrailingWhitespace,
                     Precision);
+            }
+        }
+
+        [Fact]
+        public void Unwrapped_First_Line_Overflows_Against_Width_Minus_Indent()
+        {
+            using (Start())
+            {
+                var natural = CreateLayout("abcd", 0, double.PositiveInfinity, TextWrapping.NoWrap).TextLines[0].Width;
+
+                // The line fits the paragraph width but not the width left after the indent.
+                var maxWidth = natural + Indent / 2;
+
+                var unindented = CreateLayout("abcd", 0, maxWidth, TextWrapping.NoWrap);
+                var indented = CreateLayout("abcd", Indent, maxWidth, TextWrapping.NoWrap);
+
+                Assert.False(unindented.TextLines[0].HasOverflowed);
+                Assert.True(indented.TextLines[0].HasOverflowed);
+                Assert.Equal(Indent, indented.TextLines[0].Start, Precision);
+                Assert.Equal(1, indented.TextLines.Count);
+            }
+        }
+
+        [Fact]
+        public void Unwrapped_Lines_Take_ParagraphIndent_And_Only_The_First_Takes_Indent()
+        {
+            using (Start())
+            {
+                var layout = CreateLayout("aaaa\rbbbb\rcccc", Indent, 500, TextWrapping.NoWrap, paragraphIndent: 15);
+
+                Assert.Equal(3, layout.TextLines.Count);
+                Assert.Equal(15 + Indent, layout.TextLines[0].Start, Precision);
+                Assert.Equal(15, layout.TextLines[1].Start, Precision);
+                Assert.Equal(15, layout.TextLines[2].Start, Precision);
+            }
+        }
+
+        [Theory]
+        [InlineData(TextWrapping.Wrap)]
+        [InlineData(TextWrapping.NoWrap)]
+        public void Zero_Width_Layout_Ignores_Indent(TextWrapping textWrapping)
+        {
+            using (Start())
+            {
+                var layout = CreateLayout("abcd", Indent, 0, textWrapping, paragraphIndent: 15);
+
+                Assert.Equal(0, layout.TextLines[0].Start, Precision);
+                Assert.Equal(0, layout.Width, Precision);
             }
         }
 
@@ -277,19 +341,18 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         private static TextLayout CreateWrappingLayout(double indent, out double maxWidth,
             double paragraphIndent = 0, TextAlignment textAlignment = TextAlignment.Left)
         {
-            var unwrapped = CreateLayout(WrappingText, 0, double.PositiveInfinity);
+            var unwrapped = CreateLayout(WrappingText, 0, double.PositiveInfinity, TextWrapping.NoWrap);
 
             maxWidth = unwrapped.Width / 3;
 
-            return CreateLayout(WrappingText, indent, maxWidth, paragraphIndent: paragraphIndent,
+            return CreateLayout(WrappingText, indent, maxWidth, TextWrapping.Wrap, paragraphIndent: paragraphIndent,
                 textAlignment: textAlignment);
         }
 
-        private static TextLayout CreateLayout(string text, double indent, double maxWidth,
+        private static TextLayout CreateLayout(string text, double indent, double maxWidth, TextWrapping textWrapping,
             double paragraphIndent = 0,
             FlowDirection flowDirection = FlowDirection.LeftToRight,
             TextAlignment textAlignment = TextAlignment.Left,
-            TextWrapping textWrapping = TextWrapping.Wrap,
             TextTrimming? textTrimming = null,
             bool firstLineInParagraph = true)
         {

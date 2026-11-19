@@ -570,8 +570,8 @@ namespace Avalonia.Media.TextFormatting
 
             if (MathUtilities.IsZero(MaxWidth) || MathUtilities.IsZero(MaxHeight))
             {
-                var textLine = TextFormatterImpl.CreateEmptyTextLine(0, double.PositiveInfinity, _paragraphProperties,
-                    TextFormatterImpl.GetLineIndent(_paragraphProperties, null));
+                // A layout with no room lays out no indent either, so its width stays 0.
+                var textLine = TextFormatterImpl.CreateEmptyTextLine(0, double.PositiveInfinity, _paragraphProperties);
 
                 UpdateMetrics(textLine, ref first);
 
