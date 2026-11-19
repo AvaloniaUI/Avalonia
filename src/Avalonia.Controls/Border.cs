@@ -217,6 +217,7 @@ namespace Avalonia.Controls
             };
         }
 
+        // TODO13: make explicit
         public CornerRadius ClipToBoundsRadius => CornerRadius;
     }
 }

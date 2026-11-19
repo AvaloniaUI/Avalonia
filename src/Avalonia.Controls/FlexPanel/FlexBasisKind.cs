@@ -16,7 +16,7 @@
         Absolute,
 
         /// <summary>
-        /// Indicates the <see cref="FlexBasis"/> value is a percentage, and the size of the flex item is scaled by it.
+        /// Indicates the <see cref="FlexBasis"/> value is a fraction of the container's main-axis size, where 1.0 means 100%.
         /// </summary>
         Relative,
     }

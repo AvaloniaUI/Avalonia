@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using System.Threading;
-using System.Threading.Tasks;
 using Avalonia.Rendering;
 using static Avalonia.Android.Platform.SkiaPlatform.AndroidFramebuffer;
 
@@ -12,9 +11,9 @@ namespace Avalonia.Android
     internal sealed class ChoreographerTimer : IRenderTimer
     {
         private readonly object _lock = new();
-        private readonly TaskCompletionSource<IntPtr> _choreographer = new();
         private readonly AutoResetEvent _event = new(false);
         private readonly GCHandle _timerHandle;
+        private IntPtr _choreographer;
         private Action<TimeSpan>? _tick;
         private bool _pendingCallback;
         private long _lastTime;
@@ -49,7 +48,12 @@ namespace Avalonia.Android
         private void Loop()
         {
             Looper.Prepare();
-            _choreographer.SetResult(AChoreographer_getInstance());
+            var choreographer = AChoreographer_getInstance();
+            lock (_lock)
+            {
+                _choreographer = choreographer;
+                PostFrameCallbackIfNeeded();
+            }
             Looper.Loop();
         }
 
@@ -81,9 +85,13 @@ namespace Avalonia.Android
                 if (_tick == null)
                     return;
 
+                // Never wait for the instance here; Loop posts the first callback once it exists.
+                if (_choreographer == IntPtr.Zero)
+                    return;
+
                 _pendingCallback = true;
                 
-                PostFrameCallback(_choreographer.Task.Result, GCHandle.ToIntPtr(_timerHandle));
+                PostFrameCallback(_choreographer, GCHandle.ToIntPtr(_timerHandle));
             }
         }
 
