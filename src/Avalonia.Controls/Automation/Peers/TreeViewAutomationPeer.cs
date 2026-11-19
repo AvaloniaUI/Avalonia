@@ -14,9 +14,9 @@ public class TreeViewAutomationPeer : ItemsControlAutomationPeer, ISelectionProv
         owner.AddHandler(SelectingItemsControl.SelectionChangedEvent, OwnerSelectionChanged, handledEventsToo: true);
     }
 
-    private TreeView Tree => (TreeView)Owner;
+    private new TreeView Owner => (TreeView)base.Owner;
 
-    public bool CanSelectMultiple => Tree.SelectionMode.HasAllFlags(SelectionMode.Multiple);
+    public bool CanSelectMultiple => Owner.SelectionMode.HasAllFlags(SelectionMode.Multiple);
 
     public bool IsSelectionRequired => false;
 
@@ -24,9 +24,9 @@ public class TreeViewAutomationPeer : ItemsControlAutomationPeer, ISelectionProv
     {
         List<AutomationPeer>? result = null;
 
-        foreach (var item in Tree.SelectedItems)
+        foreach (var item in Owner.SelectedItems)
         {
-            if (item is not null && Tree.TreeContainerFromItem(item) is { } container)
+            if (item is not null && Owner.TreeContainerFromItem(item) is { IsEffectivelyVisible: true } container)
             {
                 result ??= new List<AutomationPeer>();
                 result.Add(GetOrCreate(container));

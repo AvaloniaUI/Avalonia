@@ -23,6 +23,10 @@ public class TreeViewAutomationPeerTests : ScopedTestBase
         Assert.False(provider.CanSelectMultiple);
         Assert.False(provider.IsSelectionRequired);
         Assert.Empty(provider.GetSelection());
+
+        tree.SelectionMode = SelectionMode.Single | SelectionMode.AlwaysSelected;
+
+        Assert.False(provider.IsSelectionRequired);
     }
 
     [Fact]
@@ -46,6 +50,19 @@ public class TreeViewAutomationPeerTests : ScopedTestBase
 
         var selected = Assert.Single(GetProvider(tree).GetSelection());
         Assert.Same(ControlAutomationPeer.CreatePeerForElement(child), selected);
+    }
+
+    [Fact]
+    public void GetSelection_Excludes_Row_Under_Collapsed_Parent()
+    {
+        using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+        var tree = CreateTree();
+        var parent = (TreeViewItem)tree.Items[0]!;
+
+        tree.SelectedItem = parent.Items[0];
+        parent.IsExpanded = false;
+
+        Assert.Empty(GetProvider(tree).GetSelection());
     }
 
     [Fact]
