@@ -68,7 +68,8 @@ public class ImmutableDropShadowDirectionEffect : IDirectionDropShadowEffect, II
     }
     
     public double OffsetX => Math.Cos(Direction * Math.PI / 180) * ShadowDepth;
-    public double OffsetY => Math.Sin(Direction * Math.PI / 180) * ShadowDepth;
+    // As in WPF, Direction is measured anticlockwise with Y pointing up.
+    public double OffsetY => -Math.Sin(Direction * Math.PI / 180) * ShadowDepth;
     public double Direction { get; }
     public double ShadowDepth { get; }
     public double BlurRadius { get; }
