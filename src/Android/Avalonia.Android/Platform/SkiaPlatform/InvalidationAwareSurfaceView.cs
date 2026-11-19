@@ -63,8 +63,8 @@ namespace Avalonia.Android
             lock (AndroidPlatform.Instance.SharedRenderLock)
             {
                 CacheSurfaceProperties(holder);
-                SurfaceWindowCreated?.Invoke(this, EventArgs.Empty);
             }
+            SurfaceWindowCreated?.Invoke(this, EventArgs.Empty);
         }
 
         public void SurfaceDestroyed(ISurfaceHolder holder)
@@ -75,8 +75,8 @@ namespace Avalonia.Android
             {
                 ReleaseNativeWindowHandle();
                 _size = new PixelSize(1, 1);
-                SurfaceWindowDestroyed?.Invoke(this, EventArgs.Empty);
             }
+            SurfaceWindowDestroyed?.Invoke(this, EventArgs.Empty);
         }
 
         public virtual void SurfaceRedrawNeeded(ISurfaceHolder holder)
