@@ -420,29 +420,41 @@ namespace Avalonia.Controls.Utils
         /// Validates that <see cref="StartU"/> is still valid.
         /// </summary>
         /// <param name="orientation">The panel orientation.</param>
+        /// <param name="availableSize">The available size for measuring realized elements.</param>
         /// <remarks>
-        /// If the U size of any element in the realized elements has changed, then the value of
-        /// <see cref="StartU"/> should be considered unstable.
+        /// A uniform resize of uniformly sized elements changes the estimate for the items
+        /// before the realized range. A local size change does not change the range's origin.
         /// </remarks>
-        public void ValidateStartU(Orientation orientation)
+        public void ValidateStartU(Orientation orientation, Size availableSize)
         {
             if (_elements is null || _sizes is null || _startUUnstable)
                 return;
 
+            var count = 0;
+            var previousSize = double.NaN;
+            var currentSize = double.NaN;
+
             for (var i = 0; i < _elements.Count; ++i)
             {
-                if (_elements[i] is not { } element)
+                if (_elements[i] is not { } element || double.IsNaN(_sizes[i]))
                     continue;
 
+                element.Measure(availableSize);
                 var sizeU = orientation == Orientation.Horizontal ?
                     element.DesiredSize.Width : element.DesiredSize.Height;
 
-                if (sizeU != _sizes[i])
-                {
-                    _startUUnstable = true;
-                    break;
-                }
+                if (count > 0 && (_sizes[i] != previousSize || sizeU != currentSize))
+                    return;
+
+                previousSize = _sizes[i];
+                currentSize = sizeU;
+                ++count;
             }
+
+            // A single resized element is not evidence that the unrealized items
+            // have also changed size (for example, expanding a viewport-sized row).
+            if (count > 1 && previousSize != currentSize)
+                _startUUnstable = true;
         }
     }
 }
