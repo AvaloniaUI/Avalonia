@@ -1927,6 +1927,102 @@ namespace Avalonia.Controls.UnitTests
                 $"but was at {firstContainer.Bounds.Top}");
         }
 
+        [Fact]
+        public void Recycled_Container_Respects_Dynamic_Height_Change()
+        {
+            using var app = App();
+
+            // Regression: when a container is recycled and re-realized, it should respect
+            // the new height from its binding, not the old height from the previous item
+            // it displayed. This reproduces GitHub issue #12464.
+            var items = Enumerable.Range(0, 100)
+                .Select(x => new ItemWithHeight(x, 50))
+                .ToList();
+            var (target, scroll, itemsControl) = CreateUnrootedTarget<ItemsControl>(
+                items: items, itemTemplate: CanvasWithHeightTemplate);
+            var root = CreateRoot(itemsControl, clientSize: new Size(100, 200));
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            // All items are 50px. Initial extent: 100 * 50 = 5000.
+            Assert.Equal(5000, scroll.Extent.Height);
+
+            // Change items 0-9 to 10px (they may be realized initially).
+            for (int i = 0; i < 10; i++)
+                items[i].Height = 10;
+            target.UpdateLayout();
+
+            // Scroll down far enough to recycle all containers that displayed items 0-9.
+            scroll.Offset = new Vector(0, 2000);
+            Layout(target);
+
+            // The first realized index should be well past item 9.
+            Assert.True(target.FirstRealizedIndex > 9,
+                $"Expected first realized index > 9, got {target.FirstRealizedIndex}");
+
+            // Scroll back to the top to re-realize items 0-9.
+            scroll.Offset = new Vector(0, 0);
+            Layout(target);
+
+            // The extent should reflect the new heights: 10 * 10 + 90 * 50 = 4600.
+            Assert.Equal(4600, scroll.Extent.Height);
+
+            // Item 5 should be at position 5 * 10 = 50.
+            var container5 = target.ContainerFromIndex(5);
+            Assert.NotNull(container5);
+            Assert.True(Math.Abs(container5.Bounds.Top - 50) < 0.001,
+                $"Container at index 5 should be at position 50, but was at {container5.Bounds.Top}");
+
+            // Item 10 should be at position 10 * 10 + 0 * 50 = 100.
+            var container10 = target.ContainerFromIndex(10);
+            Assert.NotNull(container10);
+            Assert.True(Math.Abs(container10.Bounds.Top - 100) < 0.001,
+                $"Container at index 10 should be at position 100, but was at {container10.Bounds.Top}");
+        }
+
+        [Fact]
+        public void Recycled_Container_Respects_Dynamic_Width_Change_Horizontal()
+        {
+            using var app = App();
+
+            // Regression: horizontal variant of the recycled container dynamic size bug.
+            var items = Enumerable.Range(0, 100)
+                .Select(x => new ItemWithWidth(x, 50))
+                .ToList();
+            var (target, scroll, itemsControl) = CreateUnrootedTarget<ItemsControl>(
+                items: items, itemTemplate: CanvasWithWidthTemplate, orientation: Orientation.Horizontal);
+            var root = CreateRoot(itemsControl, clientSize: new Size(100, 100));
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            // All items are 50px wide. Initial extent: 100 * 50 = 5000.
+            Assert.Equal(5000, scroll.Extent.Width);
+
+            // Change items 0-9 to 10px wide.
+            for (int i = 0; i < 10; i++)
+                items[i].Width = 10;
+            target.UpdateLayout();
+
+            // Scroll right far enough to recycle all containers that displayed items 0-9.
+            scroll.Offset = new Vector(2000, 0);
+            Layout(target);
+
+            // The first realized index should be well past item 9.
+            Assert.True(target.FirstRealizedIndex > 9,
+                $"Expected first realized index > 9, got {target.FirstRealizedIndex}");
+
+            // Scroll back to the left to re-realize items 0-9.
+            scroll.Offset = new Vector(0, 0);
+            Layout(target);
+
+            // The extent should reflect the new widths: 10 * 10 + 90 * 50 = 4600.
+            Assert.Equal(4600, scroll.Extent.Width);
+
+            // Item 5 should be at position 5 * 10 = 50.
+            var container5 = target.ContainerFromIndex(5);
+            Assert.NotNull(container5);
+            Assert.True(Math.Abs(container5.Bounds.Left - 50) < 0.001,
+                $"Container at index 5 should be at position 50, but was at {container5.Bounds.Left}");
+        }
+
         [Theory]
         [InlineData(6000d, 3d)]
         [InlineData(12000d, 500d)]
