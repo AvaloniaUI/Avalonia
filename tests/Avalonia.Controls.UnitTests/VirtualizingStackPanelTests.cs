@@ -1686,6 +1686,74 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(lastIndex2, target.LastRealizedIndex);
         }
 
+        [Fact]
+        public void Collection_Wide_Resize_With_Heterogeneous_Row_Sizes_Updates_Extent()
+        {
+            using var app = App();
+
+            // Regression: when realized rows have different previous sizes, a collection-wide
+            // resize should still invalidate StartU and update the extent correctly.
+            // The ValidateStartU method returns early when previous sizes differ,
+            // leaving StartU stale.
+            var items = Enumerable.Range(0, 100)
+                .Select(x => new ItemWithHeight(x, x % 2 == 0 ? 60 : 40))
+                .ToList();
+            var (target, scroll, itemsControl) = CreateTarget(
+                items: items, itemTemplate: CanvasWithHeightTemplate);
+
+            // Capture the initial extent (alternating 60/40 heights across 100 items).
+            var initialExtent = scroll.Extent.Height;
+            Assert.True(initialExtent > 0, "Initial extent should be positive");
+
+            // Scroll to a position where multiple rows with different sizes are realized.
+            scroll.Offset = new Vector(0, 1000);
+            Layout(target);
+
+            // Shrink every row to 25px.
+            foreach (var item in items)
+                item.Height = 25;
+            target.UpdateLayout();
+
+            // Extent should be 100 * 25 = 2500, not the stale estimate.
+            Assert.Equal(2500, scroll.Extent.Height);
+        }
+
+        [Fact]
+        public void Collection_Wide_Resize_With_Single_Realized_Row_Updates_Extent()
+        {
+            using var app = App();
+
+            // Regression: when only one row is realized (e.g., a 500px row in a 100px viewport),
+            // the count > 1 check in ValidateStartU prevents StartU invalidation,
+            // so the extent remains stale after a collection-wide resize.
+            // 100 rows at 500px, 100px viewport, row 50 at offset 25000.
+            // Shrinking every row to 250px should yield extent 25000, not 37500.
+            var items = Enumerable.Range(0, 100)
+                .Select(x => new ItemWithHeight(x, 500))
+                .ToList();
+            var (target, scroll, itemsControl) = CreateUnrootedTarget<ItemsControl>(
+                items: items, itemTemplate: CanvasWithHeightTemplate);
+            var root = CreateRoot(itemsControl, clientSize: new Size(100, 100));
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            // Initial extent: 100 * 500 = 50000
+            Assert.Equal(50000, scroll.Extent.Height);
+
+            // Scroll to row 50 at offset 25000. Only one row fits in the 100px viewport.
+            scroll.Offset = new Vector(0, 25000);
+            Layout(target);
+            Assert.NotNull(target.ContainerFromIndex(50));
+            Assert.Equal(50, target.FirstRealizedIndex);
+
+            // Shrink every row to 250px.
+            foreach (var item in items)
+                item.Height = 250;
+            target.UpdateLayout();
+
+            // Extent should be 100 * 250 = 25000, not the stale 37500.
+            Assert.Equal(25000, scroll.Extent.Height);
+        }
+
         [Theory]
         [InlineData(6000d, 3d)]
         [InlineData(12000d, 500d)]
