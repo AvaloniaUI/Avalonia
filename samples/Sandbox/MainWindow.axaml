@@ -1,4 +1,30 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
-        x:Class="Sandbox.MainWindow">
+        x:Class="Sandbox.MainWindow"
+        Title="XI2 enter modifiers repro"
+        Width="700" Height="500">
+  <DockPanel Margin="8">
+    <StackPanel DockPanel.Dock="Top" Spacing="6">
+      <TextBlock TextWrapping="Wrap">
+        On X11, a pointer event that comes from an XI2 Enter event reports no modifiers,
+        even while a modifier is held.
+      </TextBlock>
+      <TextBlock TextWrapping="Wrap">
+        1. Move the pointer outside this window, hold Ctrl and move the pointer back in.
+        The first event logged reports KeyModifiers=None; the moves after it report Control.
+      </TextBlock>
+      <TextBlock TextWrapping="Wrap">
+        2. Click "Show window", put the pointer on its Close button, hold Ctrl and click Close
+        without moving the pointer. The window closes under the pointer, and this window gets
+        a pointer event with KeyModifiers=None although Ctrl is still held.
+      </TextBlock>
+      <StackPanel Orientation="Horizontal" Spacing="8">
+        <Button Name="ShowWindowButton" Content="Show window" />
+        <Button Name="ClearButton" Content="Clear log" />
+        <TextBlock Name="CtrlState" VerticalAlignment="Center" />
+      </StackPanel>
+    </StackPanel>
+    <TextBox Name="Log" Margin="0,8,0,0" IsReadOnly="True" AcceptsReturn="True"
+             FontFamily="monospace" />
+  </DockPanel>
 </Window>
