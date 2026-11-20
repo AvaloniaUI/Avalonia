@@ -5,6 +5,7 @@ using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
+using Avalonia.Media;
 using Avalonia.Native.Interop;
 using Avalonia.Platform;
 using Avalonia.Rendering;
@@ -12,7 +13,7 @@ using MicroCom.Runtime;
 
 namespace Avalonia.Native
 {
-    internal class WindowImpl : WindowBaseImpl, IWindowImpl
+    internal class WindowImpl : WindowBaseImpl, IWindowImpl, IMacOSOptionsTopLevelImpl
     {
         private readonly AvaloniaNativePlatformOptions _opts;
         private readonly IAvnWindow _native;
@@ -70,6 +71,11 @@ namespace Avalonia.Native
             void IAvnWindowEvents.GotInputWhenDisabled()
             {
                 _parent.GotInputWhenDisabled?.Invoke();
+            }
+
+            void IAvnWindowEvents.TrafficLightSizeChanged(AvnSize size)
+            {
+                _parent.TrafficLightSizeChanged?.Invoke(size.ToAvaloniaSize());
             }
         }
         
@@ -217,6 +223,24 @@ namespace Avalonia.Native
             _native.SetExtendTitleBarHeight(titleBarHeight);
 
             InvalidateExtendedMargins();
+        }
+
+        /// <inheritdoc/>
+        public Size TrafficLightSize => _native.TrafficLightSize.ToAvaloniaSize();
+
+        /// <inheritdoc/>
+        public Action<Size>? TrafficLightSizeChanged { get; set; }
+
+        /// <inheritdoc/>
+        public FlowDirection TitlebarFlowDirection =>
+            _native.TitlebarFlowDirection == AvnFlowDirection.AvnFlowDirectionRightToLeft
+                ? FlowDirection.RightToLeft
+                : FlowDirection.LeftToRight;
+
+        /// <inheritdoc/>
+        public void SetTrafficLightPosition(Point? position)
+        {
+            _native.SetTrafficLightPosition(position?.ToAvnPoint() ?? default, position.HasValue.AsComBool());
         }
 
         /// <inheritdoc/>
