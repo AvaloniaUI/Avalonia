@@ -239,6 +239,19 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
     *yTilt = -tilt.y * 90;
 }
 
+static AvnGesturePhase ToAvnGesturePhase(NSEventPhase phase)
+{
+    if (phase & NSEventPhaseBegan)
+        return AvnGesturePhaseBegan;
+    if (phase & NSEventPhaseChanged)
+        return AvnGesturePhaseChanged;
+    if (phase & NSEventPhaseEnded)
+        return AvnGesturePhaseEnded;
+    if (phase & NSEventPhaseCancelled)
+        return AvnGesturePhaseCancelled;
+    return AvnGesturePhaseNone;
+}
+
 - (void)mouseEvent:(NSEvent *)event withType:(AvnRawMouseEventType) type
 {
     bool triggerInputWhenDisabled = type != Move && type != LeaveWindow;
@@ -260,6 +273,8 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
     
     auto point = ToAvnPoint(localPoint);
     AvnVector delta = { 0, 0};
+    AvnGesturePhase phase = AvnGesturePhaseNone;
+    AvnGesturePhase momentumPhase = AvnGesturePhaseNone;
 
     if(type == Wheel)
     {
@@ -272,24 +287,24 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
 
         delta.X = [event scrollingDeltaX] / speed;
         delta.Y = [event scrollingDeltaY] / speed;
-
-        if(delta.X == 0 && delta.Y == 0)
-        {
-            return;
-        }
+        phase = ToAvnGesturePhase([event phase]);
+        momentumPhase = ToAvnGesturePhase([event momentumPhase]);
     }
     else if (type == Magnify)
     {
         delta.X = delta.Y = [event magnification];
+        phase = ToAvnGesturePhase([event phase]);
     }
     else if (type == Rotate)
     {
         delta.X = delta.Y = [event rotation];
+        phase = ToAvnGesturePhase([event phase]);
     }
     else if (type == Swipe)
     {
         delta.X = [event deltaX];
         delta.Y = [event deltaY];
+        phase = ToAvnGesturePhase([event phase]);
     }
 
     float pressure = 0.5f;
@@ -383,7 +398,7 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
     auto parent = _parent.tryGet();
     if(parent != nullptr)
     {
-        parent->TopLevelEvents->RawMouseEvent(type, pointerType, timestamp, modifiers, point, delta, pressure, xTilt, yTilt);
+        parent->TopLevelEvents->RawMouseEvent(type, pointerType, timestamp, modifiers, point, delta, pressure, xTilt, yTilt, phase, momentumPhase);
     }
 
     // This handler is shared by all mouse event types. Only real mouse-moved

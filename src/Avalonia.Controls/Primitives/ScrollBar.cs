@@ -304,7 +304,10 @@ namespace Avalonia.Controls.Primitives
                     e.Timestamp,
                     new PointerPointProperties((RawInputModifiers)e.KeyModifiers, PointerUpdateKind.Other),
                     e.KeyModifiers,
-                    e.Delta);
+                    e.Delta)
+                {
+                    IsInertial = e.IsInertial
+                };
                 presenter.RaiseEvent(e);
             }
         }
