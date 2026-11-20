@@ -879,7 +879,7 @@ namespace Avalonia.Layout
 
         private void AncestorBecameVisible(ILayoutManager layoutManager)
         {
-            if (!IsVisible)
+            if (!IsVisible || !IsAttachedToVisualTree)
                 return;
 
             if (!IsMeasureValid)
