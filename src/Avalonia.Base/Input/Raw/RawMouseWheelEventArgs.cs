@@ -1,4 +1,3 @@
-
 using Avalonia.Metadata;
 
 namespace Avalonia.Input.Raw
@@ -18,5 +17,15 @@ namespace Avalonia.Input.Raw
         }
 
         public Vector Delta { get; private set; }
+
+        /// <summary>
+        /// Gets the phase of the scroll gesture, or of its inertial part if <see cref="IsInertial"/> is true.
+        /// </summary>
+        public RawPointerGesturePhase Phase { get; init; }
+
+        /// <summary>
+        /// Gets whether the event belongs to the inertial part of a scroll (after the user lifted their fingers).
+        /// </summary>
+        public bool IsInertial { get; init; }
     }
 }
