@@ -5,7 +5,6 @@ using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
 using Avalonia.Metadata;
 using Avalonia.VisualTree;
-#pragma warning disable CS0618
 
 namespace Avalonia.Input
 {
@@ -13,7 +12,7 @@ namespace Avalonia.Input
     /// Represents a mouse device.
     /// </summary>
     [PrivateApi]
-    public class MouseDevice : IMouseDevice, IDisposable
+    public partial class MouseDevice : IMouseDevice, IDisposable
     {
         private static MouseDevice? _primary;
         internal static MouseDevice Primary => _primary ??= new MouseDevice();
@@ -108,17 +107,33 @@ namespace Avalonia.Input
                     e.Handled = MouseMove(mouse, e.Timestamp, e.Root, e.Position, props, keyModifiers, e.IntermediatePoints, e.InputHitTestResult.firstEnabledAncestor);
                     break;
                 case RawPointerEventType.Wheel:
-                    e.Handled = MouseWheel(mouse, e.Timestamp, e.Root, e.Position, props, ((RawMouseWheelEventArgs)e).Delta, keyModifiers, e.InputHitTestResult.firstEnabledAncestor);
+                {
+                    var wheelArgs = (RawMouseWheelEventArgs)e;
+                    e.Handled = ProcessGesture(_wheelTracker, e, props, keyModifiers, wheelArgs.Delta, wheelArgs.Phase,
+                        wheelArgs.IsInertial);
                     break;
+                }
                 case RawPointerEventType.Magnify:
-                    e.Handled = GestureMagnify(mouse, e.Timestamp, e.Root, e.Position, props, ((RawPointerGestureEventArgs)e).Delta, keyModifiers, e.InputHitTestResult.firstEnabledAncestor);
+                {
+                    var gestureArgs = (RawPointerGestureEventArgs)e;
+                    e.Handled = ProcessGesture(_magnifyTracker, e, props, keyModifiers, gestureArgs.Delta, gestureArgs.Phase,
+                        false);
                     break;
+                }
                 case RawPointerEventType.Rotate:
-                    e.Handled = GestureRotate(mouse, e.Timestamp, e.Root, e.Position, props, ((RawPointerGestureEventArgs)e).Delta, keyModifiers, e.InputHitTestResult.firstEnabledAncestor);
+                {
+                    var gestureArgs = (RawPointerGestureEventArgs)e;
+                    e.Handled = ProcessGesture(_rotateTracker, e, props, keyModifiers, gestureArgs.Delta, gestureArgs.Phase,
+                        false);
                     break;
+                }
                 case RawPointerEventType.Swipe:
-                    e.Handled = GestureSwipe(mouse, e.Timestamp, e.Root, e.Position, props, ((RawPointerGestureEventArgs)e).Delta, keyModifiers, e.InputHitTestResult.firstEnabledAncestor);
+                {
+                    var gestureArgs = (RawPointerGestureEventArgs)e;
+                    e.Handled = ProcessGesture(_swipeTracker, e, props, keyModifiers, gestureArgs.Delta, gestureArgs.Phase,
+                        false);
                     break;
+                }
                 case RawPointerEventType.CancelCapture:
                     PlatformCaptureLost();
                     break;
@@ -233,87 +248,6 @@ namespace Avalonia.Input
             return false;
         }
 
-        private bool MouseWheel(IMouseDevice device, ulong timestamp, IInputRoot root, Point p,
-            PointerPointProperties props,
-            Vector delta, KeyModifiers inputModifiers, IInputElement? hitTest)
-        {
-            var rawDelta = delta;
-            device = device ?? throw new ArgumentNullException(nameof(device));
-            root = root ?? throw new ArgumentNullException(nameof(root));
-
-            var source = _pointer.Captured ?? hitTest;
-
-            if (source is not null)
-            {
-                var e = new PointerWheelEventArgs(source, _pointer, root.RootElement, p, timestamp, props, inputModifiers, delta);
-
-                source?.RaiseEvent(e);
-                return e.Handled;
-            }
-
-            return false;
-        }
-        
-        private bool GestureMagnify(IMouseDevice device, ulong timestamp, IInputRoot root, Point p,
-            PointerPointProperties props, Vector delta, KeyModifiers inputModifiers, IInputElement? hitTest)
-        {
-            device = device ?? throw new ArgumentNullException(nameof(device));
-            root = root ?? throw new ArgumentNullException(nameof(root));
-
-            var source = _pointer.Captured ?? hitTest;
-
-            if (source != null)
-            {
-                var e = new PointerDeltaEventArgs(InputElement.PointerTouchPadGestureMagnifyEvent, source,
-                    _pointer, root.RootElement, p, timestamp, props, inputModifiers, delta);
-
-                source?.RaiseEvent(e);
-                return e.Handled;
-            }
-
-            return false;
-        }
-        
-        private bool GestureRotate(IMouseDevice device, ulong timestamp, IInputRoot root, Point p,
-            PointerPointProperties props, Vector delta, KeyModifiers inputModifiers, IInputElement? hitTest)
-        {
-            device = device ?? throw new ArgumentNullException(nameof(device));
-            root = root ?? throw new ArgumentNullException(nameof(root));
-
-            var source = _pointer.Captured ?? hitTest;
-
-            if (source != null)
-            {
-                var e = new PointerDeltaEventArgs(InputElement.PointerTouchPadGestureRotateEvent, source,
-                    _pointer, root.RootElement, p, timestamp, props, inputModifiers, delta);
-
-                source?.RaiseEvent(e);
-                return e.Handled;
-            }
-
-            return false;
-        }
-        
-        private bool GestureSwipe(IMouseDevice device, ulong timestamp, IInputRoot root, Point p,
-            PointerPointProperties props, Vector delta, KeyModifiers inputModifiers, IInputElement? hitTest)
-        {
-            device = device ?? throw new ArgumentNullException(nameof(device));
-            root = root ?? throw new ArgumentNullException(nameof(root));
-
-            var source = _pointer.Captured ?? hitTest;
-
-            if (source != null)
-            {
-                var e = new PointerDeltaEventArgs(InputElement.PointerTouchPadGestureSwipeEvent, source, 
-                    _pointer, root.RootElement, p, timestamp, props, inputModifiers, delta);
-
-                source?.RaiseEvent(e);
-                return e.Handled;
-            }
-
-            return false;
-        }
-
         public void Dispose()
         {
             System.Diagnostics.Debug.Assert(this != _primary, "Disposing primary mouse device.");
@@ -330,6 +264,7 @@ namespace Avalonia.Input
         internal void PlatformCaptureLost()
         {
             _pointer.PlatformCaptureLost();
+            CancelGestures();
         }
     }
 }

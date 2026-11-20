@@ -83,11 +83,32 @@ namespace Avalonia.Input
                 nameof(ScrollGestureEnded), RoutingStrategies.Bubble);
 
         /// <summary>
+        /// Defines the <see cref="PointerTouchPadGestureMagnifyStarted"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<PointerTouchPadGestureStartedEventArgs> PointerTouchPadGestureMagnifyStartedEvent =
+            RoutedEvent.Register<InputElement, PointerTouchPadGestureStartedEventArgs>(
+                nameof(PointerTouchPadGestureMagnifyStarted), RoutingStrategies.Bubble);
+
+        /// <summary>
         /// Defines the <see cref="PointerTouchPadGestureMagnify"/> event.
         /// </summary>
         public static readonly RoutedEvent<PointerDeltaEventArgs> PointerTouchPadGestureMagnifyEvent =
             RoutedEvent.Register<InputElement, PointerDeltaEventArgs>(
                 nameof(PointerTouchPadGestureMagnify), RoutingStrategies.Bubble);
+
+        /// <summary>
+        /// Defines the <see cref="PointerTouchPadGestureMagnifyEnded"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<PointerTouchPadGestureEndedEventArgs> PointerTouchPadGestureMagnifyEndedEvent =
+            RoutedEvent.Register<InputElement, PointerTouchPadGestureEndedEventArgs>(
+                nameof(PointerTouchPadGestureMagnifyEnded), RoutingStrategies.Bubble);
+
+        /// <summary>
+        /// Defines the <see cref="PointerTouchPadGestureRotateStarted"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<PointerTouchPadGestureStartedEventArgs> PointerTouchPadGestureRotateStartedEvent =
+            RoutedEvent.Register<InputElement, PointerTouchPadGestureStartedEventArgs>(
+                nameof(PointerTouchPadGestureRotateStarted), RoutingStrategies.Bubble);
 
         /// <summary>
         /// Defines the <see cref="PointerTouchPadGestureRotate"/> event.
@@ -97,11 +118,46 @@ namespace Avalonia.Input
                 nameof(PointerTouchPadGestureRotate), RoutingStrategies.Bubble);
 
         /// <summary>
+        /// Defines the <see cref="PointerTouchPadGestureRotateEnded"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<PointerTouchPadGestureEndedEventArgs> PointerTouchPadGestureRotateEndedEvent =
+            RoutedEvent.Register<InputElement, PointerTouchPadGestureEndedEventArgs>(
+                nameof(PointerTouchPadGestureRotateEnded), RoutingStrategies.Bubble);
+
+        /// <summary>
+        /// Defines the <see cref="PointerWheelGestureStarted"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<PointerWheelGestureStartedEventArgs> PointerWheelGestureStartedEvent =
+            RoutedEvent.Register<InputElement, PointerWheelGestureStartedEventArgs>(
+                nameof(PointerWheelGestureStarted), RoutingStrategies.Bubble);
+
+        /// <summary>
+        /// Defines the <see cref="PointerWheelGestureEnded"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<PointerWheelGestureEndedEventArgs> PointerWheelGestureEndedEvent =
+            RoutedEvent.Register<InputElement, PointerWheelGestureEndedEventArgs>(
+                nameof(PointerWheelGestureEnded), RoutingStrategies.Bubble);
+
+        /// <summary>
+        /// Defines the <see cref="PointerTouchPadGestureSwipeStarted"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<PointerTouchPadGestureStartedEventArgs> PointerTouchPadGestureSwipeStartedEvent =
+            RoutedEvent.Register<InputElement, PointerTouchPadGestureStartedEventArgs>(
+                nameof(PointerTouchPadGestureSwipeStarted), RoutingStrategies.Bubble);
+
+        /// <summary>
         /// Defines the <see cref="PointerTouchPadGestureSwipe"/> event.
         /// </summary>
         public static readonly RoutedEvent<PointerDeltaEventArgs> PointerTouchPadGestureSwipeEvent =
             RoutedEvent.Register<InputElement, PointerDeltaEventArgs>(
                 nameof(PointerTouchPadGestureSwipe), RoutingStrategies.Bubble);
+
+        /// <summary>
+        /// Defines the <see cref="PointerTouchPadGestureSwipeEnded"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<PointerTouchPadGestureEndedEventArgs> PointerTouchPadGestureSwipeEndedEvent =
+            RoutedEvent.Register<InputElement, PointerTouchPadGestureEndedEventArgs>(
+                nameof(PointerTouchPadGestureSwipeEnded), RoutingStrategies.Bubble);
 
         /// <summary>
         /// Defines the <see cref="Tapped"/> event.
@@ -219,6 +275,20 @@ namespace Avalonia.Input
         }
 
         /// <summary>
+        /// Occurs when the user starts a magnify gesture on a touchpad.
+        /// </summary>
+        /// <remarks>
+        /// This event is only raised on platforms reporting the start of a gesture.
+        /// Until <see cref="PointerTouchPadGestureMagnifyEnded"/>, all the <see cref="PointerTouchPadGestureMagnify"/> events
+        /// of the gesture are raised on the element that received this event.
+        /// </remarks>
+        public event EventHandler<PointerTouchPadGestureStartedEventArgs>? PointerTouchPadGestureMagnifyStarted
+        {
+            add { AddHandler(PointerTouchPadGestureMagnifyStartedEvent, value); }
+            remove { RemoveHandler(PointerTouchPadGestureMagnifyStartedEvent, value); }
+        }
+
+        /// <summary>
         /// Occurs when the user moves two contact points away from each other on a touchpad.
         /// </summary>
         public event EventHandler<PointerDeltaEventArgs>? PointerTouchPadGestureMagnify
@@ -228,12 +298,68 @@ namespace Avalonia.Input
         }
 
         /// <summary>
+        /// Occurs when the user ends a magnify gesture on a touchpad, or when the system cancels it.
+        /// </summary>
+        public event EventHandler<PointerTouchPadGestureEndedEventArgs>? PointerTouchPadGestureMagnifyEnded
+        {
+            add { AddHandler(PointerTouchPadGestureMagnifyEndedEvent, value); }
+            remove { RemoveHandler(PointerTouchPadGestureMagnifyEndedEvent, value); }
+        }
+
+        /// <summary>
+        /// Occurs when the user starts a rotate gesture on a touchpad.
+        /// </summary>
+        /// <remarks>
+        /// This event is only raised on platforms reporting the start of a gesture.
+        /// Until <see cref="PointerTouchPadGestureRotateEnded"/>, all the <see cref="PointerTouchPadGestureRotate"/> events
+        /// of the gesture are raised on the element that received this event.
+        /// </remarks>
+        public event EventHandler<PointerTouchPadGestureStartedEventArgs>? PointerTouchPadGestureRotateStarted
+        {
+            add { AddHandler(PointerTouchPadGestureRotateStartedEvent, value); }
+            remove { RemoveHandler(PointerTouchPadGestureRotateStartedEvent, value); }
+        }
+
+        /// <summary>
         /// Occurs when the user places two contact points and moves them in a circular motion on a touchpad.
         /// </summary>
         public event EventHandler<PointerDeltaEventArgs>? PointerTouchPadGestureRotate
         {
             add { AddHandler(PointerTouchPadGestureRotateEvent, value); }
             remove { RemoveHandler(PointerTouchPadGestureRotateEvent, value); }
+        }
+
+        /// <summary>
+        /// Occurs when the user ends a rotate gesture on a touchpad, or when the system cancels it.
+        /// </summary>
+        public event EventHandler<PointerTouchPadGestureEndedEventArgs>? PointerTouchPadGestureRotateEnded
+        {
+            add { AddHandler(PointerTouchPadGestureRotateEndedEvent, value); }
+            remove { RemoveHandler(PointerTouchPadGestureRotateEndedEvent, value); }
+        }
+
+        /// <summary>
+        /// Occurs when a continuous scroll gesture starts, either when the user starts scrolling with
+        /// their fingers on the device, or when the scroll continues with inertia after they lift them.
+        /// </summary>
+        /// <remarks>
+        /// This event is only raised on platforms and devices reporting the start of a scroll gesture.
+        /// Until <see cref="PointerWheelGestureEnded"/>, all the <see cref="PointerWheelChanged"/> events
+        /// of the gesture are raised on the element that received this event.
+        /// </remarks>
+        public event EventHandler<PointerWheelGestureStartedEventArgs>? PointerWheelGestureStarted
+        {
+            add { AddHandler(PointerWheelGestureStartedEvent, value); }
+            remove { RemoveHandler(PointerWheelGestureStartedEvent, value); }
+        }
+
+        /// <summary>
+        /// Occurs when a continuous scroll gesture ends, or when the system cancels it.
+        /// </summary>
+        public event EventHandler<PointerWheelGestureEndedEventArgs>? PointerWheelGestureEnded
+        {
+            add { AddHandler(PointerWheelGestureEndedEvent, value); }
+            remove { RemoveHandler(PointerWheelGestureEndedEvent, value); }
         }
 
         /// <summary>
@@ -255,12 +381,35 @@ namespace Avalonia.Input
         }
 
         /// <summary>
+        /// Occurs when the user starts a swipe gesture on a touchpad.
+        /// </summary>
+        /// <remarks>
+        /// This event is only raised on platforms reporting the start of a gesture.
+        /// Until <see cref="PointerTouchPadGestureSwipeEnded"/>, all the <see cref="PointerTouchPadGestureSwipe"/> events
+        /// of the gesture are raised on the element that received this event.
+        /// </remarks>
+        public event EventHandler<PointerTouchPadGestureStartedEventArgs>? PointerTouchPadGestureSwipeStarted
+        {
+            add { AddHandler(PointerTouchPadGestureSwipeStartedEvent, value); }
+            remove { RemoveHandler(PointerTouchPadGestureSwipeStartedEvent, value); }
+        }
+
+        /// <summary>
         /// Occurs when the user performs a rapid dragging motion in a single direction on a touchpad.
         /// </summary>
         public event EventHandler<PointerDeltaEventArgs>? PointerTouchPadGestureSwipe
         {
             add { AddHandler(PointerTouchPadGestureSwipeEvent, value); }
             remove { RemoveHandler(PointerTouchPadGestureSwipeEvent, value); }
+        }
+
+        /// <summary>
+        /// Occurs when the user ends a swipe gesture on a touchpad, or when the system cancels it.
+        /// </summary>
+        public event EventHandler<PointerTouchPadGestureEndedEventArgs>? PointerTouchPadGestureSwipeEnded
+        {
+            add { AddHandler(PointerTouchPadGestureSwipeEndedEvent, value); }
+            remove { RemoveHandler(PointerTouchPadGestureSwipeEndedEvent, value); }
         }
 
         /// <summary>

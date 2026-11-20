@@ -18,5 +18,7 @@ namespace Avalonia.Input.Raw
         }
 
         public Vector Delta { get; private set; }
+
+        public RawPointerGesturePhase Phase { get; init; }
     }
 }
