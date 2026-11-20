@@ -10,12 +10,20 @@ internal class VulkanContext : IVulkanPlatformGraphicsContext
 {
     private readonly IVulkanKhrSurfacePlatformSurfaceFactory? _surfaceFactory;
     private readonly VulkanExternalObjectsFeature? _externalObjectsFeature;
+    private readonly bool _ownsDevice;
     public IVulkanDevice Device { get; }
     public IVulkanInstance Instance => Device.Instance;
-    
-    public VulkanContext(IVulkanDevice device, Dictionary<Type, object> platformFeatures)
+
+    /// <param name="device">The device the context renders with.</param>
+    /// <param name="platformFeatures">The platform's optional features.</param>
+    /// <param name="ownsDevice">
+    /// Whether the device was created for this context alone, so that disposing the context destroys it.
+    /// A shared device outlives the contexts that use it.
+    /// </param>
+    public VulkanContext(IVulkanDevice device, Dictionary<Type, object> platformFeatures, bool ownsDevice)
     {
         Device = device;
+        _ownsDevice = ownsDevice;
         using (device.Lock())
         {
             InstanceApi = new VulkanInstanceApi(device.Instance);
@@ -34,7 +42,8 @@ internal class VulkanContext : IVulkanPlatformGraphicsContext
     
     public void Dispose()
     {
-        
+        if (_ownsDevice)
+            Device.Dispose();
     }
 
     public object? TryGetFeature(Type featureType)
