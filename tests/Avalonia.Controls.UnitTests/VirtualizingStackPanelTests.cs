@@ -1686,6 +1686,217 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(lastIndex2, target.LastRealizedIndex);
         }
 
+        [Fact]
+        public void Collection_Wide_Resize_With_Heterogeneous_Row_Sizes_Updates_Extent()
+        {
+            using var app = App();
+
+            // Regression: when realized rows have different previous sizes, a collection-wide
+            // resize should still invalidate StartU and update the extent correctly.
+            // The ValidateStartU method returns early when previous sizes differ,
+            // leaving StartU stale.
+            var items = Enumerable.Range(0, 100)
+                .Select(x => new ItemWithHeight(x, x % 2 == 0 ? 60 : 40))
+                .ToList();
+            var (target, scroll, itemsControl) = CreateTarget(
+                items: items, itemTemplate: CanvasWithHeightTemplate);
+
+            // Capture the initial extent (alternating 60/40 heights across 100 items).
+            var initialExtent = scroll.Extent.Height;
+            Assert.True(initialExtent > 0, "Initial extent should be positive");
+
+            // Scroll to a position where multiple rows with different sizes are realized.
+            scroll.Offset = new Vector(0, 1000);
+            Layout(target);
+
+            // Shrink every row to 25px.
+            foreach (var item in items)
+                item.Height = 25;
+            target.UpdateLayout();
+
+            // Extent should be 100 * 25 = 2500, not the stale estimate.
+            Assert.Equal(2500, scroll.Extent.Height);
+        }
+
+
+        [Fact]
+        public void Recycled_Container_Respects_Dynamic_Height_Change()
+        {
+            using var app = App();
+
+            // Regression: when a container is recycled and re-realized, it should respect
+            // the new height from its binding, not the old height from the previous item
+            // it displayed. This reproduces GitHub issue #12464.
+            var items = Enumerable.Range(0, 100)
+                .Select(x => new ItemWithHeight(x, 50))
+                .ToList();
+            var (target, scroll, itemsControl) = CreateUnrootedTarget<ItemsControl>(
+                items: items, itemTemplate: CanvasWithHeightTemplate);
+            var root = CreateRoot(itemsControl, clientSize: new Size(100, 200));
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            // All items are 50px. Initial extent: 100 * 50 = 5000.
+            Assert.Equal(5000, scroll.Extent.Height);
+
+            // Change items 0-9 to 10px (they may be realized initially).
+            for (int i = 0; i < 10; i++)
+                items[i].Height = 10;
+            target.UpdateLayout();
+
+            // Scroll down far enough to recycle all containers that displayed items 0-9.
+            scroll.Offset = new Vector(0, 2000);
+            Layout(target);
+
+            // The first realized index should be well past item 9.
+            Assert.True(target.FirstRealizedIndex > 9,
+                $"Expected first realized index > 9, got {target.FirstRealizedIndex}");
+
+            // Scroll back to the top to re-realize items 0-9.
+            scroll.Offset = new Vector(0, 0);
+            Layout(target);
+
+            // The extent should reflect the new heights: 10 * 10 + 90 * 50 = 4600.
+            Assert.Equal(4600, scroll.Extent.Height);
+
+            // Item 5 should be at position 5 * 10 = 50.
+            var container5 = target.ContainerFromIndex(5);
+            Assert.NotNull(container5);
+            Assert.True(Math.Abs(container5.Bounds.Top - 50) < 0.001,
+                $"Container at index 5 should be at position 50, but was at {container5.Bounds.Top}");
+
+            // Item 10 should be at position 10 * 10 + 0 * 50 = 100.
+            var container10 = target.ContainerFromIndex(10);
+            Assert.NotNull(container10);
+            Assert.True(Math.Abs(container10.Bounds.Top - 100) < 0.001,
+                $"Container at index 10 should be at position 100, but was at {container10.Bounds.Top}");
+        }
+
+        [Fact]
+        public void Recycled_Container_Respects_Dynamic_Width_Change_Horizontal()
+        {
+            using var app = App();
+
+            // Regression: horizontal variant of the recycled container dynamic size bug.
+            var items = Enumerable.Range(0, 100)
+                .Select(x => new ItemWithWidth(x, 50))
+                .ToList();
+            var (target, scroll, itemsControl) = CreateUnrootedTarget<ItemsControl>(
+                items: items, itemTemplate: CanvasWithWidthTemplate, orientation: Orientation.Horizontal);
+            var root = CreateRoot(itemsControl, clientSize: new Size(100, 100));
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            // All items are 50px wide. Initial extent: 100 * 50 = 5000.
+            Assert.Equal(5000, scroll.Extent.Width);
+
+            // Change items 0-9 to 10px wide.
+            for (int i = 0; i < 10; i++)
+                items[i].Width = 10;
+            target.UpdateLayout();
+
+            // Scroll right far enough to recycle all containers that displayed items 0-9.
+            scroll.Offset = new Vector(2000, 0);
+            Layout(target);
+
+            // The first realized index should be well past item 9.
+            Assert.True(target.FirstRealizedIndex > 9,
+                $"Expected first realized index > 9, got {target.FirstRealizedIndex}");
+
+            // Scroll back to the left to re-realize items 0-9.
+            scroll.Offset = new Vector(0, 0);
+            Layout(target);
+
+            // The extent should reflect the new widths: 10 * 10 + 90 * 50 = 4600.
+            Assert.Equal(4600, scroll.Extent.Width);
+
+            // Item 5 should be at position 5 * 10 = 50.
+            var container5 = target.ContainerFromIndex(5);
+            Assert.NotNull(container5);
+            Assert.True(Math.Abs(container5.Bounds.Left - 50) < 0.001,
+                $"Container at index 5 should be at position 50, but was at {container5.Bounds.Left}");
+        }
+
+        [Theory]
+        [InlineData(6000d, 3d)]
+        [InlineData(12000d, 500d)]
+        public void Growing_Visible_Variable_Height_Item_Preserves_Viewport_Position(double offset, double growth)
+        {
+            using var app = App();
+
+            // Regression for #17635: resizing a realized item must not replace the
+            // known viewport anchor with an estimate based on the new average size.
+            var items = Enumerable.Range(0, 300)
+                .Select(i => new ItemWithHeight(i, 50 + i * 37 % 90))
+                .ToArray();
+            var (target, scroll, itemsControl) = CreateUnrootedTarget<ItemsControl>(
+                items: items, itemTemplate: CanvasWithHeightTemplate);
+            var root = CreateRoot(itemsControl, clientSize: new Size(100, 400));
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            scroll.Offset = new Vector(0, offset);
+            Layout(target);
+
+            // Grow an item in the middle of the viewport, leaving all preceding
+            // item heights unchanged. Its top should therefore stay in place.
+            var index = Enumerable.Range(target.FirstRealizedIndex,
+                    target.LastRealizedIndex - target.FirstRealizedIndex + 1)
+                .First(i =>
+                {
+                    var y = target.ContainerFromIndex(i)!.Bounds.Top - scroll.Offset.Y;
+                    return y >= 120 && y <= 300;
+                });
+            var container = Assert.IsType<ContentPresenter>(target.ContainerFromIndex(index));
+            var before = container.Bounds.Top - scroll.Offset.Y;
+            var offsetBefore = scroll.Offset.Y;
+
+            items[index].Height += growth;
+            Layout(target);
+
+            var resizedContainer = target.ContainerFromIndex(index);
+            Assert.True(resizedContainer is not null,
+                $"Item {index} left the realized range after growing by {growth}: " +
+                $"viewport top was {before}, scroll offset {offsetBefore} -> {scroll.Offset.Y}, " +
+                $"realized range is now {target.FirstRealizedIndex}..{target.LastRealizedIndex}.");
+            container = Assert.IsType<ContentPresenter>(resizedContainer);
+            Assert.Equal(items[index].Height, container.DesiredSize.Height);
+            var after = container.Bounds.Top - scroll.Offset.Y;
+            Assert.True(Math.Abs(before - after) <= 1,
+                $"Item {index} grew by {growth}: viewport top {before} -> {after}, " +
+                $"scroll offset {offsetBefore} -> {scroll.Offset.Y}.");
+        }
+
+        [Theory]
+        [InlineData(Orientation.Vertical)]
+        [InlineData(Orientation.Horizontal)]
+        public void Growing_Single_Visible_Item_Preserves_Viewport_Position(Orientation orientation)
+        {
+            using var app = App();
+            var horizontal = orientation == Orientation.Horizontal;
+            var items = Enumerable.Range(0, 100).Select(_ => new Canvas
+            {
+                Width = horizontal ? 500 : 100,
+                Height = horizontal ? 100 : 500,
+            }).ToArray();
+            var (target, scroll, itemsControl) = CreateUnrootedTarget<ItemsControl>(
+                items: items, itemTemplate: null, orientation: orientation);
+            var root = CreateRoot(itemsControl);
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            scroll.Offset = horizontal ? new Vector(25000, 0) : new Vector(0, 25000);
+            Layout(target);
+            Assert.Same(items[50], target.ContainerFromIndex(50));
+            var before = horizontal ? items[50].Bounds.Left - scroll.Offset.X : items[50].Bounds.Top - scroll.Offset.Y;
+
+            if (horizontal)
+                items[50].Width += 3;
+            else
+                items[50].Height += 3;
+            Layout(target);
+
+            Assert.Same(items[50], target.ContainerFromIndex(50));
+            var after = horizontal ? items[50].Bounds.Left - scroll.Offset.X : items[50].Bounds.Top - scroll.Offset.Y;
+            Assert.Equal(before, after);
+        }
+
         [Theory]
         [InlineData(0d,
             4, 5,

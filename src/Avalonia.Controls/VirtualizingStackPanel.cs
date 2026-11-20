@@ -203,7 +203,7 @@ namespace Avalonia.Controls
 
             try
             {
-                _realizedElements?.ValidateStartU(Orientation);
+                _realizedElements?.ValidateStartU(Orientation, availableSize);
                 _realizedElements ??= new();
                 _measureElements ??= new();
 
