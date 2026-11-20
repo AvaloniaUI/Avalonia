@@ -451,10 +451,10 @@ namespace Avalonia.Controls.Utils
                 ++count;
             }
 
-            // If all realized elements now have the same size and that size differs
-            // from at least one element's previous size, mark StartU as unstable
-            // because the unrealized items likely changed too.
-            if (count > 0 && previousSize != currentSize)
+            // A single resized element is not evidence that the unrealized items
+            // have also changed size (for example, expanding a viewport-sized row).
+            // Require at least two elements to treat a uniform resize as collection-wide.
+            if (count > 1 && previousSize != currentSize)
                 _startUUnstable = true;
         }
     }
