@@ -8,10 +8,10 @@ using Avalonia.Android.Automation;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
-using Avalonia.Controls;
 using Avalonia.Controls.Automation.Peers;
-using Avalonia.Controls.Primitives;
 using Java.Lang;
+
+using static Avalonia.Android.AndroidAccessRoleHelper;
 
 namespace Avalonia.Android
 {
@@ -46,25 +46,6 @@ namespace Avalonia.Android
                 AutomationControlType.TreeItem,
                 AutomationControlType.Window,
             };
-
-        private static readonly Dictionary<AutomationControlType, string> s_roles = new()
-        {
-            { AutomationControlType.Button, "android.widget.Button" },
-            { AutomationControlType.Calendar, "android.widget.DatePicker" },
-            { AutomationControlType.CheckBox, "android.widget.CheckBox" },
-            { AutomationControlType.ComboBox, "android.widget.Spinner" },
-            { AutomationControlType.Image, "android.widget.ImageView" },
-            { AutomationControlType.List, "android.widget.ListView" },
-            { AutomationControlType.ListItem, "android.widget.ListView" },
-            { AutomationControlType.ProgressBar, "android.widget.ProgressBar" },
-            { AutomationControlType.RadioButton, "android.widget.RadioButton" },
-            { AutomationControlType.ScrollViewer, "android.widget.ScrollView" },
-            { AutomationControlType.Slider, "android.widget.SeekBar" },
-            { AutomationControlType.SplitButton, "android.widget.Button" },
-            { AutomationControlType.Tab, "android.widget.TabWidget" },
-            { AutomationControlType.TabItem, "android.widget.TabWidget" },
-            { AutomationControlType.Text, "android.widget.EditText" },
-        };
 
         private readonly Dictionary<int, AutomationPeer> _peers;
         private readonly Dictionary<AutomationPeer, int> _peerIds;
@@ -277,33 +258,6 @@ namespace Avalonia.Android
             {
                 return false;
             }
-        }
-
-        private static string? GetClassName(AutomationPeer peer)
-        {
-            if (peer is ControlAutomationPeer controlPeer)
-            {
-                if (AutomationProperties.GetClassNameOverride(controlPeer.Owner) is string classNameOverride)
-                {
-                    return classNameOverride;
-                };
-
-                var controlType = controlPeer.Owner.GetType();
-                var automationType = peer.GetAutomationControlType();
-                s_roles.TryGetValue(automationType, out var role);
-
-                return automationType switch
-                {
-                    AutomationControlType.Button when controlType.IsAssignableTo(typeof(ToggleSwitch)) => "android.widget.Switch",
-                    AutomationControlType.Button when controlType.IsAssignableTo(typeof(ToggleButton)) => "android.widget.ToggleButton",
-                    AutomationControlType.Spinner when controlType.IsAssignableTo(typeof(NumericUpDown)) => "android.widget.NumberPicker",
-                    AutomationControlType.Custom when controlType.IsAssignableTo(typeof(DatePicker)) => "android.widget.DatePicker",
-                    AutomationControlType.Button when controlType.IsAssignableTo(typeof(CalendarDatePicker)) => "android.widget.DatePicker",
-                    AutomationControlType.Custom when controlType.IsAssignableTo(typeof(TimePicker)) => "android.widget.TimePicker",
-                    _ => role
-                };
-            }
-            return peer.GetClassName();
         }
 
         protected override void OnPopulateNodeForVirtualView(int virtualViewId, AccessibilityNodeInfoCompat? nodeInfo)

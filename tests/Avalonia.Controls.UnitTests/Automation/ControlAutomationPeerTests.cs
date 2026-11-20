@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Avalonia.Android;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Presenters;
@@ -266,23 +267,15 @@ namespace Avalonia.Controls.UnitTests.Automation
 
         public class CustomRoles : ScopedTestBase
         {
-            private static readonly Dictionary<AutomationControlType, string> s_customRoles = new()
-            {
-                { AutomationControlType.Button, "CustomButton" },
-                { AutomationControlType.CheckBox, "CustomCheckBox" },
-                { AutomationControlType.Calendar, "CustomCalendar" },
-                { AutomationControlType.ComboBox, "CustomSpinner" },
-            };
-
             /// <summary>
-            /// A test to simulate custom role lookups currently used in our Android backup  
+            /// A test to simulate custom role lookups currently used in our Android backend  
             /// </summary>
             [Theory()]
-            [InlineData("Button", "CustomButton")]
-            [InlineData("ToggleButton", "CustomToggleButton")]
-            [InlineData("CheckBox", "CustomCheckBox")]
-            [InlineData("Calendar", "CustomCalendar")]
-            [InlineData("TimePicker", "CustomTimePicker")]
+            [InlineData("Button", "android.widget.Button")]
+            [InlineData("ToggleButton", "android.widget.ToggleButton")]
+            [InlineData("CheckBox", "android.widget.CheckBox")]
+            [InlineData("Calendar", "android.widget.DatePicker")]
+            [InlineData("TimePicker", "android.widget.TimePicker")]
             public void Custom_Role_For_Peer_Is_Prioritized(string controlName, string customRole)
             {
                 Control? control = controlName switch
@@ -296,17 +289,10 @@ namespace Avalonia.Controls.UnitTests.Automation
                 };
                 Assert.NotNull(control);
                 var peer = CreatePeer(control);
-                var automationType = peer.GetAutomationControlType();
-                s_customRoles.TryGetValue(automationType, out var role);
-                var type = control.GetType();
 
-                role = automationType switch
-                {
-                    AutomationControlType.Button when type.IsAssignableTo(typeof(ToggleButton)) => "CustomToggleButton",
-                    AutomationControlType.Button when type.IsAssignableTo(typeof(ToggleSwitch)) => "CustomToggleSwitch",
-                    AutomationControlType.Custom when type.IsAssignableTo(typeof(TimePicker)) => "CustomTimePicker",
-                    _ => role
-                };
+                var role = AndroidAccessRoleHelper.GetClassName(peer);
+
+                Assert.NotNull(role);
 
                 Assert.Equal(customRole, role);
             }
