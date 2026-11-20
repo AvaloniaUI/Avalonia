@@ -443,7 +443,7 @@ namespace Avalonia.Controls.Utils
                 var sizeU = orientation == Orientation.Horizontal ?
                     element.DesiredSize.Width : element.DesiredSize.Height;
 
-                if (count > 0 && (_sizes[i] != previousSize || sizeU != currentSize))
+                if (count > 0 && sizeU != currentSize)
                     return;
 
                 previousSize = _sizes[i];
@@ -451,9 +451,10 @@ namespace Avalonia.Controls.Utils
                 ++count;
             }
 
-            // A single resized element is not evidence that the unrealized items
-            // have also changed size (for example, expanding a viewport-sized row).
-            if (count > 1 && previousSize != currentSize)
+            // If all realized elements now have the same size and that size differs
+            // from at least one element's previous size, mark StartU as unstable
+            // because the unrealized items likely changed too.
+            if (count > 0 && previousSize != currentSize)
                 _startUUnstable = true;
         }
     }
