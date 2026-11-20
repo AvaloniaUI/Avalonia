@@ -5,6 +5,7 @@ using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Diagnostics;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Metadata;
 using Avalonia.Platform;
@@ -198,6 +199,10 @@ namespace Avalonia.Controls.Primitives
 
         private protected sealed override Size ArrangeSetBounds(Size size)
         {
+            // The platform sizes the popup in whole device pixels by truncation. Without layout
+            // rounding the size can be fractional, so round it up to keep the content's measured size.
+            size = LayoutHelper.RoundLayoutSizeUp(size, RenderScaling);
+
             var reposition = false;
 
             var newMargin = Presenter?.Child?.Margin ?? default;

@@ -355,9 +355,34 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 target.Width = 410;
                 target.LayoutManager.ExecuteLayoutPass();
 
-                positioner.Verify(x => 
+                positioner.Verify(x =>
                     x.Update(It.Is<PopupPositionerParameters>(x => x.Size.Width == 410)));
                 Assert.Equal(410, target.Width);
+            }
+        }
+
+        [Fact]
+        public void Fractional_Size_Without_Layout_Rounding_Should_Be_Rounded_Up_To_Whole_Pixels()
+        {
+            // Issue #22829: the platform truncates the size to whole pixels, so a fractional
+            // size must not be rounded down, or the content gets less room than it measured.
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = new Window();
+                var popupImpl = MockWindowingPlatform.CreatePopupMock(window.PlatformImpl!);
+                var positioner = new Mock<IPopupPositioner>();
+                popupImpl.Setup(x => x.PopupPositioner).Returns(positioner.Object);
+
+                var target = CreateTarget(window, popupImpl.Object);
+                target.UseLayoutRounding = false;
+                target.Width = 97.368;
+                target.Height = 20.4;
+
+                ((IPopupHost)target).ConfigurePosition(new PopupPositionRequest(window, PlacementMode.Top));
+                target.Show();
+
+                positioner.Verify(x =>
+                    x.Update(It.Is<PopupPositionerParameters>(x => x.Size.Width == 98 && x.Size.Height == 21)));
             }
         }
 
