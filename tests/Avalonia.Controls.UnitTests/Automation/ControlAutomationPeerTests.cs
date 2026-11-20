@@ -1,8 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using Avalonia.Android;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
@@ -284,6 +287,39 @@ namespace Avalonia.Controls.UnitTests.Automation
         private static AutomationPeer CreatePeer(Control control)
         {
             return ControlAutomationPeer.CreatePeerForElement(control);
+        }
+
+        public class CustomRoles : ScopedTestBase
+        {
+            /// <summary>
+            /// A test to simulate custom role lookups currently used in our Android backend  
+            /// </summary>
+            [Theory()]
+            [InlineData("Button", "android.widget.Button")]
+            [InlineData("ToggleButton", "android.widget.ToggleButton")]
+            [InlineData("CheckBox", "android.widget.CheckBox")]
+            [InlineData("Calendar", "android.widget.DatePicker")]
+            [InlineData("TimePicker", "android.widget.TimePicker")]
+            public void Custom_Role_For_Peer_Is_Prioritized(string controlName, string customRole)
+            {
+                Control? control = controlName switch
+                {
+                    "ToggleButton" => new ToggleButton(),
+                    "CheckBox" => new CheckBox(),
+                    "Button" => new Button(),
+                    "Calendar" => new Calendar(),
+                    "TimePicker" => new TimePicker(),
+                    _ => null
+                };
+                Assert.NotNull(control);
+                var peer = CreatePeer(control);
+
+                var role = AndroidAccessRoleHelper.GetClassName(peer);
+
+                Assert.NotNull(role);
+
+                Assert.Equal(customRole, role);
+            }
         }
     }
 }
