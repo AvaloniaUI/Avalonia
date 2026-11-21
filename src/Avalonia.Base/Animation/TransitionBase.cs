@@ -8,7 +8,7 @@ namespace Avalonia.Animation
     /// <summary>
     /// Defines how a property should be animated using a transition.
     /// </summary>
-    public abstract class TransitionBase : AvaloniaObject, ITransition
+    public abstract class TransitionBase : AvaloniaObject, IPropertyTransition
     {
         /// <summary>
         /// Defines the <see cref="Duration"/> property.
@@ -93,7 +93,7 @@ namespace Avalonia.Animation
         }
 
         /// <inheritdoc/>
-        IDisposable ITransition.Apply(Animatable control, IClock clock, object? oldValue, object? newValue)
+        IDisposable IPropertyTransition.Apply(Animatable control, IClock clock, object? oldValue, object? newValue)
             => Apply(control, clock, oldValue, newValue);
         
         internal abstract IDisposable Apply(Animatable control, IClock clock, object? oldValue, object? newValue);

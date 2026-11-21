@@ -593,6 +593,7 @@ namespace Avalonia
             if (PresentationSource.Renderer is IRendererWithCompositor compositingRenderer)
             {
                 AttachToCompositor(compositingRenderer.Compositor);
+                InvalidateCompositionTransitions();
             }
             InvalidateMirrorTransform();
             UpdateIsEffectivelyVisible(_visualParent?.IsEffectivelyVisible ?? true);

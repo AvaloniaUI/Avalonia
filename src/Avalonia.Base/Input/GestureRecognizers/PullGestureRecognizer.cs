@@ -84,7 +84,7 @@ namespace Avalonia.Input
 
         protected override void PointerPressed(PointerPressedEventArgs e)
         {
-            if (Target != null && Target is Visual visual && (e.Pointer.Type == PointerType.Touch || e.Pointer.Type == PointerType.Pen))
+            if (Target != null && Target is Visual visual)
             {
                 var position = e.GetPosition(visual);
 
