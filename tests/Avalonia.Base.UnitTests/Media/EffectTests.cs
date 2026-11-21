@@ -1,10 +1,11 @@
 using System;
 using Avalonia.Media;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Base.UnitTests.Media;
 
-public class EffectTests
+public class EffectTests : ScopedTestBase
 {
     [Fact]
     public void Parse_Parses_Blur()
@@ -66,6 +67,58 @@ public class EffectTests
         Assert.Equal(top, padding.Top);
         Assert.Equal(right, padding.Right);
         Assert.Equal(bottom, padding.Bottom);
+    }
+
+    // Direction is measured anticlockwise with Y pointing up, as in WPF.
+    [Theory,
+     InlineData(0, 10, 0),
+     InlineData(90, 0, -10),
+     InlineData(180, -10, 0),
+     InlineData(270, 0, 10),
+     InlineData(315, 7.0711, 7.0711)
+    ]
+    public void DropShadowDirectionEffect_Offset_Follows_Direction(double direction, double x, double y)
+    {
+        var effect = new DropShadowDirectionEffect { Direction = direction, ShadowDepth = 10 };
+        Assert.Equal(x, effect.OffsetX, 4);
+        Assert.Equal(y, effect.OffsetY, 4);
+    }
+
+    [Theory,
+     InlineData(0, 10, 0),
+     InlineData(90, 0, -10),
+     InlineData(180, -10, 0),
+     InlineData(270, 0, 10),
+     InlineData(315, 7.0711, 7.0711)
+    ]
+    public void ImmutableDropShadowDirectionEffect_Offset_Follows_Direction(double direction, double x, double y)
+    {
+        var effect = new ImmutableDropShadowDirectionEffect(direction, 10, 0, Colors.Black, 1);
+        Assert.Equal(x, effect.OffsetX, 4);
+        Assert.Equal(y, effect.OffsetY, 4);
+    }
+
+    [Fact]
+    public void DropShadowDirectionEffect_ToImmutable_Preserves_Direction_And_ShadowDepth()
+    {
+        var effect = new DropShadowDirectionEffect
+        {
+            Direction = 270,
+            ShadowDepth = 10,
+            BlurRadius = 3,
+            Color = Colors.Red,
+            Opacity = 0.5
+        };
+
+        var immutable = (ImmutableDropShadowDirectionEffect)effect.ToImmutable();
+
+        Assert.Equal(270, immutable.Direction);
+        Assert.Equal(10, immutable.ShadowDepth);
+        Assert.Equal(3, immutable.BlurRadius);
+        Assert.Equal(Colors.Red, immutable.Color);
+        Assert.Equal(0.5, immutable.Opacity);
+        Assert.Equal(effect.OffsetX, immutable.OffsetX);
+        Assert.Equal(effect.OffsetY, immutable.OffsetY);
     }
 }
 
