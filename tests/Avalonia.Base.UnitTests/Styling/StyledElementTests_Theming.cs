@@ -14,6 +14,60 @@ namespace Avalonia.Base.UnitTests.Styling;
 
 public class StyledElementTests_Theming : ScopedTestBase
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Changing_TemplatedParent_After_Style_Invalidation_Invalidates_Parent_Theme(bool clearParent)
+    {
+        var oldParent = new ThemedControl
+        {
+            Theme = new ControlTheme(typeof(ThemedControl))
+            {
+                Children =
+                {
+                    new Style(x => x.Nesting().Template().OfType<Canvas>())
+                    {
+                        Setters =
+                        {
+                            new Setter(Panel.BackgroundProperty, Brushes.Red),
+                            new Setter(Control.TagProperty, "Old parent"),
+                        },
+                    },
+                },
+            },
+        };
+        var newParent = new ThemedControl
+        {
+            Theme = new ControlTheme(typeof(ThemedControl))
+            {
+                Children =
+                {
+                    new Style(x => x.Nesting().Template().OfType<Canvas>())
+                    {
+                        Setters = { new Setter(Panel.BackgroundProperty, Brushes.Green) },
+                    },
+                },
+            },
+        };
+        var target = new Canvas { TemplatedParent = oldParent };
+        target.ApplyStyling();
+
+        Assert.Equal(Brushes.Red, target.Background);
+        Assert.Equal("Old parent", target.Tag);
+
+        target.InvalidateStyles(recurse: false);
+        target.TemplatedParent = clearParent ? null : newParent;
+
+        // Invalidate the old theme without eagerly applying the new parent's theme.
+        Assert.Null(target.Background);
+        Assert.Null(target.Tag);
+
+        target.ApplyStyling();
+
+        Assert.Equal(clearParent ? null : Brushes.Green, target.Background);
+        Assert.Null(target.Tag);
+    }
+
     public class InlineTheme : ScopedTestBase
     {
         [Fact]

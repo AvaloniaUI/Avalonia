@@ -1,0 +1,654 @@
+using System;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using Avalonia.Controls.Templates;
+using Avalonia.Controls.Presenters;
+using Avalonia.Data;
+using Avalonia.PropertyStore;
+using Avalonia.Styling;
+using Avalonia.UnitTests;
+using Avalonia.VisualTree;
+using Xunit;
+
+namespace Avalonia.Controls.UnitTests;
+
+public class SetterTemplateLifetimeTests : ScopedTestBase
+{
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Active_Setter_Does_Not_Retain_Removed_Descendants(bool nested)
+    {
+        var (root, removed) = CreateRemovedContent(nested);
+
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+
+        Assert.False(removed.TryGetTarget(out _));
+        GC.KeepAlive(root);
+    }
+
+    [Fact]
+    public void Active_Setter_Does_Not_Retain_Removed_Panel_Subtree_And_Restores_Survivors()
+    {
+        var (root, target, content, retained, removedPanel, removedLeaf) = CreateRemovedPanelSubtree();
+
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+
+        Assert.False(removedPanel.TryGetTarget(out _));
+        Assert.False(removedLeaf.TryGetTarget(out _));
+        Assert.Same(target, retained.TemplatedParent);
+        Assert.Equal("Initial", retained.Text);
+
+        target.Classes.Remove("active");
+        Assert.Null(retained.TemplatedParent);
+        Assert.Null(retained.Text);
+        target.Tag = "Inactive";
+        Assert.Null(retained.Text);
+
+        target.Classes.Add("active");
+        Assert.Same(target, retained.TemplatedParent);
+        Assert.Equal("Inactive", retained.Text);
+        target.Tag = "Reactivated";
+        Assert.Equal("Reactivated", retained.Text);
+
+        GC.KeepAlive(root);
+        GC.KeepAlive(content);
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static (TestRoot, WeakReference<Control>) CreateRemovedContent(bool nested)
+    {
+        var target = CreateTarget();
+        var root = new TestRoot
+        {
+            Styles =
+            {
+                CreateStyle(() => new Border
+                {
+                    Child = nested ? new Border { Child = new TextBlock() } : new TextBlock(),
+                }),
+            },
+            Child = target,
+        };
+        var content = Assert.IsType<Border>(target.Content);
+        var removed = new WeakReference<Control>(content.Child!);
+        content.Child = null;
+        return (root, removed);
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static (TestRoot, ContentControl, StackPanel, TextBlock, WeakReference<Control>, WeakReference<Control>)
+        CreateRemovedPanelSubtree()
+    {
+        var target = CreateTarget();
+        target.Classes.Add("active");
+        var removedLeaf = new TextBlock();
+        var removedPanel = new StackPanel { Children = { removedLeaf } };
+        var retained = new TextBlock { [!TextBlock.TextProperty] = new TemplateBinding(Control.TagProperty) };
+        var content = new StackPanel { Children = { removedPanel, retained } };
+        var root = new TestRoot
+        {
+            Styles = { CreateStyle(() => content, activeClass: true) },
+            Child = target,
+        };
+        Assert.Same(target, retained.TemplatedParent);
+        Assert.Equal("Initial", retained.Text);
+
+        content.Children.Remove(removedPanel);
+
+        return (root, target, content, retained, new(removedPanel), new(removedLeaf));
+    }
+
+    [Fact]
+    public void Reactivating_Setter_Does_Not_Claim_Retained_Forwarded_Content()
+    {
+        var userContent = new TextBlock();
+        var target = CreateTarget();
+        target.Tag = userContent;
+        target.Classes.Add("active");
+        var root = new TestRoot
+        {
+            Styles =
+            {
+                CreateStyle(() => new Border
+                {
+                    [!Border.ChildProperty] = new TemplateBinding(Control.TagProperty),
+                }, activeClass: true),
+                new Style(x => x.OfType<ContentControl>().Template().OfType<TextBlock>())
+                {
+                    Setters = { new Setter(TextBlock.TextProperty, "Template child") },
+                },
+            },
+            Child = target,
+        };
+        var content = Assert.IsType<Border>(target.Content);
+        Assert.Same(userContent, content.Child);
+        Assert.Null(userContent.TemplatedParent);
+
+        // Retain the forwarded value independently of the binding when the style deactivates.
+        content.Child = userContent;
+
+        for (var i = 0; i < 2; ++i)
+        {
+            target.Classes.Remove("active");
+            Assert.Same(userContent, content.Child);
+            target.Classes.Add("active");
+            Assert.Same(content, target.Content);
+            Assert.Same(target, content.TemplatedParent);
+            Assert.Same(userContent, content.Child);
+            Assert.Null(userContent.TemplatedParent);
+            Assert.NotEqual("Template child", userContent.Text);
+        }
+    }
+
+    [Fact]
+    public void Replacing_Control_Template_Preserves_Setter_Content_Ownership()
+    {
+        var target = CreateTarget();
+        var root = new TestRoot { Styles = { CreateStyle(BuildContent) }, Child = target };
+        var content = Assert.IsType<Border>(target.Content);
+        var text = Assert.IsType<TextBlock>(content.Child);
+
+        for (var i = 0; i < 2; ++i)
+        {
+            target.Template = new FuncControlTemplate<ContentControl>((_, scope) => new ContentPresenter
+            {
+                Name = "PART_ContentPresenter",
+                [!ContentPresenter.ContentProperty] = new TemplateBinding(ContentControl.ContentProperty),
+            }.RegisterInNameScope(scope));
+            target.ApplyTemplate();
+            target.Presenter!.UpdateChild();
+            Assert.Same(content, target.Presenter.Child);
+            Assert.Same(target, content.TemplatedParent);
+            Assert.Same(target, text.TemplatedParent);
+            target.Tag = $"Template {i}";
+            Assert.Equal($"Template {i}", text.Text);
+        }
+
+        target.InvalidateStyles(recurse: false);
+        Assert.Null(content.TemplatedParent);
+        Assert.Null(text.TemplatedParent);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Discarding_Setter_Content_Clears_Its_TemplateBindings(bool invalidateStyles)
+    {
+        var target = CreateTarget();
+        var style = CreateStyle(BuildContent);
+        var root = new TestRoot { Styles = { style }, Child = target };
+        var content = Assert.IsType<Border>(target.Content);
+        var text = Assert.IsType<TextBlock>(content.Child);
+        Assert.Equal("Initial", text.Text);
+
+        if (invalidateStyles)
+            target.InvalidateStyles(recurse: false);
+        else
+            root.Styles.Remove(style);
+
+        Assert.Null(content.TemplatedParent);
+        Assert.Null(text.TemplatedParent);
+        target.Tag = "Changed";
+        Assert.NotEqual("Changed", text.Text);
+
+        if (invalidateStyles)
+            target.ApplyStyling();
+        else
+        {
+            root.Styles.Add(style);
+            target.ApplyStyling();
+        }
+
+        var replacement = Assert.IsType<Border>(target.Content);
+        Assert.NotSame(content, replacement);
+        Assert.Equal("Changed", Assert.IsType<TextBlock>(replacement.Child).Text);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Reactivating_Setter_Content_Restores_Its_TemplateBindings(bool rootOnly)
+    {
+        var target = CreateTarget();
+        target.Classes.Add("active");
+        var style = CreateStyle(rootOnly ? BuildText : BuildContent, activeClass: true);
+        var root = new TestRoot { Styles = { style }, Child = target };
+        var content = Assert.IsAssignableFrom<Control>(target.Content);
+        var text = rootOnly ? Assert.IsType<TextBlock>(content) :
+            Assert.IsType<TextBlock>(Assert.IsType<Border>(content).Child);
+
+        target.Classes.Remove("active");
+
+        Assert.Null(target.Content);
+        Assert.Null(content.TemplatedParent);
+        Assert.Null(text.TemplatedParent);
+        target.Tag = "While inactive";
+        Assert.NotEqual("While inactive", text.Text);
+
+        target.Classes.Add("active");
+
+        Assert.Same(content, target.Content);
+        Assert.Same(target, content.TemplatedParent);
+        Assert.Same(target, text.TemplatedParent);
+        Assert.Equal("While inactive", text.Text);
+        target.Tag = "Active again";
+        Assert.Equal("Active again", text.Text);
+    }
+
+    [Fact]
+    public void Discarding_Setter_Content_Preserves_Nested_Template_Ownership()
+    {
+        var nested = new ContentControl
+        {
+            Tag = "Nested",
+            Template = new FuncControlTemplate<ContentControl>((_, _) => BuildText()),
+        };
+        var target = CreateTarget();
+        var root = new TestRoot
+        {
+            Styles = { CreateStyle(() => new Border { Child = nested }) },
+            Child = target,
+        };
+        var content = Assert.IsType<Border>(target.Content);
+        nested.ApplyTemplate();
+        var nestedText = Assert.IsType<TextBlock>(Assert.Single(nested.GetVisualChildren()));
+        Assert.Equal("Nested", nestedText.Text);
+
+        target.InvalidateStyles(recurse: false);
+
+        Assert.Null(content.TemplatedParent);
+        Assert.Null(nested.TemplatedParent);
+        Assert.Same(nested, nestedText.TemplatedParent);
+        nested.Tag = "Nested changed";
+        Assert.Equal("Nested changed", nestedText.Text);
+    }
+
+    [Fact]
+    public void Discarding_Setter_Content_Clears_Owned_Children_Removed_From_The_Subtree()
+    {
+        var target = CreateTarget();
+        var root = new TestRoot { Styles = { CreateStyle(BuildContent) }, Child = target };
+        var content = Assert.IsType<Border>(target.Content);
+        var text = Assert.IsType<TextBlock>(content.Child);
+        Assert.Same(target, text.TemplatedParent);
+        Assert.Equal("Initial", text.Text);
+        content.Child = null;
+        Assert.Same(target, text.TemplatedParent);
+
+        target.InvalidateStyles(recurse: false);
+
+        Assert.Null(text.TemplatedParent);
+        target.Tag = "Changed";
+        Assert.NotEqual("Changed", text.Text);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Reapplying_Styles_Does_Not_Retain_Discarded_Content(bool bindingInParentTheme)
+    {
+        var (root, target, discarded) = CreateDiscardedContent(bindingInParentTheme);
+
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+
+        foreach (var reference in discarded)
+            Assert.False(reference.TryGetTarget(out _));
+
+        GC.KeepAlive(root);
+        GC.KeepAlive(target);
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static (TestRoot, ContentControl, List<WeakReference<Control>>) CreateDiscardedContent(bool bindingInParentTheme)
+    {
+        var target = CreateTarget();
+        if (bindingInParentTheme)
+        {
+            target.Theme = new ControlTheme(typeof(ContentControl))
+            {
+                Children =
+                {
+                    new Style(x => x.Nesting().Template().OfType<TextBlock>())
+                    {
+                        Setters = { new Setter(TextBlock.TextProperty, new TemplateBinding(Control.TagProperty)) },
+                    },
+                },
+            };
+        }
+        var style = CreateStyle(() => bindingInParentTheme
+            ? new Border { Child = new TextBlock() }
+            : BuildContent());
+        var root = new TestRoot { Styles = { style }, Child = target };
+        var discarded = new List<WeakReference<Control>>();
+
+        for (var i = 0; i < 5; ++i)
+        {
+            var content = Assert.IsType<Border>(target.Content);
+            var text = Assert.IsType<TextBlock>(content.Child);
+            if (bindingInParentTheme)
+            {
+                Assert.Equal("Initial", text.Text);
+                target.Tag = $"Changed {i}";
+                Assert.Equal($"Changed {i}", text.Text);
+                target.Tag = "Initial";
+            }
+            discarded.Add(new(content));
+            discarded.Add(new(text));
+            target.InvalidateStyles(recurse: false);
+            target.ApplyStyling();
+        }
+
+        return (root, target, discarded);
+    }
+
+    [Fact]
+    public void Null_Setter_Template_Result_Is_Materialized_Only_Once()
+    {
+        var builds = 0;
+        var target = CreateTarget();
+        var template = new FuncTemplate<Control?>(() =>
+        {
+            ++builds;
+            return null;
+        });
+        var entry = (IValueEntry)new PropertySetterTemplateInstance(ContentControl.ContentProperty, template, target);
+
+        Assert.Null(entry.GetValue());
+        Assert.Null(entry.GetValue());
+        entry.Unsubscribe();
+        Assert.Null(entry.GetValue());
+
+        Assert.Equal(1, builds);
+    }
+
+    [Fact]
+    public void Discarding_Setter_Content_Does_Not_Clear_Reassigned_Ownership()
+    {
+        var target = CreateTarget();
+        var root = new TestRoot { Styles = { CreateStyle(BuildContent) }, Child = target };
+        var content = Assert.IsType<Border>(target.Content);
+        var text = Assert.IsType<TextBlock>(content.Child);
+        var newOwner = new ContentControl { Tag = "Other owner" };
+        text.TemplatedParent = newOwner;
+
+        target.InvalidateStyles(recurse: false);
+
+        Assert.Same(newOwner, text.TemplatedParent);
+        newOwner.Tag = "Other owner changed";
+        Assert.Equal("Other owner changed", text.Text);
+    }
+
+    [Fact]
+    public void Discarding_Setter_Content_Does_Not_Clear_Reassigned_Root_Ownership()
+    {
+        var target = CreateTarget();
+        var entry = (IValueEntry)new PropertySetterTemplateInstance(ContentControl.ContentProperty,
+            new FuncTemplate<Control>(BuildText), target);
+        var text = Assert.IsType<TextBlock>(entry.GetValue());
+        var newOwner = new ContentControl { Tag = "Other owner" };
+        text.TemplatedParent = newOwner;
+
+        entry.Unsubscribe();
+        Assert.Same(newOwner, text.TemplatedParent);
+        newOwner.Tag = "Other owner while inactive";
+        Assert.Equal("Other owner while inactive", text.Text);
+
+        Assert.Same(text, entry.GetValue());
+
+        Assert.Same(newOwner, text.TemplatedParent);
+        newOwner.Tag = "Other owner changed";
+        Assert.Equal("Other owner changed", text.Text);
+    }
+
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    [InlineData(false, true)]
+    public void Unsubscribing_During_Restoration_Does_Not_Reattach_Descendants(
+        bool unsubscribeFromRoot, bool multipleDescendants)
+    {
+        var target = CreateTarget();
+        var textBlocks = multipleDescendants
+            ? new[] { BuildText(), BuildText() }
+            : new[] { BuildText() };
+        Control content = multipleDescendants
+            ? new Border { Child = new StackPanel { Children = { textBlocks[0], textBlocks[1] } } }
+            : new Border { Child = textBlocks[0] };
+        var entry = (IValueEntry)new PropertySetterTemplateInstance(ContentControl.ContentProperty,
+            new FuncTemplate<Control>(() => content), target);
+
+        Assert.Same(content, entry.GetValue());
+        foreach (var text in textBlocks)
+        {
+            Assert.Same(target, text.TemplatedParent);
+            Assert.Equal("Initial", text.Text);
+        }
+        entry.Unsubscribe();
+
+        var trigger = unsubscribeFromRoot ? (StyledElement)content : textBlocks[0];
+        var shouldUnsubscribe = true;
+        trigger.PropertyChanged += (_, e) =>
+        {
+            if (shouldUnsubscribe && e.Property == StyledElement.TemplatedParentProperty &&
+                ReferenceEquals(e.NewValue, target))
+            {
+                shouldUnsubscribe = false;
+                entry.Unsubscribe();
+            }
+        };
+
+        Assert.Same(content, entry.GetValue());
+
+        Assert.Null(((StyledElement)content).TemplatedParent);
+        Assert.False(((StyledElement)content).IsSetterTemplateChild);
+        foreach (var text in textBlocks)
+        {
+            Assert.Null(text.TemplatedParent);
+            Assert.False(text.IsSetterTemplateChild);
+            Assert.Null(text.Text);
+        }
+
+        target.Tag = "Inactive";
+        foreach (var text in textBlocks)
+            Assert.Null(text.Text);
+
+        Assert.Same(content, entry.GetValue());
+        Assert.Same(target, ((StyledElement)content).TemplatedParent);
+        foreach (var text in textBlocks)
+        {
+            Assert.Same(target, text.TemplatedParent);
+            Assert.Equal("Inactive", text.Text);
+        }
+
+        target.Tag = "Reactivated";
+        foreach (var text in textBlocks)
+            Assert.Equal("Reactivated", text.Text);
+    }
+
+    [Fact]
+    public void Restored_Child_Reassigned_During_Parent_Change_Is_Not_Marked_As_Setter_Child()
+    {
+        var target = CreateTarget();
+        var content = new Border { Child = BuildText() };
+        var entry = (IValueEntry)new PropertySetterTemplateInstance(ContentControl.ContentProperty,
+            new FuncTemplate<Control>(() => content), target);
+        var text = Assert.IsType<TextBlock>(content.Child);
+        var newOwner = new ContentControl { Tag = "Other owner" };
+
+        Assert.Same(content, entry.GetValue());
+        entry.Unsubscribe();
+        text.PropertyChanged += (_, e) =>
+        {
+            if (e.Property == StyledElement.TemplatedParentProperty && ReferenceEquals(e.NewValue, target))
+                text.TemplatedParent = newOwner;
+        };
+
+        Assert.Same(content, entry.GetValue());
+
+        Assert.Same(newOwner, text.TemplatedParent);
+        Assert.False(text.IsSetterTemplateChild);
+        entry.Unsubscribe();
+        Assert.Same(newOwner, text.TemplatedParent);
+        newOwner.Tag = "Other owner changed";
+        Assert.Equal("Other owner changed", text.Text);
+    }
+
+    [Fact]
+    public void Initially_Assigned_Child_Reassigned_During_Parent_Change_Is_Not_Marked_As_Setter_Child()
+    {
+        var target = CreateTarget();
+        var content = new Border { Child = BuildText() };
+        var entry = (IValueEntry)new PropertySetterTemplateInstance(ContentControl.ContentProperty,
+            new FuncTemplate<Control>(() => content), target);
+        var text = Assert.IsType<TextBlock>(content.Child);
+        var newOwner = new ContentControl { Tag = "Other owner" };
+        text.PropertyChanged += (_, e) =>
+        {
+            if (e.Property == StyledElement.TemplatedParentProperty && ReferenceEquals(e.NewValue, target))
+                text.TemplatedParent = newOwner;
+        };
+
+        Assert.Same(content, entry.GetValue());
+
+        Assert.Same(newOwner, text.TemplatedParent);
+        Assert.False(text.IsSetterTemplateChild);
+        entry.Unsubscribe();
+        Assert.Same(newOwner, text.TemplatedParent);
+        newOwner.Tag = "Other owner changed";
+        Assert.Equal("Other owner changed", text.Text);
+    }
+
+    [Fact]
+    public void Unsubscribing_During_Initialization_Clears_Parent_After_Build()
+    {
+        var target = CreateTarget();
+        var content = Assert.IsType<Border>(BuildContent());
+        var entry = (IValueEntry)new PropertySetterTemplateInstance(ContentControl.ContentProperty,
+            new FuncTemplate<Control>(() => content), target);
+        content.PropertyChanged += (_, e) =>
+        {
+            if (e.Property == StyledElement.TemplatedParentProperty && e.NewValue is not null)
+            {
+                Assert.Same(content, entry.GetValue());
+                entry.Unsubscribe();
+            }
+        };
+
+        Assert.Same(content, entry.GetValue());
+
+        Assert.Null(content.TemplatedParent);
+        Assert.Null(content.Child!.TemplatedParent);
+        Assert.Null(Assert.IsType<TextBlock>(content.Child).Text);
+    }
+
+    [Fact]
+    public void Reading_Value_During_Initialization_After_Unsubscribe_Leaves_Entry_Active()
+    {
+        var target = CreateTarget();
+        var content = Assert.IsType<Border>(BuildContent());
+        var text = Assert.IsType<TextBlock>(content.Child);
+        var entry = (IValueEntry)new PropertySetterTemplateInstance(ContentControl.ContentProperty,
+            new FuncTemplate<Control>(() => content), target);
+        var reenter = true;
+        content.PropertyChanged += (_, e) =>
+        {
+            if (reenter && e.Property == StyledElement.TemplatedParentProperty &&
+                ReferenceEquals(e.NewValue, target))
+            {
+                reenter = false;
+                entry.Unsubscribe();
+                Assert.Same(content, entry.GetValue());
+            }
+        };
+
+        Assert.Same(content, entry.GetValue());
+
+        Assert.Same(target, content.TemplatedParent);
+        Assert.Same(target, text.TemplatedParent);
+        Assert.Equal("Initial", text.Text);
+        target.Tag = "Still active";
+        Assert.Equal("Still active", text.Text);
+    }
+
+    [Fact]
+    public void Removing_Style_During_Initialization_Clears_Template_Ownership()
+    {
+        var target = CreateTarget();
+        target.Classes.Add("active");
+        var content = Assert.IsType<Border>(BuildContent());
+        var text = Assert.IsType<TextBlock>(content.Child);
+        var removeStyle = true;
+        content.PropertyChanged += (_, e) =>
+        {
+            if (removeStyle && e.Property == StyledElement.TemplatedParentProperty &&
+                ReferenceEquals(e.NewValue, target))
+            {
+                removeStyle = false;
+                target.Classes.Remove("active");
+            }
+        };
+
+        var root = new TestRoot
+        {
+            Styles = { CreateStyle(() => content, activeClass: true) },
+            Child = target,
+        };
+
+        Assert.False(removeStyle);
+        target.InvalidateStyles(recurse: false);
+        target.ApplyStyling();
+
+        Assert.Null(content.TemplatedParent);
+        Assert.Null(text.TemplatedParent);
+        Assert.Null(text.Text);
+        target.Tag = "Changed after style removal";
+        Assert.Null(text.Text);
+        GC.KeepAlive(root);
+    }
+
+    [Fact]
+    public void Reading_Value_During_Teardown_Does_Not_Reattach_TemplateBindings()
+    {
+        var target = CreateTarget();
+        var entry = (IValueEntry)new PropertySetterTemplateInstance(ContentControl.ContentProperty,
+            new FuncTemplate<Control>(BuildContent), target);
+        var content = Assert.IsType<Border>(entry.GetValue());
+        var text = Assert.IsType<TextBlock>(content.Child);
+        content.PropertyChanged += (_, e) =>
+        {
+            if (e.Property == StyledElement.TemplatedParentProperty && e.NewValue is null)
+                Assert.Same(content, entry.GetValue());
+        };
+
+        entry.Unsubscribe();
+
+        Assert.Null(content.TemplatedParent);
+        Assert.Null(text.TemplatedParent);
+        target.Tag = "Changed";
+        Assert.NotEqual("Changed", text.Text);
+    }
+
+    private static ContentControl CreateTarget() => new() { Name = "target", Tag = "Initial" };
+
+    private static Style CreateStyle(Func<Control> build, bool activeClass = false) =>
+        new(x => activeClass
+            ? x.OfType<ContentControl>().Name("target").Class("active")
+            : x.OfType<ContentControl>().Name("target"))
+        {
+            Setters = { new Setter(ContentControl.ContentProperty, new FuncTemplate<Control>(build)) },
+        };
+
+    private static Control BuildContent() => new Border { Child = BuildText() };
+
+    private static TextBlock BuildText() => new()
+    {
+        [!TextBlock.TextProperty] = new TemplateBinding(Control.TagProperty),
+    };
+}

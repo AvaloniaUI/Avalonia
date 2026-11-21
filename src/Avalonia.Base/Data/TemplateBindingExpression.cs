@@ -5,6 +5,7 @@ using System.Globalization;
 using Avalonia.Data.Converters;
 using Avalonia.Data.Core;
 using Avalonia.Logging;
+using Avalonia.Utilities;
 
 namespace Avalonia.Data;
 
@@ -16,6 +17,10 @@ internal class TemplateBindingExpression : UntypedBindingExpressionBase
     private BindingMode _mode;
     private readonly AvaloniaProperty? _property;
     private bool _hasPublishedValue;
+    private bool _isPublishingValue;
+    private WeakReference<AvaloniaObject?>? _subscribedTemplatedParent;
+    private EventHandler<AvaloniaPropertyChangedEventArgs>? _onTemplatedParentPropertyChanged;
+    private EventHandler<AvaloniaPropertyChangedEventArgs>? _onTargetPropertyChanged;
 
     public TemplateBindingExpression(
         AvaloniaProperty? property,
@@ -37,26 +42,17 @@ internal class TemplateBindingExpression : UntypedBindingExpressionBase
     protected override void StartCore()
     {
         _hasPublishedValue = false;
-        OnTemplatedParentChanged();
         if (TryGetTarget(out var target))
-            target.PropertyChanged += OnTargetPropertyChanged;
+            target.PropertyChanged += _onTargetPropertyChanged ??= OnTargetPropertyChanged;
+        OnTemplatedParentChanged();
     }
 
     protected override void StopCore()
     {
-        if (TryGetTarget(out var target))
-        {
-            if (target is StyledElement targetElement &&
-                targetElement?.TemplatedParent is { } templatedParent)
-            {
-                templatedParent.PropertyChanged -= OnTemplatedParentPropertyChanged;
-            }
+        UnsubscribeFromTemplatedParent();
 
-            if (target is not null)
-            {
-                target.PropertyChanged -= OnTargetPropertyChanged;
-            }
-        }
+        if (TryGetTarget(out var target))
+            target.PropertyChanged -= _onTargetPropertyChanged;
     }
 
     internal override bool WriteValueToSource(object? value)
@@ -113,7 +109,7 @@ internal class TemplateBindingExpression : UntypedBindingExpressionBase
                 value = Convert(_converter, _converterCulture, _converterParameter, value, TargetType, ref error);
 
             value = ConvertToTargetType(value);
-            PublishValue(value, error);
+            PublishValueToTarget(value, error);
             _hasPublishedValue = true;
 
             if (_mode == BindingMode.OneTime)
@@ -121,37 +117,83 @@ internal class TemplateBindingExpression : UntypedBindingExpressionBase
         }
         else if (_hasPublishedValue)
         {
-            PublishValue(AvaloniaProperty.UnsetValue);
+            PublishValueToTarget(AvaloniaProperty.UnsetValue);
+        }
+    }
+
+    private void PublishValueToTarget(object? value, BindingError? error = null)
+    {
+        var wasPublishingValue = _isPublishingValue;
+        _isPublishingValue = true;
+        try
+        {
+            base.PublishValue(value, error);
+        }
+        finally
+        {
+            _isPublishingValue = wasPublishingValue;
         }
     }
 
     private void OnTemplatedParentChanged()
     {
+        UnsubscribeFromTemplatedParent();
         if (TryGetTemplatedParent(out var templatedParent))
-            templatedParent.PropertyChanged += OnTemplatedParentPropertyChanged;
+        {
+            if (_subscribedTemplatedParent is null)
+                _subscribedTemplatedParent = new(templatedParent);
+            else
+                _subscribedTemplatedParent.SetTarget(templatedParent);
+            templatedParent.PropertyChanged += _onTemplatedParentPropertyChanged ??= OnTemplatedParentPropertyChanged;
+        }
 
         PublishValue();
     }
 
+    private void UnsubscribeFromTemplatedParent()
+    {
+        // The target's current parent may already have changed before the binding is stopped.
+        if (_subscribedTemplatedParent is { } subscribedParent &&
+            subscribedParent.TryGetTarget(out var parent) && parent is not null)
+            parent.PropertyChanged -= _onTemplatedParentPropertyChanged;
+        _subscribedTemplatedParent?.SetTarget(null);
+    }
+
     private void OnTemplatedParentPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
     {
-        if (e.Property == _property)
+        if (IsRunning && e.Property == _property)
             PublishValue();
     }
 
     private void OnTargetPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
     {
+        if (!IsRunning)
+            return;
+
         if (e.Property == StyledElement.TemplatedParentProperty)
         {
-            if (e.OldValue is AvaloniaObject oldValue)
-                oldValue.PropertyChanged -= OnTemplatedParentPropertyChanged;
-
             OnTemplatedParentChanged();
         }
-        else if (_mode is BindingMode.TwoWay or BindingMode.OneWayToSource && e.Property == TargetProperty)
+        else if (e.Property == TargetProperty &&
+                 _mode is BindingMode.TwoWay or BindingMode.OneWayToSource &&
+                 sender is AvaloniaObject target)
         {
-            WriteValueToSource(e.NewValue);
+            var value = target.GetValue(e.Property);
+
+            if (!_isPublishingValue || !IsPublishedValue(value))
+                WriteValueToSource(value);
         }
+    }
+
+    private bool IsPublishedValue(object? targetValue)
+    {
+        if (!IsRunning)
+            return false;
+
+        var value = GetValue();
+
+        return value == AvaloniaProperty.UnsetValue ||
+            TypeUtilities.IdentityEquals(targetValue, value, TargetType);
     }
 
     private bool TryGetTemplatedParent([NotNullWhen(true)] out AvaloniaObject? result)
