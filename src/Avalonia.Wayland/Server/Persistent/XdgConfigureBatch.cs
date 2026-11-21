@@ -39,6 +39,12 @@ class XdgConfigureBatch
     /// </summary>
     public DecorationMode? InitialDecorationMode;
 
+    /// <summary>
+    /// The compositor restored this toplevel's state from its session
+    /// (<c>xdg_toplevel_session_v1.restored</c>, which precedes the initial configure).
+    /// </summary>
+    public bool SessionRestored;
+
     public static XdgToplevelStates ParseStates(ReadOnlySpan<byte> data)
     {
         var states = XdgToplevelStates.None;

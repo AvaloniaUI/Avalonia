@@ -85,9 +85,12 @@ class WaylandWorkerClient
     /// accessors needed to drive it. The underlying <see cref="WXdgTopLevel"/>
     /// is worker-thread state and is intentionally not exposed.
     /// </summary>
-    public WaylandSurfaceCreateResult<WXdgTopLevelProxy> CreateTopLevelHandle(WXdgTopLevelEventSinkProxy sink)
+    /// <param name="sink">Receives the toplevel's events on the UI thread.</param>
+    /// <param name="sessionName">The toplevel's name in the compositor session, if it joins one.</param>
+    public WaylandSurfaceCreateResult<WXdgTopLevelProxy> CreateTopLevelHandle(WXdgTopLevelEventSinkProxy sink,
+        string? sessionName)
     {
-        var topLevel = new WXdgTopLevel(_worker, sink);
+        var topLevel = new WXdgTopLevel(_worker, sink, sessionName);
         var proxy = new WXdgTopLevelProxy(topLevel, Marshaller);
         return new WaylandSurfaceCreateResult<WXdgTopLevelProxy>(
             Proxy: proxy,

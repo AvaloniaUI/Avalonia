@@ -42,6 +42,26 @@ public class WaylandPlatformOptions
     public bool? EnableReconnects { get; set; }
 
     /// <summary>
+    /// Whether to keep the window management state of named toplevels, such as their size and maximized state,
+    /// in a compositor session (<c>xdg_session_manager_v1</c>) so that a later launch can restore it.
+    /// Only windows constructed within <see cref="WaylandSession.Name"/> join the session.
+    /// Ignored when the compositor does not support the protocol.
+    /// </summary>
+    public bool UseSessionManagement { get; set; }
+
+    /// <summary>
+    /// The session to restore, as received by <see cref="SessionCreated"/> on an earlier launch.
+    /// When <c>null</c>, or when the compositor no longer knows the session, a new one is created.
+    /// </summary>
+    public string? SessionId { get; set; }
+
+    /// <summary>
+    /// Called on the UI thread with the id of a newly created session. Store it and pass it as
+    /// <see cref="SessionId"/> on later launches.
+    /// </summary>
+    public Action<string>? SessionCreated { get; set; }
+
+    /// <summary>
     /// Suppresses server-side decoration negotiation
     /// (<c>zxdg_decoration_manager_v1</c>): toplevels behave as if the
     /// compositor never advertised SSD support. Used primarily for
