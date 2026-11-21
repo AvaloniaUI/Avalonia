@@ -33,13 +33,14 @@ namespace Avalonia.Media.TextFormatting
             TextLineBreak? nextLineBreak = null;
             var objectPool = FormattingObjectPool.Instance;
             var fontManager = FontManager.Current;
+            var lineIndent = GetLineIndent(paragraphProperties, previousLineBreak);
 
             // we've wrapped the previous line and need to continue wrapping: ignore the textSource and do that instead
             if (previousLineBreak is WrappingTextLineBreak wrappingTextLineBreak
                 && wrappingTextLineBreak.AcquireRemainingRuns() is { } remainingRuns
                 && paragraphProperties.TextWrapping != TextWrapping.NoWrap)
             {
-                return PerformTextWrapping(remainingRuns, true, firstTextSourceIndex, paragraphWidth,
+                return PerformTextWrapping(remainingRuns, true, firstTextSourceIndex, paragraphWidth, lineIndent,
                     paragraphProperties, previousLineBreak.FlowDirection, previousLineBreak, objectPool);
             }
 
@@ -47,7 +48,7 @@ namespace Avalonia.Media.TextFormatting
             if (textRunCache != null
                 && textRunCache.TryGetShapedRuns(firstTextSourceIndex, out var cached))
             {
-                return FormatLineFromCache(cached, firstTextSourceIndex, paragraphWidth,
+                return FormatLineFromCache(cached, firstTextSourceIndex, paragraphWidth, lineIndent,
                     paragraphProperties, objectPool);
             }
 
@@ -88,7 +89,8 @@ namespace Avalonia.Media.TextFormatting
 
                             var textLine = new TextLineImpl(lineRuns, firstTextSourceIndex,
                                 textSourceLength,
-                                paragraphWidth, paragraphProperties, resolvedFlowDirection, nextLineBreak);
+                                paragraphWidth, paragraphProperties, resolvedFlowDirection, nextLineBreak,
+                                lineIndent: lineIndent);
 
                             textLine.FinalizeLine();
 
@@ -98,7 +100,7 @@ namespace Avalonia.Media.TextFormatting
                     case TextWrapping.Wrap:
                         {
                             return PerformTextWrapping(shapedTextRuns, false, firstTextSourceIndex, paragraphWidth,
-                                paragraphProperties, resolvedFlowDirection, nextLineBreak, objectPool);
+                                lineIndent, paragraphProperties, resolvedFlowDirection, nextLineBreak, objectPool);
                         }
                     default:
                         throw new ArgumentOutOfRangeException(nameof(paragraphProperties.TextWrapping));
@@ -115,7 +117,8 @@ namespace Avalonia.Media.TextFormatting
         /// Formats a line from cached shaped runs, skipping shaping and bidi processing.
         /// </summary>
         private static TextLine FormatLineFromCache(CachedShapingResult cached, int firstTextSourceIndex,
-            double paragraphWidth, TextParagraphProperties paragraphProperties, FormattingObjectPool objectPool)
+            double paragraphWidth, double lineIndent, TextParagraphProperties paragraphProperties,
+            FormattingObjectPool objectPool)
         {
             var resolvedFlowDirection = cached.ResolvedFlowDirection;
 
@@ -134,7 +137,8 @@ namespace Avalonia.Media.TextFormatting
 
                         var textLine = new TextLineImpl(lineRuns, firstTextSourceIndex,
                             cached.TextSourceLength,
-                            paragraphWidth, paragraphProperties, resolvedFlowDirection, nextLineBreak);
+                            paragraphWidth, paragraphProperties, resolvedFlowDirection, nextLineBreak,
+                            lineIndent: lineIndent);
 
                         textLine.FinalizeLine();
 
@@ -153,7 +157,7 @@ namespace Avalonia.Media.TextFormatting
                         }
 
                         return PerformTextWrapping(runs, false, firstTextSourceIndex,
-                            paragraphWidth, paragraphProperties, resolvedFlowDirection,
+                            paragraphWidth, lineIndent, paragraphProperties, resolvedFlowDirection,
                             nextLineBreak, objectPool);
                     }
                 default:
@@ -870,11 +874,46 @@ namespace Avalonia.Media.TextFormatting
         }
 
         /// <summary>
+        /// Gets the distance from the leading edge of the paragraph at which a line starts.
+        /// </summary>
+        /// <remarks>
+        /// Every line is offset by <see cref="TextParagraphProperties.ParagraphIndent"/>. The first line of a
+        /// paragraph is offset by <see cref="TextParagraphProperties.Indent"/> as well. A line is the first one
+        /// when <see cref="TextParagraphProperties.FirstLineInParagraph"/> is set and nothing precedes it or the
+        /// preceding line ended the paragraph. A line after a wrap or a hard line break continues the paragraph:
+        /// the preceding line reports a <see cref="TextLineBreak"/> for both, a newline character included.
+        /// A negative first-line indent makes the first line hang past the leading edge.
+        /// </remarks>
+        /// <param name="paragraphProperties">The paragraph properties.</param>
+        /// <param name="previousLineBreak">The line break of the preceding line, if any.</param>
+        /// <returns>The indent of the line.</returns>
+        internal static double GetLineIndent(TextParagraphProperties paragraphProperties, TextLineBreak? previousLineBreak)
+        {
+            var lineIndent = SanitizeIndent(paragraphProperties.ParagraphIndent);
+
+            var isFirstLine = paragraphProperties.FirstLineInParagraph
+                && (previousLineBreak is null || previousLineBreak.TextEndOfLine is TextEndOfParagraph);
+
+            if (isFirstLine)
+            {
+                lineIndent += SanitizeIndent(paragraphProperties.Indent);
+            }
+
+            return lineIndent;
+
+            static double SanitizeIndent(double value) => double.IsNaN(value) || double.IsInfinity(value) ? 0 : value;
+        }
+
+        /// <summary>
         /// Creates an empty text line.
         /// </summary>
+        /// <param name="firstTextSourceIndex">The text source index of the line.</param>
+        /// <param name="paragraphWidth">The paragraph width.</param>
+        /// <param name="paragraphProperties">The text paragraph properties.</param>
+        /// <param name="lineIndent">The indent of the line, see <see cref="GetLineIndent"/>.</param>
         /// <returns>The empty text line.</returns>
         public static TextLineImpl CreateEmptyTextLine(int firstTextSourceIndex, double paragraphWidth,
-            TextParagraphProperties paragraphProperties)
+            TextParagraphProperties paragraphProperties, double lineIndent = 0)
         {
             var flowDirection = paragraphProperties.FlowDirection;
             var properties = paragraphProperties.DefaultTextRunProperties;
@@ -887,7 +926,8 @@ namespace Avalonia.Media.TextFormatting
 
             var textRuns = new TextRun[] { new ShapedTextRun(shapedBuffer, properties) };
 
-            var line = new TextLineImpl(textRuns, firstTextSourceIndex, 0, paragraphWidth, paragraphProperties, flowDirection);
+            var line = new TextLineImpl(textRuns, firstTextSourceIndex, 0, paragraphWidth, paragraphProperties, flowDirection,
+                lineIndent: lineIndent);
 
             line.FinalizeLine();
 
@@ -959,21 +999,22 @@ namespace Avalonia.Media.TextFormatting
         /// <param name="canReuseTextRunList">Whether <see cref="TextRun"/> can be reused to store the split runs.</param>
         /// <param name="firstTextSourceIndex">The first text source index.</param>
         /// <param name="paragraphWidth">The paragraph width.</param>
+        /// <param name="lineIndent">The indent of the line, which narrows the width the line wraps against.</param>
         /// <param name="paragraphProperties">The text paragraph properties.</param>
         /// <param name="resolvedFlowDirection"></param>
         /// <param name="currentLineBreak">The current line break if the line was explicitly broken.</param>
         /// <param name="objectPool">A pool used to get reusable formatting objects.</param>
         /// <returns>The wrapped text line.</returns>
         private static TextLineImpl PerformTextWrapping(List<TextRun> textRuns, bool canReuseTextRunList,
-            int firstTextSourceIndex, double paragraphWidth, TextParagraphProperties paragraphProperties,
+            int firstTextSourceIndex, double paragraphWidth, double lineIndent, TextParagraphProperties paragraphProperties,
             FlowDirection resolvedFlowDirection, TextLineBreak? currentLineBreak, FormattingObjectPool objectPool)
         {
             if (textRuns.Count == 0)
             {
-                return CreateEmptyTextLine(firstTextSourceIndex, paragraphWidth, paragraphProperties);
+                return CreateEmptyTextLine(firstTextSourceIndex, paragraphWidth, paragraphProperties, lineIndent);
             }
 
-            var measuredLength = MeasureLength(textRuns, paragraphWidth);
+            var measuredLength = MeasureLength(textRuns, paragraphWidth - lineIndent);
 
             if(measuredLength == 0)
             {
@@ -1240,7 +1281,7 @@ namespace Avalonia.Media.TextFormatting
 
                 if(preSplitRuns is null)
                 {
-                    return CreateEmptyTextLine(firstTextSourceIndex, paragraphWidth, paragraphProperties);
+                    return CreateEmptyTextLine(firstTextSourceIndex, paragraphWidth, paragraphProperties, lineIndent);
                 }
 
                 if (postSplitRuns?.Count > 0)
@@ -1262,7 +1303,7 @@ namespace Avalonia.Media.TextFormatting
 
                 var textLine = new TextLineImpl(remainingTextRuns, firstTextSourceIndex, splitLength,
                     paragraphWidth, paragraphProperties, resolvedFlowDirection,
-                    textLineBreak);
+                    textLineBreak, lineIndent: lineIndent);
 
                 textLine.FinalizeLine();
 
