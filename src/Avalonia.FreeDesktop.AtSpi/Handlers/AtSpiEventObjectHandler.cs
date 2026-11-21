@@ -38,6 +38,11 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
             EmitSignal("BoundsChanged", string.Empty, 0, 0, new DBusVariant(0), EmptyProperties());
         }
 
+        public void EmitAnnouncementSignal(string text, AtSpiLive politeness)
+        {
+            EmitSignal("Announcement", string.Empty, (int)politeness, 0, new DBusVariant(text), EmptyProperties());
+        }
+
         private void EmitSignal(string member, params object[] body)
         {
             if (!server.HasEventListeners)
