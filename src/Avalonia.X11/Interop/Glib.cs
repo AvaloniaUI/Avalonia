@@ -1,6 +1,7 @@
 #nullable enable
 
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia.Platform.Interop;
@@ -123,6 +124,168 @@ internal static unsafe class Glib
         Func<int, GIOCondition, bool> cb) =>
         g_unix_fd_add_full(priority, fd, condition, s_unixFdSourceCallback, GCHandle.ToIntPtr(GCHandle.Alloc(cb)),
             s_gcHandleDestroyNotify);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate int GSourcePrepareFunc(IntPtr source, out int timeout);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate int GSourceCheckFunc(IntPtr source);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate int GSourceDispatchFunc(IntPtr source, IntPtr callback, IntPtr userData);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate void GSourceFinalizeFunc(IntPtr source);
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct GSourceFuncs
+    {
+        public IntPtr Prepare, Check, Dispatch, Finalize;
+        // gmain.h includes two private slots after the public callbacks.
+        public IntPtr ClosureCallback, ClosureMarshal;
+    }
+
+    private sealed class BufferedSourceState(int fd, Func<bool> isPending,
+        Func<int, GIOCondition, bool> dispatch, Action<Exception> onError)
+    {
+        public int Fd { get; } = fd;
+        public IntPtr UnixFdTag { get; set; }
+        public Func<bool> IsPending { get; } = isPending;
+        public Func<int, GIOCondition, bool> Dispatch { get; } = dispatch;
+        public Action<Exception> OnError { get; } = onError;
+        public bool Failed { get; set; }
+    }
+
+    private static readonly Dictionary<IntPtr, BufferedSourceState> s_bufferedSources = new();
+    private static readonly GSourcePrepareFunc s_bufferedPrepare = BufferedSourcePrepare;
+    private static readonly GSourceCheckFunc s_bufferedCheck = BufferedSourceCheck;
+    private static readonly GSourceDispatchFunc s_bufferedDispatch = BufferedSourceDispatch;
+    private static readonly GSourceFinalizeFunc s_bufferedFinalize = BufferedSourceFinalize;
+    private static readonly IntPtr s_bufferedSourceFuncs = CreateBufferedSourceFuncs();
+
+    [DllImport(GlibName)]
+    private static extern IntPtr g_idle_source_new();
+
+    [DllImport(GlibName)]
+    private static extern void g_source_set_funcs(IntPtr source, IntPtr funcs);
+
+    [DllImport(GlibName)]
+    private static extern void g_source_set_priority(IntPtr source, int priority);
+
+    [DllImport(GlibName)]
+    private static extern IntPtr g_source_add_unix_fd(IntPtr source, int fd, GIOCondition condition);
+
+    [DllImport(GlibName)]
+    private static extern GIOCondition g_source_query_unix_fd(IntPtr source, IntPtr tag);
+
+    [DllImport(GlibName)]
+    private static extern uint g_source_attach(IntPtr source, IntPtr context);
+
+    [DllImport(GlibName)]
+    private static extern void g_source_unref(IntPtr source);
+
+    public static uint AddBufferedUnixFdSource(int priority, int fd, Func<bool> isPending,
+        Func<int, GIOCondition, bool> dispatch, Action<Exception> onError)
+    {
+        if (fd < 0) throw new ArgumentOutOfRangeException(nameof(fd));
+        ArgumentNullException.ThrowIfNull(isPending);
+        ArgumentNullException.ThrowIfNull(dispatch);
+        ArgumentNullException.ThrowIfNull(onError);
+        // Let GLib allocate the opaque source. Replace its idle callbacks
+        // before attaching it so the source uses fd and queue readiness.
+        var source = g_idle_source_new();
+        if (source == IntPtr.Zero) throw new OutOfMemoryException();
+        try
+        {
+            g_source_set_funcs(source, s_bufferedSourceFuncs);
+            g_source_set_priority(source, priority);
+            g_source_set_can_recurse(source, 1);
+            var state = new BufferedSourceState(fd, isPending, dispatch, onError)
+            {
+                UnixFdTag = g_source_add_unix_fd(source, fd, GIOCondition.G_IO_IN)
+            };
+            if (state.UnixFdTag == IntPtr.Zero)
+                throw new InvalidOperationException("GLib refused the X11 descriptor source.");
+            lock (s_bufferedSources) s_bufferedSources.Add(source, state);
+            var id = g_source_attach(source, IntPtr.Zero);
+            if (id == 0) throw new InvalidOperationException("GLib refused the X11 event source.");
+            return id;
+        }
+        finally
+        {
+            // The context owns a reference after attach. On failure the final
+            // unref calls finalize and releases the managed state.
+            g_source_unref(source);
+        }
+    }
+
+    private static IntPtr CreateBufferedSourceFuncs()
+    {
+        var funcs = new GSourceFuncs
+        {
+            Prepare = Marshal.GetFunctionPointerForDelegate(s_bufferedPrepare),
+            Check = Marshal.GetFunctionPointerForDelegate(s_bufferedCheck),
+            Dispatch = Marshal.GetFunctionPointerForDelegate(s_bufferedDispatch),
+            Finalize = Marshal.GetFunctionPointerForDelegate(s_bufferedFinalize)
+        };
+        // GLib retains the table pointer. Keep the table and delegates
+        // alive for the lifetime of the process.
+        var address = Marshal.AllocHGlobal(Marshal.SizeOf<GSourceFuncs>());
+        Marshal.StructureToPtr(funcs, address, false);
+        return address;
+    }
+
+    private static BufferedSourceState? GetBufferedSource(IntPtr source)
+    {
+        lock (s_bufferedSources)
+            return s_bufferedSources.TryGetValue(source, out var state) ? state : null;
+    }
+
+    private static int BufferedSourcePrepare(IntPtr source, out int timeout)
+    {
+        timeout = -1;
+        var state = GetBufferedSource(source);
+        if (state == null) return 0;
+        try { return state.Failed || state.IsPending() ? 1 : 0; }
+        catch (Exception error) { ReportBufferedSourceError(state, error); return 1; }
+    }
+
+    private static int BufferedSourceCheck(IntPtr source)
+    {
+        var state = GetBufferedSource(source);
+        if (state == null) return 0;
+        try
+        {
+            return state.Failed || state.IsPending() ||
+                g_source_query_unix_fd(source, state.UnixFdTag) != 0 ? 1 : 0;
+        }
+        catch (Exception error) { ReportBufferedSourceError(state, error); return 1; }
+    }
+
+    private static int BufferedSourceDispatch(IntPtr source, IntPtr callback, IntPtr userData)
+    {
+        var state = GetBufferedSource(source);
+        if (state == null || state.Failed) return 0;
+        try
+        {
+            return state.Dispatch(state.Fd, g_source_query_unix_fd(source, state.UnixFdTag)) ? 1 : 0;
+        }
+        catch (Exception error) { ReportBufferedSourceError(state, error); return 0; }
+    }
+
+    private static void ReportBufferedSourceError(BufferedSourceState state, Exception error)
+    {
+        // Forward errors through the dispatcher so exceptions stay on the
+        // managed side of the native callback.
+        state.Failed = true;
+        try { state.OnError(error); }
+        catch { /* Keep reporting failures on the managed side as well. */ }
+    }
+
+    private static void BufferedSourceFinalize(IntPtr source)
+    {
+        lock (s_bufferedSources) s_bufferedSources.Remove(source);
+    }
     
     [DllImport(GlibName)]
     public static extern int g_source_remove (uint tag);
