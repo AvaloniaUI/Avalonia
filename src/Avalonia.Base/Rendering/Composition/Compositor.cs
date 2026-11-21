@@ -28,8 +28,8 @@ namespace Avalonia.Rendering.Composition
         private CompositionBatch? _nextCommit;
         private readonly BatchStreamObjectPool<object?> _batchObjectPool;
         private readonly BatchStreamMemoryPool _batchMemoryPool;
-        private readonly Queue<ICompositorSerializable> _objectSerializationQueue = new();
-        private readonly HashSet<ICompositorSerializable> _objectSerializationHashSet = new();
+        private readonly List<ICompositorSerializable?> _objectSerializationQueue = new();
+        private readonly Dictionary<ICompositorSerializable, int> _objectSerializationIndices = new();
         private Queue<Action> _invokeBeforeCommitWrite = new(), _invokeBeforeCommitRead = new();
         private readonly HashSet<IDisposable> _disposeOnNextBatch = new();
         internal ServerCompositor Server => _server;
@@ -133,8 +133,11 @@ namespace Avalonia.Rendering.Composition
             
             using (var writer = new BatchStreamWriter(_nextCommit.Changes, _batchMemoryPool, _batchObjectPool))
             {
-                while(_objectSerializationQueue.TryDequeue(out var obj))
+                for (var c = 0; c < _objectSerializationQueue.Count; c++)
                 {
+                    var obj = _objectSerializationQueue[c];
+                    if (obj == null)
+                        continue;
                     var serverObject = obj.TryGetServer(this);
                     if (serverObject != null)
                     {
@@ -146,7 +149,8 @@ namespace Avalonia.Rendering.Composition
 #endif
                     }
                 }
-                _objectSerializationHashSet.Clear();
+                _objectSerializationQueue.Clear();
+                _objectSerializationIndices.Clear();
 
                 if (_disposeOnNextBatch.Count != 0)
                 {
@@ -221,9 +225,33 @@ namespace Avalonia.Rendering.Composition
         internal void RegisterForSerialization(ICompositorSerializable compositionObject)
         {
             Dispatcher.VerifyAccess();
-            if(_objectSerializationHashSet.Add(compositionObject))
-                _objectSerializationQueue.Enqueue(compositionObject);
+            if (_objectSerializationIndices.TryAdd(compositionObject, _objectSerializationQueue.Count))
+                _objectSerializationQueue.Add(compositionObject);
             RequestCommitAsync();
+        }
+
+        internal void UnregisterForSerialization(ICompositorSerializable compositionObject)
+        {
+            Dispatcher.VerifyAccess();
+            if (!_objectSerializationIndices.Remove(compositionObject, out var index))
+                return;
+            _objectSerializationQueue[index] = null;
+
+            // Only a commit clears the queue, and nothing is committed while frames aren't rendering
+            if (_objectSerializationQueue.Count > _objectSerializationIndices.Count * 2)
+            {
+                var count = 0;
+                for (var c = 0; c < _objectSerializationQueue.Count; c++)
+                {
+                    if (_objectSerializationQueue[c] is { } obj)
+                    {
+                        _objectSerializationQueue[count] = obj;
+                        _objectSerializationIndices[obj] = count;
+                        count++;
+                    }
+                }
+                _objectSerializationQueue.RemoveRange(count, _objectSerializationQueue.Count - count);
+            }
         }
 
         internal void DisposeOnNextBatch(SimpleServerObject obj)
@@ -320,7 +348,7 @@ namespace Avalonia.Rendering.Composition
         }
 
         internal bool UnitTestIsRegisteredForSerialization(ICompositorSerializable serializable) =>
-            _objectSerializationHashSet.Contains(serializable);
+            _objectSerializationIndices.ContainsKey(serializable);
 
         /// <summary>
         /// Attempts to get the Compositor instance that will be used by default for new TopLevels

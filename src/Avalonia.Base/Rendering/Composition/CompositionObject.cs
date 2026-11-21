@@ -42,6 +42,7 @@ namespace Avalonia.Rendering.Composition
         internal SimpleServerObject? Server { get; }
         public bool IsDisposed { get; private set; }
         private bool _registeredForSerialization;
+        private bool _wasSerialized;
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static SimpleServerObject ThrowInvalidOperation() =>
@@ -170,10 +171,20 @@ namespace Avalonia.Rendering.Composition
             Compositor.RegisterForSerialization(this);
         }
 
+        // The pending changes are kept and still sent if the object is registered again
+        internal void UnregisterIfNeverSerialized()
+        {
+            if (!_registeredForSerialization || _wasSerialized)
+                return;
+            _registeredForSerialization = false;
+            Compositor.UnregisterForSerialization(this);
+        }
+
         void ICompositorSerializable.SerializeChanges(Compositor c, BatchStreamWriter writer)
         {
             Debug.Assert(c == Compositor);
             _registeredForSerialization = false;
+            _wasSerialized = true;
             SerializeChangesCore(writer);
         }
 
