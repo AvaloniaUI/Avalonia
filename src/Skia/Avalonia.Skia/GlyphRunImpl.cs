@@ -124,21 +124,24 @@ namespace Avalonia.Skia
                 };
             }
 
-            return _textBlobCache.GetOrAdd(textOptions, k =>
-            {
-                using var font = CreateFont(textOptions);
+            // A static lambda, so that a cache hit allocates neither a closure nor a delegate.
+            return _textBlobCache.GetOrAdd(textOptions, static (k, self) => self.CreateTextBlob(k), this);
+        }
 
-                var builder = SKTextBlobBuilderCache.Shared.Get();
+        private SKTextBlob CreateTextBlob(TextOptions textOptions)
+        {
+            using var font = CreateFont(textOptions);
 
-                var runBuffer = builder.AllocatePositionedRun(font, _glyphIndices.Length);
+            var builder = SKTextBlobBuilderCache.Shared.Get();
 
-                runBuffer.SetPositions(_glyphPositions);
-                runBuffer.SetGlyphs(_glyphIndices);
+            var runBuffer = builder.AllocatePositionedRun(font, _glyphIndices.Length);
 
-                var textBlob = builder.Build()!;
-                SKTextBlobBuilderCache.Shared.Return(builder);
-                return textBlob;
-            });
+            runBuffer.SetPositions(_glyphPositions);
+            runBuffer.SetGlyphs(_glyphIndices);
+
+            var textBlob = builder.Build()!;
+            SKTextBlobBuilderCache.Shared.Return(builder);
+            return textBlob;
         }
 
         private SKFont CreateFont(TextOptions textOptions)
