@@ -57,7 +57,6 @@ namespace Avalonia.Android
         /// and reusing it would hand out an ID that is still in use.
         /// </remarks>
         private int _nextPeerViewId;
-
         private readonly AvaloniaView _view;
 
         public AvaloniaAccessHelper(AvaloniaView view) : base(view)
@@ -69,7 +68,27 @@ namespace Avalonia.Android
             AutomationPeer rootPeer = ControlAutomationPeer.CreatePeerForElement(view.TopLevel!);
             GetOrCreateNodeInfoProvidersFromPeer(rootPeer, out int _);
 
+            if (rootPeer.GetProvider<IEmbeddedRootProvider>() is { } rootProvider)
+            {
+                rootProvider.FocusChanged += RootProvider_FocusChanged;
+            }
+
             _view = view;
+        }
+
+        private void RootProvider_FocusChanged(object? sender, EventArgs e)
+        {
+            if (sender is IEmbeddedRootProvider embeddedRoot)
+            {
+                if (embeddedRoot.GetFocus() is { } focused)
+                {
+                    GetOrCreateNodeInfoProvidersFromPeer(focused, out int viewId);
+                    InvalidateVirtualView(viewId);
+                    RequestKeyboardFocusForVirtualView(viewId);
+                }
+                else if (KeyboardFocusedVirtualViewId != InvalidId)
+                    ClearKeyboardFocusForVirtualView(KeyboardFocusedVirtualViewId);
+            }
         }
 
         private HashSet<INodeInfoProvider>? GetNodeInfoProvidersFromVirtualViewId(int virtualViewId)
@@ -173,7 +192,7 @@ namespace Avalonia.Android
 
         protected override int GetVirtualViewAt(float x, float y)
         {
-            Point p = _view.TopLevelImpl.PointToClient(new PixelPoint((int)x, (int)y));
+            Point p = new PixelPoint((int)x, (int)y).ToPoint(_view.TopLevelImpl.RenderScaling);
             IEmbeddedRootProvider? embeddedRootProvider = _peers[0].GetProvider<IEmbeddedRootProvider>();
             AutomationPeer? peer = embeddedRootProvider?.GetPeerFromPoint(p);
             if (peer is not null)
