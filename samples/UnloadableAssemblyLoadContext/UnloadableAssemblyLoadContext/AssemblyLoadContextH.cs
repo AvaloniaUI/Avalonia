@@ -6,7 +6,6 @@ using System.Reflection;
 using System.Runtime.Loader;
 using Avalonia;
 using Avalonia.Platform;
-using Avalonia.Styling;
 
 #endregion
 
@@ -19,28 +18,26 @@ public class AssemblyLoadContextH : AssemblyLoadContext
     public AssemblyLoadContextH(string pluginPath, string name) : base(isCollectible: true, name: name)
     {
         _resolver = new AssemblyDependencyResolver(pluginPath);
-        Unloading += (sender) =>
+        Unloading += sender =>
         {
-            AvaloniaPropertyRegistry.Instance.UnregisterByModule(sender.Assemblies.First().DefinedTypes);
-
-            if (MainWindow.Style is { } style)
-                Application.Current?.Styles.Remove(style);
-
-            AssetLoader.InvalidateAssemblyCache(sender.Assemblies.First().GetName().Name!);
-            MainWindow.Style = null;
+            var assemblies = sender.Assemblies.ToArray();
+            if (!AvaloniaPropertyRegistry.Instance.UnregisterByModule(assemblies.SelectMany(assembly => assembly.DefinedTypes)))
+                throw new InvalidOperationException("Plugin property cleanup failed.");
+            foreach (var assembly in assemblies)
+                AssetLoader.InvalidateAssemblyCache(assembly.GetName().Name!);
         };
     }
 
     protected override Assembly? Load(AssemblyName assemblyName)
     {
+        var name = assemblyName.Name ?? string.Empty;
+        if (name.StartsWith("Avalonia", StringComparison.Ordinal) ||
+            name is "WinRT.Runtime" or "Microsoft.Windows.SDK.NET")
+            return null;
+
         var assemblyPath = _resolver.ResolveAssemblyToPath(assemblyName);
         if (assemblyPath != null)
         {
-            if (assemblyPath.EndsWith("WinRT.Runtime.dll") || assemblyPath.EndsWith("Microsoft.Windows.SDK.NET.dll")|| assemblyPath.EndsWith("Avalonia.Controls.dll")|| assemblyPath.EndsWith("Avalonia.Base.dll")|| assemblyPath.EndsWith("Avalonia.Markup.Xaml.dll"))
-            {
-                return null;
-            }
-
             return LoadFromAssemblyPath(assemblyPath);
         }
 
