@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.ExceptionServices;
+using System.Threading;
 using Avalonia.Platform;
 using Avalonia.Utilities;
 
@@ -9,7 +10,9 @@ internal class ServerCompositionDrawingSurface : ServerCompositionSurface, IDisp
 {
     private IRef<IBitmapImpl>? _bitmap;
     private IPlatformRenderInterfaceContext? _createdWithContext;
-    private bool _disposed;
+    // The surface can be shared between multiple client-side proxies, each of them owns one reference
+    // and enqueues one dispose job via its own compositor
+    private int _refCount = 1;
     public override IRef<IBitmapImpl>? Bitmap
     {
         get
@@ -42,7 +45,7 @@ internal class ServerCompositionDrawingSurface : ServerCompositionSurface, IDisp
 
     void Update(IBitmapImpl newImage, IPlatformRenderInterfaceContext context)
     {
-        if (_disposed)
+        if (Volatile.Read(ref _refCount) <= 0)
         {
             // Batches are processed with disposals before server jobs, so an update job
             // can be processed after this surface was disposed in the same batch.
@@ -57,6 +60,19 @@ internal class ServerCompositionDrawingSurface : ServerCompositionSurface, IDisp
         _bitmap = RefCountable.Create(newImage);
         _createdWithContext = context;
         Changed?.Invoke();
+    }
+
+    /// <summary>
+    /// Adds a reference for a new client-side proxy. Must be called while the caller
+    /// holds a not-yet-disposed client-side reference
+    /// </summary>
+    public void AddRef()
+    {
+        if (Interlocked.Increment(ref _refCount) <= 1)
+        {
+            Interlocked.Decrement(ref _refCount);
+            throw new ObjectDisposedException(nameof(ServerCompositionDrawingSurface));
+        }
     }
 
     public void UpdateWithAutomaticSync(CompositionImportedGpuImage image)
@@ -103,8 +119,10 @@ internal class ServerCompositionDrawingSurface : ServerCompositionSurface, IDisp
 
     public void Dispose()
     {
-        _bitmap?.Dispose();
-        _bitmap = null;
-        _disposed = true;
+        if (Interlocked.Decrement(ref _refCount) == 0)
+        {
+            _bitmap?.Dispose();
+            _bitmap = null;
+        }
     }
 }
