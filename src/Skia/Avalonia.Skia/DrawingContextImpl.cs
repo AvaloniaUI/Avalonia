@@ -857,7 +857,20 @@ namespace Avalonia.Skia
             _intermediateLayerDepth++;
 
             // Mask paints are a plain color or shader, so DstIn applies the mask straight to the layer.
-            var maskPaint = CreatePaint(SKPaintCache.Shared.Get(), mask, bounds);
+            // The content of the layer gets the multiply opacity when it is drawn. The mask must not apply it a
+            // second time.
+            var contentOpacity = _currentOpacity;
+            _currentOpacity = 1;
+            PaintWrapper maskPaint;
+            try
+            {
+                maskPaint = CreatePaint(SKPaintCache.Shared.Get(), mask, bounds);
+            }
+            finally
+            {
+                _currentOpacity = contentOpacity;
+            }
+
             maskPaint.Paint.BlendMode = SKBlendMode.DstIn;
             _maskStack.Push((Canvas.TotalMatrix, maskPaint));
         }
