@@ -1308,6 +1308,128 @@ namespace Avalonia.Controls.UnitTests
             Assert.NotEmpty(child.GetVisualChildren());
         }
 
+        [Fact]
+        public void Should_Not_Crash_When_TextBlock_Spawns_With_IsVisible_False()
+        {
+            using var services = new CompositorTestServices();
+
+            var child = CreateTemplatedChild();
+            var target = new TextBlock
+            {
+                IsVisible = false,
+                Inlines = new InlineCollection { new Run("Text "), new InlineUIContainer(child) }
+            };
+
+            services.TopLevel.Content = new StackPanel { Children = { target } };
+            services.RunJobs();
+
+            Assert.Empty(child.GetVisualChildren());
+
+            target.IsVisible = true;
+            services.RunJobs();
+
+            Assert.NotEmpty(child.GetVisualChildren());
+            Assert.Equal(new Size(20, 10), child.DesiredSize);
+        }
+
+        [Fact]
+        public void Should_Not_Crash_When_TextBlock_And_Container_Spawn_With_IsVisible_False()
+        {
+            using var services = new CompositorTestServices();
+
+            var child = CreateTemplatedChild();
+            var target = new TextBlock
+            {
+                IsVisible = false,
+                Inlines = new InlineCollection { new Run("Text "), new InlineUIContainer(child) }
+            };
+            var page = new StackPanel { IsVisible = false, Children = { target } };
+
+            services.TopLevel.Content = new StackPanel { Children = { new TextBlock { Text = "Shown" }, page } };
+            services.RunJobs();
+
+            Assert.Empty(child.GetVisualChildren());
+
+            page.IsVisible = true;
+            services.RunJobs();
+
+            // Still hidden because target itself is IsVisible=false
+            Assert.Empty(child.GetVisualChildren());
+
+            target.IsVisible = true;
+            services.RunJobs();
+
+            Assert.NotEmpty(child.GetVisualChildren());
+            Assert.Equal(new Size(20, 10), child.DesiredSize);
+        }
+
+        [Fact]
+        public void Should_Handle_Visibility_Toggles_And_Text_Updates_On_Hidden_TextBlock_With_InlineUIContainer()
+        {
+            using var services = new CompositorTestServices();
+
+            var child = CreateTemplatedChild();
+            var run = new Run("Text ");
+            var target = new TextBlock
+            {
+                IsVisible = false,
+                Inlines = new InlineCollection { run, new InlineUIContainer(child) }
+            };
+
+            services.TopLevel.Content = new StackPanel { Children = { target } };
+            services.RunJobs();
+
+            // Hidden at start: no visual template instantiated
+            Assert.Empty(child.GetVisualChildren());
+
+            // Update text while hidden
+            run.Text = "Updated Text ";
+            services.RunJobs();
+
+            Assert.Empty(child.GetVisualChildren());
+
+            // Make visible: template should apply and layout should measure
+            target.IsVisible = true;
+            services.RunJobs();
+
+            Assert.NotEmpty(child.GetVisualChildren());
+            Assert.Equal(new Size(20, 10), child.DesiredSize);
+
+            // Hide again and change text
+            target.IsVisible = false;
+            services.RunJobs();
+
+            run.Text = "Another Text ";
+            services.RunJobs();
+
+            // Show again
+            target.IsVisible = true;
+            services.RunJobs();
+
+            Assert.NotEmpty(child.GetVisualChildren());
+            Assert.Equal(new Size(20, 10), child.DesiredSize);
+        }
+
+        [Fact]
+        public void Should_Allow_Reading_TextLayout_Directly_When_TextBlock_Is_Not_Effectively_Visible()
+        {
+            using var services = new CompositorTestServices();
+
+            var child = CreateTemplatedChild();
+            var target = new TextBlock
+            {
+                IsVisible = false,
+                Inlines = new InlineCollection { new Run("Text "), new InlineUIContainer(child) }
+            };
+
+            services.TopLevel.Content = new StackPanel { Children = { target } };
+            services.RunJobs();
+
+            // Reading TextLayout directly while IsEffectivelyVisible == false should not throw
+            var layout = target.TextLayout;
+            Assert.NotNull(layout);
+        }
+
         private static Button CreateTemplatedChild() => new Button
         {
             Template = new FuncControlTemplate<Button>((_, _) => new Border { Width = 20, Height = 10 })
