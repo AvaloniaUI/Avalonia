@@ -1630,6 +1630,34 @@ namespace Avalonia.Controls.UnitTests.Primitives
             }
         }
 
+        [Theory]
+        [InlineData(false, 1)]
+        [InlineData(true, 1.15)]
+        public void Child_Layout_Scale_Includes_LayoutTransformControl_Scale_Only_When_InheritsTransform(bool inheritsTransform, double expectedScale)
+        {
+            using (CreateServices())
+            {
+                var child = new Border { Width = 50, Height = 50 };
+                var placementTarget = new Border { Width = 100, Height = 20 };
+                var target = new Popup
+                {
+                    PlacementTarget = placementTarget,
+                    InheritsTransform = inheritsTransform,
+                    Child = child,
+                };
+                var window = PreparedWindow(new LayoutTransformControl
+                {
+                    LayoutTransform = new ScaleTransform(1.15, 1.15),
+                    Child = new Panel { Children = { placementTarget, target } }
+                });
+
+                window.LayoutManager.ExecuteInitialLayoutPass();
+                target.Open();
+
+                Assert.Equal(expectedScale, LayoutHelper.GetLayoutScale(child), 8);
+            }
+        }
+
         [Fact]
         public void InheritsTransform_Should_Apply_Placement_Target_Scale_To_Each_Axis_Separately()
         {

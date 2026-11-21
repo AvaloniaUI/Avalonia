@@ -134,8 +134,13 @@ namespace Avalonia.Layout
         /// Obtains layout scale of the given control.
         /// </summary>
         /// <param name="control">The control.</param>
+        /// <remarks>
+        /// The layout scale is the layout root's scaling multiplied by the uniform scale of any
+        /// ancestor LayoutTransformControl, so that rounded layout values fall on device pixels.
+        /// </remarks>
         /// <exception cref="Exception">Thrown when control has no root or returned layout scaling is invalid.</exception>
-        public static double GetLayoutScale(Layoutable control) => control.GetLayoutRoot()?.LayoutScaling ?? 1.0;
+        public static double GetLayoutScale(Layoutable control) =>
+            (control.GetLayoutRoot()?.LayoutScaling ?? 1.0) * control.GetValue(Layoutable.LayoutTransformScaleProperty);
 
         /// <summary>
         /// Rounds a size to integer values for layout purposes, compensating for high DPI screen

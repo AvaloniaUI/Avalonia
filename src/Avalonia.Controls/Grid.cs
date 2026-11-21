@@ -2131,7 +2131,7 @@ namespace Avalonia.Controls
             {
                 // DpiScale dpiScale = GetDpi();
                 // double dpi = columns ? dpiScale.DpiScaleX : dpiScale.DpiScaleY;
-                var dpi = this.GetLayoutRoot()?.LayoutScaling ?? 1.0;
+                var dpi = LayoutHelper.GetLayoutScale(this);
                 double[] roundingErrors = RoundingErrors;
                 double roundedTakenSize = 0;
 
