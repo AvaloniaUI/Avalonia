@@ -22,8 +22,7 @@ internal sealed class ApplicationAccessibleHandler(AtSpiServer server, Applicati
     public string Name => appNode.Name;
     public string Description => string.Empty;
 
-    public AtSpiObjectReference Parent =>
-        new(string.Empty, new DBusObjectPath(AtSpiConstants.NullPath));
+    public AtSpiObjectReference Parent => server.GetDesktopReference();
 
     public int ChildCount => appNode.WindowChildren.Count;
     public string Locale => AtSpiConstants.ResolveLocale();
