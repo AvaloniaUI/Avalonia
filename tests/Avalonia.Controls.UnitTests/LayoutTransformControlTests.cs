@@ -343,6 +343,45 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Theory]
+        [InlineData(1.3)]
+        [InlineData(1.15)]
+        [InlineData(0.85)]
+        public void Child_Is_Measured_With_The_Size_It_Is_Arranged_With(double scale)
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+            var probe = new SizeProbe();
+            var target = new LayoutTransformControl
+            {
+                LayoutTransform = new ScaleTransform(scale, scale),
+                Child = probe
+            };
+
+            target.Measure(new Size(1000, 700));
+            target.Arrange(new Rect(0, 0, 1000, 700));
+
+            Assert.Equal(probe.Arranged, probe.Measured);
+        }
+
+        private class SizeProbe : Control
+        {
+            public Size Measured { get; private set; }
+
+            public Size Arranged { get; private set; }
+
+            protected override Size MeasureOverride(Size availableSize)
+            {
+                Measured = availableSize;
+                return default;
+            }
+
+            protected override Size ArrangeOverride(Size finalSize)
+            {
+                Arranged = finalSize;
+                return finalSize;
+            }
+        }
+
         private static void TransformMeasureSizeTest(Size size, Transform transform, Size expectedSize)
         {
             using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
