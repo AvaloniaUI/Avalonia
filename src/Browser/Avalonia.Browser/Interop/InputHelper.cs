@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.InteropServices.JavaScript;
 using System.Threading.Tasks;
 
@@ -36,8 +36,8 @@ internal static partial class InputHelper
     }
 
     [JSExport]
-    public static Task OnBeforeInput(int topLevelId, string inputType, int start, int end) =>
-        RedirectInputAsync(topLevelId, t => t.InputHandler.TextInputMethod.OnBeforeInput(inputType, start, end));
+    public static Task OnBeforeInput(int topLevelId, string inputType, int start, int end, double timeStamp, string? text) =>
+        RedirectInputAsync(topLevelId, t => t.InputHandler.TextInputMethod.OnBeforeInput(inputType, start, end, (ulong)timeStamp, text));
 
     [JSExport]
     public static Task OnCompositionStart(int topLevelId) =>
