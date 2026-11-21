@@ -546,5 +546,46 @@ namespace Avalonia.Skia.RenderTests
             await RenderToFile(target);
             CompareImages();
         }
+
+        [Fact]
+        public async Task ImageBrush_NoStretch_Tile_144_Dpi()
+        {
+            // The 32x32 tiles should meet edge to edge, as at 96 DPI.
+            var target = new Border
+            {
+                Width = 100,
+                Height = 100,
+                Background = new ImageBrush
+                {
+                    Stretch = Stretch.None,
+                    TileMode = TileMode.Tile,
+                    DestinationRect = new RelativeRect(0, 0, 32, 32, RelativeUnit.Absolute),
+                    Source = new Bitmap(SmallBitmapPath),
+                }
+            };
+
+            await RenderToFile(target, dpi: 144);
+            CompareImages();
+        }
+
+        [Fact]
+        public async Task ImageBrush_Absolute_SourceRect_144_Dpi()
+        {
+            // SourceRect is in the image's DIPs, so this shows the top-left quarter of the image.
+            var target = new Border
+            {
+                Width = 100,
+                Height = 100,
+                Background = new ImageBrush
+                {
+                    Stretch = Stretch.Fill,
+                    SourceRect = new RelativeRect(0, 0, 16, 16, RelativeUnit.Absolute),
+                    Source = new Bitmap(SmallBitmapPath),
+                }
+            };
+
+            await RenderToFile(target, dpi: 144);
+            CompareImages();
+        }
     }
 }
