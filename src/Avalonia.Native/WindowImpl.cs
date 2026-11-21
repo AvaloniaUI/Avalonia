@@ -17,7 +17,7 @@ namespace Avalonia.Native
         private readonly AvaloniaNativePlatformOptions _opts;
         private readonly IAvnWindow _native;
         private double _extendTitleBarHeight = -1;
-        private DoubleClickHelper _doubleClickHelper;
+        private TitleBarDoubleClickHelper _doubleClickHelper;
         private readonly ITopLevelNativeMenuExporter _nativeMenuExporter;
         private bool _canResize = true;
         private bool _canMaximize = true;
@@ -26,7 +26,7 @@ namespace Avalonia.Native
         internal WindowImpl(IAvaloniaNativeFactory factory, AvaloniaNativePlatformOptions opts) : base(factory)
         {
             _opts = opts;
-            _doubleClickHelper = new DoubleClickHelper();
+            _doubleClickHelper = new TitleBarDoubleClickHelper();
             
             using (var e = new WindowEvents(this))
             {
@@ -159,18 +159,8 @@ namespace Avalonia.Native
                     {
                         if (_doubleClickHelper.IsDoubleClick(e.Timestamp, e.Position))
                         {
-                            switch (WindowState)
-                            {
-                                case WindowState.Maximized or WindowState.FullScreen
-                                when _canResize:
-                                    WindowState = WindowState.Normal;
-                                    break;
-
-                                case WindowState.Normal
-                                when _canMaximize:
-                                    WindowState = WindowState.Maximized;
-                                    break;
-                            }
+                            if (TitleBarDoubleClickHelper.GetStateAfterDoubleClick(WindowState, _canMaximize, _canResize) is { } newState)
+                                WindowState = newState;
                         }
                         else
                         {
