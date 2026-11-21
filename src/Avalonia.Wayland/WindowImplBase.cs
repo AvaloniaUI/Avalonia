@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
@@ -31,12 +32,12 @@ internal abstract partial class WindowBaseImpl : IWindowBaseImpl
     protected IInputRoot? InputRoot { get; private set; }
     protected MouseDevice Mouse { get; }
     protected TouchDevice Touch { get; }
-    protected KeyboardDevice Keyboard  { get; }
+    protected KeyboardDevice Keyboard { get; }
     public double RenderScaling { get; set; } = 1;
     protected WaylandCursorImpl? CurrentCursor { get; private set; }
-    protected bool IsEnabled  { get; set; } = true;
-    protected bool IsDisposed  { get; private set; }
-    
+    protected bool IsEnabled { get; set; } = true;
+    protected bool IsDisposed { get; private set; }
+
     internal IReadOnlyList<object> CurrentOutputIds { get; set; } = Array.Empty<object>();
 
     protected WindowBaseImpl(WaylandWorkerClient client)
@@ -252,10 +253,24 @@ internal abstract partial class WindowBaseImpl : IWindowBaseImpl
             if (HandleDragDropPostDispatch(args))
                 return;
 
-            if (!args.Handled && args is RawKeyEventArgs { KeySymbol: { } text, Type: RawKeyEventType.KeyDown })
+            if (!args.Handled && args is RawKeyEventArgs { KeyText: { } text, Type: RawKeyEventType.KeyDown } && IsPrintableText(text))
+            {
                 Parent.Input?.Invoke(new RawTextInputEventArgs(Keyboard, args.Timestamp, InputRoot, text));
+            }
         }
 
+        private static bool IsPrintableText(string text)
+        {
+            if (text.Length == 0)
+                return false;
+
+            foreach (var rune in text.EnumerateRunes())
+            {
+                if (Rune.IsControl(rune))
+                    return false;
+            }
+            return true;
+        }
         /// <summary>
         /// Lets a derived sink intercept input before it reaches the framework.
         /// Used by <see cref="WindowImpl.Sink"/> for title-bar move and edge resize chrome.
