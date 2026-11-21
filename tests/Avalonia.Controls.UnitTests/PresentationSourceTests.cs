@@ -241,7 +241,7 @@ public sealed class PresentationSourceTests : ScopedTestBase
         var cursorWhileCaptured = currentCursor;
 
         // Drag over the other border. With the pointer still captured by the first border,
-        // PresentationSource.PointerOverElement changes (it becomes null), but the displayed
+        // PresentationSource.PointerOverElement changes (it becomes their parent), but the displayed
         // cursor must keep coming from the captured element rather than following the new
         // PointerOverElement.
         windowImpl.Object.Input!(new RawPointerEventArgs(
@@ -270,6 +270,62 @@ public sealed class PresentationSourceTests : ScopedTestBase
 
         pointer.Capture(null);
         Assert.Same(other2.Cursor!.PlatformImpl, currentCursor);
+    }
+
+    [Fact]
+    public void Cursor_Should_Follow_Pointer_Over_Element_When_Capture_Is_Released_Over_Ancestor()
+    {
+        using var app = UnitTestApplication.Start(
+            TestServices.StyledWindow.With(inputManager: new InputManager()));
+
+        var captured = new Border
+        {
+            Background = Brushes.Red,
+            Width = 20,
+            Cursor = new Cursor(StandardCursorType.SizeWestEast)
+        };
+
+        var parent = new StackPanel
+        {
+            Background = Brushes.Blue,
+            Orientation = Orientation.Horizontal,
+            Cursor = new Cursor(StandardCursorType.Cross),
+            Children = { captured }
+        };
+
+        ICursorImpl? currentCursor = null;
+        var renderTimer = new CompositorTestServices.ManualRenderTimer();
+        var compositor = RendererMocks.CreateDummyCompositor(renderTimer);
+        var windowImpl = MockWindowingPlatform.CreateWindowMock(200, 100, compositor);
+        windowImpl
+            .Setup(w => w.SetCursor(It.IsAny<ICursorImpl?>()))
+            .Callback<ICursorImpl?>(cursor => currentCursor = cursor);
+
+        var window = new Window(windowImpl.Object) { Content = parent };
+
+        window.Show();
+        Render(renderTimer);
+
+        var mouse = new MouseDevice();
+        var root = window.PresentationSource;
+
+        windowImpl.Object.Input!(new RawPointerEventArgs(
+            mouse, 1, root, RawPointerEventType.LeftButtonDown, new Point(10, 50),
+            RawInputModifiers.LeftMouseButton));
+
+        Assert.Same(captured.Cursor!.PlatformImpl, currentCursor);
+
+        windowImpl.Object.Input!(new RawPointerEventArgs(
+            mouse, 2, root, RawPointerEventType.Move, new Point(100, 50),
+            RawInputModifiers.LeftMouseButton));
+
+        Assert.Same(captured.Cursor!.PlatformImpl, currentCursor);
+
+        windowImpl.Object.Input!(new RawPointerEventArgs(
+            mouse, 3, root, RawPointerEventType.LeftButtonUp, new Point(100, 50),
+            RawInputModifiers.None));
+
+        Assert.Same(parent.Cursor!.PlatformImpl, currentCursor);
     }
 
     private static void Render(CompositorTestServices.ManualRenderTimer renderTimer)
