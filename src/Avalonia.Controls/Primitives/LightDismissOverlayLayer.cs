@@ -64,7 +64,9 @@ namespace Avalonia.Controls.Primitives
         {
             if (InputPassThroughElement is Visual v)
             {
-                if (VisualRoot is IInputElement ie && ie.InputHitTest(point, x => x != this) is Visual hit)
+                if (VisualRoot is IInputElement ie
+                    && this.TranslatePoint(point, VisualRoot) is { } rootPoint
+                    && ie.InputHitTest(rootPoint, x => x != this) is Visual hit)
                 {
                     return !v.IsVisualAncestorOf(hit);
                 }
