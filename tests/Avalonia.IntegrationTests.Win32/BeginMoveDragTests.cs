@@ -52,6 +52,42 @@ public class BeginMoveDragTests : IDisposable
         Assert.IsType<InvalidOperationException>(thrownException);
     }
 
+    [Fact]
+    public async Task BeginMoveDrag_With_Touch_Pointer_Prevents_Gesture_Recognition()
+    {
+        _window = new Window { Width = 200, Height = 200 };
+        _window.Show();
+        await _window.WhenLoadedAsync();
+
+        var pointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Touch, true);
+        _window.BeginMoveDrag(CreatePressedEventArgs(_window, pointer));
+
+        Assert.True(pointer.IsGestureRecognitionSkipped);
+    }
+
+    [Fact]
+    public async Task BeginResizeDrag_With_Touch_Pointer_Prevents_Gesture_Recognition()
+    {
+        _window = new Window { Width = 200, Height = 200 };
+        _window.Show();
+        await _window.WhenLoadedAsync();
+
+        var pointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Touch, true);
+        _window.BeginResizeDrag(WindowEdge.SouthEast, CreatePressedEventArgs(_window, pointer));
+
+        Assert.True(pointer.IsGestureRecognitionSkipped);
+    }
+
+    private static PointerPressedEventArgs CreatePressedEventArgs(Window window, Pointer pointer)
+        => new(
+            window,
+            pointer,
+            window,
+            default,
+            0,
+            new PointerPointProperties(RawInputModifiers.None, PointerUpdateKind.LeftButtonPressed),
+            KeyModifiers.None);
+
     public void Dispose()
         => _window?.Close();
 }
