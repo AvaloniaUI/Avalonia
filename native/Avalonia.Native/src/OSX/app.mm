@@ -8,6 +8,7 @@
 
 NSApplicationActivationPolicy AvnDesiredActivationPolicy = NSApplicationActivationPolicyRegular;
 static NSMenu* s_dockMenu = nil;
+static bool s_deferredTerminationPending = false;
 
 static bool IsOSShutdown()
 {
@@ -114,6 +115,9 @@ ComStaticPtr<IAvnApplicationEvents> _events;
 
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
 {
+    if (s_deferredTerminationPending)
+        return NSTerminateLater;
+
     switch (_events->TryShutdown(IsOSShutdown()))
     {
         case ShutdownReplyCancel:
@@ -122,6 +126,10 @@ ComStaticPtr<IAvnApplicationEvents> _events;
         // The managed dispatcher loop is exiting: let it handle the termination instead.
         case ShutdownReplyDeferToManagedLoop:
             return NSTerminateCancel;
+
+        case ShutdownReplyDefer:
+            s_deferredTerminationPending = true;
+            return NSTerminateLater;
 
         case ShutdownReplyTerminateNow:
             return NSTerminateNow;
@@ -232,6 +240,16 @@ HRESULT AvnApplicationCommands::ShowAll()
 HRESULT AvnApplicationCommands::HideOthers()
 {
     [[NSApplication sharedApplication] hideOtherApplications:[NSApp delegate]];
+    return S_OK;
+}
+
+HRESULT AvnApplicationCommands::ReplyToApplicationShouldTerminate(bool shouldTerminate)
+{
+    if (!s_deferredTerminationPending)
+        return E_UNEXPECTED;
+
+    s_deferredTerminationPending = false;
+    [NSApp replyToApplicationShouldTerminate:shouldTerminate ? NSTerminateNow : NSTerminateCancel];
     return S_OK;
 }
 

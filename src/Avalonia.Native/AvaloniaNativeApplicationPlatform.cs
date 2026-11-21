@@ -117,11 +117,33 @@ namespace Avalonia.Native
                 return AvnShutdownReply.ShutdownReplyTerminateNow;
 
             var isOSShutdownBool = isOSShutdown.FromComBool();
-            var e = new ShutdownRequestedEventArgs { IsOSShutdown = isOSShutdownBool };
-            shutdownRequested.Invoke(this, e);
+            Action<bool>? completeDeferredShutdown = platform.SupportsDeferredShutdown
+                ? platform.ReplyToApplicationShouldTerminate
+                : null;
+            var e = new ShutdownRequestedEventArgs(completeDeferredShutdown) { IsOSShutdown = isOSShutdownBool };
+
+            var shutdownRequestedRaised = false;
+            try
+            {
+                shutdownRequested.Invoke(this, e);
+                shutdownRequestedRaised = true;
+            }
+            finally
+            {
+                if (!shutdownRequestedRaised)
+                    e.CancelDeferrals();
+            }
 
             if (e.Cancel)
+            {
+                e.CancelDeferrals();
                 return AvnShutdownReply.ShutdownReplyCancel;
+            }
+
+            e.EndDeferralRequest();
+
+            if (e.HasDeferrals)
+                return AvnShutdownReply.ShutdownReplyDefer;
 
             // If we know the main loop is going to exit (e.g. via a ClassicDesktopApplicationLifetime),
             // tell the native side it doesn't have to exit, allowing the managed side to complete its shutdown.
