@@ -1,4 +1,5 @@
-using System;
+﻿using System;
+using System.Collections.Generic;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering.Composition.Transport;
@@ -11,6 +12,7 @@ internal partial class RenderDataStream : IDisposable
 {
     private RenderDataWriter _writer;
     private RenderDataResources _resources;
+    private List<IDisposable>? _owned;
     private int _depth;
     private int _maxDepth;
 
@@ -37,6 +39,10 @@ internal partial class RenderDataStream : IDisposable
             _maxDepth = _depth;
     }
 
+    // Takes ownership of an object made for this stream alone, such as a scene-brush snapshot
+    // taken while recording, so it is released together with the stream's other resources.
+    public void AddOwned(IDisposable owned) => (_owned ??= new List<IDisposable>()).Add(owned);
+
     public void DisposeResources()
     {
         for (var i = 0; i < _resources.Count; i++)
@@ -52,7 +58,17 @@ internal partial class RenderDataStream : IDisposable
                 case ICustomDrawOperation operation:
                     operation.Dispose();
                     break;
+                case IRef<RecordedStream> recorded:
+                    recorded.Dispose();
+                    break;
             }
+        }
+
+        if (_owned != null)
+        {
+            foreach (var owned in _owned)
+                owned.Dispose();
+            _owned = null;
         }
     }
 
@@ -129,6 +145,33 @@ internal partial class RenderDataStream : IDisposable
         _writer.WritePayload(new DrawCustomPayload
         {
             Operation = _resources.Intern(operation)
+        });
+    }
+
+    public void DrawRecording(ServerCompositionRenderData server, CompositionRenderData client, Matrix transform)
+    {
+        // Both sides go into the table: the server data replays and provides
+        // render-thread bounds (and, being a server render resource, gets
+        // observed on deserialize so nested changes invalidate the outer
+        // stream), while the client data answers synchronous bounds and
+        // hit-test queries on the UI thread.
+        _writer.WritePayload(new DrawRecordingPayload
+        {
+            ServerRenderData = _resources.Intern(server),
+            ClientRenderData = _resources.Intern(client),
+            Stream = RenderDataResources.NullHandle,
+            Transform = transform
+        });
+    }
+
+    public void DrawRecording(IRef<RecordedStream> recorded, Matrix transform)
+    {
+        _writer.WritePayload(new DrawRecordingPayload
+        {
+            ServerRenderData = RenderDataResources.NullHandle,
+            ClientRenderData = RenderDataResources.NullHandle,
+            Stream = _resources.InternShared(recorded),
+            Transform = transform
         });
     }
 
