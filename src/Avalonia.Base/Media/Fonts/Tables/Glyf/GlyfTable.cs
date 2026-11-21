@@ -3,6 +3,7 @@ using System.Buffers;
 using System.Buffers.Binary;
 using Avalonia.Platform;
 using Avalonia.Logging;
+using Avalonia.Media.Fonts.Tables.Metrics;
 using Avalonia.Media.Fonts.Tables.Variation;
 
 namespace Avalonia.Media.Fonts.Tables.Glyf
@@ -155,18 +156,72 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
         }
 
         /// <summary>
-        /// Reads bounding boxes for a batch of glyphs into <paramref name="bounds"/>.
+        /// Reads a glyph's bounding box from its 'glyf' header, placed where the outline is placed
+        /// at the default instance.
+        /// </summary>
+        /// <remarks>
+        /// With <paramref name="hmtx"/> the box moves by minus the glyph's left phantom point x,
+        /// <c>xMin - lsb</c>, as the outline does; see <see cref="PlaceByLeftPhantom"/>. Returns
+        /// <see langword="true"/> with the zero box for an empty glyph, <see langword="false"/>
+        /// when the glyph index is out of range or the header is truncated.
+        /// </remarks>
+        /// <param name="glyphIndex">The zero-based glyph index.</param>
+        /// <param name="hmtx">The font's hmtx table; <c>null</c> leaves the box as stored.</param>
+        /// <param name="bounds">The placed header box.</param>
+        public bool TryGetGlyphBounds(int glyphIndex, HorizontalMetricsTable? hmtx, out GlyphBounds bounds)
+        {
+            bounds = default;
+
+            if (!TryGetGlyphData(glyphIndex, out var data))
+            {
+                return false;
+            }
+
+            if (data.IsEmpty)
+            {
+                return true;
+            }
+
+            var span = data.Span;
+
+            if (span.Length < 10)
+            {
+                return false;
+            }
+
+            bounds = new GlyphBounds(
+                BinaryPrimitives.ReadInt16BigEndian(span.Slice(2)),
+                BinaryPrimitives.ReadInt16BigEndian(span.Slice(4)),
+                BinaryPrimitives.ReadInt16BigEndian(span.Slice(6)),
+                BinaryPrimitives.ReadInt16BigEndian(span.Slice(8)));
+
+            if (hmtx is not null)
+            {
+                var isComposite = BinaryPrimitives.ReadInt16BigEndian(span) < 0;
+
+                bounds = PlaceByLeftPhantom(glyphIndex, isComposite, bounds, hmtx);
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Reads bounding boxes for a batch of glyphs into <paramref name="bounds"/>, placed where
+        /// the outlines are placed at the default instance.
         /// </summary>
         /// <remarks>
         /// The hot path for ink-bounds computation. The <c>glyf</c> and <c>loca</c> spans are
         /// fetched once for the whole batch (not per glyph), and offsets and headers are read
-        /// directly — no per-glyph <see cref="ReadOnlyMemory{T}.Span"/> conversion, no
-        /// intermediate slices, no nested call chain. Out-of-range, empty, or malformed
-        /// glyphs are written as the default (zero) box.
+        /// directly, with no per-glyph <see cref="ReadOnlyMemory{T}.Span"/> conversion. With
+        /// <paramref name="hmtx"/> each box moves by minus its left phantom point x; a simple glyph
+        /// only adds its hmtx entry to that, while a composite also resolves its USE_MY_METRICS
+        /// chain (see <see cref="PlaceByLeftPhantom"/>). Out-of-range, empty, or malformed glyphs
+        /// are written as the default (zero) box.
         /// </remarks>
         /// <param name="glyphIndices">The glyph indices to read.</param>
         /// <param name="bounds">Output; must be at least as long as <paramref name="glyphIndices"/>.</param>
-        public void GetGlyphBounds(ReadOnlySpan<ushort> glyphIndices, Span<GlyphBounds> bounds)
+        /// <param name="hmtx">The font's hmtx table; <c>null</c> leaves the boxes as stored.</param>
+        public void GetGlyphBounds(ReadOnlySpan<ushort> glyphIndices, Span<GlyphBounds> bounds, HorizontalMetricsTable? hmtx)
         {
             var glyf = _glyfData.Span;
             var loca = _locaTable.RawData;
@@ -213,11 +268,210 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
                     continue;
                 }
 
-                bounds[i] = new GlyphBounds(
+                var box = new GlyphBounds(
                     BinaryPrimitives.ReadInt16BigEndian(glyf.Slice(start + 2)),
                     BinaryPrimitives.ReadInt16BigEndian(glyf.Slice(start + 4)),
                     BinaryPrimitives.ReadInt16BigEndian(glyf.Slice(start + 6)),
                     BinaryPrimitives.ReadInt16BigEndian(glyf.Slice(start + 8)));
+
+                if (hmtx is not null)
+                {
+                    var isComposite = BinaryPrimitives.ReadInt16BigEndian(glyf.Slice(start)) < 0;
+
+                    box = PlaceByLeftPhantom(gid, isComposite, box, hmtx);
+                }
+
+                bounds[i] = box;
+            }
+        }
+
+        /// <summary>
+        /// Moves a glyph header box by minus the glyph's left phantom point x at the default
+        /// instance, <c>xMin - lsb</c>, which is how GlyphTypeface.GetGlyphOutline places the
+        /// outline.
+        /// </summary>
+        /// <remarks>
+        /// A simple glyph, or a composite without a USE_MY_METRICS component, supplies its own xMin
+        /// and lsb, so its box lands at x = lsb from the header already read and one hmtx entry. A
+        /// composite resolves its USE_MY_METRICS chain first, whose last glyph supplies both. A box
+        /// whose left phantom point cannot be resolved (no hmtx entry, a malformed or cyclic chain)
+        /// stays as stored, as the outline does.
+        /// </remarks>
+        private GlyphBounds PlaceByLeftPhantom(int glyphIndex, bool isComposite, GlyphBounds box, HorizontalMetricsTable hmtx)
+        {
+            var metricsGlyph = glyphIndex;
+            var metricsXMin = box.XMin;
+
+            if (isComposite)
+            {
+                if (!TryGetPhantomDeltas(glyphIndex, null, default, out metricsGlyph, default, default))
+                {
+                    return box;
+                }
+
+                if (metricsGlyph != glyphIndex && !TryGetGlyphBounds(metricsGlyph, out metricsXMin, out _, out _, out _))
+                {
+                    return box;
+                }
+            }
+
+            if (!hmtx.TryGetMetrics((ushort)metricsGlyph, out var metric))
+            {
+                return box;
+            }
+
+            var shift = metric.LeftSideBearing - metricsXMin;
+
+            if (shift == 0)
+            {
+                return box;
+            }
+
+            return new GlyphBounds(
+                (short)Math.Clamp(box.XMin + shift, short.MinValue, short.MaxValue),
+                box.YMin,
+                (short)Math.Clamp(box.XMax + shift, short.MinValue, short.MaxValue),
+                box.YMax);
+        }
+
+        /// <summary>
+        /// Resolves the gvar deltas of the phantom points that carry a glyph's varied metrics.
+        /// </summary>
+        /// <remarks>
+        /// A composite glyph with a USE_MY_METRICS component takes that component's phantom
+        /// points instead of its own, recursively, so its metrics come from the component's
+        /// hmtx / vmtx entry and the component's own deltas. When several components carry the
+        /// flag the last one wins, as in FreeType and HarfBuzz.
+        /// </remarks>
+        /// <param name="glyphIndex">The glyph to resolve.</param>
+        /// <param name="gvarTable">
+        /// The font's gvar table. <c>null</c>, or an empty <paramref name="activeCoords"/>, only
+        /// resolves <paramref name="metricsGlyphIndex"/> and leaves the deltas at zero.
+        /// </param>
+        /// <param name="activeCoords">Normalized variation coordinates in fvar axis order.</param>
+        /// <param name="metricsGlyphIndex">
+        /// The glyph whose hmtx / vmtx entry the deltas apply to: <paramref name="glyphIndex"/>
+        /// itself unless a USE_MY_METRICS component supplies the metrics.
+        /// </param>
+        /// <param name="xDeltas">
+        /// Output: x deltas of the four phantom points (left side bearing, advance width, top
+        /// origin, advance height). Must be zero-initialized; only added to.
+        /// </param>
+        /// <param name="yDeltas">Output: y deltas of the four phantom points, as <paramref name="xDeltas"/>.</param>
+        /// <returns>
+        /// <c>false</c> when the glyph is out of range, malformed, or its USE_MY_METRICS chain
+        /// does not end within <see cref="GlyphDecycler.MaxTraversalDepth"/> steps.
+        /// </returns>
+        public bool TryGetPhantomDeltas(
+            int glyphIndex,
+            GvarTable? gvarTable,
+            ReadOnlySpan<float> activeCoords,
+            out int metricsGlyphIndex,
+            Span<float> xDeltas,
+            Span<float> yDeltas)
+        {
+            metricsGlyphIndex = glyphIndex;
+
+            for (var depth = 0; depth < GlyphDecycler.MaxTraversalDepth; depth++)
+            {
+                if (!TryGetPhantomPointOwner(metricsGlyphIndex, out var pointCount, out var metricsComponent))
+                {
+                    return false;
+                }
+
+                if (metricsComponent < 0)
+                {
+                    if (gvarTable is not null && !activeCoords.IsEmpty)
+                    {
+                        GlyphVariationReader.TryGetPhantomDeltas(
+                            gvarTable, metricsGlyphIndex, activeCoords, pointCount, xDeltas, yDeltas);
+                    }
+
+                    return true;
+                }
+
+                metricsGlyphIndex = metricsComponent;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Reads the number of points that precede a glyph's phantom points in gvar, and the
+        /// USE_MY_METRICS component of a composite glyph (-1 when there is none).
+        /// </summary>
+        private bool TryGetPhantomPointOwner(int glyphIndex, out int pointCount, out int metricsComponent)
+        {
+            pointCount = 0;
+            metricsComponent = -1;
+
+            if (!TryGetGlyphData(glyphIndex, out var data))
+            {
+                return false;
+            }
+
+            if (data.IsEmpty)
+            {
+                // An empty glyph (e.g. whitespace) has only its phantom points.
+                return true;
+            }
+
+            var span = data.Span;
+
+            if (span.Length < 10)
+            {
+                return false;
+            }
+
+            var numberOfContours = BinaryPrimitives.ReadInt16BigEndian(span);
+
+            if (numberOfContours >= 0)
+            {
+                if (numberOfContours > 0)
+                {
+                    // The last contour end point is the highest point index.
+                    var lastEndPointOffset = 10 + (numberOfContours - 1) * 2;
+
+                    if (lastEndPointOffset + 2 > span.Length)
+                    {
+                        return false;
+                    }
+
+                    pointCount = BinaryPrimitives.ReadUInt16BigEndian(span.Slice(lastEndPointOffset)) + 1;
+                }
+
+                return true;
+            }
+
+            try
+            {
+                var compositeGlyph = CompositeGlyph.Create(span.Slice(10));
+
+                try
+                {
+                    var components = compositeGlyph.Components;
+                    pointCount = components.Length;
+
+                    foreach (var component in components)
+                    {
+                        if ((component.Flags & CompositeFlags.UseMyMetrics) != 0)
+                        {
+                            metricsComponent = component.GlyphIndex;
+                        }
+                    }
+                }
+                finally
+                {
+                    compositeGlyph.Dispose();
+                }
+
+                return true;
+            }
+            catch (Exception ex) when (ex is ArgumentOutOfRangeException or IndexOutOfRangeException)
+            {
+                // A component record runs past the end of the glyph data: word fields fail their
+                // slice, byte arguments their indexer.
+                return false;
             }
         }
 
