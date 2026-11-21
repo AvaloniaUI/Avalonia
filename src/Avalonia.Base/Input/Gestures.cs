@@ -160,7 +160,10 @@ namespace Avalonia.Input
                 var source = GetCaptured(e);
                 if (s_lastPress.TryGetTarget(out var target))
                 {
-                    if (e.Pointer == s_gestureState?.Pointer && source is Interactive i)
+                    // Keep the DoubleTapped state so that Tapped isn't raised on release.
+                    if (e.Pointer == s_gestureState?.Pointer &&
+                        s_gestureState.Value.Type != GestureStateType.DoubleTapped &&
+                        source is Interactive i)
                     {
                         var holdSize = new Size(4, 4);
                         var holdRect = new Rect(s_lastPressRootPoint, new Size())
