@@ -416,6 +416,7 @@ internal static class XkbKeyTransform
         { 0xff09, Key.Tab },          // XKB_KEY_Tab
         { 0xff0a, Key.LineFeed },     // XKB_KEY_Linefeed
         { 0xff0b, Key.Clear },        // XKB_KEY_Clear
+        { 0xff9d, Key.Clear },        // XKB_KEY_KP_Begin (keypad 5 with Num Lock off; VK_CLEAR on Windows)
         { 0xff0d, Key.Return },       // XKB_KEY_Return
         { 0xff8d, Key.Return },       // XKB_KEY_KP_Enter
         { 0xff13, Key.Pause },        // XKB_KEY_Pause
