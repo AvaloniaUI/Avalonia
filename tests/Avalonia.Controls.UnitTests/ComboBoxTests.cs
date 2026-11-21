@@ -1323,5 +1323,42 @@ namespace Avalonia.Controls.UnitTests
             var focused = root.FocusManager.GetFocusedElement();
             Assert.Same(editableTextBox, focused);
         }
+
+        [Fact]
+        public void IsReadOnly_Property_Is_Shared_With_TextBox()
+        {
+            Assert.Same(TextBox.IsReadOnlyProperty, ComboBox.IsReadOnlyProperty);
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void IsReadOnly_Is_Applied_To_Editable_TextBox(bool fluent)
+        {
+            IStyle CreateTheme() => fluent ? new FluentTheme() : new SimpleTheme();
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow.With(theme: CreateTheme));
+            var target = new ComboBox
+            {
+                ItemsSource = new[] { "Foo", "Bar" },
+                IsEditable = true,
+                IsReadOnly = true,
+            };
+            var window = new Window { Content = target };
+            window.Show();
+            window.LayoutManager.ExecuteInitialLayoutPass();
+
+            var editableTextBox = target.GetVisualDescendants()
+                .OfType<TextBox>()
+                .FirstOrDefault(x => x.Name == "PART_EditableTextBox");
+
+            Assert.NotNull(editableTextBox);
+            Assert.True(editableTextBox.IsReadOnly);
+
+            target.IsReadOnly = false;
+            window.LayoutManager.ExecuteLayoutPass();
+
+            Assert.False(editableTextBox.IsReadOnly);
+            window.Close();
+        }
     }
 }
