@@ -13,10 +13,10 @@ unsafe class UnsafeNativeMethods
         public PollEvents events;
         public PollEvents revents;
     }
-    
-    
-    
-    
+
+
+
+
     public const int O_NONBLOCK = 2048;
     public const int O_CLOEXEC = 0x80000;
 
@@ -50,7 +50,7 @@ unsafe class UnsafeNativeMethods
 
     [DllImport("libc", SetLastError = true)]
     public static extern int poll(pollfd* fds, IntPtr nfds, int timeout);
-    
+
     [DllImport("libc")]
     public static extern int pipe2(int* fds, int flags);
 
@@ -59,20 +59,20 @@ unsafe class UnsafeNativeMethods
 
     [DllImport("libc")]
     public static extern IntPtr read(int fd, void* buf, IntPtr count);
-    
+
     [DllImport("libc")]
     public static extern int memfd_create(string name, uint flags);
-    
+
     [DllImport("libc", SetLastError = true)]
     public static extern int ftruncate(int fd, IntPtr length);
 
     [DllImport("libc")]
     public static extern void close(int fd);
-    
+
     [DllImport("libc", EntryPoint = "mmap", SetLastError = true)]
     public static extern IntPtr mmap(IntPtr addr, IntPtr length, int prot, int flags,
         int fd, IntPtr offset);
-    
+
     [DllImport("libc", EntryPoint = "munmap", SetLastError = true)]
     public static extern int munmap(IntPtr addr, IntPtr length);
 
