@@ -51,4 +51,23 @@ public class UriExtensionsTests
 
         Assert.Equal(path, uri.LocalPath);
     }
+
+    [Fact]
+    public void Should_Keep_Server_Of_Long_Unc_Path()
+    {
+        var uri = StorageProviderHelpers.UriFromFilePath(@"\\?\UNC\server\share\file.txt", false);
+
+        Assert.Equal("file://server/share/file.txt", uri.AbsoluteUri);
+    }
+
+    [Theory]
+    [InlineData(@"C:\Work\Projects\", "file:///C:/Work/Projects/")]
+    [InlineData(@"\\server\share\folder\", "file://server/share/folder/")]
+    [InlineData("/home/Projects/", "file:///home/Projects/")]
+    public void Should_Not_Double_Trailing_Separator_Of_Directory_Path(string path, string expected)
+    {
+        var uri = StorageProviderHelpers.UriFromFilePath(path, true);
+
+        Assert.Equal(expected, uri.AbsoluteUri);
+    }
 }
