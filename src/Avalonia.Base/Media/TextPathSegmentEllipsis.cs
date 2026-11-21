@@ -277,6 +277,9 @@ namespace Avalonia.Media
                                 var removeStart = segments[segStartIndex].Start;
                                 var removeLength = (segments[segEndIndex].Start + segments[segEndIndex].Length) - removeStart;
 
+                                // One reference per shaped run. The splits pass them on: first
+                                // and last move into the result, middle is released.
+                                FormattingObjectPool.RentedList<TextRun>? ownedRuns = RentLogicalRuns(textLine, objectPool);
                                 FormattingObjectPool.RentedList<TextRun>? first = null;
                                 FormattingObjectPool.RentedList<TextRun>? remainder = null;
                                 FormattingObjectPool.RentedList<TextRun>? middle = null;
@@ -284,7 +287,7 @@ namespace Avalonia.Media
 
                                 try
                                 {
-                                    (first, remainder) = TextFormatterImpl.SplitTextRuns(logicalRuns, removeStart, objectPool);
+                                    (first, remainder) = TextFormatterImpl.SplitTextRuns(ownedRuns, removeStart, objectPool);
 
                                     if (remainder == null)
                                     {
@@ -302,6 +305,7 @@ namespace Avalonia.Media
                                 finally
                                 {
                                     // Return rented lists
+                                    objectPool.TextRunLists.Return(ref ownedRuns);
                                     objectPool.TextRunLists.Return(ref first);
                                     objectPool.TextRunLists.Return(ref remainder);
                                     objectPool.TextRunLists.Return(ref middle);
@@ -339,8 +343,6 @@ namespace Avalonia.Media
                         // Split before current segment
                         (first, second) = TextFormatterImpl.SplitTextRuns(ownedRuns, currentLength, objectPool);
 
-                        Release(first);
-
                         TextRun? removedRun = null;
                         TextRun? trimmedRun = null;
                         var remainingRunCount = 0;
@@ -373,12 +375,7 @@ namespace Avalonia.Media
                                     else
                                     {
                                         // Nothing of this run survives.
-                                        shapedRun.Dispose();
                                     }
-                                }
-                                else
-                                {
-                                    shapedRun.Dispose();
                                 }
                             }
                         }

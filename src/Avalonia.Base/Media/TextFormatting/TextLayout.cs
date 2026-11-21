@@ -818,7 +818,7 @@ namespace Avalonia.Media.TextFormatting
 
         private static TextLineImpl[] ApplyRenderOverrides(TextLayout baseLayout, IEnumerable<ValueSpan<TextRenderOverrides>> overrides)
         {
-            var overridenLines = new List<TextLineImpl>(baseLayout._textLines);
+            var overriddenLines = new List<TextLineImpl>(baseLayout._textLines);
             foreach (var overrideSpan in overrides)
             {
                 if (overrideSpan.Length == 0)
@@ -830,7 +830,7 @@ namespace Avalonia.Media.TextFormatting
 
                 for (int lineIndex = lineRange.Start; lineIndex <= lineRange.End; lineIndex++)
                 {
-                    var line = overridenLines[lineIndex];
+                    var line = overriddenLines[lineIndex];
                     var overriddenRuns = new List<TextRun>(line.TextRuns);
                     var anyRunsOverridden = false;
 
@@ -931,12 +931,28 @@ namespace Avalonia.Media.TextFormatting
 
                     if (anyRunsOverridden)
                     {
-                        overridenLines[lineIndex] = new TextLineImpl(line, [.. overriddenRuns]);
+                        overriddenLines[lineIndex] = new TextLineImpl(line, [.. overriddenRuns]);
                     }
                 }
-
             }
-            return [.. overridenLines];
+             
+            foreach (var line in overriddenLines)
+            {
+                foreach (var run in line.TextRuns)
+                {
+                    switch (run)
+                    {
+                        case ShapedTextRun shaped:
+                            shaped.AddRef();
+                            break;
+                        case CollapseSymbolRun collapse:
+                            collapse.AddRef();
+                            break;
+                    }
+                }
+            }
+
+            return [.. overriddenLines];
         }
 
         public void Dispose()

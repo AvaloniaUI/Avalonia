@@ -108,23 +108,23 @@ namespace Avalonia.Media.TextFormatting
             {
                 var textRunEnumerator = new LogicalTextRunEnumerator(textLine);
 
+                var textRunsLength = 0;
+
                 textRuns.EnsureCapacity(textRunEnumerator.Count);
                 while (textRunEnumerator.MoveNext(out var textRun))
                 {
-                    textRuns.Add(AddRef(textRun));
+                    if (textRunsLength < collapsedLength)
+                    {
+                        AddRef(textRun);
+                    }
+
+                    textRunsLength += textRun.Length;
+                    textRuns.Add(textRun);
                 }
 
                 // The split consumes the references taken above: the leading part moves into
-                // the result, the rest is not shown.
+                // the result, the rest into the collapsed symbol
                 (preSplitRuns, postSplitRuns) = TextFormatterImpl.SplitTextRuns(textRuns, collapsedLength, objectPool);
-
-                if (collapseSymbol is DrawableTextRun drawable)
-                {
-                    return [.. preSplitRuns!, new CollapseSymbolRun([.. postSplitRuns ?? []], drawable)];
-                }
-                // else legacy behaviour:
-
-                Release(postSplitRuns);
 
                 if (!owned)
                 {
@@ -142,6 +142,7 @@ namespace Avalonia.Media.TextFormatting
 
                 return collapseSymbol switch
                 {
+                    DrawableTextRun drawable =>[.. preSplitRuns!, new CollapseSymbolRun([.. postSplitRuns ?? []], drawable)],
                     null => [.. preSplitRuns!],
                     _ => [.. preSplitRuns!, collapseSymbol],
                 };

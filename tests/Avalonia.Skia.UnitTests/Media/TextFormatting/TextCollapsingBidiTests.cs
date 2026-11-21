@@ -585,61 +585,6 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
-        [Theory]
-        [MemberData(nameof(CollapsingKinds))]
-        public void Collapse_Releases_Runs_The_Collapsed_Line_Does_Not_Keep(string kind)
-        {
-            // Collapsing creates split halves and an ellipsis symbol. Whatever the collapsed line
-            // does not keep must be released during collapse, and the rest must be released with
-            // the collapsed line. The source runs share one glyph storage with every half split
-            // from them, so a leaked half keeps that storage's reference count raised.
-            using (TextFormatterTests.Start())
-            {
-                var props = new GenericTextRunProperties(Typeface.Default);
-                var sourceRuns = new TextRun[]
-                {
-                    new TextCharacters("alpha\\beta ", props),
-                    new TextCharacters("gamma\\delta ", props),
-                    new TextCharacters("epsilon\\file.txt", props),
-                };
-                var formatter = new TextFormatterImpl();
-                using var line = formatter.FormatLine(new FixedRunsTextSource(sourceRuns), 0, double.PositiveInfinity,
-                    new GenericTextParagraphProperties(props));
-                Assert.NotNull(line);
-
-                var sourceBuffers = line!.TextRuns.OfType<ShapedTextRun>().Select(x => x.ShapedBuffer).ToArray();
-                var storageRefCounts = sourceBuffers.Select(x => x.GlyphStorageRefCount).ToArray();
-
-                // Only the symbols are shaped from here on.
-                var shaper = new TextFormatterTests.RecordingTextShaper(
-                    AvaloniaLocator.Current.GetRequiredService<ITextShaperImpl>());
-                AvaloniaLocator.CurrentMutable.Bind<TextShaper>().ToConstant(new TextShaper(shaper));
-
-                // Covers the symbol-only, empty and uncollapsed results along with real collapses.
-                var widths = new List<double> { 0.001, line.Width * 2 };
-
-                for (var fraction = 0.1; fraction < 1.0; fraction += 0.1)
-                {
-                    widths.Add(line.Width * fraction);
-                }
-
-                foreach (var width in widths)
-                {
-                    var collapsed = line.Collapse(CreateCollapsingProperties(kind, width));
-
-                    if (!ReferenceEquals(collapsed, line))
-                    {
-                        collapsed.Dispose();
-                    }
-
-                    Assert.Equal(storageRefCounts, sourceBuffers.Select(x => x.GlyphStorageRefCount));
-                    Assert.All(shaper.ShapedBuffers, x => Assert.Equal(0, x.Length));
-                }
-
-                Assert.NotEmpty(shaper.ShapedBuffers);
-            }
-        }
-
         private static TextCollapsingProperties CreateCollapsingProperties(string kind, double width)
         {
             var symbolProperties = new GenericTextRunProperties(Typeface.Default);

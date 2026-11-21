@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Threading;
 using Avalonia.Media.TextFormatting.Unicode;
 
@@ -186,6 +187,7 @@ namespace Avalonia.Media.TextFormatting
         public void Dispose()
         {
             GC.SuppressFinalize(this);
+            Debug.Assert(_refCount > 0);
             if (Interlocked.Decrement(ref _refCount) == 0)
             {
                 Dispose(true);

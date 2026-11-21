@@ -1280,10 +1280,7 @@ namespace Avalonia.Media.TextFormatting
         {
             foreach (var textRun in _textRuns)
             {
-                if (textRun is ShapedTextRun shapedTextRun)
-                {
-                    shapedTextRun.Dispose();
-                }
+                (textRun as IDisposable)?.Dispose();
             }
         }
 

@@ -109,6 +109,9 @@ namespace Avalonia.Media.TextFormatting
 
                                     var collapsedRuns = objectPool.TextRunLists.Rent();
 
+                                    // One reference per shaped run. Each one either moves into
+                                    // the result or is released below.
+                                    RentedList<TextRun>? ownedRuns = RentLogicalRuns(textLine, objectPool);
                                     RentedList<TextRun>? rentedPreSplitRuns = null;
                                     RentedList<TextRun>? rentedPostSplitRuns = null;
                                     RentedList<TextRun>? reversedSuffix = null;
@@ -126,8 +129,9 @@ namespace Avalonia.Media.TextFormatting
 
                                         if (prefixCutoff > 0)
                                         {
+                                            // The split takes over the references held by ownedRuns.
                                             (rentedPreSplitRuns, rentedPostSplitRuns) = TextFormatterImpl.SplitTextRuns(
-                                                logicalRuns, prefixCutoff, objectPool);
+                                                ownedRuns, prefixCutoff, objectPool);
 
                                             effectivePostSplitRuns = rentedPostSplitRuns;
 
@@ -141,7 +145,7 @@ namespace Avalonia.Media.TextFormatting
                                         }
                                         else
                                         {
-                                            effectivePostSplitRuns = logicalRuns;
+                                            effectivePostSplitRuns = ownedRuns;
                                         }
 
                                         collapseSymbolIndex = collapsedRuns.Count;
@@ -149,8 +153,7 @@ namespace Avalonia.Media.TextFormatting
 
                                         if (totalFitChars <= _prefixLength || effectivePostSplitRuns is null)
                                         {
-                                            Release(effectivePostSplitRuns);
-                                            collapsedRuns[collapseSymbolIndex] = new CollapseSymbolRun(logicalRuns[collapseSymbolIndex..], shapedSymbol);
+                                            collapsedRuns[collapseSymbolIndex] = new CollapseSymbolRun(ownedRuns[collapseSymbolIndex..], shapedSymbol);
                                             return collapsedRuns.ToArray();
                                         }
 
@@ -246,6 +249,7 @@ namespace Avalonia.Media.TextFormatting
                                     }
                                     finally
                                     {
+                                        objectPool.TextRunLists.Return(ref ownedRuns);
                                         objectPool.TextRunLists.Return(ref rentedPreSplitRuns);
                                         objectPool.TextRunLists.Return(ref rentedPostSplitRuns);
                                         objectPool.TextRunLists.Return(ref reversedSuffix);
