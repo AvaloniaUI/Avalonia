@@ -42,11 +42,6 @@ namespace Avalonia.X11
             XFreeGC(_display, gc);
             XSync(_display, true);
             XUnlockDisplay(_display);
-            if (!_retain)
-            {
-                _fb?.Dispose();
-                _fb = null;
-            }
         }
         
         public ILockedFramebuffer Lock(IRenderTarget.RenderTargetSceneInfo _, out FramebufferLockProperties properties)
