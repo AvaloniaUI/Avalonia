@@ -179,6 +179,7 @@ namespace Avalonia.Win32
             {
                 Screen?.OnChanged();
                 UpdateTimerFps();
+                DirectX.DxgiConnection.DisplaysChanged();
             }
 
             if (msg == (uint)WindowsMessage.WM_SETTINGCHANGE)
