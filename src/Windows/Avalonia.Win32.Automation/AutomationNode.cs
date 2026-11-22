@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.Marshalling;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
+using Avalonia.Controls;
 using Avalonia.Controls.Automation.Peers;
 using Avalonia.Threading;
 using Avalonia.Win32.Automation.Interop;
@@ -56,6 +57,8 @@ namespace Avalonia.Win32.Automation
         private static ConditionalWeakTable<AutomationPeer, AutomationNode> s_nodes = new();
 
         private readonly int[] _runtimeId;
+        private TextBoxTextProvider? _textBoxTextProvider;
+        private bool _textSelectionChangedPending;
 
         private static readonly int s_pid = GetProcessId();
 
@@ -67,11 +70,58 @@ namespace Avalonia.Win32.Automation
             peer.ChildrenChanged += OnPeerChildrenChanged;
             peer.PropertyChanged += OnPeerPropertyChanged;
 
+            if (peer is TextBoxAutomationPeer textBoxPeer)
+            {
+                textBoxPeer.Owner.PropertyChanged += TextBoxPropertyChanged;
+            }
+
             if (Peer.GetProvider<AAP.IEmbeddedRootProvider>() is { } embeddedRoot)
                 embeddedRoot.FocusChanged += OnEmbeddedRootFocusChanged;
         }
 
         public AutomationPeer Peer { get; protected set; }
+
+        private void TextBoxPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+        {
+            if (e.Property == TextBox.AcceptsReturnProperty || e.Property == TextBox.AcceptsTabProperty)
+            {
+                var owner = (TextBox)sender!;
+                var wasMultiline = e.Property == TextBox.AcceptsReturnProperty
+                    ? e.GetOldValue<bool>() || owner.AcceptsTab
+                    : owner.AcceptsReturn || e.GetOldValue<bool>();
+                var isMultiline = owner.AcceptsReturn || owner.AcceptsTab;
+
+                if (wasMultiline != isMultiline)
+                {
+                    if (Peer is TextBoxAutomationPeer textBoxPeer)
+                    {
+                        var oldHelpText = InvokeSync(() => textBoxPeer.GetHelpTextForMultiline(wasMultiline));
+                        var newHelpText = InvokeSync(() => textBoxPeer.GetHelpTextForMultiline(isMultiline));
+                        UiaCoreProviderApi.UiaRaiseAutomationPropertyChangedEvent(
+                            this,
+                            (int)UiaPropertyId.HelpText,
+                            oldHelpText,
+                            newHelpText);
+                    }
+                }
+            }
+            else if (e.Property == TextBox.TextProperty)
+            {
+                UiaCoreProviderApi.UiaRaiseAutomationEvent(this, (int)UiaEventId.Text_TextChanged);
+            }
+            else if ((e.Property == TextBox.SelectionStartProperty || e.Property == TextBox.SelectionEndProperty ||
+                      e.Property == TextBox.CaretIndexProperty) && !_textSelectionChangedPending)
+            {
+                // Avalonia may update CaretIndex and both selection endpoints for one key press.
+                // Coalesce those property notifications into the single event expected by UIA clients.
+                _textSelectionChangedPending = true;
+                Dispatcher.UIThread.Post(() =>
+                {
+                    _textSelectionChangedPending = false;
+                    UiaCoreProviderApi.UiaRaiseAutomationEvent(this, (int)UiaEventId.Text_TextSelectionChanged);
+                }, DispatcherPriority.Input);
+            }
+        }
 
         public virtual Rect GetBoundingRectangle()
         {
@@ -101,6 +151,9 @@ namespace Avalonia.Win32.Automation
                 UiaPatternId.SelectionItem => ThisIfPeerImplementsProvider<AAP.ISelectionItemProvider>(),
                 UiaPatternId.Toggle => ThisIfPeerImplementsProvider<AAP.IToggleProvider>(),
                 UiaPatternId.Value => ThisIfPeerImplementsProvider<AAP.IValueProvider>(),
+                UiaPatternId.Text => InvokeSync(() => Peer is TextBoxAutomationPeer textBoxPeer
+                    ? _textBoxTextProvider ??= new TextBoxTextProvider(this, textBoxPeer.Owner)
+                    : null),
                 _ => null,
             };
         }
@@ -121,6 +174,7 @@ namespace Avalonia.Win32.Automation
                 UiaPropertyId.FrameworkId => "Avalonia",
                 UiaPropertyId.HasKeyboardFocus => InvokeSync(() => Peer.HasKeyboardFocus()),
                 UiaPropertyId.IsContentElement => InvokeSync(() => Peer.IsContentElement()),
+                UiaPropertyId.LabeledBy => InvokeSync(() => GetOrCreate(Peer.GetLabeledBy())),
                 UiaPropertyId.IsControlElement => InvokeSync(() => Peer.IsControlElement()),
                 UiaPropertyId.IsEnabled => InvokeSync(() => Peer.IsEnabled()),
                 UiaPropertyId.IsKeyboardFocusable => InvokeSync(() => Peer.IsKeyboardFocusable()),
@@ -129,6 +183,10 @@ namespace Avalonia.Win32.Automation
                 UiaPropertyId.ItemStatus => InvokeSync(() => Peer.GetItemStatus()),
                 UiaPropertyId.LocalizedControlType => InvokeSync(() => Peer.GetLocalizedControlType()),
                 UiaPropertyId.Name => InvokeSync(() => Peer.GetName()),
+                UiaPropertyId.IsPassword => InvokeSync(() => Peer is TextBoxAutomationPeer textBoxPeer &&
+                    textBoxPeer.Owner.PasswordChar != default && !textBoxPeer.Owner.RevealPassword),
+                UiaPropertyId.IsTextPatternAvailable => Peer is TextBoxAutomationPeer,
+                UiaPropertyId.IsValuePatternAvailable => Peer.GetProvider<AAP.IValueProvider>() is not null,
                 UiaPropertyId.HelpText => InvokeSync(() => Peer.GetHelpText()),
                 UiaPropertyId.LandmarkType => InvokeSync(() => ToUiaLandmarkType(Peer.GetLandmarkType())),
                 UiaPropertyId.LocalizedLandmarkType => InvokeSync(() => ToUiaLocalizedLandmarkType(Peer.GetLandmarkType())),
