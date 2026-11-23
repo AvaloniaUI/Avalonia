@@ -49,14 +49,21 @@ namespace Avalonia.Android
         {
             Logger.TryGet(LogEventLevel.Verbose, LogArea.AndroidPlatform)?
                 .Log(this, $"InvalidationAwareSurfaceView Changed. Format:{format} Size:{width} x {height}");
-            CacheSurfaceProperties(holder);
+            lock (AndroidPlatform.Instance.SharedRenderLock)
+            {
+                CacheSurfaceProperties(holder);
+            }
         }
 
         public void SurfaceCreated(ISurfaceHolder holder)
         {
             Logger.TryGet(LogEventLevel.Verbose, LogArea.AndroidPlatform)?
                 .Log(this, "InvalidationAwareSurfaceView Created");
-            CacheSurfaceProperties(holder);
+
+            lock (AndroidPlatform.Instance.SharedRenderLock)
+            {
+                CacheSurfaceProperties(holder);
+            }
             SurfaceWindowCreated?.Invoke(this, EventArgs.Empty);
         }
 
@@ -64,8 +71,11 @@ namespace Avalonia.Android
         {
             Logger.TryGet(LogEventLevel.Verbose, LogArea.AndroidPlatform)?
                 .Log(this, "InvalidationAwareSurfaceView Destroyed");
-            ReleaseNativeWindowHandle();
-            _size = new PixelSize(1, 1);
+            lock (AndroidPlatform.Instance.SharedRenderLock)
+            {
+                ReleaseNativeWindowHandle();
+                _size = new PixelSize(1, 1);
+            }
             SurfaceWindowDestroyed?.Invoke(this, EventArgs.Empty);
         }
 
