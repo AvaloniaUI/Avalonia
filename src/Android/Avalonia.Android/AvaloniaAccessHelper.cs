@@ -335,12 +335,18 @@ namespace Avalonia.Android
             nodeInfo.AccessibilityFocused = peer.HasKeyboardFocus();
             nodeInfo.Focused = peer.HasKeyboardFocus();
 
-            // On-screen bounds
+           // On-screen bounds
             Rect bounds = peer.GetBoundingRectangle();
-            PixelRect screenRect = new PixelRect(
-                _view.TopLevelImpl.InputRoot?.RootElement.PointToScreen(bounds.TopLeft) ?? default,
-                _view.TopLevelImpl.InputRoot?.RootElement.PointToScreen(bounds.BottomRight) ?? default
-                );
+            // The null-conditional below previously guarded only InputRoot. When InputRoot is non-null but its
+            // RootElement is transiently unrooted (for example during an Android foreground resume), PointToScreen
+            // dereferences a null visual root and throws, crashing the process whenever an accessibility service is
+            // querying the node tree. Project to screen only when the root element is actually rooted.
+            var rootElement = _view.TopLevelImpl.InputRoot?.RootElement;
+            PixelRect screenRect = rootElement is Visual rootVisual && rootVisual.GetVisualRoot() is not null
+                ? new PixelRect(
+                    rootVisual.PointToScreen(bounds.TopLeft),
+                    rootVisual.PointToScreen(bounds.BottomRight))
+                : default;
             nodeInfo.SetBoundsInScreen(new(
                 screenRect.X, screenRect.Y,
                 screenRect.Right, screenRect.Bottom
