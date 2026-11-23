@@ -55,7 +55,6 @@ ComStaticPtr<IAvnApplicationEvents> _events;
 - (void)applicationWillFinishLaunching:(NSNotification *)notification
 {
     NSApplicationActivationPolicy policy = [[NSApplication sharedApplication] activationPolicy];
-    // A prohibited app can't become active, so activating the Dock would only steal focus
     if(policy != AvnDesiredActivationPolicy && policy != NSApplicationActivationPolicyProhibited)
     {
         for (NSRunningApplication * app in [NSRunningApplication runningApplicationsWithBundleIdentifier:@"com.apple.dock"]) {
