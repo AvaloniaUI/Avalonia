@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.OpenGL;
+using Avalonia.FreeDesktop.UbuntuTouch;
 
 // XxxPlatformOptions are deliberately in global Avalonia namespace
 // ReSharper disable once CheckNamespace
@@ -13,11 +14,29 @@ namespace Avalonia;
 /// </summary>
 public class WaylandPlatformOptions
 {
+    private string? _appId;
+    private bool _appIdSet;
+
+    /// <summary>
+    /// Enables Ubuntu Touch defaults for Maliit, Content Hub, grid-unit scaling and overlay popups.
+    /// Null uses automatic detection, including the AVALONIA_UBUNTU_TOUCH override.
+    /// </summary>
+    public bool? UseUbuntuTouch { get; set; }
+
+    internal bool IsUbuntuTouch => UseUbuntuTouch ?? UbuntuTouchPlatform.IsEnabled;
+    internal string? EffectiveAppId => !_appIdSet && IsUbuntuTouch
+        ? Environment.GetEnvironmentVariable("APP_ID") ?? _appId : _appId;
+
     /// <summary>
     /// The default AppId for Wayland windows (xdg_toplevel.set_app_id).
-    /// If null, defaults to the entry assembly name.
+    /// Defaults to the entry assembly name, or APP_ID on Ubuntu Touch when not explicitly set.
+    /// Explicitly setting null suppresses this default.
     /// </summary>
-    public string? AppId { get; set; }
+    public string? AppId
+    {
+        get => _appId;
+        set { _appId = value; _appIdSet = true; }
+    }
 
     /// <summary>
     /// The name of the Wayland display to connect to (e.g. <c>wayland-0</c>). When <c>null</c>,
@@ -108,7 +127,7 @@ public class WaylandPlatformOptions
     {
         try
         {
-            AppId = System.Reflection.Assembly.GetEntryAssembly()?.GetName().Name;
+            _appId = System.Reflection.Assembly.GetEntryAssembly()?.GetName().Name;
         }
         catch
         {

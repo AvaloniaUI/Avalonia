@@ -1,8 +1,8 @@
 # Ubuntu Touch integration: device validation
 
-Recorded on 23 November 2026. This example references the Avalonia source projects and starts with `UsePlatformDetect()`. It has no UTDotNet assembly, package, adapter or per-control input registration.
+Recorded on 23 November 2026. This example references the Avalonia source projects. It has no UTDotNet assembly, package, adapter or per-control input registration. The original X11 results are preserved below; the native Wayland extension has a separate validation record. The current Click launcher explicitly selects `UseWayland()` with `--wayland` and unsets `DISPLAY`.
 
-## Reproducible inputs
+## Original X11 reproducible inputs
 
 | Item | Value |
 | --- | --- |
@@ -85,13 +85,44 @@ The ARM64 AXAML build and Click packaging passed. On the Fairphone, the main vie
 
 Evidence in the verification directory: `axaml-main.png`, `axaml-dynamic.png`, `axaml-dialog-close.png`, `axaml-dialog-input.png`, `axaml-after-close.png`, `axaml-dialog-geometry.log`, `axaml-app.log`, `axaml-build.log` and `axaml-package-files.txt`.
 
+## Native Wayland extension
+
+The extension starts from X11 integration commit `31272dfdfbd16a4fb777cd45d526be2491e8c977` on branch `ubuntu-touch/wayland-integration`. It uses the existing Avalonia.Wayland backend and shares Maliit editing/transport and Content Hub with X11. The pre-existing D-Bus submodule checkout remains unchanged and excluded from this work.
+
+The same Fairphone exposes `/run/user/32011/wayland-0`, `xdg_wm_base` v1, `wl_compositor` v4, `wl_seat` v6 and `wl_output` v3. No text-input manager was advertised. The Click process runs with `--wayland`, `WAYLAND_DISPLAY=wayland-0`, no `DISPLAY`, its actual `APP_ID` and the existing enforced AppArmor profile with no extra policy groups. This is a native Wayland connection.
+
+Initial hardware testing found that Lomiri reports output scale 1 while `GRID_UNIT_PX=24` requires render scale 3. The corrected backend distinguishes compositor coordinates from Avalonia logical coordinates for configuration, rendering, size constraints and input. The fullscreen sample now occupies 1224 × 2700 pixels, or 408 × 900 Avalonia units. A measured keyboard top of 1635 pixels yields `InputPane` overlap `(0, 545, 408, 355)`.
+
+Automated validation: FreeDesktop **51 passed**, Wayland **51 passed**, no failures or skips. The new shared tests cover a Maliit context without an X11 window ID, visibility without fabricated global geometry, and the transition to/from a known window position. The Wayland identity test verifies Click identity selection, explicit application-ID overrides (including null), and unchanged desktop defaults. Wayland and X11 .NET 8 builds passed with zero warnings/errors; the ARM64 .NET 10 publish includes both backends. The earlier Controls results above were not rerun because this extension does not change Controls.
+
+| Native Wayland scenario | Observed result |
+| --- | --- |
+| Text input | `hello` entered through Maliit and committed on field change |
+| Numeric input and key forwarding | Entering `123` and Backspace leaves `12` |
+| Qt to Avalonia | `Café 🌙` followed by `second line` arrives intact in the multiline field |
+| Avalonia to Qt | Cut removes selected `hello`; a fresh, empty native Qt editor pastes exactly `hello` |
+| Dynamic field | A field created while the keyboard is open accepts text and scrolls above the measured overlap |
+| Dialog | AXAML content is centered within the available viewport; input and the centered Close button work |
+| Return from dialog | The form and focused field are restored within the same fullscreen surface |
+| Application switching | Returning from the Qt probe reactivates Maliit in the same Avalonia process |
+
+An intermediate build also accepted text in a separate native owned window. Lomiri placed a windowed dialog partly outside the phone. Making that child fullscreen exposed a second compositor behavior: after closing it, the owner retained fullscreen state but received 1224 × 2595 rather than full-display bounds. The backend correctly withheld global keyboard coordinates in that state. The phone sample therefore presents its dialog within the same fullscreen surface, as an AXAML `UserControl`, and hides the form until Close restores it. It uses ordinary focus and `IInputPane` events, with no per-control IME registration. Native toplevel placement remains controlled by the compositor.
+
+The keyboard was confirmed visible on the physical phone. Current `mirscreencast` captures show application content but omit the keyboard layer; a blank lower area in these captures is not evidence that the keyboard is absent. Input and clipboard checks used only test strings. The native Qt fixture was the English `NativeClipboardProbe.qml`, with a local capture-only wrapper using `grabToImage`.
+
+Evidence under the ignored verification directory includes `wayland-scaled.png`, `wayland-input.png`, `wayland-number.png`, `wayland-qt-to-avalonia.png`, `wayland-avalonia-to-qt.png`, `wayland-dynamic-typed.png`, `wayland-overlay-input.png` and `wayland-overlay-return.png`. Earlier captures document intermediate builds, including the native-window layout issue.
+
+Final installed package: `avalonia.inputdemo_0.2.6_arm64.click`, SHA-256 `bd0a49a43bc7ac36fda264d16dfad35775e6151cd632011bf9dced9268102355`. Its process profile was `avalonia.inputdemo_inputdemo_0.2.6 (enforce)`. The published dependency manifest contains no UTDotNet dependency. In this exact build, opening Dialog automatically focused its text field and opened Maliit; entering `hello`, closing, entering `123` followed by Backspace in Number, and adding a dynamic field all succeeded. The dialog and dynamic field stayed inside the area above the keyboard. Captures: `wayland-final-dialog.png`, `wayland-final-dialog-typed.png`, `wayland-final-number.png` and `wayland-final-dynamic.png`; process diagnostics: `wayland-final-device.log`.
+
 ## Repeat the checks
 
 From the repository root:
 
 ```sh
 dotnet build src/Avalonia.X11/Avalonia.X11.csproj -f net8.0
+dotnet build src/Avalonia.Wayland/Avalonia.Wayland.csproj -f net8.0
 dotnet test --project tests/Avalonia.FreeDesktop.UnitTests/Avalonia.FreeDesktop.UnitTests.csproj
+dotnet test --project tests/Avalonia.Wayland.UnitTests/Avalonia.Wayland.UnitTests.csproj
 dotnet test --project tests/Avalonia.Controls.UnitTests/Avalonia.Controls.UnitTests.csproj
 samples/UbuntuTouchDemo/build-click.sh
 ```
@@ -102,9 +133,9 @@ Install and launch the resulting package on a connected Ubuntu Touch device:
 
 ```sh
 adb shell mkdir -p /home/phablet/avalonia-input-verification
-adb push artifacts/ubuntu-touch/avalonia.inputdemo_0.1.4_arm64.click /home/phablet/avalonia-input-verification/
-adb shell 'gdbus call --system --dest com.lomiri.click --object-path /com/lomiri/click --method com.lomiri.click.Install /home/phablet/avalonia-input-verification/avalonia.inputdemo_0.1.4_arm64.click'
-adb shell 'XDG_RUNTIME_DIR=/run/user/32011 DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/32011/bus lomiri-app-launch avalonia.inputdemo_inputdemo_0.1.4'
+adb push artifacts/ubuntu-touch/avalonia.inputdemo_0.2.6_arm64.click /home/phablet/avalonia-input-verification/
+adb shell 'gdbus call --system --dest com.lomiri.click --object-path /com/lomiri/click --method com.lomiri.click.Install /home/phablet/avalonia-input-verification/avalonia.inputdemo_0.2.6_arm64.click'
+adb shell 'XDG_RUNTIME_DIR=/run/user/32011 DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/32011/bus lomiri-app-launch avalonia.inputdemo_inputdemo_0.2.6'
 ```
 
 The runtime directory above belongs to the tested device; use the target user's actual runtime directory elsewhere. Stop any earlier test instance before replacing its package. The launcher occasionally reports a registry disconnect even when the application starts; check the application process and UI independently.
@@ -126,4 +157,4 @@ After repeated captures, `mirscreencast` stopped providing a buffer. Final scree
 
 Portrait, application background/foreground and multiple windows were exercised. Physical rotation, screen-off/deep suspend, external hardware keyboards, a real IBus/Fcitx session, accessibility and GPU acceleration were not validated in this run. Geometry resize/move behavior is covered by automated tests. The device rendered using the existing fallback after GLX initialization failed; no graphics-backend changes were made.
 
-Native Wayland, non-text clipboard formats and individual Maliit preedit formatting spans remain outside this X11/XWayland integration. See [backend notes](../../src/Avalonia.FreeDesktop/UbuntuTouch/README.md) for supported options and contracts.
+Non-text clipboard formats and individual Maliit preedit formatting spans remain unsupported. On native Wayland, ordinary window positions are unavailable, so keyboard visibility may be reported with an empty overlap rectangle. Fullscreen overlap was validated only on the single origin output described above. Rotation, external displays, physical keyboards, deep suspend and GPU acceleration remain unverified for the Wayland extension. See [backend notes](../../src/Avalonia.FreeDesktop/UbuntuTouch/README.md) for supported options and contracts.

@@ -3,9 +3,11 @@ using Avalonia.Input.Raw;
 
 namespace Avalonia.FreeDesktop.DBusIme.Maliit;
 
+internal readonly record struct MaliitKey(int KeySym, KeyModifiers Modifiers, RawKeyEventType Type, string Text, bool WithText);
+
 internal static class MaliitKeyMapper
 {
-    internal static bool TryMap(InputKey key, out X11InputMethodForwardedKey result)
+    internal static bool TryMap(InputKey key, out MaliitKey result)
     {
         // Qt::Key values are not X11 keysyms.
         var symbol = key.Key switch
@@ -35,14 +37,9 @@ internal static class MaliitKeyMapper
         if ((key.Modifiers & 0x04000000) != 0) modifiers |= KeyModifiers.Control;
         if ((key.Modifiers & 0x08000000) != 0) modifiers |= KeyModifiers.Alt;
         if ((key.Modifiers & 0x10000000) != 0) modifiers |= KeyModifiers.Meta;
-        result = new X11InputMethodForwardedKey
-        {
-            KeyVal = symbol,
-            Modifiers = modifiers,
-            Type = key.Type == 6 ? RawKeyEventType.KeyDown : RawKeyEventType.KeyUp,
-            Text = key.Text,
-            WithText = key.Text.Length > 0 && (modifiers & ~KeyModifiers.Shift) == 0
-        };
+        result = new MaliitKey(symbol, modifiers,
+            key.Type == 6 ? RawKeyEventType.KeyDown : RawKeyEventType.KeyUp, key.Text,
+            key.Text.Length > 0 && (modifiers & ~KeyModifiers.Shift) == 0);
         return symbol != 0 && key.RequestType != 1 && key.Type is 6 or 7;
     }
 }

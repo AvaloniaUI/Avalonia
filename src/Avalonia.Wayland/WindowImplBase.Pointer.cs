@@ -8,12 +8,14 @@ partial class WindowBaseImpl
 {
     partial class Sink
     {
+        private Point ToClientPoint(Point position) => new(position.X / Parent.DesktopScaling, position.Y / Parent.DesktopScaling);
+
         void IWSurfaceEventSink.OnPointerEnter(ulong timestamp, uint serial, Point position)
         {
             if (InputRoot is null)
                 return;
             ScheduleInput(new RawPointerEventArgs(Mouse, timestamp, InputRoot,
-                RawPointerEventType.Move, position, RawInputModifiers.None));
+                RawPointerEventType.Move, ToClientPoint(position), RawInputModifiers.None));
         }
 
         void IWSurfaceEventSink.OnPointerLeave(uint serial)
@@ -29,7 +31,7 @@ partial class WindowBaseImpl
             if (InputRoot is null)
                 return;
             ScheduleInput(new RawPointerEventArgs(Mouse, timestamp, InputRoot,
-                RawPointerEventType.Move, position, modifiers));
+                RawPointerEventType.Move, ToClientPoint(position), modifiers));
         }
 
         void IWSurfaceEventSink.OnPointerButton(ulong timestamp, uint serial, RawPointerEventType type,
@@ -38,7 +40,7 @@ partial class WindowBaseImpl
             if (InputRoot is null)
                 return;
             ScheduleInput(new RawPointerEventArgs(Mouse, timestamp, InputRoot,
-                type, position, modifiers) { PlatformInputEventCookie = platformCookie });
+                type, ToClientPoint(position), modifiers) { PlatformInputEventCookie = platformCookie });
         }
 
         void IWSurfaceEventSink.OnPointerAxis(ulong timestamp, Vector delta, RawInputModifiers modifiers,
@@ -47,7 +49,7 @@ partial class WindowBaseImpl
             if (InputRoot is null)
                 return;
             ScheduleInput(new RawMouseWheelEventArgs(Mouse, timestamp, InputRoot,
-                position, delta, modifiers));
+                ToClientPoint(position), delta, modifiers));
         }
 
         void IWSurfaceEventSink.OnTouchDown(ulong timestamp, int touchId, Point position, object? platformCookie)
@@ -55,7 +57,7 @@ partial class WindowBaseImpl
             if (InputRoot is null)
                 return;
             ScheduleInput(new RawTouchEventArgs(Touch, timestamp, InputRoot,
-                    RawPointerEventType.TouchBegin, position, RawInputModifiers.None, touchId)
+                    RawPointerEventType.TouchBegin, ToClientPoint(position), RawInputModifiers.None, touchId)
                 { PlatformInputEventCookie = platformCookie });
         }
 
@@ -64,7 +66,7 @@ partial class WindowBaseImpl
             if (InputRoot is null)
                 return;
             ScheduleInput(new RawTouchEventArgs(Touch, timestamp, InputRoot,
-                RawPointerEventType.TouchUpdate, position, RawInputModifiers.None, touchId));
+                RawPointerEventType.TouchUpdate, ToClientPoint(position), RawInputModifiers.None, touchId));
         }
 
         void IWSurfaceEventSink.OnTouchUp(ulong timestamp, int touchId, Point position)
@@ -72,7 +74,7 @@ partial class WindowBaseImpl
             if (InputRoot is null)
                 return;
             ScheduleInput(new RawTouchEventArgs(Touch, timestamp, InputRoot,
-                RawPointerEventType.TouchEnd, position, RawInputModifiers.None, touchId));
+                RawPointerEventType.TouchEnd, ToClientPoint(position), RawInputModifiers.None, touchId));
         }
 
         void IWSurfaceEventSink.OnTouchCancel(int touchId, Point position)
@@ -80,7 +82,7 @@ partial class WindowBaseImpl
             if (InputRoot is null)
                 return;
             ScheduleInput(new RawTouchEventArgs(Touch, 0, InputRoot,
-                RawPointerEventType.TouchCancel, position, RawInputModifiers.None, touchId));
+                RawPointerEventType.TouchCancel, ToClientPoint(position), RawInputModifiers.None, touchId));
         }
     }
 }

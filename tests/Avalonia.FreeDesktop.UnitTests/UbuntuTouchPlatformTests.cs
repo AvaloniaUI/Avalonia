@@ -66,7 +66,7 @@ public class UbuntuTouchPlatformTests
     public void QtKeysAreConvertedToX11(int qt, int x11)
     {
         Assert.True(MaliitKeyMapper.TryMap(new InputKey(6, qt, 0x04000000, "", false, 1, 0), out var key));
-        Assert.Equal(x11, key.KeyVal);
+        Assert.Equal(x11, key.KeySym);
         Assert.Equal(KeyModifiers.Control, key.Modifiers);
         Assert.False(MaliitKeyMapper.TryMap(new InputKey(6, qt, 0, "", false, 1, 1), out _));
     }

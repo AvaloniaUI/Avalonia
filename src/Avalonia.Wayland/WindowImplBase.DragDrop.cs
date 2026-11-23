@@ -74,6 +74,7 @@ partial class WindowBaseImpl
         void IWSurfaceEventSink.OnDragEnter(Point position, string[] mimeTypes, WaylandOfferCookie offerCookie,
             DragDropEffects sourceEffects, RawInputModifiers modifiers)
         {
+            position = ToClientPoint(position);
             if (InputRoot is null)
                 return;
 
@@ -94,6 +95,7 @@ partial class WindowBaseImpl
 
         void IWSurfaceEventSink.OnDragMotion(Point position, RawInputModifiers modifiers)
         {
+            position = ToClientPoint(position);
             var pending = _pendingDragMotion;
             if (pending != null)
             {
@@ -133,6 +135,7 @@ partial class WindowBaseImpl
 
         void IWSurfaceEventSink.OnDrop(Point position, RawInputModifiers modifiers)
         {
+            position = ToClientPoint(position);
             if (InputRoot is null || _currentDragDataTransfer is null)
                 return;
 

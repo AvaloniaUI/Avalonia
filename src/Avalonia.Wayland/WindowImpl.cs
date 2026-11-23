@@ -5,6 +5,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Dialogs;
 using Avalonia.FreeDesktop;
+using Avalonia.FreeDesktop.DBusIme.Maliit;
 using Avalonia.Input;
 using Avalonia.Input.TextInput;
 using Avalonia.Platform;
@@ -38,15 +39,23 @@ internal partial class WindowImpl : WindowBaseImpl, IWindowImpl, IWaylandOptions
     private string? _title;
     private string? _appId;
     private FallbackStorageProvider? _storageProvider;
+    private readonly bool _ubuntuTouch;
+    private readonly bool _textInputEnabled;
+    private readonly MaliitTextInputMethodImpl? _maliitTextInputMethod;
 
-    public WindowImpl(WaylandWorkerClient client) : base(client)
+    public WindowImpl(WaylandWorkerClient client, bool ubuntuTouch = false,
+        MaliitInputMethodManager? maliit = null, bool textInputEnabled = true) : base(client)
     {
+        _ubuntuTouch = ubuntuTouch;
+        _textInputEnabled = textInputEnabled;
+        if (maliit != null)
+            _maliitTextInputMethod = new MaliitTextInputMethodImpl(this, maliit);
         CurrentSink = new Sink(this, false);
     }
 
     private void ApplyConfigureBatch(XdgConfigureBatch batch)
     {
-        _maxAutoSizeHint = batch.MaxSize;
+        _maxAutoSizeHint = batch.MaxSize / DesktopScaling;
 
         // Map xdg_toplevel states to Avalonia WindowState
         var newWindowState = WindowState.Normal;
@@ -71,6 +80,7 @@ internal partial class WindowImpl : WindowBaseImpl, IWindowImpl, IWaylandOptions
         var isActivated = (batch.States & XdgToplevelStates.Activated) != 0;
         var wasActivated = _isActivated;
         _isActivated = isActivated;
+        _maliitTextInputMethod?.SetWindowActive(isActivated && IsEnabled);
         if (isActivated && !wasActivated)
             Activated?.Invoke();
         else if (!isActivated && wasActivated)
@@ -81,8 +91,8 @@ internal partial class WindowImpl : WindowBaseImpl, IWindowImpl, IWaylandOptions
         if (batch.Size is { Width: > 0, Height: > 0 })
         {
             var newClientSize = new Size(
-                batch.Size.Width + _shadowExtents.Left + _shadowExtents.Right,
-                batch.Size.Height + _shadowExtents.Top + _shadowExtents.Bottom);
+                batch.Size.Width / DesktopScaling + _shadowExtents.Left + _shadowExtents.Right,
+                batch.Size.Height / DesktopScaling + _shadowExtents.Top + _shadowExtents.Bottom);
             if (newClientSize != ClientSize)
             {
                 ClientSize = newClientSize;
@@ -103,7 +113,10 @@ internal partial class WindowImpl : WindowBaseImpl, IWindowImpl, IWaylandOptions
     public override object? TryGetFeature(Type featureType)
     {
         if (featureType == typeof(ITextInputMethodImpl))
-            return _textInputMethod ??= new WaylandTextInputMethod(this);
+            return !_textInputEnabled ? null : (ITextInputMethodImpl?)_maliitTextInputMethod ??
+                (_textInputMethod ??= new WaylandTextInputMethod(this));
+        if (featureType == typeof(IInputPane))
+            return _maliitTextInputMethod;
         if (featureType == typeof(IStorageProvider))
             return _storageProvider ??= new FallbackStorageProvider(BuildStorageFactories());
         if (featureType == typeof(IWaylandOptionsToplevelImplFeature))
@@ -171,7 +184,7 @@ internal partial class WindowImpl : WindowBaseImpl, IWindowImpl, IWaylandOptions
 
     internal override WXdgShellSurfaceProxy? SurfaceProxy => _surfaceProxy;
 
-    public override IPopupImpl? CreatePopup() => new PopupImpl(Client, this);
+    public override IPopupImpl? CreatePopup() => _ubuntuTouch ? null : new PopupImpl(Client, this);
 
     // TODO: Query client decorations
     public override Size? FrameSize => null;
@@ -247,7 +260,11 @@ internal partial class WindowImpl : WindowBaseImpl, IWindowImpl, IWaylandOptions
         _surfaceProxy?.SetParent(parentProxy);
     }
 
-    public void SetEnabled(bool enable) => IsEnabled = enable;
+    public void SetEnabled(bool enable)
+    {
+        IsEnabled = enable;
+        _maliitTextInputMethod?.SetWindowActive(enable && _isActivated);
+    }
 
     public Action? GotInputWhenDisabled { get; set; }
 
@@ -367,6 +384,7 @@ internal partial class WindowImpl : WindowBaseImpl, IWindowImpl, IWaylandOptions
             // Size is just a number, the actual resizing is done by the compositor when submitting a frame
             ClientSize = clientSize;
             Resized?.Invoke(clientSize, reason);
+            UpdateMaliitGeometry();
         }
         finally
         {

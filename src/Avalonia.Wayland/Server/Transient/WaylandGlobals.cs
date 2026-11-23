@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Avalonia.Platform;
+using Avalonia.FreeDesktop.UbuntuTouch;
 using Avalonia.Wayland.Screens;
 using Avalonia.Wayland.Server.Interop;
 using Avalonia.Wayland.Server.Transient.Rendering;
@@ -51,6 +52,7 @@ class WaylandGlobals
     public ZxdgDecorationManagerV1? XdgDecorationManager { get; }
     public string? AppId { get; }
     public bool UsePartialPresentation { get; }
+    public double? UbuntuTouchScaling { get; }
 
     public bool HasFractionalScaling => FractionalScaleManager != null && Viewporter != null;
 
@@ -132,8 +134,10 @@ class WaylandGlobals
     {
         Connection = connection;
         Worker = worker;
-        AppId = platformOptions.AppId;
+        AppId = platformOptions.EffectiveAppId;
         UsePartialPresentation = platformOptions.UsePartialPresentation ?? false;
+        UbuntuTouchScaling = platformOptions.IsUbuntuTouch
+            ? UbuntuTouchPlatform.GetScale(Environment.GetEnvironmentVariable("GRID_UNIT_PX")) : null;
         InputDispatcher = new WaylandInputDispatcher(this);
         Outputs = new WaylandOutputsTracker(outputsSink);
         Registry = connection.Display.GetRegistry(new RegistryListener(this), connection.Queue);
@@ -141,7 +145,8 @@ class WaylandGlobals
         connection.Queue.Roundtrip();
         WlShm = BindRequired<WlShm>(1, 1, new ShmListener(this));
         WlCompositor = BindRequired<WlCompositor>(4, 6, null);
-        XdgWmBase = BindRequired<XdgWmBase>(3, 4, new XdgWmBaseListener());
+        // Ubuntu Touch uses overlay popups, so it does not need xdg_popup.reposition (v3).
+        XdgWmBase = BindRequired<XdgWmBase>(platformOptions.IsUbuntuTouch ? 1u : 3u, 4, new XdgWmBaseListener());
         CursorManager = new WaylandCursorManager(connection.Display, WlShm, WlCompositor);
         DataDeviceManager = Bind<WlDataDeviceManager>(3, 3, null);
         LinuxDmabuf = Bind<ZwpLinuxDmabufV1>(4, 4, null);
@@ -171,6 +176,9 @@ class WaylandGlobals
 
         // Collect events from bound globals
         connection.Queue.Roundtrip();
+        var initialOutputScale = Outputs.Outputs.Count > 0 ? Outputs.Outputs[0].Scale : 1;
+        worker.Client.InitialRenderScaling = UbuntuTouchScaling ?? initialOutputScale;
+        worker.Client.InitialDesktopScaling = worker.Client.InitialRenderScaling / initialOutputScale;
 
         // GPU swapchain selection. Default is WSI (wl_egl_window +
         // eglSwapBuffers) — required for NVIDIA and most resilient to driver

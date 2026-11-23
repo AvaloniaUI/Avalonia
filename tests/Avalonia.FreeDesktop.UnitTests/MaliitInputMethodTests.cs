@@ -129,6 +129,46 @@ public class MaliitInputMethodTests : ScopedTestBase
         Assert.Equal("", client.Text);
     }
 
+    [Fact]
+    public void Unknown_Window_Position_Reports_Visibility_Without_Fabricating_Geometry()
+    {
+        using var app = UnitTestApplication.Start(TestServices.MockThreadingInterface);
+        var session = new FakeSession();
+        using var method = new MaliitTextInputMethod(new(() => session), 0, hasGlobalCoordinates: false);
+        method.UpdateClientSize(new Size(408, 900));
+        method.SetWindowActive(true);
+        method.SetClient(new Client());
+        var state = Dispatch(session, new InputAreaChanged(new(0, 1800, 1224, 900)));
+        Assert.Equal(InputPaneState.Open, method.State);
+        Assert.Equal(default, method.OccludedRect);
+        Assert.False(state!.ToProperties().ContainsKey("winId"));
+        Assert.False(state.ToProperties().ContainsKey("cursorRectangle"));
+
+        method.UpdateWindowInfo(default(PixelPoint), 3);
+        Assert.Equal(new Rect(0, 600, 408, 300), method.OccludedRect);
+        method.UpdateWindowInfo(null, 3);
+        Assert.Equal(InputPaneState.Open, method.State);
+        Assert.Equal(default, method.OccludedRect);
+        Dispatch(session, new InputHidden());
+        Assert.Equal(InputPaneState.Closed, method.State);
+    }
+
+    [Fact]
+    public void Shared_Input_Method_Commits_Without_An_X11_Window()
+    {
+        using var app = UnitTestApplication.Start(TestServices.MockThreadingInterface);
+        var session = new FakeSession();
+        using var method = new MaliitTextInputMethod(new(() => session), 0, hasGlobalCoordinates: false);
+        var client = new Client();
+        method.SetWindowActive(true);
+        method.SetClient(client);
+        Dispatch(session, new PreeditText("hello", 0, 0, 5, 0));
+        method.SetWindowActive(false);
+        Assert.Equal("hello", client.Text);
+        Assert.Null(client.Preedit);
+        Assert.True(session.Disposed);
+    }
+
     private static MaliitWidgetState? Dispatch(FakeSession session, MaliitEvent input)
     {
         var pending = session.DispatchAsync!(input);

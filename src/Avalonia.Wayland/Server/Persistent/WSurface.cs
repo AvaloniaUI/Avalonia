@@ -37,6 +37,7 @@ class WSurface : IPersistentWaylandObject, IWSurface, IWaylandFramebufferSurface
     public bool HasFractionalScaling => FractionalScale != null && Viewport != null;
     public WlDisplay? CurrentDisplay => Connection?.Display;
     internal double CurrentScale => _currentScale;
+    internal double DesktopScaling => Globals?.UbuntuTouchScaling is { } scale ? scale / _currentScale : 1;
 
     public WSurface(WaylandWorker worker)
     {
@@ -107,7 +108,8 @@ class WSurface : IPersistentWaylandObject, IWSurface, IWaylandFramebufferSurface
 
     public virtual void AbortTextInputComposition() => TextInputV3?.AbortComposition(this);
 
-    public virtual void SetTextInputCursorRect(Rect rect) => TextInputV3?.SetCursorRect(this, rect);
+    public virtual void SetTextInputCursorRect(Rect rect) => TextInputV3?.SetCursorRect(this,
+        new Rect(rect.X * DesktopScaling, rect.Y * DesktopScaling, rect.Width * DesktopScaling, rect.Height * DesktopScaling));
 
     public virtual void SetTextInputOptions(TextInputOptions options) => TextInputV3?.SetOptions(this, options);
 
@@ -192,6 +194,7 @@ class WSurface : IPersistentWaylandObject, IWSurface, IWaylandFramebufferSurface
         // state, promoted by the next commit — which happens before the surface
         // can receive any input.
         ApplyInputRegion();
+        OnScaleChanged(_currentScale);
     }
 
     private IPlatformRenderSurface[]? _renderSurfaces;
@@ -291,12 +294,12 @@ class WSurface : IPersistentWaylandObject, IWSurface, IWaylandFramebufferSurface
     {
         if (HasFractionalScaling)
         {
-            var lw = Math.Max(1, (int)Math.Round(sceneInfo.LogicalSize.Width));
-            var lh = Math.Max(1, (int)Math.Round(sceneInfo.LogicalSize.Height));
+            var lw = Math.Max(1, (int)Math.Round(sceneInfo.LogicalSize.Width * DesktopScaling));
+            var lh = Math.Max(1, (int)Math.Round(sceneInfo.LogicalSize.Height * DesktopScaling));
             Viewport!.SetDestination(lw, lh);
         }
         else
-            WlSurface!.SetBufferScale(Math.Max(1, (int)Math.Ceiling(sceneInfo.Scaling)));
+            WlSurface!.SetBufferScale(Math.Max(1, (int)Math.Ceiling(sceneInfo.Scaling / DesktopScaling)));
 
         _frameCallback = WlSurface!.Frame(new FrameListener(this));
     }
@@ -457,7 +460,7 @@ class WXdgShellSurface : WSurface, IWXdgShellSurface
         _shadowExtents = extents;
     }
 
-    protected override void OnScaleChanged(double scale) => EventSink.OnScaleChanged(scale);
+    protected override void OnScaleChanged(double scale) => EventSink.OnScaleChanged(scale * DesktopScaling, DesktopScaling);
 
     protected override void OnOutputsChanged()
     {
@@ -534,7 +537,7 @@ class WXdgShellSurface : WSurface, IWXdgShellSurface
             _pendingAckSerial = null;
         }
 
-        MaybeEmitWindowGeometry(sceneInfo.Size, sceneInfo.Scaling, sceneInfo.LogicalSize);
+        MaybeEmitWindowGeometry(sceneInfo.Size, sceneInfo.Scaling / DesktopScaling, sceneInfo.LogicalSize * DesktopScaling);
 
         base.OnBeforeNewBufferAttached(sceneInfo);
 
@@ -579,6 +582,7 @@ class WXdgShellSurface : WSurface, IWXdgShellSurface
     {
         if (_shadowExtents is not { } shadowExtents)
             return;
+        shadowExtents *= DesktopScaling;
 
         // Compute surface-local geometry excluding shadows.
         // Geometry must be >= 1x1 and lie within the buffer's logical size (protocol requirement).
@@ -759,12 +763,12 @@ class WXdgTopLevel : WXdgShellSurface, IWXdgTopLevel
 
         // null => "no constraint" => send 0 (per xdg-shell spec).
         var (minW, minH) = _minSize is { } min
-            ? (Math.Max(1, (int)Math.Ceiling(min.Width)),
-               Math.Max(1, (int)Math.Ceiling(min.Height)))
+            ? (Math.Max(1, (int)Math.Ceiling(min.Width * DesktopScaling)),
+               Math.Max(1, (int)Math.Ceiling(min.Height * DesktopScaling)))
             : (0, 0);
         var (maxW, maxH) = _maxSize is { } max
-            ? (Math.Max(1, (int)Math.Floor(max.Width)),
-               Math.Max(1, (int)Math.Floor(max.Height)))
+            ? (Math.Max(1, (int)Math.Floor(max.Width * DesktopScaling)),
+               Math.Max(1, (int)Math.Floor(max.Height * DesktopScaling)))
             : (0, 0);
 
         // Spec: "Requesting a minimum size to be larger than the maximum

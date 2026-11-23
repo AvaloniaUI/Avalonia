@@ -12,7 +12,7 @@ internal readonly record struct InputArea(int X, int Y, int Width, int Height);
 
 /// <summary>Immutable focus state. Sensitive text is removed again at the transport boundary.</summary>
 internal sealed record MaliitWidgetState(TextInputOptions Options, string SurroundingText, int Cursor, int Anchor,
-    ulong WindowId, InputArea CursorRectangle, bool Sensitive = false)
+    ulong WindowId, InputArea CursorRectangle, bool Sensitive = false, bool HasGlobalCoordinates = true)
 {
     public bool IsSensitive => Sensitive || Options.IsSensitive || Options.ContentType is TextInputContentType.Password or TextInputContentType.Pin;
     public string SelectedText => IsSensitive ? "" : SurroundingText[Math.Clamp(Math.Min(Cursor, Anchor), 0, SurroundingText.Length)..Math.Clamp(Math.Max(Cursor, Anchor), 0, SurroundingText.Length)];
@@ -61,10 +61,12 @@ internal sealed record MaliitWidgetState(TextInputOptions Options, string Surrou
                 _ => input.ContentType == TextInputContentType.Search ? 5 : input.Multiline ? 1 : 0
             },
             ["hasSelection"] = !IsSensitive && Cursor != Anchor,
-            ["winId"] = WindowId,
-            ["cursorRectangle"] = new Struct<int, int, int, int>(CursorRectangle.X, CursorRectangle.Y, CursorRectangle.Width, CursorRectangle.Height),
             ["toolbarId"] = 0
         };
+        if (WindowId != 0)
+            properties["winId"] = WindowId;
+        if (HasGlobalCoordinates)
+            properties["cursorRectangle"] = new Struct<int, int, int, int>(CursorRectangle.X, CursorRectangle.Y, CursorRectangle.Width, CursorRectangle.Height);
         // Omit, rather than mask, surrounding text for passwords. Never expose secret length/offsets.
         if (!IsSensitive)
         {

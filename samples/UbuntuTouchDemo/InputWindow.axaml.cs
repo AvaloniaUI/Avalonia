@@ -40,9 +40,16 @@ public sealed partial class InputWindow : Window
         KeyboardStatus.Text = e.NewState == InputPaneState.Open ? "Keyboard open" : "Keyboard closed";
         Console.WriteLine($"InputPane {e.NewState}: {e.EndRect}");
         // Reserve only the measured overlap; a compositor-resized window has none.
-        FormScroll.Margin = new Thickness(0, 0, 0,
-            e.NewState == InputPaneState.Open && e.EndRect.Bottom >= ClientSize.Height - 1 ? e.EndRect.Height : 0);
-        Dispatcher.UIThread.Post(() => _lastField?.BringIntoView(), DispatcherPriority.Loaded);
+        var overlap = e.NewState == InputPaneState.Open && e.EndRect.Bottom >= ClientSize.Height - 1
+            ? e.EndRect.Height : 0;
+        FormScroll.Margin = Dialog.Margin = new Thickness(0, 0, 0, overlap);
+        Dispatcher.UIThread.Post(() =>
+        {
+            if (Dialog.IsVisible)
+                Dialog.BringInputIntoView();
+            else
+                _lastField?.BringIntoView();
+        }, DispatcherPriority.Loaded);
     }
 
     private void OnFieldGotFocus(object? sender, FocusChangedEventArgs e)
@@ -75,6 +82,17 @@ public sealed partial class InputWindow : Window
         }
     }
 
-    private async void OnDialogClick(object? sender, RoutedEventArgs e)
-        => await new InputDialog().ShowForOwnerAsync(this);
+    private void OnDialogClick(object? sender, RoutedEventArgs e)
+    {
+        FormScroll.IsVisible = false;
+        Dialog.IsVisible = true;
+        Dispatcher.UIThread.Post(Dialog.FocusInput, DispatcherPriority.Loaded);
+    }
+
+    private void OnDialogCloseRequested(object? sender, EventArgs e)
+    {
+        Dialog.IsVisible = false;
+        FormScroll.IsVisible = true;
+        Dispatcher.UIThread.Post(() => _lastField?.Focus(), DispatcherPriority.Loaded);
+    }
 }

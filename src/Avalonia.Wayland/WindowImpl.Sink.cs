@@ -76,6 +76,7 @@ partial class WindowImpl
 
         protected override void DisconnectFromSurface()
         {
+            Parent._maliitTextInputMethod?.SetWindowActive(false);
             var proxy = Parent._surfaceProxy;
             Parent._handle = null;
             Parent._surfaceProxy = null;
@@ -96,6 +97,7 @@ partial class WindowImpl
             }
 
             Parent.ApplyConfigureBatch(batch);
+            Parent.UpdateMaliitGeometry();
 
             // Post the ack serial back to the wayland thread for next commit
             _surfaceProxy?.SetPendingAckSerial(batch.Serial);
@@ -116,6 +118,22 @@ partial class WindowImpl
 
             if (Parent.Closing?.Invoke(WindowCloseReason.WindowClosing) != true)
                 Dispose();
+        }
+
+        public override void OnScaleChanged(double scale, double desktopScale)
+        {
+            base.OnScaleChanged(scale, desktopScale);
+            if (!IsDisposed)
+                Parent.UpdateMaliitGeometry();
+        }
+
+        public override void OnSurfaceOutputsChanged(System.Collections.Generic.IReadOnlyList<object> outputIds)
+        {
+            base.OnSurfaceOutputsChanged(outputIds);
+            if (IsDisposed)
+                return;
+            Parent.UpdateMaliitGeometry();
+            Parent._maliitTextInputMethod?.SetWindowActive(outputIds.Count > 0 && Parent._isActivated && Parent.IsEnabled);
         }
 
         protected override void OnInputWhileDisabled() => Parent.GotInputWhenDisabled?.Invoke();
