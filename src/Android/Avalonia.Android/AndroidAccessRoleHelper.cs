@@ -22,7 +22,6 @@ namespace Avalonia.Android
             { AutomationControlType.Slider, "android.widget.SeekBar" },
             { AutomationControlType.SplitButton, "android.widget.Button" },
             { AutomationControlType.Tab, "android.widget.TabWidget" },
-            { AutomationControlType.TabItem, "android.widget.TabWidget" },
             { AutomationControlType.Edit, "android.widget.EditText" },
             { AutomationControlType.Text, "android.widget.TextView" }
         };
@@ -31,11 +30,10 @@ namespace Avalonia.Android
         {
             if (peer is ControlAutomationPeer controlPeer)
             {
-                if (AutomationProperties.GetClassNameOverride(controlPeer.Owner) is string classNameOverride)
+                if (AutomationProperties.GetClassNameOverride(controlPeer.Owner) is { } classNameOverride)
                 {
                     return classNameOverride;
                 }
-                ;
 
                 var controlType = controlPeer.Owner.GetType();
                 var automationType = peer.GetAutomationControlType();
