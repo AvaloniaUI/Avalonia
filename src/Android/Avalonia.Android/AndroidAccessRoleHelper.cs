@@ -24,6 +24,7 @@ namespace Avalonia.Android
             { AutomationControlType.Tab, "android.widget.TabWidget" },
             { AutomationControlType.TabItem, "android.widget.TabWidget" },
             { AutomationControlType.Edit, "android.widget.EditText" },
+            { AutomationControlType.Text, "android.widget.TextView" }
         };
 
         internal static string? GetClassName(AutomationPeer peer)
@@ -43,12 +44,12 @@ namespace Avalonia.Android
                 return automationType switch
                 {
                     AutomationControlType.Button when controlType.IsAssignableTo(typeof(ToggleSwitch)) => "android.widget.Switch",
-                    AutomationControlType.Button when peer.GetProvider<IToggleProvider>() is not null => "android.widget.ToggleButton",
+                    AutomationControlType.Button or AutomationControlType.SplitButton when peer.GetProvider<IToggleProvider>() is not null => "android.widget.ToggleButton",
                     AutomationControlType.Spinner when controlType.IsAssignableTo(typeof(NumericUpDown)) => "android.widget.NumberPicker",
                     AutomationControlType.Custom when controlType.IsAssignableTo(typeof(DatePicker)) => "android.widget.DatePicker",
                     AutomationControlType.Button when controlType.IsAssignableTo(typeof(CalendarDatePicker)) => "android.widget.DatePicker",
                     AutomationControlType.Custom when controlType.IsAssignableTo(typeof(TimePicker)) => "android.widget.TimePicker",
-                    _ => role
+                    _ => role ?? peer.GetClassName()
                 };
             }
             return peer.GetClassName();
