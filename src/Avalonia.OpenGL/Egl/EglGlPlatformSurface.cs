@@ -72,6 +72,7 @@ namespace Avalonia.OpenGL.Egl
             {
                 // TODO: use expectedPixelSize
                 var handle = _info.Handle;
+
                 var size = _info.Size;
                 if (size != _currentSize
                     || _handle != handle
@@ -79,9 +80,13 @@ namespace Avalonia.OpenGL.Egl
                 {
                     _glSurface?.Dispose();
                     _glSurface = null;
-                    _glSurface = Context.Display.CreateWindowSurface(handle);
                     _currentSize = size;
                     _handle = handle;
+                    if (handle == IntPtr.Zero)
+                    {
+                        throw new RenderTargetNotReadyException();
+                    }
+                    _glSurface = Context.Display.CreateWindowSurface(handle);
                 }
                 return base.BeginDraw(_glSurface, size, _info.Scaling);
             }
