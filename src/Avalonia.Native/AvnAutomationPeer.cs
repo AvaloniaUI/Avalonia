@@ -189,7 +189,14 @@ namespace Avalonia.Native
 
         public int IsSelectionItemProvider() => IsProvider<ISelectionItemProvider>();
         public int SelectionItemProvider_IsSelected() => SelectionItemProvider.IsSelected.AsComBool();
-        public void SelectionItemProvider_Select() => SelectionItemProvider.Select();
+        public void SelectionItemProvider_Select()
+        {
+            SelectionItemProvider.Select();
+
+            // Only a press calls this, and a press on a combo box item also closes the drop-down.
+            if (_inner is ControlAutomationPeer { Owner: ComboBoxItem { Parent: ComboBox comboBox } })
+                comboBox.SetCurrentValue(ComboBox.IsDropDownOpenProperty, false);
+        }
         public void SelectionItemProvider_AddToSelection() => SelectionItemProvider.AddToSelection();
         public void SelectionItemProvider_RemoveFromSelection() => SelectionItemProvider.RemoveFromSelection();
 
