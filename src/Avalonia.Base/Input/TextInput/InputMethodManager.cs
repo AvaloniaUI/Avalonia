@@ -125,7 +125,11 @@ namespace Avalonia.Input.TextInput
                 InputMethod.RemoveTextInputMethodClientRequeryRequestedHandler(_visualRoot,
                     TextInputMethodClientRequeryRequested);
             
+            if (_focusedElement is AvaloniaObject oldTarget)
+                oldTarget.PropertyChanged -= OnInputOptionsChanged;
             _focusedElement = element;
+            if (_focusedElement is AvaloniaObject newTarget)
+                newTarget.PropertyChanged += OnInputOptionsChanged;
 
             _visualRoot = (element as Visual)?.VisualRoot as Interactive;
             if (_visualRoot != null)
@@ -143,6 +147,12 @@ namespace Avalonia.Input.TextInput
             
 
             TryFindAndApplyClient();
+        }
+
+        private void OnInputOptionsChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+        {
+            if (e.Property.OwnerType == typeof(TextInputOptions) && sender is StyledElement element)
+                _im?.SetOptions(TextInputOptions.FromStyledElement(element));
         }
 
         private void TextInputMethodClientRequeryRequested(object? sender, RoutedEventArgs e)

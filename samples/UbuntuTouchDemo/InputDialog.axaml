@@ -1,0 +1,17 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="UbuntuTouchDemo.InputDialog"
+        Title="Dialog" Width="340" SizeToContent="Height"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False" CanMinimize="False" CanMaximize="False" ShowInTaskbar="False">
+  <ScrollViewer>
+    <StackPanel Margin="16" Spacing="12">
+      <TextBlock Text="Dialog text" FontSize="20" />
+      <TextBox x:Name="InputField" MinHeight="48" PlaceholderText="Enter text" />
+      <Button Content="Close" MinHeight="48"
+              HorizontalAlignment="Stretch"
+              HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+              Click="OnCloseClick" />
+    </StackPanel>
+  </ScrollViewer>
+</Window>

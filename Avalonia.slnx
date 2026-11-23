@@ -91,6 +91,7 @@
     <Project Path="samples/Sandbox/Sandbox.csproj" />
     <Project Path="samples/SingleProjectSandbox/SingleProjectSandbox.csproj" />
     <Project Path="samples/TextTestApp/TextTestApp.csproj" />
+    <Project Path="samples/UbuntuTouchDemo/UbuntuTouchDemo.csproj" />
     <Project Path="samples/VirtualizationDemo/VirtualizationDemo.csproj" />
     <Project Path="samples/WinUIEmbedSample/WinUIEmbedSample.csproj">
       <Platform Project="x64" />
@@ -142,6 +143,7 @@
     <Project Path="tests/Avalonia.Base.UnitTests/Avalonia.Base.UnitTests.csproj" />
     <Project Path="tests/Avalonia.Benchmarks/Avalonia.Benchmarks.csproj" />
     <Project Path="tests/Avalonia.Controls.UnitTests/Avalonia.Controls.UnitTests.csproj" />
+    <Project Path="tests/Avalonia.FreeDesktop.UnitTests/Avalonia.FreeDesktop.UnitTests.csproj" />
     <Project Path="tests/Avalonia.DesignerSupport.TestApp/Avalonia.DesignerSupport.TestApp.csproj" />
     <Project Path="tests/Avalonia.DesignerSupport.Tests/Avalonia.DesignerSupport.Tests.csproj" />
     <Project Path="tests/Avalonia.Generators.Tests/Avalonia.Generators.Tests.csproj" />

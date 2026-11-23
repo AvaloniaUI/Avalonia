@@ -50,6 +50,11 @@ namespace Avalonia.Input.TextInput
         public abstract bool SupportsSurroundingText { get; }
 
         /// <summary>
+        /// Indicates that the editor contains sensitive data which must not be sent as surrounding text.
+        /// </summary>
+        public virtual bool IsSensitive => false;
+
+        /// <summary>
         /// Returns the text around the cursor, usually the current paragraph
         /// </summary>
         public abstract string SurroundingText { get; }
@@ -68,6 +73,18 @@ namespace Avalonia.Input.TextInput
         /// Sets the non-committed input string
         /// </summary>
         public virtual void SetPreeditText(string? preeditText) { }
+
+        /// <summary>
+        /// Commits text synchronously through the client's normal editing path.
+        /// </summary>
+        /// <param name="text">The committed text, or an empty string to delete a replacement range.</param>
+        /// <param name="replacementStart">Replacement offset relative to the start of the selection
+        /// in <see cref="SurroundingText"/>, after removing the selection.</param>
+        /// <param name="replacementLength">Number of UTF-16 code units to replace.</param>
+        /// <param name="cursorPosition">Cursor offset from the insertion point, or -1 for the end of the insertion.</param>
+        /// <returns>True if the client supports this operation, including when editing is disallowed.</returns>
+        public virtual bool CommitText(string text, int replacementStart, int replacementLength, int cursorPosition)
+            => false;
 
         /// <summary>
         /// Execute specific context menu actions

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Avalonia.FreeDesktop.DBusIme.Fcitx;
 using Avalonia.FreeDesktop.DBusIme.IBus;
+using Avalonia.FreeDesktop.DBusIme.Maliit;
 using Tmds.DBus.Protocol;
 
 namespace Avalonia.FreeDesktop.DBusIme
@@ -10,6 +11,7 @@ namespace Avalonia.FreeDesktop.DBusIme
     {
         private static readonly Dictionary<string, Func<DBusConnection, IX11InputMethodFactory>> KnownMethods = new()
             {
+                ["maliit"] = static _ => new MaliitInputMethodFactory(),
                 ["fcitx"] = static conn =>
                     new DBusInputMethodFactory<FcitxX11TextInputMethod>(_ => new FcitxX11TextInputMethod(conn)),
                 ["fcitx5"] = static conn =>
@@ -18,7 +20,7 @@ namespace Avalonia.FreeDesktop.DBusIme
                     new DBusInputMethodFactory<IBusX11TextInputMethod>(_ => new IBusX11TextInputMethod(conn))
             };
 
-        private static Func<DBusConnection, IX11InputMethodFactory>? DetectInputMethod()
+        private static Func<DBusConnection, IX11InputMethodFactory>? DetectInputMethod(bool ubuntuTouch)
         {
             foreach (var name in new[] { "AVALONIA_IM_MODULE", "GTK_IM_MODULE", "QT_IM_MODULE" })
             {
@@ -42,12 +44,12 @@ namespace Avalonia.FreeDesktop.DBusIme
                     return factory;
             }
 
-            return null;
+            return ubuntuTouch ? static _ => new MaliitInputMethodFactory() : null;
         }
 
-        public static bool DetectAndRegister()
+        public static bool DetectAndRegister(bool ubuntuTouch = false)
         {
-            var factory = DetectInputMethod();
+            var factory = DetectInputMethod(ubuntuTouch);
             if (factory is not null)
             {
                 var conn = DBusHelper.DefaultConnection;

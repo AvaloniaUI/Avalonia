@@ -8,6 +8,7 @@ using Avalonia.Controls.Platform;
 using Avalonia.FreeDesktop;
 using Avalonia.FreeDesktop.AtSpi;
 using Avalonia.FreeDesktop.DBusIme;
+using Avalonia.FreeDesktop.UbuntuTouch;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.OpenGL;
@@ -50,15 +51,18 @@ namespace Avalonia.X11
         public ManualRawEventGrouperDispatchQueue EventGrouperDispatchQueue { get; } = new();
         public IX11PlatformDispatcher DispatcherImpl { get; private set; } = null!;
 
+        internal bool IsUbuntuTouch { get; private set; }
+
         public void Initialize(X11PlatformOptions options)
         {
             Options = options;
+            IsUbuntuTouch = options.UseUbuntuTouch ?? UbuntuTouchPlatform.IsEnabled;
 
             bool useXim = false;
             if (EnableIme(options))
             {
                 // Attempt to configure DBus-based input method and check if we can fall back to XIM
-                if (!X11DBusImeHelper.DetectAndRegister() && ShouldUseXim())
+                if (!X11DBusImeHelper.DetectAndRegister(IsUbuntuTouch) && ShouldUseXim())
                     useXim = true;
             }
 
@@ -83,7 +87,9 @@ namespace Avalonia.X11
                ? new UiThreadRenderTimer(DefaultFps)
                : new SleepLoopRenderTimer(DefaultFps);
 
-            var clipboardImpl = new X11ClipboardImpl(this, Info.Atoms.CLIPBOARD);
+            IClipboardImpl clipboardImpl = IsUbuntuTouch
+                ? new ContentHubClipboard()
+                : new X11ClipboardImpl(this, Info.Atoms.CLIPBOARD);
             var clipboard = new Input.Platform.Clipboard(clipboardImpl);
             var primarySelection = new Input.Platform.Clipboard(new X11ClipboardImpl(this, Info.Atoms.PRIMARY));
             var clipboardManager = new PlatformClipboardManager(clipboard, primarySelection);
@@ -435,6 +441,12 @@ namespace Avalonia
         /// Embeds popups to the window when set to true. The default value is false.
         /// </summary>
         public bool OverlayPopups { get; set; }
+
+        /// <summary>
+        /// Enables Ubuntu Touch platform defaults (Maliit, Content Hub, Lomiri scaling and overlay popups).
+        /// Null detects the operating system; AVALONIA_UBUNTU_TOUCH=0 or 1 overrides detection.
+        /// </summary>
+        public bool? UseUbuntuTouch { get; set; }
 
         /// <summary>
         /// Enables global menu support on Linux desktop environments where it's supported (e. g. XFCE and MATE with plugin, KDE, etc).

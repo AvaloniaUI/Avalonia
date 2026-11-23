@@ -18,6 +18,36 @@ namespace Avalonia.Controls.UnitTests
     public class TextBoxTests_Input : ScopedTestBase
     {
         [Fact]
+        public void Touch_Press_Requests_Composition_Reset_Before_Moving_Caret()
+        {
+            using var app = UnitTestApplication.Start(Services);
+            var target = new TextBox { Template = CreateTemplate(), Text = "" };
+            var root = new TestRoot { Child = target };
+            target.ApplyTemplate();
+            root.LayoutManager.ExecuteInitialLayoutPass();
+            var query = new Avalonia.Input.TextInput.TextInputMethodClientRequestedEventArgs
+            { RoutedEvent = InputElement.TextInputMethodClientRequestedEvent };
+            target.RaiseEvent(query);
+            var client = query.Client!;
+            client.SetPreeditText("ciao", 4);
+            var reset = false;
+            client.ResetRequested += (_, _) =>
+            {
+                if (!reset)
+                {
+                    reset = true;
+                    client.CommitText("ciao", 0, 0, -1);
+                }
+            };
+            var touch = new TouchTestHelper();
+            touch.Down(target, new Point(0, 0));
+            touch.Up(target, new Point(0, 0));
+            Assert.True(reset);
+            Assert.Equal("ciao", target.Text);
+            Assert.Equal(0, target.CaretIndex);
+        }
+
+        [Fact]
         public void Touch_Tap_Moves_Caret()
         {
             using (UnitTestApplication.Start(Services))

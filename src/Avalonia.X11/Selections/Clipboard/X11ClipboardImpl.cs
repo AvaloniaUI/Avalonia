@@ -85,7 +85,13 @@ internal sealed class X11ClipboardImpl : SelectionDataProvider, IOwnedClipboardI
             XConvertSelection(Platform.Display, atoms.CLIPBOARD_MANAGER, atoms.SAVE_TARGETS,
                 atoms.AVALONIA_SAVE_TARGETS_PROPERTY_ATOM, _handle, 0);
 
-            await _storeAtomTcs.Task;
+            // Clipboard managers can disappear or never answer SAVE_TARGETS. Selection ownership
+            // already succeeded; persistence is best effort and must not leave Cut awaiting forever.
+            XFlush(Platform.Display);
+            var pending = _storeAtomTcs;
+            await Task.WhenAny(pending.Task, Task.Delay(TimeSpan.FromSeconds(2)));
+            if (_storeAtomTcs == pending)
+                _storeAtomTcs = null;
         }
     }
 

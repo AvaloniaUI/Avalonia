@@ -19,6 +19,7 @@ namespace Avalonia.FreeDesktop
         public KeyModifiers Modifiers { get; set; }
         public RawKeyEventType Type { get; set; }
         public bool WithText { get; set; }
+        public string? Text { get; set; }
     }
     
     internal interface IX11InputMethodControl : IDisposable
@@ -30,5 +31,16 @@ namespace Avalonia.FreeDesktop
         event Action<X11InputMethodForwardedKey> ForwardKey;
         
         void UpdateWindowInfo(PixelPoint position, double scaling);
+    }
+}
+
+namespace Avalonia.FreeDesktop
+{
+    // Peer callbacks require input to be applied before the D-Bus acknowledgement.
+    internal interface IX11SynchronousInputMethodControl { }
+
+    internal interface IX11InputMethodWithInputPane : Avalonia.Controls.Platform.IInputPane
+    {
+        void UpdateClientSize(Size size);
     }
 }

@@ -88,6 +88,27 @@ namespace Avalonia.Controls
 
         public override bool SupportsSurroundingText => true;
 
+        public override bool IsSensitive => _parent is { PasswordChar: not '\0' };
+
+        public override bool CommitText(string text, int replacementStart, int replacementLength, int cursorPosition)
+        {
+            if (replacementLength < 0)
+                throw new ArgumentOutOfRangeException(nameof(replacementLength));
+
+            if (_parent is not null)
+            {
+                using (BeginChange())
+                {
+                    SetPreeditText(null, null);
+                    _parent.ApplyInputMethodCommit(text, replacementStart, replacementLength, cursorPosition);
+                }
+            }
+
+            return true;
+        }
+
+        internal void Reset() => RequestReset();
+
         public void SetPresenter(TextPresenter? presenter, TextBox? parent)
         {
             if (_parent != null)
@@ -178,6 +199,9 @@ namespace Avalonia.Controls
 
         private void OnParentPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
+            if (e.Property == TextBox.PasswordCharProperty)
+                RaiseSurroundingTextChanged();
+
             if (e.Property == TextBox.TextProperty)
             {
                 RaiseSurroundingTextChanged();
