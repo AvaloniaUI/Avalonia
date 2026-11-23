@@ -169,7 +169,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
                         if (!int.TryParse(ancestorLevelText.Text, NumberStyles.Integer, CultureInfo.InvariantCulture, out var level) || level < 1)
                         {
-                            throw new XamlBindingsTransformException("AncestorLevel must be an integer greater than or equal to 1.", ancestorLevelText);
+                            throw new XamlBindingsTransformException($"Invalid AncestorLevel '{ancestorLevelText.Text}'. AncestorLevel must be an integer greater than or equal to 1.", ancestorLevelText);
                         }
 
                         ancestorLevel = level - 1;

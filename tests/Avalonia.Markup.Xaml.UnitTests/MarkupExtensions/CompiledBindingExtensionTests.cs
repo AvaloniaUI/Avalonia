@@ -1042,6 +1042,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         }
 
         [Theory]
+        [InlineData(1, "border2")]
         [InlineData(2, "border1")]
         public void ResolvesRelativeSourceBindingWithAncestorLevel(int ancestorLevel, string expected)
         {
