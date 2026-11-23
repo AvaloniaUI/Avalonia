@@ -11,6 +11,8 @@ using Avalonia.Automation.Provider;
 using Avalonia.Controls.Automation.Peers;
 using Java.Lang;
 
+using static Avalonia.Android.AndroidAccessRoleHelper;
+
 namespace Avalonia.Android
 {
     internal class AvaloniaAccessHelper : ExploreByTouchHelper
@@ -203,7 +205,7 @@ namespace Avalonia.Android
                 }
 
                 int virtualViewId;
-                if (peer.GetParent() is AutomationPeer parent && 
+                if (peer.GetParent() is AutomationPeer parent &&
                     !s_containerTypes.Contains(parent.GetAutomationControlType()))
                 {
                     GetOrCreateNodeInfoProvidersFromPeer(parent, out virtualViewId);
@@ -317,7 +319,7 @@ namespace Avalonia.Android
             }
 
             // UI debug metadata
-            nodeInfo.ClassName = peer.GetClassName();
+            nodeInfo.ClassName = GetClassName(peer);
             var automationId = peer.GetAutomationId();
             nodeInfo.UniqueId = automationId;
             nodeInfo.ViewIdResourceName = automationId;
