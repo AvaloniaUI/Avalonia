@@ -301,6 +301,13 @@ class WSurface : IPersistentWaylandObject, IWSurface, IWaylandFramebufferSurface
         _frameCallback = WlSurface!.Frame(new FrameListener(this));
     }
 
+    internal void OnBufferAttachAborted()
+    {
+        // A callback staged before a failed EGL swap will never be committed.
+        _frameCallback?.Dispose();
+        _frameCallback = null;
+    }
+
     class FrameListener(WSurface p) : WlCallback.Listener
     {
         protected override void Done(WlCallback eventSender, uint callbackData)

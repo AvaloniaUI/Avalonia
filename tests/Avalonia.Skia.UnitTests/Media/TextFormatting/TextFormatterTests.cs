@@ -1137,6 +1137,119 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         }
 
         [Fact]
+        public void Should_Wrap_At_Script_Boundary_Between_Runs()
+        {
+            using (Start())
+            {
+                var defaultRunProperties = new GenericTextRunProperties(Typeface.Default);
+                var paragraphProperties = new GenericTextParagraphProperties(defaultRunProperties, textWrapping: TextWrapping.Wrap);
+
+                // Han and Hiragana shape into separate runs, producing a wrap opportunity at the run boundary.
+                const string text = "漢字漢字ひらがな漢字漢字";
+                const int fittingLength = 8;
+
+                var textSource = new SingleBufferTextSource(text, defaultRunProperties);
+
+                var unwrapped = TextFormatter.Current.FormatLine(textSource, 0, double.PositiveInfinity, paragraphProperties);
+
+                Assert.NotNull(unwrapped);
+                Assert.True(unwrapped.TextRuns.Count > 2);
+
+                var paragraphWidth = unwrapped.GetDistanceFromCharacterHit(new CharacterHit(fittingLength)) + 1;
+
+                var textLine = TextFormatter.Current.FormatLine(textSource, 0, paragraphWidth, paragraphProperties);
+
+                Assert.NotNull(textLine);
+                Assert.Equal(fittingLength, textLine.Length);
+            }
+        }
+
+        [Fact]
+        public void Should_Wrap_At_Opportunity_Between_Text_Characters()
+        {
+            using (Start())
+            {
+                var defaultRunProperties = new GenericTextRunProperties(Typeface.Default);
+                var paragraphProperties = new GenericTextParagraphProperties(defaultRunProperties, textWrapping: TextWrapping.Wrap);
+
+                var textSource = new ListTextSource(
+                    new TextCharacters("漢字漢字", defaultRunProperties),
+                    new TextCharacters("漢字漢字", defaultRunProperties));
+
+                var unwrapped = TextFormatter.Current.FormatLine(textSource, 0, double.PositiveInfinity, paragraphProperties);
+
+                Assert.NotNull(unwrapped);
+
+                var paragraphWidth = unwrapped.GetDistanceFromCharacterHit(new CharacterHit(4)) + 1;
+
+                var textLine = TextFormatter.Current.FormatLine(textSource, 0, paragraphWidth, paragraphProperties);
+
+                Assert.NotNull(textLine);
+                Assert.Equal(4, textLine.Length);
+            }
+        }
+
+        [Fact]
+        public void Should_Not_Wrap_Inside_Word_Split_Across_Text_Characters()
+        {
+            using (Start())
+            {
+                var defaultRunProperties = new GenericTextRunProperties(Typeface.Default);
+                var paragraphProperties = new GenericTextParagraphProperties(defaultRunProperties, textWrapping: TextWrapping.Wrap);
+
+                var textSource = new ListTextSource(
+                    new TextCharacters("foo Hello", defaultRunProperties),
+                    new TextCharacters("World bar", defaultRunProperties));
+
+                var unwrapped = TextFormatter.Current.FormatLine(textSource, 0, double.PositiveInfinity, paragraphProperties);
+
+                Assert.NotNull(unwrapped);
+
+                var paragraphWidth = unwrapped.GetDistanceFromCharacterHit(new CharacterHit(12)) + 1;
+
+                var textLine = TextFormatter.Current.FormatLine(textSource, 0, paragraphWidth, paragraphProperties);
+
+                Assert.NotNull(textLine);
+                Assert.Equal("foo ".Length, textLine.Length);
+            }
+        }
+
+        [Theory]
+        [InlineData(new[] { "foo ", " bar" }, 3)]
+        [InlineData(new[] { "foo 1", ")", "$xyz bar" }, 6)]
+        [InlineData(new[] { "c ab", "-", "x yz" }, 5)]
+        [InlineData(new[] { "foo 1̃", ")", "$xyz bar" }, 7)]
+        [InlineData(new[] { "foo x", "“ ", "abc" }, 7)]
+        [InlineData(new[] { "a—", "b" }, 2)]
+        [InlineData(new[] { "x 1.", ")$z y" }, 5)]
+        [InlineData(new[] { "a— ", " —b c" }, 2)]
+        public void Should_Wrap_Text_Split_Across_Text_Characters_Like_Unsplit_Text(string[] parts, int fittingLength)
+        {
+            using (Start())
+            {
+                var defaultRunProperties = new GenericTextRunProperties(Typeface.Default);
+                var paragraphProperties = new GenericTextParagraphProperties(defaultRunProperties, textWrapping: TextWrapping.Wrap);
+
+                var text = string.Concat(parts);
+                var unsplitSource = new SingleBufferTextSource(text, defaultRunProperties);
+                var splitSource = new ListTextSource(parts.Select(part => new TextCharacters(part, defaultRunProperties)));
+
+                var unwrapped = TextFormatter.Current.FormatLine(unsplitSource, 0, double.PositiveInfinity, paragraphProperties);
+
+                Assert.NotNull(unwrapped);
+
+                var paragraphWidth = unwrapped.GetDistanceFromCharacterHit(new CharacterHit(fittingLength)) + 1;
+
+                var expected = TextFormatter.Current.FormatLine(unsplitSource, 0, paragraphWidth, paragraphProperties);
+                var actual = TextFormatter.Current.FormatLine(splitSource, 0, paragraphWidth, paragraphProperties);
+
+                Assert.NotNull(expected);
+                Assert.NotNull(actual);
+                Assert.Equal(expected.Length, actual.Length);
+            }
+        }
+
+        [Fact]
         public void Should_MatchCharacter_For_Spacing_CombiningMark()
         {
             using (Start())
@@ -1260,6 +1373,38 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 // The second half of each split is split again and never reaches the shaper. Only the
                 // runs on the line may still reference the shared glyph storage.
                 Assert.All(shapedBuffers, x => Assert.Equal(shapedBuffers.Count, x.GlyphStorageRefCount));
+            }
+        }
+
+        [Fact]
+        public void Script_Runs_Of_One_Font_Should_Each_Be_Shaped_With_Their_Own_Script()
+        {
+            using (Start())
+            {
+                // Noto Sans Tamil covers Latin too, so the whole line resolves to one typeface. The Tamil
+                // vowel sign O is split around its consonant only by the Tamil shaper.
+                const string tamil = "கொ";
+                var text = "Go " + tamil + " now";
+
+                var typeface = new Typeface("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#Noto Sans Tamil");
+                var defaultProperties = new GenericTextRunProperties(typeface);
+
+                using var textLine = new TextFormatterImpl().FormatLine(new SingleBufferTextSource(text, defaultProperties),
+                    0, double.PositiveInfinity, new GenericTextParagraphProperties(defaultProperties));
+
+                Assert.NotNull(textLine);
+
+                var lineGlyphs = string.Join(",", textLine.TextRuns.OfType<ShapedTextRun>()
+                    .SelectMany(x => x.ShapedBuffer)
+                    .Select(x => x.GlyphIndex));
+
+                using var tamilBuffer = TextShaper.Current.ShapeText(tamil.AsMemory(),
+                    new TextShaperOptions(typeface.GlyphTypeface, defaultProperties.FontRenderingEmSize));
+
+                var tamilGlyphs = string.Join(",", tamilBuffer.Select(x => x.GlyphIndex));
+
+                // Shaped on its own, the Tamil text gets the Tamil shaper. The line must hold the same glyphs.
+                Assert.Contains("," + tamilGlyphs + ",", "," + lineGlyphs + ",");
             }
         }
 
@@ -1432,7 +1577,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             public override int Length { get; }
         }
 
-        private class RecordingTextShaper : ITextShaperImpl
+        internal class RecordingTextShaper : ITextShaperImpl
         {
             private readonly ITextShaperImpl _inner;
 

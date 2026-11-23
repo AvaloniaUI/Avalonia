@@ -10,6 +10,7 @@ using Avalonia.FreeDesktop.AtSpi.DBusXml;
 using Avalonia.FreeDesktop.AtSpi.Handlers;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
+using Moq;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Automation
@@ -92,6 +93,17 @@ namespace Avalonia.Controls.UnitTests.Automation
 
             Assert.Equal((uint)AtSpiRole.Frame, await handler.GetRoleAsync());
             Assert.Equal("frame", await handler.GetRoleNameAsync());
+        }
+
+        [Fact]
+        public async Task Window_Exposes_X11_Window_Handle()
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+            var window = new Window();
+            Mock.Get(window.PlatformImpl!).Setup(x => x.Handle).Returns(new PlatformHandle(new IntPtr(42), "XID"));
+            await using var server = new AtSpiServer();
+
+            Assert.Equal("42", (await CreateHandler(window, server).GetAttributesAsync())["avalonia-window-handle"]);
         }
 
         [Fact]

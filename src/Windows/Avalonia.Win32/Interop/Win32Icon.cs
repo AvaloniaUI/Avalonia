@@ -2,7 +2,6 @@
 using System.Buffers;
 using System.ComponentModel;
 using System.IO;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
@@ -94,41 +93,31 @@ internal class Win32Icon : IDisposable
 
     static unsafe IntPtr AlphaToMask(Bitmap source)
     {
-        using var alphaMaskBuffer = AllocFramebuffer(source.PixelSize, PixelFormats.BlackWhite, AlphaFormat.Opaque);
-        var height = alphaMaskBuffer.Size.Height;
-        var width = alphaMaskBuffer.Size.Width;
+        var width = source.PixelSize.Width;
+        var height = source.PixelSize.Height;
 
-        if (!source.Format!.Value.HasAlpha)
+        // CreateBitmap expects WORD-aligned, MSB-first rows. A set bit marks a transparent pixel.
+        var maskStride = (width + 15) / 16 * 2;
+        var mask = new byte[maskStride * height];
+
+        using var argbBuffer = AllocFramebuffer(source.PixelSize, PixelFormat.Bgra8888, AlphaFormat.Unpremul);
+        source.CopyPixels(argbBuffer);
+        var pSource = (byte*)argbBuffer.Address;
+
+        for (var y = 0; y < height; ++y)
         {
-            Unsafe.InitBlock((void*)alphaMaskBuffer.Address, 0xff,
-                (uint)(alphaMaskBuffer.RowBytes * alphaMaskBuffer.Size.Height));
-        }
-        else
-        {
-            using var argbBuffer = AllocFramebuffer(source.PixelSize, PixelFormat.Bgra8888, AlphaFormat.Unpremul);
-            source.CopyPixels(argbBuffer);
-            var pSource = (byte*)argbBuffer.Address;
-            var pDest = (byte*)alphaMaskBuffer.Address;
-
-
-
-            for (var y = 0; y < height; ++y)
+            var row = y * maskStride;
+            for (var x = 0; x < width; ++x)
             {
-                for (var x = 0; x < width; ++x)
-                {
-                    if (pSource[x * 4] == 0)
-                    {
-                        pDest[x / 8] |= (byte)(1 << (x % 8));
-                    }
-                }
-
-                pSource += argbBuffer.RowBytes;
-                pDest += alphaMaskBuffer.RowBytes;
+                if (pSource[x * 4 + 3] == 0)
+                    mask[row + x / 8] |= (byte)(0x80 >> (x % 8));
             }
 
+            pSource += argbBuffer.RowBytes;
         }
 
-        return UnmanagedMethods.CreateBitmap(width, height, 1, 1, alphaMaskBuffer.Address);
+        fixed (byte* pMask = mask)
+            return UnmanagedMethods.CreateBitmap(width, height, 1, 1, (IntPtr)pMask);
     }
 
     static LockedFramebuffer AllocFramebuffer(PixelSize size, PixelFormat format, AlphaFormat alphaFormat)

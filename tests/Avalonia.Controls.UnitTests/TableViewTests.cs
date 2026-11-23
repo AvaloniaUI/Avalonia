@@ -725,6 +725,53 @@ public sealed class TableViewTests : ScopedTestBase
         Assert.False(column.CanUserEffectivelyResize);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Changing_Column_Limits_Recalculates_Headers_And_Realized_Cells(bool changeMinimum)
+    {
+        using var app = Start();
+        var target = CreateTarget(new[] { "Foo" });
+        var column = new TableViewColumn();
+        target.Columns.Add(column);
+        target.Columns.Add(new TableViewColumn());
+        Prepare(target, width: 300);
+
+        var headersPresenter = GetColumnHeadersPresenter(target);
+        var cellsPresenter = GetCellsPresenter((TableViewRow)target.GetRealizedContainers().Single());
+        var headers = headersPresenter.Children;
+        var cells = cellsPresenter.Children;
+        Assert.Equal(150, column.ActualWidth);
+
+        if (changeMinimum)
+            column.MinWidth = 200;
+        else
+            column.MaxWidth = 100;
+
+        Assert.True(double.IsNaN(column.ActualWidth));
+        Assert.False(headersPresenter.IsMeasureValid);
+        Assert.False(cellsPresenter.IsMeasureValid);
+        Layout(target);
+
+        var expected = changeMinimum ? 200 : 100;
+        Assert.Equal(expected, column.ActualWidth);
+        Assert.Equal(expected, headers[0].Bounds.Width);
+        Assert.Equal(expected, cells[0].Bounds.Width);
+        Assert.Equal(300 - expected, target.Columns[1].ActualWidth);
+        Assert.Equal(300 - expected, headers[1].Bounds.Width);
+        Assert.Equal(300 - expected, cells[1].Bounds.Width);
+
+        if (changeMinimum)
+            column.ClearValue(TableViewColumn.MinWidthProperty);
+        else
+            column.ClearValue(TableViewColumn.MaxWidthProperty);
+        Layout(target);
+
+        Assert.Equal(150, column.ActualWidth);
+        Assert.Equal(150, headers[0].Bounds.Width);
+        Assert.Equal(150, cells[0].Bounds.Width);
+    }
+
     private static IDisposable Start()
         => UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
 

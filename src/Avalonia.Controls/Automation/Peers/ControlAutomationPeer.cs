@@ -69,7 +69,11 @@ namespace Avalonia.Automation.Peers
             var newChildren = GetChildrenCore() ?? Array.Empty<AutomationPeer>();
 
             foreach (var peer in children.Except(newChildren))
-                peer.TrySetParent(null);
+            {
+                if (peer.GetParent() == this)
+                    peer.TrySetParent(null);
+            }
+
             foreach (var peer in newChildren)
                 peer.TrySetParent(this);
 
@@ -328,6 +332,8 @@ namespace Avalonia.Automation.Peers
             {
                 var parent = GetVisualParent();
 
+                _parentValid = true;
+
                 while (parent is object)
                 {
                     if (parent is Control c)
@@ -343,8 +349,6 @@ namespace Avalonia.Automation.Peers
 
                     parent = parent.GetVisualParent();
                 }
-
-                _parentValid = true;
             }
         }
     }

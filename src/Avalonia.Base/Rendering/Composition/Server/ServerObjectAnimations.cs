@@ -157,8 +157,7 @@ class ServerObjectAnimations
     public void EvaluateAnimations()
     {
         foreach (var animation in _animations)
-            if (animation.Value.IsDirty)
-                animation.Value.UpdateTargetProperty();
+            animation.Value.UpdateTargetProperty();
     }
 
     public void NotifyAnimationInstanceInvalidated(CompositionProperty property)
