@@ -265,36 +265,72 @@ namespace Avalonia.Controls.UnitTests.Automation
             return ControlAutomationPeer.CreatePeerForElement(control);
         }
 
-        public class CustomRoles : ScopedTestBase
+        /// <summary>
+        /// Tests <see cref="AndroidAccessRoleHelper.GetClassName"/>, which maps automation peers
+        /// to the Android widget class names TalkBack uses to announce roles.
+        /// </summary>
+        public class AndroidRoles : ScopedTestBase
         {
-            /// <summary>
-            /// A test to simulate custom role lookups currently used in our Android backend  
-            /// </summary>
-            [Theory()]
-            [InlineData("Button", "android.widget.Button")]
-            [InlineData("ToggleButton", "android.widget.ToggleButton")]
-            [InlineData("CheckBox", "android.widget.CheckBox")]
-            [InlineData("Calendar", "android.widget.DatePicker")]
-            [InlineData("TimePicker", "android.widget.TimePicker")]
-            public void Custom_Role_For_Peer_Is_Prioritized(string controlName, string customRole)
+            [Theory]
+            [InlineData(typeof(Button), "android.widget.Button")]
+            [InlineData(typeof(ToggleButton), "android.widget.ToggleButton")]
+            [InlineData(typeof(ToggleSwitch), "android.widget.Switch")]
+            [InlineData(typeof(ToggleSplitButton), "android.widget.ToggleButton")]
+            [InlineData(typeof(CheckBox), "android.widget.CheckBox")]
+            [InlineData(typeof(RadioButton), "android.widget.RadioButton")]
+            [InlineData(typeof(TextBox), "android.widget.EditText")]
+            [InlineData(typeof(MaskedTextBox), "android.widget.EditText")]
+            [InlineData(typeof(TextBlock), "android.widget.TextView")]
+            [InlineData(typeof(Label), "android.widget.TextView")]
+            [InlineData(typeof(NumericUpDown), "android.widget.NumberPicker")]
+            [InlineData(typeof(Calendar), "android.widget.DatePicker")]
+            [InlineData(typeof(CalendarDatePicker), "android.widget.DatePicker")]
+            [InlineData(typeof(DatePicker), "android.widget.DatePicker")]
+            [InlineData(typeof(TimePicker), "android.widget.TimePicker")]
+            public void GetClassName_Returns_Android_Widget_Class(Type controlType, string expectedRole)
             {
-                Control? control = controlName switch
-                {
-                    "ToggleButton" => new ToggleButton(),
-                    "CheckBox" => new CheckBox(),
-                    "Button" => new Button(),
-                    "Calendar" => new Calendar(),
-                    "TimePicker" => new TimePicker(),
-                    _ => null
-                };
-                Assert.NotNull(control);
+                var control = (Control)Activator.CreateInstance(controlType)!;
                 var peer = CreatePeer(control);
 
                 var role = AndroidAccessRoleHelper.GetClassName(peer);
 
-                Assert.NotNull(role);
+                Assert.Equal(expectedRole, role);
+            }
 
-                Assert.Equal(customRole, role);
+            [Theory]
+            [InlineData(typeof(Border), AutomationControlType.Button, "android.widget.Button")]
+            [InlineData(typeof(ToggleButton), AutomationControlType.RadioButton, "android.widget.RadioButton")]
+            public void ControlTypeOverride_Determines_Role(Type controlType, AutomationControlType controlTypeOverride, string expectedRole)
+            {
+                var control = (Control)Activator.CreateInstance(controlType)!;
+                AutomationProperties.SetControlTypeOverride(control, controlTypeOverride);
+                var peer = CreatePeer(control);
+
+                var role = AndroidAccessRoleHelper.GetClassName(peer);
+
+                Assert.Equal(expectedRole, role);
+            }
+
+            [Fact]
+            public void ClassNameOverride_Takes_Precedence_Over_Role()
+            {
+                var control = new Button();
+                AutomationProperties.SetClassNameOverride(control, "com.example.CustomButton");
+                var peer = CreatePeer(control);
+
+                var role = AndroidAccessRoleHelper.GetClassName(peer);
+
+                Assert.Equal("com.example.CustomButton", role);
+            }
+
+            [Fact]
+            public void Unmapped_Control_Type_Uses_Peer_Class_Name()
+            {
+                var peer = CreatePeer(new Border());
+
+                var role = AndroidAccessRoleHelper.GetClassName(peer);
+
+                Assert.Equal("Border", role);
             }
         }
     }
