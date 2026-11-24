@@ -1527,6 +1527,10 @@ namespace Avalonia.Win32.Interop
         public static extern IntPtr GetAncestor(IntPtr hwnd, GetAncestorFlags gaFlags);
         [DllImport("user32.dll")]
         public static extern bool ShowWindow(IntPtr hWnd, ShowWindowCommand nCmdShow);
+        [DllImport("user32.dll")]
+        public static extern void NotifyWinEvent(int eventId, IntPtr hwnd, int idObject, int idChild);
+
+        public const int EventObjectUIFragmentCreate = 0x6FFFFFFF;
 
         [DllImport("kernel32.dll", SetLastError = true)]
         public static extern IntPtr CreateTimerQueue();

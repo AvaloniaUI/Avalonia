@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Avalonia.Controls.Chrome;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Templates;
+using Avalonia.Input;
 using Avalonia.Markup.Xaml.Templates;
 using Avalonia.Media;
 using Avalonia.Platform;
@@ -76,6 +77,90 @@ namespace Avalonia.Controls.UnitTests
                 window.Show();
 
                 Assert.True(window.IsVisible);
+            }
+        }
+
+        [Fact]
+        public void Opening_Should_Focus_First_TabStop()
+        {
+            using (UnitTestApplication.Start(TestServices.FocusableWindow))
+            {
+                var first = new TextBox();
+                var second = new ListBox();
+                var window = new Window
+                {
+                    Content = new StackPanel
+                    {
+                        Children =
+                        {
+                            new TextBlock { Text = "Not focusable by Tab" },
+                            first,
+                            second,
+                        },
+                    },
+                };
+
+                window.Show();
+
+                Assert.Same(first, window.FocusManager.GetFocusedElement());
+            }
+        }
+
+        [Fact]
+        public void Opening_Should_Skip_Controls_That_Are_Not_TabStops()
+        {
+            using (UnitTestApplication.Start(TestServices.FocusableWindow))
+            {
+                var first = new TextBox();
+                var second = new Button { Content = "Second" };
+                KeyboardNavigation.SetIsTabStop(first, false);
+                var window = new Window
+                {
+                    Content = new StackPanel
+                    {
+                        Children = { first, second },
+                    },
+                };
+
+                window.Show();
+
+                Assert.Same(second, window.FocusManager.GetFocusedElement());
+            }
+        }
+
+        [Fact]
+        public void Opening_Should_Preserve_Focus_Set_By_Opened_Handler()
+        {
+            using (UnitTestApplication.Start(TestServices.FocusableWindow))
+            {
+                var first = new TextBox();
+                var second = new Button { Content = "Second" };
+                var window = new Window
+                {
+                    Content = new StackPanel
+                    {
+                        Children = { first, second },
+                    },
+                };
+                window.Opened += (_, _) => second.Focus();
+
+                window.Show();
+
+                Assert.Same(second, window.FocusManager.GetFocusedElement());
+            }
+        }
+
+        [Fact]
+        public void Opening_Should_Focus_ListBox_When_It_Has_Items()
+        {
+            using (UnitTestApplication.Start(TestServices.FocusableWindow))
+            {
+                var listBox = new ListBox { Items = { "First item" } };
+                var window = new Window { Content = listBox };
+
+                window.Show();
+
+                Assert.True(listBox.IsKeyboardFocusWithin);
             }
         }
 
