@@ -417,45 +417,36 @@ namespace Avalonia.Controls.Utils
         }
 
         /// <summary>
-        /// Validates that <see cref="StartU"/> is still valid.
+        /// Measures the realized elements and reports whether any stored size has changed.
         /// </summary>
         /// <param name="orientation">The panel orientation.</param>
         /// <param name="availableSize">The available size for measuring realized elements.</param>
-        /// <remarks>
-        /// A uniform resize of uniformly sized elements changes the estimate for the items
-        /// before the realized range. A local size change does not change the range's origin.
-        /// </remarks>
-        public void ValidateStartU(Orientation orientation, Size availableSize)
+        /// <returns>Whether any element with a known previous size has resized.</returns>
+        public bool MeasureElements(Orientation orientation, Size availableSize)
         {
-            if (_elements is null || _sizes is null || _startUUnstable)
-                return;
+            if (_elements is null || _sizes is null)
+                return false;
 
-            var count = 0;
-            var previousSize = double.NaN;
-            var currentSize = double.NaN;
+            var resized = false;
 
             for (var i = 0; i < _elements.Count; ++i)
             {
-                if (_elements[i] is not { } element || double.IsNaN(_sizes[i]))
+                if (_elements[i] is not { } element)
                     continue;
 
                 element.Measure(availableSize);
                 var sizeU = orientation == Orientation.Horizontal ?
                     element.DesiredSize.Width : element.DesiredSize.Height;
 
-                if (count > 0 && sizeU != currentSize)
-                    return;
-
-                previousSize = _sizes[i];
-                currentSize = sizeU;
-                ++count;
+                resized |= !double.IsNaN(_sizes[i]) && sizeU != _sizes[i];
             }
 
-            // A single resized element is not evidence that the unrealized items
-            // have also changed size (for example, expanding a viewport-sized row).
-            // Require at least two elements to treat a uniform resize as collection-wide.
-            if (count > 1 && previousSize != currentSize)
-                _startUUnstable = true;
+            return resized;
         }
+
+        /// <summary>
+        /// Marks the position of the first realized element as requiring a new estimate.
+        /// </summary>
+        public void InvalidateStartU() => _startUUnstable = true;
     }
 }

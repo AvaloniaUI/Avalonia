@@ -73,6 +73,11 @@ namespace Avalonia.Controls
         private double _lastEstimatedElementSizeU = 25;
         private RealizedStackElements? _measureElements;
         private RealizedStackElements? _realizedElements;
+        private readonly (int Index, double Size)[] _leadingElementSizes = { (0, double.NaN), (1, double.NaN) };
+        private Size? _lastMeasureSize;
+        private Orientation _lastMeasureOrientation;
+        private bool _realizedElementsFromEmptyViewport;
+        private bool _hasMeasuredViewport;
         private IScrollAnchorProvider? _scrollAnchorProvider;
         private Rect _viewport;
         private Dictionary<object, Stack<Control>>? _recyclePool;
@@ -203,7 +208,7 @@ namespace Avalonia.Controls
 
             try
             {
-                _realizedElements?.ValidateStartU(Orientation, availableSize);
+                ValidateStartU(availableSize);
                 _realizedElements ??= new();
                 _measureElements ??= new();
 
@@ -222,10 +227,23 @@ namespace Avalonia.Controls
                 // Do the measure, creating/recycling elements as necessary to fill the viewport. Don't
                 // write to _realizedElements yet, only _measureElements.
                 RealizeElements(items, availableSize, ref viewport);
+                _realizedElementsFromEmptyViewport = _lastMeasuredExtendedViewport.Width <= 0 ||
+                    _lastMeasuredExtendedViewport.Height <= 0;
+                _hasMeasuredViewport |= !_realizedElementsFromEmptyViewport;
 
                 // Now swap the measureElements and realizedElements collection.
                 (_measureElements, _realizedElements) = (_realizedElements, _measureElements);
                 _measureElements.ResetForReuse();
+
+                // Remember a bounded sample of the prefix, without retaining containers.
+                for (var i = 0; i < _leadingElementSizes.Length; ++i)
+                {
+                    var index = double.IsNaN(_leadingElementSizes[i].Size) ?
+                        _realizedElements.FirstIndex + i : _leadingElementSizes[i].Index;
+                    if (_realizedElements.GetElement(index) is { } element)
+                        _leadingElementSizes[i] = (index, orientation == Orientation.Horizontal ?
+                            element.DesiredSize.Width : element.DesiredSize.Height);
+                }
 
                 // If there is a focused element is outside the visible viewport (i.e.
                 // _focusedElement is non-null), ensure it's measured.
@@ -343,6 +361,18 @@ namespace Avalonia.Controls
 
         protected override void OnItemsChanged(IReadOnlyList<object?> items, NotifyCollectionChangedEventArgs e)
         {
+            var firstChangedIndex = e.Action switch
+            {
+                NotifyCollectionChangedAction.Add => e.NewStartingIndex,
+                NotifyCollectionChangedAction.Move => Math.Min(e.OldStartingIndex, e.NewStartingIndex),
+                NotifyCollectionChangedAction.Reset => -1,
+                _ => e.OldStartingIndex,
+            };
+            for (var i = 0; i < _leadingElementSizes.Length; ++i)
+            {
+                if (_leadingElementSizes[i].Index >= firstChangedIndex)
+                    _leadingElementSizes[i] = (-1, double.NaN);
+            }
             InvalidateMeasure();
 
             // Always update special elements
@@ -513,6 +543,11 @@ namespace Avalonia.Controls
         protected override void OnItemsControlChanged(ItemsControl? oldValue)
         {
             base.OnItemsControlChanged(oldValue);
+
+            Array.Fill(_leadingElementSizes, (-1, double.NaN));
+            _lastMeasureSize = null;
+            _realizedElementsFromEmptyViewport = false;
+            _hasMeasuredViewport = false;
 
             if (oldValue is not null)
                 oldValue.PropertyChanged -= OnItemsControlPropertyChanged;
@@ -803,9 +838,73 @@ namespace Avalonia.Controls
             return DesiredSize;
         }
 
+        private void ValidateStartU(Size availableSize)
+        {
+            var orientation = Orientation;
+            var constraintsChanged = _lastMeasureSize != availableSize;
+
+            if (_lastMeasureOrientation != orientation)
+            {
+                Array.Fill(_leadingElementSizes, (-1, double.NaN));
+                _realizedElements?.InvalidateStartU();
+            }
+
+            _lastMeasureSize = availableSize;
+            _lastMeasureOrientation = orientation;
+
+            if (_realizedElements is not { } realized)
+                return;
+
+            var resized = realized.MeasureElements(orientation, availableSize);
+
+            if ((!resized && !constraintsChanged) || realized.FirstIndex <= 0 || double.IsNaN(realized.StartU))
+                return;
+
+            // The visible sizes alone cannot distinguish a local edit from a collection-wide
+            // change, especially when only one item is visible. Remeasure previously measured
+            // prefix items before discarding the known origin. This also handles heterogeneous
+            // sizes and changes whose last visible item happens to keep its old size.
+            for (var i = 0; i < _leadingElementSizes.Length; ++i)
+            {
+                var (index, previousSize) = _leadingElementSizes[i];
+                if (double.IsNaN(previousSize) || index < 0 || index >= realized.FirstIndex || index >= Items.Count)
+                    continue;
+
+                var element = index == _focusedIndex ? _focusedElement :
+                    index == _scrollToIndex ? _scrollToElement : null;
+                var recycle = element is null;
+                _realizingIndex = index;
+
+                try
+                {
+                    element ??= GetOrCreateElement(Items, index);
+                    _realizingElement = element;
+                    element.Measure(availableSize);
+                    var size = orientation == Orientation.Horizontal ?
+                        element.DesiredSize.Width : element.DesiredSize.Height;
+
+                    if (size != previousSize)
+                        realized.InvalidateStartU();
+
+                    _leadingElementSizes[i] = (index, size);
+                }
+                finally
+                {
+                    _realizingIndex = -1;
+                    _realizingElement = null;
+
+                    if (recycle && element is not null)
+                        RecycleElement(element, index);
+                }
+            }
+        }
+
         private double EstimateElementSizeU()
         {
-            if (_realizedElements is null)
+            // An empty viewport can temporarily realize just the first item while the
+            // ScrollViewer coerces its offset after an extent reduction. That item is
+            // not a representative sample (for example, after hiding alternate rows).
+            if (_realizedElements is null || (_realizedElementsFromEmptyViewport && _hasMeasuredViewport))
                 return _lastEstimatedElementSizeU;
 
             var orientation = Orientation;
