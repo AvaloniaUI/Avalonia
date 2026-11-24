@@ -202,15 +202,10 @@ namespace Avalonia.Controls
             // having brought the complex content up to date.
             EnsureTextRuns();
 
-            // A block whose measure is invalid at render time is one layout cannot reach, such as
-            // one under a hidden ancestor. Measuring its embedded controls here would apply their
-            // templates inside the render pass, which must not attach visuals. The pending measure
-            // pass measures them once the block becomes reachable.
-            if (IsMeasureValid)
-            {
-                MeasureEmbeddedControls(GetMaxSizeFromConstraint());
-            }
-
+            // The embedded controls are measured by MeasureOverride and ArrangeOverride only. A
+            // control measured for the first time applies its template, and a layout built from the
+            // render pass must not attach visuals; it uses the sizes the controls already have, and
+            // the pending layout pass brings them up to date.
             return CreateTextLayout(Text);
         }
 
@@ -887,6 +882,10 @@ namespace Avalonia.Controls
             // Dispose the TextLayout but preserve the TextRunCache so shaped runs are reused.
             DisposeTextLayout();
             _constraint = availableSize;
+
+            // The arranged width can differ from the measured one, and the lines wrap around the
+            // embedded controls at the size they have for this width.
+            MeasureEmbeddedControls(availableSize);
 
             //This implicitly recreated the TextLayout with a new constraint.
             var textLayout = TextLayout;
