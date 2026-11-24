@@ -1,9 +1,12 @@
-﻿using System.Text;
+﻿using System.Linq;
+using System.Text;
 using Avalonia.Controls.Documents;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Media.TextFormatting;
+using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Xunit;
@@ -1307,6 +1310,105 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.NotEmpty(child.GetVisualChildren());
         }
+
+        [Fact]
+        public void Inline_Should_Keep_Its_Style_When_Another_Style_Is_Added_At_Runtime()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = new Window { Styles = { CodeRunStyle() } };
+                var run = CodeRun();
+                var target = new TextBlock { Inlines = new InlineCollection { run } };
+
+                window.Content = target;
+                window.Show();
+
+                window.Styles.Add(new Style(x => x.OfType<Border>())
+                {
+                    Setters = { new Setter(Visual.OpacityProperty, 0.5) }
+                });
+                window.UpdateLayout();
+
+                Assert.Equal(Brushes.Red, run.Background);
+                Assert.Equal(Brushes.Red, LaidOutBackground(target));
+            }
+        }
+
+        [Fact]
+        public void Nested_Inline_Should_Keep_Its_Style_When_Another_Style_Is_Added_At_Runtime()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = new Window { Styles = { CodeRunStyle() } };
+                var run = CodeRun();
+                var target = new TextBlock { Inlines = new InlineCollection { new Span { Inlines = { run } } } };
+
+                window.Content = target;
+                window.Show();
+
+                window.Styles.Add(new Style(x => x.OfType<Border>())
+                {
+                    Setters = { new Setter(Visual.OpacityProperty, 0.5) }
+                });
+                window.UpdateLayout();
+
+                Assert.Equal(Brushes.Red, run.Background);
+                Assert.Equal(Brushes.Red, LaidOutBackground(target));
+            }
+        }
+
+        [Fact]
+        public void Nested_Inline_Should_Apply_A_Style_Added_At_Runtime()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = new Window();
+                var run = CodeRun();
+                var target = new TextBlock { Inlines = new InlineCollection { new Span { Inlines = { run } } } };
+
+                window.Content = target;
+                window.Show();
+
+                Assert.Null(LaidOutBackground(target));
+
+                window.Styles.Add(CodeRunStyle());
+                window.UpdateLayout();
+
+                Assert.Equal(Brushes.Red, run.Background);
+                Assert.Equal(Brushes.Red, LaidOutBackground(target));
+            }
+        }
+
+        [Fact]
+        public void Inline_Should_Apply_Styles_When_Its_Block_Is_Measured_Before_It_Is_Attached()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = new Window { Styles = { CodeRunStyle() } };
+                var run = CodeRun();
+                var target = new TextBlock { Inlines = new InlineCollection { run } };
+
+                target.Measure(Size.Infinity);
+
+                window.Content = target;
+                window.Show();
+
+                Assert.Equal(Brushes.Red, run.Background);
+                Assert.Equal(Brushes.Red, LaidOutBackground(target));
+            }
+        }
+
+        private static Style CodeRunStyle() => new Style(x => x.OfType<Run>().Class("code"))
+        {
+            Setters = { new Setter(TextElement.BackgroundProperty, Brushes.Red) }
+        };
+
+        private static Run CodeRun() => new Run("code") { Classes = { "code" } };
+
+        private static IBrush? LaidOutBackground(TextBlock textBlock) => textBlock.TextLayout.TextLines
+            .SelectMany(x => x.TextRuns)
+            .Select(x => x.Properties?.BackgroundBrush)
+            .FirstOrDefault(x => x is not null);
 
         private static Button CreateTemplatedChild() => new Button
         {
