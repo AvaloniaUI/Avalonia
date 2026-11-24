@@ -148,6 +148,8 @@ namespace Avalonia
         private Visual? _visualParent;
         private bool _hasMirrorTransform;
         private TargetWeakEventSubscriber<Visual, EventArgs>? _affectsRenderWeakSubscriber;
+        private TargetWeakEventSubscriber<Visual, EventArgs>? _affectsCompositionPropertiesWeakSubscriber;
+        private VisualDirtyFlags _affectsCompositionPropertiesWeakSubscriberFlags;
         private RenderOptions _renderOptions;
         private TextOptions _textOptions;
 
@@ -156,18 +158,18 @@ namespace Avalonia
         /// </summary>
         static Visual()
         {
-            AffectsRender<Visual>(
-                BoundsProperty,
-                ClipProperty,
-                ClipToBoundsProperty,
-                IsVisibleProperty,
-                OpacityProperty,
-                OpacityMaskProperty,
-                EffectProperty,
-                BackdropEffectProperty,
-                BackdropEffectBoundsSourceProperty,
-                BackdropEffectCacheProperty,
-                HasMirrorTransformProperty);
+            AffectsCompositionProperties(VisualDirtyFlags.Clip, ClipProperty);
+            AffectsCompositionProperties(VisualDirtyFlags.ClipToBounds, ClipToBoundsProperty);
+            AffectsCompositionProperties(VisualDirtyFlags.Visible, IsVisibleProperty);
+            AffectsCompositionProperties(VisualDirtyFlags.Opacity, OpacityProperty);
+            AffectsCompositionProperties(VisualDirtyFlags.OpacityMask, OpacityMaskProperty);
+            AffectsCompositionProperties(VisualDirtyFlags.Effect, EffectProperty);
+            AffectsCompositionProperties(VisualDirtyFlags.BackdropEffect,
+                BackdropEffectProperty, BackdropEffectBoundsSourceProperty, BackdropEffectCacheProperty);
+            AffectsCompositionProperties(VisualDirtyFlags.CacheMode, CacheModeProperty);
+            AffectsCompositionProperties(VisualDirtyFlags.Transform,
+                HasMirrorTransformProperty, RenderTransformOriginProperty);
+            BoundsProperty.Changed.Subscribe(BoundsChanged);
             RenderTransformProperty.Changed.Subscribe(RenderTransformChanged);
             ZIndexProperty.Changed.Subscribe(ZIndexChanged);
         }
@@ -402,7 +404,7 @@ namespace Avalonia
             set
             {
                 _renderOptions = value;
-                InvalidateVisual();
+                Invalidate(VisualDirtyFlags.RenderOptions);
             }
         }
 
@@ -412,7 +414,7 @@ namespace Avalonia
             set
             {
                 _textOptions = value;
-                InvalidateVisual();
+                Invalidate(VisualDirtyFlags.TextOptions);
             }
         }
 
@@ -464,7 +466,15 @@ namespace Avalonia
         /// </summary>
         public void InvalidateVisual()
         {
-            PresentationSource?.Renderer.AddDirty(this);
+            Invalidate(VisualDirtyFlags.Content | VisualDirtyFlags.Children);
+        }
+
+        /// <summary>
+        /// Queues the given parts of the visual to be sent to the compositor in the next update.
+        /// </summary>
+        internal void Invalidate(VisualDirtyFlags flags)
+        {
+            PresentationSource?.Renderer.AddDirty(this, flags);
         }
 
         /// <summary>
@@ -492,44 +502,60 @@ namespace Avalonia
         /// </remarks>
         protected static void AffectsRender<T>(params AvaloniaProperty[] properties)
             where T : Visual
+            => SubscribeInvalidation<T>(properties, VisualDirtyFlags.None);
+
+        // For the properties that SynchronizeCompositionProperties copies: a change does not need the content to
+        // be rendered again.
+        private static void AffectsCompositionProperties(VisualDirtyFlags flags, params AvaloniaProperty[] properties)
+            => SubscribeInvalidation<Visual>(properties, flags);
+
+        // VisualDirtyFlags.None means a call to InvalidateVisual.
+        private static void SubscribeInvalidation<T>(AvaloniaProperty[] properties, VisualDirtyFlags flags)
+            where T : Visual
         {
+            var compositionPropertiesOnly = flags != VisualDirtyFlags.None;
             var invalidateObserver = new AnonymousObserver<AvaloniaPropertyChangedEventArgs>(
-                static e =>
+                e =>
                 {
                     if (e.Sender is T sender)
                     {
-                        sender.InvalidateVisual();
+                        sender.InvalidateFor(flags);
                     }
                 });
 
 
             var invalidateAndSubscribeObserver = new AnonymousObserver<AvaloniaPropertyChangedEventArgs>(
-                static e =>
+                e =>
                 {
                     if (e.Sender is T sender)
                     {
+                        ref var subscriber = ref compositionPropertiesOnly
+                            ? ref sender._affectsCompositionPropertiesWeakSubscriber
+                            : ref sender._affectsRenderWeakSubscriber;
+
                         if (e.OldValue is IAffectsRender oldValue)
                         {
-                            if (sender._affectsRenderWeakSubscriber != null)
+                            if (subscriber != null)
                             {
-                                InvalidatedWeakEvent.Unsubscribe(oldValue, sender._affectsRenderWeakSubscriber);
+                                InvalidatedWeakEvent.Unsubscribe(oldValue, subscriber);
                             }
                         }
 
                         if (e.NewValue is IAffectsRender newValue)
                         {
-                            if (sender._affectsRenderWeakSubscriber == null)
-                            {
-                                sender._affectsRenderWeakSubscriber = new TargetWeakEventSubscriber<Visual, EventArgs>(
+                            // One subscriber serves all the values, so it invalidates the parts of all of them.
+                            if (compositionPropertiesOnly)
+                                sender._affectsCompositionPropertiesWeakSubscriberFlags |= flags;
+                            subscriber ??= compositionPropertiesOnly
+                                ? new TargetWeakEventSubscriber<Visual, EventArgs>(
                                     sender, static (target, _, _, _) =>
-                                    {
-                                        target.InvalidateVisual();
-                                    });
-                            }
-                            InvalidatedWeakEvent.Subscribe(newValue, sender._affectsRenderWeakSubscriber);
+                                        target.Invalidate(target._affectsCompositionPropertiesWeakSubscriberFlags))
+                                : new TargetWeakEventSubscriber<Visual, EventArgs>(
+                                    sender, static (target, _, _, _) => target.InvalidateVisual());
+                            InvalidatedWeakEvent.Subscribe(newValue, subscriber);
                         }
 
-                        sender.InvalidateVisual();
+                        sender.InvalidateFor(flags);
                     }
                 });
 
@@ -544,6 +570,14 @@ namespace Avalonia
                     property.Changed.Subscribe(invalidateObserver);
                 }
             }
+        }
+
+        private void InvalidateFor(VisualDirtyFlags flags)
+        {
+            if (flags == VisualDirtyFlags.None)
+                InvalidateVisual();
+            else
+                Invalidate(flags);
         }
 
         /// <inheritdoc/>
@@ -598,7 +632,7 @@ namespace Avalonia
             UpdateIsEffectivelyVisible(_visualParent?.IsEffectivelyVisible ?? true);
             OnAttachedToVisualTree(e);
             AttachedToVisualTree?.Invoke(this, e);
-            InvalidateVisual();
+            Invalidate(VisualDirtyFlags.All);
 
             if (_visualParent != null)
             {
@@ -641,7 +675,7 @@ namespace Avalonia
             DetachFromCompositor();
 
             DetachedFromVisualTree?.Invoke(this, e);
-            PresentationSource?.Renderer.AddDirty(this);
+            Invalidate(VisualDirtyFlags.All);
             
             PresentationSource = null;
 
@@ -704,7 +738,7 @@ namespace Avalonia
                     newTransform.Changed += sender.RenderTransformChanged;
                 }
 
-                sender.InvalidateVisual();
+                sender.Invalidate(VisualDirtyFlags.Transform);
             }
         }
 
@@ -725,6 +759,23 @@ namespace Avalonia
                     $"The control {item.DebugDisplay} already has a visual parent {parent.GetDebugDisplay(false)} " +
                     $"while trying to add it as a child of {GetDebugDisplay(false)}.");
             }
+        }
+
+        // As in WPF, only a size change renders the content again. The content must not depend on the position.
+        private static void BoundsChanged(AvaloniaPropertyChangedEventArgs<Rect> e)
+        {
+            if (e.Sender is not Visual sender)
+                return;
+            var (oldValue, newValue) = e.GetOldAndNewValue<Rect>();
+            var flags = VisualDirtyFlags.None;
+            if (oldValue.Position != newValue.Position)
+                flags |= VisualDirtyFlags.Offset;
+            // The transform origin and the mirror transform use the size.
+            if (oldValue.Size != newValue.Size)
+                flags |= VisualDirtyFlags.Size | VisualDirtyFlags.Transform | VisualDirtyFlags.Content
+                         | VisualDirtyFlags.Children;
+            if (flags != VisualDirtyFlags.None)
+                sender.Invalidate(flags);
         }
 
         /// <summary>
@@ -750,7 +801,7 @@ namespace Avalonia
         /// <param name="e">The event args.</param>
         private void RenderTransformChanged(object? sender, EventArgs e)
         {
-            InvalidateVisual();
+            Invalidate(VisualDirtyFlags.Transform);
         }
 
         /// <summary>

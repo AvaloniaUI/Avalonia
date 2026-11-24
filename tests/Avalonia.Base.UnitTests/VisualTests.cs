@@ -5,6 +5,7 @@ using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Media;
 using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Moq;
@@ -250,7 +251,7 @@ namespace Avalonia.Base.UnitTests
 
             root.Child = child;
 
-            renderer.Verify(x => x.AddDirty(child));
+            renderer.Verify(x => x.AddDirty(child, It.IsAny<VisualDirtyFlags>()));
         }
 
         [Fact]
@@ -267,7 +268,7 @@ namespace Avalonia.Base.UnitTests
             renderer.Invocations.Clear();
             root.Child = null;
 
-            renderer.Verify(x => x.AddDirty(child));
+            renderer.Verify(x => x.AddDirty(child, It.IsAny<VisualDirtyFlags>()));
         }
 
         [Fact]
@@ -365,7 +366,7 @@ namespace Avalonia.Base.UnitTests
             root.Renderer = renderer.Object;
             canvas1.ZIndex = 10;
 
-            renderer.Verify(x => x.AddDirty(canvas1));
+            renderer.Verify(x => x.AddDirty(canvas1, It.IsAny<VisualDirtyFlags>()));
         }
 
         [Fact]

@@ -28,10 +28,11 @@ namespace Avalonia.Rendering
         event EventHandler<SceneInvalidatedEventArgs>? SceneInvalidated;
 
         /// <summary>
-        /// Mark a visual as dirty and needing re-rendering.
+        /// Mark parts of a visual as dirty, to be sent to the compositor in the next update.
         /// </summary>
         /// <param name="visual">The visual.</param>
-        void AddDirty(Visual visual);
+        /// <param name="flags">The dirty parts.</param>
+        void AddDirty(Visual visual, VisualDirtyFlags flags);
         
         /// <summary>
         /// Informs the renderer that the z-ordering of a visual's children has changed.

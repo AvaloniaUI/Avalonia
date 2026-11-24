@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
 
 namespace Avalonia.UnitTests;
 
@@ -23,7 +24,7 @@ internal sealed class NullRenderer : IRenderer
     {
     }
 
-    public void AddDirty(Visual visual)
+    public void AddDirty(Visual visual, VisualDirtyFlags flags)
     {
     }
 

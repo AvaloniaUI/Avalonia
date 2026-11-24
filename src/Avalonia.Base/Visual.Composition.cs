@@ -11,6 +11,10 @@ public partial class Visual
 {
     internal CompositionDrawListVisual? CompositionVisual { get; private set; }
     internal CompositionVisual? ChildCompositionVisual { get; set; }
+
+    // The parts that the renderer must send to the compositor. Not None only while the visual is in the dirty set
+    // of the renderer, which also writes it.
+    internal VisualDirtyFlags CompositionDirtyFlags { get; set; }
     
     
     private protected virtual CompositionDrawListVisual CreateCompositionVisual(Compositor compositor)
@@ -131,50 +135,66 @@ public partial class Visual
         if(CompositionVisual == null)
             return;
         var comp = CompositionVisual;
-        
-        // TODO: Introduce a dirty mask like WPF has, so we don't overwrite properties every time
-        
-        comp.Offset = new (Bounds.Left, Bounds.Top, 0);
-        comp.Size = new (Bounds.Width, Bounds.Height);
-        comp.Visible = IsVisible;
-        comp.Opacity = (float)Opacity;
-        comp.ClipToBounds = ClipToBounds;
-        comp.Clip = Clip?.PlatformImpl;
-        
-        if (!Equals(comp.OpacityMask, OpacityMask))
+        var flags = CompositionDirtyFlags;
+
+        if ((flags & VisualDirtyFlags.Offset) != 0)
+            comp.Offset = new (Bounds.Left, Bounds.Top, 0);
+        if ((flags & VisualDirtyFlags.Size) != 0)
+            comp.Size = new (Bounds.Width, Bounds.Height);
+        if ((flags & VisualDirtyFlags.Visible) != 0)
+            comp.Visible = IsVisible;
+        if ((flags & VisualDirtyFlags.Opacity) != 0)
+            comp.Opacity = (float)Opacity;
+        if ((flags & VisualDirtyFlags.ClipToBounds) != 0)
+            comp.ClipToBounds = ClipToBounds;
+        if ((flags & VisualDirtyFlags.Clip) != 0)
+            comp.Clip = Clip?.PlatformImpl;
+
+        if ((flags & VisualDirtyFlags.OpacityMask) != 0 && !Equals(comp.OpacityMask, OpacityMask))
             comp.OpacityMask = OpacityMask;
 
-        var cacheMode = CacheMode?.GetForCompositor(comp.Compositor);
-        if (!ReferenceEquals(comp.CacheMode, cacheMode))
-            comp.CacheMode = cacheMode;
-        
-        if (!comp.Effect.EffectEquals(Effect))
-            comp.Effect = Effect?.ToImmutable();
-
-        if (!comp.BackdropEffect.EffectEquals(BackdropEffect))
-            comp.BackdropEffect = BackdropEffect?.ToImmutable();
-
-        comp.BackdropEffectBoundsSource = BackdropEffectBoundsSource;
-
-        var backdropEffectCache = BackdropEffectCache?.GetForCompositor(comp.Compositor);
-        if (!ReferenceEquals(comp.BackdropEffectCache, backdropEffectCache))
-            comp.BackdropEffectCache = backdropEffectCache;
-
-        comp.RenderOptions = RenderOptions;
-        comp.TextOptions = TextOptions;
-
-        var renderTransform = Matrix.Identity;
-
-        if (HasMirrorTransform) 
-            renderTransform = new Matrix(-1.0, 0.0, 0.0, 1.0, Bounds.Width, 0);
-
-        if (RenderTransform != null)
+        if ((flags & VisualDirtyFlags.CacheMode) != 0)
         {
-            var origin = RenderTransformOrigin.ToPixels(new Size(Bounds.Width, Bounds.Height));
-            var offset = Matrix.CreateTranslation(origin);
-            renderTransform *= (-offset) * RenderTransform.Value * (offset);
+            var cacheMode = CacheMode?.GetForCompositor(comp.Compositor);
+            if (!ReferenceEquals(comp.CacheMode, cacheMode))
+                comp.CacheMode = cacheMode;
         }
 
-        comp.TransformMatrix = renderTransform;
+        if ((flags & VisualDirtyFlags.Effect) != 0 && !comp.Effect.EffectEquals(Effect))
+            comp.Effect = Effect?.ToImmutable();
+
+        if ((flags & VisualDirtyFlags.BackdropEffect) != 0)
+        {
+            if (!comp.BackdropEffect.EffectEquals(BackdropEffect))
+                comp.BackdropEffect = BackdropEffect?.ToImmutable();
+
+            comp.BackdropEffectBoundsSource = BackdropEffectBoundsSource;
+
+            var backdropEffectCache = BackdropEffectCache?.GetForCompositor(comp.Compositor);
+            if (!ReferenceEquals(comp.BackdropEffectCache, backdropEffectCache))
+                comp.BackdropEffectCache = backdropEffectCache;
+        }
+
+        if ((flags & VisualDirtyFlags.RenderOptions) != 0)
+            comp.RenderOptions = RenderOptions;
+        if ((flags & VisualDirtyFlags.TextOptions) != 0)
+            comp.TextOptions = TextOptions;
+
+        if ((flags & VisualDirtyFlags.Transform) != 0)
+        {
+            var renderTransform = Matrix.Identity;
+
+            if (HasMirrorTransform)
+                renderTransform = new Matrix(-1.0, 0.0, 0.0, 1.0, Bounds.Width, 0);
+
+            if (RenderTransform != null)
+            {
+                var origin = RenderTransformOrigin.ToPixels(new Size(Bounds.Width, Bounds.Height));
+                var offset = Matrix.CreateTranslation(origin);
+                renderTransform *= (-offset) * RenderTransform.Value * (offset);
+            }
+
+            comp.TransformMatrix = renderTransform;
+        }
     }
 }
