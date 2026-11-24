@@ -132,6 +132,9 @@
                   <DoubleTransition Property="Width"
                                     Duration="{DynamicResource TabItemScaleAnimationDuration}"
                                     Easing="0,0,0,1"/>
+                  <DoubleTransition Property="Height"
+                                    Duration="{DynamicResource TabItemScaleAnimationDuration}"
+                                    Easing="0,0,0,1"/>
                 </Transitions>
               </Rectangle.Transitions>
             </Rectangle>
@@ -227,22 +230,31 @@
       <Setter Property="Margin" Value="8,0,0,0" />
     </Style>
 
-    <Style Selector="^[TabStripPlacement=Bottom] /template/ Border#PART_SelectedPipe">
+    <Style Selector="^[TabStripPlacement=Bottom] /template/ Rectangle#PART_SelectedPipe">
+      <Setter Property="Grid.Row" Value="0" />
       <Setter Property="Margin" Value="0,2,0,0" />
       <Setter Property="VerticalAlignment" Value="Top" />
     </Style>
 
-    <Style Selector="^[TabStripPlacement=Top] /template/ Border#PART_SelectedPipe">
-      <Setter Property="Margin" Value="0,0,0,2" />
-      <Setter Property="VerticalAlignment" Value="Bottom" />
+    <Style Selector="^[TabStripPlacement=Left], ^[TabStripPlacement=Right]">
+      <Style Selector="^ /template/ Rectangle#PART_SelectedPipe">
+        <Setter Property="Grid.Row" Value="0" />
+        <Setter Property="Width" Value="{DynamicResource TabItemHeaderPillHeight}" />
+        <Setter Property="Height" Value="{DynamicResource TabItemHeaderPillWidth}" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+      </Style>
+      <Style Selector="^:selected /template/ Rectangle#PART_SelectedPipe">
+        <Setter Property="Width" Value="{DynamicResource TabItemHeaderPillHeight}" />
+        <Setter Property="Height" Value="{DynamicResource TabItemHeaderPillScaledWidth}" />
+      </Style>
     </Style>
 
-    <Style Selector="^[TabStripPlacement=Right] /template/ Border#PART_SelectedPipe">
+    <Style Selector="^[TabStripPlacement=Right] /template/ Rectangle#PART_SelectedPipe">
       <Setter Property="Margin" Value="0,0,2,0" />
       <Setter Property="HorizontalAlignment" Value="Right" />
     </Style>
 
-    <Style Selector="^[TabStripPlacement=Left] /template/ Border#PART_SelectedPipe">
+    <Style Selector="^[TabStripPlacement=Left] /template/ Rectangle#PART_SelectedPipe">
       <Setter Property="Margin" Value="2,0,0,0" />
       <Setter Property="HorizontalAlignment" Value="Left" />
     </Style>
