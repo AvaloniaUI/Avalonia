@@ -37,6 +37,12 @@ internal class SingleDirtyRectTracker : IDirtyRectTracker
     public bool IsEmpty => _rect?.IsZeroSize ?? true;
     public bool Intersects(LtrbRect rect) => _extendedRect.Intersects(rect);
 
+    public void CopyWorkingSetTo(List<LtrbRect> buffer)
+    {
+        if (_rect is { IsZeroSize: false } rect)
+            buffer.Add(rect);
+    }
+
     public void Initialize(LtrbRect bounds) => _rect = default;
     public void Visualize(IDrawingContextImpl context)
     {
@@ -47,4 +53,20 @@ internal class SingleDirtyRectTracker : IDirtyRectTracker
     }
 
     public LtrbRect CombinedRect => _extendedRect;
+
+    public DirtyRectWorkingSet GetWorkingSet() => new(this, DirtyRectSpaceMapping.Identity);
+
+    public void CopyRects(List<PixelRect> rects)
+    {
+        rects.Clear();
+        if (!IsEmpty)
+            rects.Add(LtrbPixelRect.FromRectUnscaled(_extendedRect).ToPixelRect());
+    }
+
+    public void CopyUninflatedRects(List<LtrbRect> rects)
+    {
+        rects.Clear();
+        if (!IsEmpty && _rect.HasValue)
+            rects.Add(_rect.Value);
+    }
 }

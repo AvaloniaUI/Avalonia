@@ -23,9 +23,9 @@
   <SolidColorBrush x:Key="TabbedPageTabItemHeaderBackgroundDisabled" Color="Transparent" />
 
   <!-- Foregrounds (override via TabbedPageTabItemHeaderForegroundSelected / TabbedPageTabItemHeaderForegroundUnselected resources) -->
-  <SolidColorBrush x:Key="TabbedPageTabItemHeaderForegroundUnselected" Color="{DynamicResource ThemeForegroundMidColor}" />
+  <SolidColorBrush x:Key="TabbedPageTabItemHeaderForegroundUnselected" Color="{DynamicResource ThemeForegroundLowColor}" />
   <SolidColorBrush x:Key="TabbedPageTabItemHeaderForegroundSelected" Color="{DynamicResource ThemeAccentColor}" />
-  <SolidColorBrush x:Key="TabbedPageTabItemHeaderForegroundDisabled" Color="{DynamicResource ThemeDisabledColor}" />
+  <SolidColorBrush x:Key="TabbedPageTabItemHeaderForegroundDisabled" Color="{DynamicResource ThemeForegroundLowColor}" />
 
   <x:Double x:Key="TabbedPageTabItemHeaderMinHeight">48</x:Double>
   <x:Double x:Key="TabbedPageTabItemHeaderVerticalPipeHeight">18</x:Double>

@@ -314,7 +314,11 @@ namespace Avalonia.Controls
                             Key = rawKeyEventArgs.Key,
                             PhysicalKey = rawKeyEventArgs.PhysicalKey,
                             KeyDeviceType = rawKeyEventArgs.KeyDeviceType,
-                            KeySymbol = rawKeyEventArgs.KeySymbol
+                            KeySymbol = rawKeyEventArgs.KeySymbol,
+                            KeyText = rawKeyEventArgs.KeyText,
+                            AlternateKeyText = rawKeyEventArgs.AlternateKeyText,
+                            ConsumedModifiers = (KeyModifiers?)rawKeyEventArgs.ConsumedModifiers,
+                            PlatformKeyInfo = rawKeyEventArgs.PlatformKeyInfo
                         };
 
                         backRequested = keymap.Any(key => key.Matches(keyEvent));
@@ -672,12 +676,12 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Handles a paint notification from <see cref="ITopLevelImpl.Resized"/>.
+        /// Handles a paint notification from <see cref="ITopLevelImpl.Paint"/>.
         /// </summary>
-        /// <param name="rect">The dirty area.</param>
-        private void HandlePaint(Rect rect)
+        /// <param name="options">The paint options, <c>null</c> for defaults.</param>
+        private void HandlePaint(ITopLevelImpl.PaintOptions? options)
         {
-            Renderer.Paint(rect);
+            Renderer.Paint(true, options?.FlushRenderPass ?? false);
         }
 
         private protected void StartRendering() => MediaContext.Instance.AddTopLevel(this, LayoutManager, Renderer);

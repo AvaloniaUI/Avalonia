@@ -52,7 +52,8 @@ namespace Avalonia.Build.Tasks
             string[] references, string projectDirectory,
             bool verifyIl, bool defaultCompileBindings, MessageImportance logImportance,
             XamlCompilerDiagnosticsFilter diagnosticsFilter, string strongNameKey,
-            bool skipXamlCompilation, bool debuggerLaunch, bool verboseExceptions, bool createSourceInfo)
+            bool skipXamlCompilation, bool debuggerLaunch, bool verboseExceptions, bool createSourceInfo,
+            bool compactHelperNames)
         {
             try
             {
@@ -67,7 +68,7 @@ namespace Avalonia.Build.Tasks
 	                var compileRes = CompileCore(
                         engine, typeSystem, projectDirectory, verifyIl,
                         defaultCompileBindings, logImportance, diagnosticsFilter,
-                        debuggerLaunch, verboseExceptions, createSourceInfo);
+                        debuggerLaunch, verboseExceptions, createSourceInfo, compactHelperNames);
 	                if (compileRes == null)
 	                    return new CompileResult(true);
 	                if (compileRes == false)
@@ -108,7 +109,7 @@ namespace Avalonia.Build.Tasks
             XamlCompilerDiagnosticsFilter diagnosticsFilter,
             bool debuggerLaunch,
             bool verboseExceptions,
-            bool createSourceInfo)
+            bool createSourceInfo, bool compactHelperNames)
         {
             if (debuggerLaunch)
             {
@@ -204,7 +205,7 @@ namespace Avalonia.Build.Tasks
                 new XamlIlClrPropertyInfoEmitter(typeSystem.CreateTypeBuilder(clrPropertiesDef)),
                 new XamlIlPropertyInfoAccessorFactoryEmitter(typeSystem.CreateTypeBuilder(indexerAccessorClosure)),
                 new XamlIlTrampolineBuilder(typeSystem.CreateTypeBuilder(trampolineBuilder)),
-                new DeterministicIdGenerator(),
+                compactHelperNames ? new CompactIdentifierGenerator() : new SequentialIdentifierGenerator(),
                 diagnosticsHandler);
 
 
@@ -675,7 +676,7 @@ namespace Avalonia.Build.Tasks
                     return false;
                 avares.Save();
             }
-            
+
             loaderDispatcherMethod.Body.Instructions.Add(Instruction.Create(OpCodes.Ldnull));
             loaderDispatcherMethod.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
             return true;

@@ -181,6 +181,7 @@ namespace Avalonia.Win32.Automation
                 UiaPropertyId.IsOffscreen => InvokeSync(() => Peer.IsOffscreen()),
                 UiaPropertyId.ItemType => InvokeSync(() => Peer.GetItemType()),
                 UiaPropertyId.ItemStatus => InvokeSync(() => Peer.GetItemStatus()),
+                UiaPropertyId.LabeledBy => InvokeSync(() => GetOrCreate(Peer.GetLabeledBy())),
                 UiaPropertyId.LocalizedControlType => InvokeSync(() => Peer.GetLocalizedControlType()),
                 UiaPropertyId.Name => InvokeSync(() => Peer.GetName()),
                 UiaPropertyId.IsPassword => InvokeSync(() => Peer is TextBoxAutomationPeer textBoxPeer &&
