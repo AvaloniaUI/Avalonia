@@ -105,9 +105,13 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnDetachedFromVisualTree(e);
 
-            if (_accessKeys != null && !string.IsNullOrEmpty(AccessKey))
+            if (_accessKeys != null)
             {
-                _accessKeys.Unregister(this);
+                if (!string.IsNullOrEmpty(AccessKey))
+                {
+                    _accessKeys.Unregister(this);
+                }
+
                 _accessKeys = null;
             }
         }
