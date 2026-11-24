@@ -282,7 +282,10 @@ NSString* TryConvertFormatToUti(NSString* format)
 
 - (NSPasteboardWritingOptions) writingOptionsForType:(NSPasteboardType)type pasteboard:(NSPasteboard*)pasteboard
 {
-    return [type isEqualToString:NSPasteboardTypeString] || [type isEqualToString:GetAvnCustomDataType()]
+    return [type isEqualToString:NSPasteboardTypeString]
+        || [type isEqualToString:NSPasteboardTypeFileURL]
+        || [type isEqualToString:@"public.file-url"]
+        || [type isEqualToString:GetAvnCustomDataType()]
         ? 0
         : NSPasteboardWritingPromised;
 }
@@ -298,7 +301,13 @@ NSString* TryConvertFormatToUti(NSString* format)
         return nil;
     
     if (value->IsString())
-        return GetNSString(value->AsString());
+    {
+        NSString* str = GetNSString(value->AsString());
+        // public.file-url must be an NSURL object, not a plain string, or Finder rejects the drag.
+        if ([type isEqualToString:NSPasteboardTypeFileURL] || [type isEqualToString:@"public.file-url"])
+            return [NSURL URLWithString:str];
+        return str;
+    }
     
     auto length = value->GetByteLength();
     auto buffer = malloc(length);
