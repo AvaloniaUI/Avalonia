@@ -428,6 +428,14 @@
     else if (_peer->IsSelectionItemProvider())
     {
         _peer->SelectionItemProvider_Select();
+
+        // A press on a combo box item also closes its dropdown, as a click does.
+        auto container = _peer->SelectionItemProvider_GetSelectionContainer();
+        if (container != nullptr && container->GetAutomationControlType() == AutomationComboBox &&
+            container->IsExpandCollapseProvider())
+        {
+            container->ExpandCollapseProvider_Collapse();
+        }
     }
     return YES;
 }
