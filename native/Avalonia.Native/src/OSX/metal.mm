@@ -368,9 +368,9 @@ public:
         if(drawableSize.Width < 1) drawableSize.Width = 1;
         if(drawableSize.Height < 1) drawableSize.Height = 1;
 
-        *ret = comnew<AvnMetalRenderSession>(_device, _layer, drawable,
-                                             drawableSize, layout.Scaling, onMainThread,
-                                             layout, _layoutState);
+        ret = comnew<AvnMetalRenderSession>(_device, _layer, drawable,
+                                            drawableSize, layout.Scaling, onMainThread,
+                                            layout, _layoutState);
         return 0;
     }
 };
