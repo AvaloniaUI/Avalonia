@@ -387,7 +387,7 @@ namespace Avalonia.Controls
             {
                 FlexBasisKind.Auto => max.U,
                 FlexBasisKind.Absolute => basis.Value,
-                FlexBasisKind.Relative => max.U * basis.Value / 100,
+                FlexBasisKind.Relative => max.U * basis.Value,
                 _ => throw new InvalidOperationException($"Unsupported FlexBasisKind value: {basis.Kind}")
             };
             element.Measure(Uv.ToSize(max.WithU(flexConstraint), isColumn));
