@@ -49,6 +49,7 @@ public unsafe class VulkanImage : IDisposable
         public Vk Api { get; }
         public PixelSize Size { get; }
         public ulong MemorySize { get; private set; }
+        public bool IsDedicatedAllocation { get; private set; }
         public uint CurrentLayout => (uint) _currentLayout;
 
         private bool _hasIOSurface;
@@ -126,19 +127,37 @@ public unsafe class VulkanImage : IDisposable
             if (!exportable || !RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
 
-                Api.GetImageMemoryRequirements(Device, InternalHandle,
-                    out var memoryRequirements);
+                var dedicatedRequirements = new MemoryDedicatedRequirements
+                {
+                    SType = StructureType.MemoryDedicatedRequirements
+                };
+                var memoryRequirements2 = new MemoryRequirements2
+                {
+                    SType = StructureType.MemoryRequirements2,
+                    PNext = &dedicatedRequirements
+                };
+                Api.GetImageMemoryRequirements2(Device, new ImageMemoryRequirementsInfo2
+                {
+                    SType = StructureType.ImageMemoryRequirementsInfo2,
+                    Image = image
+                }, &memoryRequirements2);
+                var memoryRequirements = memoryRequirements2.MemoryRequirements;
 
                 var dedicatedAllocation = new MemoryDedicatedAllocateInfoKHR
                 {
                     SType = StructureType.MemoryDedicatedAllocateInfoKhr, Image = image
                 };
 
+                // Exported memory is dedicated only when the driver asks for it; importers are told via IsDedicatedAllocation
+                var exportDedicated = dedicatedRequirements.RequiresDedicatedAllocation
+                                      || dedicatedRequirements.PrefersDedicatedAllocation
+                                      || IsDedicatedOnlyHandleType(handleType, imageCreateInfo);
+
                 var fdExport = new ExportMemoryAllocateInfo
                 {
                     HandleTypes = handleType,
                     SType = StructureType.ExportMemoryAllocateInfo,
-                    PNext = &dedicatedAllocation
+                    PNext = exportDedicated ? &dedicatedAllocation : null
                 };
 
                 ImportMemoryWin32HandleInfoKHR handleImport = default;
@@ -172,10 +191,43 @@ public unsafe class VulkanImage : IDisposable
                 Api.AllocateMemory(Device, in memoryAllocateInfo, null,
                     out var imageMemory).ThrowOnError();
 
+                IsDedicatedAllocation = exportable && (handleImport.Handle != IntPtr.Zero || exportDedicated);
                 AttachMemory(imageMemory, memoryRequirements.Size);
             }
 
             CreateImageView();
+        }
+
+        private bool IsDedicatedOnlyHandleType(ExternalMemoryHandleTypeFlags handleType, ImageCreateInfo imageCreateInfo)
+        {
+            var externalFormatInfo = new PhysicalDeviceExternalImageFormatInfo
+            {
+                SType = StructureType.PhysicalDeviceExternalImageFormatInfo,
+                HandleType = handleType
+            };
+            var formatInfo = new PhysicalDeviceImageFormatInfo2
+            {
+                SType = StructureType.PhysicalDeviceImageFormatInfo2,
+                PNext = &externalFormatInfo,
+                Format = imageCreateInfo.Format,
+                Type = imageCreateInfo.ImageType,
+                Tiling = imageCreateInfo.Tiling,
+                Usage = imageCreateInfo.Usage,
+                Flags = imageCreateInfo.Flags
+            };
+            var externalProperties = new ExternalImageFormatProperties
+            {
+                SType = StructureType.ExternalImageFormatProperties
+            };
+            var properties = new ImageFormatProperties2
+            {
+                SType = StructureType.ImageFormatProperties2,
+                PNext = &externalProperties
+            };
+            if (Api.GetPhysicalDeviceImageFormatProperties2(PhysicalDevice, &formatInfo, &properties) != Result.Success)
+                return false;
+            return (externalProperties.ExternalMemoryProperties.ExternalMemoryFeatures
+                    & ExternalMemoryFeatureFlags.DedicatedOnlyBit) != 0;
         }
 
         /// <summary>
