@@ -1460,6 +1460,49 @@ namespace Avalonia.Controls.UnitTests
         [Theory]
         [InlineData(0d)]
         [InlineData(0.5d)]
+        public void Can_Hide_Alternating_Items_While_Scrolled_Then_Scroll_Back(double bufferFactor)
+        {
+            using var app = App();
+            var items = Enumerable.Range(0, 100).Select(x => new ItemWithIsVisible(x)).ToArray();
+            var (target, scroll, _) = CreateTarget(items: items,
+                styles: new[] { CreateIsVisibleBindingStyle() }, bufferFactor: bufferFactor);
+
+            scroll.Offset = new Vector(0, 500);
+            Layout(target);
+
+            for (var i = 1; i < items.Length; i += 2)
+                items[i].IsVisible = false;
+            Layout(target);
+
+            // Scroll upwards in steps so recycling and origin estimation are exercised
+            // before reaching the panel origin, which would mask a stale prefix.
+            for (var offset = 300; offset >= 0; offset -= 100)
+            {
+                scroll.Offset = new Vector(0, offset);
+                Layout(target);
+
+                var visible = target.GetRealizedContainers()!.Where(x => x.IsVisible).ToArray();
+                Assert.NotEmpty(visible);
+                for (var i = 0; i < visible.Length; ++i)
+                {
+                    var container = visible[i];
+                    var index = target.IndexFromContainer(container);
+                    Assert.Equal(0, index % 2);
+                    if (i > 0)
+                        Assert.Equal(visible[i - 1].Bounds.Bottom, container.Bounds.Top);
+                    if (offset == 0)
+                        Assert.Equal(index / 2 * 10, container.Bounds.Top);
+                }
+                Assert.True(visible[0].Bounds.Top <= scroll.Offset.Y);
+                Assert.True(visible[^1].Bounds.Bottom >= scroll.Offset.Y + scroll.Viewport.Height);
+                // The extent is estimated from a range with an uneven number of hidden rows.
+                Assert.InRange(scroll.Extent.Height, 450, 550);
+            }
+        }
+
+        [Theory]
+        [InlineData(0d)]
+        [InlineData(0.5d)]
         public void Recycling_A_Hidden_Control_Shows_It(double bufferFactor)
         {
             using var app = App();
@@ -1686,15 +1729,14 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(lastIndex2, target.LastRealizedIndex);
         }
 
-        [Fact]
-        public void Collection_Wide_Resize_With_Heterogeneous_Row_Sizes_Updates_Extent()
+        [Theory]
+        [InlineData(25d)]
+        [InlineData(40d)]
+        public void Collection_Wide_Resize_With_Heterogeneous_Row_Sizes_Updates_Extent(double newHeight)
         {
             using var app = App();
 
-            // Regression: when realized rows have different previous sizes, a collection-wide
-            // resize should still invalidate StartU and update the extent correctly.
-            // The ValidateStartU method returns early when previous sizes differ,
-            // leaving StartU stale.
+            // Include an unchanged trailing row in the realized range when newHeight is 40.
             var items = Enumerable.Range(0, 100)
                 .Select(x => new ItemWithHeight(x, x % 2 == 0 ? 60 : 40))
                 .ToList();
@@ -1709,13 +1751,140 @@ namespace Avalonia.Controls.UnitTests
             scroll.Offset = new Vector(0, 1000);
             Layout(target);
 
-            // Shrink every row to 25px.
             foreach (var item in items)
-                item.Height = 25;
+                item.Height = newHeight;
             target.UpdateLayout();
 
-            // Extent should be 100 * 25 = 2500, not the stale estimate.
-            Assert.Equal(2500, scroll.Extent.Height);
+            Assert.Equal(100 * newHeight, scroll.Extent.Height);
+        }
+
+        [Theory]
+        [InlineData(Orientation.Vertical, false)]
+        [InlineData(Orientation.Horizontal, false)]
+        [InlineData(Orientation.Vertical, true)]
+        [InlineData(Orientation.Horizontal, true)]
+        public void Collection_Wide_Resize_With_One_Realized_Item_Updates_Extent(Orientation orientation, bool appendItem)
+        {
+            using var app = App();
+            var horizontal = orientation == Orientation.Horizontal;
+            var items = new ObservableCollection<ItemWithHeight>(Enumerable.Range(0, 100)
+                .Select(i => new ItemWithHeight(i, 500)));
+            var template = new FuncDataTemplate<ItemWithHeight>((_, _) => new Canvas
+            {
+                Width = horizontal ? double.NaN : 100,
+                Height = horizontal ? 100 : double.NaN,
+                [!(horizontal ? Layoutable.WidthProperty : Layoutable.HeightProperty)] = new Binding("Height"),
+            });
+            var (target, scroll, _) = CreateTarget(items: items, itemTemplate: template, orientation: orientation);
+            scroll.Offset = horizontal ? new Vector(25000, 0) : new Vector(0, 25000);
+            Layout(target);
+            Assert.Equal(50, target.FirstRealizedIndex);
+            Assert.Equal(50, target.LastRealizedIndex);
+
+            if (appendItem)
+            {
+                items.Add(new ItemWithHeight(100, 500));
+                Layout(target);
+            }
+
+            foreach (var item in items)
+                item.Height = 25;
+            Layout(target);
+
+            Assert.Equal(items.Count * 25, horizontal ? scroll.Extent.Width : scroll.Extent.Height);
+            Assert.Equal(items.Count * 25 - 100, horizontal ? scroll.Offset.X : scroll.Offset.Y);
+            Assert.Equal(items.Count - 4, target.FirstRealizedIndex);
+            Assert.Equal(items.Count - 1, target.LastRealizedIndex);
+        }
+
+        [Fact]
+        public void Collection_Wide_Resize_Can_Remain_Heterogeneous()
+        {
+            using var app = App();
+            var items = Enumerable.Range(0, 100).Select(i => new ItemWithHeight(i, i % 2 == 0 ? 60 : 40)).ToArray();
+            var (target, scroll, _) = CreateTarget(items: items, itemTemplate: CanvasWithHeightTemplate);
+            scroll.Offset = new Vector(0, 1000);
+            Layout(target);
+            Assert.Equal(20, target.FirstRealizedIndex);
+
+            foreach (var item in items)
+                item.Height *= 2;
+            Layout(target);
+
+            // The new extent is still estimated from the visible rows. The old prefix
+            // must no longer pin item 20 at offset 1000 after all preceding rows doubled.
+            Assert.InRange(target.FirstRealizedIndex, 8, 12);
+            Assert.True(scroll.Extent.Height > 5000);
+        }
+
+        [Theory]
+        [InlineData(100d)]
+        [InlineData(25d)]
+        public void Local_Resize_Preserves_Origin_Even_When_New_Sizes_Are_Uniform(double newHeight)
+        {
+            using var app = App();
+            var items = Enumerable.Range(0, 100).Select(i => new ItemWithHeight(i, i % 2 == 0 ? 100 : 50)).ToArray();
+            var (target, scroll, itemsControl) = CreateUnrootedTarget<ItemsControl>(
+                items: items, itemTemplate: CanvasWithHeightTemplate);
+            var root = CreateRoot(itemsControl, clientSize: new Size(100, 150));
+            root.LayoutManager.ExecuteInitialLayoutPass();
+            scroll.Offset = new Vector(0, 1500);
+            Layout(target);
+            var index = target.FirstRealizedIndex;
+            Assert.NotNull(target.ContainerFromIndex(index + 1));
+            var container = target.ContainerFromIndex(index)!;
+            var before = container.Bounds.Top;
+            var offsetBefore = scroll.Offset.Y;
+
+            items[index + 1].Height = newHeight;
+            Layout(target);
+
+            Assert.Same(container, target.ContainerFromIndex(index));
+            Assert.Equal(before, container.Bounds.Top);
+            Assert.Equal(offsetBefore, scroll.Offset.Y);
+        }
+
+        [Theory]
+        [InlineData(400d)]
+        [InlineData(600d)]
+        public void Local_Resize_With_One_Realized_Item_Preserves_Origin(double newHeight)
+        {
+            using var app = App();
+            var items = Enumerable.Range(0, 100).Select(i => new ItemWithHeight(i, 500)).ToArray();
+            var (target, scroll, _) = CreateTarget(items: items, itemTemplate: CanvasWithHeightTemplate);
+            scroll.Offset = new Vector(0, 25000);
+            Layout(target);
+            var container = target.ContainerFromIndex(50)!;
+            Assert.Equal(50, target.FirstRealizedIndex);
+            Assert.Equal(50, target.LastRealizedIndex);
+
+            items[50].Height = newHeight;
+            Layout(target);
+
+            Assert.Same(container, target.ContainerFromIndex(50));
+            Assert.Equal(25000, container.Bounds.Top);
+            Assert.Equal(25000, scroll.Offset.Y);
+        }
+
+        [Fact]
+        public void Width_Change_Can_Resize_Heterogeneous_Rows()
+        {
+            using var app = App();
+            var items = Enumerable.Range(0, 100).Select(i => new ItemWithHeight(i, i % 2 == 0 ? 60 : 40)).ToArray();
+            var template = new FuncDataTemplate<ItemWithHeight>((_, _) => new WrappingControl());
+            var (target, scroll, itemsControl) = CreateUnrootedTarget<ItemsControl>(items: items, itemTemplate: template);
+            var root = CreateRoot(itemsControl);
+            root.LayoutManager.ExecuteInitialLayoutPass();
+            scroll.Offset = new Vector(0, 1000);
+            Layout(target);
+            Assert.Equal(20, target.FirstRealizedIndex);
+
+            root.ClientSize = new Size(50, 100);
+            root.InvalidateMeasure();
+            Layout(target);
+
+            Assert.InRange(target.FirstRealizedIndex, 8, 12);
+            Assert.Equal(50, target.ContainerFromIndex(target.FirstRealizedIndex)!.DesiredSize.Width);
         }
 
 
@@ -3035,6 +3204,12 @@ namespace Avalonia.Controls.UnitTests
                 Arranged++;
                 return base.ArrangeOverride(finalSize);
             }
+        }
+
+        private class WrappingControl : Control
+        {
+            protected override Size MeasureOverride(Size availableSize) =>
+                new(availableSize.Width, ((ItemWithHeight?)DataContext)?.Height * Math.Ceiling(100 / availableSize.Width) ?? 0);
         }
 
         private class CanvasCountingMeasureArrangeCalls : Canvas
