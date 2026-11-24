@@ -136,11 +136,12 @@ public unsafe class VulkanImage : IDisposable
                     SType = StructureType.MemoryRequirements2,
                     PNext = &dedicatedRequirements
                 };
-                Api.GetImageMemoryRequirements2(Device, new ImageMemoryRequirementsInfo2
+                var memoryRequirementsInfo = new ImageMemoryRequirementsInfo2
                 {
                     SType = StructureType.ImageMemoryRequirementsInfo2,
                     Image = image
-                }, &memoryRequirements2);
+                };
+                Api.GetImageMemoryRequirements2(Device, &memoryRequirementsInfo, &memoryRequirements2);
                 var memoryRequirements = memoryRequirements2.MemoryRequirements;
 
                 var dedicatedAllocation = new MemoryDedicatedAllocateInfoKHR
