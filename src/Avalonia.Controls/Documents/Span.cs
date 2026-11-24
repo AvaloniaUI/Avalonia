@@ -18,14 +18,11 @@ namespace Avalonia.Controls.Documents
             AvaloniaProperty.Register<Span, InlineCollection>(
                 nameof(Inlines));
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1012", 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1012",
             Justification = "Collection properties shouldn't be set with SetCurrentValue.")]
         public Span()
         {
-            Inlines = new InlineCollection
-            {
-                LogicalChildren = LogicalChildren
-            };
+            Inlines = [];
         }
 
         /// <summary>
@@ -38,12 +35,24 @@ namespace Avalonia.Controls.Documents
             set => SetValue(InlinesProperty, value);
         }
 
-        internal override void BuildTextRun(IList<TextRun> textRuns, Size blockSize)
+        internal override void BuildTextRun(IList<TextRun> textRuns)
         {
             foreach (var inline in Inlines)
             {
-                inline.BuildTextRun(textRuns, blockSize);
+                inline.BuildTextRun(textRuns);
             }
+        }
+
+        internal override bool MeasureEmbeddedControls(Size blockSize)
+        {
+            var resized = false;
+
+            foreach (var inline in Inlines)
+            {
+                resized |= inline.MeasureEmbeddedControls(blockSize);
+            }
+
+            return resized;
         }
 
         internal override void AppendText(StringBuilder stringBuilder)
@@ -59,12 +68,10 @@ namespace Avalonia.Controls.Documents
         {
             base.OnPropertyChanged(change);
 
-            switch (change.Property.Name)
+            if (change.Property == InlinesProperty)
             {
-                case nameof(InlinesProperty):
-                    OnInlinesChanged(change.OldValue as InlineCollection, change.NewValue as InlineCollection);
-                    InlineHost?.Invalidate();
-                    break;
+                OnInlinesChanged(change.OldValue as InlineCollection, change.NewValue as InlineCollection);
+                InlineHost?.Invalidate();
             }
         }
 

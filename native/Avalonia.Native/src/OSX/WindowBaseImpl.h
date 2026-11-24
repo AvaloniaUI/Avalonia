@@ -16,7 +16,7 @@
 @protocol AvnWindowProtocol;
 
 class WindowBaseImpl : public virtual TopLevelImpl,
-                       public virtual IAvnWindowBase,
+                       public virtual MicroComImpl<IAvnWindowBase>,
                        public INSWindowHolder {
 
 public:
@@ -29,7 +29,7 @@ public:
 
     virtual ~WindowBaseImpl();
 
-    WindowBaseImpl(IAvnWindowBaseEvents *events, bool usePanel = false);
+    WindowBaseImpl(const ComPtr<IAvnWindowBaseEvents>& events, bool usePanel = false);
 
     virtual HRESULT ObtainNSWindowHandle(void **ret) override;
 
@@ -57,7 +57,7 @@ public:
 
     virtual HRESULT Resize(double x, double y, AvnPlatformResizeReason reason) override;
 
-    virtual HRESULT SetMainMenu(IAvnMenu *menu) override;
+    virtual HRESULT SetMainMenu(const ComPtr<IAvnMenu>& menu) override;
 
     virtual HRESULT BeginMoveDrag() override;
 
@@ -79,9 +79,13 @@ public:
 
     virtual bool CanZoom() { return false; }
                            
-    virtual HRESULT SetParent(IAvnWindowBase* parent) override;
-                           
+    virtual HRESULT SetParent(const ComPtr<IAvnWindowBase>& parent) override;
+
+    void UpdateWindowLevel();
+
 protected:
+    virtual NSWindowLevel GetBaseWindowLevel();
+
     virtual NSWindowStyleMask CalculateStyleMask() = 0;
     virtual void UpdateAppearance() override;
     virtual void SetClientSize(NSSize size) override;
@@ -101,6 +105,7 @@ protected:
     AutoFitContentView *StandardContainer;
     AvnPoint lastPositionSet;
     bool _shown;
+    bool _isTopmost = false;
     std::list<ComObjectWeakPtr<WindowBaseImpl>> _children;
 
 public:

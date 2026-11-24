@@ -2,10 +2,11 @@ using Avalonia.Media;
 using Avalonia.Media.Transformation;
 using Avalonia.Utilities;
 using Xunit;
+using Avalonia.UnitTests;
 
 namespace Avalonia.Base.UnitTests.Media
 {
-    public class TransformOperationsTests
+    public class TransformOperationsTests : ScopedTestBase
     {
         [Theory]
         [InlineData("translate(10px)", 10d, 0d)]

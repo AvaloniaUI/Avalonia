@@ -28,6 +28,130 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
         }
 
         [Fact]
+        public void Limit_Stops_Inside_A_Word_Without_Break_Opportunity()
+        {
+            var lineBreaker = new LineBreakEnumerator("xxxxxxxxxxxxxxxx", 4);
+
+            Assert.False(lineBreaker.MoveNext(out _));
+            Assert.True(lineBreaker.LimitReached);
+        }
+
+        [Fact]
+        public void Limit_Keeps_Opportunities_Before_It()
+        {
+            var lineBreaker = new LineBreakEnumerator("ab cd efghijkl", 8);
+
+            Assert.True(lineBreaker.MoveNext(out var lineBreak));
+            Assert.Equal(3, lineBreak.PositionWrap);
+
+            Assert.True(lineBreaker.MoveNext(out lineBreak));
+            Assert.Equal(6, lineBreak.PositionWrap);
+
+            Assert.False(lineBreaker.MoveNext(out _));
+            Assert.True(lineBreaker.LimitReached);
+        }
+
+        [Fact]
+        public void Limit_Inside_Whitespace_Still_Resolves_The_Break_After_It()
+        {
+            var lineBreaker = new LineBreakEnumerator("abc" + new string(' ', 10) + "defgh", 5);
+
+            Assert.True(lineBreaker.MoveNext(out var lineBreak));
+            Assert.Equal(3, lineBreak.PositionMeasure);
+            Assert.Equal(13, lineBreak.PositionWrap);
+
+            Assert.False(lineBreaker.MoveNext(out _));
+            Assert.True(lineBreaker.LimitReached);
+        }
+
+        [Fact]
+        public void Limit_Beyond_The_Text_Does_Not_Change_The_Result()
+        {
+            var text = "Hello World\r\nThis is a test.";
+            var expected = new LineBreakEnumerator(text);
+            var actual = new LineBreakEnumerator(text, text.Length + 100);
+
+            while (expected.MoveNext(out var expectedBreak))
+            {
+                Assert.True(actual.MoveNext(out var actualBreak));
+                Assert.Equal(expectedBreak, actualBreak);
+            }
+
+            Assert.False(actual.MoveNext(out _));
+            Assert.False(actual.LimitReached);
+        }
+
+        [Theory]
+        [InlineData("漢字", "ひ", new[] { 1, 2 })]
+        [InlineData("漢字", "、", new[] { 1 })]
+        [InlineData("漢字", "ぁ", new[] { 1 })]
+        [InlineData("foo Hello", "W", new[] { 4 })]
+        [InlineData("foo ", "W", new[] { 4 })]
+        [InlineData("a", "́", new int[0])]
+        public void Following_Codepoint_Decides_The_Break_At_The_End(string text, string following, int[] expected)
+        {
+            var lineBreaker = new LineBreakEnumerator(text, default, Codepoint.ReadAt(following, 0, out _),
+                int.MaxValue);
+
+            Assert.Equal(expected, GetWrapPositions(ref lineBreaker));
+        }
+
+        [Theory]
+        [InlineData("a—b", new[] { 2 })]
+        [InlineData("a——b", new[] { 2 })]
+        [InlineData("a— —b", new[] { 3 })]
+        [InlineData("a— —b c", new[] { 3 })]
+        [InlineData("a—  —b c", new[] { 2, 3 })]
+        [InlineData("〉 ぁx", new[] { 2 })]
+        [InlineData("漢字ひらがな", new[] { 2, 4 })]
+        [InlineData("foo  bar", new[] { 4 })]
+        [InlineData("Hello World", new[] { 5 })]
+        [InlineData("foo 1)$xyz bar", new[] { 5, 6 })]
+        [InlineData("x 1.)$z y", new[] { 4 })]
+        [InlineData("x 1.)$z y", new[] { 3, 4 })]
+        [InlineData("אב-x", new[] { 2, 3 })]
+        [InlineData("ab-x", new[] { 2, 3 })]
+        [InlineData("c אְ-x yz", new[] { 4, 5 })]
+        [InlineData("foo x“ abc", new[] { 5, 7 })]
+        [InlineData("foo 1̃)$xyz bar", new[] { 6, 7 })]
+        public void Split_Text_Breaks_Like_The_Whole_Text(string text, int[] splits)
+        {
+            var whole = new LineBreakEnumerator(text);
+            var expected = GetWrapPositions(ref whole);
+
+            var actual = new List<int>();
+            var context = default(LineBreakEnumerator.LineBreakContext);
+            var start = 0;
+
+            for (var i = 0; i <= splits.Length; i++)
+            {
+                var end = i < splits.Length ? splits[i] : text.Length;
+                Codepoint? following = end < text.Length ? Codepoint.ReadAt(text, end, out _) : null;
+
+                var part = new LineBreakEnumerator(text.AsSpan(start, end - start), context, following, int.MaxValue);
+
+                actual.AddRange(GetWrapPositions(ref part).Select(position => start + position));
+
+                context = part.EndContext;
+                start = end;
+            }
+
+            Assert.Equal(expected, actual.ToArray());
+        }
+
+        private static int[] GetWrapPositions(ref LineBreakEnumerator lineBreaker)
+        {
+            var positions = new List<int>();
+
+            while (lineBreaker.MoveNext(out var lineBreak))
+            {
+                positions.Add(lineBreak.PositionWrap);
+            }
+
+            return positions.ToArray();
+        }
+
+        [Fact]
         public void BasicLatinTest()
         {
             var lineBreaker = new LineBreakEnumerator("Hello World\r\nThis is a test.");

@@ -4,10 +4,11 @@ using Avalonia.Controls;
 using Avalonia.LogicalTree;
 using Avalonia.Styling;
 using Xunit;
+using Avalonia.UnitTests;
 
 namespace Avalonia.Base.UnitTests.Styling
 {
-    public class SelectorTests_Child
+    public class SelectorTests_Child : ScopedTestBase
     {
         [Fact]
         public void Child_Matches_Control_When_It_Is_Child_OfType()

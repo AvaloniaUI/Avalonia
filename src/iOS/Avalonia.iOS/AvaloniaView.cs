@@ -249,7 +249,7 @@ namespace Avalonia.iOS
             public double RenderScaling => _view.ContentScaleFactor;
             public IPlatformRenderSurface[] Surfaces { get; set; } = [];
             public Action<RawInputEventArgs>? Input { get; set; }
-            public Action<Rect>? Paint { get; set; }
+            public Action<ITopLevelImpl.PaintOptions?>? Paint { get; set; }
             public Action<Size, WindowResizeReason>? Resized { get; set; }
             public Action<double>? ScalingChanged { get; set; }
             public Action<WindowTransparencyLevel>? TransparencyLevelChanged { get; set; }
@@ -419,6 +419,23 @@ namespace Avalonia.iOS
             set => _topLevel.Content = value;
         }
 
+        /// <inheritdoc />
+        public override void WillMoveToWindow(UIWindow? window)
+        {
+            base.WillMoveToWindow(window);
+            if (window is null)
+                _input.ResetTouches();
+        }
+
+        /// <inheritdoc />
+        public override void MovedToWindow()
+        {
+            base.MovedToWindow();
+#if !TVOS
+            DisplayLinkTimer.WarnIfLimitedTo60Hz(Window?.WindowScene?.Screen);
+#endif
+        }
+
         internal void SetRenderTarget(Metal.MetalRenderTarget target)
         {
             _currentRenderTarget = target;
@@ -433,6 +450,7 @@ namespace Avalonia.iOS
 
                 if (disposing)
                 {
+                    _input.ResetTouches();
                     _accessWrapper.Dispose();
                     _topLevel.Dispose();
                 }

@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Avalonia.Base.UnitTests
 {
-    public class VisualExtensionsTests
+    public class VisualExtensionsTests : ScopedTestBase
     {
         [Fact]
         public void FindAncestorOfType_Finds_Direct_Parent()

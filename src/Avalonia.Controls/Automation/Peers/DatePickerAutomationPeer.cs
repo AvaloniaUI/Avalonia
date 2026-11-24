@@ -18,7 +18,7 @@ public class DatePickerAutomationPeer : ControlAutomationPeer, IValueProvider
     public void SetValue(string? value)
     {
         if (DateTimeOffset.TryParse(value, out var result))
-            Owner.SelectedDate = result;
+            Owner.SetCurrentValue(DatePicker.SelectedDateProperty, result);
     }
 
     protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.Custom;

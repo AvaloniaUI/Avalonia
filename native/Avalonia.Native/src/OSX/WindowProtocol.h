@@ -6,6 +6,7 @@
 #pragma once
 
 #import <AppKit/AppKit.h>
+#include "comimpl.h"
 
 @class AvnMenu;
 struct IAvnAutomationPeer;
@@ -17,7 +18,7 @@ struct IAvnAutomationPeer;
 -(void) showAppMenuOnly;
 -(void) showWindowMenuWithAppMenu;
 -(void) applyMenu:(AvnMenu* _Nullable)menu;
--(IAvnAutomationPeer* _Nullable) automationPeer;
+-(ComPtr<IAvnAutomationPeer>) automationPeer;
 
 -(double) getExtendedTitleBarHeight;
 -(void) setIsExtended:(bool)value;

@@ -5,12 +5,148 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.UnitTests;
+using Avalonia.VisualTree;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests;
 
 public class ListBoxVirtualizationIssueTests : ScopedTestBase
 {
+    [Fact]
+    public void Opening_SplitView_Pane_After_Scrolling_ListBox_Does_Not_Show_Unrealized_Containers()
+    {
+        using var app = UnitTestApplication.Start(TestServices.StyledWindow
+            .With(globalClock: new MockGlobalClock()));
+
+        var items = new[]
+        {
+            new SizedItem(196, 331),
+            new SizedItem(186, 258),
+            new SizedItem(196, 321),
+            new SizedItem(186, 296),
+            new SizedItem(150, 340),
+            new SizedItem(196, 319),
+        };
+        var target = new ListBox
+        {
+            ItemsSource = items,
+            ItemTemplate = new FuncDataTemplate<SizedItem>((item, _) => new Border
+            {
+                Width = item?.Width ?? 0,
+                Height = item?.Height ?? 0,
+            }),
+            ItemsPanel = new FuncTemplate<Panel?>(() => new VirtualizingStackPanel()),
+            SelectionMode = SelectionMode.Single | SelectionMode.AlwaysSelected,
+        };
+
+        var splitView = new SplitView
+        {
+            DisplayMode = SplitViewDisplayMode.CompactInline,
+            CompactPaneLength = 0,
+            OpenPaneLength = 300,
+            Pane = target,
+            Content = new TextBlock(),
+        };
+        var window = new Window
+        {
+            Width = 800,
+            Height = 804,
+            Content = new Grid
+            {
+                RowDefinitions = new RowDefinitions("30,*"),
+                Children = { new TextBlock(), splitView },
+            },
+        };
+        Grid.SetRow(splitView, 1);
+        window.Show();
+
+        Assert.Equal(0, target.Bounds.Width);
+
+        // Scroll the selected item into view while the SplitView pane is effectively hidden.
+        for (var index = 1; index <= 3; ++index)
+        {
+            target.SelectedIndex = index;
+            window.LayoutManager.ExecuteLayoutPass();
+        }
+
+        // Disable the theme animation so the assertion observes the opened-pane layout directly.
+        var paneRoot = splitView.GetVisualDescendants()
+            .OfType<Panel>()
+            .Single(x => x.Name == "PART_PaneRoot");
+        paneRoot.Transitions = null;
+
+        splitView.IsPaneOpen = true;
+        window.LayoutManager.ExecuteLayoutPass();
+
+        Assert.Equal(300, target.Bounds.Width);
+
+        var panel = Assert.IsType<VirtualizingStackPanel>(target.Presenter!.Panel);
+        var realized = target.GetRealizedContainers().ToHashSet();
+        var visibleChildren = panel.Children.Where(x => x.IsVisible).ToList();
+
+        Assert.All(visibleChildren, child =>
+        {
+            Assert.NotEqual(-1, target.IndexFromContainer(child));
+            Assert.Contains(child, realized);
+        });
+
+        var selectedContainer = Assert.IsType<ListBoxItem>(target.ContainerFromIndex(target.SelectedIndex));
+        Assert.Contains(selectedContainer, realized);
+        Assert.True(selectedContainer.Bounds.Bottom > target.Scroll!.Offset.Y);
+        Assert.True(selectedContainer.Bounds.Top < target.Scroll.Offset.Y + target.Scroll.Viewport.Height);
+    }
+
+    [Fact]
+    public void Opening_SplitView_Pane_After_Scrolling_Keeps_TabOnce_Container_Indexed()
+    {
+        using var app = UnitTestApplication.Start(TestServices.StyledWindow
+            .With(globalClock: new MockGlobalClock()));
+
+        var target = CreateSizedListBox();
+        var (window, splitView) = CreateSplitViewWindow(target);
+
+        ScrollWhilePaneIsClosed(target, window);
+
+        var tabOnceContainer = Assert.IsType<ListBoxItem>(target.ContainerFromIndex(0));
+        KeyboardNavigation.SetTabOnceActiveElement(target, tabOnceContainer);
+
+        OpenPane(splitView, target, window);
+
+        var activeContainer = Assert.IsType<ListBoxItem>(KeyboardNavigation.GetTabOnceActiveElement(target));
+        var activeIndex = target.IndexFromContainer(activeContainer);
+
+        Assert.InRange(activeIndex, 0, 5);
+        Assert.Same(activeContainer, target.ContainerFromIndex(activeIndex));
+    }
+
+    [Fact]
+    public void Opening_SplitView_Pane_After_Scrolling_Own_Container_Items_Does_Not_Show_Unrealized_Containers()
+    {
+        using var app = UnitTestApplication.Start(TestServices.StyledWindow
+            .With(globalClock: new MockGlobalClock()));
+
+        var target = new ListBox
+        {
+            ItemsSource = new[]
+            {
+                new ListBoxItem { Content = new Border { Width = 196, Height = 331 } },
+                new ListBoxItem { Content = new Border { Width = 186, Height = 258 } },
+                new ListBoxItem { Content = new Border { Width = 196, Height = 321 } },
+                new ListBoxItem { Content = new Border { Width = 186, Height = 296 } },
+                new ListBoxItem { Content = new Border { Width = 150, Height = 340 } },
+                new ListBoxItem { Content = new Border { Width = 196, Height = 319 } },
+            },
+            ItemsPanel = new FuncTemplate<Panel?>(() => new VirtualizingStackPanel()),
+            SelectionMode = SelectionMode.Single | SelectionMode.AlwaysSelected,
+        };
+        var (window, splitView) = CreateSplitViewWindow(target);
+
+        ScrollWhilePaneIsClosed(target, window);
+        OpenPane(splitView, target, window);
+
+        AssertVisibleChildrenAreRealized(target);
+    }
+
     [Fact]
     public void Removing_First_Item_After_Scrolling_To_End_Should_Allow_Scrolling_To_Start()
     {
@@ -318,6 +454,92 @@ public class ListBoxVirtualizationIssueTests : ScopedTestBase
         }
     }
 
+    private static ListBox CreateSizedListBox()
+    {
+        var items = new[]
+        {
+            new SizedItem(196, 331),
+            new SizedItem(186, 258),
+            new SizedItem(196, 321),
+            new SizedItem(186, 296),
+            new SizedItem(150, 340),
+            new SizedItem(196, 319),
+        };
+
+        return new ListBox
+        {
+            ItemsSource = items,
+            ItemTemplate = new FuncDataTemplate<SizedItem>((item, _) => new Border
+            {
+                Width = item?.Width ?? 0,
+                Height = item?.Height ?? 0,
+            }),
+            ItemsPanel = new FuncTemplate<Panel?>(() => new VirtualizingStackPanel()),
+            SelectionMode = SelectionMode.Single | SelectionMode.AlwaysSelected,
+        };
+    }
+
+    private static (Window Window, SplitView SplitView) CreateSplitViewWindow(ListBox listBox)
+    {
+        var splitView = new SplitView
+        {
+            DisplayMode = SplitViewDisplayMode.CompactInline,
+            CompactPaneLength = 0,
+            OpenPaneLength = 300,
+            Pane = listBox,
+            Content = new TextBlock(),
+        };
+        var window = new Window
+        {
+            Width = 800,
+            Height = 804,
+            Content = new Grid
+            {
+                RowDefinitions = new RowDefinitions("30,*"),
+                Children = { new TextBlock(), splitView },
+            },
+        };
+        Grid.SetRow(splitView, 1);
+        window.Show();
+        return (window, splitView);
+    }
+
+    private static void ScrollWhilePaneIsClosed(ListBox listBox, Window window)
+    {
+        Assert.Equal(0, listBox.Bounds.Width);
+
+        for (var index = 1; index <= 3; ++index)
+        {
+            listBox.SelectedIndex = index;
+            window.LayoutManager.ExecuteLayoutPass();
+        }
+    }
+
+    private static void OpenPane(SplitView splitView, ListBox listBox, Window window)
+    {
+        var paneRoot = splitView.GetVisualDescendants()
+            .OfType<Panel>()
+            .Single(x => x.Name == "PART_PaneRoot");
+        paneRoot.Transitions = null;
+
+        splitView.IsPaneOpen = true;
+        window.LayoutManager.ExecuteLayoutPass();
+
+        Assert.Equal(300, listBox.Bounds.Width);
+    }
+
+    private static void AssertVisibleChildrenAreRealized(ListBox listBox)
+    {
+        var panel = Assert.IsType<VirtualizingStackPanel>(listBox.Presenter!.Panel);
+        var realized = listBox.GetRealizedContainers().ToHashSet();
+
+        Assert.All(panel.Children.Where(x => x.IsVisible), child =>
+        {
+            Assert.NotEqual(-1, listBox.IndexFromContainer(child));
+            Assert.Contains(child, realized);
+        });
+    }
+
     private Control CreateListBoxTemplate(TemplatedControl parent, INameScope scope)
     {
         return new ScrollViewer
@@ -357,5 +579,17 @@ public class ListBoxVirtualizationIssueTests : ScopedTestBase
             Id = id;
         }
         public int Id { get; }
+    }
+
+    private class SizedItem
+    {
+        public SizedItem(double width, double height)
+        {
+            Width = width;
+            Height = height;
+        }
+
+        public double Width { get; }
+        public double Height { get; }
     }
 }

@@ -213,6 +213,64 @@ namespace Avalonia.Media
             return variations.Count == 0 ? Empty : new FontVariationSettings(variations);
         }
 
+        /// <summary>
+        /// Interpolates between two settings values, for animation.
+        /// </summary>
+        /// <remarks>
+        /// Matches CSS <c>font-variation-settings</c> interpolation: when both endpoints
+        /// set exactly the same axes, each axis value is interpolated linearly (easing
+        /// overshoot extrapolates); otherwise the result is discrete — <paramref name="from"/>
+        /// below the midpoint, <paramref name="to"/> at and above it. Discrete is the only
+        /// sound fallback because a missing axis means "the font's default", a value that
+        /// is not knowable in user space. <c>null</c> and <see cref="Empty"/> both mean
+        /// "no axes set".
+        /// </remarks>
+        public static FontVariationSettings? Interpolate(
+            FontVariationSettings? from,
+            FontVariationSettings? to,
+            double progress)
+        {
+            var fromVariations = from?._variations ?? ImmutableArray<FontVariation>.Empty;
+            var toVariations = to?._variations ?? ImmutableArray<FontVariation>.Empty;
+
+            if (fromVariations.Length != toVariations.Length || fromVariations.IsEmpty)
+            {
+                return progress < 0.5 ? from : to;
+            }
+
+            // Both sides are sorted by tag, so a positional comparison decides whether
+            // the axis sets match.
+            for (var i = 0; i < fromVariations.Length; i++)
+            {
+                if (fromVariations[i].Tag != toVariations[i].Tag)
+                {
+                    return progress < 0.5 ? from : to;
+                }
+            }
+
+            var builder = ImmutableArray.CreateBuilder<FontVariation>(fromVariations.Length);
+
+            for (var i = 0; i < fromVariations.Length; i++)
+            {
+                var a = fromVariations[i].Value;
+                var b = toVariations[i].Value;
+
+                var lerped = a + (b - a) * progress;
+
+                // Infinite endpoints collapse the lerp arithmetic to NaN (infinity minus
+                // infinity); snap that axis to the nearer endpoint instead so the no-NaN
+                // invariant holds.
+                if (double.IsNaN(lerped))
+                {
+                    lerped = progress < 0.5 ? a : b;
+                }
+
+                builder.Add(new FontVariation(fromVariations[i].Tag, lerped));
+            }
+
+            return new FontVariationSettings(builder.MoveToImmutable());
+        }
+
         /// <summary>Returns the parseable string form, e.g. <c>wght=700,wdth=85</c>.</summary>
         public override string ToString()
         {

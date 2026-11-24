@@ -240,7 +240,11 @@ internal static unsafe class PixelFormatWriter
             }
         }
 
-        public void Reset(IntPtr address) => _address = (byte*)address;
+        public void Reset(IntPtr address)
+        {
+            _address = (byte*)address;
+            _bit = 0;
+        }
     }
 
     public unsafe struct Gray2PixelFormatWriter : IPixelFormatWriter
@@ -288,7 +292,11 @@ internal static unsafe class PixelFormatWriter
             }
         }
 
-        public void Reset(IntPtr address) => _address = (byte*)address;
+        public void Reset(IntPtr address)
+        {
+            _address = (byte*)address;
+            _bit = 0;
+        }
     }
 
     public unsafe struct Gray4PixelFormatWriter : IPixelFormatWriter
@@ -318,7 +326,11 @@ internal static unsafe class PixelFormatWriter
             }
         }
 
-        public void Reset(IntPtr address) => _address = (byte*)address;
+        public void Reset(IntPtr address)
+        {
+            _address = (byte*)address;
+            _bit = 0;
+        }
     }
 
     public unsafe struct Gray8PixelFormatWriter : IPixelFormatWriter

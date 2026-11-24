@@ -132,12 +132,12 @@
                            Grid.Column="1"
                            Width="1"
                            HorizontalAlignment="Center"
-                           Fill="{DynamicResource DatePickerSpacerFill}" />
+                           Fill="{DynamicResource ThemeControlMidHighBrush}" />
                 <Rectangle x:Name="PART_SecondSpacer"
                            Grid.Column="3"
                            Width="1"
                            HorizontalAlignment="Center"
-                           Fill="{DynamicResource DatePickerSpacerFill}" />
+                           Fill="{DynamicResource ThemeControlMidHighBrush}" />
               </Grid>
             </Button>
 

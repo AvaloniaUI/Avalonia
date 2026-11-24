@@ -464,7 +464,7 @@ namespace Avalonia.Controls
 
         private void UpdatePseudoClasses()
         {
-            PseudoClasses.Set(PC_FirstPage, SelectedPageIndex == 0);
+            PseudoClasses.Set(PC_FirstPage, NumberOfPages > 0 && SelectedPageIndex == 0);
             PseudoClasses.Set(PC_LastPage, NumberOfPages > 0 && SelectedPageIndex >= NumberOfPages - 1);
             PseudoClasses.Set(PC_Vertical, Orientation == Orientation.Vertical);
             PseudoClasses.Set(PC_Horizontal, Orientation == Orientation.Horizontal);
@@ -511,12 +511,19 @@ namespace Avalonia.Controls
             if (_pipsPagerList == null)
                 return;
 
-            if (NumberOfPages <= MaxVisiblePips)
-                return;
-
             var scrollViewer = _pipsPagerList.Scroll as ScrollViewer;
             if (scrollViewer == null)
                 return;
+
+            if (NumberOfPages <= MaxVisiblePips)
+            {
+                if (scrollViewer.Offset.X != 0 || scrollViewer.Offset.Y != 0)
+                {
+                    _scrollAnimationCts?.Cancel();
+                    scrollViewer.Offset = new Vector(0, 0);
+                }
+                return;
+            }
 
             var container = _pipsPagerList.ContainerFromIndex(SelectedPageIndex) as Layoutable;
             if (container == null)
@@ -636,7 +643,21 @@ namespace Avalonia.Controls
                 var visibleCount = Math.Min(NumberOfPages, MaxVisiblePips);
 
                 if (visibleCount <= 0)
+                {
+                    if (Orientation == Orientation.Horizontal)
+                    {
+                        _pipsPagerList.Width = 0;
+                        _pipsPagerList.Height = double.NaN;
+                    }
+                    else
+                    {
+                        _pipsPagerList.Height = 0;
+                        _pipsPagerList.Width = double.NaN;
+                    }
+
+                    RequestScrollToSelectedPip();
                     return;
+                }
 
                 var extent = (visibleCount * pipSize) + ((visibleCount - 1) * spacing);
 

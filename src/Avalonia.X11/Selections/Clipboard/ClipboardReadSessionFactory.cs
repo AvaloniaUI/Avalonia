@@ -5,7 +5,7 @@ namespace Avalonia.X11.Selections.Clipboard;
 
 internal static class ClipboardReadSessionFactory
 {
-    public static SelectionReadSession CreateSession(AvaloniaX11Platform platform)
+    public static SelectionReadSession CreateSession(AvaloniaX11Platform platform, IntPtr selection)
     {
         var window = new EventStreamWindow(platform);
         XSelectInput(platform.Display, window.Handle, new IntPtr((int)XEventMask.PropertyChangeMask));
@@ -13,7 +13,7 @@ internal static class ClipboardReadSessionFactory
         return new SelectionReadSession(
             platform.Display,
             window.Handle,
-            platform.Info.Atoms.CLIPBOARD,
+            selection,
             window,
             platform.Info.Atoms);
     }

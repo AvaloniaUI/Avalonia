@@ -42,7 +42,7 @@ public:
         CGLContextObj _savedContext;
         ComPtr<AvnGlContext> _parent;
     public:
-        SavedGlContext(CGLContextObj saved, AvnGlContext* parent)
+        SavedGlContext(CGLContextObj saved, const ComPtr<AvnGlContext>& parent)
         {
             _savedContext = saved;
             _parent = parent;
@@ -69,17 +69,13 @@ public:
     
     virtual HRESULT LegacyMakeCurrent() override
     {
-        START_COM_CALL;
-        
         if(CGLSetCurrentContext(Context) != 0)
             return E_FAIL;
         return S_OK;
     }
     
-    virtual HRESULT MakeCurrent(IUnknown** ppv) override
+    virtual HRESULT MakeCurrent(ComPtr<IUnknown>& ppv) override
     {
-        START_COM_CALL;
-        
         CGLContextObj saved = CGLGetCurrentContext();
         CGLLockContext(Context);
         if(CGLSetCurrentContext(Context) != 0)
@@ -87,7 +83,7 @@ public:
             CGLUnlockContext(Context);
             return E_FAIL;
         }
-        *ppv = new SavedGlContext(saved, this);
+        ppv = comnew<SavedGlContext>(saved, comself(this));
         
         return S_OK;
     }
@@ -185,31 +181,23 @@ public:
         return dlsym(_libgl, proc);
     }
     
-    virtual HRESULT CreateContext(IAvnGlContext* share, IAvnGlContext**ppv) override
+    virtual HRESULT CreateContext(const ComPtr<IAvnGlContext>& share, ComPtr<IAvnGlContext>& ppv) override
     {
-        START_COM_CALL;
-        
         CGLContextObj shareContext = nil;
-        if(share != nil)
-        {
-            AvnGlContext* shareCtx = dynamic_cast<AvnGlContext*>(share);
-            if(shareCtx != nil)
-                shareContext = shareCtx->Context;
-        }
+        if(auto shareCtx = share.dynamicCast<AvnGlContext>())
+            shareContext = shareCtx->Context;
         CGLContextObj ctx = ::CreateCglContext(shareContext);
         if(ctx == nil)
             return E_FAIL;
-        *ppv = new AvnGlContext(ctx);
+        ppv = comnew<AvnGlContext>(ctx);
         return S_OK;
     }
     
-    virtual HRESULT WrapContext(void* native, IAvnGlContext**ppv) override
+    virtual HRESULT WrapContext(void* native, ComPtr<IAvnGlContext>& ppv) override
     {
-        START_COM_CALL;
-        
         if(native == nil)
             return E_INVALIDARG;
-        *ppv = new AvnGlContext((CGLContextObj) native);
+        ppv = comnew<AvnGlContext>((CGLContextObj) native);
         return S_OK;
     }
     
@@ -222,8 +210,8 @@ public:
 static ComStaticPtr<AvnGlDisplay> GlDisplay(comnew<AvnGlDisplay>());
 
 
-extern IAvnGlDisplay* GetGlDisplay()
+extern ComPtr<IAvnGlDisplay> GetGlDisplay()
 {
-    return GlDisplay;
+    return GlDisplay.get();
 };
 

@@ -50,6 +50,14 @@ internal interface IWXdgTopLevel : IWXdgShellSurface
     void SetTitle(string? title);
 
     /// <summary>
+    /// Sets the toplevel's application ID (xdg_toplevel.set_app_id). The compositor
+    /// may use this to group windows, match desktop files, display window icons, etc.
+    /// A <c>null</c> or empty value clears the app ID. The worker caches the value so it
+    /// survives compositor reconnects.
+    /// </summary>
+    void SetAppId(string? appId);
+
+    /// <summary>
     /// Tear down the worker's <c>zxdg_toplevel_decoration_v1</c> object
     /// (if any). Switches the compositor back to "client-side
     /// decorations on next commit" per the v1 spec. Also latches the

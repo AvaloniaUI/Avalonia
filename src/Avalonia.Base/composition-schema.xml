@@ -11,6 +11,7 @@
     <Manual Name="Avalonia.Media.IImmutableBrush" Passthrough="true"/>
     <Manual Name="Avalonia.Media.IImmutableEffect" Passthrough="true"/>
     <Manual Name="Avalonia.Media.Immutable.ImmutableDashStyle" Passthrough="true"/>
+    <Manual Name="object" Passthrough="true"/>
     <Manual Name="CompositionSurface" />
     <Manual Name="CompositionDrawingSurface" />
     <Object Name="CompositionVisual" Abstract="true">
@@ -34,6 +35,9 @@
         <Property Name="AdornerIsClipped" Type="bool" Internal="true" />
         <Property Name="OpacityMaskBrush" ClientName="OpacityMaskBrushTransportField" Type="Avalonia.Media.IBrush?" Private="true"  />
         <Property Name="Effect" Type="Avalonia.Media.IImmutableEffect?" Internal="true" />
+        <Property Name="BackdropEffect" Type="Avalonia.Media.IImmutableEffect?" Internal="true" />
+        <Property Name="BackdropEffectBoundsSource" Type="Avalonia.Media.BackdropEffectBoundsSource" Internal="true" />
+        <Property Name="BackdropEffectCache" Type="CompositionBackdropEffectCache?" Internal="true" />
         <Property Name="RenderOptions" Type="Avalonia.Media.RenderOptions" />
         <Property Name="TextOptions" Type="Avalonia.Media.TextOptions" />
         <Property Name="CacheMode" Type="CompositionCacheMode?" Internal="true" />
@@ -60,6 +64,7 @@
         <Property Name="Scaling" Type="double"/>
         <Property Name="Size" Type="Size" />
         <Property Name="TransparencyLevel" Type="CompositionTransparencyLevel" />
+        <Property Name="PlatformSpecificSceneInfo" Type="object?" />
     </Object>
     <KeyFrameAnimation Name="Scalar" Type="float"/>
     <KeyFrameAnimation Name="Double" Type="double"/>
@@ -91,6 +96,7 @@
         <Property Name="Opacity" Type="double" />
         <Property Name="TransformOrigin" Type="RelativePoint" />
         <Property Name="Transform" Type="Avalonia.Media.ITransform?" />
+        <Property Name="RelativeTransform" Type="Avalonia.Media.ITransform?" />
     </Object>
     <Object Name="CompositionSimpleSolidColorBrush" Internal="true" ServerOnly="true" ServerBase="ServerCompositionSimpleBrush">
         <Property Name="Color" Type="Avalonia.Media.Color" />
@@ -125,10 +131,17 @@
         <Property Name="SnapsToDevicePixels" Type="bool" Animated="true" DefaultValue="false"/>
         <Property Name="EnableClearType" Type="bool" Animated="true" DefaultValue="false"/>
     </Object>
+    <Object Name="CompositionBackdropEffectCache" Internal="true">
+    </Object>
+    <Object Name="CompositionRetainedBackdropEffectCache" Internal="true" Inherits="CompositionBackdropEffectCache">
+    </Object>
+    <Object Name="CompositionVolatileBackdropEffectCache" Internal="true" Inherits="CompositionBackdropEffectCache">
+    </Object>
     <Object Name="CompositionBrush" ServerBase="ServerRenderResource">
         <Property Name="Opacity" Type="double" Animated="true" DefaultValue="1"/>
         <Property Name="TransformOrigin" Type="RelativePoint" />
         <Property Name="Transform" Type="Avalonia.Media.ITransform?" />
+        <Property Name="RelativeTransform" Type="Avalonia.Media.ITransform?" />
     </Object>
     <Object Name="CompositionSolidColorBrush" Inherits="CompositionBrush" ServerBase="ServerCompositionBrush">
         <Property Name="Color" Type="Avalonia.Media.Color" Animated="true"/>

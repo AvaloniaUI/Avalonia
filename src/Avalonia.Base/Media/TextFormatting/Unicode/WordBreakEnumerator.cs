@@ -11,11 +11,17 @@ namespace Avalonia.Media.TextFormatting.Unicode
         private int _offset;
         private int _codepointOffset;
 
+        // Whether an odd number of regional indicators precedes the position the walk has
+        // reached. WB15 and WB16 need only that parity, so it is carried along with the walk
+        // instead of being recounted from the start of the run at every indicator.
+        private bool _oddRegionalIndicatorRun;
+
         public WordBreakEnumerator(ReadOnlySpan<char> text)
         {
             _text = text;
             _offset = 0;
             _codepointOffset = 0;
+            _oddRegionalIndicatorRun = false;
         }
 
         /// <summary>
@@ -33,10 +39,15 @@ namespace Avalonia.Media.TextFormatting.Unicode
             }
 
             var segmentStart = _offset;
-            var segmentCodepointStart = _codepointOffset;
             var current = ReadForward(_offset);
+
+            Consume(current.WordBreakClass);
+
             var currentEnd = current.End;
-            var boundaryCodepoint = _codepointOffset + 1;
+
+            // Each WordBreakUnit covers exactly one code point, so counting accepted
+            // units yields the segment's code-point length for the WordSegment readouts.
+            var codepointLength = 1;
 
             while (currentEnd < _text.Length)
             {
@@ -48,18 +59,16 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 }
 
                 current = next;
+
+                Consume(current.WordBreakClass);
+
                 currentEnd = current.End;
-                boundaryCodepoint++;
+                codepointLength++;
             }
 
-            segment = new WordSegment(
-                segmentStart,
-                currentEnd - segmentStart,
-                segmentCodepointStart,
-                boundaryCodepoint - segmentCodepointStart);
-
+            segment = new WordSegment(segmentStart, _text.Slice(segmentStart, currentEnd - segmentStart), _codepointOffset, codepointLength);
             _offset = currentEnd;
-            _codepointOffset = boundaryCodepoint;
+            _codepointOffset += codepointLength;
 
             return true;
         }
@@ -194,12 +203,25 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
             if (left.WordBreakClass == WordBreakClass.RegionalIndicator &&
                 right == WordBreakClass.RegionalIndicator &&
-                (CountRegionalIndicatorsBefore(next.Start) & 1) == 1)
+                _oddRegionalIndicatorRun)
             {
                 return false;
             }
 
             return true;
+        }
+
+        // Extends the left-hand context by one code point. WB4 treats Extend, Format and ZWJ as
+        // transparent, so they leave the regional indicator run they sit inside intact.
+        private void Consume(WordBreakClass wordBreakClass)
+        {
+            if (IsIgnored(wordBreakClass))
+            {
+                return;
+            }
+
+            _oddRegionalIndicatorRun = wordBreakClass == WordBreakClass.RegionalIndicator &&
+                !_oddRegionalIndicatorRun;
         }
 
         private readonly WordBreakUnit GetEffectivePrevious(in WordBreakUnit current)
@@ -224,25 +246,6 @@ namespace Avalonia.Media.TextFormatting.Unicode
             }
 
             return current;
-        }
-
-        private readonly int CountRegionalIndicatorsBefore(int end)
-        {
-            var count = 0;
-            var scanEnd = end;
-
-            while (TryGetPreviousSignificant(scanEnd, out var previous))
-            {
-                if (previous.WordBreakClass != WordBreakClass.RegionalIndicator)
-                {
-                    break;
-                }
-
-                count++;
-                scanEnd = previous.Start;
-            }
-
-            return count;
         }
 
         private readonly bool TryGetPreviousSignificant(int end, out WordBreakUnit codepoint)

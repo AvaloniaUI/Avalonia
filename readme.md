@@ -8,7 +8,7 @@
 
 [Avalonia](https://avaloniaui.net?utm_source=github&utm_medium=referral&utm_content=readme_link) is a cross-platform UI framework for dotnet, providing a flexible styling system and supporting a wide range of platforms such as Windows, macOS, Linux, iOS, Android and WebAssembly. Avalonia is mature and production ready and is used by companies, including [Schneider Electric](https://avaloniaui.net/showcase#se), [Unity](https://avaloniaui.net/showcase#unity), [JetBrains](https://avaloniaui.net/showcase#rider) and [GitHub](https://avaloniaui.net/showcase#github).
 
-Considered by many to be the spiritual successor to WPF, Avalonia UI provides a familiar, modern development experience for XAML developers creating cross-platform applications. While Avalonia UI is [similar to WPF](https://docs.avaloniaui.net/docs/next/get-started/wpf/), it isn't a 1:1 copy, and you'll find plenty of improvements. 
+Considered by many to be the spiritual successor to WPF, Avalonia UI provides a familiar, modern development experience for XAML developers creating cross-platform applications. While Avalonia UI is [similar to WPF](https://docs.avaloniaui.net/docs/migration/wpf), it isn't a 1:1 copy, and you'll find plenty of improvements. 
 
 For those seeking a cross-platform WPF, we have created [Avalonia XPF](https://avaloniaui.net/xpf?utm_source=github&utm_medium=referral&utm_content=readme_link), enabling WPF applications to run on macOS and Linux with little to no code changes. Avalonia XPF is a commercial product and is licensed per-app, per-platform. 
 
@@ -78,6 +78,8 @@ See the [build instructions here](docs/build.md).
 ## Contributing
 
 This project exists thanks to all the people who contribute. Please read the [contribution guidelines](CONTRIBUTING.md) before submitting a pull request.
+
+New contributors need to be [vouched for](CONTRIBUTING.md#getting-vouched) by a maintainer before their pull requests are accepted.
 
 ### Code of Conduct
 

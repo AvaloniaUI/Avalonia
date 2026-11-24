@@ -1335,8 +1335,9 @@ namespace Avalonia.Controls
                             sizeToDistribute -= newMinSize;
                         }
 
-                        //  sanity check: requested size must all be distributed
-                        Debug.Assert(MathUtilities.IsZero(sizeToDistribute));
+                        //  sanity check: requested size must all be distributed, up to a rounding residual
+                        //  relative to the requested size
+                        Debug.Assert(MathUtilities.AreClose(requestedSize - sizeToDistribute, requestedSize));
                     }
                     else if (requestedSize <= rangeMaxSize)
                     {
@@ -1379,8 +1380,9 @@ namespace Avalonia.Controls
                             sizeToDistribute -= (tempDefinition.MinSize - preferredSize);
                         }
 
-                        //  sanity check: requested size must all be distributed
-                        Debug.Assert(MathUtilities.IsZero(sizeToDistribute));
+                        //  sanity check: requested size must all be distributed, up to a rounding residual
+                        //  relative to the requested size
+                        Debug.Assert(MathUtilities.AreClose(requestedSize - sizeToDistribute, requestedSize));
                     }
                     else
                     {

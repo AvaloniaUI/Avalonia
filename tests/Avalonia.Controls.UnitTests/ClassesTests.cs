@@ -6,6 +6,9 @@ namespace Avalonia.Controls.UnitTests
 {
     public class ClassesTests : ScopedTestBase
     {
+        // Culture-sensitive comparisons ignore the soft hyphen, so they see this class as starting with ':'.
+        private const string SoftHyphenClass = "\u00AD:foo";
+
         [Fact]
         public void Duplicates_Should_Not_Be_Added()
         {
@@ -158,6 +161,36 @@ namespace Avalonia.Controls.UnitTests
             target.Clear();
 
             Assert.Equal(new[] { ":baz" }, target);
+        }
+
+        [Fact]
+        public void Should_Be_Able_To_Add_Class_With_Soft_Hyphen_Before_Colon()
+        {
+            var target = new Classes();
+
+            target.Add(SoftHyphenClass);
+
+            Assert.Equal(new[] { SoftHyphenClass }, target);
+        }
+
+        [Fact]
+        public void Replace_Should_Replace_Class_With_Soft_Hyphen_Before_Colon()
+        {
+            var target = new Classes(SoftHyphenClass);
+
+            target.Replace(new[] { "foo" });
+
+            Assert.Equal(new[] { "foo" }, target);
+        }
+
+        [Fact]
+        public void Clear_Should_Remove_Class_With_Soft_Hyphen_Before_Colon()
+        {
+            var target = new Classes(SoftHyphenClass);
+
+            target.Clear();
+
+            Assert.Empty(target);
         }
 
         [Fact]

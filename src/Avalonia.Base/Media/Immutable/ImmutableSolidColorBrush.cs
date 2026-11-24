@@ -13,11 +13,30 @@ namespace Avalonia.Media.Immutable
         /// <param name="color">The color to use.</param>
         /// <param name="opacity">The opacity of the brush.</param>
         /// <param name="transform">The transform of the brush.</param>
+        // TODO13: remove, folding relativeTransform into the overload below as an optional parameter.
         public ImmutableSolidColorBrush(Color color, double opacity = 1, ImmutableTransform? transform = null)
+            : this(color, opacity, transform, null)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ImmutableSolidColorBrush"/> class.
+        /// </summary>
+        /// <param name="color">The color to use.</param>
+        /// <param name="opacity">The opacity of the brush.</param>
+        /// <param name="transform">The transform of the brush.</param>
+        /// <param name="relativeTransform">The transform of the brush in the relative coordinate
+        /// space of the area being painted, applied before <paramref name="transform"/>.</param>
+        public ImmutableSolidColorBrush(
+            Color color,
+            double opacity,
+            ImmutableTransform? transform,
+            ImmutableTransform? relativeTransform)
         {
             Color = color;
             Opacity = opacity;
             Transform = transform;
+            RelativeTransform = relativeTransform;
         }
 
         /// <summary>
@@ -34,7 +53,8 @@ namespace Avalonia.Media.Immutable
         /// </summary>
         /// <param name="source">The brush from which this brush's properties should be copied.</param>
         public ImmutableSolidColorBrush(ISolidColorBrush source)
-            : this(source.Color, source.Opacity, source.Transform?.ToImmutable())
+            : this(source.Color, source.Opacity, source.Transform?.ToImmutable(),
+                  source.RelativeTransform?.ToImmutable())
         {
         }
 
@@ -58,11 +78,15 @@ namespace Avalonia.Media.Immutable
         /// </summary>
         public RelativePoint TransformOrigin { get; }
 
+        /// <inheritdoc/>
+        public ITransform? RelativeTransform { get; }
+
         public bool Equals(ImmutableSolidColorBrush? other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
-            return Color.Equals(other.Color) && Opacity.Equals(other.Opacity) && (Transform == null && other.Transform == null ? true : (Transform != null && Transform.Equals(other.Transform)));
+            return Color.Equals(other.Color) && Opacity.Equals(other.Opacity)
+                   && Equals(Transform, other.Transform) && Equals(RelativeTransform, other.RelativeTransform);
         }
 
         public override bool Equals(object? obj)
@@ -74,7 +98,8 @@ namespace Avalonia.Media.Immutable
         {
             unchecked
             {
-                return (Color.GetHashCode() * 397) ^ Opacity.GetHashCode() ^ (Transform is null ? 0 : Transform.GetHashCode());
+                return (Color.GetHashCode() * 397) ^ Opacity.GetHashCode() ^ (Transform is null ? 0 : Transform.GetHashCode())
+                       ^ (RelativeTransform is null ? 0 : RelativeTransform.GetHashCode());
             }
         }
 

@@ -18,6 +18,8 @@ namespace Avalonia.Media.TextFormatting
             if (properties.Width < shapedSymbol.GlyphRun.Bounds.Width)
             {
                 //Not enough space to fit in the symbol
+                shapedSymbol.Dispose();
+
                 return [];
             }
 
@@ -46,6 +48,8 @@ namespace Avalonia.Media.TextFormatting
 
                                         while (currentBreakPosition < measuredLength && wordBreaker.MoveNext(out var wordSegment))
                                         {
+                                            // TODO13: a WordSegment can carry an empty Text, so Length is the only
+                                            // code-unit width valid for every segment.
                                             var nextBreakPosition = wordSegment.Offset + wordSegment.Length;
 
                                             if (nextBreakPosition == 0)
@@ -78,7 +82,7 @@ namespace Avalonia.Media.TextFormatting
 
                                 collapsedLength += measuredLength;
 
-                                return TextCollapsingProperties.CreateCollapsedRuns(textLine, collapsedLength, shapedSymbol);
+                                return TextCollapsingProperties.CreateOwnedCollapsedRuns(textLine, collapsedLength, shapedSymbol);
                             }
 
                             availableWidth -= textRunWidth;
@@ -91,7 +95,7 @@ namespace Avalonia.Media.TextFormatting
                             //The whole run needs to fit into available space
                             if (drawableRun.Size.Width > availableWidth)
                             {
-                                return TextCollapsingProperties.CreateCollapsedRuns(textLine, collapsedLength, shapedSymbol);
+                                return TextCollapsingProperties.CreateOwnedCollapsedRuns(textLine, collapsedLength, shapedSymbol);
                             }
 
                             availableWidth -= drawableRun.Size.Width;
@@ -102,6 +106,8 @@ namespace Avalonia.Media.TextFormatting
 
                 collapsedLength += currentRun.Length;
             }
+
+            shapedSymbol.Dispose();
 
             return null;
         }

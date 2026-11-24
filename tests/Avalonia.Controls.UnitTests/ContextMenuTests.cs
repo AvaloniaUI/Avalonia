@@ -380,6 +380,36 @@ namespace Avalonia.Controls.UnitTests
                 _popupImpl.Verify(x => x.Show(true, false), Times.Exactly(2));
             }
         }
+
+        [Fact]
+        public void ContextMenu_With_Pointer_Placement_Resizes_When_Items_Are_Added()
+        {
+            using (Application())
+            {
+                var sut = new ContextMenu();
+                sut.Items.Add(new MenuItem { Header = "One" });
+                var target = new Panel
+                {
+                    ContextMenu = sut
+                };
+
+                var window = PreparedWindow(target);
+                window.Show();
+
+                _mouse.Click(target, MouseButton.Right);
+
+                Assert.True(sut.IsOpen);
+                var popupRoot = Assert.IsType<PopupRoot>(TopLevel.GetTopLevel(sut));
+                var initialSize = popupRoot.ClientSize;
+
+                sut.Items.Add(new MenuItem { Header = "Two" });
+                sut.Items.Add(new MenuItem { Header = "Three" });
+                popupRoot.UpdateLayout();
+
+                Assert.True(popupRoot.DesiredSize.Height > initialSize.Height);
+                Assert.Equal(popupRoot.DesiredSize.Height, popupRoot.ClientSize.Height);
+            }
+        }
         
         [Fact]
         public void Context_Menu_Can_Be_Shared_Between_Controls_Even_After_A_Control_Is_Removed_From_Visual_Tree()

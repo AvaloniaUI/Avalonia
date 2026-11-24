@@ -12,6 +12,7 @@ namespace Avalonia.Rendering.Composition.Server
     internal partial class ServerCompositionSimpleBrush : IBrush
     {
         ITransform? IBrush.Transform => Transform;
+        ITransform? IBrush.RelativeTransform => RelativeTransform;
     }
 
     internal class ServerCompositionSimpleGradientBrush : ServerCompositionSimpleBrush, IGradientBrush

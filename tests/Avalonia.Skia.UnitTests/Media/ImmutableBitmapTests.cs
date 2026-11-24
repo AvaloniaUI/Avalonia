@@ -1,5 +1,7 @@
 using System;
+using System.IO;
 using System.Runtime.InteropServices;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Xunit;
 
@@ -7,6 +9,19 @@ namespace Avalonia.Skia.UnitTests.Media
 {
     public class ImmutableBitmapTests
     {
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Constructor_From_Invalid_Encoded_Data_Throws_ArgumentException(bool horizontal)
+        {
+            using var stream = new MemoryStream(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7 });
+
+            var exception = Assert.Throws<ArgumentException>(() =>
+                new ImmutableBitmap(stream, 48, horizontal, BitmapInterpolationMode.HighQuality));
+
+            Assert.Equal("Unable to load bitmap from provided data", exception.Message);
+        }
+
         [Theory]
         [InlineData(1, 1, false)]
         [InlineData(3, 5, false)]

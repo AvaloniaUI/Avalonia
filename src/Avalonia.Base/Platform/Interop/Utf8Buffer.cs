@@ -11,17 +11,24 @@ namespace Avalonia.Platform.Interop
     {
         private GCHandle _gcHandle;
         private byte[]? _data;
-            
+        private int _byteLen;
+
         public Utf8Buffer(string? s) : base(IntPtr.Zero, true)
         {
             if (s == null)
                 return;
-            _data = Encoding.UTF8.GetBytes(s);
+            _byteLen = Encoding.UTF8.GetByteCount(s);
+            // The extra zero byte is the C string terminator.
+            _data = new byte[_byteLen + 1];
+            Encoding.UTF8.GetBytes(s, 0, s.Length, _data, 0);
             _gcHandle = GCHandle.Alloc(_data, GCHandleType.Pinned);
             handle = _gcHandle.AddrOfPinnedObject();
         }
 
-        public int ByteLen => _data?.Length ?? 0;
+        /// <summary>
+        /// The length of the string in bytes, without the terminating zero.
+        /// </summary>
+        public int ByteLen => _byteLen;
 
         protected override bool ReleaseHandle()
         {
@@ -29,6 +36,7 @@ namespace Avalonia.Platform.Interop
             {
                 handle = IntPtr.Zero;
                 _data = null;
+                _byteLen = 0;
                 _gcHandle.Free();
             }
             return true;

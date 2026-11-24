@@ -131,11 +131,10 @@ internal partial class MediaContext : ICompositorScheduler
         }
     }
     
-    private void RenderCore()
+    private void PulseAndFireInvokeOnRenderCallbacks(bool pulseClock)
     {
-        var now = _time.Elapsed;
-        if (!_animationsAreWaitingForComposition)
-            _clock.Pulse(now);
+        if (pulseClock)
+            _clock.Pulse(_time.Elapsed);
 
         // Since new animations could be started during the layout and can affect layout/render
         // We are doing several iterations when it happens
@@ -151,6 +150,11 @@ internal partial class MediaContext : ICompositorScheduler
 
             break;
         }
+    }
+
+    private void RenderCore()
+    {
+        PulseAndFireInvokeOnRenderCallbacks(!_animationsAreWaitingForComposition);
         
         if (_requestedCommits.Count > 0 || _clock.HasSubscriptions)
         {

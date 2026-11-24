@@ -12,7 +12,10 @@
         CanMaximize="{Binding CanMaximize}"
         WindowDrawnDecorations.TitleBarDecorations="{Binding TitleBarDecorations}"
         Win32Properties.WindowCornerPreference="{Binding Win32WindowCornerPreference}"
-        x:Class="ControlCatalog.MainWindow" WindowState="{Binding WindowState, Mode=TwoWay}"
+        x:Class="ControlCatalog.MainWindow"
+        WindowState="{Binding SettingsViewModel.WindowState, Mode=TwoWay}"
+        WindowDecorations="{Binding SettingsViewModel.CurrentWindowDecorations}"
+        FlowDirection="{Binding SettingsViewModel.CurrentFlowDirection}"
         x:DataType="vm:MainWindowViewModel">
   <NativeMenu.Menu>
     <NativeMenu>
@@ -37,13 +40,13 @@
       </NativeMenuItem>
       <NativeMenuItem Header="Options">
         <NativeMenu>
-          <NativeMenuItem Header="Check Me (None)" 
+          <NativeMenuItem Header="Check Me (None)"
                           ToggleType="None" />
-          <NativeMenuItem Header="Check Me (CheckBox)" 
+          <NativeMenuItem Header="Check Me (CheckBox)"
                           ToggleType="CheckBox" />
-          <NativeMenuItem Header="Check Me (Radio 1)" 
+          <NativeMenuItem Header="Check Me (Radio 1)"
                           ToggleType="Radio" />
-          <NativeMenuItem Header="Check Me (Radio 2)" 
+          <NativeMenuItem Header="Check Me (Radio 2)"
                           ToggleType="Radio" />
         </NativeMenu>
       </NativeMenuItem>
@@ -56,23 +59,14 @@
     </DataTemplate>
   </Window.DataTemplates>
   <Panel>
-    <Panel Margin="{Binding $parent[local:MainWindow].OffScreenMargin}">
-      <local:MainView Margin="{Binding $parent[local:MainWindow].WindowDecorationMargin}" />
-    </Panel>
-    <Border IsVisible="{Binding ExtendClientAreaEnabled}"
-            BorderThickness="1"
-            CornerRadius="4"
-            BorderBrush="#55000000"
-            VerticalAlignment="Top"
-            HorizontalAlignment="Left"
-            Margin="250,0,0,0"
-            Height="{Binding $parent[local:MainWindow].WindowDecorationMargin.Top}">
-      <Border.Background>
-        <SolidColorBrush Color="DodgerBlue" Opacity="0.7" />
-      </Border.Background>
-      <TextBlock Text="Content In Title Bar"
-                 Margin="4"
-                 VerticalAlignment="Center" />
-    </Border>
+    <ContentControl Name="ContentHost" 
+                    Content="{Binding}" 
+                    Margin="{Binding $parent[local:MainWindow].OffScreenMargin}">
+      <ContentControl.ContentTemplate>
+        <DataTemplate x:DataType="vm:MainWindowViewModel">
+          <local:MainView Margin="{Binding $parent[local:MainWindow].WindowDecorationMargin}" />
+        </DataTemplate>
+      </ContentControl.ContentTemplate>
+    </ContentControl>
   </Panel>
 </Window>

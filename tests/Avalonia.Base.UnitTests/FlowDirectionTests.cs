@@ -1,9 +1,10 @@
 using Avalonia.Media;
 using Xunit;
+using Avalonia.UnitTests;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class FlowDirectionTests
+    public class FlowDirectionTests : ScopedTestBase
     {
         [Fact]
         public void HasMirrorTransform_Should_Be_True()

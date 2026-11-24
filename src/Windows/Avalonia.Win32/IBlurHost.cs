@@ -12,6 +12,4 @@ internal enum BlurEffect
 internal interface ICompositionEffectsSurface
 {
     bool IsBlurSupported(BlurEffect effect);
-
-    void SetBlur(BlurEffect enable);
 }

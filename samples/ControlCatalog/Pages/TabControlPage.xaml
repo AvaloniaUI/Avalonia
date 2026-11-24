@@ -5,6 +5,9 @@
              Header="TabControl"
     xmlns:viewModels="using:ControlCatalog.ViewModels"
     x:DataType="viewModels:TabControlPageViewModel">
+  <ContentPage.Resources>
+    <StreamGeometry x:Key="LeafIcon">M2.002 4.705V9a6 6 0 0 0 6.293 5.993 7 7 0 0 0 1.259 2.394l-2.33 2.329a.75.75 0 0 0 1.06 1.06l2.33-2.329a6.999 6.999 0 0 0 11.389-5.451V7.748a1.75 1.75 0 0 0-1.75-1.75h-5.249c-.583 0-1.15.071-1.692.205A6 6 0 0 0 8.002 3H3.707c-.941 0-1.705.763-1.705 1.705m9.682 12.674 4.096-4.094a.75.75 0 0 0-1.06-1.06l-4.097 4.094a5.499 5.499 0 0 1 4.382-8.821h5.248a.25.25 0 0 1 .25.25v5.248a5.499 5.499 0 0 1-8.82 4.383M8.002 4.5c1.657 0 3.105.895 3.886 2.228a7.03 7.03 0 0 0-2.71 2.39L7.28 7.22a.75.75 0 0 0-1.06 1.06l2.237 2.238a7 7 0 0 0-.433 2.982h-.022a4.5 4.5 0 0 1-4.5-4.5V4.705c0-.113.092-.205.205-.205z</StreamGeometry>
+  </ContentPage.Resources>
     <DockPanel Classes.WithContentTemplates="{Binding IsChecked, ElementName=UseContentTemplates}">
         <DockPanel.Styles>
             <Style Selector="DockPanel.WithContentTemplates">
@@ -53,6 +56,12 @@
                         </StackPanel>
                     </TabItem>
                     <TabItem Header="_Leaf">
+                        <TabItem.Icon>
+                          <PathIcon
+                            Width="16"
+                            Height="16"
+                            Data="{StaticResource LeafIcon}"/>
+                        </TabItem.Icon>
                         <StackPanel Orientation="Vertical" Spacing="8">
                             <TextBlock>This is the second page in the TabControl.</TextBlock>
                             <Image Source="/Assets/maple-leaf-888807_640.jpg" Width="300"/>

@@ -6,6 +6,7 @@ using System.Reactive.Disposables;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
@@ -1082,6 +1083,39 @@ namespace Avalonia.LeakTests
                 Assert.False(weakMenu.IsAlive);
 
                 GC.KeepAlive(window);
+            }
+        }
+
+        [ReleaseFact]
+        public void Detached_AccessText_Does_Not_Keep_Window_Alive()
+        {
+            using (Start())
+            {
+                static (WeakReference, AccessText) Run(string text)
+                {
+                    var accessText = new AccessText { Text = text };
+                    var window = new Window { Content = accessText };
+
+                    window.Show();
+                    window.LayoutManager.ExecuteInitialLayoutPass();
+                    Assert.Same(accessText, window.Presenter!.Child);
+
+                    window.Content = null;
+                    window.LayoutManager.ExecuteLayoutPass();
+                    window.Close();
+
+                    return (new WeakReference(window), accessText);
+                }
+
+                foreach (var text in new[] { "_Add", "+" })
+                {
+                    var (weakWindow, accessText) = Run(text);
+
+                    CollectGarbage();
+
+                    Assert.False(weakWindow.IsAlive, $"Window kept alive by '{text}'");
+                    GC.KeepAlive(accessText);
+                }
             }
         }
 
