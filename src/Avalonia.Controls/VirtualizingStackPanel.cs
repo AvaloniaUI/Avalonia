@@ -239,7 +239,7 @@ namespace Avalonia.Controls
                 for (var i = 0; i < _leadingElementSizes.Length; ++i)
                 {
                     var index = double.IsNaN(_leadingElementSizes[i].Size) ?
-                        _realizedElements.FirstIndex + i : _leadingElementSizes[i].Index;
+                        i : _leadingElementSizes[i].Index;
                     if (_realizedElements.GetElement(index) is { } element)
                         _leadingElementSizes[i] = (index, orientation == Orientation.Horizontal ?
                             element.DesiredSize.Width : element.DesiredSize.Height);
@@ -370,8 +370,19 @@ namespace Avalonia.Controls
             };
             for (var i = 0; i < _leadingElementSizes.Length; ++i)
             {
-                if (_leadingElementSizes[i].Index >= firstChangedIndex)
-                    _leadingElementSizes[i] = (-1, double.NaN);
+                var (index, size) = _leadingElementSizes[i];
+                if (index < firstChangedIndex)
+                    continue;
+
+                _leadingElementSizes[i] = e.Action switch
+                {
+                    NotifyCollectionChangedAction.Add => (index + e.NewItems!.Count, size),
+                    NotifyCollectionChangedAction.Remove when index >= e.OldStartingIndex + e.OldItems!.Count =>
+                        (index - e.OldItems.Count, size),
+                    NotifyCollectionChangedAction.Replace when index >= e.OldStartingIndex + e.OldItems!.Count =>
+                        (index, size),
+                    _ => (-1, double.NaN),
+                };
             }
             InvalidateMeasure();
 
@@ -842,6 +853,9 @@ namespace Avalonia.Controls
         {
             var orientation = Orientation;
             var constraintsChanged = _lastMeasureSize != availableSize;
+            var crossAxisChanged = _lastMeasureSize is { } previousMeasureSize &&
+                (orientation == Orientation.Vertical ? previousMeasureSize.Width != availableSize.Width :
+                    previousMeasureSize.Height != availableSize.Height);
 
             if (_lastMeasureOrientation != orientation)
             {
@@ -857,7 +871,13 @@ namespace Avalonia.Controls
 
             var resized = realized.MeasureElements(orientation, availableSize);
 
-            if ((!resized && !constraintsChanged) || realized.FirstIndex <= 0 || double.IsNaN(realized.StartU))
+            // A new wrapping constraint can resize the prefix even when the sampled
+            // items are fixed-size headers.
+            if (resized && crossAxisChanged)
+                realized.InvalidateStartU();
+
+            var needsBaseline = Array.Exists(_leadingElementSizes, x => double.IsNaN(x.Size));
+            if ((!resized && !constraintsChanged && !needsBaseline) || realized.FirstIndex <= 0 || double.IsNaN(realized.StartU))
                 return;
 
             // The visible sizes alone cannot distinguish a local edit from a collection-wide
@@ -867,7 +887,11 @@ namespace Avalonia.Controls
             for (var i = 0; i < _leadingElementSizes.Length; ++i)
             {
                 var (index, previousSize) = _leadingElementSizes[i];
-                if (double.IsNaN(previousSize) || index < 0 || index >= realized.FirstIndex || index >= Items.Count)
+                // Replacements and resets can remove every sample. Establish the new
+                // baseline from preceding items, rather than from the visible range.
+                if (double.IsNaN(previousSize))
+                    index = i;
+                if (index < 0 || index >= realized.FirstIndex || index >= Items.Count)
                     continue;
 
                 var element = index == _focusedIndex ? _focusedElement :
@@ -883,7 +907,7 @@ namespace Avalonia.Controls
                     var size = orientation == Orientation.Horizontal ?
                         element.DesiredSize.Width : element.DesiredSize.Height;
 
-                    if (size != previousSize)
+                    if (!double.IsNaN(previousSize) && size != previousSize)
                         realized.InvalidateStartU();
 
                     _leadingElementSizes[i] = (index, size);
@@ -894,7 +918,9 @@ namespace Avalonia.Controls
                     _realizingElement = null;
 
                     if (recycle && element is not null)
-                        RecycleElement(element, index);
+                        // A temporary probe must not become the retained focus element
+                        // if a removed container still has the tab-once marker.
+                        RecycleElementOnItemRemoved(element);
                 }
             }
         }

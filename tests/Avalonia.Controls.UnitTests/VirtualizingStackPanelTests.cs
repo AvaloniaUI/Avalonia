@@ -1818,6 +1818,96 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Theory]
+        [InlineData("replace")]
+        [InlineData("replace-both")]
+        [InlineData("insert")]
+        public void Prefix_Change_Followed_By_Collection_Wide_Shrink_Updates_Extent(string change)
+        {
+            using var app = App();
+            var items = new ObservableCollection<ItemWithHeight>(Enumerable.Range(0, 100)
+                .Select(i => new ItemWithHeight(i, 500)));
+            var (target, scroll, _) = CreateTarget(items: items, itemTemplate: CanvasWithHeightTemplate);
+            scroll.Offset = new Vector(0, 25000);
+            Layout(target);
+            Assert.Equal(50, target.FirstRealizedIndex);
+            Assert.Equal(50, target.LastRealizedIndex);
+
+            if (change == "insert")
+                items.Insert(0, new ItemWithHeight(100, 500));
+            else
+            {
+                items[0] = new ItemWithHeight(100, 500);
+                if (change == "replace-both")
+                    items[1] = new ItemWithHeight(101, 500);
+            }
+            Layout(target);
+
+            foreach (var item in items)
+                item.Height = 25;
+            Layout(target);
+
+            Assert.Equal(items.Count * 25, scroll.Extent.Height);
+            Assert.Equal(items.Count * 25 - 100, scroll.Offset.Y);
+            Assert.Equal(items.Count - 4, target.FirstRealizedIndex);
+            Assert.Equal(items.Count - 1, target.LastRealizedIndex);
+        }
+
+        [Theory]
+        [InlineData(Orientation.Vertical)]
+        [InlineData(Orientation.Horizontal)]
+        public void Collection_Wide_Shrink_With_One_Realized_Item_Updates_Origin(Orientation orientation)
+        {
+            using var app = App();
+            var horizontal = orientation == Orientation.Horizontal;
+            var items = Enumerable.Range(0, 100).Select(_ => new Canvas
+            {
+                Width = horizontal ? 500 : 100,
+                Height = horizontal ? 100 : 500,
+            }).ToArray();
+            var (target, scroll, _) = CreateTarget(items: items, itemTemplate: null, orientation: orientation);
+            scroll.Offset = horizontal ? new Vector(25000, 0) : new Vector(0, 25000);
+            Layout(target);
+            Assert.Equal(50, target.FirstRealizedIndex);
+            Assert.Equal(50, target.LastRealizedIndex);
+
+            foreach (var item in items)
+            {
+                if (horizontal)
+                    item.Width = 250;
+                else
+                    item.Height = 250;
+            }
+            Layout(target);
+
+            Assert.Equal(25000, horizontal ? scroll.Extent.Width : scroll.Extent.Height);
+            Assert.Equal(24900, horizontal ? scroll.Offset.X : scroll.Offset.Y);
+            Assert.Equal(99, target.FirstRealizedIndex);
+            Assert.Equal(99, target.LastRealizedIndex);
+        }
+
+        [Fact]
+        public void Width_Change_With_Fixed_Headers_Updates_Wrapping_Row_Origin()
+        {
+            using var app = App();
+            var items = Enumerable.Range(0, 100).Select(i => new ItemWithHeight(i, 50)).ToArray();
+            var template = new FuncDataTemplate<ItemWithHeight>((item, _) => item == items[0] || item == items[1] ?
+                new Canvas { Width = 100, Height = 50 } : new WrappingControl());
+            var (target, scroll, itemsControl) = CreateUnrootedTarget<ItemsControl>(items: items, itemTemplate: template);
+            var root = CreateRoot(itemsControl);
+            root.LayoutManager.ExecuteInitialLayoutPass();
+            scroll.Offset = new Vector(0, 1000);
+            Layout(target);
+            Assert.Equal(20, target.FirstRealizedIndex);
+
+            root.ClientSize = new Size(50, 100);
+            root.InvalidateMeasure();
+            Layout(target);
+
+            Assert.InRange(target.FirstRealizedIndex, 10, 12);
+            Assert.True(scroll.Extent.Height > 9000);
+        }
+
+        [Theory]
         [InlineData(100d)]
         [InlineData(25d)]
         public void Local_Resize_Preserves_Origin_Even_When_New_Sizes_Are_Uniform(double newHeight)
