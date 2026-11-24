@@ -100,25 +100,22 @@ namespace Avalonia.Media
         private protected sealed override IGeometryImpl? CreateDefiningGeometry()
         {
             var factory = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
-            var geometry = factory.CreateStreamGeometry();
+            using var builder = factory.CreateStreamGeometryBuilder();
 
-            using (var context = geometry.Open())
+            builder.SetFillRule(_fillRule);
+            var points = Points;
+            var isFilled = IsFilled;
+            if (points.Count > 0)
             {
-                context.SetFillRule(_fillRule);
-                var points = Points;
-                var isFilled = IsFilled;
-                if (points.Count > 0)
+                builder.BeginFigure(points[0], isFilled);
+                for (int i = 1; i < points.Count; i++)
                 {
-                    context.BeginFigure(points[0], isFilled);
-                    for (int i = 1; i < points.Count; i++)
-                    {
-                        context.LineTo(points[i]);
-                    }
-                    context.EndFigure(isFilled);
+                    builder.LineTo(points[i]);
                 }
+                builder.EndFigure(isFilled);
             }
 
-            return geometry;
+            return builder.ToGeometry();
         }
 
         private void OnPointsChanged(IList<Point>? newValue)

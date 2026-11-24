@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Avalonia.Platform;
 using Avalonia.Utilities;
 
 namespace Avalonia.Media;
@@ -48,7 +49,7 @@ public sealed class PolyBezierSegment : PathSegment
         set => SetAndRaise(PointsProperty, ref _points, value);
     }
 
-    internal override void ApplyTo(StreamGeometryContext ctx)
+    internal override void ApplyTo(IGeometryContext ctx)
     {
         var isStroken = this.IsStroked;
         if (_points is { Count: > 0 } points)

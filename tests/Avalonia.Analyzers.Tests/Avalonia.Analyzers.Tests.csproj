@@ -5,7 +5,9 @@
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="System.Security.Cryptography.Pkcs" />
     <ProjectReference Include="..\..\src\Avalonia.Base\Avalonia.Base.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.Controls\Avalonia.Controls.csproj" />
     <ProjectReference Include="..\..\src\tools\Avalonia.Analyzers.CSharp\Avalonia.Analyzers.CSharp.csproj" />
     <ProjectReference Include="..\..\src\tools\Avalonia.Analyzers.CodeFixes.CSharp\Avalonia.Analyzers.CodeFixes.CSharp.csproj" />
     <!-- The testing packages float on ancient minimum Roslyn versions; pin the repo version. -->

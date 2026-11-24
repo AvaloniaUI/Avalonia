@@ -8,17 +8,20 @@ private:
 public:
     FORWARD_IUNKNOWN()
 
-    Screens(IAvnScreenEvents* events) {
+    Screens(const ComPtr<IAvnScreenEvents>& events) {
         _events = events;
         CGDisplayRegisterReconfigurationCallback(CGDisplayReconfigurationCallBack, this);
+    }
+
+    virtual ~Screens()
+    {
+        CGDisplayRemoveReconfigurationCallback(CGDisplayReconfigurationCallBack, this);
     }
 
     virtual HRESULT GetScreenIds (
         unsigned int* ptrFirstResult,
         int* screenCound) override
     {
-        START_COM_CALL;
-        
         @autoreleasepool
         {
             auto screens = [NSScreen screens];
@@ -40,8 +43,6 @@ public:
        void** localizedName,
        AvnScreen* ret
     ) override {
-        START_COM_CALL;
-        
         @autoreleasepool
         {
             NSScreen* screen;
@@ -89,7 +90,8 @@ public:
             }
 
             if (@available(macOS 10.15, *)) {
-                *localizedName = CreateAvnString([screen localizedName]);
+                // Untyped out-param in the IDL: the caller takes ownership
+                *localizedName = CreateAvnString([screen localizedName]).getRetainedReference();
             }
 
             return S_OK;
@@ -107,7 +109,7 @@ private:
     }
 };
 
-extern IAvnScreens* CreateScreens(IAvnScreenEvents* events)
+extern ComPtr<IAvnScreens> CreateScreens(const ComPtr<IAvnScreenEvents>& events)
 {
-    return new Screens(events);
+    return comnew<Screens>(events);
 }

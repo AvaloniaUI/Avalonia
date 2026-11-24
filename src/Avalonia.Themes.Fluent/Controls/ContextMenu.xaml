@@ -30,9 +30,6 @@
     </Border>
   </Design.PreviewWith>
 
-  <!--  Added missing resource  -->
-  <Thickness x:Key="MenuFlyoutScrollerMargin">0,4,0,4</Thickness>
-
   <ControlTheme x:Key="{x:Type ContextMenu}" TargetType="ContextMenu">
     <Setter Property="Background" Value="{DynamicResource MenuFlyoutPresenterBackground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource MenuFlyoutPresenterBorderBrush}" />

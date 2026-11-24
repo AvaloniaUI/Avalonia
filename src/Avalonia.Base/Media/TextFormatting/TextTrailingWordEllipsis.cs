@@ -33,6 +33,9 @@
 
         public override FlowDirection FlowDirection { get; }
 
+        /// <inheritdoc/>
+        internal override bool ReturnsOwnedRuns => true;
+
         /// <inheritdoc />
         public override TextRun[]? Collapse(TextLine textLine)
         {

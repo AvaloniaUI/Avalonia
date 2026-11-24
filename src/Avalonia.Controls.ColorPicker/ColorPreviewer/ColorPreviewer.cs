@@ -22,7 +22,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public event EventHandler<ColorChangedEventArgs>? ColorChanged;
 
-        private bool eventsConnected = false;
+        private bool _eventsConnected = false;
 
         // XAML template parts
         private Border? _accentDecrement1Border;
@@ -43,7 +43,7 @@ namespace Avalonia.Controls.Primitives
         /// <param name="connected">True to connect event handlers, otherwise false.</param>
         private void ConnectEvents(bool connected)
         {
-            if (connected == true && eventsConnected == false)
+            if (connected == true && _eventsConnected == false)
             {
                 // Add all events
                 if (_accentDecrement1Border != null) { _accentDecrement1Border.PointerPressed += AccentBorder_PointerPressed; }
@@ -51,9 +51,9 @@ namespace Avalonia.Controls.Primitives
                 if (_accentIncrement1Border != null) { _accentIncrement1Border.PointerPressed += AccentBorder_PointerPressed; }
                 if (_accentIncrement2Border != null) { _accentIncrement2Border.PointerPressed += AccentBorder_PointerPressed; }
 
-                eventsConnected = true;
+                _eventsConnected = true;
             }
-            else if (connected == false && eventsConnected == true)
+            else if (connected == false && _eventsConnected == true)
             {
                 // Remove all events
                 if (_accentDecrement1Border != null) { _accentDecrement1Border.PointerPressed -= AccentBorder_PointerPressed; }
@@ -61,7 +61,7 @@ namespace Avalonia.Controls.Primitives
                 if (_accentIncrement1Border != null) { _accentIncrement1Border.PointerPressed -= AccentBorder_PointerPressed; }
                 if (_accentIncrement2Border != null) { _accentIncrement2Border.PointerPressed -= AccentBorder_PointerPressed; }
 
-                eventsConnected = false;
+                _eventsConnected = false;
             }
         }
 

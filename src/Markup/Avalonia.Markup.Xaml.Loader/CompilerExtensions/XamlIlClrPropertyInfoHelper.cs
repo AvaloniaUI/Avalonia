@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Emit;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers;
 using XamlX.Ast;
 using XamlX.TypeSystem;
 using XamlX.IL;
 using XamlX.Emit;
+using XamlX.Transform;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 {
@@ -36,8 +38,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             if (_boxedTrue is null || _boxedFalse is null)
             {
                 var wellKnownTypes = context.Configuration.WellKnownTypes;
-                _boxedTrue = _builder.DefineField(wellKnownTypes.Object, "BooleanBox!True", XamlVisibility.Private, true);
-                _boxedFalse = _builder.DefineField(wellKnownTypes.Object, "BooleanBox!False", XamlVisibility.Private, true);
+                _boxedTrue = _builder.DefineField(wellKnownTypes.Object,
+                    context.Configuration.IdentifierGenerator.CreateIdentifierFromPreferredName("BooleanBox!True", 0),
+                    XamlVisibility.Private, true);
+                _boxedFalse = _builder.DefineField(wellKnownTypes.Object,
+                    context.Configuration.IdentifierGenerator.CreateIdentifierFromPreferredName("BooleanBox!False", 0),
+                    XamlVisibility.Private, true);
 
                 var cctor = _builder.DefineConstructor(true);
                 cctor.Generator
@@ -105,31 +111,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             return null;
         }
 
-        /// <summary>
-        /// Emits a delegate which invokes a property accessor, or a null reference if the property
-        /// has no such accessor.
-        /// </summary>
-        /// <param name="context">The emit context.</param>
-        /// <param name="emitter">The emitter to write to.</param>
-        /// <param name="method">The accessor to wrap, or null if the property has no accessor.</param>
-        /// <param name="del">The delegate type to construct.</param>
-        static void EmitFunc(
-            XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context,
-            IXamlILEmitter emitter,
-            IXamlMethod? method,
-            IXamlType del)
+        private static void EmitFunctionPointer(IXamlILEmitter emitter, IXamlMethod? method)
         {
             if (method == null)
-                emitter.Ldnull();
+                emitter.Ldc_I4(0).Emit(OpCodes.Conv_I);
             else
-            {
-                emitter
-                    .Ldnull()
-                    .Ldftn(method)
-                    .Newobj(del.Constructors.First(c =>
-                        c.Parameters.Count == 2 &&
-                        c.Parameters[0].Equals(context.Configuration.WellKnownTypes.Object)));
-            }
+                emitter.Ldftn(method);
         }
 
         public IXamlType Emit(
@@ -148,9 +135,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 if (GetCachedPropertyInfoMethod(_fields, key, property, out var lst) is { } cached)
                     return cached;
 
-                var name = lst.Count == 0 ? key : key + "_" + context.Configuration.IdentifierGenerator.GenerateIdentifierPart();
+                var name = context.Configuration.IdentifierGenerator.CreateIdentifierFromPreferredName(key, lst.Count);
                 
-                var field = _builder.DefineField(types.IPropertyInfo, name + "!Field", XamlVisibility.Private, true);
+                var field = _builder.DefineField(types.IPropertyInfo, name.AppendSuffix("!Field"), XamlVisibility.Private, true);
 
                 void Load(IXamlMethod m, IXamlILEmitter cg, bool passThis)
                 {
@@ -173,7 +160,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 var getter = property.Getter == null ?
                     null :
                     _builder.DefineMethod(types.XamlIlTypes.Object,
-                        new[] {types.XamlIlTypes.Object}, name + "!Getter", XamlVisibility.Private, true, false);
+                        new[] {types.XamlIlTypes.Object}, name.AppendSuffix("!Getter"), XamlVisibility.Private, true, false);
                 if (getter != null)
                 {
                     Load(property.Getter!, getter.Generator, !property.Getter!.IsStatic);
@@ -199,7 +186,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     null :
                     _builder.DefineMethod(types.XamlIlTypes.Void,
                         new[] {types.XamlIlTypes.Object, types.XamlIlTypes.Object},
-                        name + "!Setter", XamlVisibility.Private, true, false);
+                        name.AppendSuffix("!Setter"), XamlVisibility.Private, true, false);
                 if (setter != null)
                 {
                     Load(property.Setter!, setter.Generator, !property.Setter!.IsStatic);
@@ -217,28 +204,18 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 }
 
                 var get = _builder.DefineMethod(types.IPropertyInfo, Array.Empty<IXamlType>(),
-                    name + "!Property", XamlVisibility.Public, true, false);
+                    name.AppendSuffix("!Property"), XamlVisibility.Public, true, false);
 
 
-                var ctor = types.ClrPropertyInfo.Constructors.First(c =>
-                    c.Parameters.Count == 4 && c.IsStatic == false);
-                
-                var cacheMiss = get.Generator.DefineLabel();
+                var factory = types.GetPropertyInfoFromPointers.MakeGenericMethod([_builder, property.PropertyType]);
                 get.Generator
-                    .Ldsfld(field)
-                    .Brfalse(cacheMiss)
-                    .Ldsfld(field)
-                    .Ret()
-                    .MarkLabel(cacheMiss)
+                    .Emit(OpCodes.Ldsflda, field)
                     .Ldstr(property.Name);
 
-                EmitFunc(context, get.Generator, getter, ctor.Parameters[1]);
-                EmitFunc(context, get.Generator, setter, ctor.Parameters[2]);
+                EmitFunctionPointer(get.Generator, getter);
+                EmitFunctionPointer(get.Generator, setter);
                 get.Generator
-                    .Ldtype(property.PropertyType)
-                    .Newobj(ctor)
-                    .Stsfld(field)
-                    .Ldsfld(field)
+                    .EmitCall(factory)
                     .Ret();
 
                 lst.Add((property, get));
@@ -269,21 +246,14 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 if (GetCachedPropertyInfoMethod(_typedFields, key, property, out var lst) is { } cached)
                     return cached;
 
-                // Only construct the generic types on a cache miss: they're not needed when an
-                // existing property info method is reused.
-                var typedClrPropertyInfoType = types.ClrPropertyInfoT.MakeGenericType(sourceType, valueType);
-                var funcType = context.Configuration.WellKnownTypes.GetFuncOfT(2).MakeGenericType(sourceType, valueType);
-                var actionType = context.Configuration.WellKnownTypes.GetActionOfT(2).MakeGenericType(sourceType, valueType);
+                var name = context.Configuration.IdentifierGenerator.CreateIdentifierFromPreferredName(
+                    key + "!Typed", lst.Count);
 
-                var name = lst.Count == 0
-                    ? key + "!Typed"
-                    : key + "!Typed_" + context.Configuration.IdentifierGenerator.GenerateIdentifierPart();
-
-                var field = _builder.DefineField(typedPropertyInfoType, name + "!Field", XamlVisibility.Private, true);
+                var field = _builder.DefineField(typedPropertyInfoType, name.AppendSuffix("!Field"), XamlVisibility.Private, true);
 
                 var getter = property.Getter == null
                     ? null
-                    : _builder.DefineMethod(valueType, new[] { sourceType }, name + "!Getter", XamlVisibility.Private, true, false);
+                    : _builder.DefineMethod(valueType, new[] { sourceType }, name.AppendSuffix("!Getter"), XamlVisibility.Private, true, false);
                 if (getter != null)
                 {
                     if (!property.Getter!.IsStatic)
@@ -293,7 +263,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
                 var setter = property.Setter == null
                     ? null
-                    : _builder.DefineMethod(types.XamlIlTypes.Void, new[] { sourceType, valueType }, name + "!Setter", XamlVisibility.Private, true, false);
+                    : _builder.DefineMethod(types.XamlIlTypes.Void, new[] { sourceType, valueType }, name.AppendSuffix("!Setter"), XamlVisibility.Private, true, false);
                 if (setter != null)
                 {
                     if (!property.Setter!.IsStatic)
@@ -303,26 +273,17 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 }
 
                 var get = _builder.DefineMethod(typedPropertyInfoType, Array.Empty<IXamlType>(),
-                    name + "!Property", XamlVisibility.Public, true, false);
+                    name.AppendSuffix("!Property"), XamlVisibility.Public, true, false);
 
-                var ctor = typedClrPropertyInfoType.Constructors.First(c =>
-                    c.Parameters.Count == 3 && !c.IsStatic);
-
-                var cacheMiss = get.Generator.DefineLabel();
+                var factory = types.GetTypedPropertyInfoFromPointers.MakeGenericMethod([_builder, sourceType, valueType]);
                 get.Generator
-                    .Ldsfld(field)
-                    .Brfalse(cacheMiss)
-                    .Ldsfld(field)
-                    .Ret()
-                    .MarkLabel(cacheMiss)
+                    .Emit(OpCodes.Ldsflda, field)
                     .Ldstr(property.Name);
 
-                EmitFunc(context, get.Generator, getter, funcType);
-                EmitFunc(context, get.Generator, setter, actionType);
+                EmitFunctionPointer(get.Generator, getter);
+                EmitFunctionPointer(get.Generator, setter);
                 get.Generator
-                    .Newobj(ctor)
-                    .Stsfld(field)
-                    .Ldsfld(field)
+                    .EmitCall(factory)
                     .Ret();
 
                 lst.Add((property, get));

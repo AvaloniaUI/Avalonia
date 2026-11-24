@@ -26,56 +26,36 @@ internal sealed class SystemAccentColors : ResourceProvider
     public override bool HasResources => true;
     public override bool TryGetResource(object key, ThemeVariant? theme, out object? value)
     {
-        if (key is string strKey)
+        switch (key)
         {
-            if (strKey.Equals(AccentKey, StringComparison.InvariantCulture))
-            {
+            case AccentKey:
                 EnsureColors();
                 value = _systemAccentColor;
                 return true;
-            }
-
-            if (strKey.Equals(AccentDark1Key, StringComparison.InvariantCulture))
-            {
+            case AccentDark1Key:
                 EnsureColors();
                 value = _systemAccentColorDark1;
                 return true;
-            }
-
-            if (strKey.Equals(AccentDark2Key, StringComparison.InvariantCulture))
-            {
+            case AccentDark2Key:
                 EnsureColors();
                 value = _systemAccentColorDark2;
                 return true;
-            }
-
-            if (strKey.Equals(AccentDark3Key, StringComparison.InvariantCulture))
-            {
+            case AccentDark3Key:
                 EnsureColors();
                 value = _systemAccentColorDark3;
                 return true;
-            }
-
-            if (strKey.Equals(AccentLight1Key, StringComparison.InvariantCulture))
-            {
+            case AccentLight1Key:
                 EnsureColors();
                 value = _systemAccentColorLight1;
                 return true;
-            }
-
-            if (strKey.Equals(AccentLight2Key, StringComparison.InvariantCulture))
-            {
+            case AccentLight2Key:
                 EnsureColors();
                 value = _systemAccentColorLight2;
                 return true;
-            }
-
-            if (strKey.Equals(AccentLight3Key, StringComparison.InvariantCulture))
-            {
+            case AccentLight3Key:
                 EnsureColors();
                 value = _systemAccentColorLight3;
                 return true;
-            }
         }
 
         value = null;

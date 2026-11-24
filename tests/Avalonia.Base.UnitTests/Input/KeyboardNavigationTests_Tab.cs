@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Avalonia.Base.UnitTests.Input
 {
-    public class KeyboardNavigationTests_Tab
+    public class KeyboardNavigationTests_Tab : ScopedTestBase
     {
         [Fact]
         public void Next_Continue_Returns_Next_Control_In_Container()

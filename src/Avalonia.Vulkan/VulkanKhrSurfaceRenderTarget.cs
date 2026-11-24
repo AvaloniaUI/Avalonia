@@ -53,17 +53,26 @@ internal class VulkanKhrRenderTarget : IVulkanRenderTarget
     public IVulkanRenderSession BeginDraw()
     {
         var l = _context.EnsureCurrent();
-        _display.CommandBufferPool.FreeUsedCommandBuffers();
-        if (_display.EnsureSwapchainAvailable() || _image == null)
+        try
         {
-            DestroyImage();
-            CreateImage();
-        }
-        else
-            _image.TransitionLayout(VkImageLayout.VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-                VkAccessFlags.VK_ACCESS_NONE);
+            _display.CommandBufferPool.FreeUsedCommandBuffers();
+            if (_display.EnsureSwapchainAvailable() || _image == null)
+            {
+                DestroyImage();
+                CreateImage();
+            }
+            else
+                _image.TransitionLayout(VkImageLayout.VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                    VkAccessFlags.VK_ACCESS_NONE);
 
-        return new RenderingSession(_display, _image!, IsRgba, _platformSurface.Scaling, l);
+            return new RenderingSession(_display, _image!, IsRgba, _platformSurface.Scaling, l);
+        }
+        catch
+        {
+            // Release the device lock, otherwise every later frame blocks on it
+            l.Dispose();
+            throw;
+        }
     }
 
     public class RenderingSession : IVulkanRenderSession

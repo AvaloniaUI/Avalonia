@@ -17,8 +17,8 @@ namespace Avalonia.Automation.Peers
 
         public ExpandCollapseState ExpandCollapseState => ToState(Owner.IsDropDownOpen);
         public bool ShowsMenu => true;
-        public void Collapse() => Owner.IsDropDownOpen = false;
-        public void Expand() => Owner.IsDropDownOpen = true;
+        public void Collapse() => Owner.SetCurrentValue(AutoCompleteBox.IsDropDownOpenProperty, false);
+        public void Expand() => Owner.SetCurrentValue(AutoCompleteBox.IsDropDownOpenProperty, true);
         public bool IsReadOnly => false;
 
         public string? Value
@@ -29,11 +29,11 @@ namespace Avalonia.Automation.Peers
                 if (value == Owner.Text)
                     return;
 
-                Owner.Text = value;
+                Owner.SetCurrentValue(AutoCompleteBox.TextProperty, value);
             }
         }
 
-        void IValueProvider.SetValue(string? value) => Owner.Text = value;
+        void IValueProvider.SetValue(string? value) => Owner.SetCurrentValue(AutoCompleteBox.TextProperty, value);
 
         protected override AutomationControlType GetAutomationControlTypeCore()
         {

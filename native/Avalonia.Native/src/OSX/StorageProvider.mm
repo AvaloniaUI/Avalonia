@@ -1,6 +1,6 @@
 #include "common.h"
 #include "AvnString.h"
-#include "INSWindowHolder.h"
+#include "WindowBaseImpl.h"
 #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 
 const int kFileTypePopupTag = 10975;
@@ -72,28 +72,24 @@ public:
     FORWARD_IUNKNOWN()
 
     virtual HRESULT SaveBookmarkToBytes (
-         IAvnString* fileUriStr,
+         const ComPtr<IAvnString>& fileUriStr,
          void** err,
-         IAvnString** ppv
+         ComPtr<IAvnString>& ppv
     ) override
     {
         @autoreleasepool
         {
-            if(ppv == nullptr)
-                return E_POINTER;
-
-            *ppv = nullptr;
-
             NSError* error = nil;
-            auto fileUri = [NSURL URLWithString: GetNSStringAndRelease(fileUriStr)];
+            auto fileUri = [NSURL URLWithString: GetNSString(fileUriStr)];
             auto bookmarkData = [fileUri bookmarkDataWithOptions:NSURLBookmarkCreationWithSecurityScope includingResourceValuesForKeys:nil relativeToURL:nil error:&error];
             if (bookmarkData)
             {
-                *ppv = CreateByteArray((void*)bookmarkData.bytes, (int)bookmarkData.length);
+                ppv = CreateByteArray((void*)bookmarkData.bytes, (int)bookmarkData.length);
             }
             else if (error != nil && err != nullptr)
             {
-                *err = CreateAvnString([error localizedDescription]);
+                // Untyped out-param in the IDL: the caller takes ownership
+                *err = CreateAvnString([error localizedDescription]).getRetainedReference();
             }
             return S_OK;
         }
@@ -102,13 +98,10 @@ public:
     virtual HRESULT ReadBookmarkFromBytes (
        void* ptr,
        int len,
-       IAvnString** ppv
+       ComPtr<IAvnString>& ppv
     ) override {
         @autoreleasepool
         {
-            if(ppv == nullptr)
-                return E_POINTER;
-
             auto bookmarkData = [[NSData alloc] initWithBytes:ptr length:len];
             auto fileUri = [NSURL URLByResolvingBookmarkData: bookmarkData
                                                      options:NSURLBookmarkResolutionWithSecurityScope|NSURLBookmarkResolutionWithoutUI
@@ -118,50 +111,46 @@ public:
             
             if (fileUri)
             {
-                *ppv = CreateAvnString([fileUri absoluteString]);
+                ppv = CreateAvnString([fileUri absoluteString]);
             }
             return S_OK;
         }
     }
 
     virtual void ReleaseBookmark (
-        IAvnString* fileUriStr
+        const ComPtr<IAvnString>& fileUriStr
     ) override {
         // no-op
     }
 
     virtual bool OpenSecurityScope (
-        IAvnString* fileUriStr
+        const ComPtr<IAvnString>& fileUriStr
     ) override {
         @autoreleasepool
         {
-            auto fileUri = [NSURL URLWithString: GetNSStringAndRelease(fileUriStr)];
+            auto fileUri = [NSURL URLWithString: GetNSString(fileUriStr)];
             auto success = [fileUri startAccessingSecurityScopedResource];
             return success;
         }
     }
 
     virtual void CloseSecurityScope (
-        IAvnString* fileUriStr
+        const ComPtr<IAvnString>& fileUriStr
     ) override {
         @autoreleasepool
         {
-            auto fileUri = [NSURL URLWithString: GetNSStringAndRelease(fileUriStr)];
+            auto fileUri = [NSURL URLWithString: GetNSString(fileUriStr)];
             [fileUri stopAccessingSecurityScopedResource];
         }
     }
     
-    static NSWindow* GetEffectiveNSWindow(IAvnTopLevel* topLevel)
+    static NSWindow* GetEffectiveNSWindow(const ComPtr<IAvnTopLevel>& topLevel)
     {
-        auto windowHolder = dynamic_cast<INSWindowHolder*>(topLevel);
-        if (windowHolder != nullptr)
-            return windowHolder->GetNSWindow();
+        if (auto window = topLevel.dynamicCast<WindowBaseImpl>())
+            return window->GetNSWindow();
         
-        auto viewHolder = dynamic_cast<INSViewHolder*>(topLevel);
-        if (viewHolder != nullptr) {
-            auto view = (NSView*)viewHolder->GetNSView();
-            return [view window];
-        }
+        if (auto view = topLevel.dynamicCast<TopLevelImpl>())
+            return [(NSView*)view->GetNSView() window];
         
         return nullptr;
     }
@@ -177,8 +166,8 @@ public:
         return -1;
     }
 
-    virtual void SelectFolderDialog (IAvnTopLevel* parentTopLevel,
-                                     IAvnSystemDialogEvents* events,
+    virtual void SelectFolderDialog (const ComPtr<IAvnTopLevel>& parentTopLevel,
+                                     const ComPtr<IAvnSystemDialogEvents>& events,
                                      bool allowMultiple,
                                      const char* title,
                                      const char* initialDirectory) override
@@ -244,13 +233,13 @@ public:
         }
     }
     
-    virtual void OpenFileDialog (IAvnTopLevel* parentTopLevel,
-                                 IAvnSystemDialogEvents* events,
+    virtual void OpenFileDialog (const ComPtr<IAvnTopLevel>& parentTopLevel,
+                                 const ComPtr<IAvnSystemDialogEvents>& events,
                                  bool allowMultiple,
                                  const char* title,
                                  const char* initialDirectory,
                                  const char* initialFile,
-                                 IAvnFilePickerFileTypes* filters) override
+                                 const ComPtr<IAvnFilePickerFileTypes>& filters) override
     {
         @autoreleasepool
         {
@@ -319,12 +308,12 @@ public:
         }
     }
 
-    virtual void SaveFileDialog (IAvnTopLevel* parentTopLevel,
-                                 IAvnSystemDialogEvents* events,
+    virtual void SaveFileDialog (const ComPtr<IAvnTopLevel>& parentTopLevel,
+                                 const ComPtr<IAvnSystemDialogEvents>& events,
                                  const char* title,
                                  const char* initialDirectory,
                                  const char* initialFile,
-                                 IAvnFilePickerFileTypes* filters) override
+                                 const ComPtr<IAvnFilePickerFileTypes>& filters) override
     {
         @autoreleasepool
         {
@@ -388,31 +377,28 @@ public:
         }
     }
     
-    virtual HRESULT TryResolveFileReferenceUri(IAvnString* fileUriStr, IAvnString** ret) override {
-        if (ret == nullptr)
-            return E_POINTER;
-        
+    virtual HRESULT TryResolveFileReferenceUri(const ComPtr<IAvnString>& fileUriStr, ComPtr<IAvnString>& ret) override {
         if (fileUriStr == nullptr)
         {
-            *ret = nullptr;
+            ret = nullptr;
             return S_OK;
         }
         
-        auto fileUri = [NSURL URLWithString:GetNSStringAndRelease(fileUriStr)];
+        auto fileUri = [NSURL URLWithString:GetNSString(fileUriStr)];
         if (fileUri == nil)
         {
-            *ret = nullptr;
+            ret = nullptr;
             return S_OK;
         }
         
         auto filePathUri = [fileUri filePathURL];
         if (filePathUri == nil)
         {
-            *ret = nullptr;
+            ret = nullptr;
             return S_OK;
         }
         
-        *ret = CreateAvnString([filePathUri absoluteString]);
+        ret = CreateAvnString([filePathUri absoluteString]);
         return S_OK;
     }
     
@@ -521,7 +507,7 @@ private:
     }
     
     void SetAccessoryView(NSSavePanel* panel,
-                          IAvnFilePickerFileTypes* filters,
+                          const ComPtr<IAvnFilePickerFileTypes>& filters,
                           bool is_save_panel)
     {
         NSView* accessory_view = CreateAccessoryView();
@@ -534,7 +520,7 @@ private:
         
         for (int i = 0; i < filters->GetCount(); i++)
         {
-            NSString* type_description = GetNSStringAndRelease(filters->GetName(i));
+            NSString* type_description = GetNSString(filters->GetName(i));
             [popup addItemWithTitle:type_description];
 
             // If any type is included, enable allowsOtherFileTypes, and skip this filter on save panel.
@@ -546,7 +532,7 @@ private:
                 default_extension_index = i;
             }
 
-            IAvnStringArray* array;
+            ComPtr<IAvnStringArray> array;
 
             // Prefer types priority of: file ext -> apple type id -> mime.
             // On macOS 10 we only support file extensions.
@@ -559,8 +545,8 @@ private:
                     [file_uttype_array addObject:type];
                     typeCompleted = true;
                 }
-                if (!typeCompleted && filters->GetExtensions(i, &array) == 0) {
-                    for (NSString* ext in GetNSArrayOfStringsAndRelease(array))
+                if (!typeCompleted && filters->GetExtensions(i, array) == 0) {
+                    for (NSString* ext in GetNSArrayOfStrings(array))
                     {
                         UTType* type = [UTType typeWithFilenameExtension:ext];
                         if (type && ![file_uttype_array containsObject:type]) {
@@ -569,8 +555,8 @@ private:
                         }
                     }
                 }
-                if (!typeCompleted && filters->GetAppleUniformTypeIdentifiers(i, &array) == 0) {
-                    for (NSString* ext in GetNSArrayOfStringsAndRelease(array))
+                if (!typeCompleted && filters->GetAppleUniformTypeIdentifiers(i, array) == 0) {
+                    for (NSString* ext in GetNSArrayOfStrings(array))
                     {
                         UTType* type = [UTType typeWithIdentifier:ext];
                         if (type && ![file_uttype_array containsObject:type]) {
@@ -579,8 +565,8 @@ private:
                         }
                     }
                 }
-                if (!typeCompleted && filters->GetMimeTypes(i, &array) == 0) {
-                    for (NSString* ext in GetNSArrayOfStringsAndRelease(array))
+                if (!typeCompleted && filters->GetMimeTypes(i, array) == 0) {
+                    for (NSString* ext in GetNSArrayOfStrings(array))
                     {
                         UTType* type = [UTType typeWithMIMEType:ext];
                         if (type && ![file_uttype_array containsObject:type]) {
@@ -596,8 +582,8 @@ private:
                 if (filters->IsAnyType(i)) {
                     [file_type_array addObject:@"*.*"];
                 }
-                else if (filters->GetExtensions(i, &array) == 0) {
-                    for (NSString* ext in GetNSArrayOfStringsAndRelease(array))
+                else if (filters->GetExtensions(i, array) == 0) {
+                    for (NSString* ext in GetNSArrayOfStrings(array))
                     {
                         if (![file_type_array containsObject:ext]) {
                             [file_type_array addObject:ext];
@@ -635,7 +621,7 @@ private:
     };
 };
 
-extern IAvnStorageProvider* CreateStorageProvider()
+extern ComPtr<IAvnStorageProvider> CreateStorageProvider()
 {
-    return new StorageProvider();
+    return comnew<StorageProvider>();
 }

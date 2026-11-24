@@ -167,7 +167,7 @@ internal class AvaloniaXamlIncludeTransformer : IXamlAstGroupTransformer
     
     internal static (string?, IXamlAstNode?) ResolveSourceFromXamlInclude(
         AstGroupTransformationContext context, string nodeTypeName, XamlPropertyAssignmentNode sourceProperty,
-        bool strictSourceValueType)
+        bool strictSourceValueType, string? documentUri = null)
     {
         void OnInvalidSource(IXamlAstNode? node) =>
             context.ReportDiagnostic(
@@ -207,7 +207,7 @@ internal class AvaloniaXamlIncludeTransformer : IXamlAstGroupTransformer
         var uriPath = new Uri(originalAssetPath, (UriKind)uriKind);
         if (!uriPath.IsAbsoluteUri)
         {
-            var baseUrl = context.CurrentDocument?.Uri ?? throw new InvalidOperationException("CurrentDocument URI is null.");
+            var baseUrl = documentUri ?? context.CurrentDocument?.Uri ?? throw new InvalidOperationException("CurrentDocument URI is null.");
             uriPath = new Uri(new Uri(baseUrl, UriKind.Absolute), uriPath);
         }
         else if (!uriPath.Scheme.Equals("avares", StringComparison.CurrentCultureIgnoreCase))

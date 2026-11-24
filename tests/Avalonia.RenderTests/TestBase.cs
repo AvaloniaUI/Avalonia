@@ -1,26 +1,10 @@
+using System;
 using System.IO;
 using System.Runtime.CompilerServices;
-using Avalonia.Controls;
-using Avalonia.Media.Imaging;
-using Avalonia.Rendering;
-using SixLabors.ImageSharp;
-using Xunit;
-using Avalonia.Platform;
 using System.Threading.Tasks;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reactive.Disposables;
-using System.Threading;
+using Avalonia.Controls;
 using Avalonia.Media;
-using Avalonia.Rendering.Composition;
-using Avalonia.Skia;
-using Avalonia.Threading;
-using Avalonia.UnitTests;
-using Avalonia.Utilities;
-using SixLabors.ImageSharp.PixelFormats;
-using Image = SixLabors.ImageSharp.Image;
+using Xunit;
 
 namespace Avalonia.Skia.RenderTests
 {
@@ -83,12 +67,12 @@ namespace Avalonia.Skia.RenderTests
         {
             var expectedPath = Path.Combine(OutputPath, testName + ".expected.png");
 
-            using (var expected = Image.Load<Rgba32>(expectedPath))
+            using (var expected = TestRenderHelper.LoadImage(expectedPath))
             {
                 void Compare(string outputType, double allowedError)
                 {
                     var actualPath = Path.Combine(OutputPath, testName + "." + outputType + ".out.png");
-                    using var actual = Image.Load<Rgba32>(actualPath);
+                    using var actual = TestRenderHelper.LoadImage(actualPath);
                     var error = TestRenderHelper.CompareImages(actual, expected);
                     if (error > allowedError)
                     {

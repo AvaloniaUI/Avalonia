@@ -394,12 +394,12 @@ namespace Avalonia.Controls.UnitTests
                 {
                     new Border()
                     {
-                        [Flex.BasisProperty] = new FlexBasis(50, FlexBasisKind.Relative),
+                        [Flex.BasisProperty] = new FlexBasis(0.5, FlexBasisKind.Relative),
                         Height = 15
                     },
                     new Border()
                     {
-                        [Flex.BasisProperty] = new FlexBasis(50, FlexBasisKind.Relative),
+                        [Flex.BasisProperty] = new FlexBasis(0.5, FlexBasisKind.Relative),
                         Height = 15
                     }
                 }
@@ -411,6 +411,72 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(new Size(50, 15), target.Bounds.Size);
             Assert.Equal(new Rect(0, 0, 25, 15), target.Children[0].Bounds);
             Assert.Equal(new Rect(25, 0, 25, 15), target.Children[1].Bounds);
+        }
+
+        [Fact]
+        public void Applies_Parsed_Percentage_FlexBasis_Properties()
+        {
+            var target = new FlexPanel
+            {
+                Width = 100,
+                Children =
+                {
+                    new Border
+                    {
+                        [Flex.BasisProperty] = FlexBasis.Parse("25%"),
+                        Height = 15
+                    },
+                    new Border
+                    {
+                        [Flex.BasisProperty] = FlexBasis.Parse("75%"),
+                        Height = 15
+                    }
+                }
+            };
+
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(target.DesiredSize));
+
+            Assert.Equal(new Size(100, 15), target.Bounds.Size);
+            Assert.Equal(new Rect(0, 0, 25, 15), target.Children[0].Bounds);
+            Assert.Equal(new Rect(25, 0, 75, 15), target.Children[1].Bounds);
+        }
+
+        [Theory]
+        [InlineData(FlexDirection.Row)]
+        [InlineData(FlexDirection.Column)]
+        public void Growing_Items_Can_Be_Measured_With_Infinite_Main_Axis(FlexDirection direction)
+        {
+            var isColumn = direction == FlexDirection.Column;
+            var target = new FlexPanel
+            {
+                Direction = direction,
+                RowSpacing = 10,
+                ColumnSpacing = 10,
+                Children =
+                {
+                    new Border { MinWidth = 50, MinHeight = 50 },
+                    new Border { MinWidth = 50, MinHeight = 50, [Flex.GrowProperty] = 1.0 },
+                },
+            };
+            var presenter = new ScrollContentPresenter
+            {
+                CanHorizontallyScroll = !isColumn,
+                CanVerticallyScroll = isColumn,
+                Content = target,
+            };
+            var viewport = isColumn ? new Size(100, 300) : new Size(300, 100);
+
+            presenter.UpdateChild();
+            presenter.Measure(viewport);
+
+            Assert.Equal(isColumn ? new Size(50, 110) : new Size(110, 50), target.DesiredSize);
+
+            presenter.Arrange(new Rect(viewport));
+
+            Assert.Equal(viewport, target.Bounds.Size);
+            Assert.Equal(isColumn ? new Rect(0, 0, 100, 50) : new Rect(0, 0, 50, 100), target.Children[0].Bounds);
+            Assert.Equal(isColumn ? new Rect(0, 60, 100, 240) : new Rect(60, 0, 240, 100), target.Children[1].Bounds);
         }
 
         [Fact]

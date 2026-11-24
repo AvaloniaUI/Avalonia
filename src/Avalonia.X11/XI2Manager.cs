@@ -102,6 +102,7 @@ namespace Avalonia.X11
                 PressureXIValuatorClassInfo = null;
                 TouchMajorXIValuatorClassInfo = null;
                 TouchMinorXIValuatorClassInfo = null;
+                IsPen = false;
 
                 foreach (var xiValuatorClassInfo in Valuators)
                 {
@@ -109,6 +110,7 @@ namespace Avalonia.X11
                         xiValuatorClassInfo.Label == pressureAtomPen)
                     {
                         PressureXIValuatorClassInfo = xiValuatorClassInfo;
+                        IsPen |= xiValuatorClassInfo.Label == pressureAtomPen;
                     }
                     else if (xiValuatorClassInfo.Label == touchMajorAtom)
                     {
@@ -156,10 +158,10 @@ namespace Avalonia.X11
                 UpdateKnownValuator();
             }
 
-            public bool HasPressureValuator()
-            {
-                return PressureXIValuatorClassInfo is not null;
-            }
+            /// <summary>
+            /// Whether the current slave device is a pen, i.e. reports the pen pressure axis.
+            /// </summary>
+            public bool IsPen { get; private set; }
 
             public bool IsEraser => _currentSlaveIsEraser;
             public string? Name => _currentSlaveName;
@@ -419,7 +421,7 @@ namespace Avalonia.X11
             {
                 Vector scrollDelta = default;
                 var rawPointerPoint = new RawPointerPoint() { Position = ev.Position };
-                IInputDevice device = _pointerDevice.HasPressureValuator() ? client.PenDevice : client.MouseDevice;
+                IInputDevice device = _pointerDevice.IsPen ? client.PenDevice : client.MouseDevice;
 
                 foreach (var v in ev.Valuators)
                 {
@@ -482,7 +484,7 @@ namespace Avalonia.X11
 
                 if (type.HasValue)
                 {
-                    IInputDevice device = _pointerDevice.HasPressureValuator() ? client.PenDevice : client.MouseDevice;
+                    IInputDevice device = _pointerDevice.IsPen ? client.PenDevice : client.MouseDevice;
                     var pointerPoint = new RawPointerPoint() { Position = ev.Position };
 
                     SetPenSpecificValues(ev, ref pointerPoint);

@@ -22,6 +22,7 @@ namespace Avalonia.Input
         private int _clickCount;
         private Rect _lastClickRect;
         private ulong _lastClickTime;
+        private MouseButton _lastClickButton;
         private MouseButton _lastMouseDownButton;
 
         private bool _disposed;
@@ -108,24 +109,27 @@ namespace Avalonia.Input
             if (source != null)
             {
                 pointer.Capture(source, CaptureSource.Implicit);
+                var button = properties.PointerUpdateKind.GetMouseButton();
                 var settings = (source as Interactive)?.GetPlatformSettings();
                 if (settings is not null)
                 {
                     var doubleClickTime = settings.GetDoubleTapTime(PointerType.Pen).TotalMilliseconds;
                     var doubleClickSize = settings.GetDoubleTapSize(PointerType.Pen);
 
-                    if (!_lastClickRect.Contains(p) || timestamp - _lastClickTime > doubleClickTime)
+                    if (!_lastClickRect.Contains(p) || timestamp - _lastClickTime > doubleClickTime
+                        || button != _lastClickButton)
                     {
                         _clickCount = 0;
                     }
 
                     ++_clickCount;
+                    _lastClickButton = button;
                     _lastClickTime = timestamp;
                     _lastClickRect = new Rect(p, new Size())
                         .Inflate(new Thickness(doubleClickSize.Width / 2, doubleClickSize.Height / 2));
                 }
 
-                _lastMouseDownButton = properties.PointerUpdateKind.GetMouseButton();
+                _lastMouseDownButton = button;
                 var e = new PointerPressedEventArgs(source, pointer, root.RootElement, p, timestamp, properties, inputModifiers, _clickCount, platformInputEventCookie);
                 source.RaiseEvent(e);
                 return e.Handled;

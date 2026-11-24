@@ -254,7 +254,7 @@ namespace Avalonia.Controls
                 var (itemsCount, freeU) = GetLineMeasureU(flexLine, max.U, spacing.U);
                 var (lineMult, autoMargins, remainingFreeU) = GetLineMultInfo(flexLine, freeU);
 
-                if (lineMult != 0.0 && remainingFreeU != 0.0)
+                if (double.IsFinite(max.U) && lineMult != 0.0 && remainingFreeU != 0.0)
                 {
                     double maxV = 0.0;
                     for (var j = flexLine.First; j <= flexLine.Last; j++)
@@ -387,7 +387,7 @@ namespace Avalonia.Controls
             {
                 FlexBasisKind.Auto => max.U,
                 FlexBasisKind.Absolute => basis.Value,
-                FlexBasisKind.Relative => max.U * basis.Value / 100,
+                FlexBasisKind.Relative => max.U * basis.Value,
                 _ => throw new InvalidOperationException($"Unsupported FlexBasisKind value: {basis.Kind}")
             };
             element.Measure(Uv.ToSize(max.WithU(flexConstraint), isColumn));

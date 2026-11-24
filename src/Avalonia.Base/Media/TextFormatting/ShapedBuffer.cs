@@ -322,6 +322,13 @@ namespace Avalonia.Media.TextFormatting
         internal double[]? ClusterPrefix => _clusterPrefix;
 
         /// <summary>
+        /// Test hook: the number of live buffers that share this buffer's pooled glyph
+        /// storage, counting this one. The storage returns to the pool when it reaches zero.
+        /// Returns 0 for caller-owned storage and after <see cref="Dispose"/>.
+        /// </summary>
+        internal int GlyphStorageRefCount => _glyphRef?.RefCount ?? 0;
+
+        /// <summary>
         /// Returns the total advance of all glyphs in the buffer (i.e. the buffer's
         /// rendered width). Cached after first access; the value is summed in
         /// logical cluster order, which can differ by ULPs from a visual-order sum

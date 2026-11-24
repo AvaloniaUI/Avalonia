@@ -764,6 +764,13 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         protected override void OnLostFocus(FocusChangedEventArgs e)
         {
+            // The drop-down is a popup of its own, so picking an item moves focus into it without the box being left.
+            if (IsInsideDropDown(e.NewFocusedElement))
+            {
+                base.OnLostFocus(e);
+                return;
+            }
+
             SetCurrentValue(IsDropDownOpenProperty, false);
 
             _userCalledPopulate = false;
@@ -778,6 +785,9 @@ namespace Avalonia.Controls
 
             base.OnLostFocus(e);
         }
+
+        private bool IsInsideDropDown(IInputElement? element) =>
+            element is Visual visual && DropDownPopup?.Child is { } content && content.IsVisualAncestorOf(visual);
 
         protected override AutomationPeer OnCreateAutomationPeer() => new AutoCompleteBoxAutomationPeer(this);
 

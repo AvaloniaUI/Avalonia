@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -16,21 +17,21 @@ internal interface IAssemblyDescriptorResolver
 
 internal class AssemblyDescriptorResolver: IAssemblyDescriptorResolver
 {
-    private readonly Dictionary<string, IAssemblyDescriptor> _assemblyNameCache = new();
+    private readonly ConcurrentDictionary<string, IAssemblyDescriptor> _assemblyNameCache = new();
 
     public IAssemblyDescriptor GetAssembly(string name)
     {
         if (name == null)
             throw new ArgumentNullException(nameof(name));
 
-        if (!_assemblyNameCache.TryGetValue(name, out var rv))
+        return _assemblyNameCache.GetOrAdd(name, static name =>
         {
             var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
             // Select assembly by ManifestModule.ScopeName instead of GetName().Name to avoid CultureInfo dependency.
-            var match = loadedAssemblies.Where(a => a.ManifestModule.ScopeName.StartsWith(name, StringComparison.InvariantCultureIgnoreCase)).OrderBy(a => a.ManifestModule.ScopeName.Length).FirstOrDefault();
+            var match = loadedAssemblies.FirstOrDefault(a => IsScopeNameOf(a.ManifestModule.ScopeName, name));
             if (match != null)
             {
-                _assemblyNameCache[name] = rv = new AssemblyDescriptor(match);
+                return new AssemblyDescriptor(match);
             }
             else
             {
@@ -42,15 +43,30 @@ internal class AssemblyDescriptorResolver: IAssemblyDescriptorResolver
                 }
 #endif
                 name = Uri.UnescapeDataString(name);
-                _assemblyNameCache[name] = rv = new AssemblyDescriptor(Assembly.Load(name));
+                return new AssemblyDescriptor(Assembly.Load(name));
             }
-        }
-
-        return rv;
+        });
     }
+    /// <summary>
+    /// Whether <paramref name="scopeName"/>, the name of an assembly's manifest module, belongs to the assembly
+    /// <paramref name="name"/>: it is the file name of the module ("Lib.dll"), or the assembly name itself when the
+    /// module has no file. A longer name which merely starts with <paramref name="name"/> ("Lib.Tests.dll") doesn't.
+    /// </summary>
+    internal static bool IsScopeNameOf(string scopeName, string name)
+    {
+        if (!scopeName.StartsWith(name, StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        var extensionLength = scopeName.Length - name.Length;
+        return extensionLength == 0
+               || (extensionLength == 4
+                   && (string.Compare(scopeName, name.Length, ".dll", 0, 4, StringComparison.OrdinalIgnoreCase) == 0
+                       || string.Compare(scopeName, name.Length, ".exe", 0, 4, StringComparison.OrdinalIgnoreCase) == 0));
+    }
+
     public void InvalidateAssemblyCache(string name)
     {
-        _assemblyNameCache.Remove(name);
+        _assemblyNameCache.TryRemove(name, out _);
     }
 
     public void InvalidateAssemblyCache()

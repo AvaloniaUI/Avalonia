@@ -22,12 +22,34 @@ namespace Avalonia.Media
             FontStyle style = FontStyle.Normal,
             FontWeight weight = FontWeight.Normal,
             FontStretch stretch = FontStretch.Normal)
+            : this(fontFamily, style, weight, stretch, null)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Typeface"/> struct bound to a
+        /// variable-font position.
+        /// </summary>
+        /// <param name="fontFamily">The font family.</param>
+        /// <param name="style">The font style.</param>
+        /// <param name="weight">The font weight.</param>
+        /// <param name="stretch">The font stretch.</param>
+        /// <param name="fontVariations">
+        /// Variable-font axis values in user space (e.g. <c>wght = 700</c>), applied when the
+        /// resolved font is a variable font. <c>null</c> and
+        /// <see cref="FontVariationSettings.Empty"/> both mean the design defaults.
+        /// </param>
+        public Typeface(FontFamily fontFamily,
+            FontStyle style,
+            FontWeight weight,
+            FontStretch stretch,
+            FontVariationSettings? fontVariations)
         {
             if (weight <= 0)
             {
                 throw new ArgumentException("Font weight must be > 0.");
             }
-            
+
             if ((int)stretch < 1)
             {
                 throw new ArgumentException("Font stretch must be > 1.");
@@ -37,6 +59,10 @@ namespace Avalonia.Media
             Style = style;
             Weight = weight;
             Stretch = stretch;
+
+            // Empty and null both mean "design defaults"; store the canonical form so
+            // equality, hashing and cache keys never distinguish the two spellings.
+            FontVariations = fontVariations is { IsEmpty: true } ? null : fontVariations;
         }
 
         /// <summary>
@@ -50,8 +76,30 @@ namespace Avalonia.Media
             FontStyle style = FontStyle.Normal,
             FontWeight weight = FontWeight.Normal,
             FontStretch stretch = FontStretch.Normal)
+            : this(fontFamilyName, style, weight, stretch, null)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Typeface"/> struct bound to a
+        /// variable-font position.
+        /// </summary>
+        /// <param name="fontFamilyName">The name of the font family.</param>
+        /// <param name="style">The font style.</param>
+        /// <param name="weight">The font weight.</param>
+        /// <param name="stretch">The font stretch.</param>
+        /// <param name="fontVariations">
+        /// Variable-font axis values in user space (e.g. <c>wght = 700</c>), applied when the
+        /// resolved font is a variable font. <c>null</c> and
+        /// <see cref="FontVariationSettings.Empty"/> both mean the design defaults.
+        /// </param>
+        public Typeface(string fontFamilyName,
+            FontStyle style,
+            FontWeight weight,
+            FontStretch stretch,
+            FontVariationSettings? fontVariations)
             : this(string.IsNullOrEmpty(fontFamilyName) ? FontFamily.Default : new FontFamily(fontFamilyName),
-                  style, weight, stretch)
+                  style, weight, stretch, fontVariations)
         {
         }
 
@@ -78,6 +126,14 @@ namespace Avalonia.Media
         public FontStretch Stretch { get; }
 
         /// <summary>
+        /// Gets the variable-font axis values in user space, or <c>null</c> when the
+        /// typeface uses the font's design defaults. Never
+        /// <see cref="FontVariationSettings.Empty"/> — empty settings are normalized to
+        /// <c>null</c> at construction.
+        /// </summary>
+        public FontVariationSettings? FontVariations { get; }
+
+        /// <summary>
         /// Gets the glyph typeface.
         /// </summary>
         /// <value>
@@ -93,7 +149,7 @@ namespace Avalonia.Media
                 }
 
                 throw new InvalidOperationException(
-                    $"Could not create glyphTypeface. Font family: {FontFamily?.Name} (key: {FontFamily?.Key}). Style: {Style}. Weight: {Weight}. Stretch: {Stretch}");
+                    $"Could not create glyphTypeface. Font family: {FontFamily?.Name} (key: {FontFamily?.Key}). Style: {Style}. Weight: {Weight}. Stretch: {Stretch}. Variations: {FontVariations?.ToString() ?? "none"}");
             }
         }
 
@@ -114,8 +170,11 @@ namespace Avalonia.Media
 
         public bool Equals(Typeface other)
         {
-            return FontFamily == other.FontFamily && Style == other.Style && 
-                   Weight == other.Weight && Stretch == other.Stretch;
+            // FontVariations is stored canonically (Empty coerced to null), so the
+            // reference-null fast path plus structural equality covers all cases.
+            return FontFamily == other.FontFamily && Style == other.Style &&
+                   Weight == other.Weight && Stretch == other.Stretch &&
+                   Equals(FontVariations, other.FontVariations);
         }
 
         public override int GetHashCode()
@@ -126,6 +185,7 @@ namespace Avalonia.Media
                 hashCode = (hashCode * 397) ^ (int)Style;
                 hashCode = (hashCode * 397) ^ (int)Weight;
                 hashCode = (hashCode * 397) ^ (int)Stretch;
+                hashCode = (hashCode * 397) ^ (FontVariations?.GetHashCode() ?? 0);
                 return hashCode;
             }
         }
@@ -159,13 +219,21 @@ namespace Avalonia.Media
             StringBuilder? normalizedFamilyNameBuilder = null;
             var totalCharsRemoved = 0;
 
-            var tokenizer = new SpanStringTokenizer(normalizedFamilyName, ' ');
+            // Split the name into words manually instead of using SpanStringTokenizer: real-world fonts can have
+            // repeated or trailing whitespace in their family names (e.g. "Autoproject  GOST Type A"),
+            // which the tokenizer rejects with a FormatException.
+            var index = 0;
+            var isFirstToken = true;
 
-            // Skip initial family name.
-            tokenizer.ReadSpan();
-
-            while (tokenizer.TryReadSpan(out var token))
+            while (TryReadWord(normalizedFamilyName, ref index, out var tokenIndex, out var token))
             {
+                // Skip initial family name.
+                if (isFirstToken)
+                {
+                    isFirstToken = false;
+                    continue;
+                }
+
                 // Don't try to match numbers.
                 if (new SpanStringTokenizer(token).TryReadInt32(out _))
                 {
@@ -194,7 +262,7 @@ namespace Avalonia.Media
                 {
                     // Carve out matched word from the normalized name.
                     normalizedFamilyNameBuilder ??= new StringBuilder(normalizedFamilyName);
-                    normalizedFamilyNameBuilder.Remove(tokenizer.CurrentTokenIndex - totalCharsRemoved, token.Length);
+                    normalizedFamilyNameBuilder.Remove(tokenIndex - totalCharsRemoved, token.Length);
                     totalCharsRemoved += token.Length;
                 }
             }
@@ -203,7 +271,29 @@ namespace Avalonia.Media
             normalizedFamilyName = (normalizedFamilyNameBuilder?.ToString() ?? normalizedFamilyName).TrimEnd();
 
             //Preserve old font source
-            return new Typeface(FontFamily, style, weight, stretch);
+            return new Typeface(FontFamily, style, weight, stretch, FontVariations);
+        }
+
+        /// <summary>
+        /// Reads the next whitespace-separated word, skipping any amount of whitespace before it.
+        /// </summary>
+        private static bool TryReadWord(string text, ref int index, out int wordIndex, out ReadOnlySpan<char> word)
+        {
+            while (index < text.Length && char.IsWhiteSpace(text[index]))
+            {
+                index++;
+            }
+
+            wordIndex = index;
+
+            while (index < text.Length && !char.IsWhiteSpace(text[index]))
+            {
+                index++;
+            }
+
+            word = text.AsSpan(wordIndex, index - wordIndex);
+
+            return word.Length > 0;
         }
     }
 }

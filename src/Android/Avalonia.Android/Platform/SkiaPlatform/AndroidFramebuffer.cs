@@ -15,7 +15,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 throw new ArgumentNullException(nameof(surface));
             _window = (surface as IPlatformHandle).Handle;
             if (_window == IntPtr.Zero)
-                throw new Exception("Unable to obtain ANativeWindow");
+                throw new RenderTargetNotReadyException("Unable to obtain ANativeWindow");
             ANativeWindow_Buffer buffer;
             var rc = new ARect()
             {
