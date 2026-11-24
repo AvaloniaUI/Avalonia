@@ -918,9 +918,13 @@ namespace Avalonia.Controls
                     _realizingElement = null;
 
                     if (recycle && element is not null)
-                        // A temporary probe must not become the retained focus element
-                        // if a removed container still has the tab-once marker.
-                        RecycleElementOnItemRemoved(element);
+                    {
+                        if (element.GetValue(RecycleKeyProperty) == s_itemIsItsOwnContainer)
+                            RecycleElement(element, index);
+                        else
+                            // Do not retain a generated probe because of a stale tab-once marker.
+                            RecycleElementOnItemRemoved(element);
+                    }
                 }
             }
         }
