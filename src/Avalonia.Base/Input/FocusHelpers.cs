@@ -33,7 +33,7 @@ namespace Avalonia.Input
             {
                 if (IsVisible(child))
                 {
-                    if (child.Focusable)
+                    if (IsFocusable(child))
                     {
                         hasFocusChildren = true;
                     }
@@ -83,7 +83,8 @@ namespace Avalonia.Input
 
         internal static bool IsFocusable(IInputElement? element)
         {
-            return element?.Focusable ?? false;
+            // A disabled element can't take focus, like in Tab navigation and FocusManager.CanFocus
+            return element is { Focusable: true, IsEffectivelyEnabled: true };
         }
 
         internal static bool CanHaveChildren(IInputElement? element)

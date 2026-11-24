@@ -169,6 +169,98 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
             Assert.Equal(PanoseFamilyKind.LatinText, panose.FamilyKind);
         }
 
+        [Fact]
+        public void TryLoad_From_Span_Should_Parse_WeightClass_And_Selection_Of_Inter_Font()
+        {
+            var assetLoader = new StandardAssetLoader();
+
+            using var stream = assetLoader.Open(new Uri(s_InterFontUri));
+
+            using var platformTypeface = new CustomPlatformTypeface(stream);
+
+            Assert.True(platformTypeface.TryGetTable(OS2Table.Tag, out var table));
+
+            var loaded = OS2Table.TryLoad(table.Span, out var os2Table);
+
+            Assert.True(loaded);
+            Assert.Equal(400, os2Table.WeightClass);
+            Assert.True(os2Table.Selection.HasFlag(OS2Table.FontSelectionFlags.REGULAR));
+        }
+
+        [Fact]
+        public void TryLoad_From_Span_Should_Parse_WeightClass_And_Selection()
+        {
+            var data = CreateTable(0, 78, 700, OS2Table.FontSelectionFlags.BOLD | OS2Table.FontSelectionFlags.ITALIC);
+
+            var loaded = OS2Table.TryLoad(data, out var os2Table);
+
+            Assert.True(loaded);
+            Assert.Equal(0, os2Table.Version);
+            Assert.Equal(700, os2Table.WeightClass);
+            Assert.Equal(OS2Table.FontSelectionFlags.BOLD | OS2Table.FontSelectionFlags.ITALIC, os2Table.Selection);
+        }
+
+        [Theory]
+        [InlineData(0, 78)]
+        [InlineData(1, 86)]
+        [InlineData(2, 96)]
+        [InlineData(4, 96)]
+        [InlineData(5, 100)]
+        public void TryLoad_From_Span_Should_Accept_Table_Of_Minimum_Length_For_Its_Version(ushort version, int length)
+        {
+            var data = CreateTable(version, length, 400, OS2Table.FontSelectionFlags.REGULAR);
+
+            var loaded = OS2Table.TryLoad(data, out var os2Table);
+
+            Assert.True(loaded);
+            Assert.Equal(version, os2Table.Version);
+            Assert.Equal(400, os2Table.WeightClass);
+        }
+
+        [Theory]
+        [InlineData(0, 0)]
+        [InlineData(0, 1)]
+        [InlineData(0, 64)]
+        [InlineData(0, 77)]
+        [InlineData(1, 85)]
+        [InlineData(2, 95)]
+        [InlineData(4, 95)]
+        [InlineData(5, 99)]
+        public void TryLoad_From_Span_Should_Return_False_For_Truncated_Table(ushort version, int length)
+        {
+            var data = CreateTable(version, length, 400, OS2Table.FontSelectionFlags.REGULAR);
+
+            var loaded = OS2Table.TryLoad(data, out _);
+
+            Assert.False(loaded);
+        }
+
+        private static byte[] CreateTable(ushort version, int length, ushort weightClass,
+            OS2Table.FontSelectionFlags selection)
+        {
+            var data = new byte[length];
+
+            WriteUInt16(data, 0, version);
+            WriteUInt16(data, 4, weightClass);
+            WriteUInt16(data, 62, (ushort)selection);
+
+            return data;
+        }
+
+        // Writes only the bytes that fit, so a truncated table keeps the leading fields it still holds.
+        private static void WriteUInt16(byte[] data, int offset, ushort value)
+        {
+            if (offset < data.Length)
+            {
+                data[offset] = (byte)(value >> 8);
+            }
+
+            if (offset + 1 < data.Length)
+            {
+                data[offset + 1] = (byte)value;
+            }
+        }
+
         private class CustomPlatformTypeface : IPlatformTypeface
         {
             private readonly UnmanagedFontMemory _fontMemory;

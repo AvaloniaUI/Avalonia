@@ -335,6 +335,18 @@ namespace Avalonia.Skia.UnitTests
         }
 
         [Fact]
+        public void GetOrAdd_WithFactoryArgument_PassesKeyAndArgumentToFactory()
+        {
+            var cache = new TwoLevelCache<string, string>();
+
+            var result = cache.GetOrAdd("key", static (key, argument) => key + argument, "Argument");
+
+            Assert.Equal("keyArgument", result);
+            Assert.True(cache.TryGet("key", out var retrieved));
+            Assert.Same(result, retrieved);
+        }
+
+        [Fact]
         public void GetOrAdd_NullEvictionAction_DoesNotThrow()
         {
             var cache = new TwoLevelCache<string, object>(

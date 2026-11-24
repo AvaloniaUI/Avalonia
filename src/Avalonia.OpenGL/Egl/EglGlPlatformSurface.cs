@@ -21,10 +21,16 @@ namespace Avalonia.OpenGL.Egl
         }
         
         private readonly IEglWindowGlPlatformSurfaceInfo _info;
+        private readonly bool _usePartialPresentation;
         
-        public EglGlPlatformSurface(IEglWindowGlPlatformSurfaceInfo info)
+        public EglGlPlatformSurface(IEglWindowGlPlatformSurfaceInfo info) : this(info, false)
+        {
+        }
+
+        internal EglGlPlatformSurface(IEglWindowGlPlatformSurfaceInfo info, bool usePartialPresentation)
         {
             _info = info;
+            _usePartialPresentation = usePartialPresentation;
         }
 
         public override IGlPlatformSurfaceRenderTarget CreateGlRenderTarget(IGlContext context)
@@ -32,7 +38,7 @@ namespace Avalonia.OpenGL.Egl
             var eglContext = (EglContext)context;
             
             var glSurface = eglContext.Display.CreateWindowSurface(_info.Handle);
-            return new RenderTarget(glSurface, eglContext, _info);
+            return new RenderTarget(glSurface, eglContext, _info, _usePartialPresentation);
         }
 
         private class RenderTarget : EglPlatformSurfaceRenderTargetBase
@@ -42,23 +48,31 @@ namespace Avalonia.OpenGL.Egl
             private PixelSize _currentSize;
             private IntPtr _handle;
 
-            public RenderTarget(EglSurface glSurface, EglContext context, IEglWindowGlPlatformSurfaceInfo info) : base(context)
+            public RenderTarget(EglSurface glSurface, EglContext context, IEglWindowGlPlatformSurfaceInfo info,
+                bool usePartialPresentation) : base(context)
             {
                 _glSurface = glSurface;
                 _info = info;
                 _currentSize = info.Size;
                 _handle = _info.Handle;
                 SkipWaits = info is IEglWindowGlPlatformSurfaceInfoWithWaitPolicy { SkipWaits: true };
+                UsePartialPresentation = usePartialPresentation;
             }
 
             protected override bool SkipWaits { get; }
+            protected override bool UsePartialPresentation { get; }
 
-            public override void Dispose() => _glSurface?.Dispose();
+            public override void Dispose()
+            {
+                base.Dispose();
+                _glSurface?.Dispose();
+            }
 
             public override IGlPlatformSurfaceRenderingSession BeginDrawCore(IRenderTarget.RenderTargetSceneInfo sceneInfo)
             {
                 // TODO: use expectedPixelSize
                 var handle = _info.Handle;
+
                 var size = _info.Size;
                 if (size != _currentSize
                     || _handle != handle
@@ -66,9 +80,13 @@ namespace Avalonia.OpenGL.Egl
                 {
                     _glSurface?.Dispose();
                     _glSurface = null;
-                    _glSurface = Context.Display.CreateWindowSurface(handle);
                     _currentSize = size;
                     _handle = handle;
+                    if (handle == IntPtr.Zero)
+                    {
+                        throw new RenderTargetNotReadyException();
+                    }
+                    _glSurface = Context.Display.CreateWindowSurface(handle);
                 }
                 return base.BeginDraw(_glSurface, size, _info.Scaling);
             }

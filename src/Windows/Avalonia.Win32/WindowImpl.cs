@@ -108,6 +108,7 @@ namespace Avalonia.Win32
         private bool _hiddenWindowIsParent;
         private uint _langid;
         internal bool _ignoreWmChar;
+        private bool _deadCharPending;
         private WindowTransparencyLevel _transparencyLevel;
         private readonly WindowTransparencyLevel _defaultTransparencyLevel;
         private WindowCornerPreference _cornerPreference;
@@ -204,7 +205,7 @@ namespace Avalonia.Win32
 
         public Action<RawInputEventArgs>? Input { get; set; }
 
-        public Action<Rect>? Paint { get; set; }
+        public Action<ITopLevelImpl.PaintOptions?>? Paint { get; set; }
 
         public Action<Size, WindowResizeReason>? Resized { get; set; }
 
