@@ -73,7 +73,8 @@ namespace Avalonia.Controls
         private double _lastEstimatedElementSizeU = 25;
         private RealizedStackElements? _measureElements;
         private RealizedStackElements? _realizedElements;
-        private readonly (int Index, double Size)[] _leadingElementSizes = { (0, double.NaN), (1, double.NaN) };
+        private readonly (int Index, double Size)[] _leadingElementSizes =
+            { (0, double.NaN), (1, double.NaN), (-1, double.NaN) };
         private Size? _lastMeasureSize;
         private Orientation _lastMeasureOrientation;
         private bool _realizedElementsFromEmptyViewport;
@@ -236,7 +237,7 @@ namespace Avalonia.Controls
                 _measureElements.ResetForReuse();
 
                 // Remember a bounded sample of the prefix, without retaining containers.
-                for (var i = 0; i < _leadingElementSizes.Length; ++i)
+                for (var i = 0; i < _leadingElementSizes.Length - 1; ++i)
                 {
                     var index = double.IsNaN(_leadingElementSizes[i].Size) ?
                         i : _leadingElementSizes[i].Index;
@@ -244,6 +245,13 @@ namespace Avalonia.Controls
                         _leadingElementSizes[i] = (index, orientation == Orientation.Horizontal ?
                             element.DesiredSize.Width : element.DesiredSize.Height);
                 }
+
+                // Keep a sample near the viewport as well as the leading items, which
+                // may be fixed-size headers unrelated to the sizes of the data rows.
+                var precedingIndex = _realizedElements.FirstIndex - 1;
+                if (precedingIndex >= 0 && _leadingElementSizes[^1].Index != precedingIndex)
+                    _leadingElementSizes[^1] = (precedingIndex,
+                        MeasurePrefixElement(precedingIndex, orientation, availableSize));
 
                 // If there is a focused element is outside the visible viewport (i.e.
                 // _focusedElement is non-null), ensure it's measured.
@@ -877,7 +885,11 @@ namespace Avalonia.Controls
                 realized.InvalidateStartU();
 
             var needsBaseline = Array.Exists(_leadingElementSizes, x => double.IsNaN(x.Size));
-            if ((!resized && !constraintsChanged && !needsBaseline) || realized.FirstIndex <= 0 || double.IsNaN(realized.StartU))
+            // Refresh the prefix baselines even when the cross-axis resize has already
+            // invalidated the origin, so a later local edit cannot reuse stale sizes.
+            if ((!resized && !constraintsChanged && !needsBaseline) ||
+                realized.FirstIndex <= 0 ||
+                (double.IsNaN(realized.StartU) && !(resized && crossAxisChanged)))
                 return;
 
             // The visible sizes alone cannot distinguish a local edit from a collection-wide
@@ -890,41 +902,45 @@ namespace Avalonia.Controls
                 // Replacements and resets can remove every sample. Establish the new
                 // baseline from preceding items, rather than from the visible range.
                 if (double.IsNaN(previousSize))
-                    index = i;
+                    index = i == _leadingElementSizes.Length - 1 ? realized.FirstIndex - 1 : i;
                 if (index < 0 || index >= realized.FirstIndex || index >= Items.Count)
                     continue;
 
-                var element = index == _focusedIndex ? _focusedElement :
-                    index == _scrollToIndex ? _scrollToElement : null;
-                var recycle = element is null;
-                _realizingIndex = index;
+                var size = MeasurePrefixElement(index, orientation, availableSize);
+                if (!double.IsNaN(previousSize) && size != previousSize)
+                    realized.InvalidateStartU();
 
-                try
+                _leadingElementSizes[i] = (index, size);
+            }
+        }
+
+        private double MeasurePrefixElement(int index, Orientation orientation, Size availableSize)
+        {
+            var element = index == _focusedIndex ? _focusedElement :
+                index == _scrollToIndex ? _scrollToElement : null;
+            var recycle = element is null;
+            _realizingIndex = index;
+
+            try
+            {
+                element ??= GetOrCreateElement(Items, index);
+                _realizingElement = element;
+                element.Measure(availableSize);
+                return orientation == Orientation.Horizontal ?
+                    element.DesiredSize.Width : element.DesiredSize.Height;
+            }
+            finally
+            {
+                _realizingIndex = -1;
+                _realizingElement = null;
+
+                if (recycle && element is not null)
                 {
-                    element ??= GetOrCreateElement(Items, index);
-                    _realizingElement = element;
-                    element.Measure(availableSize);
-                    var size = orientation == Orientation.Horizontal ?
-                        element.DesiredSize.Width : element.DesiredSize.Height;
-
-                    if (!double.IsNaN(previousSize) && size != previousSize)
-                        realized.InvalidateStartU();
-
-                    _leadingElementSizes[i] = (index, size);
-                }
-                finally
-                {
-                    _realizingIndex = -1;
-                    _realizingElement = null;
-
-                    if (recycle && element is not null)
-                    {
-                        if (element.GetValue(RecycleKeyProperty) == s_itemIsItsOwnContainer)
-                            RecycleElement(element, index);
-                        else
-                            // Do not retain a generated probe because of a stale tab-once marker.
-                            RecycleElementOnItemRemoved(element);
-                    }
+                    if (element.GetValue(RecycleKeyProperty) == s_itemIsItsOwnContainer)
+                        RecycleElement(element, index);
+                    else
+                        // Do not retain a generated probe because of a stale tab-once marker.
+                        RecycleElementOnItemRemoved(element);
                 }
             }
         }
