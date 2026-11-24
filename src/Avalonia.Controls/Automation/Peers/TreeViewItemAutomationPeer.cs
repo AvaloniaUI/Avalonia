@@ -89,6 +89,15 @@ public class TreeViewItemAutomationPeer : ItemsControlAutomationPeer,
 
     private void OwnerPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
     {
+        if (e.Property == TreeViewItem.IsSelectedProperty)
+        {
+            RaisePropertyChangedEvent(
+                SelectionItemPatternIdentifiers.IsSelectedProperty,
+                e.GetOldValue<bool>(),
+                e.GetNewValue<bool>());
+            return;
+        }
+
         if (e.Property != TreeViewItem.IsExpandedProperty && e.Property != ItemsControl.ItemCountProperty)
             return;
 
