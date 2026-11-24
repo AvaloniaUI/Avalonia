@@ -124,8 +124,10 @@ namespace Avalonia.Skia
                 };
             }
 
-            // A static lambda, so that a cache hit allocates neither a closure nor a delegate.
-            return _textBlobCache.GetOrAdd(textOptions, static (k, self) => self.CreateTextBlob(k), this);
+            // A static local function, so that a cache hit allocates neither a closure nor a delegate.
+            return _textBlobCache.GetOrAdd(textOptions, Create, this);
+
+            static SKTextBlob Create(TextOptions textOptions, GlyphRunImpl self) => self.CreateTextBlob(textOptions);
         }
 
         private SKTextBlob CreateTextBlob(TextOptions textOptions)
