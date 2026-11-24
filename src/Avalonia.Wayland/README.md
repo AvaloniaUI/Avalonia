@@ -41,6 +41,45 @@ We are sending most of our UI->Wayland commands as a part of our composition bat
 the information required to render frame, so the wayland thread  always works with a consistent view of the UI state.
 There are also OOB commands for special cases that bypass regular Compositor's commit cycle.
 
+## Layer surfaces (`zwlr_layer_shell_v1`)
+
+A layer surface is a toplevel role provided by `zwlr_layer_shell_v1` (wlroots
+compositors and KWin; GNOME/Mutter does not implement it). It anchors to an
+output edge, does not appear in the taskbar or alt-tab switcher, and can be
+configured to never take keyboard focus. Use it for panels, docks,
+notification layers, and desktop islands.
+
+The platform does not fall back to an xdg toplevel when the protocol is
+missing; check `WaylandLayerShell.IsSupported` after initialization and let
+the application choose another window type.
+
+```csharp
+using var window = new Window(WaylandLayerShell.CreateWindowImpl(new LayerShellOptions
+{
+    Layer = LayerShellLayer.Overlay,
+    Anchor = LayerShellAnchor.Top,
+    ExclusiveZone = -1,
+    KeyboardInteractivity = LayerShellKeyboardInteractivity.None,
+    Namespace = "my-panel",
+    Width = 300,
+    Height = 38,
+}));
+window.Show();
+```
+
+`CreateWindowImpl` must be called on the UI thread after `UseWayland()`.
+
+Current limitations:
+
+- Text input is not exposed (`ITextInputMethodImpl` is `null`); this matches
+  the intended use of a surface that does not take keyboard focus.
+- Popups are supported through `zwlr_layer_surface_v1.get_popup`.
+- Server-side shadow and background blur are KDE-specific protocols and are
+  intentionally not part of this implementation.
+
+Verify with the unit tests plus a real compositor smoke test (`WAYLAND_DEBUG=1`
+on KWin and Sway). GNOME is expected to report `IsSupported == false`.
+
 ## "Persistence"
 
 To handle compositor restarts, we maintain a "persistent" state of our surfaces and resources (see Server/Persistent dir).
