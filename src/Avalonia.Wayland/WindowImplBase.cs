@@ -141,14 +141,21 @@ internal abstract partial class WindowBaseImpl : IWindowBaseImpl
     public void SetCursor(ICursorImpl? cursor)
     {
         CurrentCursor = cursor as WaylandCursorImpl;
-        ApplyCurrentCursor(SurfaceProxy);
+        ApplyCurrentCursor(SurfaceProxyForCursor);
     }
+
+    /// <summary>
+    /// The surface used for cursor application. xdg top-levels/popups expose
+    /// their <see cref="SurfaceProxy"/>; layer surfaces override this because
+    /// they don't have an xdg surface.
+    /// </summary>
+    internal virtual WSurfaceProxy? SurfaceProxyForCursor => SurfaceProxy;
 
     /// <summary>
     /// Pushes <see cref="CurrentCursor"/> to the given surface proxy (<c>null</c> falls back to the
     /// default arrow). Also used by the sinks to re-apply the cursor on a freshly created surface.
     /// </summary>
-    internal void ApplyCurrentCursor(WXdgShellSurfaceProxy? proxy) => proxy?.SetCursor(CurrentCursor?.Cursor);
+    internal void ApplyCurrentCursor(WSurfaceProxy? proxy) => proxy?.SetCursor(CurrentCursor?.Cursor);
 
     /// <summary>
     /// Returns the worker-side <c>xdg_surface</c>-derived proxy backing
@@ -159,6 +166,13 @@ internal abstract partial class WindowBaseImpl : IWindowBaseImpl
     /// parenting).
     /// </summary>
     internal abstract WXdgShellSurfaceProxy? SurfaceProxy { get; }
+
+    /// <summary>
+    /// Surface proxy used as the parent for a new popup. xdg windows return
+    /// <see cref="SurfaceProxy"/>; layer surfaces override this with their
+    /// <c>zwlr_layer_surface_v1</c> proxy since they have no xdg_surface.
+    /// </summary>
+    internal virtual WSurfaceProxy? PopupParentProxy => SurfaceProxy;
 
     protected void UpdateScaling(double scale)
     {

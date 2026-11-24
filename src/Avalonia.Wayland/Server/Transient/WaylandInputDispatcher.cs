@@ -16,9 +16,9 @@ partial class WaylandInputDispatcher : IDisposable
     private readonly WaylandGlobals _globals;
     private readonly Dictionary<uint, Seat> _seats = new();
 
-    internal static WXdgShellSurface? FindSurfaceForWlSurface(WlSurface? surface) =>
-        surface != null && surface.Tags.TryGetValue(typeof(WXdgShellSurface), out var tag)
-            ? (WXdgShellSurface)tag
+    internal static WSurface? FindSurfaceForWlSurface(WlSurface? surface) =>
+        surface != null && surface.Tags.TryGetValue(typeof(WSurface), out var tag)
+            ? (WSurface)tag
             : null;
 
     internal void NotifyCursorChanged(WSurface surface)
@@ -383,7 +383,7 @@ partial class WaylandInputDispatcher : IDisposable
                     handler._focusedWlSurface = surface;
                     handler._lastEnterSerial = serial;
                     handler.UpdateCursor();
-                    shellSurface?.EventSink.OnPointerEnter(0, serial, pos);
+                    shellSurface?.EventSink?.OnPointerEnter(0, serial, pos);
                 });
             }
 
@@ -573,8 +573,8 @@ partial class WaylandInputDispatcher : IDisposable
                 {
                     if (shellSurface != null)
                     {
-                        handler._activeTouchPoints[id] = (shellSurface.EventSink, pos);
-                        shellSurface.EventSink.OnTouchDown(time, id, pos, cookie);
+                        handler._activeTouchPoints[id] = (shellSurface.EventSink!, pos);
+                        shellSurface.EventSink!.OnTouchDown(time, id, pos, cookie);
                     }
                 });
             }
