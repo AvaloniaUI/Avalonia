@@ -36,7 +36,7 @@ void WindowImpl::OnInitialiseNSWindow(){
     
     [Window disableCursorRects];
     [Window setTabbingMode:NSWindowTabbingModeDisallowed];
-    [Window setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
+    UpdateFullScreenCollectionBehavior();
 
     [Window setTitle:_lastTitle];
     
@@ -130,6 +130,7 @@ void WindowImpl::StartStateTransition() {
 void WindowImpl::EndStateTransition() {
     _transitioningWindowState = false;
     UpdateAppearance();
+    UpdateFullScreenCollectionBehavior();
 
     // Ensure correct order of child windows after fullscreen transition.
     ZOrderChildWindows();
@@ -208,7 +209,36 @@ HRESULT WindowImpl::SetCanMinimize(bool value) {
 HRESULT WindowImpl::SetCanMaximize(bool value) {
     _canMaximize = value;
     UpdateAppearance();
+    UpdateFullScreenCollectionBehavior();
     return S_OK;
+}
+
+void WindowImpl::UpdateFullScreenCollectionBehavior() {
+    if (Window == nullptr) {
+        return;
+    }
+
+    // While the window is in (or moving into or out of) full screen, keep the current behavior so that AppKit can
+    // still take it out of full screen. EndStateTransition calls this again once the exit transition is done.
+    if (_transitioningWindowState ||
+        ([Window styleMask] & NSWindowStyleMaskFullScreen) == NSWindowStyleMaskFullScreen) {
+        return;
+    }
+
+    auto behavior = [Window collectionBehavior];
+
+    // Child windows join their owner's full screen space instead of getting their own.
+    if (behavior & NSWindowCollectionBehaviorFullScreenAuxiliary) {
+        return;
+    }
+
+    // The green button, Fn+F, Window > Enter Full Screen and full screen tiling all check this flag, so a window that
+    // can't be maximized (including any window with CanResize=false) must opt out here, not only in the style mask.
+    // FullScreenNone is set explicitly, rather than only clearing Primary, so AppKit has no default to fall back on.
+    behavior &= ~(NSWindowCollectionBehaviorFullScreenPrimary | NSWindowCollectionBehaviorFullScreenNone);
+    behavior |= _canMaximize ? NSWindowCollectionBehaviorFullScreenPrimary : NSWindowCollectionBehaviorFullScreenNone;
+
+    [Window setCollectionBehavior:behavior];
 }
 
 HRESULT WindowImpl::SetDecorations(SystemDecorations value) {
@@ -405,6 +435,13 @@ HRESULT WindowImpl::SetExtendTitleBarHeight(double value) {
 
 void WindowImpl::EnterFullScreenMode() {
     _fullScreenActive = true;
+
+    // CanMaximize only restricts what the user can do; WindowState = FullScreen set from code must still work. AppKit
+    // ignores toggleFullScreen: on a FullScreenNone window, so allow full screen until the window has left it again.
+    auto behavior = [Window collectionBehavior];
+    if (behavior & NSWindowCollectionBehaviorFullScreenNone) {
+        [Window setCollectionBehavior:(behavior & ~NSWindowCollectionBehaviorFullScreenNone) | NSWindowCollectionBehaviorFullScreenPrimary];
+    }
 
     [Window setTitle:_lastTitle];
     [Window toggleFullScreen:nullptr];

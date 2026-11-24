@@ -95,6 +95,7 @@ protected:
 private:
     void ZOrderChildWindows();
     void OnInitialiseNSWindow();
+    void UpdateFullScreenCollectionBehavior();
     NSString *_lastTitle;
     bool _isEnabled;
     bool _canResize;
