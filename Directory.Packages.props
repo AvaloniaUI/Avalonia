@@ -45,6 +45,7 @@
     <PackageVersion Include="NUnit3TestAdapter" Version="6.2.0" />
     <PackageVersion Include="NWayland" Version="0.11.0" />
     <PackageVersion Include="NWayland.Server" Version="0.11.0" />
+    <PackageVersion Include="NWayland.Protocols.Wlr" Version="0.11.0" />
     <PackageVersion Include="Quamotion.RemoteViewing" Version="1.1.211" />
     <PackageVersion Include="SharpCompress" Version="0.48.0" />
     <PackageVersion Include="Silk.NET.Direct3D.Compilers" Version="2.22.0" />

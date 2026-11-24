@@ -98,17 +98,18 @@ class WaylandWorkerClient
     /// <summary>
     /// Creates a new xdg_popup surface parented to <paramref name="parent"/>
     /// (a <see cref="WXdgTopLevelProxy"/> / <see cref="WXdgPopupProxy"/> /
-    /// other <see cref="WXdgShellSurfaceProxy"/> belonging to this worker).
+    /// <see cref="WLayerSurfaceProxy"/> proxy belonging to this worker).
     /// Throws if <paramref name="parent"/> doesn't unwrap to a known
-    /// worker-side parent surface. The popup isn't actually mapped until
+    /// worker-side popup parent. The popup isn't actually mapped until
     /// the UI side calls <see cref="IWXdgPopup.UpdatePositioner"/> at least
     /// once and a buffer is attached.
     /// </summary>
     public WaylandSurfaceCreateResult<WXdgPopupProxy> CreatePopupHandle(
         WXdgPopupEventSinkProxy sink,
-        WXdgShellSurfaceProxy parent)
+        WSurfaceProxy parent)
     {
-        var popup = new WXdgPopup(_worker, sink, (WXdgShellSurface)parent.ProxyTarget);
+        var popup = new WXdgPopup(
+            _worker, sink, (IWXdgPopupParent)parent.ProxyTarget);
         var proxy = new WXdgPopupProxy(popup, Marshaller);
         // Popups don't currently surface a "basic init" task to the UI
         // side: the UI driver waits on the first OnPopupConfigure delivered
@@ -119,5 +120,21 @@ class WaylandWorkerClient
             Proxy: proxy,
             GetRenderSurfaces: () => popup.RenderSurfaces,
             BasicInitCompleted: Task.FromResult(new XdgConfigureBatch()));
+    }
+
+    /// <summary>
+    /// Creates a native <c>zwlr_layer_surface_v1</c> and returns the UI-thread
+    /// proxy plus the initial configure task.
+    /// </summary>
+    public LayerSurfaceCreateResult CreateLayerSurfaceHandle(
+        WLayerSurfaceEventSinkProxy sink,
+        LayerShellOptions options)
+    {
+        var surface = new WLayerSurface(_worker, sink, options);
+        var proxy = new WLayerSurfaceProxy(surface, Marshaller);
+        return new LayerSurfaceCreateResult(
+            proxy,
+            () => surface.RenderSurfaces,
+            surface.BasicInitCompleted);
     }
 }

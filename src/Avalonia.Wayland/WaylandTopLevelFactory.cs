@@ -11,13 +11,24 @@ namespace Avalonia.Wayland;
 class WaylandTopLevelFactory : IWindowingPlatform
 {
     private readonly WaylandWorkerClient _client;
+    private readonly bool _layerShellSupported;
 
-    public WaylandTopLevelFactory(WaylandWorkerClient client)
+    public WaylandTopLevelFactory(WaylandWorkerClient client, bool layerShellSupported)
     {
         _client = client;
+        _layerShellSupported = layerShellSupported;
     }
 
     public IWindowImpl CreateWindow() => new WindowImpl(_client);
+
+    internal IWindowImpl CreateLayerShellWindow(LayerShellOptions options)
+    {
+        if (!_layerShellSupported)
+            throw new AvaloniaWaylandException(
+                "zwlr_layer_shell_v1 is not available on this compositor");
+
+        return new LayerShellWindowImpl(_client, options);
+    }
 
     public ITopLevelImpl CreateEmbeddableTopLevel() => throw new System.NotSupportedException();
 

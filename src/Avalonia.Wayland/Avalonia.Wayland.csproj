@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <PackageReference Include="NWayland" />
+    <PackageReference Include="NWayland.Protocols.Wlr" />
     <ProjectReference Include="..\..\packages\Avalonia\Avalonia.csproj" />
     <ProjectReference Include="..\Avalonia.Dialogs\Avalonia.Dialogs.csproj" />
     <ProjectReference Include="..\Avalonia.FreeDesktop\Avalonia.FreeDesktop.csproj" />

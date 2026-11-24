@@ -63,6 +63,8 @@ class WaylandPlatform
         if (initTcs.Task.GetAwaiter().GetResult() is { } initError)
             return initError;
 
+        WaylandLayerShell.IsSupported = worker.Globals?.LayerShell != null;
+
         IDispatcherImpl dispatcherImpl = options.UseGLibMainLoop
             ? new WaylandGlibDispatcher(options.ExternalGLibMainLoopExceptionLogger)
             : new ManagedDispatcherImpl(null);
@@ -73,7 +75,7 @@ class WaylandPlatform
 
         AvaloniaLocator.CurrentMutable
 
-            .Bind<IWindowingPlatform>().ToConstant(new WaylandTopLevelFactory(worker.Client))
+            .Bind<IWindowingPlatform>().ToConstant(new WaylandTopLevelFactory(worker.Client, WaylandLayerShell.IsSupported))
             .Bind<IRenderLoop>().ToConstant(worker.RenderLoop)
             .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(KeyModifiers.Control))
             .Bind<KeyGestureFormatInfo>()
