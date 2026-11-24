@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
+using System.Threading;
 using Avalonia.Input;
 using Avalonia.Logging;
 using Avalonia.Media.Imaging;
@@ -25,6 +26,8 @@ namespace Avalonia.Win32;
 internal static class OleDataObjectHelper
 {
     private const int SRCCOPY = 0x00CC0020;
+    private const int GetDataRetryCount = 10;
+    private const int GetDataRetryDelay = 10;
 
     public static FORMATETC ToFormatEtc(ushort formatId)
         => new()
@@ -43,7 +46,7 @@ internal static class OleDataObjectHelper
 
         var medium = new STGMEDIUM();
         var formatEtc = ToFormatEtc(formatId);
-        var result = oleDataObject.GetData(&formatEtc, &medium);
+        var result = GetData(oleDataObject, &formatEtc, &medium);
         if (result != (uint)HRESULT.S_OK)
             return null;
 
@@ -69,6 +72,25 @@ internal static class OleDataObjectHelper
         }
 
         return null;
+    }
+
+    private static unsafe uint GetData(Win32Com.IDataObject oleDataObject, FORMATETC* formatEtc, STGMEDIUM* medium)
+    {
+        var i = GetDataRetryCount;
+
+        while (true)
+        {
+            var result = oleDataObject.GetData(formatEtc, medium);
+
+            // Another process may hold the clipboard open briefly: retry, then throw instead of reporting no data.
+            if (result != CLIPBRD_E_CANT_OPEN)
+                return result;
+
+            if (--i == 0)
+                Marshal.ThrowExceptionForHR(unchecked((int)result));
+
+            Thread.Sleep(GetDataRetryDelay);
+        }
     }
 
     private static ushort? TryGetContainedFormat(Win32Com.IDataObject oleDataObject, DataFormat format)

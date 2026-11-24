@@ -35,6 +35,12 @@ namespace Avalonia.Rendering.Composition.Server
         private bool _fullRedrawRequested;
         private bool _disposed;
         private readonly HashSet<ServerCompositionVisual> _attachedVisuals = new();
+        private readonly BackdropVolatilePass _backdropVolatilePass = new();
+
+        /// <summary>
+        /// The backdrop visual list: every backdrop visual attached to this target.
+        /// </summary>
+        internal HashSet<ServerCompositionVisual> BackdropVisuals { get; } = new();
         public IDirtyRectTracker DirtyRects { get; }
 
         public long Id { get; }
@@ -131,8 +137,17 @@ namespace Avalonia.Rendering.Composition.Server
                 var collector = DebugEvents != null
                     ? new DebugEventsDirtyRectCollectorProxy(DirtyRects, DebugEvents)
                     : (IDirtyRectCollector)DirtyRects;
-                
+
+                // Backdrop state recompute. After the compositor-wide passes (adorners included), so the
+                // transforms are final.
+                foreach (var visual in BackdropVisuals)
+                    visual.RecomputeBackdropState(Scaling);
+
                 Root.UpdateRoot(collector, transform, new LtrbRect(0, 0, PixelSize.Width, PixelSize.Height));
+
+                // Volatile pass. Gets the collector that the update walk used for the root layer, so that
+                // tests see its dirty rects too.
+                _backdropVolatilePass.Run(this, collector, Scaling);
 
                 _updateRequested = false;
 
@@ -241,6 +256,14 @@ namespace Avalonia.Rendering.Composition.Server
                 return;
             }
             
+            // Backdrop effects read the root layer. Draw into an intermediate surface if the render target cannot
+            // be read back, or with partial presentation: the output buffer then has older contents, and the
+            // rects that repair it are added after the volatile pass.
+            if (BackdropVisuals.Count > 0
+                && (usePartialPresentation
+                    || renderTargetContext is not IDrawingContextImplWithBackdropSupport { SupportsBackdrop: true }))
+                needLayer = true;
+
             var renderBounds = new LtrbRect(0, 0, PixelSize.Width, PixelSize.Height);
             IPartialPresentationFeature? partialPresentation = null;
             PartialPresentationDirtyRectHistory? partialPresentationHistory = null;
@@ -258,6 +281,9 @@ namespace Avalonia.Rendering.Composition.Server
                         {
                             DirtyRects.Initialize(renderBounds);
                             DirtyRects.AddRect(renderBounds);
+                            // A full redraw does not go through the update walk, so no input dirty rects were
+                            // collected for the retained backdrop visuals of the root layer.
+                            InvalidateRetainedBackdropInputs(null);
                         }
 
                         DirtyRects.FinalizeFrame(renderBounds);
@@ -449,6 +475,30 @@ namespace Avalonia.Rendering.Composition.Server
         {
             if (_attachedVisuals.Remove(visual) && IsEnabled)
                 visual.Deactivate();
+        }
+
+        internal void RegisterBackdropVisual(ServerCompositionVisual visual) => BackdropVisuals.Add(visual);
+
+        internal void UnregisterBackdropVisual(ServerCompositionVisual visual)
+        {
+            BackdropVisuals.Remove(visual);
+            // Called during deserialization, where the render context is not current.
+            visual.BackdropState?.DisposeSnapshotWithContext();
+            visual.BackdropState = null;
+        }
+
+        /// <summary>
+        /// Marks the whole input dirty for every retained backdrop visual of <paramref name="layer"/> (null for
+        /// the root layer). For full redraws of a layer, which do not go through the update walk.
+        /// </summary>
+        internal void InvalidateRetainedBackdropInputs(ServerCompositionVisualCache? layer)
+        {
+            foreach (var visual in BackdropVisuals)
+            {
+                var state = visual.BackdropState;
+                if (state is { IsRetained: true } && ReferenceEquals(state.Layer, layer))
+                    state.MarkInputFullyDirty();
+            }
         }
 
         public void RequestFullRedraw() => _redrawRequested = true;

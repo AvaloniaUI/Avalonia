@@ -33,7 +33,7 @@ internal class DirectCompositedWindow : ISwapchainVisualHost, IDisposable
         _shared = shared;
         _device = shared.Device.CloneReference();
 
-        using var desktopTarget = shared.Device.CreateTargetForHwnd(WindowInfo.Handle, false);
+        using var desktopTarget = shared.Device.CreateTargetForHwnd(WindowInfo.Handle, 0);
         _target = desktopTarget.QueryInterface<IDCompositionTarget>();
 
         using var container = shared.Device.CreateVisual();

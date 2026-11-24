@@ -17,7 +17,9 @@ partial class ServerCompositionVisual
           | CompositionVisualChangedFields.Size
           | CompositionVisualChangedFields.SizeAnimated
           | CompositionVisualChangedFields.RenderOptions
-          | CompositionVisualChangedFields.Effect;
+          | CompositionVisualChangedFields.Effect
+          | CompositionVisualChangedFields.BackdropEffect
+          | CompositionVisualChangedFields.BackdropEffectBoundsSource;
 
     private const CompositionVisualChangedFields OwnBoundsUpdateFieldsMask =
         CompositionVisualChangedFields.Clip
@@ -25,7 +27,9 @@ partial class ServerCompositionVisual
         | CompositionVisualChangedFields.ClipToBoundsAnimated
         | CompositionVisualChangedFields.Size
         | CompositionVisualChangedFields.SizeAnimated
-        | CompositionVisualChangedFields.Effect;
+        | CompositionVisualChangedFields.Effect
+        | CompositionVisualChangedFields.BackdropEffect
+        | CompositionVisualChangedFields.BackdropEffectBoundsSource;
 
     private const CompositionVisualChangedFields CombinedTransformFieldsMask =
         CompositionVisualChangedFields.Size
@@ -111,7 +115,12 @@ partial class ServerCompositionVisual
            ) TriggerClipSizeDirty();
 
         if (property == s_IdOfSizeProperty)
+        {
             SizeChanged();
+            // The layout rect is part of the own content bounds of a layout-bounds backdrop visual.
+            if (BackdropEffect != null && BackdropEffectBoundsSource == Media.BackdropEffectBoundsSource.Layout)
+                EnqueueForOwnBoundsRecompute();
+        }
 
         if (property == s_IdOfVisibleProperty)
             TriggerVisibleDirty();
@@ -151,9 +160,10 @@ partial class ServerCompositionVisual
     {
         if (Parent != null && _transformedSubTreeBounds.HasValue)
             Parent.AddExtraDirtyRect(_transformedSubTreeBounds.Value);
+        Backdrop_OnParentChanging();
         AttHelper_ParentChanging();
     }
-    
+
     partial void OnParentChanged()
     {
         if (Parent != null)
@@ -161,6 +171,7 @@ partial class ServerCompositionVisual
             _delayPropagateNeedsBoundsUpdate = _delayPropagateIsDirtyForRender = true;
             EnqueueOwnPropertiesRecompute();
         }
+        Backdrop_OnParentChanged();
         AttHelper_ParentChanged();
     }
     

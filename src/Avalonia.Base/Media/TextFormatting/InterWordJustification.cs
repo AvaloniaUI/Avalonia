@@ -36,7 +36,8 @@ namespace Avalonia.Media.TextFormatting
                 return;
             }
 
-            var paragraphWidth = Width;
+            // An indented line is aligned within the paragraph width minus its indent, so that is what it fills.
+            var paragraphWidth = Width - lineImpl.LineIndent;
 
             if (double.IsInfinity(paragraphWidth))
             {

@@ -47,7 +47,7 @@ interface IDCompositionDevice : IUnknown
     HRESULT Commit();
     HRESULT WaitForCommitCompletion();
     HRESULT GetFrameStatistics(DCOMPOSITION_FRAME_STATISTICS* statistics);
-    HRESULT CreateTargetForHwnd(IntPtr hwnd, bool topmost, [out] IDCompositionVisual** target);
+    HRESULT CreateTargetForHwnd(IntPtr hwnd, BOOL topmost, [out] IDCompositionVisual** target);
     HRESULT CreateVisual([out] IDCompositionVisual** visual);
     HRESULT CreateSurface(UINT width, UINT height, DXGI_FORMAT pixelFormat, DXGI_ALPHA_MODE alphaMode, [out] IDCompositionSurface** surface);
     HRESULT CreateVirtualSurface(UINT initialWidth, UINT initialHeight, DXGI_FORMAT pixelFormat, DXGI_ALPHA_MODE alphaMode, [out] IDCompositionVirtualSurface** virtualSurface);
@@ -106,7 +106,7 @@ interface IDCompositionDevice3 : IDCompositionDevice2
 [uuid(5f4633fe-1e08-4cb8-8c75-ce24333f5602)]
 interface IDCompositionDesktopDevice : IDCompositionDevice2
 {
-    HRESULT CreateTargetForHwnd(IntPtr hwnd, bool topmost, [out] IDCompositionVisual** target);
+    HRESULT CreateTargetForHwnd(IntPtr hwnd, BOOL topmost, [out] IDCompositionVisual** target);
     HRESULT CreateSurfaceFromHandle(IntPtr handle, [out] IUnknown** surface);
     HRESULT CreateSurfaceFromHwnd(IntPtr hwnd, [out] IUnknown** surface);
 }
