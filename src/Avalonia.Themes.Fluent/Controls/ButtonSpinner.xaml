@@ -49,6 +49,7 @@
                           Background="{TemplateBinding Background}"
                           BorderBrush="{TemplateBinding BorderBrush}"
                           BorderThickness="{TemplateBinding BorderThickness}"
+                          CornerRadius="{TemplateBinding CornerRadius}"
                           Content="{TemplateBinding Content}"
                           ContentTemplate="{TemplateBinding ContentTemplate}"
                           Padding="{TemplateBinding Padding}"
@@ -117,6 +118,7 @@
                               Background="{TemplateBinding Background}"
                               BorderBrush="{TemplateBinding BorderBrush}"
                               BorderThickness="{TemplateBinding BorderThickness, Converter={StaticResource ButtonSpinnerLeftThickness}}"
+                              CornerRadius="{TemplateBinding CornerRadius, Converter={StaticResource RightCornerRadiusFilterConverter}}"
                               VerticalAlignment="Stretch"
                               VerticalContentAlignment="Center"
                               Foreground="{TemplateBinding Foreground}"
@@ -145,6 +147,13 @@
       </Style>
       <Style Selector="^ /template/ RepeatButton">
         <Setter Property="BorderThickness" Value="{TemplateBinding BorderThickness, Converter={StaticResource ButtonSpinnerRightThickness}}"/>
+      </Style>
+      <!-- The increase button is on the outer edge when the spinner is on the left -->
+      <Style Selector="^ /template/ RepeatButton#PART_IncreaseButton">
+        <Setter Property="CornerRadius" Value="{TemplateBinding CornerRadius, Converter={StaticResource LeftCornerRadiusFilterConverter}}"/>
+      </Style>
+      <Style Selector="^ /template/ RepeatButton#PART_DecreaseButton">
+        <Setter Property="CornerRadius" Value="0"/>
       </Style>
     </Style>
     <Style Selector="^:error">

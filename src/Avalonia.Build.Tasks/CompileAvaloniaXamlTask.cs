@@ -32,7 +32,7 @@ namespace Avalonia.Build.Tasks
                 ProjectDirectory, VerifyIl, DefaultCompileBindings, outputImportance,
                 new XamlCompilerDiagnosticsFilter(AnalyzerConfigFiles),
                 (SignAssembly && !DelaySign && !PublicSign) ? AssemblyOriginatorKeyFile : null,
-                SkipXamlCompilation, DebuggerLaunch, VerboseExceptions, CreateSourceInfo);
+                SkipXamlCompilation, DebuggerLaunch, VerboseExceptions, CreateSourceInfo, CompactHelperNames);
 
             if (res.Success && !res.WrittenFile)
             {
@@ -101,6 +101,8 @@ namespace Avalonia.Build.Tasks
         public bool DebuggerLaunch { get; set; }
 
         public bool CreateSourceInfo { get; set; }
+
+        public bool CompactHelperNames { get; set; }
 
         public bool VerboseExceptions { get; set; }
 

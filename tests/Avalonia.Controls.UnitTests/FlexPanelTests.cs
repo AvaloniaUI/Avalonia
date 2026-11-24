@@ -394,12 +394,12 @@ namespace Avalonia.Controls.UnitTests
                 {
                     new Border()
                     {
-                        [Flex.BasisProperty] = new FlexBasis(50, FlexBasisKind.Relative),
+                        [Flex.BasisProperty] = new FlexBasis(0.5, FlexBasisKind.Relative),
                         Height = 15
                     },
                     new Border()
                     {
-                        [Flex.BasisProperty] = new FlexBasis(50, FlexBasisKind.Relative),
+                        [Flex.BasisProperty] = new FlexBasis(0.5, FlexBasisKind.Relative),
                         Height = 15
                     }
                 }
@@ -411,6 +411,35 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(new Size(50, 15), target.Bounds.Size);
             Assert.Equal(new Rect(0, 0, 25, 15), target.Children[0].Bounds);
             Assert.Equal(new Rect(25, 0, 25, 15), target.Children[1].Bounds);
+        }
+
+        [Fact]
+        public void Applies_Parsed_Percentage_FlexBasis_Properties()
+        {
+            var target = new FlexPanel
+            {
+                Width = 100,
+                Children =
+                {
+                    new Border
+                    {
+                        [Flex.BasisProperty] = FlexBasis.Parse("25%"),
+                        Height = 15
+                    },
+                    new Border
+                    {
+                        [Flex.BasisProperty] = FlexBasis.Parse("75%"),
+                        Height = 15
+                    }
+                }
+            };
+
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(target.DesiredSize));
+
+            Assert.Equal(new Size(100, 15), target.Bounds.Size);
+            Assert.Equal(new Rect(0, 0, 25, 15), target.Children[0].Bounds);
+            Assert.Equal(new Rect(25, 0, 75, 15), target.Children[1].Bounds);
         }
 
         [Theory]

@@ -96,6 +96,25 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        [Fact]
+        public void WrapWithOverflow_Shares_The_Lookahead_Across_The_Runs_Of_A_Split_Word()
+        {
+            using (TextFormatterTests.Start())
+            {
+                var properties = CreateParagraph(TextWrapping.WrapWithOverflow, out var runProperties);
+                var word = new string('x', 20_000);
+                var source = new TextFormatterTests.ListTextSource(Enumerable.Range(0, word.Length / 50)
+                    .Select(i => new TextCharacters(word.Substring(i * 50, 50), runProperties)));
+
+                using var line = new TextFormatterImpl().FormatLine(source, 0, ParagraphWidth, properties);
+
+                Assert.NotNull(line);
+
+                // No opportunity is in reach, so the word is broken at the fitting length like a single run.
+                Assert.Equal(WrapAll(word, TextWrapping.Wrap)[0], line!.Length);
+            }
+        }
+
         private static GenericTextParagraphProperties CreateParagraph(TextWrapping wrapping,
             out GenericTextRunProperties runProperties)
         {
