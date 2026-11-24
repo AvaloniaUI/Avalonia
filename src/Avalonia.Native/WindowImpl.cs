@@ -81,6 +81,17 @@ namespace Avalonia.Native
             _native.SetCanResize(value.AsComBool());
         }
 
+        public void BeginResizeDrag(WindowEdge edge, PointerPressedEventArgs e)
+        {
+            if (!_canResize)
+                return;
+
+            e.Pointer.Capture(null);
+
+            // WindowEdge values match AvnWindowEdge.
+            _native.BeginResizeDrag((AvnWindowEdge)edge);
+        }
+
         public void SetCanMinimize(bool value)
         {
             _native.SetCanMinimize(value.AsComBool());

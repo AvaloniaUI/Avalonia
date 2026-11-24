@@ -61,7 +61,7 @@ public:
 
     virtual HRESULT BeginMoveDrag() override;
 
-    virtual HRESULT BeginResizeDrag(__attribute__((unused)) AvnWindowEdge edge) override;
+    virtual HRESULT BeginResizeDrag(AvnWindowEdge edge) override;
 
     virtual HRESULT GetPosition(AvnPoint *ret) override;
 
