@@ -72,9 +72,24 @@ namespace Avalonia.Native
 
         public void SetupApplicationName()
         {
-            if (!string.IsNullOrWhiteSpace(Application.Current!.Name))
+            var app = Application.Current!;
+
+            ApplyApplicationName(app.Name);
+
+            app.PropertyChanged += (_, e) =>
             {
-                _factory.MacOptions.SetApplicationTitle(Application.Current.Name);
+                if (e.Property == Application.NameProperty)
+                {
+                    ApplyApplicationName(e.GetNewValue<string?>());
+                }
+            };
+        }
+
+        private void ApplyApplicationName(string? name)
+        {
+            if (!string.IsNullOrWhiteSpace(name))
+            {
+                _factory.MacOptions.SetApplicationTitle(name);
             }
         }
 

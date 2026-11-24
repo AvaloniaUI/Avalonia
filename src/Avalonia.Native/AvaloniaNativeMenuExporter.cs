@@ -153,10 +153,23 @@ namespace Avalonia.Native
 
             appMenu.Add(new NativeMenuItemSeparator());
 
-            var hideItem = new NativeMenuItem("Hide " + (Application.Current?.Name ?? "Application"))
+            var app = Application.Current;
+
+            var hideItem = new NativeMenuItem(GetHideItemHeader(app?.Name))
             {
                 Gesture = new KeyGesture(Key.H, KeyModifiers.Meta)
             };
+
+            if (app is not null)
+            {
+                app.PropertyChanged += (_, e) =>
+                {
+                    if (e.Property == Application.NameProperty)
+                    {
+                        hideItem.Header = GetHideItemHeader(e.GetNewValue<string?>());
+                    }
+                };
+            }
 
             hideItem.Click += (_, _) =>
             {
@@ -200,6 +213,9 @@ namespace Avalonia.Native
 
             appMenu.Add(quitItem);
         }
+
+        private static string GetHideItemHeader(string? applicationName) =>
+            "Hide " + (applicationName ?? "Application");
 
         private void DoLayoutReset() => DoLayoutReset(false);
 
