@@ -1398,6 +1398,47 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Inline_Should_Apply_A_Style_Added_To_It_At_Runtime()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = new Window();
+                var run = CodeRun();
+                var target = new TextBlock { Inlines = new InlineCollection { run } };
+
+                window.Content = target;
+                window.Show();
+
+                run.Styles.Add(CodeRunStyle());
+                window.UpdateLayout();
+
+                Assert.Equal(Brushes.Red, run.Background);
+                Assert.Equal(Brushes.Red, LaidOutBackground(target));
+            }
+        }
+
+        [Fact]
+        public void Nested_Inline_Should_Apply_A_Style_Added_To_Its_Span_At_Runtime()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = new Window();
+                var run = CodeRun();
+                var span = new Span { Inlines = { run } };
+                var target = new TextBlock { Inlines = new InlineCollection { span } };
+
+                window.Content = target;
+                window.Show();
+
+                span.Styles.Add(CodeRunStyle());
+                window.UpdateLayout();
+
+                Assert.Equal(Brushes.Red, run.Background);
+                Assert.Equal(Brushes.Red, LaidOutBackground(target));
+            }
+        }
+
         private static Style CodeRunStyle() => new Style(x => x.OfType<Run>().Class("code"))
         {
             Setters = { new Setter(TextElement.BackgroundProperty, Brushes.Red) }

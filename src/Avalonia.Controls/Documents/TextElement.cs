@@ -394,9 +394,9 @@ namespace Avalonia.Controls.Documents
         {
             base.InvalidateStyles(recurse);
 
-            // The host applies the styles again from its next measure pass. A style that newly
-            // matches removes no frame and changes no value, so without this nothing would
-            // schedule that pass.
+            // The host applies the styles again from its next measure pass. A style added to the
+            // inline itself, or to a span around it, invalidates only that part of the inline tree
+            // and not the host, so without this nothing would schedule that pass.
             InlineHost?.Invalidate();
         }
 
