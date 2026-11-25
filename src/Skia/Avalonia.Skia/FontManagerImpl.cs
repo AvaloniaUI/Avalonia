@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
+using Avalonia.Logging;
 using Avalonia.Media;
 using Avalonia.Media.Fonts;
 using Avalonia.Media.Fonts.Tables;
@@ -52,10 +53,7 @@ namespace Avalonia.Skia
                 return false;
             }
 
-            platformTypeface = CreateMatchedTypeface(skTypeface, fontStyle, fontWeight, fontStretch);
-
-            return true;
-
+            return TryCreateMatchedTypeface(skTypeface, fontStyle, fontWeight, fontStretch, out platformTypeface);
         }
 
         private bool TryMatchCharacter(
@@ -112,9 +110,39 @@ namespace Avalonia.Skia
                 return false;
             }
 
-            platformTypeface = CreateMatchedTypeface(skTypeface, style, weight, stretch);
+            return TryCreateMatchedTypeface(skTypeface, style, weight, stretch, out platformTypeface);
+        }
 
-            return true;
+        /// <summary>
+        /// Wraps a typeface the platform matched like <see cref="CreateMatchedTypeface"/>, and reports no
+        /// match when the matched font cannot be read.
+        /// </summary>
+        /// <remarks>
+        /// The platform matches against every installed font file, which the application does not
+        /// control, so a file that fails to read is logged and skipped instead of failing the text
+        /// layout that asked for it.
+        /// </remarks>
+        private bool TryCreateMatchedTypeface(SKTypeface skTypeface, FontStyle style, FontWeight weight,
+            FontStretch stretch, [NotNullWhen(true)] out IPlatformTypeface? platformTypeface)
+        {
+            try
+            {
+                platformTypeface = CreateMatchedTypeface(skTypeface, style, weight, stretch);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                // The typeface is not disposed: SkiaSharp hands out the same wrapper for a native
+                // typeface it already wraps, which another platform typeface can still be using.
+                Logger.TryGet(LogEventLevel.Error, LogArea.Fonts)?.Log(this,
+                    "Could not create a typeface for the font family {FamilyName}: {Exception}",
+                    skTypeface.FamilyName, ex);
+
+                platformTypeface = null;
+
+                return false;
+            }
         }
 
         /// <summary>
