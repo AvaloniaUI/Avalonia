@@ -17,6 +17,11 @@ namespace Avalonia.Controls
     /// <summary>
     /// Arranges and virtualizes content on a single line that is oriented either horizontally or vertically.
     /// </summary>
+    /// <remarks>
+    /// When hosted by an <see cref="IScrollAnchorProvider"/>, changes to the available size
+    /// perpendicular to <see cref="Orientation"/> preserve the current scroll anchor.
+    /// The sizes of unrealized items, and therefore the scroll extent, are estimated.
+    /// </remarks>
     public class VirtualizingStackPanel : VirtualizingPanel, IScrollSnapPointsInfo
     {
         /// <summary>
@@ -75,6 +80,7 @@ namespace Avalonia.Controls
         private RealizedStackElements? _realizedElements;
         private readonly (int Index, double Size)[] _leadingElementSizes =
             { (0, double.NaN), (1, double.NaN), (-1, double.NaN) };
+        private int _measuredPrefixSamples;
         private Size? _lastMeasureSize;
         private Orientation _lastMeasureOrientation;
         private bool _realizedElementsFromEmptyViewport;
@@ -209,7 +215,7 @@ namespace Avalonia.Controls
 
             try
             {
-                ValidateStartU(availableSize);
+                var preservedAnchor = ValidateStartU(availableSize, GetAnchorForConstraintChange(availableSize));
                 _realizedElements ??= new();
                 _measureElements ??= new();
 
@@ -219,7 +225,7 @@ namespace Avalonia.Controls
                 // We handle horizontal and vertical layouts here so X and Y are abstracted to:
                 // - Horizontal layouts: U = horizontal, V = vertical
                 // - Vertical layouts: U = vertical, V = horizontal
-                var viewport = CalculateMeasureViewport(orientation, items);
+                var viewport = CalculateMeasureViewport(orientation, items, preservedAnchor);
 
                 // If the viewport is disjunct then we can recycle everything.
                 if (viewport.viewportIsDisjunct)
@@ -242,8 +248,11 @@ namespace Avalonia.Controls
                     var index = double.IsNaN(_leadingElementSizes[i].Size) ?
                         i : _leadingElementSizes[i].Index;
                     if (_realizedElements.GetElement(index) is { } element)
+                    {
                         _leadingElementSizes[i] = (index, orientation == Orientation.Horizontal ?
                             element.DesiredSize.Width : element.DesiredSize.Height);
+                        _measuredPrefixSamples |= 1 << i;
+                    }
                 }
 
                 // Keep a sample near the viewport as well as the leading items, which
@@ -369,6 +378,7 @@ namespace Avalonia.Controls
 
         protected override void OnItemsChanged(IReadOnlyList<object?> items, NotifyCollectionChangedEventArgs e)
         {
+            _measuredPrefixSamples = 0;
             var firstChangedIndex = e.Action switch
             {
                 NotifyCollectionChangedAction.Add => e.NewStartingIndex,
@@ -564,6 +574,7 @@ namespace Avalonia.Controls
             base.OnItemsControlChanged(oldValue);
 
             Array.Fill(_leadingElementSizes, (-1, double.NaN));
+            _measuredPrefixSamples = 0;
             _lastMeasureSize = null;
             _realizedElementsFromEmptyViewport = false;
             _hasMeasuredViewport = false;
@@ -778,7 +789,10 @@ namespace Avalonia.Controls
             return _realizedElements?.Elements ?? Array.Empty<Control>();
         }
 
-        private MeasureViewport CalculateMeasureViewport(Orientation orientation, IReadOnlyList<object?> items)
+        private MeasureViewport CalculateMeasureViewport(
+            Orientation orientation,
+            IReadOnlyList<object?> items,
+            (int Index, double Position)? preservedAnchor)
         {
             Debug.Assert(_realizedElements is not null);
 
@@ -799,6 +813,11 @@ namespace Avalonia.Controls
             {
                 anchorIndex = _scrollToIndex;
                 anchorU = orientation == Orientation.Horizontal ? _scrollToElement.Bounds.Left : _scrollToElement.Bounds.Top;
+            }
+            else if (preservedAnchor is { } anchor)
+            {
+                anchorIndex = anchor.Index;
+                anchorU = anchor.Position;
             }
             else
             {
@@ -857,13 +876,49 @@ namespace Avalonia.Controls
             return DesiredSize;
         }
 
-        private void ValidateStartU(Size availableSize)
+        private bool CrossAxisConstraintChanged(Size availableSize) =>
+            _lastMeasureOrientation == Orientation && _lastMeasureSize is { } previous &&
+            (Orientation == Orientation.Vertical ? previous.Width != availableSize.Width :
+                previous.Height != availableSize.Height);
+
+        private (int Index, double Position)? GetAnchorForConstraintChange(Size availableSize)
+        {
+            if (_scrollToIndex >= 0 || !CrossAxisConstraintChanged(availableSize) ||
+                _realizedElements is not { } realized || double.IsNaN(realized.StartU))
+                return null;
+
+            // Ask the provider before measuring can change or recycle its candidate.
+            if (_scrollAnchorProvider?.CurrentAnchor is { IsVisible: true } anchor)
+            {
+                var index = realized.GetIndex(anchor);
+                if (index >= 0)
+                {
+                    var position = realized.GetElementU(index);
+                    if (double.IsFinite(position))
+                        return (index, position);
+                }
+            }
+
+            // A standalone panel may not have an anchor provider. Use the first visible
+            // realized item without examining any unrealized prefix.
+            var start = Orientation == Orientation.Horizontal ? _viewport.Left : _viewport.Top;
+            var end = Orientation == Orientation.Horizontal ? _viewport.Right : _viewport.Bottom;
+            var u = realized.StartU;
+            for (var i = 0; i < realized.Count; ++i)
+            {
+                var size = realized.SizeU[i];
+                if (realized.Elements[i] is { IsVisible: true } && u < end && u + size > start)
+                    return (realized.FirstIndex + i, u);
+                u += size;
+            }
+            return null;
+        }
+
+        private (int Index, double Position)? ValidateStartU(
+            Size availableSize, (int Index, double Position)? preservedAnchor)
         {
             var orientation = Orientation;
             var constraintsChanged = _lastMeasureSize != availableSize;
-            var crossAxisChanged = _lastMeasureSize is { } previousMeasureSize &&
-                (orientation == Orientation.Vertical ? previousMeasureSize.Width != availableSize.Width :
-                    previousMeasureSize.Height != availableSize.Height);
 
             if (_lastMeasureOrientation != orientation)
             {
@@ -875,25 +930,22 @@ namespace Avalonia.Controls
             _lastMeasureOrientation = orientation;
 
             if (_realizedElements is not { } realized)
-                return;
+                return null;
 
             var resized = realized.MeasureElements(orientation, availableSize);
-
-            // A new wrapping constraint can resize the prefix even when the sampled
-            // items are fixed-size headers.
-            if (resized && crossAxisChanged)
-            {
-                Array.Fill(_leadingElementSizes, (-1, double.NaN));
-                realized.InvalidateStartU();
-            }
+            if (preservedAnchor is { } anchor && realized.GetElement(anchor.Index) is { } element &&
+                (orientation == Orientation.Horizontal ? element.DesiredSize.Width : element.DesiredSize.Height) <= 0)
+                preservedAnchor = null;
 
             var needsBaseline = Array.Exists(_leadingElementSizes, x => double.IsNaN(x.Size));
-            // Refresh the prefix baselines even when the cross-axis resize has already
-            // invalidated the origin, so a later local edit cannot reuse stale sizes.
+            if (resized || constraintsChanged || needsBaseline)
+                _measuredPrefixSamples = 0;
+            // Constraint changes may only affect rows within or after the viewport.
+            // Compare and refresh the prefix samples before discarding the known origin.
             if ((!resized && !constraintsChanged && !needsBaseline) ||
                 realized.FirstIndex <= 0 ||
-                (double.IsNaN(realized.StartU) && !(resized && crossAxisChanged)))
-                return;
+                double.IsNaN(realized.StartU))
+                return preservedAnchor;
 
             // The visible sizes alone cannot distinguish a local edit from a collection-wide
             // change, especially when only one item is visible. Remeasure previously measured
@@ -910,15 +962,27 @@ namespace Avalonia.Controls
                     continue;
 
                 var size = MeasurePrefixElement(index, orientation, availableSize);
-                if (!double.IsNaN(previousSize) && size != previousSize)
+                // Constraint-driven wrapping preserves the visible anchor. Samples are
+                // refreshed for later data edits, rather than used to infer the whole prefix.
+                if (preservedAnchor is null && !double.IsNaN(previousSize) && size != previousSize)
                     realized.InvalidateStartU();
 
                 _leadingElementSizes[i] = (index, size);
+                _measuredPrefixSamples |= 1 << i;
             }
+            return preservedAnchor;
         }
 
         private double MeasurePrefixElement(int index, Orientation orientation, Size availableSize)
         {
+            // Reuse measurements until a resize, constraint change, or collection edit
+            // requires revalidation. Viewport updates can span multiple measure passes.
+            for (var i = 0; i < _leadingElementSizes.Length; ++i)
+            {
+                if ((_measuredPrefixSamples & (1 << i)) != 0 && _leadingElementSizes[i].Index == index)
+                    return _leadingElementSizes[i].Size;
+            }
+
             var element = index == _focusedIndex ? _focusedElement :
                 index == _scrollToIndex ? _scrollToElement : null;
             var recycle = element is null;
@@ -939,7 +1003,12 @@ namespace Avalonia.Controls
 
                 if (recycle && element is not null)
                 {
-                    RecycleElement(element, index);
+                    if (element.GetValue(RecycleKeyProperty) == s_itemIsItsOwnContainer)
+                        RecycleElement(element, index);
+                    else
+                        // A temporary generated probe must not retain focus through
+                        // a tab-once marker left on a previously removed container.
+                        RecycleElementOnItemRemoved(element);
                 }
             }
         }
@@ -949,7 +1018,8 @@ namespace Avalonia.Controls
             // An empty viewport can temporarily realize just the first item while the
             // ScrollViewer coerces its offset after an extent reduction. That item is
             // not a representative sample (for example, after hiding alternate rows).
-            if (_realizedElements is null || (_realizedElementsFromEmptyViewport && _hasMeasuredViewport))
+            if (_realizedElements is null ||
+                (_realizedElementsFromEmptyViewport && _hasMeasuredViewport && _lastEstimatedElementSizeU > 0))
                 return _lastEstimatedElementSizeU;
 
             var orientation = Orientation;
@@ -969,8 +1039,17 @@ namespace Avalonia.Controls
             }
 
             // Check we have enough information on which to base our estimate.
-            if (divisor == 0 || total == 0)
+            if (divisor == 0)
                 return _lastEstimatedElementSizeU;
+
+            if (total == 0)
+            {
+                // When every item was measured at zero, preserve that empty extent
+                // through the temporary empty viewport used while coercing the offset.
+                if (_realizedElements.FirstIndex == 0 && _realizedElements.LastIndex == Items.Count - 1)
+                    _lastEstimatedElementSizeU = 0;
+                return _lastEstimatedElementSizeU;
+            }
 
             // Store and return the estimate.
             return _lastEstimatedElementSizeU = total / divisor;
@@ -984,7 +1063,7 @@ namespace Avalonia.Controls
             out double position)
         {
             // We have no elements, or we're at the start of the viewport.
-            if (itemCount <= 0 || MathUtilities.IsZero(viewportStartU))
+            if (itemCount <= 0 || MathUtilities.IsZero(viewportStartU) || _lastEstimatedElementSizeU <= 0)
             {
                 index = 0;
                 position = 0;
@@ -993,6 +1072,29 @@ namespace Avalonia.Controls
 
             var horizontal = Orientation == Orientation.Horizontal;
             var viewportEnd = horizontal ? _viewport.Right : _viewport.Bottom;
+
+            // A vanished realized range cannot locate the viewport using the previous
+            // nonzero average. If its origin also changed, restart at the collection
+            // origin so an entirely hidden list can report an empty extent.
+            if (_realizedElements is { Count: > 0 } collapsed && double.IsNaN(collapsed.StartU))
+            {
+                var hasSize = false;
+                foreach (var element in collapsed.Elements)
+                {
+                    if (element is not null &&
+                        (horizontal ? element.DesiredSize.Width : element.DesiredSize.Height) > 0)
+                    {
+                        hasSize = true;
+                        break;
+                    }
+                }
+                if (!hasSize)
+                {
+                    index = 0;
+                    position = 0;
+                    return;
+                }
+            }
 
             if (!_hasReachedEnd && MathUtilities.GreaterThanOrClose(
                 viewportEnd,
@@ -1108,7 +1210,10 @@ namespace Avalonia.Controls
             // If the anchor element is at the beginning of, or before, the start of the viewport
             // then we can recycle all elements before it.
             if (u <= viewport.viewportUStart)
+            {
+                RememberMeasuredPredecessor(viewport.anchorIndex);
                 _realizedElements.RecycleElementsBefore(viewport.anchorIndex, _recycleElement);
+            }
 
             // Start at the anchor element and move forwards, realizing elements.
             do
@@ -1160,6 +1265,15 @@ namespace Avalonia.Controls
                 var sizeV = horizontal ? e.DesiredSize.Height : e.DesiredSize.Width;
                 u -= sizeU;
 
+                // A growing predecessor can exceed the anchor's old position. Keep
+                // coordinates nonnegative and let the scroll provider track the shift.
+                if (u < 0)
+                {
+                    viewport.anchorU -= u;
+                    viewport.realizedEndU -= u;
+                    u = 0;
+                }
+
                 _measureElements!.Add(index, e, u, sizeU);
                 viewport.measuredV = Math.Max(viewport.measuredV, sizeV);
                 --index;
@@ -1169,7 +1283,21 @@ namespace Avalonia.Controls
             _hasReachedStart = index < 0;
 
             // We can now recycle elements before the first element.
+            RememberMeasuredPredecessor(index + 1);
             _realizedElements.RecycleElementsBefore(index + 1, _recycleElement);
+        }
+
+        private void RememberMeasuredPredecessor(int firstIndex)
+        {
+            // ValidateStartU already measured the old realized range. Save the size
+            // before recycling clears bindings or destroys a non-recycling template.
+            var index = firstIndex - 1;
+            if (_realizedElements?.GetElement(index) is { IsMeasureValid: true } element)
+            {
+                _leadingElementSizes[^1] = (index, Orientation == Orientation.Horizontal ?
+                    element.DesiredSize.Width : element.DesiredSize.Height);
+                _measuredPrefixSamples |= 1 << (_leadingElementSizes.Length - 1);
+            }
         }
 
         private Control GetOrCreateElement(IReadOnlyList<object?> items, int index)
