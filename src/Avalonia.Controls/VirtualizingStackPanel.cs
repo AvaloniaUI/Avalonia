@@ -9,6 +9,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Logging;
+using Avalonia.LogicalTree;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
 
@@ -440,6 +441,31 @@ namespace Avalonia.Controls
                 case NotifyCollectionChangedAction.Reset:
                     _realizedElements.ItemsReset(_recycleElementOnItemRemoved);
                     break;
+            }
+
+            // Own containers keep their logical owner while virtualized. Collection
+            // removals must also release containers outside the realized range.
+            if (e.Action is NotifyCollectionChangedAction.Remove or NotifyCollectionChangedAction.Replace)
+            {
+                foreach (var item in e.OldItems!)
+                {
+                    if (item is Control control && control.GetValue(RecycleKeyProperty) == s_itemIsItsOwnContainer)
+                        RecycleElementOnItemRemoved(control);
+                }
+            }
+            else if (e.Action == NotifyCollectionChangedAction.Reset)
+            {
+                var ownContainers = ItemsControl!.GetLogicalChildren().OfType<Control>()
+                    .Where(c => c.GetValue(RecycleKeyProperty) == s_itemIsItsOwnContainer).ToArray();
+                if (ownContainers.Length > 0)
+                {
+                    var remaining = new HashSet<object?>(items);
+                    foreach (var control in ownContainers)
+                    {
+                        if (!remaining.Contains(control))
+                            RecycleElementOnItemRemoved(control);
+                    }
+                }
             }
         }
 
@@ -1352,16 +1378,20 @@ namespace Avalonia.Controls
 
             var controlItem = (Control)item!;
             var generator = ItemContainerGenerator!;
+            var needsPreparation = !controlItem.IsSet(RecycleKeyProperty);
 
-            if (!controlItem.IsSet(RecycleKeyProperty))
-            {
+            if (needsPreparation)
                 generator.PrepareItemContainer(controlItem, controlItem, index);
+
+            if (controlItem.GetVisualParent() != this)
                 AddInternalChild(controlItem);
+
+            if (needsPreparation)
+            {
                 controlItem.SetValue(RecycleKeyProperty, s_itemIsItsOwnContainer);
                 generator.ItemContainerPrepared(controlItem, item, index);
             }
 
-            controlItem.SetCurrentValue(Visual.IsVisibleProperty, true);
             return controlItem;
         }
 
@@ -1377,7 +1407,6 @@ namespace Avalonia.Controls
             if (_recyclePool?.TryGetValue(recycleKey, out var recyclePool) == true && recyclePool.Count > 0)
             {
                 var recycled = recyclePool.Pop();
-                recycled.SetCurrentValue(Visual.IsVisibleProperty, true);
                 generator.PrepareItemContainer(recycled, item, index);
                 AddInternalChild(recycled);
                 generator.ItemContainerPrepared(recycled, item, index);
@@ -1418,7 +1447,9 @@ namespace Avalonia.Controls
             }
             else if (recycleKey == s_itemIsItsOwnContainer)
             {
-                element.SetCurrentValue(Visual.IsVisibleProperty, false);
+                // The source owns the logical child. Only detach it from the panel's
+                // visual children, preserving its application visibility and logical parent.
+                Children.Remove(element);
             }
             else if (KeyboardNavigation.GetTabOnceActiveElement(ItemsControl) == element)
             {
@@ -1429,7 +1460,6 @@ namespace Avalonia.Controls
             {
                 ItemContainerGenerator!.ClearItemContainer(element);
                 PushToRecyclePool(recycleKey, element);
-                element.SetCurrentValue(Visual.IsVisibleProperty, false);
                 RemoveInternalChild(element);
             }
         }
@@ -1450,12 +1480,12 @@ namespace Avalonia.Controls
             else if (recycleKey == s_itemIsItsOwnContainer)
             {
                 RemoveInternalChild(element);
+                element.ClearValue(RecycleKeyProperty);
             }
             else
             {
                 ItemContainerGenerator!.ClearItemContainer(element);
                 PushToRecyclePool(recycleKey, element);
-                element.SetCurrentValue(Visual.IsVisibleProperty, false);
                 RemoveInternalChild(element);
             }
         }
