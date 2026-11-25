@@ -882,7 +882,10 @@ namespace Avalonia.Controls
             // A new wrapping constraint can resize the prefix even when the sampled
             // items are fixed-size headers.
             if (resized && crossAxisChanged)
+            {
+                Array.Fill(_leadingElementSizes, (-1, double.NaN));
                 realized.InvalidateStartU();
+            }
 
             var needsBaseline = Array.Exists(_leadingElementSizes, x => double.IsNaN(x.Size));
             // Refresh the prefix baselines even when the cross-axis resize has already
