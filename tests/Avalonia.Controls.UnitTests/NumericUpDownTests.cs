@@ -64,16 +64,25 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(control.Value, expected);
         }
 
-        [Fact]
-        public void Default_Increment_Does_Not_Add_Decimal_Places()
+        [Theory]
+        [InlineData("30", null, "31")]
+        [InlineData("30.5", null, "31.5")]
+        [InlineData("30.00", null, "31.00")]
+        [InlineData("30", "0.1", "30.1")]
+        public void Step_Keeps_The_Places_Of_The_Value_And_Increment(string value, string? increment, string expected)
         {
             RunTest((control, textbox) =>
             {
-                control.Value = 30;
+                control.Value = decimal.Parse(value, CultureInfo.InvariantCulture);
+                if (increment is not null)
+                {
+                    control.Increment = decimal.Parse(increment, CultureInfo.InvariantCulture);
+                }
 
                 GetSpinner(control).RaiseEvent(new SpinEventArgs(Spinner.SpinEvent, SpinDirection.Increase));
 
-                Assert.Equal("31", control.Text);
+                var expectedValue = decimal.Parse(expected, CultureInfo.InvariantCulture);
+                Assert.Equal(expectedValue.ToString(control.NumberFormat), control.Text);
             });
         }
 
