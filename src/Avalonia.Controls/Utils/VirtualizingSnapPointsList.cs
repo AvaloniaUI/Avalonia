@@ -17,16 +17,18 @@ namespace Avalonia.Controls.Utils
         private readonly Orientation _parentOrientation;
         private readonly SnapPointsAlignment _snapPointsAlignment;
         private readonly double _size;
+        private readonly double _spacing;
         private readonly int _start = -1;
         private readonly int _end;
 
-        public VirtualizingSnapPointsList(RealizedStackElements realizedElements, int count, Orientation orientation, Orientation parentOrientation, SnapPointsAlignment snapPointsAlignment, double size)
+        public VirtualizingSnapPointsList(RealizedStackElements realizedElements, int count, Orientation orientation, Orientation parentOrientation, SnapPointsAlignment snapPointsAlignment, double size, double spacing)
         {
             _realizedElements = realizedElements;
             _orientation = orientation;
             _parentOrientation = parentOrientation;
             _snapPointsAlignment = snapPointsAlignment;
             _size = size;
+            _spacing = spacing;
             if (parentOrientation == orientation)
             {
                 _start = Math.Max(0, _realizedElements.FirstIndex - ExtraCount);
@@ -73,7 +75,13 @@ namespace Avalonia.Controls.Utils
                             {
                                 ind -= _realizedElements.LastIndex + 1;
                             }
-                            snapPoint = ind * averageElementSize;
+                            snapPoint = ind * (averageElementSize + _spacing);
+                            if (index > _realizedElements.LastIndex)
+                            {
+                                // One more spacing sits between the last realized element
+                                // and the first unrealized one.
+                                snapPoint += _spacing;
+                            }
                             switch (_snapPointsAlignment)
                             {
                                 case SnapPointsAlignment.Center:
@@ -117,7 +125,13 @@ namespace Avalonia.Controls.Utils
                             {
                                 ind -= _realizedElements.LastIndex + 1;
                             }
-                            snapPoint = ind * averageElementSize;
+                            snapPoint = ind * (averageElementSize + _spacing);
+                            if (index > _realizedElements.LastIndex)
+                            {
+                                // One more spacing sits between the last realized element
+                                // and the first unrealized one.
+                                snapPoint += _spacing;
+                            }
                             switch (_snapPointsAlignment)
                             {
                                 case SnapPointsAlignment.Center:

@@ -2459,6 +2459,142 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Lays_Out_Children_Vertically_With_Spacing()
+        {
+            using var app = App();
+
+            var items = new[]
+            {
+                new ItemWithHeight(0, 20),
+                new ItemWithHeight(1, 30),
+                new ItemWithHeight(2, 50),
+            };
+            var (target, _, _) = CreateTarget(items: items, itemTemplate: CanvasWithHeightTemplate);
+
+            target.Spacing = 10;
+            Assert.False(target.IsMeasureValid);
+
+            Layout(target);
+
+            Assert.Equal(new Size(100, 120), target.Bounds.Size);
+
+            var elements = target.GetRealizedElements().ToList();
+            Assert.Equal(new Rect(0, 0, 100, 20), elements[0]!.Bounds);
+            Assert.Equal(new Rect(0, 30, 100, 30), elements[1]!.Bounds);
+            Assert.Equal(new Rect(0, 70, 100, 50), elements[2]!.Bounds);
+        }
+
+        [Fact]
+        public void Lays_Out_Children_Horizontally_With_Spacing()
+        {
+            using var app = App();
+
+            var items = new[]
+            {
+                new ItemWithWidth(0, 20),
+                new ItemWithWidth(1, 30),
+                new ItemWithWidth(2, 50),
+            };
+            var (target, _, _) = CreateTarget(items: items, itemTemplate: CanvasWithWidthTemplate, orientation: Orientation.Horizontal);
+
+            target.Spacing = 10;
+            Assert.False(target.IsMeasureValid);
+
+            Layout(target);
+
+            Assert.Equal(new Size(120, 100), target.Bounds.Size);
+
+            var elements = target.GetRealizedElements().ToList();
+            Assert.Equal(new Rect(0, 0, 20, 100), elements[0]!.Bounds);
+            Assert.Equal(new Rect(30, 0, 30, 100), elements[1]!.Bounds);
+            Assert.Equal(new Rect(70, 0, 50, 100), elements[2]!.Bounds);
+        }
+
+        [Fact]
+        public void Spacing_Is_Accounted_For_In_Extent_When_Items_Are_Virtualized()
+        {
+            using var app = App();
+
+            var items = Enumerable.Range(0, 100).Select(x => new ItemWithHeight(x, 10));
+            var (target, scroll, itemsControl) = CreateTarget(items: items, itemTemplate: CanvasWithHeightTemplate);
+
+            target.Spacing = 10;
+            Layout(target);
+
+            Assert.Equal(1990, scroll.Extent.Height);
+            AssertRealizedItems(target, itemsControl, 0, 5);
+
+            var elements = target.GetRealizedElements().ToList();
+            Assert.Equal(0, elements[0]!.Bounds.Top);
+            Assert.Equal(20, elements[1]!.Bounds.Top);
+            Assert.Equal(40, elements[2]!.Bounds.Top);
+            Assert.Equal(60, elements[3]!.Bounds.Top);
+            Assert.Equal(80, elements[4]!.Bounds.Top);
+        }
+
+        [Fact]
+        public void Spacing_Positions_Are_Correct_After_Scrolling()
+        {
+            using var app = App();
+
+            var items = Enumerable.Range(0, 100).Select(x => new ItemWithHeight(x, 10));
+            var (target, scroll, itemsControl) = CreateTarget(items: items, itemTemplate: CanvasWithHeightTemplate);
+
+            target.Spacing = 10;
+            Layout(target);
+
+            scroll.Offset = new Vector(0, 200);
+            Layout(target);
+
+            Assert.Equal(1990, scroll.Extent.Height);
+            AssertRealizedItems(target, itemsControl, 10, 5);
+            Assert.Equal(200, target.GetRealizedElements().First()!.Bounds.Top);
+        }
+
+        [Fact]
+        public void Changing_Spacing_After_Layout_Updates_Positions()
+        {
+            using var app = App();
+
+            var items = Enumerable.Range(0, 100).Select(x => new ItemWithHeight(x, 10));
+            var (target, scroll, itemsControl) = CreateTarget(items: items, itemTemplate: CanvasWithHeightTemplate);
+
+            scroll.Offset = new Vector(0, 200);
+            Layout(target);
+
+            AssertRealizedItems(target, itemsControl, 20, 10);
+
+            target.Spacing = 10;
+            Layout(target);
+
+            Assert.Equal(10, target.FirstRealizedIndex);
+            Assert.Equal(1990, scroll.Extent.Height);
+            Assert.Equal(200, target.GetRealizedElements().First()!.Bounds.Top);
+        }
+
+        [Fact]
+        public void Spacing_Is_Accounted_For_In_Extent_When_Items_Are_Virtualized_Horizontally()
+        {
+            using var app = App();
+
+            var items = Enumerable.Range(0, 100).Select(x => new ItemWithWidth(x, 10));
+            var (target, scroll, itemsControl) = CreateTarget(items: items, itemTemplate: CanvasWithWidthTemplate, orientation: Orientation.Horizontal);
+
+            target.Spacing = 10;
+            Layout(target);
+
+            Assert.Equal(1990, scroll.Extent.Width);
+            AssertRealizedItems(target, itemsControl, 0, 5);
+
+            var elements = target.GetRealizedElements().ToList();
+            Assert.Equal(0, elements[0]!.Bounds.Left);
+            Assert.Equal(20, elements[1]!.Bounds.Left);
+            Assert.Equal(40, elements[2]!.Bounds.Left);
+            Assert.Equal(60, elements[3]!.Bounds.Left);
+            Assert.Equal(80, elements[4]!.Bounds.Left);
+        }
+
         private static IReadOnlyList<int> GetRealizedIndexes(VirtualizingStackPanel target, ItemsControl itemsControl)
         {
             return target.GetRealizedElements()

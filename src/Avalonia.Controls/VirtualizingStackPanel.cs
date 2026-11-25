@@ -20,6 +20,12 @@ namespace Avalonia.Controls
     public class VirtualizingStackPanel : VirtualizingPanel, IScrollSnapPointsInfo
     {
         /// <summary>
+        /// Defines the <see cref="Spacing"/> property.
+        /// </summary>
+        public static readonly StyledProperty<double> SpacingProperty =
+            StackPanel.SpacingProperty.AddOwner<VirtualizingStackPanel>();
+
+        /// <summary>
         /// Defines the <see cref="Orientation"/> property.
         /// </summary>
         public static readonly StyledProperty<Orientation> OrientationProperty =
@@ -89,6 +95,9 @@ namespace Avalonia.Controls
 
         static VirtualizingStackPanel()
         {
+            AffectsMeasure<VirtualizingStackPanel>(SpacingProperty);
+            AffectsArrange<VirtualizingStackPanel>(SpacingProperty);
+            SpacingProperty.Changed.AddClassHandler<VirtualizingStackPanel>((x, e) => x.OnSpacingChanged(e));
             CacheLengthProperty.Changed.AddClassHandler<VirtualizingStackPanel>((x, e) => x.OnCacheLengthChanged(e));
         }
 
@@ -100,6 +109,15 @@ namespace Avalonia.Controls
 
             _bufferFactor = Math.Max(0, CacheLength);
             EffectiveViewportChanged += OnEffectiveViewportChanged;
+        }
+
+        /// <summary>
+        /// Gets or sets the size of the spacing to place between child controls.
+        /// </summary>
+        public double Spacing
+        {
+            get => GetValue(SpacingProperty);
+            set => SetValue(SpacingProperty, value);
         }
 
         /// <summary>
@@ -193,11 +211,12 @@ namespace Avalonia.Controls
                 return default;
 
             var orientation = Orientation;
+            var spacing = Spacing;
 
             // If we're bringing an item into view, ignore any layout passes until we receive a new
             // effective viewport.
             if (_isWaitingForViewportUpdate)
-                return EstimateDesiredSize(orientation, items.Count);
+                return EstimateDesiredSize(orientation, items.Count, spacing);
 
             _isInLayout = true;
 
@@ -206,6 +225,9 @@ namespace Avalonia.Controls
                 _realizedElements?.ValidateStartU(Orientation);
                 _realizedElements ??= new();
                 _measureElements ??= new();
+
+                _realizedElements.Spacing = spacing;
+                _measureElements.Spacing = spacing;
 
                 // We need to set the lastEstimatedElementSizeU before calling CalculateDesiredSize()
                 _ = EstimateElementSizeU();
@@ -221,7 +243,7 @@ namespace Avalonia.Controls
 
                 // Do the measure, creating/recycling elements as necessary to fill the viewport. Don't
                 // write to _realizedElements yet, only _measureElements.
-                RealizeElements(items, availableSize, ref viewport);
+                RealizeElements(items, availableSize, ref viewport, spacing);
 
                 // Now swap the measureElements and realizedElements collection.
                 (_measureElements, _realizedElements) = (_realizedElements, _measureElements);
@@ -231,7 +253,7 @@ namespace Avalonia.Controls
                 // _focusedElement is non-null), ensure it's measured.
                 _focusedElement?.Measure(availableSize);
 
-                return CalculateDesiredSize(orientation, items.Count, viewport);
+                return CalculateDesiredSize(orientation, items.Count, viewport, spacing);
             }
             finally
             {
@@ -249,6 +271,7 @@ namespace Avalonia.Controls
             try
             {
                 var orientation = Orientation;
+                var spacing = Spacing;
                 var u = _realizedElements!.StartU;
 
                 // Collection changes before the realized range make its exact position unstable
@@ -260,6 +283,11 @@ namespace Avalonia.Controls
 
                 for (var i = 0; i < _realizedElements.Count; ++i)
                 {
+                    // Spacing sits between consecutive realized items. The first realized
+                    // item already sits at StartU, which includes any spacing before it.
+                    if (i > 0)
+                        u += spacing;
+
                     var e = _realizedElements.Elements[i];
 
                     if (e is not null)
@@ -770,7 +798,7 @@ namespace Avalonia.Controls
             };
         }
 
-        private Size CalculateDesiredSize(Orientation orientation, int itemCount, in MeasureViewport viewport)
+        private Size CalculateDesiredSize(Orientation orientation, int itemCount, in MeasureViewport viewport, double spacing)
         {
             var sizeU = 0.0;
             var sizeV = viewport.measuredV;
@@ -778,13 +806,13 @@ namespace Avalonia.Controls
             if (viewport.lastIndex >= 0)
             {
                 var remaining = itemCount - viewport.lastIndex - 1;
-                sizeU = viewport.realizedEndU + (remaining * _lastEstimatedElementSizeU);
+                sizeU = viewport.realizedEndU + (remaining * (spacing + _lastEstimatedElementSizeU));
             }
 
             return orientation == Orientation.Horizontal ? new(sizeU, sizeV) : new(sizeV, sizeU);
         }
 
-        private Size EstimateDesiredSize(Orientation orientation, int itemCount)
+        private Size EstimateDesiredSize(Orientation orientation, int itemCount, double spacing)
         {
             if (_scrollToIndex >= 0 && _scrollToElement is not null)
             {
@@ -794,7 +822,7 @@ namespace Avalonia.Controls
                 var u = orientation == Orientation.Horizontal ?
                     _scrollToElement.Bounds.Right :
                     _scrollToElement.Bounds.Bottom;
-                var sizeU = u + (remaining * _lastEstimatedElementSizeU);
+                var sizeU = u + (remaining * (spacing + _lastEstimatedElementSizeU));
                 return orientation == Orientation.Horizontal ?
                     new(sizeU, DesiredSize.Height) :
                     new(DesiredSize.Width, sizeU);
@@ -859,6 +887,8 @@ namespace Avalonia.Controls
                 return;
             }
 
+            var spacing = Spacing;
+
             // If we have realised elements and a valid StartU then try to use this information to
             // get the anchor element.
             if (_realizedElements?.StartU is { } u && !double.IsNaN(u))
@@ -869,6 +899,11 @@ namespace Avalonia.Controls
                 {
                     if (_realizedElements.Elements[i] is not { } element)
                         continue;
+
+                    // Each realized element after the first starts one spacing after the
+                    // previous element ends. (A null element is skipped, its size is unknown.)
+                    if (i > 0)
+                        u += spacing;
 
                     var sizeU = orientation == Orientation.Horizontal ?
                         element.DesiredSize.Width :
@@ -891,9 +926,10 @@ namespace Avalonia.Controls
             var estimatedSize = EstimateElementSizeU();
 
             // Estimate the element at the start of the viewport.
-            var startIndex = Math.Min((int)(viewportStartU / estimatedSize), itemCount - 1);
+            // Each element occupies its estimated size plus one spacing.
+            var startIndex = Math.Min((int)(viewportStartU / (estimatedSize + spacing)), itemCount - 1);
             index = startIndex;
-            position = startIndex * estimatedSize;
+            position = startIndex * (estimatedSize + spacing);
         }
 
         private double GetOrEstimateElementU(int index)
@@ -906,6 +942,7 @@ namespace Avalonia.Controls
 
             // Estimate the element size.
             var estimatedSize = EstimateElementSizeU();
+            var spacing = Spacing;
 
             // If we have a valid StartU, use it to anchor estimates relative to the realized range.
             if (_realizedElements is { } realized && !double.IsNaN(realized.StartU))
@@ -932,17 +969,18 @@ namespace Avalonia.Controls
                         realizedSpan += double.IsNaN(sizeU) ? estimatedSize : sizeU;
                     }
 
-                    return realized.StartU + realizedSpan + ((index - last - 1) * estimatedSize);
+                    return realized.StartU + realizedSpan + ((index - last) * spacing) + ((index - last - 1) * estimatedSize);
                 }
             }
 
-            return index * estimatedSize;
+            return index * (estimatedSize + spacing);
         }
 
         private void RealizeElements(
             IReadOnlyList<object?> items,
             Size availableSize,
-            ref MeasureViewport viewport)
+            ref MeasureViewport viewport,
+            double spacing)
         {
             Debug.Assert(_measureElements is not null);
             Debug.Assert(_realizedElements is not null);
@@ -983,6 +1021,13 @@ namespace Avalonia.Controls
                     u = viewportEnd - sizeU;
                     viewport.anchorU = u;
                 }
+                else if (index != viewport.anchorIndex)
+                {
+                    // Every element after the anchor starts one spacing after the
+                    // previous element ends. The anchor already sits at its final
+                    // position, spacing before it included.
+                    u += spacing;
+                }
 
                 _measureElements!.Add(index, e, u, sizeU);
                 viewport.measuredV = Math.Max(viewport.measuredV, sizeV);
@@ -991,7 +1036,7 @@ namespace Avalonia.Controls
                 ++index;
                 _realizingIndex = -1;
                 _realizingElement = null;
-            } while (u < viewport.viewportUEnd && index < items.Count);
+            } while (u + spacing < viewport.viewportUEnd && index < items.Count);
 
             // Check if we reached the end of the collection
             _hasReachedEnd = index >= items.Count;
@@ -1014,6 +1059,8 @@ namespace Avalonia.Controls
                 e.Measure(availableSize);
                 var sizeU = horizontal ? e.DesiredSize.Width : e.DesiredSize.Height;
                 var sizeV = horizontal ? e.DesiredSize.Height : e.DesiredSize.Width;
+                // The element before the anchor ends one spacing before the anchor starts.
+                u -= spacing;
                 u -= sizeU;
 
                 _measureElements!.Add(index, e, u, sizeU);
@@ -1404,6 +1451,15 @@ namespace Avalonia.Controls
             }
         }
 
+        private void OnSpacingChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            // Element positions depend on the spacing, so a spacing change makes the
+            // cached position of the first realized element stale. Mark it unstable so
+            // the next measure re-estimates the anchor instead of trusting it.
+            _realizedElements?.InvalidateStartU();
+            _measureElements?.InvalidateStartU();
+        }
+
         private void OnCacheLengthChanged(AvaloniaPropertyChangedEventArgs e)
         {
             var newValue = e.GetNewValue<double>();
@@ -1419,7 +1475,7 @@ namespace Avalonia.Controls
             if (_realizedElements == null)
                 return new List<double>();
 
-            return new VirtualizingSnapPointsList(_realizedElements, ItemsControl?.ItemsSource?.Count() ?? 0, orientation, Orientation, snapPointsAlignment, EstimateElementSizeU());
+            return new VirtualizingSnapPointsList(_realizedElements, ItemsControl?.ItemsSource?.Count() ?? 0, orientation, Orientation, snapPointsAlignment, EstimateElementSizeU(), Spacing);
         }
 
         /// <inheritdoc/>
@@ -1441,7 +1497,7 @@ namespace Avalonia.Controls
                     if (!AreHorizontalSnapPointsRegular)
                         throw new InvalidOperationException();
 
-                    snapPoint = firstRealizedChild.Bounds.Width;
+                    snapPoint = firstRealizedChild.Bounds.Width + Spacing;
                     switch (snapPointsAlignment)
                     {
                         case SnapPointsAlignment.Near:
@@ -1458,7 +1514,7 @@ namespace Avalonia.Controls
                 case Orientation.Vertical:
                     if (!AreVerticalSnapPointsRegular)
                         throw new InvalidOperationException();
-                    snapPoint = firstRealizedChild.Bounds.Height;
+                    snapPoint = firstRealizedChild.Bounds.Height + Spacing;
                     switch (snapPointsAlignment)
                     {
                         case SnapPointsAlignment.Near:
