@@ -1,0 +1,100 @@
+<ContentPage xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:ControlCatalog.ViewModels"
+             x:Class="ControlCatalog.Pages.ListBoxVirtualizationPage">
+  <ContentPage.Styles>
+    <Style Selector="Button">
+      <Setter Property="Margin" Value="0,0,4,4" />
+    </Style>
+  </ContentPage.Styles>
+  <Grid RowDefinitions="Auto,Auto,Auto,Auto,*,Auto" Margin="8" RowSpacing="8">
+    <TextBlock x:Name="DescriptionText" TextWrapping="Wrap" />
+    <WrapPanel Grid.Row="1" Orientation="Horizontal">
+      <CheckBox x:Name="HorizontalCheck" Content="Horizontal" Margin="0,0,16,0"
+                IsCheckedChanged="OnOrientationChanged" />
+      <TextBlock Text="Preset" VerticalAlignment="Center" Margin="0,0,8,0" />
+      <ComboBox x:Name="SizePreset" SelectedIndex="0" MinWidth="140" Margin="0,0,16,0"
+                SelectionChanged="OnPresetChanged">
+        <ComboBoxItem>Variable sizes</ComboBoxItem>
+        <ComboBoxItem>Uniform 50 px</ComboBoxItem>
+        <ComboBoxItem>Large 500 px</ComboBoxItem>
+        <ComboBoxItem>Alternating 60 / 40</ComboBoxItem>
+      </ComboBox>
+      <TextBlock Text="{Binding #HeaderCount.Value, StringFormat='Fixed headers: {0:0}'}"
+                 VerticalAlignment="Center" Margin="0,0,8,0" />
+      <NumericUpDown x:Name="HeaderCount" Minimum="0" Maximum="50" Value="0" Width="85"
+                     ValueChanged="OnHeadersChanged" />
+      <Button x:Name="SingleItemButton" Content="Single visible item" Margin="8,0,0,0" Click="OnSingleItem" />
+    </WrapPanel>
+    <WrapPanel Grid.Row="2">
+      <StackPanel Width="180" Margin="0,0,16,0">
+        <TextBlock Text="{Binding #CrossSize.Value, StringFormat='Cross-axis size: {0:0} px'}" />
+        <Slider x:Name="CrossSize" Minimum="40" Maximum="600" Value="360"
+                ValueChanged="OnViewportChanged" />
+      </StackPanel>
+      <StackPanel Width="180" Margin="0,0,16,0">
+        <TextBlock Text="{Binding #ViewportSize.Value, StringFormat='Viewport length: {0:0} px'}" />
+        <Slider x:Name="ViewportSize" Minimum="100" Maximum="500" Value="240"
+                ValueChanged="OnViewportChanged" />
+      </StackPanel>
+      <StackPanel Width="140">
+        <TextBlock Text="{Binding #CacheSize.Value, StringFormat='Cache length: {0:0.0}'}" />
+        <Slider x:Name="CacheSize" Minimum="0" Maximum="1" Value="0.5" TickFrequency="0.5"
+                IsSnapToTickEnabled="True" ValueChanged="OnCacheChanged" />
+      </StackPanel>
+    </WrapPanel>
+    <StackPanel Grid.Row="3" Spacing="6">
+      <WrapPanel ToolTip.Tip="Grow and shrink change row sizes, or font sizes in Wrapping. Fixed headers keep their size.">
+        <Button Content="Start" Tag="start" Click="OnJump" />
+        <Button Content="Middle" Tag="middle" Click="OnJump" />
+        <Button Content="End" Tag="end" Click="OnJump" />
+        <Button Content="Grow selected" Tag="grow-selected" Click="OnResize" />
+        <Button Content="Shrink selected" Tag="shrink-selected" Click="OnResize" />
+        <Button Content="Grow all" Tag="grow-all" Click="OnResize" />
+        <Button Content="Shrink all" Tag="shrink-all" Click="OnResize" />
+      </WrapPanel>
+      <WrapPanel>
+        <Button Content="Toggle selected" Click="OnToggleSelected" />
+        <Button Content="Hide alternating" Click="OnHideAlternating" />
+        <Button Content="Hide viewport" Click="OnHideViewport" />
+        <Button Content="Hide all" Click="OnHideAll" />
+        <Button Content="Show all" Click="OnShowAll" />
+        <Button Content="Replace first" Click="OnReplaceFirst" />
+        <Button Content="Insert first" Click="OnInsertFirst" />
+        <Button Content="Remove first" Click="OnRemoveFirst" />
+        <Button Content="Move first" Click="OnMoveFirst" />
+        <Button Content="Reset" Click="OnReset" />
+      </WrapPanel>
+    </StackPanel>
+    <ListBox x:Name="ItemsList" Grid.Row="4" HorizontalAlignment="Left" VerticalAlignment="Top"
+             AutoScrollToSelectedItem="False">
+      <ListBox.Styles>
+        <Style Selector="ListBoxItem" x:DataType="vm:ListBoxVirtualizationItem">
+          <Setter Property="Padding" Value="0" />
+          <Setter Property="MinWidth" Value="0" />
+          <Setter Property="MinHeight" Value="0" />
+          <Setter Property="BorderThickness" Value="0" />
+          <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+          <Setter Property="VerticalContentAlignment" Value="Stretch" />
+          <Setter Property="IsVisible" Value="{Binding IsVisible}" />
+        </Style>
+      </ListBox.Styles>
+      <ListBox.ItemTemplate>
+        <DataTemplate x:DataType="vm:ListBoxVirtualizationItem">
+          <Grid Width="{Binding Width}" Height="{Binding Height}" ClipToBounds="True">
+            <Border BorderBrush="Gray" BorderThickness="0,0,1,1" Padding="8">
+              <LayoutTransformControl LayoutTransform="{Binding TextTransform}">
+                <StackPanel Spacing="4">
+                  <TextBlock Text="{Binding Caption}" FontWeight="Bold" />
+                  <TextBlock Text="{Binding Text}" FontSize="{Binding FontSize}"
+                             TextWrapping="Wrap" IsVisible="{Binding ShowText}" />
+                </StackPanel>
+              </LayoutTransformControl>
+            </Border>
+          </Grid>
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
+    <TextBlock x:Name="StatusText" Grid.Row="5" TextWrapping="Wrap" />
+  </Grid>
+</ContentPage>

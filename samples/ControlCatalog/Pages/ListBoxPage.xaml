@@ -1,51 +1,57 @@
-<ContentPage xmlns="https://github.com/avaloniaui"
+<TabbedPage xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:viewModels="using:ControlCatalog.ViewModels"
+             xmlns:pages="using:ControlCatalog.Pages"
              Header="ListBox"
              x:Class="ControlCatalog.Pages.ListBoxPage"
              x:DataType="viewModels:ListBoxPageViewModel">
-  <DockPanel>
-    <DockPanel.Styles>
-      <Style Selector="ListBox ListBoxItem:nth-child(even)">
-        <Setter Property="ContextFlyout">
-          <MenuFlyout>
-            <MenuItem Header="Hello there" />
-          </MenuFlyout>
-        </Setter>
-      </Style>
-      <Style Selector="ListBox ListBoxItem:nth-child(5n+3)">
-        <Setter Property="Foreground" Value="Red" />
-        <Setter Property="FontWeight" Value="Bold" />
-      </Style>
-      <Style Selector="ListBox ListBoxItem:nth-last-child(5n+4)">
-        <Setter Property="Background" Value="Blue" />
-        <Setter Property="FontWeight" Value="Bold" />
-      </Style>
-	  <Style Selector="VirtualizingStackPanel">
-	    <Setter Property="CacheLength" Value="0.5" />
-	  </Style>
-    </DockPanel.Styles>
-    <StackPanel DockPanel.Dock="Top" Margin="4">
-      <TextBlock Classes="h2">Hosts a collection of ListBoxItem.</TextBlock>
-      <TextBlock Classes="h2">Each 5th item is highlighted with nth-child(5n+3) and nth-last-child(5n+4) rules.</TextBlock>
-    </StackPanel>
-    <StackPanel DockPanel.Dock="Right" Margin="4">
-      <CheckBox IsChecked="{Binding Multiple}">Multiple</CheckBox>
-      <CheckBox IsChecked="{Binding Toggle}">Toggle</CheckBox>
-      <CheckBox IsChecked="{Binding AlwaysSelected}">AlwaysSelected</CheckBox>
-      <CheckBox IsChecked="{Binding AutoScrollToSelectedItem}">AutoScrollToSelectedItem</CheckBox>
-      <CheckBox IsChecked="{Binding WrapSelection}">WrapSelection</CheckBox>
-    </StackPanel>
-    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="4">
-      <Button Command="{Binding AddItemCommand}">Add</Button>
-      <Button Command="{Binding RemoveItemCommand}">Remove</Button>
-      <Button Command="{Binding SelectRandomItemCommand}">Select Random Item</Button>
-    </StackPanel>
-    <ListBox ItemsSource="{Binding Items}"
-             Selection="{Binding Selection}"
-             DisplayMemberBinding="{Binding (viewModels:ItemModel).ID, StringFormat='{}Item {0:N0}'}"
-             AutoScrollToSelectedItem="{Binding AutoScrollToSelectedItem}"
-             SelectionMode="{Binding SelectionMode^}"
-             WrapSelection="{Binding WrapSelection}"/>
-  </DockPanel>
-</ContentPage>
+  <ContentPage x:Name="SelectionPage" Header="Selection">
+    <DockPanel>
+      <DockPanel.Styles>
+        <Style Selector="ListBox ListBoxItem:nth-child(even)">
+          <Setter Property="ContextFlyout">
+            <MenuFlyout>
+              <MenuItem Header="Hello there" />
+            </MenuFlyout>
+          </Setter>
+        </Style>
+        <Style Selector="ListBox ListBoxItem:nth-child(5n+3)">
+          <Setter Property="Foreground" Value="Red" />
+          <Setter Property="FontWeight" Value="Bold" />
+        </Style>
+        <Style Selector="ListBox ListBoxItem:nth-last-child(5n+4)">
+          <Setter Property="Background" Value="Blue" />
+          <Setter Property="FontWeight" Value="Bold" />
+        </Style>
+        <Style Selector="VirtualizingStackPanel">
+          <Setter Property="CacheLength" Value="0.5" />
+        </Style>
+      </DockPanel.Styles>
+      <StackPanel DockPanel.Dock="Top" Margin="4">
+        <TextBlock Classes="h2">Hosts a collection of ListBoxItem.</TextBlock>
+        <TextBlock Classes="h2">Each 5th item is highlighted with nth-child(5n+3) and nth-last-child(5n+4) rules.</TextBlock>
+      </StackPanel>
+      <StackPanel DockPanel.Dock="Right" Margin="4">
+        <CheckBox IsChecked="{Binding Multiple}">Multiple</CheckBox>
+        <CheckBox IsChecked="{Binding Toggle}">Toggle</CheckBox>
+        <CheckBox IsChecked="{Binding AlwaysSelected}">AlwaysSelected</CheckBox>
+        <CheckBox IsChecked="{Binding AutoScrollToSelectedItem}">AutoScrollToSelectedItem</CheckBox>
+        <CheckBox IsChecked="{Binding WrapSelection}">WrapSelection</CheckBox>
+      </StackPanel>
+      <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="4">
+        <Button Command="{Binding AddItemCommand}">Add</Button>
+        <Button Command="{Binding RemoveItemCommand}">Remove</Button>
+        <Button Command="{Binding SelectRandomItemCommand}">Select Random Item</Button>
+      </StackPanel>
+      <ListBox ItemsSource="{Binding Items}"
+               Selection="{Binding Selection}"
+               DisplayMemberBinding="{Binding (viewModels:ItemModel).ID, StringFormat='{}Item {0:N0}'}"
+               AutoScrollToSelectedItem="{Binding AutoScrollToSelectedItem}"
+               SelectionMode="{Binding SelectionMode^}"
+               WrapSelection="{Binding WrapSelection}"/>
+    </DockPanel>
+  </ContentPage>
+  <pages:ListBoxVirtualizationPage Header="Variable sizes" Scenario="VariableSizes" />
+  <pages:ListBoxVirtualizationPage Header="Wrapping" Scenario="Wrapping" />
+  <pages:ListBoxVirtualizationPage Header="Own containers" Scenario="OwnContainers" />
+</TabbedPage>
