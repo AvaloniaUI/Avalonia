@@ -1342,6 +1342,7 @@ interface IAvnAutomationPeer : IUnknown
      void SelectionItemProvider_Select();
      void SelectionItemProvider_AddToSelection();
      void SelectionItemProvider_RemoveFromSelection();
+     IAvnAutomationPeer* SelectionItemProvider_GetSelectionContainer();
 
      IAvnAutomationPeer* ScrollProvider_GetHorizontalScrollBar();
      IAvnAutomationPeer* ScrollProvider_GetVerticalScrollBar();

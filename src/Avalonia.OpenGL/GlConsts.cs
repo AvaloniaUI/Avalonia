@@ -3366,7 +3366,7 @@ namespace Avalonia.OpenGL
 //        public const int GL_TEXTURE_MATERIAL_PARAMETER_EXT = 0x8352;
 //        public const int GL_EXT_memory_object = 1;
 //        public const int GL_TEXTURE_TILING_EXT = 0x9580;
-//        public const int GL_DEDICATED_MEMORY_OBJECT_EXT = 0x9581;
+        internal const int GL_DEDICATED_MEMORY_OBJECT_EXT = 0x9581;
 //        public const int GL_PROTECTED_MEMORY_OBJECT_EXT = 0x959B;
 //        public const int GL_NUM_TILING_TYPES_EXT = 0x9582;
 //        public const int GL_TILING_TYPES_EXT = 0x9583;
