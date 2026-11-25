@@ -204,6 +204,7 @@ internal class VulkanDisplay : IDisposable
             return;
         }
         _context.DeviceApi.DeviceWaitIdle(_context.DeviceHandle);
+        DestroyCurrentImageViews(); // Destroy ImageViews before the swapchain is destroyed in CreateSwapchain 
         _swapchain = CreateSwapchain(_context, _surface, out var extent, this);
         _swapchainExtent = extent;
         CreateSwapchainImages();
