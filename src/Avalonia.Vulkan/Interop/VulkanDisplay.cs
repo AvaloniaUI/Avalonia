@@ -215,6 +215,7 @@ internal class VulkanDisplay : IDisposable
     {
         _surface?.Dispose();
         _surface = null;
+        _surfaceFormat = new VkSurfaceFormatKHR(); // set to VK_FORMAT_UNDEFINED so the actual value will be read again in the SurfaceFormat getter because the new surface can have a different format
         _surface = new VulkanKhrSurface(_context, _platformSurface);
         DestroySwapchain();
         RecreateSwapchain();
