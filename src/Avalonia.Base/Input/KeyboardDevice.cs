@@ -108,7 +108,7 @@ namespace Avalonia.Input
             }
         }
         
-        private void ClearChildrenFocusWithin(IInputElement element, bool clearRoot)
+        private void ClearChildrenFocusWithin(IInputElement? element, bool clearRoot)
         {
             if (element is Visual v)
             {
