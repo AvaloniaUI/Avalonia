@@ -1291,9 +1291,9 @@ namespace Avalonia.Controls
                 var sizeV = horizontal ? e.DesiredSize.Height : e.DesiredSize.Width;
                 u -= sizeU;
 
-                // A growing predecessor can exceed the anchor's old position. Keep
-                // coordinates nonnegative and let the scroll provider track the shift.
-                if (u < 0)
+                // Keep coordinates nonnegative and place item 0 at the panel origin.
+                // Let the scroll provider track any shift of the preserved anchor.
+                if (u < 0 || (index == 0 && u > 0))
                 {
                     viewport.anchorU -= u;
                     viewport.realizedEndU -= u;
