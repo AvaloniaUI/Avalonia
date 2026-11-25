@@ -1658,6 +1658,73 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Theory]
+        [InlineData(Orientation.Vertical, false)]
+        [InlineData(Orientation.Horizontal, false)]
+        [InlineData(Orientation.Vertical, true)]
+        [InlineData(Orientation.Horizontal, true)]
+        public void Showing_A_Previously_Hidden_Collection_Only_Measures_The_Viewport(
+            Orientation orientation, bool ownContainers)
+        {
+            using var app = App();
+            var horizontal = orientation == Orientation.Horizontal;
+            var models = Enumerable.Range(0, 1000)
+                .Select(i => new ItemWithIsVisible(i)).ToArray();
+            var controls = new List<MeasureCountingControl>();
+            MeasureCountingControl CreateControl(ItemWithIsVisible model)
+            {
+                var control = new MeasureCountingControl
+                {
+                    DataContext = model,
+                    Width = horizontal ? 50 : 100,
+                    Height = horizontal ? 100 : 50,
+                };
+                if (ownContainers)
+                    control.Bind(Visual.IsVisibleProperty, new Binding("IsVisible"));
+                controls.Add(control);
+                return control;
+            }
+            var items = ownContainers ? models.Select(CreateControl).ToArray<object>() : models;
+            var template = new FuncDataTemplate<ItemWithIsVisible>((model, _) => model is null ? null : CreateControl(model));
+            var (target, scroll, _) = CreateTarget(items: items, itemTemplate: template,
+                orientation: orientation, styles: new[] { CreateIsVisibleBindingStyle() });
+            var measureSize = horizontal ? new Size(double.PositiveInfinity, 100) :
+                new Size(100, double.PositiveInfinity);
+
+            scroll.Offset = horizontal ? new Vector(25000, 0) : new Vector(0, 25000);
+            Layout(target);
+            foreach (var model in models)
+                model.IsVisible = false;
+            // Show again before the ScrollViewer processes the empty extent and
+            // reduces the fully hidden realized range to the viewport.
+            target.Measure(measureSize);
+
+            for (var cycle = 0; cycle < 2; ++cycle)
+            {
+                Assert.Equal(0, target.FirstRealizedIndex);
+                Assert.Equal(models.Length - 1, target.LastRealizedIndex);
+                foreach (var control in controls)
+                    control.MeasureCount = 0;
+                var previousCount = controls.Count;
+                foreach (var model in models)
+                    model.IsVisible = true;
+                Layout(target);
+
+                Assert.InRange(controls.Sum(c => c.MeasureCount), 1, 8);
+                Assert.InRange(controls.Count - previousCount, 0, 8);
+                Assert.Equal(50000, horizontal ? scroll.Extent.Width : scroll.Extent.Height);
+                Assert.Equal(horizontal ? new Vector(25000, 0) : new Vector(0, 25000), scroll.Offset);
+                Assert.Equal(500, target.FirstRealizedIndex);
+                Assert.InRange(target.LastRealizedIndex, 501, 503);
+
+                scroll.Offset = horizontal ? new Vector(25000, 0) : new Vector(0, 25000);
+                Layout(target);
+                foreach (var model in models)
+                    model.IsVisible = false;
+                target.Measure(measureSize);
+            }
+        }
+
+        [Theory]
         [InlineData(Orientation.Vertical, "local")]
         [InlineData(Orientation.Horizontal, "local")]
         [InlineData(Orientation.Vertical, "binding")]
@@ -3922,6 +3989,17 @@ namespace Avalonia.Controls.UnitTests
                 var crossSize = horizontal ? availableSize.Height : availableSize.Width;
                 var size = resizes ? 50 * Math.Ceiling(100 / crossSize) : 50;
                 return horizontal ? new Size(size, crossSize) : new Size(crossSize, size);
+            }
+        }
+
+        private class MeasureCountingControl : Control
+        {
+            public int MeasureCount { get; set; }
+
+            protected override Size MeasureOverride(Size availableSize)
+            {
+                ++MeasureCount;
+                return base.MeasureOverride(availableSize);
             }
         }
 
