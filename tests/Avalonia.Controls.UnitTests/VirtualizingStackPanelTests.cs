@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -440,7 +440,7 @@ namespace Avalonia.Controls.UnitTests
 
             // Container being replaced should have been recycled.
             Assert.DoesNotContain(toReplace, target.GetRealizedElements());
-            Assert.False(toReplace!.IsVisible);
+            Assert.Null(toReplace!.GetVisualParent());
 
             var indexes = GetRealizedIndexes(target, itemsControl);
 
@@ -471,7 +471,7 @@ namespace Avalonia.Controls.UnitTests
 
             // Container being moved should have been recycled.
             Assert.DoesNotContain(toMove, target.GetRealizedElements());
-            Assert.False(toMove!.IsVisible);
+            Assert.Null(toMove!.GetVisualParent());
 
             var indexes = GetRealizedIndexes(target, itemsControl);
 
@@ -622,7 +622,7 @@ namespace Avalonia.Controls.UnitTests
             newFocused.Focusable = true;
             newFocused.Focus();
 
-            Assert.False(originalFocused.IsVisible);
+            Assert.Null(originalFocused.GetVisualParent());
         }
 
         [Theory]
@@ -1655,6 +1655,112 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(50000, horizontal ? scroll.Extent.Width : scroll.Extent.Height);
             Assert.Equal(0, target.FirstRealizedIndex);
             Assert.True(target.ContainerFromIndex(0)!.IsVisible);
+        }
+
+        [Theory]
+        [InlineData(Orientation.Vertical, "local")]
+        [InlineData(Orientation.Horizontal, "local")]
+        [InlineData(Orientation.Vertical, "binding")]
+        [InlineData(Orientation.Horizontal, "binding")]
+        [InlineData(Orientation.Vertical, "style")]
+        [InlineData(Orientation.Horizontal, "style")]
+        public void Own_Container_Visibility_Is_Preserved_When_Realized_And_Recycled(
+            Orientation orientation, string source)
+        {
+            using var app = App();
+            var horizontal = orientation == Orientation.Horizontal;
+            var models = Enumerable.Range(0, 100).Select(i => new ItemWithIsVisible(i)
+            {
+                IsVisible = i % 2 == 0,
+            }).ToArray();
+            var items = models.Select(model => new Canvas
+            {
+                DataContext = model,
+                Width = horizontal ? 50 : 100,
+                Height = horizontal ? 100 : 50,
+            }).ToArray();
+            for (var i = 0; i < items.Length; ++i)
+            {
+                if (source == "local")
+                    items[i].IsVisible = models[i].IsVisible;
+                else if (source == "binding")
+                    items[i].Bind(Visual.IsVisibleProperty, new Binding("IsVisible"));
+            }
+            var style = new Style(x => x.OfType<Canvas>())
+            {
+                Setters = { new Setter(Visual.IsVisibleProperty, new Binding("IsVisible")) },
+            };
+            var (target, scroll, itemsControl) = CreateTarget(items: items, itemTemplate: null, orientation: orientation,
+                styles: source == "style" ? new[] { style } : null);
+            var preparedAgain = false;
+            itemsControl.ContainerPrepared += (_, e) => preparedAgain |= ReferenceEquals(e.Container, items[0]);
+
+            foreach (var offset in new[] { 0, 500, 1000, 0 })
+            {
+                scroll.Offset = horizontal ? new Vector(offset, 0) : new Vector(0, offset);
+                Layout(target);
+                foreach (var container in target.GetRealizedContainers()!)
+                {
+                    var index = target.IndexFromContainer(container);
+                    Assert.Equal(models[index].IsVisible, container.IsVisible);
+                    Assert.Same(target, container.GetVisualParent());
+                }
+            }
+
+            // A value written while a container is virtualized must survive re-realization.
+            scroll.Offset = horizontal ? new Vector(1000, 0) : new Vector(0, 1000);
+            Layout(target);
+            models[0].IsVisible = false;
+            if (source == "local")
+                items[0].IsVisible = false;
+            scroll.Offset = default;
+            Layout(target);
+            Assert.False(items[0].IsVisible);
+            models[0].IsVisible = true;
+            if (source == "local")
+                items[0].IsVisible = true;
+            Layout(target);
+            Assert.True(items[0].IsVisible);
+            Assert.False(preparedAgain);
+        }
+
+        [Theory]
+        [InlineData("remove")]
+        [InlineData("replace")]
+        [InlineData("reset")]
+        [InlineData("panel")]
+        public void Removing_A_Recycled_Own_Container_Restores_Its_Application_Visibility(string change)
+        {
+            using var app = App();
+            var original = new Canvas { Width = 100, Height = 50 };
+            var items = new ObservableCollection<Control>(Enumerable.Range(0, 100)
+                .Select(i => i == 0 ? original : new Canvas { Width = 100, Height = 50 }));
+            var (target, scroll, itemsControl) = CreateTarget(items: items, itemTemplate: null);
+            scroll.Offset = new Vector(0, 1000);
+            Layout(target);
+            Assert.Null(original.GetVisualParent());
+
+            switch (change)
+            {
+                case "remove": items.RemoveAt(0); break;
+                case "replace": items[0] = new Canvas { Width = 100, Height = 50 }; break;
+                case "reset": items.Clear(); break;
+                case "panel":
+                    itemsControl.ItemsPanel = new FuncTemplate<Panel?>(() => new StackPanel());
+                    break;
+            }
+            Layout(itemsControl);
+            Assert.True(original.IsVisible);
+            if (change != "panel")
+            {
+                Assert.Null(original.GetVisualParent());
+                Assert.Null(original.Parent);
+                items.Insert(0, original);
+                scroll.Offset = default;
+                Layout(target);
+                Assert.Same(original, target.ContainerFromIndex(0));
+                Assert.Same(target, original.GetVisualParent());
+            }
         }
 
         [Theory]
