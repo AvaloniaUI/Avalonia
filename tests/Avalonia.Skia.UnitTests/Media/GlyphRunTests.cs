@@ -398,6 +398,32 @@ namespace Avalonia.Skia.UnitTests.Media
             }
         }
 
+        [Fact]
+        public void GetTextBlob_Should_Not_Allocate_When_TextBlob_Is_Cached()
+        {
+            using (Start())
+            {
+                var typeface = new Typeface("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#Inter");
+                var options = new TextShaperOptions(typeface.GlyphTypeface, 14);
+                var shapedBuffer = TextShaper.Current.ShapeText("ABC", options);
+
+                var glyphRunImpl = (GlyphRunImpl)CreateGlyphRun(shapedBuffer).PlatformImpl.Item;
+                var textOptions = new TextOptions { TextRenderingMode = TextRenderingMode.SubpixelAntialias };
+
+                var textBlob = glyphRunImpl.GetTextBlob(textOptions, default);
+
+                // The first cache hit initializes the equality comparers used for the lookup.
+                glyphRunImpl.GetTextBlob(textOptions, default);
+
+                var allocatedBefore = GC.GetAllocatedBytesForCurrentThread();
+                var cachedTextBlob = glyphRunImpl.GetTextBlob(textOptions, default);
+                var allocated = GC.GetAllocatedBytesForCurrentThread() - allocatedBefore;
+
+                Assert.Same(textBlob, cachedTextBlob);
+                Assert.Equal(0, allocated);
+            }
+        }
+
         private static List<Rect> BuildRects(GlyphRun glyphRun)
         {
             var height = glyphRun.Bounds.Height;
