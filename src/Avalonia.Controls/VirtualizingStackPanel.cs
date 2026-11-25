@@ -969,7 +969,6 @@ namespace Avalonia.Controls
             // Constraint changes may only affect rows within or after the viewport.
             // Compare and refresh the prefix samples before discarding the known origin.
             if ((!resized && !constraintsChanged && !needsBaseline) ||
-                realized.FirstIndex <= 0 ||
                 double.IsNaN(realized.StartU))
                 return preservedAnchor;
 
@@ -984,8 +983,18 @@ namespace Avalonia.Controls
                 // baseline from preceding items, rather than from the visible range.
                 if (double.IsNaN(previousSize))
                     index = i == _leadingElementSizes.Length - 1 ? realized.FirstIndex - 1 : i;
-                if (index < 0 || index >= realized.FirstIndex || index >= Items.Count)
+                if (index < 0 || index >= Items.Count)
                     continue;
+
+                // Keep measurements made at the origin before realization can recycle
+                // them. A formerly collapsed range may only have one measured row.
+                if (index >= realized.FirstIndex)
+                {
+                    if (realized.GetElement(index) is { IsMeasureValid: true } measured)
+                        _leadingElementSizes[i] = (index, orientation == Orientation.Horizontal ?
+                            measured.DesiredSize.Width : measured.DesiredSize.Height);
+                    continue;
+                }
 
                 var size = MeasurePrefixElement(index, orientation, availableSize);
                 // Constraint-driven wrapping preserves the visible anchor. Samples are

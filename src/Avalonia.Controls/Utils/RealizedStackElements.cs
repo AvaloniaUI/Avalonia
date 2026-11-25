@@ -438,7 +438,16 @@ namespace Avalonia.Controls.Utils
                 var sizeU = orientation == Orientation.Horizontal ?
                     element.DesiredSize.Width : element.DesiredSize.Height;
 
-                resized |= !double.IsNaN(_sizes[i]) && sizeU != _sizes[i];
+                if (!resized && !double.IsNaN(_sizes[i]) && sizeU != _sizes[i])
+                {
+                    resized = true;
+
+                    // A fully collapsed range can contain the entire collection. Once
+                    // it starts growing, let normal realization measure the viewport
+                    // instead of measuring (and building templates for) every row.
+                    if (_sizes[i] == 0 && _sizes.TrueForAll(static size => size == 0))
+                        break;
+                }
             }
 
             return resized;
