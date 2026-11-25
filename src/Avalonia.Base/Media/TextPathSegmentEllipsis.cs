@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using Avalonia.Media.TextFormatting;
@@ -301,32 +300,7 @@ namespace Avalonia.Media
 
                                     (middle, last) = TextFormatterImpl.SplitTextRuns(remainder, removeLength, objectPool);
 
-                                    Release(middle);
-
-                                    // Build resulting runs
-                                    // first + shapedSymbol + last
-                                    var result = new TextRun[(first?.Count ?? 0) + 1 + (last?.Count ?? 0)];
-                                    var index = 0;
-
-                                    if (first != null)
-                                    {
-                                        foreach (var run in first)
-                                        {
-                                            result[index++] = run;
-                                        }
-                                    }
-
-                                    result[index++] = shapedSymbol;
-
-                                    if (last != null)
-                                    {
-                                        foreach (var run in last)
-                                        {
-                                            result[index++] = run;
-                                        }
-                                    }
-
-                                    return result;
+                                    return [.. first ?? [], new CollapseSymbolRun([.. middle ?? []], shapedSymbol), .. last ?? []];
                                 }
                                 finally
                                 {
@@ -369,8 +343,7 @@ namespace Avalonia.Media
                         // Split before current segment
                         (first, second) = TextFormatterImpl.SplitTextRuns(ownedRuns, currentLength, objectPool);
 
-                        Release(first);
-
+                        TextRun? removedRun = null;
                         TextRun? trimmedRun = null;
                         var remainingRunCount = 0;
 
@@ -378,9 +351,9 @@ namespace Avalonia.Media
                         {
                             remainingRunCount = Math.Max(0, second.Count - 1);
 
-                            var run = second[0];
+                            removedRun = second[0];
 
-                            if (run is ShapedTextRun shapedRun)
+                            if (removedRun is ShapedTextRun shapedRun)
                             {
                                 var measureWidth = Width - shapedSymbol.Size.Width;
 
@@ -390,12 +363,7 @@ namespace Avalonia.Media
 
                                     if (splitAt > 0)
                                     {
-                                        ShapedTextRun? trimmedHead;
-
-                                        (trimmedHead, trimmedRun) = shapedRun.Split(splitAt);
-
-                                        // Only the trailing half survives next to the symbol.
-                                        trimmedHead?.Dispose();
+                                        (removedRun, trimmedRun) = shapedRun.Split(splitAt);
                                         shapedRun.Dispose();
                                     }
                                     else if (length > 0)
@@ -407,23 +375,37 @@ namespace Avalonia.Media
                                     else
                                     {
                                         // Nothing of this run survives.
-                                        shapedRun.Dispose();
                                     }
-                                }
-                                else
-                                {
-                                    shapedRun.Dispose();
                                 }
                             }
                         }
 
-                        var runCount = (trimmedRun != null ? 1 : 0) + 1 + remainingRunCount;
+                        var runCount = remainingRunCount;
+                        if (first?.Count > 0 || removedRun != null)
+                        {
+                            runCount++;
+                        }
+                        if (trimmedRun != null)
+                        {
+                            runCount++;
+                        }
 
                         var result = new TextRun[runCount];
                         var index = 0;
 
                         // Append symbol
-                        result[index++] = shapedSymbol;
+                        if (first?.Count > 0)
+                        {
+                            if (removedRun != null)
+                            {
+                                first.Add(removedRun);
+                            }
+                            result[index++] = new CollapseSymbolRun([..first], shapedSymbol);
+                        }
+                        else if (removedRun != null)
+                        {
+                            result[index++] = new CollapseSymbolRun([removedRun], shapedSymbol);
+                        }
 
                         // Append trimmed run if any
                         if (trimmedRun != null)
@@ -434,7 +416,7 @@ namespace Avalonia.Media
                         // Append remaining runs
                         if (second != null)
                         {
-                            for(var i = 1; i < second.Count; i++)
+                            for (var i = 1; i < second.Count; i++)
                             {
                                 var run = second[i];
 

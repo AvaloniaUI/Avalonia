@@ -105,6 +105,11 @@ namespace Avalonia.Media.TextFormatting
 
         private static sbyte GetRunBidiLevel(TextRun run, FlowDirection flowDirection, sbyte? previousLevel)
         {
+            if (run is CollapseSymbolRun collapseSymbolRun)
+            {
+                run = collapseSymbolRun.Symbol;
+            }
+            
             if (run is ShapedTextRun shapedTextRun)
             {
                 return shapedTextRun.BidiLevel;

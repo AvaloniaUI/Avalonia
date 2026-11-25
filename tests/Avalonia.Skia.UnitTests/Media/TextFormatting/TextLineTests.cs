@@ -2659,9 +2659,9 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
         public static string ExtractTextFromRuns(TextLine textLine)
         {
-            // Only extract text for ShapedTextRun instances.
+            // Only extract text from drawable instances.
             return string.Concat(textLine.TextRuns
-                .OfType<ShapedTextRun>()
+                .OfType<DrawableTextRun>()
                 .Select(r => r.Text.ToString()));
         }
 

@@ -731,7 +731,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         /// <summary>
         /// Either puts a symbol in front of the line and keeps every run of the line as it is,
         /// or keeps a prefix that ends inside a run, built with
-        /// <see cref="TextCollapsingProperties.CreateCollapsedRuns"/>.
+        /// <see cref="TextCollapsingProperties.CreateCollapsedRuns(TextLine, int, DrawableTextRun?)"/>.
         /// </summary>
         private sealed class CustomCollapsingProperties : TextCollapsingProperties
         {
