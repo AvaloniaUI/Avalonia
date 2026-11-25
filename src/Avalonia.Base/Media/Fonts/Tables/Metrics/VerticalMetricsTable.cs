@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Buffers.Binary;
+using Avalonia.Media.Fonts.Tables.Variation;
 
 namespace Avalonia.Media.Fonts.Tables.Metrics
 {
@@ -14,7 +16,12 @@ namespace Avalonia.Media.Fonts.Tables.Metrics
         private VerticalMetricsTable(ReadOnlyMemory<byte> data, ushort numOfVMetrics, int numGlyphs)
         {
             _data = data;
-            _numOfVMetrics = numOfVMetrics;
+
+            // Clamp to what the table can actually hold: a numberOfVMetrics larger than the vmtx
+            // bytes — or an out-of-spec 0 — would otherwise drive negative or out-of-range reads in
+            // the accessors. A well-formed table always holds numberOfVMetrics * 4 bytes, so it is
+            // unaffected.
+            _numOfVMetrics = (ushort)Math.Min((int)numOfVMetrics, data.Length / 4);
             _numGlyphs = numGlyphs;
         }
 
@@ -38,7 +45,7 @@ namespace Avalonia.Media.Fonts.Tables.Metrics
         {
             metric = default;
 
-            if (glyphIndex >= _numGlyphs)
+            if (glyphIndex >= _numGlyphs || _numOfVMetrics == 0)
             {
                 return false;
             }
@@ -63,9 +70,14 @@ namespace Avalonia.Media.Fonts.Tables.Metrics
                 int tsbIndex = glyphIndex - _numOfVMetrics;
                 int tsbOffset = _numOfVMetrics * 4 + tsbIndex * 2;
 
-                reader.Seek(tsbOffset);
-
-                short tsb = reader.ReadInt16();
+                // A truncated table may omit some or all of the trailing topSideBearing array;
+                // treat a missing entry as zero rather than reading past the end.
+                short tsb = 0;
+                if (tsbOffset + 2 <= _data.Length)
+                {
+                    reader.Seek(tsbOffset);
+                    tsb = reader.ReadInt16();
+                }
 
                 metric = new VerticalGlyphMetric(lastAdvanceHeight, tsb);
             }
@@ -83,7 +95,7 @@ namespace Avalonia.Media.Fonts.Tables.Metrics
         {
             advance = 0;
 
-            if (glyphIndex >= _numGlyphs)
+            if (glyphIndex >= _numGlyphs || _numOfVMetrics == 0)
             {
                 return false;
             }
@@ -108,27 +120,38 @@ namespace Avalonia.Media.Fonts.Tables.Metrics
 
         /// <summary>
         /// Attempts to retrieve advance heights for multiple glyphs in a single operation.
+        /// When <paramref name="vvar"/> and <paramref name="vvarRegionScalers"/> are both
+        /// supplied, VVAR's per-glyph delta is applied to each advance in the same pass.
         /// </summary>
         /// <param name="glyphIndices">Read-only span of glyph indices to query.</param>
-        /// <param name="advances">Output span to write the advance heights. Must be at least as long as <paramref name="glyphIndices"/>.</param>
+        /// <param name="advances">Output span; must be at least as long as <paramref name="glyphIndices"/>.</param>
+        /// <param name="vvar">Optional VVAR table. <c>null</c> means no variation adjustment.</param>
+        /// <param name="vvarRegionScalers">
+        /// Pre-computed per-region scalers for VVAR's ItemVariationStore. Ignored when
+        /// <paramref name="vvar"/> is <c>null</c>.
+        /// </param>
         /// <returns><c>true</c> if all glyph indices are valid and advances were retrieved; otherwise, <c>false</c>.</returns>
-        /// <remarks>
-        /// This method is more efficient than calling <see cref="TryGetAdvance"/> multiple times as it reuses
-        /// the same reader and span reference. If any glyph index is invalid, the method returns <c>false</c>
-        /// and the contents of <paramref name="advances"/> are undefined.
-        /// </remarks>
-        public bool TryGetAdvances(ReadOnlySpan<ushort> glyphIndices, Span<ushort> advances)
+        public bool TryGetAdvances(
+            ReadOnlySpan<ushort> glyphIndices,
+            Span<ushort> advances,
+            VvarTable? vvar = null,
+            ReadOnlySpan<float> vvarRegionScalers = default)
         {
             if (advances.Length < glyphIndices.Length)
             {
                 return false;
             }
 
+            if (_numOfVMetrics == 0)
+            {
+                return false;
+            }
+
             var data = _data.Span;
-            var reader = new BigEndianBinaryReader(data);
 
             // Cache the last advance height for glyphs beyond numOfVMetrics
             ushort? lastAdvanceHeight = null;
+            var hasVvar = vvar is not null && !vvarRegionScalers.IsEmpty;
 
             for (int i = 0; i < glyphIndices.Length; i++)
             {
@@ -139,21 +162,31 @@ namespace Avalonia.Media.Fonts.Tables.Metrics
                     return false;
                 }
 
+                ushort raw;
                 if (glyphIndex < _numOfVMetrics)
                 {
-                    reader.Seek(glyphIndex * 4);
-                    advances[i] = reader.ReadUInt16();
+                    raw = BinaryPrimitives.ReadUInt16BigEndian(data.Slice(glyphIndex * 4, 2));
                 }
                 else
                 {
-                    // All glyphs beyond numOfVMetrics share the same advance height
                     if (!lastAdvanceHeight.HasValue)
                     {
-                        reader.Seek((_numOfVMetrics - 1) * 4);
-                        lastAdvanceHeight = reader.ReadUInt16();
+                        lastAdvanceHeight = BinaryPrimitives.ReadUInt16BigEndian(
+                            data.Slice((_numOfVMetrics - 1) * 4, 2));
                     }
+                    raw = lastAdvanceHeight.Value;
+                }
 
-                    advances[i] = lastAdvanceHeight.Value;
+                if (hasVvar && vvar!.TryGetAdvanceHeightDeltaWithScalers(glyphIndex, vvarRegionScalers, out var delta) && delta != 0f)
+                {
+                    var adjusted = raw + (int)MathF.Round(delta);
+                    advances[i] = adjusted < 0
+                        ? (ushort)0
+                        : (ushort)Math.Min(adjusted, ushort.MaxValue);
+                }
+                else
+                {
+                    advances[i] = raw;
                 }
             }
 
@@ -161,28 +194,35 @@ namespace Avalonia.Media.Fonts.Tables.Metrics
         }
 
         /// <summary>
-        /// Attempts to retrieve vertical glyph metrics for multiple glyphs in a single operation.
+        /// Attempts to retrieve vertical glyph metrics for multiple glyphs in a single
+        /// operation, optionally applying VVAR variation deltas in the same pass.
         /// </summary>
         /// <param name="glyphIndices">Read-only span of glyph indices to query.</param>
-        /// <param name="metrics">Output span to write the metrics. Must be at least as long as <paramref name="glyphIndices"/>.</param>
+        /// <param name="metrics">Output span; must be at least as long as <paramref name="glyphIndices"/>.</param>
+        /// <param name="vvar">Optional VVAR table for variation-adjusted advances + TSBs.</param>
+        /// <param name="vvarRegionScalers">Pre-computed per-region scalers for VVAR's ItemVariationStore.</param>
         /// <returns><c>true</c> if all glyph indices are valid and metrics were retrieved; otherwise, <c>false</c>.</returns>
-        /// <remarks>
-        /// This method is more efficient than calling <see cref="TryGetMetrics(ushort, out VerticalGlyphMetric)"/> multiple times as it reuses
-        /// the same reader and span reference. If any glyph index is invalid, the method returns <c>false</c>
-        /// and the contents of <paramref name="metrics"/> are undefined.
-        /// </remarks>
-        public bool TryGetMetrics(ReadOnlySpan<ushort> glyphIndices, Span<VerticalGlyphMetric> metrics)
+        public bool TryGetMetrics(
+            ReadOnlySpan<ushort> glyphIndices,
+            Span<VerticalGlyphMetric> metrics,
+            VvarTable? vvar = null,
+            ReadOnlySpan<float> vvarRegionScalers = default)
         {
             if (metrics.Length < glyphIndices.Length)
             {
                 return false;
             }
 
+            if (_numOfVMetrics == 0)
+            {
+                return false;
+            }
+
             var data = _data.Span;
-            var reader = new BigEndianBinaryReader(data);
 
             // Cache the last advance height for glyphs beyond numOfVMetrics
             ushort? lastAdvanceHeight = null;
+            var hasVvar = vvar is not null && !vvarRegionScalers.IsEmpty;
 
             for (int i = 0; i < glyphIndices.Length; i++)
             {
@@ -193,32 +233,52 @@ namespace Avalonia.Media.Fonts.Tables.Metrics
                     return false;
                 }
 
+                ushort advanceHeight;
+                short topSideBearing;
+
                 if (glyphIndex < _numOfVMetrics)
                 {
-                    reader.Seek(glyphIndex * 4);
-
-                    ushort advanceHeight = reader.ReadUInt16();
-                    short topSideBearing = reader.ReadInt16();
-
-                    metrics[i] = new VerticalGlyphMetric(advanceHeight, topSideBearing);
+                    var entryOffset = glyphIndex * 4;
+                    advanceHeight = BinaryPrimitives.ReadUInt16BigEndian(data.Slice(entryOffset, 2));
+                    topSideBearing = BinaryPrimitives.ReadInt16BigEndian(data.Slice(entryOffset + 2, 2));
                 }
                 else
                 {
-                    // All glyphs beyond numOfVMetrics share the same advance height
                     if (!lastAdvanceHeight.HasValue)
                     {
-                        reader.Seek((_numOfVMetrics - 1) * 4);
-                        lastAdvanceHeight = reader.ReadUInt16();
+                        lastAdvanceHeight = BinaryPrimitives.ReadUInt16BigEndian(
+                            data.Slice((_numOfVMetrics - 1) * 4, 2));
+                    }
+                    advanceHeight = lastAdvanceHeight.Value;
+
+                    var tsbIndex = glyphIndex - _numOfVMetrics;
+                    var tsbOffset = _numOfVMetrics * 4 + tsbIndex * 2;
+
+                    // A truncated table may omit some or all of the trailing topSideBearing array;
+                    // treat a missing entry as zero rather than reading past the end.
+                    topSideBearing = tsbOffset + 2 <= data.Length
+                        ? BinaryPrimitives.ReadInt16BigEndian(data.Slice(tsbOffset, 2))
+                        : (short)0;
+                }
+
+                if (hasVvar)
+                {
+                    if (vvar!.TryGetAdvanceHeightDeltaWithScalers(glyphIndex, vvarRegionScalers, out var advDelta) && advDelta != 0f)
+                    {
+                        var adjusted = advanceHeight + (int)MathF.Round(advDelta);
+                        advanceHeight = adjusted < 0
+                            ? (ushort)0
+                            : (ushort)Math.Min(adjusted, ushort.MaxValue);
                     }
 
-                    int tsbIndex = glyphIndex - _numOfVMetrics;
-                    int tsbOffset = _numOfVMetrics * 4 + tsbIndex * 2;
-
-                    reader.Seek(tsbOffset);
-                    short topSideBearing = reader.ReadInt16();
-
-                    metrics[i] = new VerticalGlyphMetric(lastAdvanceHeight.Value, topSideBearing);
+                    if (vvar.TryGetTopSideBearingDeltaWithScalers(glyphIndex, vvarRegionScalers, out var tsbDelta) && tsbDelta != 0f)
+                    {
+                        var adjusted = topSideBearing + (int)MathF.Round(tsbDelta);
+                        topSideBearing = (short)Math.Clamp(adjusted, short.MinValue, short.MaxValue);
+                    }
                 }
+
+                metrics[i] = new VerticalGlyphMetric(advanceHeight, topSideBearing);
             }
 
             return true;

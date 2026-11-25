@@ -424,10 +424,8 @@ public class CardStackPageTransition : PageSlide
         return sign * FarPeekAngle;
     }
 
-    private static double Lerp(double from, double to, double t)
-    {
-        return from + ((to - from) * Math.Clamp(t, 0.0, 1.0));
-    }
+    private static double Lerp(double from, double to, double t) =>
+        double.Lerp(from, to, Math.Clamp(t, 0.0, 1.0));
 
     private static int GetViewportZIndex(double offsetFromCenter, Visual visual, Visual? from, Visual? to)
     {

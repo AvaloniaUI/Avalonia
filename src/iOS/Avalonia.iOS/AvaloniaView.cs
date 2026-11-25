@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Versioning;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls;
 using Avalonia.Controls.Embedding;
 using Avalonia.Controls.Platform;
@@ -32,20 +33,24 @@ namespace Avalonia.iOS
             => _inputRoot ?? throw new InvalidOperationException($"{nameof(IWindowImpl.SetInputRoot)} must have been called");
         internal TopLevel TopLevel => _topLevel;
 
+        private readonly AutomationPeerWrapper _accessWrapper;
         private readonly TopLevelImpl _topLevelImpl;
         private readonly EmbeddableControlRoot _topLevel;
         private readonly InputHandler _input;
+
         private TextInputMethodClient? _client;
         private IAvaloniaViewController? _controller;
         private IInputRoot? _inputRoot;
         private Metal.MetalRenderTarget? _currentRenderTarget;
         private (PixelSize size, double scaling) _latestLayoutProps;
+        private bool _disposedValue;
 
         public AvaloniaView()
         {
             _topLevelImpl = new TopLevelImpl(this);
             _input = new InputHandler(this, _topLevelImpl);
             _topLevel = new EmbeddableControlRoot(_topLevelImpl);
+            _accessWrapper = new(this, ControlAutomationPeer.CreatePeerForElement(_topLevel));
 
             _topLevel.Prepare();
 
@@ -132,7 +137,7 @@ namespace Avalonia.iOS
         public override void TraitCollectionDidChange(UITraitCollection? previousTraitCollection)
         {
             base.TraitCollectionDidChange(previousTraitCollection);
-            
+
             var settings = AvaloniaLocator.Current.GetRequiredService<IPlatformSettings>() as PlatformSettings;
             settings?.TraitCollectionDidChange();
         }
@@ -141,7 +146,7 @@ namespace Avalonia.iOS
         public override void TintColorDidChange()
         {
             base.TintColorDidChange();
-            
+
             var settings = AvaloniaLocator.Current.GetRequiredService<IPlatformSettings>() as PlatformSettings;
             settings?.TraitCollectionDidChange();
         }
@@ -152,7 +157,7 @@ namespace Avalonia.iOS
             _controller = controller;
             _topLevelImpl._insetsManager.InitWithController(controller);
         }
-        
+
         internal class TopLevelImpl : ITopLevelImpl
         {
             private readonly AvaloniaView _view;
@@ -244,7 +249,7 @@ namespace Avalonia.iOS
             public double RenderScaling => _view.ContentScaleFactor;
             public IPlatformRenderSurface[] Surfaces { get; set; } = [];
             public Action<RawInputEventArgs>? Input { get; set; }
-            public Action<Rect>? Paint { get; set; }
+            public Action<ITopLevelImpl.PaintOptions?>? Paint { get; set; }
             public Action<Size, WindowResizeReason>? Resized { get; set; }
             public Action<double>? ScalingChanged { get; set; }
             public Action<WindowTransparencyLevel>? TransparencyLevelChanged { get; set; }
@@ -271,7 +276,7 @@ namespace Avalonia.iOS
                 }
 #endif
             }
-            
+
             public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } =
                 new AcrylicPlatformCompensationLevels();
 
@@ -414,10 +419,44 @@ namespace Avalonia.iOS
             set => _topLevel.Content = value;
         }
 
+        /// <inheritdoc />
+        public override void WillMoveToWindow(UIWindow? window)
+        {
+            base.WillMoveToWindow(window);
+            if (window is null)
+                _input.ResetTouches();
+        }
+
+        /// <inheritdoc />
+        public override void MovedToWindow()
+        {
+            base.MovedToWindow();
+#if !TVOS
+            DisplayLinkTimer.WarnIfLimitedTo60Hz(Window?.WindowScene?.Screen);
+#endif
+        }
+
         internal void SetRenderTarget(Metal.MetalRenderTarget target)
         {
             _currentRenderTarget = target;
             _currentRenderTarget.PendingLayout = _latestLayoutProps;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (!_disposedValue)
+            {
+                _disposedValue = true;
+
+                if (disposing)
+                {
+                    _input.ResetTouches();
+                    _accessWrapper.Dispose();
+                    _topLevel.Dispose();
+                }
+            }
+
+            base.Dispose(disposing);
         }
     }
 }

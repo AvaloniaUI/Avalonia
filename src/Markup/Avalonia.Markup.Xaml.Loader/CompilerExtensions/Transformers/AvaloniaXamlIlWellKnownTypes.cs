@@ -13,6 +13,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
     sealed class AvaloniaXamlIlWellKnownTypes
     {
         public IXamlType RuntimeHelpers { get; }
+        public IXamlMethod GetPropertyInfoFromPointers { get; }
+        public IXamlMethod GetTypedPropertyInfoFromPointers { get; }
         public IXamlType AvaloniaObject { get; }
         public IXamlType BindingPriority { get; }
         public IXamlType AvaloniaObjectExtensions { get; }
@@ -49,11 +51,17 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlMethod INameScopeRegister { get; }
         public IXamlMethod INameScopeComplete { get; }
         public IXamlType IPropertyInfo { get; }
-        public IXamlType ClrPropertyInfo { get; }
+        public IXamlType IPropertyInfoT { get; }
         public IXamlType IPropertyAccessor { get; }
         public IXamlType PropertyInfoAccessorFactory { get; }
         public IXamlType CompiledBinding { get; }
         public IXamlType CompiledBindingPathBuilder { get; }
+        public IXamlMethod CompiledBindingPathBuilderProperty { get; }
+        public IXamlMethod CompiledBindingPathBuilderPropertyWithNull { get; }
+        public IXamlMethod CompiledBindingPathBuilderMethod { get; }
+        public IXamlMethod CompiledBindingPathBuilderMethodWithNull { get; }
+        public IXamlType RuntimeMethodHandle { get; }
+        public IXamlType RuntimeTypeHandle { get; }
         public IXamlType CompiledBindingPath { get; }
         public IXamlType CompiledBindingExtension { get; }
 
@@ -190,6 +198,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public AvaloniaXamlIlWellKnownTypes(IXamlTypeSystem typeSystem)
         {
             RuntimeHelpers = typeSystem.GetType("Avalonia.Markup.Xaml.XamlIl.Runtime.XamlIlRuntimeHelpers");
+            GetPropertyInfoFromPointers = RuntimeHelpers.GetMethod(m =>
+                m.Name == "GetPropertyInfoFromPointers" && m.IsGenericMethod);
+            GetTypedPropertyInfoFromPointers = RuntimeHelpers.GetMethod(m =>
+                m.Name == "GetTypedPropertyInfoFromPointers" && m.IsGenericMethod);
 
             XamlIlTypes = typeSystem.WellKnownTypes;
             AvaloniaObject = typeSystem.GetType("Avalonia.AvaloniaObject");
@@ -247,7 +259,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             AvaloniaObjectSetValueMethod = AvaloniaObject.GetMethod("SetValue", IDisposable,
                 false, AvaloniaProperty, XamlIlTypes.Object, BindingPriority);
             IPropertyInfo = typeSystem.GetType("Avalonia.Data.Core.IPropertyInfo");
-            ClrPropertyInfo = typeSystem.GetType("Avalonia.Data.Core.ClrPropertyInfo");
+            IPropertyInfoT = typeSystem.GetType("Avalonia.Data.Core.IPropertyInfo`2");
             IPropertyAccessor = typeSystem.GetType("Avalonia.Data.Core.Plugins.IPropertyAccessor");
             PropertyInfoAccessorFactory = typeSystem.GetType("Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings.PropertyInfoAccessorFactory");
             CompiledBinding = typeSystem.GetType("Avalonia.Data.CompiledBinding");
@@ -270,6 +282,22 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             TaskOfT = typeSystem.GetType("System.Threading.Tasks.Task`1");
             IDictionaryT = typeSystem.GetType("System.Collections.Generic.IDictionary`2");
             WeakReferenceOfT = typeSystem.GetType("System.WeakReference`1");
+            RuntimeMethodHandle = typeSystem.GetType("System.RuntimeMethodHandle");
+            RuntimeTypeHandle = typeSystem.GetType("System.RuntimeTypeHandle");
+            var accessorFactoryType = XamlIlTypes.GetFuncOfT(3).MakeGenericType(
+                WeakReferenceOfT.MakeGenericType(XamlIlTypes.Object), IPropertyInfo, IPropertyAccessor);
+            CompiledBindingPathBuilderProperty = CompiledBindingPathBuilder.GetMethod(
+                new FindMethodMethodSignature("Property", CompiledBindingPathBuilder,
+                    IPropertyInfo, accessorFactoryType));
+            CompiledBindingPathBuilderPropertyWithNull = CompiledBindingPathBuilder.GetMethod(
+                new FindMethodMethodSignature("Property", CompiledBindingPathBuilder,
+                    IPropertyInfo, accessorFactoryType, XamlIlTypes.Boolean));
+            CompiledBindingPathBuilderMethod = CompiledBindingPathBuilder.GetMethod(
+                new FindMethodMethodSignature("Method", CompiledBindingPathBuilder,
+                    RuntimeMethodHandle, RuntimeTypeHandle));
+            CompiledBindingPathBuilderMethodWithNull = CompiledBindingPathBuilder.GetMethod(
+                new FindMethodMethodSignature("Method", CompiledBindingPathBuilder,
+                    RuntimeMethodHandle, RuntimeTypeHandle, XamlIlTypes.Boolean));
             IObservableOfT = typeSystem.GetType("System.IObservable`1");
             FontFamily = typeSystem.GetType("Avalonia.Media.FontFamily");
             FontFamilyConstructorUriName = FontFamily.GetConstructor(new List<IXamlType> { Uri, XamlIlTypes.String });

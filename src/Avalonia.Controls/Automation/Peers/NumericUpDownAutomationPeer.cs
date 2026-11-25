@@ -31,7 +31,7 @@ namespace Avalonia.Automation.Peers
 
         public void SetValue(double value)
         {
-            Owner.Value = (decimal)value;
+            Owner.SetCurrentValue(NumericUpDown.ValueProperty, (decimal)value);
         }
 
         protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.Spinner;

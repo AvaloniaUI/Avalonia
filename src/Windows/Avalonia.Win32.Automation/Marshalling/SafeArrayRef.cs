@@ -8,6 +8,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.Marshalling;
 // ReSharper disable InconsistentNaming
 
 namespace Avalonia.Win32.Automation.Marshalling;
@@ -160,6 +161,25 @@ internal unsafe partial struct SafeArrayRef
         });
     }
 
+    /// <summary>
+    /// Creates a SAFEARRAY from a typed array.
+    /// </summary>
+    /// <remarks>
+    /// COM interfaces have to come through here rather than through the non-generic overload: the
+    /// element type is what tells us to wrap each item, and it isn't recoverable from the values.
+    /// </remarks>
+    public static bool TryCreate<T>(T[]? managed, [NotNullWhen(true)] out SafeArrayRef? safearray, out VarEnum varEnum)
+    {
+        if (managed is not null && typeof(T).IsInterface)
+        {
+            safearray = CreateFromComObjects(managed);
+            varEnum = VarEnum.VT_UNKNOWN;
+            return true;
+        }
+
+        return TryCreate((IEnumerable?)managed, out safearray, out varEnum);
+    }
+
     public static bool TryCreate(IEnumerable? managed, [NotNullWhen(true)] out SafeArrayRef? safearray, out VarEnum varEnum)
     {
         safearray = default;
@@ -179,38 +199,6 @@ internal unsafe partial struct SafeArrayRef
                 _ => collection.ToArray()
             };
             return CreateFromSpan<T>(collectionSpan, varEnum);
-        }
-
-        static SafeArrayRef CreateFromSpan<T>(ReadOnlySpan<T> span, VarEnum varEnum)
-        {
-            var bound = new SAFEARRAYBOUND { cElements = (uint)span.Length, lLbound = 0 };
-            var safearray = SafeArrayCreate(varEnum, 1, bound);
-            if (span.Length == 0)
-            {
-                return new SafeArrayRef
-                {
-                    _ptr = safearray
-                };
-            }
-
-            var lockResult = SafeArrayLock(safearray);
-            if (lockResult != 0) throw new Win32Exception(lockResult);
-
-            try
-            {
-                // We assume it has the same length.
-                var output = new Span<T>(safearray->pvData, (int)safearray->rgsabound[0].cElements);
-                span.CopyTo(output);
-            }
-            finally
-            {
-                SafeArrayUnlock(safearray);
-            }
-
-            return new SafeArrayRef
-            {
-                _ptr = safearray
-            };
         }
 
         static SafeArrayRef CreateFromStrings(IReadOnlyList<string> strings, VarEnum varEnum)
@@ -251,28 +239,6 @@ internal unsafe partial struct SafeArrayRef
             }
         }
 
-        static SafeArrayRef CreateFromObjects(IReadOnlyList<object> objects, VarEnum varEnum)
-        {
-            Debug.Assert(varEnum == VarEnum.VT_UNKNOWN); // other types not supported yet
-            var pointers = ArrayPool<IntPtr>.Shared.Rent(objects.Count);
-            try
-            {
-                for (int i = 0; i < objects.Count; i++)
-                {
-                    if (ComWrappers.TryGetComInstance(objects[i], out var pointer))
-                    {
-                        pointers[i] = pointer;
-                    }
-                }
-
-                return CreateFromSpan<IntPtr>(pointers, varEnum);
-            }
-            finally
-            {
-                ArrayPool<IntPtr>.Shared.Return(pointers);
-            }
-        }
-
         safearray = managed switch
         {
             IReadOnlyCollection<sbyte> ints => CreateFromCollection(ints, varEnum = VarEnum.VT_I1),
@@ -295,12 +261,61 @@ internal unsafe partial struct SafeArrayRef
 
             IReadOnlyList<string> strings => CreateFromStrings(strings, varEnum = VarEnum.VT_BSTR),
 
-            IReadOnlyList<object> objects => CreateFromObjects(objects, varEnum = VarEnum.VT_UNKNOWN),
-            
             _ => null
         };
 
         return safearray is not null;
+    }
+
+    private static SafeArrayRef CreateFromSpan<T>(ReadOnlySpan<T> span, VarEnum varEnum)
+    {
+        var bound = new SAFEARRAYBOUND { cElements = (uint)span.Length, lLbound = 0 };
+        var safearray = SafeArrayCreate(varEnum, 1, bound);
+        if (span.Length == 0)
+        {
+            return new SafeArrayRef
+            {
+                _ptr = safearray
+            };
+        }
+
+        var lockResult = SafeArrayLock(safearray);
+        if (lockResult != 0) throw new Win32Exception(lockResult);
+
+        try
+        {
+            // We assume it has the same length.
+            var output = new Span<T>(safearray->pvData, (int)safearray->rgsabound[0].cElements);
+            span.CopyTo(output);
+        }
+        finally
+        {
+            SafeArrayUnlock(safearray);
+        }
+
+        return new SafeArrayRef
+        {
+            _ptr = safearray
+        };
+    }
+
+    private static SafeArrayRef CreateFromComObjects<T>(T[] objects)
+    {
+        var pointers = ArrayPool<IntPtr>.Shared.Rent(objects.Length);
+
+        try
+        {
+            for (var i = 0; i < objects.Length; i++)
+            {
+                pointers[i] = (IntPtr)ComInterfaceMarshaller<T>.ConvertToUnmanaged(objects[i]);
+            }
+
+            return CreateFromSpan<IntPtr>(pointers.AsSpan(0, objects.Length), VarEnum.VT_UNKNOWN);
+        }
+        finally
+        {
+            ArrayPool<IntPtr>.Shared.Return(pointers);
+        }
     }
 
     [LibraryImport("oleaut32.dll")]

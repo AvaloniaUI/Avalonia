@@ -7,6 +7,7 @@
 #import <Carbon/Carbon.h> /* For the TIS functions used to classify the keyboard input source. */
 #include "AvnView.h"
 #include "automation.h"
+#include "AvnString.h"
 #import "WindowInterfaces.h"
 #import "WindowImpl.h"
 
@@ -70,7 +71,7 @@
     [self updateLayer];
 }
 
--(AvnView*)  initWithParent: (TopLevelImpl*) parent
+-(AvnView*)  initWithParent: (const ComPtr<TopLevelImpl>&) parent
 {
     self = [super init];
     [self setWantsLayer:YES];
@@ -80,7 +81,17 @@
     [self setLayerContentsRedrawPolicy: NSViewLayerContentsRedrawDuringViewResize];
 
     _parent = parent;
-    _area = nullptr;
+
+    // NSTrackingInVisibleRect makes AppKit follow the visible bounds of the view.
+    // Because of this, the tracking area does not need to change on resize.
+    // Do not remove and add the area again on each live-resize tick.
+    // If you do, AppKit queues synthetic enter and exit events with stale locations.
+    // These events corrupt the pointer position after a resize and force it to the top left.
+    NSTrackingAreaOptions options = NSTrackingActiveAlways | NSTrackingMouseMoved |
+        NSTrackingMouseEnteredAndExited | NSTrackingEnabledDuringMouseDrag | NSTrackingInVisibleRect;
+    _area = [[NSTrackingArea alloc] initWithRect:NSZeroRect options:options owner:self userInfo:nullptr];
+    [self addTrackingArea:_area];
+
     _lastPixelSize.Height = 100;
     _lastPixelSize.Width = 100;
     [self registerForDraggedTypes: @[@"public.data", GetAvnCustomDataType()]];
@@ -128,24 +139,11 @@
 {
     [super setFrameSize:newSize];
 
-    if(_area != nullptr)
-    {
-        [self removeTrackingArea:_area];
-        _area = nullptr;
-    }
-
     auto parent = _parent.tryGet();
     if (parent == nullptr)
     {
         return;
     }
-
-    NSRect rect = NSZeroRect;
-    rect.size = newSize;
-
-    NSTrackingAreaOptions options = NSTrackingActiveAlways | NSTrackingMouseMoved | NSTrackingMouseEnteredAndExited | NSTrackingEnabledDuringMouseDrag;
-    _area = [[NSTrackingArea alloc] initWithRect:rect options:options owner:self userInfo:nullptr];
-    [self addTrackingArea:_area];
 
     parent->UpdateCursor();
 
@@ -167,14 +165,6 @@
 {
     AvnInsidePotentialDeadlock deadlock;
     auto parent = _parent.tryGet();
-    if (parent == nullptr)
-    {
-        return;
-    }
-
-    parent->TopLevelEvents->RunRenderPriorityJobs();
-
-    parent = _parent.tryGet();
     if (parent == nullptr)
     {
         return;
@@ -258,8 +248,12 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
         return;
     }
 
-    NSPoint eventLocation = [event locationInWindow];
-    
+    // AppKit synthesizes enter and exit events for the tracked geometry.
+    // They can have stale locations. Use the current pointer location instead.
+    NSPoint eventLocation = event.type == NSEventTypeMouseEntered || event.type == NSEventTypeMouseExited
+        ? [[self window] mouseLocationOutsideOfEventStream]
+        : [event locationInWindow];
+
     auto viewLocation = [self convertPoint:NSMakePoint(0, 0) toView:nil];
     
     auto localPoint = NSMakePoint(eventLocation.x - viewLocation.x, viewLocation.y - eventLocation.y);
@@ -392,7 +386,10 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
         parent->TopLevelEvents->RawMouseEvent(type, pointerType, timestamp, modifiers, point, delta, pressure, xTilt, yTilt);
     }
 
-    [super mouseMoved:event];
+    // This handler is shared by all mouse event types. Only real mouse-moved
+    // events must continue up the responder chain as mouseMoved:
+    if (event.type == NSEventTypeMouseMoved)
+        [super mouseMoved:event];
 }
 
 - (BOOL) resignFirstResponder
@@ -560,7 +557,10 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
 
 - (void)mouseEntered:(NSEvent *)event
 {
-    [self mouseEvent:event withType:Move];
+    // If the pointer is not inside the view, the enter event is false. Ignore it.
+    NSPoint location = [self convertPoint:[[self window] mouseLocationOutsideOfEventStream] fromView:nil];
+    if (NSPointInRect(location, self.bounds))
+        [self mouseEvent:event withType:Move];
     [super mouseEntered:event];
 }
 
@@ -587,7 +587,14 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
     auto timestamp = static_cast<uint64_t>([event timestamp] * 1000);
     auto modifiers = [self getModifiers:[event modifierFlags]];
 
-    parent->TopLevelEvents->RawKeyEvent(type, timestamp, modifiers, key, physicalKey, keySymbolUtf8);
+    AvnKeyEventInfo info = {};
+    info.HasNativeKeyCode = true;
+    info.NativeKeyCode = [event keyCode];
+    info.NativeModifiers = [event modifierFlags];
+
+    // Also called from flagsChanged:, where reading the event's characters throws
+    parent->TopLevelEvents->RawKeyEvent(type, timestamp, modifiers, key, physicalKey, keySymbolUtf8,
+                                        nullptr, nullptr, info);
 }
 
 - (void)setModifiers:(NSEventModifierFlags)modifierFlags
@@ -788,7 +795,24 @@ static bool KeyboardInputSourceComposes(NSString* sourceId)
     // A KeyDown is always raised before the input context sees the event, otherwise the
     // input context silently consumes printable keys (space, letters, digits) and user code
     // never gets a chance to react to them.
-    auto handled = parent->TopLevelEvents->RawKeyEvent(KeyDown, timestamp, modifiers, key, physicalKey, keySymbolUtf8);
+    auto characters = [event characters];
+    ComPtr<IAvnString> keyText;
+    if ([characters length] != 0)
+        keyText = CreateAvnString(characters);
+    // Option counts as Alt here, so a terminal can use it as a Meta key
+    auto alternateSymbol = KeySymbolFromScanCode(scanCode, [event modifierFlags] & ~NSEventModifierFlagOption, true);
+    ComPtr<IAvnString> alternateKeyText;
+    if (alternateSymbol != nullptr)
+        alternateKeyText = CreateAvnString(alternateSymbol);
+
+    AvnKeyEventInfo info = {};
+    info.HasConsumedModifiers = ConsumedModifiersFromScanCode(scanCode, [event modifierFlags], &info.ConsumedModifiers);
+    info.HasNativeKeyCode = true;
+    info.NativeKeyCode = scanCode;
+    info.NativeModifiers = [event modifierFlags];
+
+    auto handled = parent->TopLevelEvents->RawKeyEvent(KeyDown, timestamp, modifiers, key, physicalKey, keySymbolUtf8,
+                                                       keyText, alternateKeyText, info);
 
     if(handled)
     {
@@ -913,8 +937,12 @@ static bool KeyboardInputSourceComposes(NSString* sourceId)
     {
         parent->InputMethod->Client->SelectInSurroundingText((int)finalReplacementRange.location, (int)(finalReplacementRange.location + finalReplacementRange.length));
         uint64_t timestamp = static_cast<uint64_t>([NSDate timeIntervalSinceReferenceDate] * 1000);
-        parent->TopLevelEvents->RawKeyEvent(KeyDown, timestamp, AvnInputModifiersNone, AvnKeyBack, AvnPhysicalKeyNone, "\b");
-        parent->TopLevelEvents->RawKeyEvent(KeyUp, timestamp, AvnInputModifiersNone, AvnKeyBack, AvnPhysicalKeyNone, "\b");
+        // Synthesized events: no native data
+        AvnKeyEventInfo info = {};
+        parent->TopLevelEvents->RawKeyEvent(KeyDown, timestamp, AvnInputModifiersNone, AvnKeyBack, AvnPhysicalKeyNone, "\b",
+                                            nullptr, nullptr, info);
+        parent->TopLevelEvents->RawKeyEvent(KeyUp, timestamp, AvnInputModifiersNone, AvnKeyBack, AvnPhysicalKeyNone, "\b",
+                                            nullptr, nullptr, info);
     }
 
     auto markedLocation = [self selectedRange].location;
@@ -1174,9 +1202,9 @@ static bool KeyboardInputSourceComposes(NSString* sourceId)
     {
         for (int i = 0; i < childCount; ++i)
         {
-            IAvnAutomationPeer* child;
+            ComPtr<IAvnAutomationPeer> child;
 
-            if (childPeers->Get(i, &child) == S_OK)
+            if (childPeers->Get(i, child) == S_OK)
             {
                 id element = [AvnAccessibilityElement acquire:child];
                 [_accessibilityChildren addObject:element];

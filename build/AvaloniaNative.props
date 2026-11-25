@@ -1,0 +1,12 @@
+<Project>
+
+  <PropertyGroup>
+    <AvaloniaNativeSourceDir>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)../native/Avalonia.Native))</AvaloniaNativeSourceDir>
+    <AvaloniaNativeIdl>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)../src/Avalonia.Native/avn.idl))</AvaloniaNativeIdl>
+    <AvaloniaNativeHeader>$(AvaloniaNativeSourceDir)/inc/avalonia-native.h</AvaloniaNativeHeader>
+    <AvaloniaNativeXcodeProject>$(AvaloniaNativeSourceDir)/src/OSX/Avalonia.Native.OSX.xcodeproj</AvaloniaNativeXcodeProject>
+    <AvaloniaNativeBuildDir>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)../artifacts/native/$(Configuration)))</AvaloniaNativeBuildDir>
+    <AvaloniaNativeDylibPath>$(AvaloniaNativeBuildDir)/libAvalonia.Native.OSX.dylib</AvaloniaNativeDylibPath>
+  </PropertyGroup>
+
+</Project>

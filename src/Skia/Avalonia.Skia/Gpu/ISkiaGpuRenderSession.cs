@@ -1,4 +1,6 @@
 using System;
+using Avalonia.Metadata;
+using Avalonia.Platform;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -24,5 +26,11 @@ namespace Avalonia.Skia
         double ScaleFactor { get; }
         
         GRSurfaceOrigin SurfaceOrigin { get; }
+    }
+
+    [PrivateApi]
+    public interface ISkiaGpuRenderSessionWithPartialPresentation : ISkiaGpuRenderSession
+    {
+        IPartialPresentationFeature? PartialPresentation { get; }
     }
 }

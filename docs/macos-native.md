@@ -13,7 +13,7 @@ When you make changes in Xcode and recompile using Cmd+B, the binary will be com
 
 ![How to find the product path in Xcode](images/xcode-product-path.png)
 
-To use this build in Avalonia, one can specifiy the path by using `AvaloniaNativePlatformOptions.AvaloniaNativeLibraryPath` in an application's AppBuilder:
+To use this build in Avalonia, one can specify the path by using `AvaloniaNativePlatformOptions.AvaloniaNativeLibraryPath` in an application's AppBuilder:
 
 ```csharp
 public static AppBuilder BuildAvaloniaApp() =>

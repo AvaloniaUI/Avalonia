@@ -1,9 +1,10 @@
 using System;
 using Xunit;
+using Avalonia.UnitTests;
 
 namespace Avalonia.Base.UnitTests
 {
-    public class AvaloniaObjectTests_Attached
+    public class AvaloniaObjectTests_Attached : ScopedTestBase
     {
         [Fact]
         public void AddOwnered_Property_Retains_Default_Value()

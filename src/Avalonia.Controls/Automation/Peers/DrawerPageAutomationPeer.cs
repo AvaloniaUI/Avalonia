@@ -16,8 +16,8 @@ public class DrawerPageAutomationPeer : ControlAutomationPeer,
 
     public ExpandCollapseState ExpandCollapseState => ToState(Owner.IsOpen);
     public bool ShowsMenu => false;
-    public void Collapse() => Owner.IsOpen = false;
-    public void Expand() => Owner.IsOpen = true;
+    public void Collapse() => Owner.SetCurrentValue(DrawerPage.IsOpenProperty, false);
+    public void Expand() => Owner.SetCurrentValue(DrawerPage.IsOpenProperty, true);
 
     protected override AutomationControlType GetAutomationControlTypeCore()
         => AutomationControlType.Pane;

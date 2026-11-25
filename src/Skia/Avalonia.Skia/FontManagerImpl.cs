@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 
 using System;
 using System.Collections.Generic;
@@ -6,6 +6,9 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using Avalonia.Media;
+using Avalonia.Media.Fonts;
+using Avalonia.Media.Fonts.Tables;
+using Avalonia.Media.Fonts.Tables.Variation;
 using Avalonia.Platform;
 using SkiaSharp;
 
@@ -49,7 +52,7 @@ namespace Avalonia.Skia
                 return false;
             }
 
-            platformTypeface = new SkiaTypeface(skTypeface, FontSimulations.None);
+            platformTypeface = CreateMatchedTypeface(skTypeface, fontStyle, fontWeight, fontStretch);
 
             return true;
 
@@ -109,19 +112,225 @@ namespace Avalonia.Skia
                 return false;
             }
 
+            platformTypeface = CreateMatchedTypeface(skTypeface, style, weight, stretch);
+
+            return true;
+        }
+
+        /// <summary>
+        /// Wraps a typeface the platform matched like <see cref="CreatePlatformTypeface(SKTypeface, FontStyle,
+        /// FontWeight, FontStretch)"/>, after replacing a colour font face the platform simulated with the face
+        /// of its family as designed.
+        /// </summary>
+        /// <remarks>
+        /// DirectWrite and fontconfig embolden or slant inside the typeface they match, which applies to
+        /// every glyph, colour glyphs included. The face as designed takes the simulations when it is
+        /// drawn instead, where the renderer decides what they do to colour glyphs.
+        /// </remarks>
+        private SkiaTypeface CreateMatchedTypeface(SKTypeface skTypeface, FontStyle style, FontWeight weight,
+            FontStretch stretch)
+        {
+            var typeface = CreatePlatformTypeface(skTypeface, style, weight, stretch);
+
+            if (typeface.PlatformSimulations == FontSimulations.None || !SkiaTypeface.IsColorFont(skTypeface) ||
+                !TryGetDesignedFaceStyle(skTypeface, typeface.PlatformSimulations, out var designedStyle))
+            {
+                return typeface;
+            }
+
+            var designed = _skFontManager.MatchFamily(skTypeface.FamilyName, designedStyle);
+
+            // SkiaSharp hands out the same wrapper for a native typeface it already wraps.
+            if (designed is null || ReferenceEquals(designed, skTypeface))
+            {
+                return typeface;
+            }
+
+            typeface.Dispose();
+
+            return CreatePlatformTypeface(designed, style, weight, stretch);
+        }
+
+        /// <summary>
+        /// Wraps a typeface the platform matched to the requested style, weight and stretch. A bold
+        /// or slanted request the matched face cannot satisfy is simulated on that face when it is
+        /// drawn, without a copy of the font data.
+        /// </summary>
+        /// <param name="skTypeface">The typeface the platform matched.</param>
+        /// <param name="style">The requested style.</param>
+        /// <param name="weight">The requested weight.</param>
+        /// <param name="stretch">The requested stretch.</param>
+        internal static SkiaTypeface CreatePlatformTypeface(SKTypeface skTypeface, FontStyle style, FontWeight weight,
+            FontStretch stretch)
+        {
+            SkiaTypeface.ReadTableDirectory(skTypeface, out _, out var hasFvar);
+
+            return CreatePlatformTypeface(skTypeface, skTypeface.FontStyle.Slant.ToAvalonia(),
+                (FontWeight)skTypeface.FontWeight, (FontStretch)skTypeface.FontWidth,
+                GetPlatformSimulations(skTypeface, hasFvar), style, weight, stretch);
+        }
+
+        /// <param name="skTypeface">The typeface the platform matched.</param>
+        /// <param name="faceStyle">The style the matched typeface reports.</param>
+        /// <param name="faceWeight">The weight the matched typeface reports.</param>
+        /// <param name="faceStretch">The stretch the matched typeface reports.</param>
+        /// <param name="platformSimulations">The simulations the platform applied inside the matched typeface.</param>
+        /// <param name="style">The requested style.</param>
+        /// <param name="weight">The requested weight.</param>
+        /// <param name="stretch">The requested stretch.</param>
+        internal static SkiaTypeface CreatePlatformTypeface(SKTypeface skTypeface, FontStyle faceStyle,
+            FontWeight faceWeight, FontStretch faceStretch, FontSimulations platformSimulations, FontStyle style,
+            FontWeight weight, FontStretch stretch)
+        {
             var fontSimulations = FontSimulations.None;
 
-            if ((int)weight >= 600 && !skTypeface.IsBold)
+            // A face the platform already emboldened is not emboldened a second time, while a face
+            // designed lighter than the request is, a real Bold face for ExtraBold included.
+            if (weight >= FontWeight.SemiBold && faceWeight < weight && (platformSimulations & FontSimulations.Bold) == 0)
             {
                 fontSimulations |= FontSimulations.Bold;
             }
 
-            if (style == FontStyle.Italic && !skTypeface.IsItalic)
+            // Any slanted face, italic or oblique, satisfies a slanted request.
+            if (style != FontStyle.Normal && faceStyle == FontStyle.Normal)
             {
                 fontSimulations |= FontSimulations.Oblique;
             }
 
-            platformTypeface = new SkiaTypeface(skTypeface, fontSimulations);
+            var allSimulations = fontSimulations | platformSimulations;
+
+            // A simulated face stands for the requested one in what it simulates, so it reports the
+            // requested weight or style and a font collection recognizes it as the face it asked for.
+            // A designed italic face that answers an oblique request stays italic, and no simulation
+            // changes the stretch, so those report the face's own values, the ones its glyph typeface
+            // reads from the font file.
+            var reportedWeight = (allSimulations & FontSimulations.Bold) != 0 ? weight : faceWeight;
+            var reportedStyle = (allSimulations & FontSimulations.Oblique) != 0 ? style : faceStyle;
+
+            return new SkiaTypeface(skTypeface, fontSimulations, platformSimulations, reportedStyle, reportedWeight,
+                faceStretch);
+        }
+
+        /// <summary>
+        /// Gets the simulations a platform applied inside a typeface it matched, such as a DirectWrite
+        /// or fontconfig face that reports Bold or an oblique slant for a font file designed regular
+        /// and upright.
+        /// </summary>
+        /// <remarks>
+        /// The CoreText font manager answers with a face as designed and never simulates inside a
+        /// typeface. It takes the slant from the face's traits, which can disagree with the OS/2
+        /// table, such as Apple Chancery, designed italic without the italic bit, so the comparison
+        /// would report a simulation that is not there.
+        /// </remarks>
+        private static FontSimulations GetPlatformSimulations(SKTypeface skTypeface, bool hasFvar)
+        {
+            if (OperatingSystem.IsMacOS() || OperatingSystem.IsIOS() || OperatingSystem.IsMacCatalyst() ||
+                OperatingSystem.IsTvOS())
+            {
+                return FontSimulations.None;
+            }
+
+            var slant = skTypeface.FontStyle.Slant;
+            var hasSlantAxis = false;
+
+            if (hasFvar)
+            {
+                // A variable face is never reported as emboldened, so only a slant needs the tables.
+                if (slant == SKFontStyleSlant.Upright)
+                {
+                    return FontSimulations.None;
+                }
+
+                hasSlantAxis = skTypeface.TryGetTableData(FvarTable.Tag, out var fvar) && fvar is not null &&
+                               FvarTable.TryLoadAxisTags(fvar, out var axisTags) &&
+                               (axisTags.Contains(s_slantAxisTag) || axisTags.Contains(s_italicAxisTag));
+
+                if (hasSlantAxis)
+                {
+                    return FontSimulations.None;
+                }
+            }
+
+            if (!skTypeface.TryGetTableData(OS2Table.Tag, out var os2) || os2 is null ||
+                !OS2Table.TryLoad(os2, out var table))
+            {
+                return FontSimulations.None;
+            }
+
+            return GetPlatformSimulations(skTypeface.FontWeight, slant, table.WeightClass, table.Selection,
+                hasFvar, hasSlantAxis);
+        }
+
+        private static readonly OpenTypeTag s_slantAxisTag = OpenTypeTag.Parse("slnt");
+        private static readonly OpenTypeTag s_italicAxisTag = OpenTypeTag.Parse("ital");
+
+        /// <summary>
+        /// Gets the simulations a platform applied inside a typeface from what the typeface reports
+        /// and what its font file declares.
+        /// </summary>
+        /// <param name="reportedWeight">The weight the typeface reports.</param>
+        /// <param name="reportedSlant">The slant the typeface reports.</param>
+        /// <param name="weightClass">The usWeightClass of the OS/2 table.</param>
+        /// <param name="fsSelection">The fsSelection flags of the OS/2 table.</param>
+        /// <param name="isVariable">Whether the font has an fvar table.</param>
+        /// <param name="hasSlantAxis">Whether the fvar table declares a slnt or ital axis.</param>
+        internal static FontSimulations GetPlatformSimulations(int reportedWeight, SKFontStyleSlant reportedSlant,
+            int weightClass, OS2Table.FontSelectionFlags fsSelection, bool isVariable, bool hasSlantAxis)
+        {
+            // Some fonts store the weight class on the legacy 1-9 scale.
+            if (weightClass is > 0 and < 10)
+            {
+                weightClass *= 100;
+            }
+
+            var platformSimulations = FontSimulations.None;
+
+            // The OS/2 table of a variable font describes its default instance only, while the
+            // platform reports the weight of the instance it applied, so that weight is real.
+            if (!isVariable && reportedWeight >= (int)FontWeight.SemiBold &&
+                weightClass < (int)FontWeight.SemiBold && (fsSelection & OS2Table.FontSelectionFlags.BOLD) == 0)
+            {
+                platformSimulations |= FontSimulations.Bold;
+            }
+
+            // A slant or italic axis makes the reported slant an instance too. Without one the
+            // platform slants the face itself, as DirectWrite does for the oblique faces it lists.
+            if (reportedSlant != SKFontStyleSlant.Upright && !(isVariable && hasSlantAxis) &&
+                (fsSelection & (OS2Table.FontSelectionFlags.ITALIC | OS2Table.FontSelectionFlags.OBLIQUE)) == 0)
+            {
+                platformSimulations |= FontSimulations.Oblique;
+            }
+
+            return platformSimulations;
+        }
+
+        /// <summary>
+        /// Gets the style of the face as designed that a typeface the platform simulated stands for: the
+        /// regular weight in place of a simulated bold and upright in place of a simulated slant, with
+        /// the weight, slant and width the platform did not simulate kept as the typeface reports them.
+        /// </summary>
+        /// <param name="skTypeface">The typeface the platform matched.</param>
+        /// <param name="platformSimulations">The simulations the platform applied inside <paramref name="skTypeface"/>.</param>
+        /// <param name="designedStyle">The style to request the face as designed with.</param>
+        /// <returns><c>false</c> when the platform simulated nothing, so the typeface is the face as designed.</returns>
+        internal static bool TryGetDesignedFaceStyle(SKTypeface skTypeface, FontSimulations platformSimulations,
+            out SKFontStyle designedStyle)
+        {
+            if (platformSimulations == FontSimulations.None)
+            {
+                designedStyle = SKFontStyle.Normal;
+
+                return false;
+            }
+
+            var weight = (platformSimulations & FontSimulations.Bold) != 0 ?
+                SKFontStyleWeight.Normal :
+                (SKFontStyleWeight)skTypeface.FontWeight;
+            var slant = (platformSimulations & FontSimulations.Oblique) != 0 ?
+                SKFontStyleSlant.Upright :
+                skTypeface.FontStyle.Slant;
+
+            designedStyle = new SKFontStyle(weight, (SKFontStyleWidth)skTypeface.FontWidth, slant);
 
             return true;
         }

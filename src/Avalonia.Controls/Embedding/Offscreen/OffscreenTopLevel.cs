@@ -35,6 +35,7 @@ namespace Avalonia.Controls.Embedding.Offscreen
         public void Dispose()
         {
             PlatformImpl?.Dispose();
+            EnsureClosed();
         }
     }
 }

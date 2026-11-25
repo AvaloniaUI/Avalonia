@@ -15,7 +15,7 @@ using Xunit;
 
 namespace Avalonia.Base.UnitTests
 {
-    public class AvaloniaObjectTests_Direct
+    public class AvaloniaObjectTests_Direct : ScopedTestBase
     {
         [Fact]
         public void GetValue_Gets_Default_Value()

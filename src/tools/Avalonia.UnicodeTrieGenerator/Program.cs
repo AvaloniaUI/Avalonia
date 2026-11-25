@@ -45,10 +45,9 @@ internal static class Program
         var eawTrie = EastAsianWidthClassTrieGenerator.Execute(outputDir, out var eawValues);
         VerifyEastAsianWidthTrie(eawTrie, eawValues);
 
-        Console.WriteLine("Generating GraphemeBreak trie...");
-        UnicodeEnumsGenerator.CreateGraphemeBreakTypeEnum(outputDir);
-        var graphemeBreakTrie = GraphemeBreakClassTrieGenerator.Execute(outputDir, out var graphemeBreakValues);
-        VerifyGraphemeBreakTrie(graphemeBreakTrie, graphemeBreakValues);
+        Console.WriteLine("Generating Segmentation trie...");
+        var segmentationTrie = SegmentationTrieGenerator.Execute(outputDir, out var segmentationValues);
+        VerifySegmentationTrie(segmentationTrie, segmentationValues);
 
         Console.WriteLine("Generating PropertyValueAliasHelper...");
         UnicodeEnumsGenerator.CreatePropertyValueAliasHelper(outputDir, unicodeDataEntries, biDiDataEntries);
@@ -83,8 +82,6 @@ internal static class Program
 
             Expect(value.GeneralCategory, GetValue(packed, 0, UnicodeData.CATEGORY_MASK), "GeneralCategory", value.Codepoint);
             Expect(value.Script, GetValue(packed, UnicodeData.SCRIPT_SHIFT, UnicodeData.SCRIPT_MASK), "Script", value.Codepoint);
-            Expect(value.LineBreakClass, GetValue(packed, UnicodeData.LINEBREAK_SHIFT, UnicodeData.LINEBREAK_MASK), "LineBreakClass", value.Codepoint);
-            Expect(value.WordBreakClass, GetValue(packed, UnicodeData.WORDBREAK_SHIFT, UnicodeData.WORDBREAK_MASK), "WordBreakClass", value.Codepoint);
             Expect(value.ScriptExtensionsIndex, GetValue(packed, UnicodeData.SCRIPTEXTENSIONS_SHIFT, UnicodeData.SCRIPTEXTENSIONS_MASK), "ScriptExtensionsIndex", value.Codepoint);
         }
     }
@@ -122,7 +119,7 @@ internal static class Program
         }
     }
 
-    private static void VerifyGraphemeBreakTrie(
+    private static void VerifySegmentationTrie(
         UnicodeTrie trie,
         System.Collections.Generic.Dictionary<int, uint> values)
     {
@@ -133,7 +130,7 @@ internal static class Program
             if (expected != actual)
             {
                 throw new InvalidOperationException(
-                    $"GraphemeBreak trie mismatch at U+{codepoint:X4}: expected 0x{expected:X8}, got 0x{actual:X8}.");
+                    $"Segmentation trie mismatch at U+{codepoint:X4}: expected 0x{expected:X8}, got 0x{actual:X8}.");
             }
         }
     }

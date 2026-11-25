@@ -78,6 +78,8 @@ namespace Avalonia.Win32
         private readonly FramebufferManager _framebuffer;
         private readonly IPlatformRenderSurface? _glSurface;
         private readonly bool _wmPointerEnabled;
+        private Action? _pendingDrag;
+        private bool _dragRequestedFromPointer;
 
         private readonly Win32NativeControlHost _nativeControlHost;
         private readonly IStorageProvider _storageProvider;
@@ -106,6 +108,7 @@ namespace Avalonia.Win32
         private bool _hiddenWindowIsParent;
         private uint _langid;
         internal bool _ignoreWmChar;
+        private bool _deadCharPending;
         private WindowTransparencyLevel _transparencyLevel;
         private readonly WindowTransparencyLevel _defaultTransparencyLevel;
         private WindowCornerPreference _cornerPreference;
@@ -118,6 +121,7 @@ namespace Avalonia.Win32
         private static POINTER_INFO[]? s_historyInfos;
         private static MOUSEMOVEPOINT[]? s_mouseHistoryInfos;
         private PlatformThemeVariant _currentThemeVariant;
+        private Win32TopLevelSceneInfo _sceneInfo = new(PlatformThemeVariant.Light);
 
         public WindowImpl()
         {
@@ -201,7 +205,7 @@ namespace Avalonia.Win32
 
         public Action<RawInputEventArgs>? Input { get; set; }
 
-        public Action<Rect>? Paint { get; set; }
+        public Action<ITopLevelImpl.PaintOptions?>? Paint { get; set; }
 
         public Action<Size, WindowResizeReason>? Resized { get; set; }
 
@@ -215,6 +219,10 @@ namespace Avalonia.Win32
         public Action? LostFocus { get; set; }
 
         public Action<WindowTransparencyLevel>? TransparencyLevelChanged { get; set; }
+
+        public object? PlatformSpecificSceneInfo => _sceneInfo;
+
+        public Action<object?>? PlatformSpecificSceneInfoChanged { get; set; }
 
         public Thickness BorderThickness
         {
@@ -437,43 +445,29 @@ namespace Avalonia.Win32
             return false;
         }
 
+        // The composition effects themselves are applied by the render target on the render thread,
+        // based on the transparency level and theme variant it receives with RenderTargetSceneInfo.
+        // Here we only adjust the DWM window attributes that have to be set from the UI thread.
+
         private bool SetTransparencyTransparent()
         {
-            if (CompositionEffectsSurface is { } surface)
-            {
-                surface.SetBlur(BlurEffect.None);
+            if (CompositionEffectsSurface is not null)
                 return true;
-            }
-            else
-            {
-                return SetLegacyTransparency(true);
-            }
+
+            return SetLegacyTransparency(true);
         }
 
         private bool SetTransparencyAcrylicBlur()
         {
             SetUseHostBackdropBrush(true);
             SetLegacyTransparency(false);
-
-            CompositionEffectsSurface!.SetBlur(BlurEffect.Acrylic);
             return true;
         }
 
-        /// <summary>
-        /// Sets the transparency mica
-        /// </summary>
-        /// <exception cref="ArgumentOutOfRangeException"></exception>
         private bool SetTransparencyMica()
         {
             SetUseHostBackdropBrush(false);
             SetLegacyTransparency(false);
-
-            CompositionEffectsSurface!.SetBlur(_currentThemeVariant switch
-            {
-                PlatformThemeVariant.Light => BlurEffect.MicaLight,
-                PlatformThemeVariant.Dark => BlurEffect.MicaDark,
-                _ => throw new ArgumentOutOfRangeException()
-            });
             return true;
         }
 
@@ -538,7 +532,7 @@ namespace Avalonia.Win32
                     0,
                     SetWindowPosFlags.SWP_NOSIZE | SetWindowPosFlags.SWP_NOACTIVATE | SetWindowPosFlags.SWP_NOZORDER);
 
-                if (ShCoreAvailable && Win32Platform.WindowsVersion >= PlatformConstants.Windows8_1)
+                if (GetDpiForMonitorAvailable)
                 {
                     var monitor = MonitorFromWindow(Handle.Handle, MONITOR.MONITOR_DEFAULTTONEAREST);
 
@@ -775,22 +769,34 @@ namespace Avalonia.Win32
         {
             e.Pointer.Capture(null);
 
+            if (!e.Pointer.IsPrimary)
+            {
+                throw new InvalidOperationException("BeginMoveDrag Failed");
+            }
+
+            _dragRequestedFromPointer = e.Pointer.Type != PointerType.Mouse;
+
             Dispatcher.UIThread.Post(() =>
             {
-                if (e.Pointer.IsPrimary)
+                if (e.Pointer.Type != PointerType.Mouse && GetKeyState(VirtualKeyStates.VK_LBUTTON) >= 0)
                 {
-                    // SendMessage's return value is dependent on the message send.  WM_SYSCOMMAND
-                    // and WM_LBUTTONUP return value just signify whether the WndProc handled the
-                    // message or not, so they are not interesting
-
-                    SendMessage(_hwnd, (int)WindowsMessage.WM_SYSCOMMAND, (IntPtr)SC_MOUSEMOVE, IntPtr.Zero);
-                    SendMessage(_hwnd, (int)WindowsMessage.WM_LBUTTONUP, IntPtr.Zero, IntPtr.Zero);
+                    _pendingDrag = StartMoveDrag;
                 }
                 else
                 {
-                    throw new InvalidOperationException("BeginMoveDrag Failed");
+                    StartMoveDrag();
                 }
             }, DispatcherPriority.Send);
+        }
+
+        private void StartMoveDrag()
+        {
+            // SendMessage's return value is dependent on the message send.  WM_SYSCOMMAND
+            // and WM_LBUTTONUP return value just signify whether the WndProc handled the
+            // message or not, so they are not interesting
+
+            SendMessage(_hwnd, (int)WindowsMessage.WM_SYSCOMMAND, (IntPtr)SC_MOUSEMOVE, IntPtr.Zero);
+            SendMessage(_hwnd, (int)WindowsMessage.WM_LBUTTONUP, IntPtr.Zero, IntPtr.Zero);
         }
 
         public void BeginResizeDrag(WindowEdge edge, PointerPressedEventArgs e)
@@ -801,10 +807,24 @@ namespace Avalonia.Win32
                 _managedDrag.BeginResizeDrag(edge, ScreenToClient(MouseDevice.Position.ToPoint(_scaling)));
 #else
                 e.Pointer.Capture(null);
-                DefWindowProc(_hwnd, (int)WindowsMessage.WM_NCLBUTTONDOWN,
-                    new IntPtr((int)s_edgeLookup[edge]), IntPtr.Zero);
+
+                if (e.Pointer.Type != PointerType.Mouse && GetKeyState(VirtualKeyStates.VK_LBUTTON) >= 0)
+                {
+                    _dragRequestedFromPointer = true;
+                    _pendingDrag = () => StartResizeDrag(edge);
+                }
+                else
+                {
+                    StartResizeDrag(edge);
+                }
 #endif
             }
+        }
+
+        private void StartResizeDrag(WindowEdge edge)
+        {
+            DefWindowProc(_hwnd, (int)WindowsMessage.WM_NCLBUTTONDOWN,
+                new IntPtr((int)s_edgeLookup[edge]), IntPtr.Zero);
         }
 
         public void SetTitle(string? title)
@@ -951,6 +971,11 @@ namespace Avalonia.Win32
         public unsafe void SetFrameThemeVariant(PlatformThemeVariant? themeVariant)
         {
             _currentThemeVariant = themeVariant ?? Win32Platform.Instance.PlatformSettings.GetColorValues().ThemeVariant;
+            if (_sceneInfo.ThemeVariant != _currentThemeVariant)
+            {
+                _sceneInfo = new Win32TopLevelSceneInfo(_currentThemeVariant);
+                PlatformSpecificSceneInfoChanged?.Invoke(_sceneInfo);
+            }
             if (Win32Platform.WindowsVersion.Build >= 22000)
             {
                 var pvUseBackdropBrush = _currentThemeVariant == PlatformThemeVariant.Dark ? 1 : 0;
@@ -1025,7 +1050,7 @@ namespace Avalonia.Win32
 
             RegisterTouchWindow(_hwnd, 0);
 
-            if (ShCoreAvailable && Win32Platform.WindowsVersion >= PlatformConstants.Windows8_1)
+            if (GetDpiForMonitorAvailable)
             {
                 var monitor = MonitorFromWindow(
                     _hwnd,
@@ -1109,6 +1134,12 @@ namespace Avalonia.Win32
                 _savedWindowInfo.WindowRect = windowRect;
                 _savedWindowInfo.Style = current;
                 _savedWindowInfo.ExStyle = currentEx;
+
+                if (current.HasAllFlags(WindowStyles.WS_SYSMENU))
+                {
+                    // Create the system menu copy before fullscreen removes WS_SYSMENU.
+                    GetSystemMenu(_hwnd, false);
+                }
 
                 // Set new window style and size.
                 SetStyle(current & ~WindowStyles.WS_OVERLAPPEDWINDOW, false);
@@ -1241,15 +1272,6 @@ namespace Avalonia.Win32
                 _extendedMargins = new Thickness();
 
                 SetNCRenderingPolicy(DwmNCRenderingPolicy.DWMNCRP_USEWINDOWSTYLE);
-            }
-
-            if (!_isClientAreaExtended)
-            {
-                EnableCloseButton(_hwnd);
-            }
-            else
-            {
-                DisableCloseButton(_hwnd);
             }
 
             // Inform the application of the frame change.
@@ -1547,19 +1569,6 @@ namespace Avalonia.Win32
         private const int MF_ENABLED = 0x0;
         private const int MF_GRAYED = 0x1;
         private const int MF_DISABLED = 0x2;
-        private const int SC_CLOSE = 0xF060;
-
-        private static void DisableCloseButton(IntPtr hwnd)
-        {
-            EnableMenuItem(GetSystemMenu(hwnd, false), SC_CLOSE,
-                           MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
-        }
-
-        private static void EnableCloseButton(IntPtr hwnd)
-        {
-            EnableMenuItem(GetSystemMenu(hwnd, false), SC_CLOSE,
-                           MF_BYCOMMAND | MF_ENABLED);
-        }
 
         private RECT ClientRectToWindowRect(RECT clientRect, WindowStyles? styleOverride = null, WindowStyles? extendedStyleOverride = null)
         {

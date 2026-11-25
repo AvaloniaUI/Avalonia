@@ -15,7 +15,7 @@ public sealed class FilePickerFileType(string? name)
     public string Name { get; } = name ?? string.Empty;
 
     /// <summary>
-    /// List of extensions in GLOB format. I.e. "*.png" or "*.*".
+    /// List of extensions in GLOB format. I.e. <c>*.png</c> or <c>*.*</c>.
     /// </summary>
     /// <remarks>
     /// Used on Windows, Linux and Browser platforms.

@@ -10,7 +10,7 @@ using static Avalonia.X11.XLib;
 
 namespace Avalonia.X11
 {
-    internal unsafe class X11PlatformThreading : IControlledDispatcherImpl, IX11PlatformDispatcher
+    internal unsafe class X11PlatformThreading : IControlledDispatcherImpl, IDispatcherImplWithExplicitBackgroundProcessing, IX11PlatformDispatcher
     {
         private readonly AvaloniaX11Platform _platform;
         private Thread _mainThread = Thread.CurrentThread;
@@ -65,6 +65,7 @@ namespace Avalonia.X11
         private int _sigread, _sigwrite;
         private object _lock = new object();
         private bool _signaled;
+        private bool _backgroundProcessingRequested;
         private bool _wakeupRequested;
         private long? _nextTimer;
         private int _epoll;
@@ -112,7 +113,19 @@ namespace Avalonia.X11
 
             Signaled?.Invoke();
         }
-        
+
+        private bool CheckBackgroundProcessingRequested()
+        {
+            lock (_lock)
+            {
+                if (!_backgroundProcessingRequested)
+                    return false;
+                _backgroundProcessingRequested = false;
+            }
+
+            ReadyForBackgroundProcessing?.Invoke();
+            return true;
+        }
 
         public void RunLoop(CancellationToken cancellationToken)
         {
@@ -120,44 +133,53 @@ namespace Avalonia.X11
             {
                 var now = _clock.ElapsedMilliseconds;
                 if (_nextTimer.HasValue && now > _nextTimer.Value)
-                {
                     Timer?.Invoke();
-                }
 
                 if (cancellationToken.IsCancellationRequested)
                     return;
-                
-                //Flush whatever requests were made to XServer
+
+                // Flush whatever requests were made to XServer
                 _x11Events.Flush();
-                epoll_event ev;
-                if (!_x11Events.IsPending)
-                {
-                    now = _clock.ElapsedMilliseconds;
-                    if (_nextTimer < now)
-                        continue;
-                    
-                    var timeout = _nextTimer == null ? (int)-1 : Math.Max(1, _nextTimer.Value - now);
-                    epoll_wait(_epoll, &ev, 1, (int)Math.Min(int.MaxValue, timeout));
-                    
-                    // Drain the signaled pipe
-                    int buf = 0;
-                    while (read(_sigread, &buf, new IntPtr(4)).ToInt64() > 0)
-                    {
-                    }
 
-                    lock (_lock)
-                        _wakeupRequested = false;
-                }
+                CheckSignaled();
 
                 if (cancellationToken.IsCancellationRequested)
                     return;
-                CheckSignaled();
+
                 _x11Events.DispatchX11Events(cancellationToken);
-                while (_platform.EventGrouperDispatchQueue.HasJobs)
+
+                if (cancellationToken.IsCancellationRequested)
+                    return;
+
+                if (_platform.EventGrouperDispatchQueue.HasJobs)
                 {
-                    CheckSignaled();
                     _platform.EventGrouperDispatchQueue.DispatchNext();
+                    continue;
                 }
+
+                if (CheckBackgroundProcessingRequested())
+                    continue;
+
+                // XPending flushes the output buffer, so nothing is left unflushed before the wait
+                if (_x11Events.IsPending)
+                    continue;
+
+                now = _clock.ElapsedMilliseconds;
+                if (_nextTimer < now)
+                    continue;
+
+                var timeout = _nextTimer == null ? (int)-1 : Math.Max(1, _nextTimer.Value - now);
+                epoll_event ev;
+                epoll_wait(_epoll, &ev, 1, (int)Math.Min(int.MaxValue, timeout));
+
+                // Drain the signaled pipe
+                int buf = 0;
+                while (read(_sigread, &buf, new IntPtr(4)).ToInt64() > 0)
+                {
+                }
+
+                lock (_lock)
+                    _wakeupRequested = false;
             }
         }
 
@@ -184,10 +206,22 @@ namespace Avalonia.X11
             }
         }
 
+        public void RequestBackgroundProcessing()
+        {
+            lock (_lock)
+            {
+                if (_backgroundProcessingRequested)
+                    return;
+                _backgroundProcessingRequested = true;
+                Wakeup();
+            }
+        }
+
         public bool CurrentThreadIsLoopThread => Thread.CurrentThread == _mainThread;
         
         public event Action? Signaled;
         public event Action? Timer;
+        public event Action? ReadyForBackgroundProcessing;
 
         public void UpdateTimer(long? dueTimeInMs)
         {

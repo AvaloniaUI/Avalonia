@@ -26,6 +26,7 @@ using Avalonia.X11.Glx;
 using Avalonia.X11.NativeDialogs;
 using Avalonia.X11.Selections.DragDrop;
 using static Avalonia.X11.XLib;
+using Avalonia.X11.XShm;
 
 // ReSharper disable IdentifierTypo
 // ReSharper disable StringLiteralTypo
@@ -41,6 +42,9 @@ namespace Avalonia.X11
         private readonly X11Info _x11;
         private XConfigureEvent? _configure;
         private PixelPoint? _configurePoint;
+        // Serial of the last XConfigureWindow request whose size we applied to _realSize ourselves (see Resize).
+        // The size in ConfigureNotify events generated before the server processed that request is stale.
+        private ulong _selfResizeRequestSerial;
         private bool _triggeredExpose;
         private IInputRoot? _inputRoot;
         private readonly MouseDevice _mouse;
@@ -166,6 +170,10 @@ namespace Avalonia.X11
                     // Emulate Window 7+'s default window size behavior.
                     defaultWidth = (int)(monitor.WorkingArea.Width * 0.75d);
                     defaultHeight = (int)(monitor.WorkingArea.Height * 0.7d);
+
+                    // The default size is in pixels, so initialize the scaling to match the monitor.
+                    // Otherwise UpdateScaling() would treat the pixel size as DIPs and scale it again.
+                    RenderScaling = monitor.Scaling;
                 }
             }
 
@@ -202,7 +210,13 @@ namespace Avalonia.X11
             Handle = new PlatformHandle(_handle, "XID");
 
             _mode.OnHandleCreated(_handle);
-            
+
+            // The window mode may have set a scaling override (e.g. XEmbed forces a scaling of 1), which takes
+            // precedence over the monitor scaling. Keep them in sync, otherwise UpdateScaling() would see a
+            // mismatch and trigger a spurious DPI resize.
+            if (_scalingOverride is { } scalingOverride)
+                RenderScaling = scalingOverride;
+
             _realSize = new PixelSize(defaultWidth, defaultHeight);
             platform.Windows[_handle] = new X11WindowInfo(OnEvent, this);
             XEventMask ignoredMask = XEventMask.SubstructureRedirectMask
@@ -229,10 +243,20 @@ namespace Avalonia.X11
                 new X11FramebufferSurface(_x11.DeferredDisplay, _renderHandle, 
                    depth, _platform.Options.UseRetainedFramebuffer ?? false)
             };
+
+            // XShm needs a 32-bit visual (other depths would require a slow XShmPutImage conversion) and the
+            // MIT-SHM extension, probed once by X11Info on the deferred display.
+            if (_platform.Options.UseXShmFramebuffer is true && depth == 32 && _x11.HasXShm)
+            {
+                surfaces.Insert(0,
+                    new X11ShmFramebufferSurface(_x11.DeferredDisplay, _renderHandle, visual, depth,
+                        platform.DeferredDisplayDispatcher));
+            }
             
             if (egl != null)
                 surfaces.Insert(0,
-                    new EglGlPlatformSurface(new SurfaceInfo(this, _x11.DeferredDisplay, _handle, _renderHandle)));
+                    new EglGlPlatformSurface(new SurfaceInfo(this, _x11.DeferredDisplay, _handle, _renderHandle),
+                        _platform.Options.UsePartialPresentation ?? false));
             if (glx != null)
                 surfaces.Insert(0, new GlxGlPlatformSurface(new SurfaceInfo(this, _x11.DeferredDisplay, _handle, _renderHandle)));
 
@@ -506,7 +530,7 @@ namespace Avalonia.X11
 
         public IPlatformRenderSurface[] Surfaces { get; }
         public Action<RawInputEventArgs>? Input { get; set; }
-        public Action<Rect>? Paint { get; set; }
+        public Action<ITopLevelImpl.PaintOptions?>? Paint { get; set; }
         public Action<Size, WindowResizeReason>? Resized { get; set; }
         //TODO
         public Action<double>? ScalingChanged { get; set; }
@@ -583,6 +607,12 @@ namespace Avalonia.X11
                 _mapped = true;
                 if (_useRenderWindow)
                     XMapWindow(_x11.Display, _renderHandle);
+                EnqueuePositionRefresh();
+            }
+            else if (ev.type == XEventName.ReparentNotify)
+            {
+                if (ev.ReparentEvent.window == _handle)
+                    EnqueuePositionRefresh();
             }
             else if (ev.type == XEventName.UnmapNotify)
                 _mapped = false;
@@ -595,13 +625,15 @@ namespace Avalonia.X11
             else if (ev.type == XEventName.MotionNotify)
                 MouseEvent(RawPointerEventType.Move, ref ev, ev.MotionEvent.state);
             else if (ev.type == XEventName.LeaveNotify)
-                MouseEvent(RawPointerEventType.LeaveWindow, ref ev, ev.CrossingEvent.state);
+            {
+                if (IsHandledLeaveEnterDetail(ev.CrossingEvent.detail))
+                {
+                    MouseEvent(RawPointerEventType.LeaveWindow, ref ev, ev.CrossingEvent.state);
+                }
+            }
             else if (ev.type == XEventName.EnterNotify)
             {
-                if (ev.CrossingEvent.detail is
-                    NotifyDetail.NotifyNonlinear or
-                    NotifyDetail.NotifyNonlinearVirtual or
-                    NotifyDetail.NotifyVirtual)
+                if (IsHandledLeaveEnterDetail(ev.CrossingEvent.detail))
                 {
                     MouseEvent(RawPointerEventType.Move, ref ev, ev.CrossingEvent.state);
                 }
@@ -680,8 +712,16 @@ namespace Avalonia.X11
                         var npos = _configurePoint.Value;
                         _configure = null;
                         _configurePoint = null;
-                        
-                        var nsize = new PixelSize(cev.width, cev.height);
+
+                        // An event the server generated before it processed our last self-applied resize
+                        // request still carries the size that request has superseded. Applying it would revert
+                        // _realSize and report a bogus resize, which Window feeds back into Width/Height. This has
+                        // to be checked here rather than when the event is read: the event may have been read and
+                        // queued before Resize() ran (e.g. a pre-map move whose notify was already in Xlib's queue).
+                        // Only the size is stale: the request didn't touch the position, and a later notify is not
+                        // guaranteed (a no-op resize produces none), so the position is still applied.
+                        var staleSize = (ulong)cev.serial.ToInt64() < _selfResizeRequestSerial;
+                        var nsize = staleSize ? _realSize : new PixelSize(cev.width, cev.height);
                         var changedSize = _realSize != nsize;
                         var changedPos = _position == null || npos != _position;
                         _realSize = nsize;
@@ -747,6 +787,13 @@ namespace Avalonia.X11
                 HandleKeyEvent(ref ev);
             }
         }
+
+        private static bool IsHandledLeaveEnterDetail(NotifyDetail detail)
+            => detail is
+                NotifyDetail.NotifyNonlinear or
+                NotifyDetail.NotifyNonlinearVirtual or
+                NotifyDetail.NotifyVirtual or
+                NotifyDetail.NotifyAncestor;
 
         private void HandleActivation(bool active)
         {
@@ -1027,6 +1074,30 @@ namespace Avalonia.X11
             _rawEventGrouper?.HandleEvent(args);
         }
 
+        // A position translated on ConfigureNotify can be stale if the window manager was reparenting
+        // the window at the time, and some window managers (e.g. openbox with an undecorated window)
+        // send no later ConfigureNotify to correct it. Translate it again once that has settled.
+        private void EnqueuePositionRefresh()
+        {
+            Dispatcher.UIThread.Post(() =>
+            {
+                if (_handle == IntPtr.Zero || _configure != null)
+                    return;
+
+                XTranslateCoordinates(_x11.Display, _handle, _x11.RootWindow,
+                    0, 0,
+                    out var tx, out var ty, out _);
+                var npos = new PixelPoint(tx, ty);
+                if (_position == npos)
+                    return;
+
+                _position = npos;
+                PositionChanged?.Invoke(npos);
+                UpdateScaling();
+                UpdateImePosition();
+            }, DispatcherPriority.Background);
+        }
+
         private void MouseEvent(RawPointerEventType type, ref XEvent ev, XModifierMask mods)
         {
             if (_inputRoot is null)
@@ -1052,7 +1123,7 @@ namespace Avalonia.X11
 
         private void DoPaint()
         {
-            Paint?.Invoke(new Rect());
+            Paint?.Invoke(null);
             if (_xSyncCounter != IntPtr.Zero && _xSyncState == XSyncState.WaitPaint)
             {
                 _xSyncState = XSyncState.None;
@@ -1098,6 +1169,11 @@ namespace Avalonia.X11
             if (featureType == typeof(IClipboard))
             {
                 return AvaloniaLocator.Current.GetRequiredService<IClipboard>();
+            }
+
+            if (featureType == typeof(IPlatformClipboardManagerImpl))
+            {
+                return AvaloniaLocator.Current.GetRequiredService<IPlatformClipboardManagerImpl>();
             }
 
             if (featureType == typeof(ILauncher))
@@ -1316,6 +1392,7 @@ namespace Avalonia.X11
 
             var pixelSize = ToPixelSize(clientSize);
             UpdateSizeHints(pixelSize);
+            var resizeRequestSerial = (ulong)XNextRequest(_x11.Display).ToInt64();
             XConfigureResizeWindow(_x11.Display, _handle, pixelSize);
             if (_useRenderWindow && !_useCompositorDrivenRenderWindowResize)
                 XConfigureResizeWindow(_x11.Display, _renderHandle, pixelSize);
@@ -1324,6 +1401,7 @@ namespace Avalonia.X11
             if (force || !_wasMappedAtLeastOnce || (_overrideRedirect && needImmediatePopupResize))
             {
                 _realSize = pixelSize;
+                _selfResizeRequestSerial = resizeRequestSerial;
                 Resized?.Invoke(ClientSize, reason);
             }
         }
@@ -1506,8 +1584,8 @@ namespace Avalonia.X11
             var appId = Environment.GetEnvironmentVariable("RESOURCE_NAME") 
                         ?? Process.GetCurrentProcess().ProcessName;
             
-            var encodedAppId = Encoding.ASCII.GetBytes(appId);
-            var encodedWmClass = Encoding.ASCII.GetBytes(wmClass ?? appId);
+            var encodedAppId = Encoding.ASCII.GetBytes(appId + '\0');
+            var encodedWmClass = Encoding.ASCII.GetBytes((wmClass ?? appId) + '\0');
 
             var hint = XAllocClassHint();
             fixed(byte* pAppId = encodedAppId)

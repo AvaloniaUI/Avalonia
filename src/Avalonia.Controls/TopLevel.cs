@@ -123,6 +123,7 @@ namespace Avalonia.Controls
         private readonly IDisposable? _backGestureSubscription;
         private readonly Dictionary<AvaloniaProperty, Action> _platformImplBindings = new();
         private double _scaling;
+        private bool _isClosed;
         private Size _clientSize;
         private Size? _frameSize;
         private WindowTransparencyLevel _actualTransparencyLevel;
@@ -131,6 +132,7 @@ namespace Avalonia.Controls
         private TargetWeakEventSubscriber<TopLevel, ResourcesChangedEventArgs>? _resourcesChangesSubscriber;
         private IStorageProvider? _storageProvider;
         private Screens? _screens;
+        private List<Popup>? _openedPopups;
         private readonly PresentationSource _source;
         private readonly TopLevelHost _topLevelHost;
         internal TopLevelHost TopLevelHost => _topLevelHost;
@@ -221,6 +223,7 @@ namespace Avalonia.Controls
 
             _source.Renderer.CompositionTarget.TransparencyLevel =
                 ToCompositionTransparencyLevel(_actualTransparencyLevel);
+            _source.Renderer.CompositionTarget.PlatformSpecificSceneInfo = impl.PlatformSpecificSceneInfo;
 
 
             _accessKeyHandler = TryGetService<IAccessKeyHandler>(dependencyResolver);
@@ -233,11 +236,12 @@ namespace Avalonia.Controls
 
 
 
-            impl.Closed = HandleClosed;
+            impl.Closed = EnsureClosed;
             impl.Paint = HandlePaint;
             impl.Resized = HandleResized;
             impl.ScalingChanged += HandleScalingChanged;
             impl.TransparencyLevelChanged = HandleTransparencyLevelChanged;
+            impl.PlatformSpecificSceneInfoChanged = HandlePlatformSpecificSceneInfoChanged;
 
             CreatePlatformImplBinding(TransparencyLevelHintProperty, hint => PlatformImpl.SetTransparencyLevelHint(hint ?? Array.Empty<WindowTransparencyLevel>()));
 
@@ -310,7 +314,11 @@ namespace Avalonia.Controls
                             Key = rawKeyEventArgs.Key,
                             PhysicalKey = rawKeyEventArgs.PhysicalKey,
                             KeyDeviceType = rawKeyEventArgs.KeyDeviceType,
-                            KeySymbol = rawKeyEventArgs.KeySymbol
+                            KeySymbol = rawKeyEventArgs.KeySymbol,
+                            KeyText = rawKeyEventArgs.KeyText,
+                            AlternateKeyText = rawKeyEventArgs.AlternateKeyText,
+                            ConsumedModifiers = (KeyModifiers?)rawKeyEventArgs.ConsumedModifiers,
+                            PlatformKeyInfo = rawKeyEventArgs.PlatformKeyInfo
                         };
 
                         backRequested = keymap.Any(key => key.Matches(keyEvent));
@@ -539,7 +547,18 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the platform's clipboard implementation
         /// </summary>
-        public IClipboard? Clipboard => PlatformImpl?.TryGetFeature<IClipboard>();
+        public IClipboard? Clipboard => TryGetClipboard(ClipboardType.Default);
+
+        /// <summary>
+        /// Gets the platform's clipboard of the specified type, or null if the platform doesn't provide it.
+        /// </summary>
+        public IClipboard? TryGetClipboard(ClipboardType type)
+        {
+            if (PlatformImpl?.TryGetFeature<IPlatformClipboardManagerImpl>() is { } clipboardManager)
+                return clipboardManager.TryGetClipboard(type);
+
+            return type == ClipboardType.Default ? PlatformImpl?.TryGetFeature<IClipboard>() : null;
+        }
 
         /// <summary>
         /// Gets focus manager of the root.
@@ -557,6 +576,14 @@ namespace Avalonia.Controls
         /// </remarks>
         // TODO: Un-private
         private IPlatformSettings? PlatformSettings => AvaloniaLocator.Current.GetService<IPlatformSettings>();
+
+        /// <summary>
+        /// Gets the popups that are currently open directly in this top level, in the order they were opened.
+        /// </summary>
+        /// <remarks>
+        /// Use <see cref="Popup.OpenedPopups"/> for nested popups.
+        /// </remarks>
+        public virtual IReadOnlyList<Popup> OpenedPopups => _openedPopups ?? (IReadOnlyList<Popup>)[];
 
         /// <summary>
         /// Gets the <see cref="TopLevel" /> for which the given <see cref="Visual"/> is hosted in.
@@ -649,17 +676,29 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Handles a paint notification from <see cref="ITopLevelImpl.Resized"/>.
+        /// Handles a paint notification from <see cref="ITopLevelImpl.Paint"/>.
         /// </summary>
-        /// <param name="rect">The dirty area.</param>
-        private void HandlePaint(Rect rect)
+        /// <param name="options">The paint options, <c>null</c> for defaults.</param>
+        private void HandlePaint(ITopLevelImpl.PaintOptions? options)
         {
-            Renderer.Paint(rect);
+            Renderer.Paint(true, options?.FlushRenderPass ?? false);
         }
 
         private protected void StartRendering() => MediaContext.Instance.AddTopLevel(this, LayoutManager, Renderer);
 
         private protected void StopRendering() => MediaContext.Instance.RemoveTopLevel(this);
+
+        /// <summary>
+        /// Runs the top level teardown exactly once, no matter whether it was initiated by the
+        /// platform via <see cref="ITopLevelImpl.Closed"/> or by a managed <c>Dispose()</c>.
+        /// </summary>
+        private protected void EnsureClosed()
+        {
+            if (_isClosed)
+                return;
+            _isClosed = true;
+            HandleClosed();
+        }
 
         /// <summary>
         /// Handles a closed notification from <see cref="ITopLevelImpl.Closed"/>.
@@ -695,6 +734,7 @@ namespace Avalonia.Controls
 
             LayoutManager.Dispose();
             _platformImplBindings.Clear();
+            _openedPopups = null;
         }
 
         /// <summary>
@@ -710,6 +750,10 @@ namespace Avalonia.Controls
             LayoutManager.ExecuteLayoutPass();
             Renderer.Resized(clientSize);
         }
+
+        internal void AddOpenedPopup(Popup popup) => (_openedPopups ??= new List<Popup>(capacity: 2)).Add(popup);
+
+        internal void RemoveOpenedPopup(Popup popup) => _openedPopups?.Remove(popup);
 
         /// <summary>
         /// Handles a window scaling change notification from 
@@ -742,6 +786,11 @@ namespace Avalonia.Controls
             ActualTransparencyLevel = transparencyLevel;
             Renderer.CompositionTarget.TransparencyLevel =
                 ToCompositionTransparencyLevel(transparencyLevel);
+        }
+
+        private void HandlePlatformSpecificSceneInfoChanged(object? sceneInfo)
+        {
+            Renderer.CompositionTarget.PlatformSpecificSceneInfo = sceneInfo;
         }
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)

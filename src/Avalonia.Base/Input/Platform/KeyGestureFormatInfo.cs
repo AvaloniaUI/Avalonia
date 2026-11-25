@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Avalonia.Metadata;
 
 namespace Avalonia.Input.Platform
 {
@@ -23,6 +24,25 @@ namespace Avalonia.Input.Platform
                                              string alt = "Alt",
                                              string shift = "Shift") : IFormatProvider
     {
+        [PrivateApi]
+        public static KeyGestureFormatInfo Apple => new(
+            new Dictionary<Key, string>()
+            {
+                { Key.Back, "⌫" },
+                { Key.Down, "↓" },
+                { Key.End, "↘" },
+                { Key.Escape, "⎋" },
+                { Key.Home, "↖" },
+                { Key.Left, "←" },
+                { Key.Return, "↩" },
+                { Key.PageDown, "⇟" },
+                { Key.PageUp, "⇞" },
+                { Key.Right, "→" },
+                { Key.Space, "␣" },
+                { Key.Tab, "⇥" },
+                { Key.Up, "↑" }
+            }, ctrl: "⌃", meta: "⌘", shift: "⇧", alt: "⌥"); 
+
         /// <summary>
         /// The Invariant format.  Only uses strings straight from the appropriate Enums.
         /// </summary>

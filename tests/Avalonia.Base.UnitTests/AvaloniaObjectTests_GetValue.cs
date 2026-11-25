@@ -2,10 +2,11 @@ using System;
 using System.Reactive.Subjects;
 using Avalonia.Data;
 using Xunit;
+using Avalonia.UnitTests;
 
 namespace Avalonia.Base.UnitTests
 {
-    public class AvaloniaObjectTests_GetValue
+    public class AvaloniaObjectTests_GetValue : ScopedTestBase
     {
         [Fact]
         public void GetValue_Returns_Default_Value()

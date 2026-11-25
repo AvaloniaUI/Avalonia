@@ -3,11 +3,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Linq.Expressions;
 using System.Text;
 using Avalonia.Data.Converters;
 using Avalonia.Data.Core.ExpressionNodes;
-using Avalonia.Data.Core.Parsers;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Logging;
@@ -221,6 +219,18 @@ internal class BindingExpression : UntypedBindingExpressionBase, IDescription, I
                 var forceUpdate = _mode == BindingMode.OneWay || _updateTargetDepth > 0;
                 ConvertAndPublishValue(value, error, forceUpdate);
             }
+            else if (IsDataValidationEnabled)
+            {
+                // In OneWayToSource mode the value must not be published to the target, but any
+                // data validation error produced when writing to the source still has to be
+                // published (or cleared) so that it can be displayed (issue #8235). Publishing
+                // UnchangedValue leaves the target's value untouched.
+                var error = dataValidationError is not null ?
+                    new BindingError(dataValidationError, BindingErrorType.DataValidationError) :
+                    null;
+
+                PublishValue(UnchangedValue, error);
+            }
         }
         else if (_mode == BindingMode.OneWayToSource && nodeIndex == _nodes.Count - 2 && value is not null)
         {
@@ -237,6 +247,27 @@ internal class BindingExpression : UntypedBindingExpressionBase, IDescription, I
 
             _nodes[nodeIndex + 1].SetSource(value, dataValidationError);
         }
+    }
+
+    /// <summary>
+    /// Called by an <see cref="ExpressionNode"/> belonging to this binding when a
+    /// null-conditional operator applied to the node encounters a null source.
+    /// </summary>
+    /// <param name="nodeIndex">The <see cref="ExpressionNode.Index"/>.</param>
+    /// <remarks>
+    /// A null-conditional operator short-circuits the remainder of the binding path, just as it
+    /// does in C#. The nodes after <paramref name="nodeIndex"/> are unsubscribed and their values
+    /// set to null, and null is published as the value of the binding.
+    /// </remarks>
+    internal void OnNodeNullShortCircuit(int nodeIndex)
+    {
+        Debug.Assert(nodeIndex >= 0 && nodeIndex < _nodes.Count);
+
+        for (var i = nodeIndex + 1; i < _nodes.Count; ++i)
+            _nodes[i].PropagateNullShortCircuitValue();
+
+        // Publish the null value as if it were produced by the leaf node.
+        OnNodeValueChanged(_nodes.Count - 1, null, null);
     }
 
     /// <summary>
@@ -283,13 +314,12 @@ internal class BindingExpression : UntypedBindingExpressionBase, IDescription, I
         if (_nodes.Count == 0 || LeafNode is not ISettableNode setter || setter.ValueType is not { } type)
             return false;
 
-        if (Converter is { } converter &&
-            value != AvaloniaProperty.UnsetValue &&
-            value != BindingOperations.DoNothing)
-        {
-            value = ConvertBack(converter, ConverterCulture, ConverterParameter, value, type);
-        }
+        // Invoke any converter on the value before writing it to the source. If the converter
+        // returns an error then we don't write the value to the source and return false.
+        if (!TryConvertBack(type, ref value))
+            return false;
 
+        // A converter may return DoNothing.
         if (value == BindingOperations.DoNothing)
             return true;
 
@@ -495,6 +525,13 @@ internal class BindingExpression : UntypedBindingExpressionBase, IDescription, I
         if (e.Property != TargetProperty)
             return;
 
+        // Don't write a value that this binding has just published back to the source: the
+        // converter may not round-trip it (#22673). This includes UnsetValue, for which the target
+        // falls back to its default value. A value changed by the target, e.g. through coercion,
+        // differs from the published value and is still written back.
+        if (IsPublishingValue && IsPublishedValue(e.Property))
+            return;
+
         if (_uncommon?._delay is not { Ticks: > 0 } delay)
         {
             // The value must be read from the target object instead of using the value from the event
@@ -509,6 +546,19 @@ internal class BindingExpression : UntypedBindingExpressionBase, IDescription, I
             delayTimer = _uncommon._delayTimer = new DispatcherTimer(delay, DispatcherPriority.Normal, OnDelayTimerTick) { Tag = this };
 
         delayTimer.Start();
+    }
+
+    private bool IsPublishedValue(AvaloniaProperty property)
+    {
+        // The binding can be stopped by a handler of the change it is publishing.
+        if (!IsRunning)
+            return false;
+
+        var value = GetValue();
+
+        return value == AvaloniaProperty.UnsetValue ||
+            (TryGetTarget(out var target) &&
+             TypeUtilities.IdentityEquals(target.GetValue(property), value, TargetType));
     }
 
     // This is a static method so that the same delegate object can be reused by all expression instances
@@ -551,6 +601,41 @@ internal class BindingExpression : UntypedBindingExpressionBase, IDescription, I
 
         error = new(new InvalidCastException(message), BindingErrorType.Error);
         return AvaloniaProperty.UnsetValue;
+    }
+
+    private bool TryConvertBack(Type valueType, ref object? value)
+    {
+        if (Converter is { } converter &&
+            value != AvaloniaProperty.UnsetValue &&
+            value != BindingOperations.DoNothing)
+        {
+            value = ConvertBack(converter, ConverterCulture, ConverterParameter, value, valueType);
+
+            if (value is BindingNotification notification)
+            {
+                if (notification.Error is { } error)
+                {
+                    switch (notification.ErrorType)
+                    {
+                        case BindingErrorType.DataValidationError:
+                            if (IsDataValidationEnabled)
+                                OnDataValidationError(notification.Error);
+                            break;
+                        default:
+                            if (ShouldLogError(out var target))
+                                Log(target, error.Message);
+                            PublishValue(UnchangedValue, new(error, BindingErrorType.Error));
+                            break;
+                    }
+
+                    return false;
+                }
+
+                value = notification.Value;
+            }
+        }
+
+        return true;
     }
 
     /// <summary>

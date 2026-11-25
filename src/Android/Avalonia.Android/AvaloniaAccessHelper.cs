@@ -8,7 +8,10 @@ using Avalonia.Android.Automation;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
+using Avalonia.Controls.Automation.Peers;
 using Java.Lang;
+
+using static Avalonia.Android.AndroidAccessRoleHelper;
 
 namespace Avalonia.Android
 {
@@ -49,6 +52,13 @@ namespace Avalonia.Android
 
         private readonly Dictionary<AutomationPeer, HashSet<INodeInfoProvider>> _peerNodeInfoProviders;
 
+        /// <remarks>
+        /// Virtual view IDs must be allocated from a monotonic counter rather than derived from
+        /// the size of <see cref="_peerNodeInfoProviders"/>: entries are now removed when their
+        /// owner leaves the visual tree, so the dictionary's count no longer grows monotonically
+        /// and reusing it would hand out an ID that is still in use.
+        /// </remarks>
+        private int _nextPeerViewId;
         private readonly AvaloniaView _view;
 
         public AvaloniaAccessHelper(AvaloniaView view) : base(view)
@@ -60,7 +70,27 @@ namespace Avalonia.Android
             AutomationPeer rootPeer = ControlAutomationPeer.CreatePeerForElement(view.TopLevel!);
             GetOrCreateNodeInfoProvidersFromPeer(rootPeer, out int _);
 
+            if (rootPeer.GetProvider<IEmbeddedRootProvider>() is { } rootProvider)
+            {
+                rootProvider.FocusChanged += RootProvider_FocusChanged;
+            }
+
             _view = view;
+        }
+
+        private void RootProvider_FocusChanged(object? sender, EventArgs e)
+        {
+            if (sender is IEmbeddedRootProvider embeddedRoot)
+            {
+                if (embeddedRoot.GetFocus() is { } focused)
+                {
+                    GetOrCreateNodeInfoProvidersFromPeer(focused, out int viewId);
+                    InvalidateVirtualView(viewId);
+                    RequestKeyboardFocusForVirtualView(viewId);
+                }
+                else if (KeyboardFocusedVirtualViewId != InvalidId)
+                    ClearKeyboardFocusForVirtualView(KeyboardFocusedVirtualViewId);
+            }
         }
 
         private HashSet<INodeInfoProvider>? GetNodeInfoProvidersFromVirtualViewId(int virtualViewId)
@@ -76,6 +106,8 @@ namespace Avalonia.Android
             }
         }
 
+        private static bool IsInteropPeer(AutomationPeer peer) => peer is InteropAutomationPeer;
+
         private HashSet<INodeInfoProvider> GetOrCreateNodeInfoProvidersFromPeer(AutomationPeer peer, out int virtualViewId)
         {
             int peerViewId;
@@ -85,16 +117,16 @@ namespace Avalonia.Android
             }
             else
             {
-                peerViewId = _peerNodeInfoProviders.Count;
+                peerViewId = _nextPeerViewId++;
                 _peers.Add(peerViewId, peer);
                 _peerIds.Add(peer, peerViewId);
 
                 nodeInfoProviders = new();
                 _peerNodeInfoProviders.Add(peer, nodeInfoProviders);
 
-                peer.ChildrenChanged += (s, ev) => InvalidateVirtualView(peerViewId,
+                EventHandler childrenChanged = (s, ev) => InvalidateVirtualView(peerViewId,
                     AccessibilityEventCompat.ContentChangeTypeSubtree);
-                peer.PropertyChanged += (s, ev) =>
+                EventHandler<AutomationPropertyChangedEventArgs> propertyChanged = (s, ev) =>
                 {
                     if (ev.Property == AutomationElementIdentifiers.NameProperty)
                     {
@@ -104,12 +136,41 @@ namespace Avalonia.Android
                     {
                         InvalidateVirtualView(peerViewId, AccessibilityEventCompat.ContentChangeTypeContentDescription);
                     }
-                    else if (ev.Property == AutomationElementIdentifiers.BoundingRectangleProperty || 
+                    else if (ev.Property == AutomationElementIdentifiers.BoundingRectangleProperty ||
                         ev.Property == AutomationElementIdentifiers.ClassNameProperty)
                     {
                         InvalidateVirtualView(peerViewId);
                     }
                 };
+
+                peer.ChildrenChanged += childrenChanged;
+                peer.PropertyChanged += propertyChanged;
+
+                // Drop the registration once the peer's control leaves the visual tree, otherwise
+                // every control ever explored by accessibility is kept alive for the lifetime of
+                // the view: the peer holds a strong reference to its Owner, and these three
+                // dictionaries were never pruned. On a long-running app that rebuilds its UI (for
+                // instance digital signage swapping screens), this retains each dead visual tree in
+                // full — measured at ~2.5 MB per rebuild on a real device.
+                // The root peer (ID 0) is deliberately never unregistered: GetVirtualViewAt and
+                // GetVisibleVirtualViews index _peers[0] directly, so removing it would throw.
+                // It is a single entry owned by the view itself, and dies with the helper.
+                if (peerViewId != 0 && peer is ControlAutomationPeer controlPeer)
+                {
+                    EventHandler<VisualTreeAttachmentEventArgs>? detachedFromVisualTree = null;
+                    detachedFromVisualTree = (s, ev) =>
+                    {
+                        controlPeer.Owner.DetachedFromVisualTree -= detachedFromVisualTree;
+                        peer.ChildrenChanged -= childrenChanged;
+                        peer.PropertyChanged -= propertyChanged;
+
+                        _peers.Remove(peerViewId);
+                        _peerIds.Remove(peer);
+                        _peerNodeInfoProviders.Remove(peer);
+                    };
+
+                    controlPeer.Owner.DetachedFromVisualTree += detachedFromVisualTree;
+                }
 
                 if (peer.GetProvider<IExpandCollapseProvider>() is not null)
                     nodeInfoProviders.Add(new ExpandCollapseNodeInfoProvider(this, peer, peerViewId));
@@ -133,13 +194,18 @@ namespace Avalonia.Android
 
         protected override int GetVirtualViewAt(float x, float y)
         {
-            Point p = _view.TopLevelImpl.PointToClient(new PixelPoint((int)x, (int)y));
+            Point p = new PixelPoint((int)x, (int)y).ToPoint(_view.TopLevelImpl.RenderScaling);
             IEmbeddedRootProvider? embeddedRootProvider = _peers[0].GetProvider<IEmbeddedRootProvider>();
             AutomationPeer? peer = embeddedRootProvider?.GetPeerFromPoint(p);
             if (peer is not null)
             {
+                if (IsInteropPeer(peer))
+                {
+                    return InvalidId;
+                }
+
                 int virtualViewId;
-                if (peer.GetParent() is AutomationPeer parent && 
+                if (peer.GetParent() is AutomationPeer parent &&
                     !s_containerTypes.Contains(parent.GetAutomationControlType()))
                 {
                     GetOrCreateNodeInfoProvidersFromPeer(parent, out virtualViewId);
@@ -154,7 +220,7 @@ namespace Avalonia.Android
             else
             {
                 peer = embeddedRootProvider?.GetFocus();
-                return peer is null ? InvalidId : _peerIds[peer];
+                return peer is null || IsInteropPeer(peer) ? InvalidId : _peerIds[peer];
             }
         }
 
@@ -167,6 +233,11 @@ namespace Avalonia.Android
 
             foreach (AutomationPeer peer in _peers[0].GetChildren())
             {
+                if (IsInteropPeer(peer))
+                {
+                    continue;
+                }
+
                 GetOrCreateNodeInfoProvidersFromPeer(peer, out int virtualViewId);
                 virtualViewIds.Add(Integer.ValueOf(virtualViewId));
             }
@@ -210,14 +281,31 @@ namespace Avalonia.Android
 
         protected override void OnPopulateNodeForVirtualView(int virtualViewId, AccessibilityNodeInfoCompat? nodeInfo)
         {
-            if (nodeInfo is null || !_peers.TryGetValue(virtualViewId, out AutomationPeer? peer))
+            if (nodeInfo is null)
             {
                 return; // BAIL!! No work to be done
+            }
+
+            if (!_peers.TryGetValue(virtualViewId, out AutomationPeer? peer))
+            {
+                // The node must still be populated: ExploreByTouchHelper rejects one whose text,
+                // content description or bounds are unset.
+                nodeInfo.ContentDescription = string.Empty;
+                nodeInfo.Enabled = false;
+                nodeInfo.Focusable = false;
+                nodeInfo.ScreenReaderFocusable = false;
+                nodeInfo.SetBoundsInScreen(new(0, 0, 0, 0));
+                return;
             }
 
             // UI logical structure
             foreach (AutomationPeer child in peer.GetChildren())
             {
+                if (IsInteropPeer(child))
+                {
+                    continue;
+                }
+
                 GetOrCreateNodeInfoProvidersFromPeer(child, out int childId);
                 nodeInfo.AddChild(_view, childId);
             }
@@ -231,7 +319,7 @@ namespace Avalonia.Android
             }
 
             // UI debug metadata
-            nodeInfo.ClassName = peer.GetClassName();
+            nodeInfo.ClassName = GetClassName(peer);
             var automationId = peer.GetAutomationId();
             nodeInfo.UniqueId = automationId;
             nodeInfo.ViewIdResourceName = automationId;

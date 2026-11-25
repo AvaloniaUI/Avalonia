@@ -6,7 +6,6 @@
         xmlns:views="clr-namespace:SafeAreaDemo.Views"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="SafeAreaDemo.Views.MainWindow"
-        Icon="/Assets/avalonia-logo.ico"
         Title="SafeAreaDemo">
         <views:MainView />
 </Window>

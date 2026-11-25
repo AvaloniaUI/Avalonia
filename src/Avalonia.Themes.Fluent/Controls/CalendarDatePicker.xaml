@@ -30,13 +30,13 @@
                   Grid.ColumnSpan="4"
                   Grid.Row="1"
                   Grid.RowSpan="3"
-                  BorderThickness="0.5,0,0.5,0.5"
+                  BorderThickness="1,0,1,1"
                   BorderBrush="{TemplateBinding Foreground}"
                   CornerRadius="0,0,2,2" />
           <Border Grid.ColumnSpan="4"
                   Grid.RowSpan="1"
                   BorderBrush="{TemplateBinding Foreground}"
-                  BorderThickness="0.5"
+                  BorderThickness="1"
                   CornerRadius="2,2,0,0" />
           <TextBlock Margin="0,-1,0,0"
                      VerticalAlignment="Center"

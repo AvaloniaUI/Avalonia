@@ -605,9 +605,7 @@ namespace Avalonia
         /// </returns>
         internal BindingExpressionBase Bind(AvaloniaProperty property, BindingBase binding, object? anchor)
         {
-            if (binding.CreateInstance(this, property, anchor) is not UntypedBindingExpressionBase expression)
-                throw new NotSupportedException($"Binding returned unsupported {nameof(BindingExpressionBase)}.");
-
+            var expression = binding.CreateInstance(this, property, anchor);
             return GetValueStore().AddBinding(property, expression);
         }
 
