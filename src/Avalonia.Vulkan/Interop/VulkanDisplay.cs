@@ -20,6 +20,8 @@ internal class VulkanDisplay : IDisposable
     private readonly IVulkanKhrSurfacePlatformSurface _platformSurface;
     private VkImage[] _swapchainImages = Array.Empty<VkImage>();
     private VkImageView[] _swapchainImageViews = Array.Empty<VkImageView>();
+    private bool _isSurfaceLost;
+    private bool _isSwapchainSizeDirty;
     public VulkanCommandBufferPool CommandBufferPool { get; private set; }
     public PixelSize Size { get; private set; }
 
@@ -205,6 +207,7 @@ internal class VulkanDisplay : IDisposable
         _swapchain = CreateSwapchain(_context, _surface, out var extent, this);
         _swapchainExtent = extent;
         CreateSwapchainImages();
+        _isSwapchainSizeDirty = false;
     }
 
     private void RecreateSurface()
@@ -214,11 +217,17 @@ internal class VulkanDisplay : IDisposable
         _surface = new VulkanKhrSurface(_context, _platformSurface);
         DestroySwapchain();
         RecreateSwapchain();
+        _isSurfaceLost = false;
     }
     
     public bool EnsureSwapchainAvailable()
     {
-        if (Size != _surface?.Size)
+        if (_isSurfaceLost)
+        {
+            RecreateSurface(); // This will also call RecreateSwapchain
+            return true;
+        }
+        if (Size != _surface?.Size || _isSwapchainSizeDirty)
         {
             RecreateSwapchain();
             return true;
@@ -339,11 +348,11 @@ internal class VulkanDisplay : IDisposable
         if ((presentResult is VkResult.VK_ERROR_OUT_OF_DATE_KHR or VkResult.VK_SUBOPTIMAL_KHR) ||
             (result is VkResult.VK_ERROR_OUT_OF_DATE_KHR or VkResult.VK_SUBOPTIMAL_KHR))
         {
-            RecreateSwapchain();
+            _isSwapchainSizeDirty = true;
         }
         else if (presentResult == VkResult.VK_ERROR_SURFACE_LOST_KHR || result == VkResult.VK_ERROR_SURFACE_LOST_KHR)
         {
-            RecreateSurface();
+            _isSurfaceLost = true;
         }
         else
         {
