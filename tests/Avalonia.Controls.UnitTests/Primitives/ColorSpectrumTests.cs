@@ -21,5 +21,16 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Assert.Equal(color, target.Color);
             }
         }
+
+        [Fact]
+        public void Color_Matches_HsvColor_ToRgb()
+        {
+            var target = new ColorSpectrum();
+            var hsvColor = HsvColor.FromAhsv(0.5, 200, 0.5, 0.5);
+
+            target.HsvColor = hsvColor;
+
+            Assert.Equal(hsvColor.ToRgb(), target.Color);
+        }
     }
 }
