@@ -939,11 +939,7 @@ namespace Avalonia.Controls
 
                 if (recycle && element is not null)
                 {
-                    if (element.GetValue(RecycleKeyProperty) == s_itemIsItsOwnContainer)
-                        RecycleElement(element, index);
-                    else
-                        // Do not retain a generated probe because of a stale tab-once marker.
-                        RecycleElementOnItemRemoved(element);
+                    RecycleElement(element, index);
                 }
             }
         }
