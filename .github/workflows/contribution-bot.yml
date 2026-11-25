@@ -13,6 +13,7 @@ on:
 jobs:
   bot:
     name: Contribution Bot
+    if: github.repository == 'AvaloniaUI/Avalonia'
     uses: AvaloniaUI/Avalonia.ContributionBot/.github/workflows/contribution-bot.yml@v1
     with:
       client-id: ${{ vars.CONTRIBUTION_BOT_CLIENT_ID }}
