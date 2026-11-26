@@ -21,6 +21,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
+    [InvariantCulture]
     public class MaskedTextBoxTests : ScopedTestBase
     {
         [Fact]
@@ -1089,6 +1090,53 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Default_Culture_Uses_Current_Culture_When_Mask_Is_Set()
+        {
+            using var app = Start();
+
+            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("fr-FR");
+            var target1 = new MaskedTextBox { Mask = "0.0" };
+
+            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("en-US");
+            var target2 = new MaskedTextBox { Mask = "0.0" };
+
+            Assert.Equal("fr-FR", target1.MaskProvider?.Culture.Name);
+            Assert.Equal("_,_", target1.Text);
+            Assert.Equal("en-US", target2.MaskProvider?.Culture.Name);
+            Assert.Equal("_._", target2.Text);
+        }
+
+        [Fact]
+        public void Culture_Defaults_To_Current_Culture_At_Creation()
+        {
+            using var app = Start();
+
+            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("fr-FR");
+            var target1 = new MaskedTextBox();
+
+            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("en-US");
+            var target2 = new MaskedTextBox();
+
+            Assert.Equal("fr-FR", target1.Culture?.Name);
+            Assert.Equal("en-US", target2.Culture?.Name);
+        }
+
+        [Fact]
+        public void Explicit_Culture_Overrides_Current_Culture()
+        {
+            using var app = Start();
+
+            var target = new MaskedTextBox
+            {
+                Culture = CultureInfo.GetCultureInfo("fr-FR"),
+                Mask = "0.0"
+            };
+
+            Assert.Equal("fr-FR", target.MaskProvider?.Culture.Name);
+            Assert.Equal("_,_", target.Text);
+        }
+
         private static TestServices FocusServices => TestServices.MockThreadingInterface.With(
             keyboardDevice: () => new KeyboardDevice(),
             keyboardNavigation: () => new KeyboardNavigationHandler(),
@@ -1148,7 +1196,6 @@ namespace Avalonia.Controls.UnitTests
 
         private static IDisposable Start(TestServices? services = null)
         {
-            CultureInfo.CurrentCulture = CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("en-US");
             return UnitTestApplication.Start((services ?? Services).With(assetLoader: new StandardAssetLoader()));
         }
 
