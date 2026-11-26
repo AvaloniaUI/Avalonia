@@ -153,12 +153,22 @@ namespace Avalonia.Skia
         /// Reads the table directory of a typeface once for whether it is a colour font face, as
         /// <see cref="IsColorFont"/> decides it, and whether it has an fvar table.
         /// </summary>
+        /// <remarks>
+        /// A face that is not an SFNT font, such as a Type 1 or bitmap font a fontconfig match can
+        /// return, has no table directory and reports neither.
+        /// </remarks>
         internal static void ReadTableDirectory(SKTypeface typeface, out bool isColorFont, out bool hasFvar)
         {
             isColorFont = false;
             hasFvar = false;
 
-            foreach (var tag in typeface.GetTableTags())
+            // GetTableTags throws for a face without a table directory.
+            if (!typeface.TryGetTableTags(out var tags))
+            {
+                return;
+            }
+
+            foreach (var tag in tags)
             {
                 if (ColorGlyphTables.Contains(tag))
                 {

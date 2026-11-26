@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Windows.Input;
 using Avalonia.Controls;
 using Avalonia.Data.Converters;
 using Avalonia.Markup.Xaml.XamlIl.Runtime;
@@ -480,6 +479,21 @@ namespace Avalonia.Markup.Xaml.UnitTests
 </ListBox>");
                 Assert.NotNull(parsed.ItemTemplate);
             }
+        }
+
+        // Mono's full AOT compiler relies on a local to generate the FunctionPointerPropertyInfo methods.
+        // See XamlIlRuntimeHelpers.GetTypedPropertyInfoFromPointers. Remove only when Mono becomes unsupported.
+        [Fact]
+        public void GetTypedPropertyInfoFromPointers_Should_Have_A_Local_Of_Concrete_PropertyInfo_Type()
+        {
+            var method = typeof(XamlIlRuntimeHelpers).GetMethod(nameof(XamlIlRuntimeHelpers.GetTypedPropertyInfoFromPointers));
+            Assert.NotNull(method);
+            var body = method.GetMethodBody();
+            Assert.NotNull(body);
+
+            Assert.Contains(
+                body.LocalVariables,
+                l => l.LocalType.IsGenericType && l.LocalType.GetGenericTypeDefinition() == typeof(FunctionPointerPropertyInfo<,>));
         }
     }
 

@@ -17,6 +17,6 @@ namespace Avalonia.Layout
         /// </summary>
         public ILayoutManager LayoutManager { get; }
         
-        public Layoutable RootVisual { get; }
+        public Layoutable? RootVisual { get; }
     }
 }

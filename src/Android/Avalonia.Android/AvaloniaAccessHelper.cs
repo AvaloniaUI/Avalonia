@@ -337,10 +337,13 @@ namespace Avalonia.Android
 
             // On-screen bounds
             Rect bounds = peer.GetBoundingRectangle();
-            PixelRect screenRect = new PixelRect(
-                _view.TopLevelImpl.InputRoot?.RootElement.PointToScreen(bounds.TopLeft) ?? default,
-                _view.TopLevelImpl.InputRoot?.RootElement.PointToScreen(bounds.BottomRight) ?? default
-                );
+
+            var rootElement = _view.TopLevelImpl.InputRoot?.RootElement;
+
+            var screenRect = rootElement is null ? default : new PixelRect(
+                rootElement.PointToScreen(bounds.TopLeft),
+                rootElement.PointToScreen(bounds.BottomRight));
+
             nodeInfo.SetBoundsInScreen(new(
                 screenRect.X, screenRect.Y,
                 screenRect.Right, screenRect.Bottom

@@ -54,7 +54,8 @@ ComStaticPtr<IAvnApplicationEvents> _events;
 
 - (void)applicationWillFinishLaunching:(NSNotification *)notification
 {
-    if([[NSApplication sharedApplication] activationPolicy] != AvnDesiredActivationPolicy)
+    NSApplicationActivationPolicy policy = [[NSApplication sharedApplication] activationPolicy];
+    if(policy != AvnDesiredActivationPolicy && policy != NSApplicationActivationPolicyProhibited)
     {
         for (NSRunningApplication * app in [NSRunningApplication runningApplicationsWithBundleIdentifier:@"com.apple.dock"]) {
             [app activateWithOptions:NSApplicationActivateIgnoringOtherApps];

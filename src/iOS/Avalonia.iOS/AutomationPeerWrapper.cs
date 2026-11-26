@@ -63,6 +63,8 @@ namespace Avalonia.iOS
             };
 
         private readonly AvaloniaView _view;
+        private CGRect _viewFrame;
+        private CGRect? _explicitAccessibilityFrame;
 
         private readonly AutomationPeer _peer;
 
@@ -245,10 +247,17 @@ namespace Avalonia.iOS
                 screenRect.X, screenRect.Y,
                 screenRect.Width, screenRect.Height
                 );
-            if (self.AccessibilityFrame != nativeRect)
-            {
-                self.AccessibilityFrame = nativeRect;
-            }
+            self._viewFrame = nativeRect;
+            self._explicitAccessibilityFrame = null;
+        }
+
+        // The peer bounds are in AvaloniaView coordinates, but UIKit reads accessibilityFrame in screen coordinates:
+        // convert on every read so a view that is not at the screen origin, or that moves (sheet, drawer), stays right.
+        public override CGRect AccessibilityFrame
+        {
+            get => _explicitAccessibilityFrame ??
+                (_view.Window is null ? _viewFrame : UIAccessibility.ConvertFrameToScreenCoordinates(_viewFrame, _view));
+            set => _explicitAccessibilityFrame = value;
         }
 
         private static void UpdateIsReadOnly(AutomationPeerWrapper self)

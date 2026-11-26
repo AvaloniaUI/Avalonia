@@ -170,6 +170,42 @@ namespace Avalonia.Skia.UnitTests.Media
             }
         }
 
+        [LinuxFact("Only FreeType loads a Type 1 font from a stream.")]
+        public void Should_Wrap_A_Face_Without_A_Table_Directory()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var type1 = LoadTypeface(Type1Uri);
+
+                Assert.Equal(0, type1.TableCount);
+                Assert.False(SkiaTypeface.IsColorFont(type1));
+
+                using var typeface = FontManagerImpl.CreatePlatformTypeface(type1, FontStyle.Italic,
+                    FontWeight.Bold, FontStretch.Normal);
+
+                Assert.Equal(FontSimulations.None, typeface.PlatformSimulations);
+                Assert.Equal(FontSimulations.Bold | FontSimulations.Oblique, typeface.FontSimulations);
+            }
+        }
+
+        [LinuxFact("Only FreeType loads a Type 1 font from a stream.")]
+        public void Should_Not_Create_A_Glyph_Typeface_For_A_Face_Without_A_Table_Directory()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var type1 = LoadTypeface(Type1Uri);
+
+                using var typeface = FontManagerImpl.CreatePlatformTypeface(type1, FontStyle.Normal,
+                    FontWeight.Normal, FontStretch.Normal);
+
+                // A system font collection skips the face when no glyph typeface can read its cmap.
+                Assert.Null(GlyphTypeface.TryCreate(typeface));
+            }
+        }
+
+        private const string Type1Uri =
+            "resm:Avalonia.Skia.UnitTests.Fonts.AvaloniaType1Test.pfa?assembly=Avalonia.Skia.UnitTests";
+
         private const string ArefRegularUri =
             "resm:Avalonia.Skia.UnitTests.Fonts.ArefRuqaaInk-Regular.Subset.ttf?assembly=Avalonia.Skia.UnitTests";
 

@@ -425,6 +425,18 @@
     {
         _peer->ToggleProvider_Toggle();
     }
+    else if (_peer->IsSelectionItemProvider())
+    {
+        _peer->SelectionItemProvider_Select();
+
+        // A press on a combo box item also closes its dropdown, as a click does.
+        auto container = _peer->SelectionItemProvider_GetSelectionContainer();
+        if (container != nullptr && container->GetAutomationControlType() == AutomationComboBox &&
+            container->IsExpandCollapseProvider())
+        {
+            container->ExpandCollapseProvider_Collapse();
+        }
+    }
     return YES;
 }
 
@@ -509,7 +521,8 @@
     }
     else if (selector == @selector(accessibilityPerformPress))
     {
-        return _peer->IsInvokeProvider() || _peer->IsExpandCollapseProvider() || _peer->IsToggleProvider();
+        return _peer->IsInvokeProvider() || _peer->IsExpandCollapseProvider() || _peer->IsToggleProvider() ||
+               _peer->IsSelectionItemProvider();
     }
     else if (selector == @selector(setAccessibilitySelected:))
     {

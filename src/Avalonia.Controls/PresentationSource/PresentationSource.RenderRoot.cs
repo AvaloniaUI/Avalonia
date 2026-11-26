@@ -10,7 +10,7 @@ internal partial class PresentationSource
 {
     public CompositingRenderer Renderer { get; }
     IRenderer IPresentationSource.Renderer => Renderer;
-    Visual IPresentationSource.RootVisual => RootVisual;
+    Visual? IPresentationSource.RootVisual => RootVisual;
     public IHitTester HitTester => HitTesterOverride ?? Renderer;
     //TODO: Can we PLEASE get rid of this abomination in tests and use actual hit-testing engine instead?
     public IHitTester? HitTesterOverride { get; set; }
