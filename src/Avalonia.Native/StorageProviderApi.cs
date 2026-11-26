@@ -158,7 +158,7 @@ internal class StorageProviderApi(IAvnStorageProvider native, bool sandboxEnable
 
         var (items, selectedFilterIndex) = await OpenDialogAsync(events =>
         {
-            _native.OpenFileDialog(topLevel?.Native,
+            _native.OpenFileDialog(GetDialogParent(topLevel)?.Native,
                 events,
                 options.AllowMultiple.AsComBool(),
                 options.Title ?? string.Empty,
@@ -180,7 +180,7 @@ internal class StorageProviderApi(IAvnStorageProvider native, bool sandboxEnable
 
         var (items, selectedFilterIndex) = await OpenDialogAsync(events =>
         {
-            _native.SaveFileDialog(topLevel?.Native,
+            _native.SaveFileDialog(GetDialogParent(topLevel)?.Native,
                 events,
                 options.Title ?? string.Empty,
                 suggestedDirectory,
@@ -200,7 +200,7 @@ internal class StorageProviderApi(IAvnStorageProvider native, bool sandboxEnable
 
         var (items, _) = await OpenDialogAsync(events =>
         {
-            _native.SelectFolderDialog(topLevel?.Native,
+            _native.SelectFolderDialog(GetDialogParent(topLevel)?.Native,
                 events,
                 options.AllowMultiple.AsComBool(),
                 options.Title ?? "",
@@ -208,6 +208,16 @@ internal class StorageProviderApi(IAvnStorageProvider native, bool sandboxEnable
         }).ConfigureAwait(false);
 
         return items.OfType<IStorageFolder>().ToArray();
+    }
+
+    // A popup's NSWindow sits at NSPopUpMenuWindowLevel and can't become key, so AppKit aborts a sheet
+    // attached to it (NSModalResponseAbort) and the picker returns nothing. Use the window owning the popup.
+    private static TopLevelImpl? GetDialogParent(TopLevelImpl? topLevel)
+    {
+        while (topLevel is PopupImpl popup)
+            topLevel = popup.ParentTopLevel as TopLevelImpl;
+
+        return topLevel;
     }
 
     public async Task<(IEnumerable<IStorageItem> Items, int? SelectedFilterIndex)> OpenDialogAsync(Action<SystemDialogEvents> runDialog, bool create = false)
