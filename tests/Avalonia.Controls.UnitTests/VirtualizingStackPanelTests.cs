@@ -569,6 +569,147 @@ namespace Avalonia.Controls.UnitTests
             Assert.Same(focused, target.GetRealizedElements().First());
         }
 
+        [Fact]
+        public void Active_Tab_Once_Own_Container_Remains_Focusable_When_Scrolled_Out()
+        {
+            using var app = App();
+            var items = Enumerable.Range(0, 100).Select(_ => new ListBoxItem
+            {
+                Template = ListBoxItemTemplate(),
+            }).ToArray();
+            var (target, scroll, listBox) = CreateTarget<ListBox, VirtualizingStackPanel>(items: items);
+            var active = items[0];
+            Assert.True(active.Focus());
+            Assert.Same(active, KeyboardNavigation.GetTabOnceActiveElement(listBox));
+
+            scroll.Offset = new Vector(0, 200);
+            Layout(target);
+
+            Assert.True(target.FirstRealizedIndex > 0);
+            Assert.Same(target, active.VisualParent);
+            Assert.Same(listBox, active.Parent);
+            Assert.True(items[target.FirstRealizedIndex].Focus());
+            Assert.Null(active.VisualParent);
+            Assert.True(active.IsVisible);
+        }
+
+        [Fact]
+        public void Selecting_A_Virtualized_Own_Container_Attaches_The_Tab_Stop()
+        {
+            using var app = App();
+            var items = Enumerable.Range(0, 100).Select(_ => new ListBoxItem
+            {
+                Template = ListBoxItemTemplate(),
+            }).ToArray();
+            var (target, scroll, listBox) = CreateTarget<ListBox, VirtualizingStackPanel>(items: items);
+            listBox.AutoScrollToSelectedItem = false;
+            scroll.Offset = new Vector(0, 200);
+            Layout(target);
+            Assert.Null(items[0].VisualParent);
+
+            listBox.SelectedIndex = 0;
+            Layout(target);
+
+            Assert.Equal(new Vector(0, 200), scroll.Offset);
+            Assert.Same(items[0], KeyboardNavigation.GetTabOnceActiveElement(listBox));
+            Assert.Same(target, items[0].VisualParent);
+
+            listBox.SelectedIndex = target.FirstRealizedIndex;
+            Assert.Null(items[0].VisualParent);
+            Assert.True(items[0].IsVisible);
+        }
+
+        [Fact]
+        public void Virtualized_Own_Container_Selection_Uses_Current_Collection_Index()
+        {
+            using var app = App();
+            var items = new ObservableCollection<ListBoxItem>(Enumerable.Range(0, 100).Select(_ => new ListBoxItem
+            {
+                Template = ListBoxItemTemplate(),
+            }));
+            var (target, scroll, listBox) = CreateTarget<ListBox, VirtualizingStackPanel>(items: items);
+            listBox.AutoScrollToSelectedItem = false;
+            var item = items[5];
+            scroll.Offset = new Vector(0, 200);
+            Layout(target);
+            Assert.Null(item.VisualParent);
+            Assert.Same(item, listBox.ContainerFromIndex(5));
+            Assert.Equal(5, listBox.IndexFromContainer(item));
+
+            items.Insert(0, new ListBoxItem { Template = ListBoxItemTemplate() });
+            Layout(target);
+            Assert.Equal(6, listBox.IndexFromContainer(item));
+            item.IsSelected = true;
+            Assert.Equal(6, listBox.SelectedIndex);
+
+            items.Remove(item);
+            Assert.Equal(-1, listBox.IndexFromContainer(item));
+            Assert.Null(item.Parent);
+            Assert.Null(item.VisualParent);
+        }
+
+        [Theory]
+        [InlineData("move")]
+        [InlineData("reset")]
+        public void Own_Containers_Remaining_In_Source_Keep_Their_Logical_Parent(string change)
+        {
+            using var app = App();
+            var items = new ObservableCollection<ListBoxItem>(Enumerable.Range(0, 100).Select(_ => new ListBoxItem
+            {
+                Template = ListBoxItemTemplate(),
+            }));
+            var (target, scroll, listBox) = CreateTarget<ListBox, VirtualizingStackPanel>(items: items);
+            listBox.AutoScrollToSelectedItem = false;
+            var item = items[5];
+            Assert.Same(listBox, item.Parent);
+
+            if (change == "move")
+                items.Move(5, 99);
+            else
+            {
+                scroll.Offset = new Vector(0, 200);
+                Layout(target);
+                listBox.ItemsSource = items.ToArray();
+            }
+            Layout(target);
+
+            Assert.Null(item.VisualParent);
+            Assert.Same(listBox, item.Parent);
+            Assert.Same(item, listBox.ContainerFromIndex(change == "move" ? 99 : 5));
+            item.IsSelected = true;
+            Assert.Same(item, listBox.SelectedItem);
+            Layout(target);
+            Assert.Same(target, item.VisualParent);
+        }
+
+        [Fact]
+        public void Returning_Own_Container_Refreshes_Index_Based_Styles_After_A_Move()
+        {
+            using var app = App();
+            var items = new ObservableCollection<ListBoxItem>(Enumerable.Range(0, 100).Select(_ => new ListBoxItem
+            {
+                Template = ListBoxItemTemplate(),
+            }));
+            var style = new Style(x => x.OfType<ListBoxItem>().NthChild(2, 0))
+            {
+                Setters = { new Setter(TemplatedControl.BackgroundProperty, Brushes.Red) },
+            };
+            var (target, scroll, listBox) = CreateTarget<ListBox, VirtualizingStackPanel>(items: items,
+                styles: new[] { style });
+            var item = items[5];
+            Assert.Same(Brushes.Red, item.Background);
+            scroll.Offset = new Vector(0, 200);
+            Layout(target);
+
+            items.Move(5, 6);
+            Layout(target);
+            scroll.Offset = default;
+            Layout(target);
+
+            Assert.Same(item, target.ContainerFromIndex(6));
+            Assert.Null(item.Background);
+        }
+
         [Theory]
         [InlineData(0d)]
         [InlineData(0.5d)]
@@ -1658,12 +1799,20 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Theory]
-        [InlineData(Orientation.Vertical, false)]
-        [InlineData(Orientation.Horizontal, false)]
-        [InlineData(Orientation.Vertical, true)]
-        [InlineData(Orientation.Horizontal, true)]
+        [InlineData(Orientation.Vertical, false, null)]
+        [InlineData(Orientation.Horizontal, false, null)]
+        [InlineData(Orientation.Vertical, true, null)]
+        [InlineData(Orientation.Horizontal, true, null)]
+        [InlineData(Orientation.Vertical, false, "insert")]
+        [InlineData(Orientation.Horizontal, false, "insert")]
+        [InlineData(Orientation.Vertical, true, "insert")]
+        [InlineData(Orientation.Horizontal, true, "insert")]
+        [InlineData(Orientation.Vertical, false, "replace")]
+        [InlineData(Orientation.Horizontal, false, "replace")]
+        [InlineData(Orientation.Vertical, true, "replace")]
+        [InlineData(Orientation.Horizontal, true, "replace")]
         public void Showing_A_Previously_Hidden_Collection_Only_Measures_The_Viewport(
-            Orientation orientation, bool ownContainers)
+            Orientation orientation, bool ownContainers, string? change)
         {
             using var app = App();
             var horizontal = orientation == Orientation.Horizontal;
@@ -1683,7 +1832,7 @@ namespace Avalonia.Controls.UnitTests
                 controls.Add(control);
                 return control;
             }
-            var items = ownContainers ? models.Select(CreateControl).ToArray<object>() : models;
+            var items = new ObservableCollection<object>(ownContainers ? models.Select(CreateControl).ToArray<object>() : models);
             var template = new FuncDataTemplate<ItemWithIsVisible>((model, _) => model is null ? null : CreateControl(model));
             var (target, scroll, _) = CreateTarget(items: items, itemTemplate: template,
                 orientation: orientation, styles: new[] { CreateIsVisibleBindingStyle() });
@@ -1701,25 +1850,50 @@ namespace Avalonia.Controls.UnitTests
             for (var cycle = 0; cycle < 2; ++cycle)
             {
                 Assert.Equal(0, target.FirstRealizedIndex);
-                Assert.Equal(models.Length - 1, target.LastRealizedIndex);
+                Assert.Equal(items.Count - 1, target.LastRealizedIndex);
+                if (change is not null)
+                {
+                    var model = new ItemWithIsVisible(1000);
+                    var item = ownContainers ? (object)CreateControl(model) : model;
+                    if (change == "insert")
+                        items.Insert(10, item);
+                    else
+                        items[10] = item;
+                }
                 foreach (var control in controls)
                     control.MeasureCount = 0;
                 var previousCount = controls.Count;
-                foreach (var model in models)
-                    model.IsVisible = true;
+                foreach (var item in items)
+                    ((ItemWithIsVisible)(ownContainers ? ((Control)item).DataContext! : item)).IsVisible = true;
                 Layout(target);
 
                 Assert.InRange(controls.Sum(c => c.MeasureCount), 1, 8);
                 Assert.InRange(controls.Count - previousCount, 0, 8);
-                Assert.Equal(50000, horizontal ? scroll.Extent.Width : scroll.Extent.Height);
+                Assert.Equal(items.Count * 50, horizontal ? scroll.Extent.Width : scroll.Extent.Height);
                 Assert.Equal(horizontal ? new Vector(25000, 0) : new Vector(0, 25000), scroll.Offset);
                 Assert.Equal(500, target.FirstRealizedIndex);
                 Assert.InRange(target.LastRealizedIndex, 501, 503);
 
+                var first = target.FirstRealizedIndex;
+                var container = target.ContainerFromIndex(first)!;
+                var position = container.Bounds.Position;
+                var offset = scroll.Offset;
+                var sizeProperty = horizontal ? Layoutable.WidthProperty : Layoutable.HeightProperty;
+                container.SetValue(sizeProperty, 40);
+                Layout(target);
+                Assert.Same(container, target.ContainerFromIndex(first));
+                Assert.Equal(position, container.Bounds.Position);
+                Assert.Equal(offset, scroll.Offset);
+                if (ownContainers)
+                    container.SetValue(sizeProperty, 50);
+                else
+                    container.ClearValue(sizeProperty);
+                Layout(target);
+
                 scroll.Offset = horizontal ? new Vector(25000, 0) : new Vector(0, 25000);
                 Layout(target);
-                foreach (var model in models)
-                    model.IsVisible = false;
+                foreach (var item in items)
+                    ((ItemWithIsVisible)(ownContainers ? ((Control)item).DataContext! : item)).IsVisible = false;
                 target.Measure(measureSize);
             }
         }
@@ -2203,6 +2377,43 @@ namespace Avalonia.Controls.UnitTests
             // must no longer pin item 20 at offset 1000 after all preceding rows doubled.
             Assert.InRange(target.FirstRealizedIndex, 8, 12);
             Assert.True(scroll.Extent.Height > 5000);
+        }
+
+        [Theory]
+        [InlineData(Orientation.Vertical)]
+        [InlineData(Orientation.Horizontal)]
+        public void Insertion_And_Bulk_Resize_In_Same_Pass_Refresh_Prefix_Baselines(Orientation orientation)
+        {
+            using var app = App();
+            var horizontal = orientation == Orientation.Horizontal;
+            var items = new ObservableCollection<ItemWithHeight>(Enumerable.Range(0, 100)
+                .Select(i => new ItemWithHeight(i, 50)));
+            var template = new FuncDataTemplate<ItemWithHeight>((_, _) => new Canvas
+            {
+                Width = horizontal ? double.NaN : 100,
+                Height = horizontal ? 100 : double.NaN,
+                [!(horizontal ? Layoutable.WidthProperty : Layoutable.HeightProperty)] = new Binding("Height"),
+            });
+            var (target, scroll, _) = CreateTarget(items: items, itemTemplate: template, orientation: orientation);
+            scroll.Offset = horizontal ? new Vector(1000, 0) : new Vector(0, 1000);
+            Layout(target);
+
+            items.Insert(0, new ItemWithHeight(100, 50));
+            foreach (var item in items)
+                item.Height = 40;
+            Layout(target);
+
+            var first = target.FirstRealizedIndex;
+            var container = target.ContainerFromIndex(first)!;
+            var position = container.Bounds.Position;
+            var offset = scroll.Offset;
+            items[first].Height = 30;
+            Layout(target);
+
+            Assert.Equal(first, target.FirstRealizedIndex);
+            Assert.Same(container, target.ContainerFromIndex(first));
+            Assert.Equal(position, container.Bounds.Position);
+            Assert.Equal(offset, scroll.Offset);
         }
 
         [Theory]
