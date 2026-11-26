@@ -27,7 +27,7 @@ namespace Avalonia.Input
         
         internal ITextInputMethodImpl? InputMethod { get; }
         
-        internal InputElement RootElement { get; }
+        internal InputElement? RootElement { get; }
         
         // HACK: This is a temporary hack for "default focus" concept. 
         // If nothing is focused we send keyboard events to Window. Since for now we always

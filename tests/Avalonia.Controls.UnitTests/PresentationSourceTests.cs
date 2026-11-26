@@ -150,7 +150,7 @@ public sealed class PresentationSourceTests : ScopedTestBase
         var clientVisual = window.GetVisualAt(hitTestPoint);
         Assert.Same(window.Content, clientVisual);
 
-        var chromeVisual = window.PresentationSource.RootVisual.GetVisualAt(hitTestPoint);
+        var chromeVisual = window.PresentationSource.RootVisual?.GetVisualAt(hitTestPoint);
         Assert.Same(expectedChromeVisual, chromeVisual);
 
         var chromeRole = ((IInputRoot)window.PresentationSource).HitTestChromeElement(hitTestPoint);
