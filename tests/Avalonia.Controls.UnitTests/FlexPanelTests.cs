@@ -493,5 +493,56 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(default, target.DesiredSize);
             Assert.Equal(new Size(100, 50), stack.DesiredSize);
         }
+
+        [Fact]
+        public void Applies_Order_Set_After_Child_Is_Added()
+        {
+            var target = new FlexPanel()
+            {
+                Width = 300,
+                Children =
+                {
+                    new Border { Height = 50, Width = 100 },
+                    new Border { Height = 50, Width = 100 },
+                    new Border { Height = 50, Width = 100 },
+                }
+            };
+
+            Flex.SetOrder(target.Children[2], -1);
+
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(target.DesiredSize));
+
+            Assert.Equal(new Rect(100, 0, 100, 50), target.Children[0].Bounds);
+            Assert.Equal(new Rect(200, 0, 100, 50), target.Children[1].Bounds);
+            Assert.Equal(new Rect(0, 0, 100, 50), target.Children[2].Bounds);
+        }
+
+        [Fact]
+        public void Applies_Order_Changed_After_Layout()
+        {
+            var target = new FlexPanel()
+            {
+                Width = 300,
+                Children =
+                {
+                    new Border { Height = 50, Width = 100 },
+                    new Border { Height = 50, Width = 100 },
+                    new Border { Height = 50, Width = 100 },
+                }
+            };
+
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(target.DesiredSize));
+
+            Flex.SetOrder(target.Children[0], 1);
+
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(target.DesiredSize));
+
+            Assert.Equal(new Rect(200, 0, 100, 50), target.Children[0].Bounds);
+            Assert.Equal(new Rect(0, 0, 100, 50), target.Children[1].Bounds);
+            Assert.Equal(new Rect(100, 0, 100, 50), target.Children[2].Bounds);
+        }
     }
 }
