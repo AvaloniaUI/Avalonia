@@ -225,12 +225,8 @@ public:
 class AvnMetalRenderTarget : public ComSingleObject<IAvnMetalRenderTarget, &IID_IAvnMetalRenderTarget>
 {
     CAMetalLayer* _layer;
-    double _scaling = 1;
-    AvnPixelSize _size = {1,1};
     ComPtr<AvnMetalDevice> _device;
 public:
-    double PendingScaling = 1;
-    AvnPixelSize PendingSize = {1,1};
     FORWARD_IUNKNOWN()
     AvnMetalRenderTarget(CAMetalLayer* layer, const ComPtr<AvnMetalDevice>& device)
     {
@@ -238,33 +234,39 @@ public:
         _device = device;
     }
 
-    HRESULT BeginDrawing(ComPtr<IAvnMetalRenderingSession>& ret) override {
+    HRESULT BeginDrawing(AvnPixelSize size, double scaling, ComPtr<IAvnMetalRenderingSession>& ret) override {
         bool onMainThread = [NSThread isMainThread];
-        if(onMainThread)
+        if (onMainThread)
         {
             // Flush all existing rendering
             auto buffer = [_device->queue commandBuffer];
             [buffer commit];
             [buffer waitUntilCompleted];
-            _size = PendingSize;
-            _scaling= PendingScaling;
-            CGSize layerSize = {(CGFloat)_size.Width, (CGFloat)_size.Height};
+        }
 
+        CGSize drawableSize = {(CGFloat)size.Width, (CGFloat)size.Height};
+        if (!CGSizeEqualToSize(_layer.drawableSize, drawableSize))
+        {
+            // Explicit transaction: we might be on the render thread, which has no run loop
             [CATransaction begin];
             [CATransaction setDisableActions:YES];
-            [_layer setDrawableSize: layerSize];
-            _layer.presentsWithTransaction = YES;
+            _layer.drawableSize = drawableSize;
             [CATransaction commit];
         }
+
+        if (onMainThread)
+            _layer.presentsWithTransaction = YES;
+
         auto drawable = [_layer nextDrawable];
-        if(drawable == nil)
+        if (drawable == nil)
         {
-            if(onMainThread)
+            if (onMainThread)
                 _layer.presentsWithTransaction = NO;
             ret = nullptr;
             return E_FAIL;
         }
-        ret = comnew<AvnMetalRenderSession>(_device, _layer, drawable, _size, _scaling, onMainThread);
+
+        ret = comnew<AvnMetalRenderSession>(_device, _layer, drawable, size, scaling, onMainThread);
         return 0;
     }
 };
@@ -293,9 +295,7 @@ public:
 }
 
 - (void)resize:(AvnPixelSize)size withScale:(float)scale {
-    CGSize layerSize = {(CGFloat)size.Width, (CGFloat)size.Height};
-    _target->PendingScaling = scale;
-    _target->PendingSize = size;
+    // The drawable size is driven by the compositor, see AvnMetalRenderTarget::BeginDrawing
     [_layer setNeedsDisplay];
 }
 
