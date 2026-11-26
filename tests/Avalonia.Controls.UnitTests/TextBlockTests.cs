@@ -1502,7 +1502,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Reading_TextLayout_Should_Not_Apply_Embedded_Control_Templates()
         {
-            using var services = new CompositorTestServices();
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
 
             var child = CreateTemplatedChild();
             var target = new TextBlock
@@ -1511,8 +1511,12 @@ namespace Avalonia.Controls.UnitTests
                 Inlines = new InlineCollection { new Run("Text "), new InlineUIContainer(child) }
             };
 
-            services.TopLevel.Content = new StackPanel { Children = { target } };
-            services.RunJobs();
+            // Layout only, no render pass
+            var root = new TestRoot(new StackPanel { Children = { target } });
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            Assert.True(target.IsMeasureValid);
+            Assert.False(target.HasTextLayout);
 
             Assert.NotNull(target.TextLayout);
             Assert.Empty(child.GetVisualChildren());
