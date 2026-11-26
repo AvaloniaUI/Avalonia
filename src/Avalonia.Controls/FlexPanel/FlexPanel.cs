@@ -66,6 +66,7 @@ namespace Avalonia.Controls
         private FlexLayoutState _state = new FlexLayoutState();
         private Dictionary<Visual, IDisposable> _childVisibilitySubscriptions = new Dictionary<Visual, IDisposable>();
         private Layoutable[]? _visibleChildren;
+        private bool _visibleChildrenDirty;
 
         static FlexPanel()
         {
@@ -197,6 +198,15 @@ namespace Avalonia.Controls
         /// <inheritdoc />
         protected override Size MeasureOverride(Size availableSize)
         {
+            if (_visibleChildrenDirty)
+            {
+                _visibleChildren = Children.Where(s_isVisible).OrderBy(s_getOrder).ToArray();
+                _visibleChildrenDirty = false;
+
+                // Arrange may be marked valid after the list changed during a measure that Arrange started.
+                InvalidateArrange();
+            }
+
             if (_visibleChildren is not { Length: > 0 } children)
             {
                 _state.Lines.Clear();
@@ -553,25 +563,25 @@ namespace Avalonia.Controls
                     }
                 }
 
-            UpdateVisibleChildren();
+            InvalidateVisibleChildren();
         }
 
         private void OnChildVisibilityChanged(bool isVisible)
         {
-            UpdateVisibleChildren();
+            InvalidateVisibleChildren();
         }
 
         private static void OnChildOrderChanged(Layoutable child, AvaloniaPropertyChangedEventArgs e)
         {
             if (child.VisualParent is FlexPanel panel)
             {
-                panel.UpdateVisibleChildren();
+                panel.InvalidateVisibleChildren();
             }
         }
 
-        private void UpdateVisibleChildren()
+        private void InvalidateVisibleChildren()
         {
-            _visibleChildren = Children.Where(s_isVisible).OrderBy(s_getOrder).ToArray();
+            _visibleChildrenDirty = true;
 
             InvalidateMeasure();
         }
