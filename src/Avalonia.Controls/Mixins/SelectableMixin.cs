@@ -50,10 +50,17 @@ namespace Avalonia.Controls.Mixins
                 {
                     ((IPseudoClasses)sender.Classes).Set(":selected", x.NewValue.GetValueOrDefault());
 
-                    sender.RaiseEvent(new RoutedEventArgs
+                    var e = new RoutedEventArgs
                     {
                         RoutedEvent = SelectingItemsControl.IsSelectedChangedEvent
-                    });
+                    };
+                    sender.RaiseEvent(e);
+
+                    // A virtualized container is detached from the visual tree, so the
+                    // event can't bubble to the control that owns it.
+                    if (!e.Handled && sender.VisualParent is null &&
+                        sender.Parent is SelectingItemsControl owner)
+                        owner.ContainerSelectionChanged(sender);
                 }
             });
         }

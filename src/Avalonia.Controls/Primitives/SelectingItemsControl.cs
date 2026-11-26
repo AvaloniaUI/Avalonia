@@ -167,12 +167,6 @@ namespace Avalonia.Controls.Primitives
         static SelectingItemsControl()
         {
             IsSelectedChangedEvent.AddClassHandler<SelectingItemsControl>((x, e) => x.ContainerSelectionChanged(e));
-            IsSelectedProperty.Changed.AddClassHandler<Control>((x, _) =>
-            {
-                if (x.VisualParent is null && x.Parent is SelectingItemsControl parent &&
-                    !parent._ignoreContainerSelectionChanged)
-                    parent.ContainerSelectionChanged(x);
-            });
         }
 
         /// <summary>
@@ -1260,7 +1254,7 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        private void ContainerSelectionChanged(Control control)
+        internal void ContainerSelectionChanged(Control control)
         {
             if (!_ignoreContainerSelectionChanged && control.Parent == this &&
                 IndexFromContainer(control) is var index && index >= 0)
