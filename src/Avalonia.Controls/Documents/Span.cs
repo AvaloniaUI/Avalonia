@@ -55,6 +55,16 @@ namespace Avalonia.Controls.Documents
             return resized;
         }
 
+        internal override void ApplyInlineStyling()
+        {
+            base.ApplyInlineStyling();
+
+            foreach (var inline in Inlines)
+            {
+                inline.ApplyInlineStyling();
+            }
+        }
+
         internal override void AppendText(StringBuilder stringBuilder)
         {
             foreach (var inline in Inlines)

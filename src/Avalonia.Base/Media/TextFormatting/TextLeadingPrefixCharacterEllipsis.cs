@@ -111,7 +111,6 @@ namespace Avalonia.Media.TextFormatting
                                         RentedList<TextRun>? ownedRuns = RentLogicalRuns(textLine, objectPool);
                                         RentedList<TextRun>? rentedPreSplitRuns = null;
                                         RentedList<TextRun>? rentedPostSplitRuns = null;
-                                        RentedList<TextRun>? reversedSuffix = null;
 
                                         try
                                         {
@@ -177,65 +176,8 @@ namespace Avalonia.Media.TextFormatting
                                                 }
                                             }
 
-                                            // Walk the post-split runs from the logical tail back toward the
-                                            // prefix, fitting trailing characters into availableSuffixWidth.
-                                            // We collect each split into reversedSuffix here (so the LAST
-                                            // logical run lands at index 0) and then drain reversedSuffix
-                                            // backwards when appending to collapsedRuns, which restores
-                                            // LOGICAL order. FinalizeLine handles the visual re-bidi.
-                                            reversedSuffix = objectPool.TextRunLists.Rent();
-
-                                            for (var i = effectivePostSplitRuns.Count - 1; i >= 0; i--)
-                                            {
-                                                var run = effectivePostSplitRuns[i];
-
-                                                switch (run)
-                                                {
-                                                    case ShapedTextRun endShapedRun:
-                                                    {
-                                                        if (endShapedRun.TryMeasureCharactersBackwards(availableSuffixWidth,
-                                                                out var suffixCount, out var suffixWidth))
-                                                        {
-                                                            availableSuffixWidth -= suffixWidth;
-
-                                                            var splitAt = run.Length - suffixCount;
-
-                                                            if (splitAt > 0)
-                                                            {
-                                                                var splitSuffix = endShapedRun.Split(splitAt);
-
-                                                                // Only the trailing half survives in the suffix.
-                                                                splitSuffix.First?.Dispose();
-                                                                endShapedRun.Dispose();
-
-                                                                reversedSuffix.Add(splitSuffix.Second!);
-                                                            }
-                                                            else if (suffixCount > 0)
-                                                            {
-                                                                // The whole run fits in the remaining suffix budget, so no
-                                                                // split is needed; use the run as-is. (Calling Split(0) throws.)
-                                                                reversedSuffix.Add(endShapedRun);
-                                                            }
-                                                            else
-                                                            {
-                                                                // Nothing of this run survives.
-                                                                endShapedRun.Dispose();
-                                                            }
-                                                        }
-                                                        else
-                                                        {
-                                                            endShapedRun.Dispose();
-                                                        }
-
-                                                        break;
-                                                    }
-                                                }
-                                            }
-
-                                            for (var i = reversedSuffix.Count - 1; i >= 0; i--)
-                                            {
-                                                collapsedRuns.Add(reversedSuffix[i]);
-                                            }
+                                            TextEllipsisHelper.AppendFittingSuffix(effectivePostSplitRuns,
+                                                availableSuffixWidth, collapsedRuns);
 
                                             return collapsedRuns.ToArray();
                                         }
@@ -244,7 +186,6 @@ namespace Avalonia.Media.TextFormatting
                                             objectPool.TextRunLists.Return(ref ownedRuns);
                                             objectPool.TextRunLists.Return(ref rentedPreSplitRuns);
                                             objectPool.TextRunLists.Return(ref rentedPostSplitRuns);
-                                            objectPool.TextRunLists.Return(ref reversedSuffix);
                                             objectPool.TextRunLists.Return(ref collapsedRuns);
                                         }
                                     }

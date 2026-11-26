@@ -192,6 +192,8 @@ namespace Avalonia.Native
         public void SelectionItemProvider_Select() => SelectionItemProvider.Select();
         public void SelectionItemProvider_AddToSelection() => SelectionItemProvider.AddToSelection();
         public void SelectionItemProvider_RemoveFromSelection() => SelectionItemProvider.RemoveFromSelection();
+        public IAvnAutomationPeer? SelectionItemProvider_GetSelectionContainer()
+            => Wrap(SelectionItemProvider.SelectionContainer as AutomationPeer);
 
         public IAvnAutomationPeer? ScrollProvider_GetHorizontalScrollBar()
             => _inner is ScrollViewerAutomationPeer scrollViewer ? Wrap(scrollViewer.GetHorizontalScrollBarPeer()) : null;

@@ -10,7 +10,7 @@ public record struct PlatformGraphicsExternalImageProperties
     public bool TopLeftOrigin { get; set; }
 
     /// <summary>
-    /// Vulkan-specific properties of the imported image, ignored by other backends.
+    /// Properties of the Vulkan memory backing the imported image, used by Vulkan and OpenGL (EXT_external_objects) importers.
     /// </summary>
     public PlatformGraphicsExternalImageVulkanProperties? VulkanProperties { get; set; }
 
@@ -26,6 +26,13 @@ public record struct PlatformGraphicsExternalImageVulkanProperties
     /// The VkImageLayout the underlying memory is currently in.
     /// </summary>
     public int Layout { get; set; }
+
+    /// <summary>
+    /// Whether the exported memory was allocated with VkMemoryDedicatedAllocateInfo. Importers must match the exporter.
+    /// When null, the Vulkan importer assumes a dedicated allocation and the OpenGL importer assumes a non-dedicated one.
+    /// </summary>
+    // TODO13: make the default consistent across backends
+    public bool? IsDedicatedAllocation { get; set; }
 }
 
 /// <summary>

@@ -67,10 +67,26 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
             ref IPropertyInfo<TSource, TValue>? field, string name, IntPtr getter, IntPtr setter)
             where THelper : class
             where TSource : class
-            => field ??= new FunctionPointerPropertyInfo<TSource, TValue>(name,
+        {
+            if (field is { } existing)
+                return existing;
+
+            // <!> WARNING: DO NOT REMOVE OR REFACTOR THE VARIABLE BELOW <!>
+
+            // Keep this local typed as FunctionPointerPropertyInfo<TSource, TValue>: DO NOT simplify to `field ??= new(...)`.
+            // Mono's full AOT compiler scans the locals of the generic methods called by compiled code to find the
+            // generic instances to generate. Without this local, the FunctionPointerPropertyInfo methods aren't
+            // generated for primitive types and fail at runtime.
+            FunctionPointerPropertyInfo<TSource, TValue> info = new(
+                name,
                 (delegate* managed<TSource, TValue>)getter.ToPointer(),
                 (delegate* managed<TSource, TValue, void>)setter.ToPointer(),
                 typeof(THelper));
+
+            field = info;
+
+            return info;
+        }
 
         public static Func<IServiceProvider, object> DeferredTransformationFactoryV1(Func<IServiceProvider, object> builder,
             IServiceProvider provider)

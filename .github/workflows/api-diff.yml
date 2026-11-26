@@ -14,7 +14,8 @@ jobs:
   api-diff:
     name: Output API Diff
     if: >-
-      github.event.issue.pull_request
+      github.repository == 'AvaloniaUI/Avalonia'
+      && github.event.issue.pull_request
       && contains(github.event.comment.body, '/api-diff')
       && contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)
     runs-on: ubuntu-latest

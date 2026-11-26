@@ -390,6 +390,16 @@ namespace Avalonia.Controls.Documents
 
         }
 
+        internal override void InvalidateStyles(bool recurse)
+        {
+            base.InvalidateStyles(recurse);
+
+            // The host applies the styles again from its next measure pass. A style added to the
+            // inline itself, or to a span around it, invalidates only that part of the inline tree
+            // and not the host, so without this nothing would schedule that pass.
+            InlineHost?.Invalidate();
+        }
+
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);

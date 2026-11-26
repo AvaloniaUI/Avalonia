@@ -85,7 +85,7 @@ namespace Avalonia.Input
                     }
                 }
 
-                target.RaiseEvent(new PointerPressedEventArgs(target, pointer,
+                target?.RaiseEvent(new PointerPressedEventArgs(target, pointer,
                     args.Root.RootElement, args.Position, ev.Timestamp,
                     new PointerPointProperties(GetModifiers(args.InputModifiers, true), updateKind, args.Point),
                     keyModifier, _clickCount, args.PlatformInputEventCookie));
@@ -107,7 +107,7 @@ namespace Avalonia.Input
                     }
                     else
                     {
-                        target.RaiseEvent(e);
+                        target?.RaiseEvent(e);
                     }
                     pointer?.CaptureLost(CaptureSource.Implicit);
                 }
@@ -133,7 +133,7 @@ namespace Avalonia.Input
                 }
                 else
                 {
-                    target.RaiseEvent(e);
+                    target?.RaiseEvent(e);
                 }
             }
         }
