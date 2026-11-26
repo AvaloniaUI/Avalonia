@@ -81,7 +81,7 @@ namespace Avalonia.Win32
             SetDataObject(pDataObj);
 
             // Can happen if the DataTransferToOleDataObjectWrapper was somehow disposed
-            if (_currentDrag is null)
+            if (_currentDrag is null || TryGetDragLocation(pt) is not { } location)
             {
                 *pdwEffect = DropEffect.None;
                 return;
@@ -89,9 +89,9 @@ namespace Avalonia.Win32
 
             var args = new RawDragEvent(
                 _dragDevice,
-                RawDragEventType.DragEnter, 
+                RawDragEventType.DragEnter,
                 _target,
-                GetDragLocation(pt),
+                location,
                 _currentDrag, 
                 ConvertDropEffect(*pdwEffect),
                 ConvertKeyState(grfKeyState)
@@ -103,17 +103,17 @@ namespace Avalonia.Win32
         unsafe void Win32Com.IDropTarget.DragOver(int grfKeyState, UnmanagedMethods.POINT pt, DropEffect* pdwEffect)
         {
             var dispatch = _topLevel.Input;
-            if (dispatch == null || _currentDrag is null)
+            if (dispatch == null || _currentDrag is null || TryGetDragLocation(pt) is not { } location)
             {
                 *pdwEffect = DropEffect.None;
                 return;
             }
-            
+
             var args = new RawDragEvent(
                 _dragDevice,
-                RawDragEventType.DragOver, 
+                RawDragEventType.DragOver,
                 _target,
-                GetDragLocation(pt),
+                location,
                 _currentDrag,
                 ConvertDropEffect(*pdwEffect),
                 ConvertKeyState(grfKeyState)
@@ -162,17 +162,17 @@ namespace Avalonia.Win32
                 SetDataObject(pDataObj);
 
                 // Can happen if the DataTransferToOleDataObjectWrapper was somehow disposed
-                if (_currentDrag is null)
+                if (_currentDrag is null || TryGetDragLocation(pt) is not { } location)
                 {
                     *pdwEffect = DropEffect.None;
                     return;
                 }
 
                 var args = new RawDragEvent(
-                    _dragDevice, 
-                    RawDragEventType.Drop, 
+                    _dragDevice,
+                    RawDragEventType.Drop,
                     _target,
-                    GetDragLocation(pt),
+                    location,
                     _currentDrag,
                     ConvertDropEffect(*pdwEffect),
                     ConvertKeyState(grfKeyState)
@@ -206,10 +206,10 @@ namespace Avalonia.Win32
             _currentDrag = null;
         }
 
-        private Point GetDragLocation(UnmanagedMethods.POINT dragPoint)
+        private Point? TryGetDragLocation(UnmanagedMethods.POINT dragPoint)
         {
             var screenPt = new PixelPoint(dragPoint.X, dragPoint.Y);
-            return _target.RootElement.PointToClient(screenPt);
+            return _target.RootElement?.PointToClient(screenPt);
         }
 
         protected override void Destroyed()
