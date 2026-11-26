@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading;
+using Avalonia.Logging;
 using Avalonia.Vulkan.UnmanagedInterop;
 // ReSharper disable FieldCanBeMadeReadOnly.Local
 // ReSharper disable IdentifierTypo
@@ -21,7 +22,7 @@ internal class VulkanDisplay : IDisposable
     private VkImage[] _swapchainImages = Array.Empty<VkImage>();
     private VkImageView[] _swapchainImageViews = Array.Empty<VkImageView>();
     private bool _isSurfaceLost;
-    private bool _isSwapchainSizeDirty;
+    private bool _isSwapchainDirty;
     public VulkanCommandBufferPool CommandBufferPool { get; private set; }
     public PixelSize Size { get; private set; }
 
@@ -208,7 +209,7 @@ internal class VulkanDisplay : IDisposable
         _swapchain = CreateSwapchain(_context, _surface, out var extent, this);
         _swapchainExtent = extent;
         CreateSwapchainImages();
-        _isSwapchainSizeDirty = false;
+        _isSwapchainDirty = false;
     }
 
     private void RecreateSurface()
@@ -229,7 +230,7 @@ internal class VulkanDisplay : IDisposable
             RecreateSurface(); // This will also call RecreateSwapchain
             return true;
         }
-        if (Size != _surface?.Size || _isSwapchainSizeDirty)
+        if (Size != _surface?.Size || _isSwapchainDirty)
         {
             RecreateSwapchain();
             return true;
@@ -347,10 +348,18 @@ internal class VulkanDisplay : IDisposable
         
         // We need to check both presentResult and result because some drivers may report different results,
         // for example, presentResult can be VK_SUCCESS but result can be VK_ERROR_OUT_OF_DATE_KHR.
-        if ((presentResult is VkResult.VK_ERROR_OUT_OF_DATE_KHR or VkResult.VK_SUBOPTIMAL_KHR) ||
-            (result is VkResult.VK_ERROR_OUT_OF_DATE_KHR or VkResult.VK_SUBOPTIMAL_KHR))
+        if (presentResult is VkResult.VK_ERROR_OUT_OF_DATE_KHR || result is VkResult.VK_ERROR_OUT_OF_DATE_KHR)
         {
-            _isSwapchainSizeDirty = true;
+            _isSwapchainDirty = true;
+        }
+        else if (presentResult is VkResult.VK_SUBOPTIMAL_KHR || result is VkResult.VK_SUBOPTIMAL_KHR)
+        {
+            // In case of VK_SUBOPTIMAL_KHR, we currently just log a warning and do not set _isSwapchainDirty to true.
+            // This is done to prevent recreating the swap chain after each rendering on Android with rotated screen.
+            // Because Avalonia currently does not rotate the swapchain (using preTransform), the Android compositor
+            // rotates the image and this is reported as VK_SUBOPTIMAL_KHR.
+            // See https://docs.vulkan.org/samples/latest/samples/performance/surface_rotation/README.html
+            Logger.TryGet(LogEventLevel.Warning, "Vulkan")?.Log(null, "vkQueuePresentKHR result is VK_SUBOPTIMAL_KHR");
         }
         else if (presentResult == VkResult.VK_ERROR_SURFACE_LOST_KHR || result == VkResult.VK_ERROR_SURFACE_LOST_KHR)
         {
