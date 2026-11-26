@@ -833,6 +833,19 @@ namespace Avalonia.Controls
             return resized;
         }
 
+        private void ApplyInlineStyling()
+        {
+            if (!HasComplexContent)
+            {
+                return;
+            }
+
+            foreach (var inline in Inlines)
+            {
+                inline.ApplyInlineStyling();
+            }
+        }
+
         protected override Size MeasureOverride(Size availableSize)
         {
             var padding = Padding;
@@ -855,6 +868,9 @@ namespace Avalonia.Controls
                 InvalidateArrange();
             }
            
+            // Styling sets inline properties, which invalidates the block, so it runs here and
+            // not where the runs are built: a render pass also builds them and must not invalidate.
+            ApplyInlineStyling();
             EnsureTextRuns();
 
             if (MeasureEmbeddedControls(deflatedSize))

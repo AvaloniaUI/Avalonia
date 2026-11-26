@@ -728,7 +728,7 @@ namespace Avalonia.Controls
             var logicalArgs = new LogicalTreeAttachmentEventArgs(this, this, null);
             ((ILogical)this).NotifyDetachedFromLogicalTree(logicalArgs);
 
-            _source.RootVisual = null!;
+            _source.RootVisual = null;
 
             OnClosed(EventArgs.Empty);
 

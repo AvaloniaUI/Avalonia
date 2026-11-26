@@ -14,7 +14,8 @@ jobs:
   update-api:
     name: Update API Suppressions
     if: >-
-      github.event.issue.pull_request
+      github.repository == 'AvaloniaUI/Avalonia'
+      && github.event.issue.pull_request
       && contains(github.event.comment.body, '/update-api')
       && contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)
     runs-on: ubuntu-latest

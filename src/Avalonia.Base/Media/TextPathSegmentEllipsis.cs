@@ -363,6 +363,7 @@ namespace Avalonia.Media
                     FormattingObjectPool.RentedList<TextRun>? ownedRuns = RentLogicalRuns(textLine, objectPool);
                     FormattingObjectPool.RentedList<TextRun>? first = null;
                     FormattingObjectPool.RentedList<TextRun>? second = null;
+                    FormattingObjectPool.RentedList<TextRun>? collapsedRuns = null;
 
                     try
                     {
@@ -371,79 +372,16 @@ namespace Avalonia.Media
 
                         Release(first);
 
-                        TextRun? trimmedRun = null;
-                        var remainingRunCount = 0;
+                        collapsedRuns = objectPool.TextRunLists.Rent();
+                        collapsedRuns.Add(shapedSymbol);
 
-                        if (second != null && second.Count > 0)
-                        {
-                            remainingRunCount = Math.Max(0, second.Count - 1);
-
-                            var run = second[0];
-
-                            if (run is ShapedTextRun shapedRun)
-                            {
-                                var measureWidth = Width - shapedSymbol.Size.Width;
-
-                                if (shapedRun.TryMeasureCharactersBackwards(measureWidth, out var length, out _))
-                                {
-                                    var splitAt = shapedRun.Length - length;
-
-                                    if (splitAt > 0)
-                                    {
-                                        ShapedTextRun? trimmedHead;
-
-                                        (trimmedHead, trimmedRun) = shapedRun.Split(splitAt);
-
-                                        // Only the trailing half survives next to the symbol.
-                                        trimmedHead?.Dispose();
-                                        shapedRun.Dispose();
-                                    }
-                                    else if (length > 0)
-                                    {
-                                        // The whole run fits in the remaining budget — no split needed,
-                                        // use the run as-is. (Calling Split(0) throws.)
-                                        trimmedRun = shapedRun;
-                                    }
-                                    else
-                                    {
-                                        // Nothing of this run survives.
-                                        shapedRun.Dispose();
-                                    }
-                                }
-                                else
-                                {
-                                    shapedRun.Dispose();
-                                }
-                            }
-                        }
-
-                        var runCount = (trimmedRun != null ? 1 : 0) + 1 + remainingRunCount;
-
-                        var result = new TextRun[runCount];
-                        var index = 0;
-
-                        // Append symbol
-                        result[index++] = shapedSymbol;
-
-                        // Append trimmed run if any
-                        if (trimmedRun != null)
-                        {
-                            result[index++] = trimmedRun;
-                        }
-
-                        // Append remaining runs
                         if (second != null)
                         {
-                            for(var i = 1; i < second.Count; i++)
-                            {
-                                var run = second[i];
-
-                                result[index++] = run;
-                            }
+                            TextEllipsisHelper.AppendFittingSuffix(second, Width - shapedSymbol.Size.Width,
+                                collapsedRuns);
                         }
 
-                        return result;
-
+                        return collapsedRuns.ToArray();
                     }
                     finally
                     {
@@ -451,6 +389,7 @@ namespace Avalonia.Media
                         objectPool.TextRunLists.Return(ref ownedRuns);
                         objectPool.TextRunLists.Return(ref first);
                         objectPool.TextRunLists.Return(ref second);
+                        objectPool.TextRunLists.Return(ref collapsedRuns);
                     }
                 }
 

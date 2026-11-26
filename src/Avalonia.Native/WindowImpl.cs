@@ -144,9 +144,10 @@ namespace Avalonia.Native
             {
                 if(e.Type == RawPointerEventType.LeftButtonDown)
                 {
-                    // TODO: Casts like this are evil
-                    var source = (PresentationSource?)_inputRoot;
-                    var visual = source?.Renderer.HitTestFirst(e.Position, source.RootElement, x =>
+                    if (_inputRoot?.RootElement is not { PresentationSource: PresentationSource source } rootElement)
+                        return false;
+
+                    var visual = source.Renderer.HitTestFirst(e.Position, rootElement, x =>
                             {
                                 if (x is IInputElement ie && (!ie.IsHitTestVisible || !ie.IsEffectivelyVisible))
                                 {
