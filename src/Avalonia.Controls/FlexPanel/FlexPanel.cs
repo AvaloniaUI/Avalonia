@@ -90,6 +90,8 @@ namespace Avalonia.Controls
 
             AffectsParentArrange<FlexPanel>(
                 Flex.AlignSelfProperty);
+
+            Flex.OrderProperty.Changed.AddClassHandler<Layoutable>(OnChildOrderChanged);
         }
 
         /// <summary>
@@ -557,6 +559,14 @@ namespace Avalonia.Controls
         private void OnChildVisibilityChanged(bool isVisible)
         {
             UpdateVisibleChildren();
+        }
+
+        private static void OnChildOrderChanged(Layoutable child, AvaloniaPropertyChangedEventArgs e)
+        {
+            if (child.VisualParent is FlexPanel panel)
+            {
+                panel.UpdateVisibleChildren();
+            }
         }
 
         private void UpdateVisibleChildren()
