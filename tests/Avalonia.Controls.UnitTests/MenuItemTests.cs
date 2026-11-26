@@ -10,6 +10,7 @@ using Avalonia.Platform;
 using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
+using Avalonia.VisualTree;
 using Moq;
 using Xunit;
 
@@ -913,6 +914,48 @@ namespace Avalonia.Controls.UnitTests
             var root = new TestRoot { Child = target };
 
             (target as IClickableControl).RaiseClick();
+        }
+
+        [Fact]
+        public void Pressing_Empty_Part_Of_Menu_Bar_Closes_Open_Menu()
+        {
+            using (Application())
+            {
+                var file = new MenuItem { Header = "File", Items = { new MenuItem { Header = "Import" } } };
+                var menu = new Menu { Items = { file } };
+                var window = new Window { Content = menu };
+                window.Show();
+
+                var mouse = new MouseTestHelper();
+                mouse.Click(file);
+                Assert.True(file.IsSubMenuOpen);
+
+                // The light dismiss overlay passes input through to the Menu, so the press lands on its template.
+                var menuBackground = menu.GetVisualChildren().OfType<Border>().Single();
+                mouse.Click(menuBackground);
+
+                Assert.False(file.IsSubMenuOpen);
+                Assert.False(menu.IsOpen);
+            }
+        }
+
+        [Fact]
+        public void Pressing_ContextMenu_Background_Does_Not_Close_It()
+        {
+            using (Application())
+            {
+                var contextMenu = new ContextMenu { Items = { new MenuItem { Header = "Copy" } } };
+                var target = new Panel { ContextMenu = contextMenu };
+                var window = new Window { Content = target };
+                window.Show();
+                contextMenu.Open(target);
+                Assert.True(contextMenu.IsOpen);
+
+                var background = contextMenu.GetVisualChildren().OfType<Border>().Single();
+                new MouseTestHelper().Click(background);
+
+                Assert.True(contextMenu.IsOpen);
+            }
         }
 
         private IDisposable Application()
