@@ -352,6 +352,10 @@ internal class VulkanDisplay : IDisposable
         {
             _isSwapchainDirty = true;
         }
+        else if (presentResult == VkResult.VK_ERROR_SURFACE_LOST_KHR || result == VkResult.VK_ERROR_SURFACE_LOST_KHR)
+        {
+            _isSurfaceLost = true;
+        }
         else if (presentResult is VkResult.VK_SUBOPTIMAL_KHR || result is VkResult.VK_SUBOPTIMAL_KHR)
         {
             // In case of VK_SUBOPTIMAL_KHR, we currently just log a warning and do not set _isSwapchainDirty to true.
@@ -360,10 +364,6 @@ internal class VulkanDisplay : IDisposable
             // rotates the image and this is reported as VK_SUBOPTIMAL_KHR.
             // See https://docs.vulkan.org/samples/latest/samples/performance/surface_rotation/README.html
             Logger.TryGet(LogEventLevel.Warning, "Vulkan")?.Log(null, "vkQueuePresentKHR result is VK_SUBOPTIMAL_KHR");
-        }
-        else if (presentResult == VkResult.VK_ERROR_SURFACE_LOST_KHR || result == VkResult.VK_ERROR_SURFACE_LOST_KHR)
-        {
-            _isSurfaceLost = true;
         }
         else
         {
