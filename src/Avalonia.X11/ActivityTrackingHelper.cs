@@ -23,6 +23,9 @@ internal class WindowActivationTrackingHelper : IDisposable
         _window = window;
         _platform.ActiveWindowTracker.ActiveWindowChanged += OnActiveWindowChanged;
         _platform.Globals.WindowActivationTrackingModeChanged += OnWindowActivationTrackingModeChanged;
+        // The root may already name this XID before this window subscribes (notably on XMir).
+        // Post so the window can attach its ActivationChanged handler first.
+        Dispatcher.UIThread.Post(RequeryActivation, DispatcherPriority.Input);
     }
 
     public bool IsActive => _active;
@@ -44,10 +47,11 @@ internal class WindowActivationTrackingHelper : IDisposable
 
     void RequeryActivation()
     {
-        // The _NET_ACTIVE_WINDOW mode is driven by the shared X11ActiveWindowTracker, so only the
-        // per-window _NET_WM_STATE needs re-reading here.
         if (Mode == X11Globals.WindowActivationTrackingMode._NET_WM_STATE_FOCUSED)
             RequeryNetWmState();
+        // A mode change must consume the current root value even if its XID did not change.
+        else if (Mode == X11Globals.WindowActivationTrackingMode._NET_ACTIVE_WINDOW)
+            OnActiveWindowChanged(_platform.ActiveWindowTracker.ActiveWindow);
     }
 
     private void OnWindowActivationTrackingModeChanged() =>
