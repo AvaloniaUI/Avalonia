@@ -379,8 +379,75 @@ HRESULT WindowBaseImpl::BeginMoveDrag() {
     }
 }
 
-HRESULT WindowBaseImpl::BeginResizeDrag(__attribute__((unused)) AvnWindowEdge edge) {
-    return S_OK;
+HRESULT WindowBaseImpl::BeginResizeDrag(AvnWindowEdge edge) {
+    @autoreleasepool {
+        // AppKit has no resize counterpart to performWindowDragWithEvent:, so track the mouse manually.
+        if (Window == nullptr || ([NSEvent pressedMouseButtons] & 1) == 0) {
+            return S_OK;
+        }
+
+        auto west = edge == WindowEdgeNorthWest || edge == WindowEdgeWest || edge == WindowEdgeSouthWest;
+        auto east = edge == WindowEdgeNorthEast || edge == WindowEdgeEast || edge == WindowEdgeSouthEast;
+        auto north = edge == WindowEdgeNorthWest || edge == WindowEdgeNorth || edge == WindowEdgeNorthEast;
+        auto south = edge == WindowEdgeSouthWest || edge == WindowEdgeSouth || edge == WindowEdgeSouthEast;
+
+        NSWindow* window = Window;
+        NSPoint startMouse = [NSEvent mouseLocation];
+        NSRect startFrame = [window frame];
+
+        NSSize minContent = window.contentMinSize;
+        NSSize maxContent = window.contentMaxSize;
+        NSSize minFrame = [window frameRectForContentRect:NSMakeRect(0, 0, minContent.width, minContent.height)].size;
+        NSSize maxFrame = [window frameRectForContentRect:NSMakeRect(0, 0, maxContent.width, maxContent.height)].size;
+
+        while (true) {
+            auto event = [NSApp nextEventMatchingMask:NSEventMaskLeftMouseDragged | NSEventMaskLeftMouseUp
+                                            untilDate:[NSDate distantFuture]
+                                               inMode:NSEventTrackingRunLoopMode
+                                              dequeue:YES];
+
+            if (event == nil) {
+                break;
+            }
+
+            if ([event type] == NSEventTypeLeftMouseUp) {
+                break;
+            }
+
+            NSPoint mouse = [NSEvent mouseLocation];
+            CGFloat dx = mouse.x - startMouse.x;
+            CGFloat dy = mouse.y - startMouse.y; // Y grows upwards in screen coordinates
+
+            NSRect frame = startFrame;
+
+            if (east) {
+                frame.size.width = startFrame.size.width + dx;
+            } else if (west) {
+                frame.size.width = startFrame.size.width - dx;
+            }
+
+            if (north) {
+                frame.size.height = startFrame.size.height + dy;
+            } else if (south) {
+                frame.size.height = startFrame.size.height - dy;
+            }
+
+            frame.size.width = MAX(minFrame.width, MIN(maxFrame.width, frame.size.width));
+            frame.size.height = MAX(minFrame.height, MIN(maxFrame.height, frame.size.height));
+
+            if (west) {
+                frame.origin.x = NSMaxX(startFrame) - frame.size.width;
+            }
+
+            if (south) {
+                frame.origin.y = NSMaxY(startFrame) - frame.size.height;
+            }
+
+            [window setFrame:frame display:YES animate:NO];
+        }
+
+        return S_OK;
+    }
 }
 
 HRESULT WindowBaseImpl::GetPosition(AvnPoint *ret) {

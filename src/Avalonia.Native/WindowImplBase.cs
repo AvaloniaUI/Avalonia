@@ -117,12 +117,6 @@ namespace Avalonia.Native
             Native?.SetTopMost(value.AsComBool());
         }
 
-        // TODO
-        public void BeginResizeDrag(WindowEdge edge, PointerPressedEventArgs e)
-        {
-
-        }
-
         public void SetMinMaxSize(Size minSize, Size maxSize)
         {
             Native?.SetMinMaxSize(minSize.ToAvnSize(), maxSize.ToAvnSize());
