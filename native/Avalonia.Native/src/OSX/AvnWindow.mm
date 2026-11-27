@@ -38,7 +38,7 @@
     bool _isTitlebarSession;
     AvnMenu* _menu;
     ComPtr<IAvnAutomationPeer> _automationPeer;
-    AvnAutomationNode* _automationNode;
+    ComPtr<AvnAutomationNode> _automationNode;
 }
 
 -(AvnView* _Nullable) view
@@ -167,7 +167,7 @@
     _menu = menu;
 }
 
--(CLASS_NAME*_Nonnull)  initWithParent: (WindowBaseImpl*_Nonnull) parent contentRect: (NSRect)contentRect styleMask: (NSWindowStyleMask)styleMask;
+-(CLASS_NAME*_Nonnull)  initWithParent: (const ComPtr<WindowBaseImpl>&) parent contentRect: (NSRect)contentRect styleMask: (NSWindowStyleMask)styleMask;
 {
     // https://jameshfisher.com/2020/07/10/why-is-the-contentrect-of-my-nswindow-ignored/
     // create nswindow with specific contentRect, otherwise we wont be able to resize the window
@@ -585,14 +585,20 @@
             break;
 
             case NSEventTypeMouseEntered:
-            {
-                parent->UpdateCursor();
-            }
-                break;
-
             case NSEventTypeMouseExited:
             {
-                [[NSCursor arrowCursor] set];
+                // Only react to our own view's tracking area. Other views in the window (NSThemeFrame,
+                // the titlebar, native control hosts) have tracking areas of their own, and macOS 26
+                // leaks a stale NSThemeFrame edge area on every resize, so reacting to those would
+                // reset the cursor to the arrow in the middle of the content.
+                NSTrackingArea* area = event.trackingArea;
+                if (area != nil && area.owner != parent->View)
+                    break;
+
+                if (event.type == NSEventTypeMouseEntered)
+                    parent->UpdateCursor();
+                else
+                    [[NSCursor arrowCursor] set];
             }
                 break;
 
@@ -629,10 +635,10 @@
     if (automationPeer == nullptr)
         return nil;
 
-    return GetNSStringAndRelease(automationPeer->GetAutomationId());
+    return GetNSString(automationPeer->GetAutomationId());
 }
 
-- (IAvnAutomationPeer* _Nullable) automationPeer
+- (ComPtr<IAvnAutomationPeer>) automationPeer
 {
     auto parent = _parent.tryGet();
     if (parent && _automationPeer == nullptr)
@@ -641,7 +647,7 @@
         if (peer != nullptr)
         {
             _automationPeer = peer;
-            _automationNode = new AvnAutomationNode(self);
+            _automationNode = comnew<AvnAutomationNode>(self);
             _automationPeer->SetNode(_automationNode);
         }
     }

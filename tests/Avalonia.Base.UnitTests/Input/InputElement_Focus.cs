@@ -668,6 +668,49 @@ namespace Avalonia.Base.UnitTests.Input
             Assert.Same(outerButton, focusManager.GetFocusedElement());
         }
 
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void Removing_Or_Hiding_Focus_Scope_Clears_Focus_When_Root_Focus_Scope_Element_Is_Disabled(bool remove)
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealFocus);
+            Button innerButton, outerButton;
+            TestFocusScope innerScope;
+            var root = new TestRoot
+            {
+                Child = new StackPanel
+                {
+                    Children =
+                    {
+                        (innerScope = new TestFocusScope
+                        {
+                            Children =
+                            {
+                                (innerButton = new Button()),
+                            }
+                        }),
+                        (outerButton = new Button()),
+                    }
+                }
+            };
+
+            // e.g. a button whose command is running while it waits for a choice in a popup.
+            outerButton.Focus();
+            innerButton.Focus();
+            outerButton.IsEnabled = false;
+
+            if (remove)
+                ((Panel)innerScope.Parent!).Children.Remove(innerScope);
+            else
+                innerScope.IsVisible = false;
+
+            // Focus can't return to the disabled button, but must not stay on the removed/hidden control.
+            var focusManager = Assert.IsType<FocusManager>(root.FocusManager);
+            Assert.False(innerButton.IsFocused);
+            Assert.Null(focusManager.GetFocusedElement());
+            Assert.Null(KeyboardDevice.Instance!.FocusedElement);
+        }
+
         [Fact]
         public void Switching_Focus_Scope_Changes_Focus()
         {
@@ -878,6 +921,90 @@ namespace Avalonia.Base.UnitTests.Input
                 lastFocusable = (root.FocusManager as FocusManager)?.FindLastFocusableElement();
 
                 Assert.Equal(target2, lastFocusable);
+            }
+        }
+
+        [Theory]
+        [InlineData(NavigationDirection.Next)]
+        [InlineData(NavigationDirection.Previous)]
+        public void TryMoveFocus_Skips_Disabled_Elements(NavigationDirection direction)
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var target1 = new Button { Content = "1" };
+                var target2 = new Button { Content = "2", IsEnabled = false };
+                var target3 = new Button { Content = "3" };
+                var root = new TestRoot
+                {
+                    Child = new StackPanel { Children = { target1, target2, target3 } }
+                };
+
+                var focusManager = FocusManager.GetFocusManager(target1);
+                Assert.NotNull(focusManager);
+                var start = direction == NavigationDirection.Next ? target1 : target3;
+                var expected = direction == NavigationDirection.Next ? target3 : target1;
+                start.Focus();
+
+                Assert.Same(expected, focusManager.FindNextElement(direction));
+                Assert.True(focusManager.TryMoveFocus(direction));
+                Assert.Same(expected, focusManager.GetFocusedElement());
+            }
+        }
+
+        [Theory]
+        [InlineData(NavigationDirection.Next)]
+        [InlineData(NavigationDirection.Previous)]
+        public void TryMoveFocus_Skips_Children_Of_Disabled_Container(NavigationDirection direction)
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var target1 = new Button { Content = "1" };
+                var inside = new Button { Content = "inside" };
+                var target3 = new Button { Content = "3" };
+                var root = new TestRoot
+                {
+                    Child = new StackPanel
+                    {
+                        Children =
+                        {
+                            target1,
+                            new StackPanel { IsEnabled = false, Children = { inside } },
+                            target3
+                        }
+                    }
+                };
+
+                var focusManager = FocusManager.GetFocusManager(target1);
+                Assert.NotNull(focusManager);
+                var start = direction == NavigationDirection.Next ? target1 : target3;
+                var expected = direction == NavigationDirection.Next ? target3 : target1;
+                start.Focus();
+
+                Assert.True(focusManager.TryMoveFocus(direction));
+                Assert.Same(expected, focusManager.GetFocusedElement());
+            }
+        }
+
+        [Fact]
+        public void FindFirstFocusableElement_And_FindLastFocusableElement_Skip_Disabled_Elements()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var first = new Button { Content = "first", IsEnabled = false };
+                var target2 = new Button { Content = "2" };
+                var target3 = new Button { Content = "3" };
+                var last = new Button { Content = "last", IsEnabled = false };
+                var root = new TestRoot
+                {
+                    Child = new StackPanel { Children = { first, target2, target3, last } }
+                };
+
+                var focusManager = FocusManager.GetFocusManager(target2);
+                Assert.NotNull(focusManager);
+                target2.Focus();
+
+                Assert.Same(target2, focusManager.FindFirstFocusableElement());
+                Assert.Same(target3, focusManager.FindLastFocusableElement());
             }
         }
 

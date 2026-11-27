@@ -300,6 +300,61 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Pager_Size_Should_Reset_To_Zero_When_NumberOfPages_Becomes_Zero()
+        {
+            using var unittestApplication = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var target = new PipsPager
+            {
+                NumberOfPages = 10,
+                MaxVisiblePips = 5,
+                Orientation = Orientation.Horizontal,
+                Template = GetTemplate()
+            };
+
+            var root = new TestRoot(target);
+            target.ApplyTemplate();
+
+            var pipsList = target.GetVisualDescendants().OfType<ListBox>().First(i => i.Name == "PART_PipsPagerList");
+            Assert.Equal(60, pipsList.Width);
+
+            target.NumberOfPages = 0;
+            Assert.Equal(0, pipsList.Width);
+            Assert.True(double.IsNaN(pipsList.Height));
+
+            target.Orientation = Orientation.Vertical;
+            Assert.Equal(0, pipsList.Height);
+            Assert.True(double.IsNaN(pipsList.Width));
+        }
+
+        [Fact]
+        public void Scroll_Offset_Should_Reset_When_NumberOfPages_Becomes_Less_Than_Or_Equal_To_MaxVisiblePips()
+        {
+            using var unittestApplication = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var target = new PipsPager
+            {
+                NumberOfPages = 10,
+                MaxVisiblePips = 5,
+                Template = GetTemplateWithScrollViewer()
+            };
+
+            var root = new TestRoot(target);
+            target.ApplyTemplate();
+
+            var pipsList = target.GetVisualDescendants().OfType<ListBox>().First(i => i.Name == "PART_PipsPagerList");
+            pipsList.ApplyTemplate();
+            var scrollViewer = Assert.IsType<ScrollViewer>(pipsList.Scroll);
+
+            scrollViewer.Offset = new Vector(50, 0);
+
+            target.NumberOfPages = 3;
+            Avalonia.Threading.Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+            Assert.Equal(new Vector(0, 0), scrollViewer.Offset);
+        }
+
+        [Fact]
         public void NumberOfPages_Reduction_Should_Clamp_SelectedPageIndex()
         {
             var target = new PipsPager();
@@ -327,6 +382,10 @@ namespace Avalonia.Controls.UnitTests
             target.SelectedPageIndex = 4;
             Assert.False(target.Classes.Contains(":first-page"));
             Assert.True(target.Classes.Contains(":last-page"));
+
+            target.NumberOfPages = 0;
+            Assert.False(target.Classes.Contains(":first-page"));
+            Assert.False(target.Classes.Contains(":last-page"));
         }
 
         [Fact]
@@ -609,6 +668,28 @@ namespace Avalonia.Controls.UnitTests
                     {
                         new Button { Name = "PART_PreviousButton" }.RegisterInNameScope(scope),
                         new ListBox { Name = "PART_PipsPagerList" }.RegisterInNameScope(scope),
+                        new Button { Name = "PART_NextButton" }.RegisterInNameScope(scope)
+                    }
+                };
+            });
+        }
+
+        private static FuncControlTemplate<PipsPager> GetTemplateWithScrollViewer()
+        {
+            return new FuncControlTemplate<PipsPager>((parent, scope) =>
+            {
+                var listBox = new ListBox
+                {
+                    Name = "PART_PipsPagerList",
+                    Template = new FuncControlTemplate<ListBox>((lb, lbScope) =>
+                        new ScrollViewer { Name = "PART_ScrollViewer" }.RegisterInNameScope(lbScope))
+                };
+                return new StackPanel
+                {
+                    Children =
+                    {
+                        new Button { Name = "PART_PreviousButton" }.RegisterInNameScope(scope),
+                        listBox.RegisterInNameScope(scope),
                         new Button { Name = "PART_NextButton" }.RegisterInNameScope(scope)
                     }
                 };

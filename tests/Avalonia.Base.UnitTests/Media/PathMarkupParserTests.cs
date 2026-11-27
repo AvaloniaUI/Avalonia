@@ -5,10 +5,11 @@ using Avalonia.Platform;
 using Avalonia.Visuals.Platform;
 using Moq;
 using Xunit;
+using Avalonia.UnitTests;
 
 namespace Avalonia.Base.UnitTests.Media
 {
-    public class PathMarkupParserTests
+    public class PathMarkupParserTests : ScopedTestBase
     {
         [Fact]
         public void Parses_Move()

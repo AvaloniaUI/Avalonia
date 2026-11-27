@@ -4,7 +4,7 @@ namespace Avalonia.Input
     {
         public Vector Delta { get; }
 
-        public PointerWheelEventArgs(object? source, IPointer pointer, Visual rootVisual,
+        public PointerWheelEventArgs(object? source, IPointer pointer, Visual? rootVisual,
             Point rootVisualPosition, ulong timestamp,
             PointerPointProperties properties, KeyModifiers modifiers, Vector delta)
             : base(InputElement.PointerWheelChangedEvent, source, pointer, rootVisual, rootVisualPosition,

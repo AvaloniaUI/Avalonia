@@ -21,7 +21,7 @@ class AvnAppMenu;
 @end
 
 @interface AvnMenuItem : NSMenuItem
-- (id) initWithAvnAppMenuItem: (AvnAppMenuItem*)menuItem;
+- (id) initWithAvnAppMenuItem: (const ComPtr<AvnAppMenuItem>&)menuItem;
 - (void)didSelectItem:(id)sender;
 @end
 
@@ -40,7 +40,7 @@ public:
     
     NSMenuItem* GetNative();
     
-    virtual HRESULT SetSubMenu (IAvnMenu* menu) override;
+    virtual HRESULT SetSubMenu (const ComPtr<IAvnMenu>& menu) override;
     
     virtual HRESULT SetTitle (char* utf8String) override;
 
@@ -48,7 +48,7 @@ public:
 
     virtual HRESULT SetGesture (AvnKey key, AvnInputModifiers modifiers) override;
     
-    virtual HRESULT SetAction (IAvnPredicateCallback* predicate, IAvnActionCallback* callback) override;
+    virtual HRESULT SetAction (const ComPtr<IAvnPredicateCallback>& predicate, const ComPtr<IAvnActionCallback>& callback) override;
     
     virtual HRESULT SetIsChecked (bool isChecked) override;
 
@@ -66,8 +66,7 @@ public:
 class AvnAppMenu;
 
 @interface AvnMenuDelegate : NSObject<NSMenuDelegate>
-- (id) initWithParent: (AvnAppMenu*) parent;
-- (void) parentDestroyed;
+- (id) initWithParent: (const ComPtr<AvnAppMenu>&) parent;
 @end
 
 
@@ -81,7 +80,7 @@ private:
 public:
     FORWARD_IUNKNOWN()
     
-    AvnAppMenu(IAvnMenuEvents* events);
+    AvnAppMenu(const ComPtr<IAvnMenuEvents>& events);
 
     AvnMenu* GetNative();
     
@@ -89,14 +88,13 @@ public:
     void RaiseOpening();
     void RaiseClosed();
     
-    virtual HRESULT InsertItem (int index, IAvnMenuItem* item) override;
+    virtual HRESULT InsertItem (int index, const ComPtr<IAvnMenuItem>& item) override;
     
-    virtual HRESULT RemoveItem (IAvnMenuItem* item) override;
+    virtual HRESULT RemoveItem (const ComPtr<IAvnMenuItem>& item) override;
     
     virtual HRESULT SetTitle (char* utf8String) override;
     
     virtual HRESULT Clear () override;
-    virtual ~AvnAppMenu() override;
 };
 
 

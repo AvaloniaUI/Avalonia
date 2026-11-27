@@ -187,21 +187,21 @@ namespace Avalonia.Media.TextFormatting
 
                     if (defaultCanShape &&
                         TryGetShapeableLength(textSpan, defaultGlyphTypeface, null, defaultCanShapeScript: false,
-                            requireFullCluster, out count))
+                            requireFullCluster, out count, out var script))
                     {
                         // Primary font: the properties already carry this typeface, so reuse them
                         // directly. This avoids a needless copy and preserves a custom
                         // TextRunProperties subclass that WithTypeface would otherwise flatten.
-                        return new UnshapedTextRun(text.Slice(0, count), defaultProperties, biDiLevel);
+                        return new UnshapedTextRun(text.Slice(0, count), defaultProperties, biDiLevel, script);
                     }
 
                     if (allowPreviousTypeface && previousGlyphTypeface is not null &&
                         (!requireShapingCapability || previousGlyphTypeface.CanShapeScript(firstScript)) &&
                         TryGetShapeableLength(textSpan, previousGlyphTypeface, defaultGlyphTypeface, defaultCanShape,
-                            requireFullCluster, out count))
+                            requireFullCluster, out count, out script))
                     {
                         return new UnshapedTextRun(text.Slice(0, count),
-                            defaultProperties.WithTypeface(previousTypeface!.Value), biDiLevel);
+                            defaultProperties.WithTypeface(previousTypeface!.Value), biDiLevel, script);
                     }
 
                     // Resolve the fallback once, after the primary/previous probes fail. It is keyed on
@@ -216,23 +216,34 @@ namespace Avalonia.Media.TextFormatting
 
                         if (fontManager.TryMatchCharacter(fallbackCodepoint, defaultTypeface.Style, defaultTypeface.Weight,
                                 defaultTypeface.Stretch, defaultTypeface.FontFamily, defaultProperties.CultureInfo,
-                                shapingConstraint, out fallbackTypeface)
-                            && !fontManager.TryGetGlyphTypeface(fallbackTypeface, out fallbackGlyphTypeface))
+                                shapingConstraint, out fallbackTypeface))
                         {
-                            // The platform matched a fallback family but its glyph typeface could not
-                            // be loaded; the cluster degrades to .notdef. Surface it for diagnosis.
-                            Logger.TryGet(LogEventLevel.Warning, LogArea.Fonts)?.Log(null,
-                                "Matched fallback typeface {FamilyName} for codepoint U+{Codepoint} but could not load its glyph typeface.",
-                                fallbackTypeface.FontFamily.Name, ((uint)fallbackCodepoint).ToString("X4"));
+                            // Variations follow the text, not the font: the matched fallback
+                            // family renders at the same axis values the primary typeface
+                            // requested (each font clamps to its own axes; CSS behavior).
+                            if (defaultTypeface.FontVariations is { } fallbackVariations)
+                            {
+                                fallbackTypeface = new Typeface(fallbackTypeface.FontFamily, fallbackTypeface.Style,
+                                    fallbackTypeface.Weight, fallbackTypeface.Stretch, fallbackVariations);
+                            }
+
+                            if (!fontManager.TryGetGlyphTypeface(fallbackTypeface, out fallbackGlyphTypeface))
+                            {
+                                // The platform matched a fallback family but its glyph typeface could not
+                                // be loaded; the cluster degrades to .notdef. Surface it for diagnosis.
+                                Logger.TryGet(LogEventLevel.Warning, LogArea.Fonts)?.Log(null,
+                                    "Matched fallback typeface {FamilyName} for codepoint U+{Codepoint} but could not load its glyph typeface.",
+                                    fallbackTypeface.FontFamily.Name, ((uint)fallbackCodepoint).ToString("X4"));
+                            }
                         }
                     }
 
                     if (fallbackGlyphTypeface is not null &&
                         TryGetShapeableLength(textSpan, fallbackGlyphTypeface, defaultGlyphTypeface, defaultCanShape,
-                            requireFullCluster, out count))
+                            requireFullCluster, out count, out script))
                     {
                         return new UnshapedTextRun(text.Slice(0, count),
-                            defaultProperties.WithTypeface(fallbackTypeface), biDiLevel);
+                            defaultProperties.WithTypeface(fallbackTypeface), biDiLevel, script);
                     }
                 }
             }
@@ -290,6 +301,10 @@ namespace Avalonia.Media.TextFormatting
         /// scalar is tested.
         /// </param>
         /// <param name="length">The shapeable length.</param>
+        /// <param name="script">
+        /// The script of the shapeable text: its first script other than Common or Inherited, or Common
+        /// when it has none.
+        /// </param>
         /// <returns></returns>
         internal static bool TryGetShapeableLength(
             ReadOnlySpan<char> text,
@@ -297,10 +312,11 @@ namespace Avalonia.Media.TextFormatting
             GlyphTypeface? defaultGlyphTypeface,
             bool defaultCanShapeScript,
             bool requireFullCluster,
-            out int length)
+            out int length,
+            out Script script)
         {
             length = 0;
-            var script = Script.Unknown;
+            script = Script.Unknown;
 
             if (text.IsEmpty)
             {
@@ -361,6 +377,11 @@ namespace Avalonia.Media.TextFormatting
                 }
 
                 length += currentGrapheme.Length;
+            }
+
+            if (script is Script.Inherited)
+            {
+                script = Script.Common;
             }
 
             return length > 0;

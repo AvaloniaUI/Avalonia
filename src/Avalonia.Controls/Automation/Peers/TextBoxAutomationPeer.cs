@@ -13,8 +13,8 @@ namespace Avalonia.Automation.Peers
 
         public new TextBox Owner => (TextBox)base.Owner;
         public bool IsReadOnly => Owner.IsReadOnly;
-        public string? Value => Owner.Text;
-        public void SetValue(string? value) => Owner.Text = value;
+        public string? Value => GetDisplayedText(Owner.Text, Owner.PasswordChar, Owner.RevealPassword);
+        public void SetValue(string? value) => Owner.SetCurrentValue(TextBox.TextProperty, value);
 
         protected override AutomationControlType GetAutomationControlTypeCore()
         {
@@ -27,8 +27,33 @@ namespace Avalonia.Automation.Peers
         {
             if(e.Property == TextBox.TextProperty)
             {
-                RaisePropertyChangedEvent(ValuePatternIdentifiers.ValueProperty, e.OldValue, e.NewValue);
+                RaisePropertyChangedEvent(
+                    ValuePatternIdentifiers.ValueProperty,
+                    GetDisplayedText((string?)e.OldValue, Owner.PasswordChar, Owner.RevealPassword),
+                    GetDisplayedText((string?)e.NewValue, Owner.PasswordChar, Owner.RevealPassword));
             }
+            else if (e.Property == TextBox.PasswordCharProperty)
+            {
+                RaisePropertyChangedEvent(
+                    ValuePatternIdentifiers.ValueProperty,
+                    GetDisplayedText(Owner.Text, e.GetOldValue<char>(), Owner.RevealPassword),
+                    Value);
+            }
+            else if (e.Property == TextBox.RevealPasswordProperty)
+            {
+                RaisePropertyChangedEvent(
+                    ValuePatternIdentifiers.ValueProperty,
+                    GetDisplayedText(Owner.Text, Owner.PasswordChar, e.GetOldValue<bool>()),
+                    Value);
+            }
+        }
+
+        // Expose the text as drawn so a masked password is not reported in clear.
+        private static string? GetDisplayedText(string? text, char passwordChar, bool revealPassword)
+        {
+            if (text is null || passwordChar == default(char) || revealPassword)
+                return text;
+            return new string(passwordChar, text.Length);
         }
     }
 }

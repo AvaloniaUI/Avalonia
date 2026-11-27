@@ -273,6 +273,24 @@ public class PageAutomationPeerTests
 
             Assert.False(page.IsOpen);
         }
+
+        [Fact]
+        public void Expand_Preserves_Style_Binding()
+        {
+            var page = new DrawerPage();
+            var peer = (DrawerPageAutomationPeer)ControlAutomationPeer.CreatePeerForElement(page);
+
+            AutomationPeerAssert.PreservesStyleBinding(page, DrawerPage.IsOpenProperty, false, true, peer.Expand);
+        }
+
+        [Fact]
+        public void Collapse_Preserves_Style_Binding()
+        {
+            var page = new DrawerPage();
+            var peer = (DrawerPageAutomationPeer)ControlAutomationPeer.CreatePeerForElement(page);
+
+            AutomationPeerAssert.PreservesStyleBinding(page, DrawerPage.IsOpenProperty, true, false, peer.Collapse);
+        }
     }
 
     public class CarouselPagePeer : ScopedTestBase

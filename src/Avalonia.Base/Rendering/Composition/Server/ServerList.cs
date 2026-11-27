@@ -18,10 +18,19 @@ namespace Avalonia.Rendering.Composition.Server
             {
                 List.Clear();
                 var count = reader.Read<int>();
-                for (var c = 0; c < count; c++) 
+                for (var c = 0; c < count; c++)
                     List.Add(reader.ReadObject<T>());
+                OnListReplaced();
             }
             base.DeserializeChangesCore(reader, committedAt);
+        }
+
+        /// <summary>
+        /// Called when deserialization replaced the list. See <see cref="ServerCompositionVisualCollection"/>
+        /// for what depends on it.
+        /// </summary>
+        protected virtual void OnListReplaced()
+        {
         }
 
         public List<T>.Enumerator GetEnumerator() => List.GetEnumerator();

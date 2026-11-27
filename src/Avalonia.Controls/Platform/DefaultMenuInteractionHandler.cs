@@ -23,6 +23,7 @@ namespace Avalonia.Controls.Platform
         private IDisposable? _inputManagerSubscription;
         private TopLevel? _root;
         private RadioButtonGroupManager? _groupManager;
+        private int _closeCount;
 
         public DefaultMenuInteractionHandler(bool isContextMenu)
             : this(isContextMenu, Input.InputManager.Instance, DefaultDelayRun)
@@ -192,13 +193,13 @@ namespace Avalonia.Controls.Platform
                 }
                 else if (!item.IsPointerOverSubMenu)
                 {
-                    DelayRun(() =>
+                    DelayRunWhileOpen(() =>
                     {
                         if (!item.IsPointerOverSubMenu)
                         {
                             item.IsSubMenuOpen = false;
                         }
-                    }, MenuShowDelay);
+                    });
                 }
             }
         }
@@ -294,6 +295,7 @@ namespace Avalonia.Controls.Platform
             Menu.PointerReleased += PointerReleased;
             Menu.AddHandler(AccessKeyHandler.AccessKeyEvent, AccessKeyPressed);
             Menu.AddHandler(MenuBase.OpenedEvent, MenuOpened);
+            Menu.AddHandler(MenuBase.ClosedEvent, MenuClosed);
             Menu.AddHandler(MenuItem.PointerEnteredItemEvent, PointerEntered);
             Menu.AddHandler(MenuItem.PointerExitedItemEvent, PointerExited);
             Menu.AddHandler(InputElement.PointerMovedEvent, PointerMoved);
@@ -336,6 +338,7 @@ namespace Avalonia.Controls.Platform
             Menu.PointerReleased -= PointerReleased;
             Menu.RemoveHandler(AccessKeyHandler.AccessKeyEvent, AccessKeyPressed);
             Menu.RemoveHandler(MenuBase.OpenedEvent, MenuOpened);
+            Menu.RemoveHandler(MenuBase.ClosedEvent, MenuClosed);
             Menu.RemoveHandler(MenuItem.PointerEnteredItemEvent, PointerEntered);
             Menu.RemoveHandler(MenuItem.PointerExitedItemEvent, PointerExited);
             Menu.RemoveHandler(InputElement.PointerMovedEvent, PointerMoved);
@@ -410,7 +413,7 @@ namespace Avalonia.Controls.Platform
                 }
             }
 
-            DelayRun(Execute, MenuShowDelay);
+            DelayRunWhileOpen(Execute);
         }
 
         internal void KeyDown(IMenuItem? item, KeyEventArgs e)
@@ -567,7 +570,7 @@ namespace Avalonia.Controls.Platform
                 }
             }
 
-            DelayRun(Execute, MenuShowDelay);
+            DelayRunWhileOpen(Execute);
         }
 
         internal void SelectItemAndAncestors(IMenuItem item)
@@ -611,6 +614,29 @@ namespace Avalonia.Controls.Platform
                     return menuItem;
                 item = item.Parent;
             }
+        }
+
+        private void MenuClosed(object? sender, RoutedEventArgs e)
+        {
+            if (e.Source == Menu)
+                ++_closeCount;
+        }
+
+        /// <summary>
+        /// Runs an action after <see cref="MenuShowDelay"/>, unless the menu has been closed in the meantime.
+        /// </summary>
+        /// <remarks>We can't simply stop the previous timer, since <see cref="DelayRun"/> can be externally provided.</remarks>
+        private void DelayRunWhileOpen(Action action)
+        {
+            var closeCount = _closeCount;
+
+            DelayRun(
+                () =>
+                {
+                    if (closeCount == _closeCount)
+                        action();
+                },
+                MenuShowDelay);
         }
 
         private void TopLevelLostPlatformFocus()

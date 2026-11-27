@@ -4,10 +4,9 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Windows.Input;
 using Avalonia.Controls;
 using Avalonia.Data.Converters;
-using Avalonia.Data.Core;
+using Avalonia.Markup.Xaml.XamlIl.Runtime;
 using Avalonia.Markup.Xaml.UnitTests.Xaml;
 using Avalonia.Media;
 using Avalonia.Threading;
@@ -151,6 +150,13 @@ namespace Avalonia.Markup.Xaml.UnitTests
 </UserControl>");
             Assert.Equal("321", loaded.Test);
             
+        }
+
+        [Fact]
+        public void XClass_With_DllImport_Should_Be_Compiled()
+        {
+            var precompiled = new XamlIlClassWithDllImport();
+            Assert.Equal(Brushes.Red, precompiled.Background);
         }
 
         [Fact]
@@ -474,6 +480,21 @@ namespace Avalonia.Markup.Xaml.UnitTests
                 Assert.NotNull(parsed.ItemTemplate);
             }
         }
+
+        // Mono's full AOT compiler relies on a local to generate the FunctionPointerPropertyInfo methods.
+        // See XamlIlRuntimeHelpers.GetTypedPropertyInfoFromPointers. Remove only when Mono becomes unsupported.
+        [Fact]
+        public void GetTypedPropertyInfoFromPointers_Should_Have_A_Local_Of_Concrete_PropertyInfo_Type()
+        {
+            var method = typeof(XamlIlRuntimeHelpers).GetMethod(nameof(XamlIlRuntimeHelpers.GetTypedPropertyInfoFromPointers));
+            Assert.NotNull(method);
+            var body = method.GetMethodBody();
+            Assert.NotNull(body);
+
+            Assert.Contains(
+                body.LocalVariables,
+                l => l.LocalType.IsGenericType && l.LocalType.GetGenericTypeDefinition() == typeof(FunctionPointerPropertyInfo<,>));
+        }
     }
 
     public class XamlIlBugTestsEventHandlerCodeBehind : Window
@@ -560,7 +581,7 @@ namespace Avalonia.Markup.Xaml.UnitTests
         public object ProvideValue(IServiceProvider prov)
         {
             var pvt = prov.GetRequiredService<IProvideValueTarget>();
-            var info = (ClrPropertyInfo)pvt.TargetProperty;
+            var info = Assert.IsType<FunctionPointerPropertyInfo>(pvt.TargetProperty);
             var v = (int)info.Get(pvt.TargetObject)!;
             return v + 1;
         }

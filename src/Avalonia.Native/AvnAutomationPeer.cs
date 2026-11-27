@@ -161,7 +161,8 @@ namespace Avalonia.Native
             return Wrap(result);
         }
 
-        public int IsExpandCollapseProvider() => IsProvider<IExpandCollapseProvider>();
+        public int IsExpandCollapseProvider() =>
+            (_inner.GetProvider<IExpandCollapseProvider>() is { ExpandCollapseState: not ExpandCollapseState.LeafNode }).AsComBool();
 
         public int ExpandCollapseProvider_GetIsExpanded() => ExpandCollapseProvider.ExpandCollapseState switch
         {
@@ -191,6 +192,8 @@ namespace Avalonia.Native
         public void SelectionItemProvider_Select() => SelectionItemProvider.Select();
         public void SelectionItemProvider_AddToSelection() => SelectionItemProvider.AddToSelection();
         public void SelectionItemProvider_RemoveFromSelection() => SelectionItemProvider.RemoveFromSelection();
+        public IAvnAutomationPeer? SelectionItemProvider_GetSelectionContainer()
+            => Wrap(SelectionItemProvider.SelectionContainer as AutomationPeer);
 
         public IAvnAutomationPeer? ScrollProvider_GetHorizontalScrollBar()
             => _inner is ScrollViewerAutomationPeer scrollViewer ? Wrap(scrollViewer.GetHorizontalScrollBarPeer()) : null;

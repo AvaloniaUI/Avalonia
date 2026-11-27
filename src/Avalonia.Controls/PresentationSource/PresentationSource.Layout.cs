@@ -11,7 +11,7 @@ internal partial class PresentationSource : ILayoutRoot
     public double LayoutScaling => RenderScaling;
     public ILayoutManager LayoutManager { get; }
     ILayoutRoot IPresentationSource.LayoutRoot => this;
-    Layoutable ILayoutRoot.RootVisual => RootVisual;
+    Layoutable? ILayoutRoot.RootVisual => RootVisual;
 
     private ILayoutManager CreateLayoutManager()
     {

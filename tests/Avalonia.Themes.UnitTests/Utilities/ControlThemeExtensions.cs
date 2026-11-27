@@ -5,6 +5,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Chrome;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.LogicalTree;
 using Avalonia.Styling;
 using Avalonia.VisualTree;
 
@@ -62,10 +63,12 @@ internal static class ControlThemeExtensions
 
         var templateRoot = (Control)templatedParent.GetVisualChildren().First();
 
-        // Use visual tree instead of logical tree for the most complete result.
-        // Because logical tree might not necessary 1to1 map to XAML.
-        // And we filter by the same TemplateParent anyway.
-        return templateRoot.GetVisualDescendants().Where(v => v.TemplatedParent == templatedParent).Prepend(templateRoot);
+        // We filter logical descendants by TemplatedParent to ensure these are part of the same template.
+        var descendantsCombined = templateRoot.GetLogicalDescendants()
+            .Concat(templateRoot.GetVisualDescendants())
+            .OfType<StyledElement>()
+            .Distinct();
+        return descendantsCombined.Where(v => v.TemplatedParent == templatedParent).Prepend(templateRoot);
     }
 
     private static IEnumerable<AvaloniaObject> EnumerateDecorationsChildren(IWindowDrawnDecorationsTemplate template)
@@ -92,25 +95,40 @@ internal static class ControlThemeExtensions
 
         object? template = null;
 
-        if (styleBase.Setters.OfType<Setter>()
-                .FirstOrDefault(s => s.Property == TemplatedControl.TemplateProperty
-                                     || s.Property == WindowDrawnDecorations.TemplateProperty)?
-                .Value is { } setterValue)
-        {
-            if (setterValue is IControlTemplate or IWindowDrawnDecorationsTemplate)
-            {
-                template = setterValue;
-            }
-        }
-
-        // ContentControl derived controls inherit its template.
-        if (template is null && typeof(ContentControl).IsAssignableFrom(targetType))
-        {
-            template = TemplatedControl.TemplateProperty.GetDefaultValue(typeof(ContentControl))
-                       ?? throw new InvalidOperationException("ContentControl must always have default template");
-        }
+        ResolveTemplateInStyle(styleBase);
 
         return template;
+
+        void ResolveTemplateInStyle(StyleBase styleBase)
+        {
+            if (styleBase.Setters.OfType<Setter>()
+                            .FirstOrDefault(s => s.Property == TemplatedControl.TemplateProperty
+                                                 || s.Property == WindowDrawnDecorations.TemplateProperty)?
+                            .Value is { } setterValue)
+            {
+                if (setterValue is IControlTemplate or IWindowDrawnDecorationsTemplate)
+                {
+                    template = setterValue;
+                }
+            }
+
+            if (template == null && styleBase is ControlTheme controlTheme)
+            {
+                // If we don't find any template in the current StyleBase
+                // we look for one in its BaseOn style
+                var baseStyle = controlTheme.BasedOn;
+
+                if (baseStyle != null)
+                    ResolveTemplateInStyle(baseStyle);
+            }
+
+            // ContentControl derived controls inherit its template.
+            if (template is null && typeof(ContentControl).IsAssignableFrom(targetType))
+            {
+                template = TemplatedControl.TemplateProperty.GetDefaultValue(typeof(ContentControl))
+                           ?? throw new InvalidOperationException("ContentControl must always have default template");
+            }
+        }
     }
 
     private static Type? ResolveTargetType(StyleBase styleBase)

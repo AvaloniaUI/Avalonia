@@ -480,7 +480,8 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
             if (positionRequest.Placement == PlacementMode.Pointer)
             {
                 // We need a better way for tracking the last pointer position
-                var position = topLevel.PointToClient(topLevel.LastPointerPosition ?? default);
+                var position = positionRequest.PointerPosition
+                    ?? topLevel.PointToClient(topLevel.LastPointerPosition ?? default);
 
                 positionerParameters.AnchorRectangle = new Rect(position, new Size(1, 1));
                 positionerParameters.Anchor = PopupAnchor.TopLeft;
@@ -575,7 +576,10 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
             var target = positionRequest.Target;
             if (target == null)
                 throw new InvalidOperationException("Placement mode is not Pointer and PlacementTarget is null");
-            Matrix? matrix = target.TransformToVisual(topLevel.PresentationSource.RootVisual);
+
+            var matrix = topLevel.PresentationSource.RootVisual is { } rootVisual
+                ? target.TransformToVisual(rootVisual)
+                : null;
             
             if (matrix == null)
             {

@@ -61,6 +61,12 @@ namespace Avalonia.Controls
             TextElement.FontStretchProperty.AddOwner<TextBlock>();
 
         /// <summary>
+        /// Defines the <see cref="FontVariations"/> property.
+        /// </summary>
+        public static readonly StyledProperty<FontVariationSettings?> FontVariationsProperty =
+            TextElement.FontVariationsProperty.AddOwner<TextBlock>();
+
+        /// <summary>
         /// Defines the <see cref="Foreground"/> property.
         /// </summary>
         public static readonly StyledProperty<IBrush?> ForegroundProperty =
@@ -195,8 +201,11 @@ namespace Avalonia.Controls
             // queued measure, or a read of this property - so it cannot rely on the measure pass
             // having brought the complex content up to date.
             EnsureTextRuns();
-            MeasureEmbeddedControls(GetMaxSizeFromConstraint());
 
+            // The embedded controls are measured by MeasureOverride and ArrangeOverride only. A
+            // control measured for the first time applies its template, and a layout built from the
+            // render pass must not attach visuals; it uses the sizes the controls already have, and
+            // the pending layout pass brings them up to date.
             return CreateTextLayout(Text);
         }
 
@@ -270,6 +279,16 @@ namespace Avalonia.Controls
         {
             get => GetValue(FontStretchProperty);
             set => SetValue(FontStretchProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the variable-font axis values (e.g. <c>wght=700</c>) used to draw
+        /// the control's text. <c>null</c> means the font's design defaults.
+        /// </summary>
+        public FontVariationSettings? FontVariations
+        {
+            get => GetValue(FontVariationsProperty);
+            set => SetValue(FontVariationsProperty, value);
         }
 
         /// <summary>
@@ -670,7 +689,7 @@ namespace Avalonia.Controls
         /// <returns>A <see cref="TextLayout"/> object.</returns>
         protected virtual TextLayout CreateTextLayout(string? text)
         {
-            var typeface = new Typeface(FontFamily, FontStyle, FontWeight, FontStretch);
+            var typeface = new Typeface(FontFamily, FontStyle, FontWeight, FontStretch, FontVariations);
 
             var defaultProperties = new GenericTextRunProperties(
                 typeface,
@@ -733,6 +752,8 @@ namespace Avalonia.Controls
             InvalidateMeasure();
         }
 
+        internal bool HasTextLayout => _textLayout is not null;
+
         /// <remarks>
         /// InvalidateMeasure only raises OnMeasureInvalidated while the measure is still
         /// valid, so a second invalidation before the next measure pass would leave the
@@ -742,6 +763,13 @@ namespace Avalonia.Controls
         {
             _textLayout?.Dispose();
             _textLayout = null;
+        }
+
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnDetachedFromVisualTree(e);
+
+            DisposeTextLayout();
         }
 
         protected override void OnMeasureInvalidated()
@@ -800,6 +828,19 @@ namespace Avalonia.Controls
             return resized;
         }
 
+        private void ApplyInlineStyling()
+        {
+            if (!HasComplexContent)
+            {
+                return;
+            }
+
+            foreach (var inline in Inlines)
+            {
+                inline.ApplyInlineStyling();
+            }
+        }
+
         protected override Size MeasureOverride(Size availableSize)
         {
             var padding = Padding;
@@ -822,6 +863,9 @@ namespace Avalonia.Controls
                 InvalidateArrange();
             }
            
+            // Styling sets inline properties, which invalidates the block, so it runs here and
+            // not where the runs are built: a render pass also builds them and must not invalidate.
+            ApplyInlineStyling();
             EnsureTextRuns();
 
             if (MeasureEmbeddedControls(deflatedSize))
@@ -854,6 +898,10 @@ namespace Avalonia.Controls
             // Dispose the TextLayout but preserve the TextRunCache so shaped runs are reused.
             DisposeTextLayout();
             _constraint = availableSize;
+
+            // The arranged width can differ from the measured one, and the lines wrap around the
+            // embedded controls at the size they have for this width.
+            MeasureEmbeddedControls(availableSize);
 
             //This implicitly recreated the TextLayout with a new constraint.
             var textLayout = TextLayout;
@@ -923,6 +971,7 @@ namespace Avalonia.Controls
                 case nameof(FontStyle):
                 case nameof(FontFamily):
                 case nameof(FontStretch):
+                case nameof(FontVariations):
                 case nameof(FlowDirection):
                 case nameof(LetterSpacing):
                 case nameof(Text):

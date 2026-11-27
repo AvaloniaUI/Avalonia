@@ -138,6 +138,11 @@ partial class ServerCompositionVisual
                 if (visual.AdornedVisual != null)
                     AdornerHelper_RenderPreGraphPushAdornerClip(visual);
 
+                // Before the visual's own content and children. Not reached for the root of a bitmap cache
+                // render: its backdrop effect belongs to the outer layer and the outer render walk drew it.
+                if (visual.BackdropEffect != null)
+                    DrawBackdropEffect(visual);
+
                 // If caching is enabled, draw from cache and skip rendering
                 if (visual.Cache != null)
                 {
@@ -166,7 +171,93 @@ partial class ServerCompositionVisual
             
             visitChildren = _renderChildren;
         }
-        
+
+        // Layer space to layer pixels.
+        private static LtrbPixelRect ToLayerPixels(LtrbRect hostRect, DirtyRectSpaceMapping mapping) =>
+            LtrbPixelRect.FromRectUnscaled(mapping.IsIdentity ? hostRect : mapping.LayerSpaceToLayerPixels(hostRect));
+
+        // Draws the backdrop effect of a backdrop visual.
+        private void DrawBackdropEffect(ServerCompositionVisual visual)
+        {
+            var state = visual.BackdropState;
+            if (state?.Aabb is not { } aabbPixels)
+                return;
+
+            // A layer without readable pixels (PDF, picture recording) draws no backdrop effects.
+            if (_canvas is not IDrawingContextImplWithBackdropSupport { SupportsBackdrop: true } backdropCanvas)
+                return;
+
+            var mapping = state.Layer?.GetDirtyRectSpaceMapping() ?? DirtyRectSpaceMapping.Identity;
+            if (!mapping.IsUsable)
+                return;
+
+            var aabbInLayer = aabbPixels.ToLtrbRectUnscaled();
+            var aabbInLayerPixels = ToLayerPixels(aabbInLayer, mapping);
+
+            // The backdrop bounds. They are in the visual's local space, which is the current coordinate
+            // space of the canvas, so the clip follows the visual's transform.
+            var localBounds = visual.BackdropEffectBoundsSource == Media.BackdropEffectBoundsSource.Layout
+                ? new LtrbRect(0, 0, visual.Size.X, visual.Size.Y)
+                : visual._subTreeBounds;
+            if (localBounds is not { IsZeroSize: false } boundsRect)
+                return;
+
+            // The layer has no pixels outside of its surface. Limit the bounds to the layer's area, so that the
+            // effect sees the edge of the layer as it sees the edge of the bounds. Under a rotation this is the
+            // bounding box of the layer's area in local space, which can be larger than the area itself.
+            var layerSize = state.Layer?.LayerPixelSize ?? visual.Root?.PixelSize ?? default;
+            if (!_canvas.Transform.TryInvert(out var layerPixelsToLocal))
+                return;
+            var layerAreaInLocal = new LtrbRect(0, 0, layerSize.Width, layerSize.Height)
+                .TransformToAABB(layerPixelsToLocal);
+            if (boundsRect.IntersectOrNull(layerAreaInLocal) is not { IsZeroSize: false } visibleBounds)
+                return;
+            var bounds = visibleBounds.ToRect();
+
+            if (state.IsRetained)
+            {
+                // The retained path cannot read the backdrop while an intermediate layer is open. Draw no
+                // effect and drop the snapshot: a new one refreshes the whole AABB when reading works again.
+                if (!backdropCanvas.IsBackdropSamplingSafe)
+                {
+                    state.DisposeSnapshot();
+                    return;
+                }
+
+                // The snapshot covers only the part of the AABB that is inside of the layer.
+                var snapshotBounds = new LtrbPixelRect(
+                    Math.Max(aabbInLayerPixels.Left, 0), Math.Max(aabbInLayerPixels.Top, 0),
+                    Math.Min(aabbInLayerPixels.Right, layerSize.Width),
+                    Math.Min(aabbInLayerPixels.Bottom, layerSize.Height));
+                if (snapshotBounds.Right <= snapshotBounds.Left || snapshotBounds.Bottom <= snapshotBounds.Top)
+                {
+                    state.DisposeSnapshot();
+                    return;
+                }
+
+                var snapshot = state.Snapshot ??= new ServerCompositionBackdropSnapshot();
+
+                LtrbPixelRect? inputDirtyRect = null;
+                if (state.InputDirtyRect is { } dirtyInLayer)
+                {
+                    var clamped = dirtyInLayer.IntersectOrEmpty(aabbInLayer)
+                        .IntersectOrEmpty(mapping.LayerPixelsToLayerSpace(snapshotBounds.ToLtrbRectUnscaled()));
+                    if (!clamped.IsZeroSize)
+                        inputDirtyRect = ToLayerPixels(clamped, mapping);
+                }
+
+                var renderContext = visual.Compositor.RenderInterface.Value;
+                snapshot.Draw(backdropCanvas, renderContext, snapshotBounds, inputDirtyRect,
+                    visual.BackdropEffect!, bounds);
+                state.InputDirtyRect = null; // the snapshot is up to date
+            }
+            else
+            {
+                // The backend reads the backdrop itself, also through open intermediate layers.
+                backdropCanvas.DrawVolatileBackdropEffect(bounds, visual.BackdropEffect!);
+            }
+        }
+
         public void PostSubgraph(ServerCompositionVisual visual)
         {
             if (_fullSkip)
@@ -188,7 +279,7 @@ partial class ServerCompositionVisual
 
                 if (visual.TextOptions != default)
                     _canvas.PopTextOptions();
-                
+
                 if (visual.RenderOptions != default)
                     _canvas.PopRenderOptions();
             }

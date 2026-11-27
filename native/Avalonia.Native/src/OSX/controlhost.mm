@@ -1,7 +1,7 @@
 #include "common.h"
 
 
-IAvnNativeControlHostTopLevelAttachment* CreateAttachment();
+static ComPtr<IAvnNativeControlHostTopLevelAttachment> CreateAttachment();
 
 class AvnNativeControlHost :
     public ComSingleObject<IAvnNativeControlHost, &IID_IAvnNativeControlHost>
@@ -16,8 +16,6 @@ public:
     
     virtual HRESULT CreateDefaultChild(void* parent, void** retOut) override
     {
-        START_COM_CALL;
-        
         @autoreleasepool
         {
             NSView* view = [NSView new];
@@ -28,7 +26,7 @@ public:
         }
     };
     
-    virtual IAvnNativeControlHostTopLevelAttachment* CreateAttachment() override
+    virtual ComPtr<IAvnNativeControlHostTopLevelAttachment> CreateAttachment() override
     {
         return ::CreateAttachment();
     };
@@ -77,8 +75,6 @@ public:
     
     virtual HRESULT InitializeWithChildHandle(void* child) override
     {
-        START_COM_CALL;
-        
         @autoreleasepool
         {
             if(_child != nil)
@@ -92,20 +88,18 @@ public:
         }
     };
     
-    virtual HRESULT AttachTo(IAvnNativeControlHost* host) override
+    virtual HRESULT AttachTo(const ComPtr<IAvnNativeControlHost>& host) override
     {
-        START_COM_CALL;
-        
         @autoreleasepool
         {
-            if(host == nil)
+            if(host == nullptr)
             {
                 [_holder removeFromSuperview];
                 [_holder setHidden: true];
             }
             else
             {
-                AvnNativeControlHost* chost = dynamic_cast<AvnNativeControlHost*>(host);
+                auto chost = host.dynamicCast<AvnNativeControlHost>();
                 if(chost == nil || chost->View == nil)
                     return E_FAIL;
                 [_holder setHidden:true];
@@ -121,11 +115,9 @@ public:
             return;
         if(AvnInsidePotentialDeadlock::IsInside())
         {
-            IAvnNativeControlHostTopLevelAttachment* slf = this;
-            slf->AddRef();
+            auto slf = comself(this);
             dispatch_async(dispatch_get_main_queue(), ^{
                 slf->ShowInBounds(x, y, width, height);
-                slf->Release();
             });
             return;
         }
@@ -146,11 +138,9 @@ public:
             return;
         if(AvnInsidePotentialDeadlock::IsInside())
         {
-            IAvnNativeControlHostTopLevelAttachment* slf = this;
-            slf->AddRef();
+            auto slf = comself(this);
             dispatch_async(dispatch_get_main_queue(), ^{
                 slf->HideWithSize(width, height);
-                slf->Release();
             });
             return;
         }
@@ -167,12 +157,12 @@ public:
     }
 };
 
-IAvnNativeControlHostTopLevelAttachment* CreateAttachment()
+static ComPtr<IAvnNativeControlHostTopLevelAttachment> CreateAttachment()
 {
-    return new AvnNativeControlHostTopLevelAttachment();
+    return comnew<AvnNativeControlHostTopLevelAttachment>();
 }
 
-extern IAvnNativeControlHost* CreateNativeControlHost(NSView* parent)
+extern ComPtr<IAvnNativeControlHost> CreateNativeControlHost(NSView* parent)
 {
-    return new AvnNativeControlHost(parent);
+    return comnew<AvnNativeControlHost>(parent);
 }

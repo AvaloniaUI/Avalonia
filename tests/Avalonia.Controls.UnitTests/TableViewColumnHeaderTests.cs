@@ -70,6 +70,72 @@ public sealed class TableViewColumnHeaderTests : ScopedTestBase
         Assert.Equal(new GridLength(6), column.Width);
     }
 
+    [Theory]
+    [InlineData(-500, 20, 120, 6, 20)]
+    [InlineData(500, 20, 120, 6, 120)]
+    [InlineData(20, 20, 120, 6, 70)]
+    [InlineData(-500, 100, 20, 6, 100)]
+    [InlineData(-500, 0, 4, 6, 4)]
+    public void Dragging_Resizer_Respects_Column_Limits(
+        double delta, double min, double max, int resizerWidth, double expected)
+    {
+        using var app = Start();
+        var column = new TableViewColumn
+        {
+            MinWidth = min,
+            MaxWidth = max,
+            CanUserResize = true,
+            ActualWidth = 50,
+        };
+        var header = new TableViewColumnHeader
+        {
+            Column = column,
+            Theme = TableViewColumnHeaderTheme(resizerWidth),
+        };
+        var root = new TestRoot { Child = header };
+        root.LayoutManager.ExecuteInitialLayoutPass();
+        var thumb = header.GetVisualDescendants().OfType<Thumb>().Single();
+
+        thumb.RaiseEvent(new VectorEventArgs
+        {
+            RoutedEvent = Thumb.DragDeltaEvent,
+            Vector = new Vector(delta, 0),
+        });
+
+        Assert.Equal(new GridLength(expected), column.Width);
+    }
+
+    [Theory]
+    [InlineData(false, 50)]
+    [InlineData(true, double.NaN)]
+    public void Dragging_Resizer_Ignores_Disabled_Or_Unmeasured_Columns(bool canResize, double actualWidth)
+    {
+        using var app = Start();
+        var column = new TableViewColumn
+        {
+            Width = GridLength.Auto,
+            CanUserResize = canResize,
+            ActualWidth = actualWidth,
+            MaxWidth = 100,
+        };
+        var header = new TableViewColumnHeader
+        {
+            Column = column,
+            Theme = TableViewColumnHeaderTheme(6),
+        };
+        var root = new TestRoot { Child = header };
+        root.LayoutManager.ExecuteInitialLayoutPass();
+        var thumb = header.GetVisualDescendants().OfType<Thumb>().Single();
+
+        thumb.RaiseEvent(new VectorEventArgs
+        {
+            RoutedEvent = Thumb.DragDeltaEvent,
+            Vector = new Vector(500, 0),
+        });
+
+        Assert.Equal(GridLength.Auto, column.Width);
+    }
+
     private static IDisposable Start()
         => UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
 

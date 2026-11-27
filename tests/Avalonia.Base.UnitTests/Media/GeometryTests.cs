@@ -3,10 +3,11 @@ using Avalonia.Media;
 using Avalonia.Platform;
 using Moq;
 using Xunit;
+using Avalonia.UnitTests;
 
 namespace Avalonia.Base.UnitTests.Media
 {
-    public class GeometryTests
+    public class GeometryTests : ScopedTestBase
     {
         [Fact]
         public void Changing_AffectsGeometry_Property_Causes_PlatformImpl_To_Be_Updated()

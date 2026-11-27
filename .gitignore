@@ -218,6 +218,7 @@ node_modules
 src/Browser/Avalonia.Browser.Blazor/webapp/package-lock.json
 src/Browser/Avalonia.Browser.Blazor/wwwroot
 src/Browser/Avalonia.Browser/wwwroot
+src/Browser/Avalonia.Browser/webapp/modules/avalonia/*.g.ts
 api/diff
 src/Browser/Avalonia.Browser/staticwebassets
 .serena

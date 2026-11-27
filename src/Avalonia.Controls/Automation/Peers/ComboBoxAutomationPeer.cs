@@ -20,8 +20,8 @@ namespace Avalonia.Automation.Peers
 
         public ExpandCollapseState ExpandCollapseState => ToState(Owner.IsDropDownOpen);
         public bool ShowsMenu => true;
-        public void Collapse() => Owner.IsDropDownOpen = false;
-        public void Expand() => Owner.IsDropDownOpen = true;
+        public void Collapse() => Owner.SetCurrentValue(ComboBox.IsDropDownOpenProperty, false);
+        public void Expand() => Owner.SetCurrentValue(ComboBox.IsDropDownOpenProperty, true);
         bool IValueProvider.IsReadOnly => !Owner.IsEditable;
 
         string? IValueProvider.Value

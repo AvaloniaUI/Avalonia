@@ -16,7 +16,7 @@
 #include <list>
 
 class TopLevelImpl : public virtual ComObject,
-                     public virtual IAvnTopLevel,
+                     public virtual MicroComImpl<IAvnTopLevel>,
                      public INSViewHolder{
     
 public:
@@ -27,29 +27,29 @@ public:
     
     virtual ~TopLevelImpl();
     
-    TopLevelImpl(IAvnTopLevelEvents* events);
+    TopLevelImpl(const ComPtr<IAvnTopLevelEvents>& events);
                          
     virtual AvnView *GetNSView() override;
                          
-    virtual HRESULT SetCursor(IAvnCursor* cursor) override;
+    virtual HRESULT SetCursor(const ComPtr<IAvnCursor>& cursor) override;
                          
     virtual HRESULT GetScaling(double*ret) override;
                          
     virtual HRESULT GetClientSize(AvnSize *ret) override;
                            
-    virtual HRESULT GetInputMethod(IAvnTextInputMethod **ppv) override;
+    virtual HRESULT GetInputMethod(ComPtr<IAvnTextInputMethod>& ppv) override;
                            
     virtual HRESULT ObtainNSViewHandle(void** retOut) override;
                                                   
     virtual HRESULT ObtainNSViewHandleRetained(void** retOut) override;
                            
-    virtual HRESULT CreateSoftwareRenderTarget(IAvnSoftwareRenderTarget** ret) override;
+    virtual HRESULT CreateSoftwareRenderTarget(ComPtr<IAvnSoftwareRenderTarget>& ret) override;
                                                   
-    virtual HRESULT CreateMetalRenderTarget(IAvnMetalDevice* device, IAvnMetalRenderTarget** ret) override;
+    virtual HRESULT CreateMetalRenderTarget(const ComPtr<IAvnMetalDevice>& device, ComPtr<IAvnMetalRenderTarget>& ret) override;
                            
-    virtual HRESULT CreateGlRenderTarget(IAvnGlContext* context, IAvnGlSurfaceRenderTarget** ret) override;
+    virtual HRESULT CreateGlRenderTarget(const ComPtr<IAvnGlContext>& context, ComPtr<IAvnGlSurfaceRenderTarget>& ret) override;
 
-    virtual HRESULT CreateNativeControlHost(IAvnNativeControlHost **retOut) override;
+    virtual HRESULT CreateNativeControlHost(ComPtr<IAvnNativeControlHost>& retOut) override;
                          
     virtual HRESULT Invalidate() override;
                          
@@ -64,8 +64,8 @@ public:
     virtual HRESULT BeginDragAndDropOperation(
         AvnDragDropEffects effects,
         AvnPoint point,
-        IAvnClipboardDataSource* source,
-        IAvnDndResultCallback* callback,
+        const ComPtr<IAvnClipboardDataSource>& source,
+        const ComPtr<IAvnDndResultCallback>& callback,
         void* sourceHandle) override;
 
 protected:

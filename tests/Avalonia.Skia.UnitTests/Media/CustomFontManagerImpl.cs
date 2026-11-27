@@ -84,7 +84,7 @@ namespace Avalonia.Skia.UnitTests.Media
         {
             if (SystemFonts.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, familyName, culture, out var glyphTypeface))
             {
-                platformTypeface = glyphTypeface.GlyphTypeface.PlatformTypeface;
+                platformTypeface = Share(glyphTypeface.GlyphTypeface.PlatformTypeface);
 
                 return true;
             }
@@ -102,7 +102,7 @@ namespace Avalonia.Skia.UnitTests.Media
         {
             if (SystemFonts.TryGetGlyphTypeface(familyName, style, weight, stretch, out var glyphTypeface))
             {
-                platformTypeface = glyphTypeface.PlatformTypeface;
+                platformTypeface = Share(glyphTypeface.PlatformTypeface);
 
                 return true;
             }
@@ -113,6 +113,20 @@ namespace Avalonia.Skia.UnitTests.Media
             platformTypeface = new SkiaTypeface(skTypeface, FontSimulations.None);
 
             return true;
+        }
+
+        /// <summary>
+        /// The caller owns a returned platform typeface, while the system font collection keeps
+        /// owning the typeface of its own glyph typeface, so a face found there is handed out behind
+        /// a typeface that does not own the shared SKTypeface. The faces of that collection are loaded
+        /// from font files, so the platform applied no simulation to them.
+        /// </summary>
+        private static IPlatformTypeface Share(IPlatformTypeface platformTypeface)
+        {
+            var skiaTypeface = (SkiaTypeface)platformTypeface;
+
+            return new SkiaTypeface(skiaTypeface.SKTypeface, skiaTypeface.FontSimulations, FontSimulations.None,
+                skiaTypeface.Style, skiaTypeface.Weight, skiaTypeface.Stretch, ownsTypeface: false);
         }
 
         public bool TryCreateGlyphTypeface(Stream stream, FontSimulations fontSimulations, [NotNullWhen(true)] out IPlatformTypeface platformTypeface)

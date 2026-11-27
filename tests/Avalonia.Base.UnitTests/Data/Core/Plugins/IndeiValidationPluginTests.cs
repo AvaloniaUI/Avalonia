@@ -5,10 +5,11 @@ using Avalonia.Data;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Threading;
 using Xunit;
+using Avalonia.UnitTests;
 
 namespace Avalonia.Base.UnitTests.Data.Core.Plugins
 {
-    public class IndeiValidationPluginTests
+    public class IndeiValidationPluginTests : ScopedTestBase
     {
         [Fact]
         public void Produces_BindingNotifications()

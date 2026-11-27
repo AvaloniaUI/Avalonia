@@ -77,6 +77,20 @@ namespace Avalonia.Controls.UnitTests.Presenters
         }
 
         [Fact]
+        public void TextPresenter_Should_Use_FontVariations_Property()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var variations = FontVariationSettings.Parse("wght=650, wdth=85");
+                var presenter = new TextPresenter { FontVariations = variations, Text = "test" };
+
+                Assert.NotNull(presenter.TextLayout);
+                Assert.NotNull(presenter.TextLayout.TextLines[0].TextRuns[0].Properties);
+                Assert.Equal(variations, presenter.TextLayout.TextLines[0].TextRuns[0].Properties!.Typeface.FontVariations);
+            }
+        }
+
+        [Fact]
         public void Measure_And_Arrange_Should_Use_WidthIncludingTrailingWhitespace_For_Bounds()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
@@ -102,6 +116,29 @@ namespace Avalonia.Controls.UnitTests.Presenters
         }
 
         [Fact]
+        public void CursorRectangle_Should_Reflect_Caret_Position()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var presenter = new TextPresenter
+                {
+                    Text = "Hello",
+                    CaretIndex = 2
+                };
+
+                presenter.Measure(Size.Infinity);
+                presenter.Arrange(new Rect(default, presenter.DesiredSize));
+                presenter.UpdateLayout();
+
+                var cursor = presenter.CursorRectangle;
+
+                Assert.True(cursor.Height > 0);
+                Assert.Equal(0, cursor.Width);
+                Assert.True(cursor.X > 0);
+            }
+        }
+
+        [Fact]
         public void HideCaret_Should_Keep_The_Text_Layout()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
@@ -118,6 +155,33 @@ namespace Avalonia.Controls.UnitTests.Presenters
                 // repaints; rebuilding the layout would reshape the text for nothing, and would
                 // dispose a layout its callers may still be holding.
                 Assert.Same(textLayout, presenter.TextLayout);
+            }
+        }
+
+        [Fact]
+        public void Caret_Points_Should_Be_Recalculated_When_Centered_TextLayout_Is_Recreated()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var presenter = new TextPresenter
+                {
+                    Text = "hello",
+                    CaretIndex = 5,
+                    TextAlignment = TextAlignment.Center,
+                    UseLayoutRounding = false
+                };
+
+                presenter.Measure(Size.Infinity);
+
+                var initialCaret = presenter.GetCaretPoints();
+
+                // Changing the width during arrange recreates the TextLayout. Center alignment
+                // moves the text, so the caret position needs to be recalculated as well.
+                presenter.Arrange(new Rect(0, 0, 300, presenter.DesiredSize.Height));
+
+                var arrangedCaret = presenter.GetCaretPoints();
+
+                Assert.True(arrangedCaret.Item1.X > initialCaret.Item1.X);
             }
         }
     }

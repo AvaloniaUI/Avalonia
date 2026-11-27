@@ -180,7 +180,8 @@ class VulkanSwapchainImage : ISwapchainImage
                 MemorySize = _image.MemorySize,
                 VulkanProperties = new PlatformGraphicsExternalImageVulkanProperties
                 {
-                    Layout = (int)ImageLayout.TransferSrcOptimal
+                    Layout = (int)ImageLayout.TransferSrcOptimal,
+                    IsDedicatedAllocation = _image.IsDedicatedAllocation
                 }
             });
         if (_importedTimelineSemaphore != null)

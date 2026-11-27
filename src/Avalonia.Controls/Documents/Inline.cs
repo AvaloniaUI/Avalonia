@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Text;
+using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 
@@ -82,6 +83,24 @@ namespace Avalonia.Controls.Documents
         /// </remarks>
         internal virtual bool MeasureEmbeddedControls(Size blockSize) => false;
 
+        /// <summary>
+        /// Applies the styles of this inline and of the inlines it contains.
+        /// </summary>
+        /// <remarks>
+        /// A style change clears the styles of every element below the style host. A control gets
+        /// them back from its own measure pass; an inline has none, so its block applies them from
+        /// its measure pass.
+        /// </remarks>
+        internal virtual void ApplyInlineStyling()
+        {
+            // A detached inline finds no styles, and styling it anyway would mark them applied,
+            // so attaching it later would not apply them. Attaching applies them in any case.
+            if (((ILogical)this).IsAttachedToLogicalTree)
+            {
+                ApplyStyling();
+            }
+        }
+
         internal abstract void AppendText(StringBuilder stringBuilder);
 
         protected TextRunProperties CreateTextRunProperties()
@@ -89,10 +108,11 @@ namespace Avalonia.Controls.Documents
             var parentOrSelfBackground = Background ?? FindParentBackground();
 
             var typeface = new Typeface(
-                FontFamily, 
-                FontStyle, 
-                FontWeight, 
-                FontStretch);
+                FontFamily,
+                FontStyle,
+                FontWeight,
+                FontStretch,
+                FontVariations);
 
             return new GenericTextRunProperties(
                 typeface,

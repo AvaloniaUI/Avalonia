@@ -266,7 +266,7 @@ namespace Avalonia.Controls
             });
             ScalingChanged += OnScalingChangedUpdateDecorations;
 
-            CreatePlatformImplBinding(TitleProperty, title => PlatformImpl!.SetTitle(title));
+            CreatePlatformImplBinding(TitleProperty, title => PlatformImpl!.SetTitle(title?.Replace("\0", string.Empty)));
             CreatePlatformImplBinding(IconProperty, SetEffectiveIcon);
             CreatePlatformImplBinding(CanResizeProperty, canResize => PlatformImpl!.CanResize(canResize));
             CreatePlatformImplBinding(CanMinimizeProperty, canMinimize => PlatformImpl!.SetCanMinimize(canMinimize));
@@ -1494,6 +1494,16 @@ namespace Avalonia.Controls
 
                 Width = clientSize.Width;
                 Height = clientSize.Height;
+            }
+            else if (_shown && !_canHandleResized)
+            {
+                // Show() is in progress: the platform may have constrained the requested size.
+                // Update an explicit Width/Height before any layout pass, otherwise the content would be
+                // measured with the requested size but arranged with the actual one.
+                if (!double.IsNaN(Width))
+                    Width = clientSize.Width;
+                if (!double.IsNaN(Height))
+                    Height = clientSize.Height;
             }
 
             base.HandleResized(clientSize, reason);
