@@ -98,12 +98,13 @@ public sealed class DropShadowDirectionEffect : DropShadowEffectBase, IDirection
     }
     
     public double OffsetX => Math.Cos(Direction * Math.PI / 180) * ShadowDepth;
-    public double OffsetY => Math.Sin(Direction * Math.PI / 180) * ShadowDepth;
+    // As in WPF, Direction is measured anticlockwise with Y pointing up.
+    public double OffsetY => -Math.Sin(Direction * Math.PI / 180) * ShadowDepth;
 
     static DropShadowDirectionEffect()
     {
         AffectsRender<DropShadowDirectionEffect>(ShadowDepthProperty, DirectionProperty);
     }
 
-    public IImmutableEffect ToImmutable() => new ImmutableDropShadowDirectionEffect(OffsetX, OffsetY, BlurRadius, Color, Opacity);
+    public IImmutableEffect ToImmutable() => new ImmutableDropShadowDirectionEffect(Direction, ShadowDepth, BlurRadius, Color, Opacity);
 }
