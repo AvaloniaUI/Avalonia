@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
 using Avalonia.Data.Core;
 using Avalonia.Data.Core.Parsers;
@@ -153,10 +154,26 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
                 if (mode == "FindAncestor")
                 {
-                    var ancestorLevel = relativeSourceObject.Children
+                    var ancestorLevel = 0;
+                    var ancestorLevelNode = relativeSourceObject.Children
                         .OfType<XamlAstXamlPropertyValueNode>()
-                        .FirstOrDefault(x => x.Property.GetClrProperty().Name == "FindAncestor")
-                        ?.Values[0] is XamlAstTextNode ancestorLevelText ? int.Parse(ancestorLevelText.Text) - 1 : 0;
+                        .FirstOrDefault(x => x.Property.GetClrProperty().Name == "AncestorLevel")
+                        ?.Values[0];
+
+                    if (ancestorLevelNode is not null)
+                    {
+                        if (ancestorLevelNode is not XamlAstTextNode ancestorLevelText)
+                        {
+                            throw new XamlBindingsTransformException("Unsupported node for AncestorLevel property", ancestorLevelNode);
+                        }
+
+                        if (!int.TryParse(ancestorLevelText.Text, NumberStyles.Integer, CultureInfo.InvariantCulture, out var level) || level < 1)
+                        {
+                            throw new XamlBindingsTransformException($"Invalid AncestorLevel '{ancestorLevelText.Text}'. AncestorLevel must be an integer greater than or equal to 1.", ancestorLevelText);
+                        }
+
+                        ancestorLevel = level - 1;
+                    }
 
                     var treeType = relativeSourceObject.Children
                         .OfType<XamlAstXamlPropertyValueNode>()
