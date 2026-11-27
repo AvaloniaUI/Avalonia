@@ -66,6 +66,9 @@ internal static partial class InputHelper
     [JSImport("InputHelper.focusElement", AvaloniaModule.MainModuleName)]
     public static partial void FocusElement(JSObject htmlElement);
 
+    [JSImport("InputHelper.focusHost", AvaloniaModule.MainModuleName)]
+    public static partial void FocusHost(JSObject host);
+
     [JSImport("InputHelper.setCursor", AvaloniaModule.MainModuleName)]
     public static partial void SetCursor(JSObject htmlElement, string kind);
 
