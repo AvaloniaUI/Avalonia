@@ -121,6 +121,66 @@ public class ShapedBufferTests
     }
 
     [Fact]
+    public void Split_Descending_Preserves_GlyphIndices_Alignment()
+    {
+        var typeface = LoadInter();
+
+        // RTL (bidi 1): clusters descending in visual order.
+        using var buffer = new ShapedBuffer("ABCDE".AsMemory(), 5, typeface, 16, 1);
+        buffer[0] = new GlyphInfo(50, 4, 5);
+        buffer[1] = new GlyphInfo(40, 3, 5);
+        buffer[2] = new GlyphInfo(30, 2, 5);
+        buffer[3] = new GlyphInfo(20, 1, 5);
+        buffer[4] = new GlyphInfo(10, 0, 5);
+
+        var split = buffer.Split(2);
+
+        using var first = split.First!;
+        using var second = split.Second!;
+
+        Assert.Equal(new ushort[] { 20, 10 }, first.GlyphIndices.ToArray());
+        Assert.Equal(new ushort[] { 50, 40, 30 }, second.GlyphIndices.ToArray());
+    }
+
+    [Fact]
+    public void WithBidiLevel_Shares_GlyphIndices()
+    {
+        var typeface = LoadInter();
+
+        using var buffer = new ShapedBuffer("AB".AsMemory(), 2, typeface, 16, 0);
+        buffer[0] = new GlyphInfo(10, 0, 5);
+        buffer[1] = new GlyphInfo(20, 1, 5);
+
+        using var alias = buffer.WithBidiLevel(1);
+
+        Assert.Equal(new ushort[] { 10, 20 }, alias.GlyphIndices.ToArray());
+        Assert.Equal(2, buffer.GlyphStorageRefCount);
+
+        buffer.Dispose();
+
+        // The alias keeps the shared storage, glyph indices included, alive on its own.
+        Assert.Equal(1, alias.GlyphStorageRefCount);
+        Assert.Equal(new ushort[] { 10, 20 }, alias.GlyphIndices.ToArray());
+    }
+
+    [Fact]
+    public void CloneWritable_Copies_GlyphIndices()
+    {
+        var typeface = LoadInter();
+
+        using var buffer = new ShapedBuffer("AB".AsMemory(), 2, typeface, 16, 0);
+        buffer[0] = new GlyphInfo(10, 0, 5);
+        buffer[1] = new GlyphInfo(20, 1, 5);
+
+        using var clone = buffer.CloneWritable();
+
+        clone[0] = new GlyphInfo(99, 0, 5);
+
+        Assert.Equal(new ushort[] { 99, 20 }, clone.GlyphIndices.ToArray());
+        Assert.Equal(new ushort[] { 10, 20 }, buffer.GlyphIndices.ToArray());
+    }
+
+    [Fact]
     public void Dispose_Clears_GlyphIndices_View()
     {
         var typeface = LoadInter();
