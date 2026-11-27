@@ -1161,7 +1161,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Prompts_Return_On_Focus_When_HidePromptOnLeave_Is_Turned_Off_While_Hidden()
+        public void Changing_HidePromptOnLeave_While_Not_Focused_Updates_Text()
         {
             using (Start(FocusServices))
             {
@@ -1180,9 +1180,37 @@ namespace Avalonia.Controls.UnitTests
                 target.Text = "123";
                 other.Focus();
                 target.HidePromptOnLeave = false;
-                target.Focus();
 
                 Assert.Equal("123-___", target.Text);
+
+                target.HidePromptOnLeave = true;
+
+                Assert.Equal("123-", target.Text);
+            }
+        }
+
+        [Fact]
+        public void HidePromptOnLeave_Selects_Text_With_Prompts_On_Tab_Focus()
+        {
+            using (Start(FocusServices))
+            {
+                var target = new MaskedTextBox
+                {
+                    Template = CreateTemplate(),
+                    Mask = "000-000",
+                    HidePromptOnLeave = true,
+                };
+                var other = new MaskedTextBox { Template = CreateTemplate() };
+                var root = new TestRoot { Child = new StackPanel { Children = { target, other } } };
+                target.ApplyTemplate();
+                other.ApplyTemplate();
+
+                target.Focus();
+                target.Text = "123";
+                other.Focus();
+                target.Focus(NavigationMethod.Tab);
+
+                Assert.Equal("123-___", target.SelectedText);
             }
         }
 
@@ -1214,6 +1242,7 @@ namespace Avalonia.Controls.UnitTests
         [Theory]
         [InlineData("000-000", false, "123", "123-___")]
         [InlineData("000-000", true, "1 3", "1 3-")]
+        [InlineData("000-000", true, "", "   -")]
         [InlineData("000", true, "", "")]
         public void HidePromptOnLeave_Text_After_Focus_Leaves(string mask, bool hidePromptOnLeave, string text, string expected)
         {

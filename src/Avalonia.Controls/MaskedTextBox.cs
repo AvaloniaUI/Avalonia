@@ -449,7 +449,7 @@ namespace Avalonia.Controls
         /// <inheritdoc />
         protected override string? CoerceText(string? text)
         {
-            // The shown text can hold password characters, which some masks accept as input.
+            // The shown text can hold password characters or hidden prompts, which the provider would read as input.
             if (!_ignoreTextChanges && MaskProvider is { } maskProvider && text != GetText(maskProvider))
             {
                 if (string.IsNullOrEmpty(text))
@@ -469,7 +469,7 @@ namespace Avalonia.Controls
             var hidePrompt = HidePromptOnLeave && !IsFocused && ContextFlyout?.IsOpen != true && ContextMenu?.IsOpen != true;
 
             return hidePrompt
-                ? provider.ToString(ignorePasswordChar: false, includePrompt: false, includeLiterals: true, 0, provider.Length)
+                ? provider.ToString(ignorePasswordChar: false, includePrompt: false, includeLiterals: true, startPosition: 0, length: provider.Length)
                 : provider.ToDisplayString();
         }
 
@@ -477,16 +477,7 @@ namespace Avalonia.Controls
         {
             if (MaskProvider is { } provider)
             {
-                // Setting the text through the provider would read prompts and password characters as input.
-                _ignoreTextChanges = true;
-                try
-                {
-                    SetTextFromInternalSynchronization(GetText(provider));
-                }
-                finally
-                {
-                    _ignoreTextChanges = false;
-                }
+                SetTextFromInternalSynchronization(GetText(provider));
             }
         }
     }
