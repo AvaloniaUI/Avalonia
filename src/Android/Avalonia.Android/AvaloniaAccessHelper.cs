@@ -336,7 +336,7 @@ namespace Avalonia.Android
             nodeInfo.Focused = peer.HasKeyboardFocus();
 
             // Control Parent
-            if (peer.GetParent() is { } parent)
+            if (peer == _peers[0] && peer.GetParent() is { } parent)
             {
                 GetOrCreateNodeInfoProvidersFromPeer(parent, out var parentVirtualViewId);
                 nodeInfo.SetParent(_view, parentVirtualViewId);
