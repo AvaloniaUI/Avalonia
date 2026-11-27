@@ -823,7 +823,7 @@ namespace Avalonia.Input
             {
                 isTabStopOverridden = candidateTargetAsIE.ProcessCandidateTabStopInternal(focusedElement, null, isReverse, out spNewTabStop);
             }
-            else if (isTabStopOverridden && newTabStop != null)
+            else if (isTabStopOverridden && spNewTabStop != null)
             {
                 newCandidateTargetAsIE = spNewTabStop as InputElement;
                 if (newCandidateTargetAsIE != null)
@@ -843,7 +843,7 @@ namespace Avalonia.Input
             }
             else if (isTabStopOverridden)
             {
-                if (newTabStop != null)
+                if (spNewTabStop != null)
                 {
                     newTabStop = spNewTabStop;
                 }
