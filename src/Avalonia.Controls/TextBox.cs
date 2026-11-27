@@ -23,6 +23,7 @@ using Avalonia.Platform;
 using Avalonia.Reactive;
 using Avalonia.Threading;
 using Avalonia.Utilities;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -380,6 +381,8 @@ namespace Avalonia.Controls
         private readonly UndoRedoHelper<UndoRedoState> _undoRedoHelper;
         private bool _isUndoingRedoing;
         private TextMutationKind _textMutationKind;
+        private int _changeDepth;
+        private bool _selectionChangedInChange;
         // Coercion runs before the new value is committed, so a snapshot taken there would capture the old text.
         private bool _needsUndoRedoSnapshotAfterTextChange;
         private bool _canCut;
@@ -492,7 +495,7 @@ namespace Avalonia.Controls
             if (IsUndoEnabled && _undoRedoHelper.TryGetLastState(out state) && state.Text == Text)
                 _undoRedoHelper.UpdateLastState();
 
-            using var _ = _imClient.BeginChange();
+            using var _ = BeginChange();
 
             var newValue = e.GetNewValue<int>();
             SetCurrentValue(SelectionStartProperty, newValue);
@@ -944,6 +947,149 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Raised once the caret and selection have settled after a change, however many of
+        /// <see cref="CaretIndex"/>, <see cref="SelectionStart"/> and <see cref="SelectionEnd"/> it moved.
+        /// </summary>
+        internal event EventHandler? SelectionSettled;
+
+        // Groups edits and selection moves so the input method client and SelectionSettled see the
+        // final state, never one with only some of the selection properties updated.
+        internal ChangeScope BeginChange()
+        {
+            _changeDepth++;
+            return new ChangeScope(this, _imClient.BeginChange());
+        }
+
+        private void EndChange()
+        {
+            if (--_changeDepth > 0 || !_selectionChangedInChange)
+            {
+                return;
+            }
+
+            _selectionChangedInChange = false;
+            SelectionSettled?.Invoke(this, EventArgs.Empty);
+        }
+
+        internal readonly struct ChangeScope : IDisposable
+        {
+            private readonly TextBox _owner;
+            private readonly IDisposable _imChange;
+
+            public ChangeScope(TextBox owner, IDisposable imChange)
+            {
+                _owner = owner;
+                _imChange = imChange;
+            }
+
+            public void Dispose()
+            {
+                _imChange.Dispose();
+                _owner.EndChange();
+            }
+        }
+
+        // Top-level-space rectangles for a character range, used by the automation text provider
+        // (the platform layer converts them to screen coordinates).
+        internal Rect[] GetTextRangeBounds(int start, int length)
+        {
+            if (_presenter is null || length <= 0 || this.GetVisualRoot() is not Visual root)
+            {
+                return Array.Empty<Rect>();
+            }
+
+            var transform = _presenter.TransformToVisual(root);
+            if (transform is null)
+            {
+                return Array.Empty<Rect>();
+            }
+
+            var result = new List<Rect>();
+            foreach (var rect in _presenter.TextLayout.HitTestTextRange(start, length))
+            {
+                result.Add(rect.TransformToAABB(transform.Value));
+            }
+
+            return result.ToArray();
+        }
+
+        // Nearest character offset for a point in top-level coordinates (the inverse of
+        // GetTextRangeBounds), used by the automation text provider for hit-testing. Returns -1 when
+        // there is no layout.
+        internal int GetOffsetFromTopLevelPoint(Point topLevelPoint)
+        {
+            if (_presenter is null || this.GetVisualRoot() is not Visual root)
+            {
+                return -1;
+            }
+
+            var transform = root.TransformToVisual(_presenter);
+            if (transform is null)
+            {
+                return -1;
+            }
+
+            var local = topLevelPoint.Transform(transform.Value);
+            var hit = _presenter.TextLayout.HitTestPoint(local);
+
+            return hit.CharacterHit.FirstCharacterIndex + hit.CharacterHit.TrailingLength;
+        }
+
+        // The character offset range currently visible in the presenter's viewport, hit-tested at the
+        // viewport corners. Returns (-1, -1) when there is no layout.
+        internal (int Start, int End) GetVisibleTextRange()
+        {
+            if (_presenter is null || this.GetVisualRoot() is not Visual root)
+            {
+                return (-1, -1);
+            }
+
+            var transform = _presenter.TransformToVisual(root);
+            if (transform is null)
+            {
+                return (-1, -1);
+            }
+
+            var bounds = new Rect(_presenter.Bounds.Size);
+            var start = GetOffsetFromTopLevelPoint(bounds.TopLeft.Transform(transform.Value));
+            var end = GetOffsetFromTopLevelPoint(bounds.BottomRight.Transform(transform.Value));
+
+            if (start < 0 || end < 0)
+            {
+                return (-1, -1);
+            }
+
+            return start <= end ? (start, end) : (end, start);
+        }
+
+        // Scrolls the presenter so the given character range is visible (best-effort, via the
+        // ScrollViewer's BringIntoView). Used by the automation text providers' scroll operations.
+        internal void ScrollTextRangeIntoView(int start, int length)
+        {
+            if (_presenter is null)
+            {
+                return;
+            }
+
+            if (length <= 0)
+            {
+                _presenter.BringIntoView(_presenter.TextLayout.HitTestTextPosition(start));
+                return;
+            }
+
+            Rect? union = null;
+            foreach (var rect in _presenter.TextLayout.HitTestTextRange(start, length))
+            {
+                union = union is null ? rect : union.Value.Union(rect);
+            }
+
+            if (union is { } bounds)
+            {
+                _presenter.BringIntoView(bounds);
+            }
+        }
+
+        /// <summary>
         /// Raised when content is being copied to the clipboard
         /// </summary>
         public event EventHandler<RoutedEventArgs>? CopyingToClipboard
@@ -1062,10 +1208,29 @@ namespace Avalonia.Controls
         {
             base.OnPropertyChanged(change);
 
+            if (change.Property == CaretIndexProperty ||
+                change.Property == SelectionStartProperty ||
+                change.Property == SelectionEndProperty)
+            {
+                // Each handler moves the other selection properties; the scope reports the selection
+                // once, after they have all settled.
+                using var _ = BeginChange();
+                _selectionChangedInChange = true;
+
+                if (change.Property == CaretIndexProperty)
+                    OnCaretIndexChanged(change);
+                else if (change.Property == SelectionStartProperty)
+                    OnSelectionStartChanged(change);
+                else
+                    OnSelectionEndChanged(change);
+
+                return;
+            }
+
             if (change.Property == TextProperty)
             {
                 // Do not expose a selection with only one endpoint coerced to the new text.
-                using var _ = _imClient.BeginChange();
+                using var _ = BeginChange();
 
                 if (_needsUndoRedoSnapshotAfterTextChange)
                 {
@@ -1087,18 +1252,6 @@ namespace Avalonia.Controls
                 change.Property == RevealPasswordProperty)
             {
                 UpdateCommandStates();
-            }
-            else if (change.Property == CaretIndexProperty)
-            {
-                OnCaretIndexChanged(change);
-            }
-            else if (change.Property == SelectionStartProperty)
-            {
-                OnSelectionStartChanged(change);
-            }
-            else if (change.Property == SelectionEndProperty)
-            {
-                OnSelectionEndChanged(change);
             }
             else if (change.Property == MaxLinesProperty)
             {
@@ -1426,7 +1579,7 @@ namespace Avalonia.Controls
 
             var keymap = Application.Current!.PlatformSettings!.HotkeyConfiguration;
 
-            using var _ = _imClient.BeginChange();
+            using var _ = BeginChange();
 
             bool Match(List<KeyGesture> gestures) => gestures.Any(g => g.Matches(e));
             bool DetectSelection() => e.KeyModifiers.HasAllFlags(keymap.SelectionModifiers);
@@ -1776,7 +1929,7 @@ namespace Avalonia.Controls
 
             var text = Text;
 
-            using var _ = _imClient.BeginChange();
+            using var _ = BeginChange();
 
             if (text != null)
             {
@@ -1846,7 +1999,7 @@ namespace Avalonia.Controls
             var text = Text;
             var clickInfo = e.GetCurrentPoint(this);
 
-            using var _ = _imClient.BeginChange();
+            using var _ = BeginChange();
 
             _isInTouchMode = false;
             _isInTouchSelectionMode = false;
@@ -1965,7 +2118,7 @@ namespace Avalonia.Controls
             {
                 return;
             }
-            using var _ = _imClient.BeginChange();
+            using var _ = BeginChange();
             var point = e.GetPosition(_presenter);
 
             if (e.Pointer.Type == PointerType.Mouse)
@@ -2108,7 +2261,7 @@ namespace Avalonia.Controls
                 return;
             }
 
-            using var change = _imClient.BeginChange();
+            using var change = BeginChange();
 
             if (e.Pointer.Type != PointerType.Mouse && !_isInTouchSelectionMode)
             {
@@ -2226,7 +2379,7 @@ namespace Avalonia.Controls
                 return;
             }
 
-            using var _ = _imClient.BeginChange();
+            using var _ = BeginChange();
 
             var text = Text ?? string.Empty;
             var selectionStart = SelectionStart;
@@ -2443,7 +2596,7 @@ namespace Avalonia.Controls
         /// </summary>
         public void SelectAll()
         {
-            using var _ = _imClient.BeginChange();
+            using var _ = BeginChange();
 
             SetCurrentValue(SelectionStartProperty, 0);
             SetCurrentValue(SelectionEndProperty, Text?.Length ?? 0);
@@ -2462,7 +2615,7 @@ namespace Avalonia.Controls
             if (IsReadOnly)
                 return true;
 
-            using var _ = _imClient.BeginChange();
+            using var _ = BeginChange();
 
             var (start, end) = GetSelectionRange();
 
@@ -2610,7 +2763,7 @@ namespace Avalonia.Controls
             var text = Text ?? string.Empty;
             var selectionStart = CaretIndex;
 
-            using var _ = _imClient.BeginChange();
+            using var _ = BeginChange();
 
             MoveHorizontal(-1, true, false, false);
 
@@ -2631,7 +2784,7 @@ namespace Avalonia.Controls
                 return;
             }
 
-            using var _ = _imClient.BeginChange();
+            using var _ = BeginChange();
 
             SetCurrentValue(SelectionStartProperty, CaretIndex);
 
