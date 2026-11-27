@@ -5,6 +5,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Reactive;
+using Avalonia.Layout;
 using Avalonia.Media;
 
 namespace Avalonia.Controls
@@ -69,7 +70,7 @@ namespace Avalonia.Controls
 
             // Determine the largest available size after the transformation
             Size finalSizeTransformed = ComputeLargestTransformedSize(finalSize);
-            if (IsSizeSmaller(finalSizeTransformed, TransformRoot.DesiredSize))
+            if (IsSizeSmaller(RoundLayoutSizeUp(finalSizeTransformed), TransformRoot.DesiredSize))
             {
                 // Some elements do not like being given less space than they asked for (ex: TextBlock)
                 // Bump the working size up to do the right thing by them
@@ -125,7 +126,7 @@ namespace Avalonia.Controls
             if (_childActualSize == default)
             {
                 // Determine the largest size after the transformation
-                measureSize = ComputeLargestTransformedSize(availableSize);
+                measureSize = RoundLayoutSizeUp(ComputeLargestTransformedSize(availableSize));
             }
             else
             {
@@ -247,6 +248,11 @@ namespace Avalonia.Controls
         private static bool IsSizeSmaller(Size a, Size b)
         {
             return (a.Width + AcceptableDelta < b.Width) || (a.Height + AcceptableDelta < b.Height);
+        }
+
+        private Size RoundLayoutSizeUp(Size size)
+        {
+            return UseLayoutRounding ? LayoutHelper.RoundLayoutSizeUp(size, LayoutHelper.GetLayoutScale(TransformRoot!)) : size;
         }
 
         /// <summary>
