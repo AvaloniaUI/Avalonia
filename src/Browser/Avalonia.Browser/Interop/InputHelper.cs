@@ -8,16 +8,10 @@ internal static partial class InputHelper
 {
     public static Task RedirectInputAsync(int topLevelId, Action<BrowserTopLevelImpl> handler)
     {
+        using var _ = JsCallbackHelper.EnsureDispatcherContext();
         if (BrowserTopLevelImpl.TryGetTopLevel(topLevelId) is { } topLevelImpl)
             handler(topLevelImpl);
         return Task.CompletedTask;
-    }
-
-    public static Task<T> RedirectInputRetunAsync<T>(int topLevelId, Func<BrowserTopLevelImpl, T> handler, T @default)
-    {
-        if (BrowserTopLevelImpl.TryGetTopLevel(topLevelId) is { } topLevelImpl)
-            return Task.FromResult(handler(topLevelImpl));
-        return Task.FromResult(@default);
     }
 
     [JSImport("InputHelper.subscribeInputEvents", AvaloniaModule.MainModuleName)]
@@ -26,21 +20,31 @@ internal static partial class InputHelper
     [JSImport("InputHelper.subscribeEditContextEvents", AvaloniaModule.MainModuleName)]
     public static partial JSObject SubscribeEditContextEvents(JSObject htmlElement, int topLevelId);
 
-    [JSExport]
-    public static Task<bool> OnKeyDown(int topLevelId, string code, string key, int modifier) =>
-        RedirectInputRetunAsync(topLevelId, t => t.InputHandler.OnKeyDown(code, key, modifier), false);
+    /// <summary>
+    /// Hands the input queue control block to JS. <paramref name="threadingEnabled"/> tells JS that
+    /// synchronous exports cannot be called from the browser main thread.
+    /// </summary>
+    [JSImport("InputQueue.attach", AvaloniaModule.MainModuleName)]
+    public static partial void AttachInputQueue(int controlBlockPtr, bool threadingEnabled);
 
+    /// <summary>
+    /// Drains the input queue and dispatches everything inline. Returns the handled state of the record just
+    /// posted, which is the one whose DOM handler is asking. Single-threaded runtime only.
+    /// </summary>
     [JSExport]
-    public static Task<bool> OnKeyUp(int topLevelId, string code, string key, int modifier) =>
-        RedirectInputRetunAsync(topLevelId, t => t.InputHandler.OnKeyUp(code, key, modifier), false);
+    public static bool FlushInputSync()
+    {
+        using var _ = JsCallbackHelper.EnsureDispatcherContext();
+        return BrowserInputQueue.FlushSync();
+    }
 
     [JSExport]
     public static Task OnCompositionStart(int topLevelId) =>
         RedirectInputAsync(topLevelId, t => t.InputHandler.TextInputMethod?.OnCompositionStart());
 
     [JSExport]
-    public static Task OnTextUpdate(int topLevelId, int rangeStart, int rangeEnd, string? text, int selectionStart, int selectionEnd) =>
-        RedirectInputAsync(topLevelId, t => t.InputHandler.TextInputMethod?.OnTextUpdate(rangeStart, rangeEnd, text, selectionStart, selectionEnd));
+    public static Task OnTextUpdate(int topLevelId, double timeStamp, int rangeStart, int rangeEnd, string? text, int selectionStart, int selectionEnd) =>
+        RedirectInputAsync(topLevelId, t => t.InputHandler.TextInputMethod?.OnTextUpdate((ulong)timeStamp, rangeStart, rangeEnd, text, selectionStart, selectionEnd));
 
     [JSExport]
     public static Task OnCharacterBoundsUpdate(int topLevelId, int rangeStart, int rangeEnd) =>
@@ -51,38 +55,8 @@ internal static partial class InputHelper
         RedirectInputAsync(topLevelId, t => t.InputHandler.TextInputMethod?.OnCompositionEnd());
 
     [JSExport]
-    public static Task OnPointerMove(int topLevelId, string pointerType, [JSMarshalAs<JSType.Number>] long pointerId,
-        double offsetX, double offsetY, double pressure, double tiltX, double tiltY, double twist, int modifier, JSObject argsObj) =>
-        RedirectInputAsync(topLevelId, t => t.InputHandler
-            .OnPointerMove(pointerType, pointerId, offsetX, offsetY, pressure, tiltX, tiltY, twist, modifier, argsObj));
-
-    [JSExport]
-    public static Task OnPointerDown(int topLevelId, string pointerType, [JSMarshalAs<JSType.Number>] long pointerId, int buttons,
-        double offsetX, double offsetY, double pressure, double tiltX, double tiltY, double twist, int modifier) =>
-        RedirectInputAsync(topLevelId, t => t.InputHandler
-            .OnPointerDown(pointerType, pointerId, buttons, offsetX, offsetY, pressure, tiltX, tiltY, twist, modifier));
-
-    [JSExport]
-    public static Task OnPointerUp(int topLevelId, string pointerType, [JSMarshalAs<JSType.Number>] long pointerId, int buttons,
-        double offsetX, double offsetY, double pressure, double tiltX, double tiltY, double twist, int modifier) =>
-        RedirectInputAsync(topLevelId, t => t.InputHandler
-            .OnPointerUp(pointerType, pointerId, buttons, offsetX, offsetY, pressure, tiltX, tiltY, twist, modifier));
-
-    [JSExport]
-    public static Task OnPointerCancel(int topLevelId, string pointerType, [JSMarshalAs<JSType.Number>] long pointerId,
-        double offsetX, double offsetY, double pressure, double tiltX, double tiltY, double twist, int modifier) =>
-        RedirectInputAsync(topLevelId, t => t.InputHandler
-            .OnPointerCancel(pointerType, pointerId, offsetX, offsetY, pressure, tiltX, tiltY, twist, modifier));
-
-    [JSExport]
-    public static Task OnWheel(int topLevelId,
-        double offsetX, double offsetY,
-        double deltaX, double deltaY, int modifier) =>
-        RedirectInputAsync(topLevelId, t => t.InputHandler.OnWheel(offsetX, offsetY, deltaX, deltaY, modifier));
-
-    [JSExport]
-    public static Task OnDragDrop(int topLevelId, string type, double offsetX, double offsetY, int modifiers, JSObject dataTransfer, JSObject items) =>
-        RedirectInputAsync(topLevelId, t => t.InputHandler.OnDragEvent(type, offsetX, offsetY, modifiers, dataTransfer, items));
+    public static Task OnDragDrop(int topLevelId, string type, double offsetX, double offsetY, int keyModifiers, int buttons, JSObject dataTransfer, JSObject items) =>
+        RedirectInputAsync(topLevelId, t => t.InputHandler.OnDragEvent(type, offsetX, offsetY, keyModifiers, buttons, dataTransfer, items));
 
     [JSExport]
     public static Task OnKeyboardGeometryChange(int topLevelId, double x, double y, double width, double height) =>
@@ -91,10 +65,6 @@ internal static partial class InputHelper
 
     [JSImport("Caniuse.supportsEditContext", AvaloniaModule.MainModuleName)]
     public static partial bool SupportsEditContext();
-
-    [JSImport("InputHelper.getCoalescedEvents", AvaloniaModule.MainModuleName)]
-    [return: JSMarshalAs<JSType.Array<JSType.Number>>]
-    public static partial double[] GetCoalescedEvents(JSObject pointerEvent);
 
     [JSImport("InputHelper.clearInput", AvaloniaModule.MainModuleName)]
     public static partial void ClearInputElement(JSObject htmlElement);

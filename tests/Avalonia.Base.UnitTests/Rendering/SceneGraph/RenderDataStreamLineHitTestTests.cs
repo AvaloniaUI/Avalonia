@@ -2,10 +2,11 @@ using System.Collections.Generic;
 using Avalonia.Media;
 using Avalonia.Rendering.Composition.Drawing;
 using Xunit;
+using Avalonia.UnitTests;
 
 namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
 {
-    public class RenderDataStreamLineHitTestTests
+    public class RenderDataStreamLineHitTestTests : ScopedTestBase
     {
         private static RenderDataStream LineStream(IPen pen, Point p1, Point p2)
         {

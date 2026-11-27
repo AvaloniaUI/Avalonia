@@ -12,6 +12,27 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     public class BindingExtensionTests : XamlTestBase
     {
         [Fact]
+        public void SupportCastToNestedTypeInExpression()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        >
+    <ContentControl Content='{Binding $parent.((local:ReflectionOuter+Nested)DataContext).NestedProperty}' Name='contentControl' />
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var contentControl = window.GetControl<ContentControl>("contentControl");
+
+                window.DataContext = new ReflectionOuter.Nested { NestedProperty = "hello" };
+
+                Assert.Equal("hello", contentControl.Content);
+            }
+        }
+
+        [Fact]
         public void BindingExtension_Binds_To_Source()
         {
             using (StyledWindow())
@@ -165,6 +186,14 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                             }))
                 }
             };
+        }
+    }
+
+    public class ReflectionOuter
+    {
+        public class Nested
+        {
+            public string NestedProperty { get; set; } = "nested";
         }
     }
 }

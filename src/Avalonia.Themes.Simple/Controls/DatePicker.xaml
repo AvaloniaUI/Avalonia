@@ -132,12 +132,12 @@
                            Grid.Column="1"
                            Width="1"
                            HorizontalAlignment="Center"
-                           Fill="{DynamicResource DatePickerSpacerFill}" />
+                           Fill="{DynamicResource ThemeControlMidHighBrush}" />
                 <Rectangle x:Name="PART_SecondSpacer"
                            Grid.Column="3"
                            Width="1"
                            HorizontalAlignment="Center"
-                           Fill="{DynamicResource DatePickerSpacerFill}" />
+                           Fill="{DynamicResource ThemeControlMidHighBrush}" />
               </Grid>
             </Button>
 
@@ -156,6 +156,10 @@
 
     <Style Selector="^:disabled /template/ Rectangle">
       <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}" />
+    </Style>
+
+    <Style Selector="^ /template/ Button#PART_FlyoutButton TextBlock">
+      <Setter Property="VerticalAlignment" Value="{TemplateBinding VerticalContentAlignment}"/>
     </Style>
 
     <!--  Changes foreground for watermark text when SelectedDate is null  -->

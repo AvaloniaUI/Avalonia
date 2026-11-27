@@ -47,6 +47,9 @@ namespace Avalonia.Media.TextFormatting
 
         public override FlowDirection FlowDirection { get; }
 
+        /// <inheritdoc/>
+        internal override bool ReturnsOwnedRuns => true;
+
         /// <inheritdoc />
         public override TextRun[]? Collapse(TextLine textLine)
         {
@@ -69,6 +72,8 @@ namespace Avalonia.Media.TextFormatting
 
                 if (MathUtilities.LessThan(Width, shapedSymbol.GlyphRun.Bounds.Width))
                 {
+                    shapedSymbol.Dispose();
+
                     return Array.Empty<TextRun>();
                 }
 
@@ -101,13 +106,15 @@ namespace Avalonia.Media.TextFormatting
                                     {
                                         var collapsedRuns = objectPool.TextRunLists.Rent();
 
+                                        // One reference per shaped run. Each one either moves into
+                                        // the result or is released below.
+                                        RentedList<TextRun>? ownedRuns = RentLogicalRuns(textLine, objectPool);
                                         RentedList<TextRun>? rentedPreSplitRuns = null;
                                         RentedList<TextRun>? rentedPostSplitRuns = null;
-                                        RentedList<TextRun>? reversedSuffix = null;
 
                                         try
                                         {
-                                            IReadOnlyList<TextRun>? effectivePostSplitRuns;
+                                            RentedList<TextRun>? effectivePostSplitRuns;
 
                                             // Split at GLOBAL character index totalFitChars-capped-by-prefixLength.
                                             // (Previously this used `Math.Min(_prefixLength, measuredLength)`
@@ -117,8 +124,9 @@ namespace Avalonia.Media.TextFormatting
 
                                             if (prefixCutoff > 0)
                                             {
+                                                // The split takes over the references held by ownedRuns.
                                                 (rentedPreSplitRuns, rentedPostSplitRuns) = TextFormatterImpl.SplitTextRuns(
-                                                    logicalRuns, prefixCutoff, objectPool);
+                                                    ownedRuns, prefixCutoff, objectPool);
 
                                                 effectivePostSplitRuns = rentedPostSplitRuns;
 
@@ -132,13 +140,15 @@ namespace Avalonia.Media.TextFormatting
                                             }
                                             else
                                             {
-                                                effectivePostSplitRuns = logicalRuns;
+                                                effectivePostSplitRuns = ownedRuns;
                                             }
 
                                             collapsedRuns.Add(shapedSymbol);
 
                                             if (totalFitChars <= _prefixLength || effectivePostSplitRuns is null)
                                             {
+                                                Release(effectivePostSplitRuns);
+
                                                 return collapsedRuns.ToArray();
                                             }
 
@@ -166,61 +176,16 @@ namespace Avalonia.Media.TextFormatting
                                                 }
                                             }
 
-                                            // Walk the post-split runs from the logical tail back toward the
-                                            // prefix, fitting trailing characters into availableSuffixWidth.
-                                            // We collect each split into reversedSuffix here (so the LAST
-                                            // logical run lands at index 0) and then drain reversedSuffix
-                                            // backwards when appending to collapsedRuns, which restores
-                                            // LOGICAL order. FinalizeLine handles the visual re-bidi.
-                                            reversedSuffix = objectPool.TextRunLists.Rent();
-
-                                            for (var i = effectivePostSplitRuns.Count - 1; i >= 0; i--)
-                                            {
-                                                var run = effectivePostSplitRuns[i];
-
-                                                switch (run)
-                                                {
-                                                    case ShapedTextRun endShapedRun:
-                                                    {
-                                                        if (endShapedRun.TryMeasureCharactersBackwards(availableSuffixWidth,
-                                                                out var suffixCount, out var suffixWidth))
-                                                        {
-                                                            availableSuffixWidth -= suffixWidth;
-
-                                                            var splitAt = run.Length - suffixCount;
-
-                                                            if (splitAt > 0)
-                                                            {
-                                                                var splitSuffix = endShapedRun.Split(splitAt);
-
-                                                                reversedSuffix.Add(splitSuffix.Second!);
-                                                            }
-                                                            else if (suffixCount > 0)
-                                                            {
-                                                                // The whole run fits in the remaining suffix budget, so no
-                                                                // split is needed; use the run as-is. (Calling Split(0) throws.)
-                                                                reversedSuffix.Add(endShapedRun);
-                                                            }
-                                                            // else: suffixCount == 0, nothing of this run survives.
-                                                        }
-
-                                                        break;
-                                                    }
-                                                }
-                                            }
-
-                                            for (var i = reversedSuffix.Count - 1; i >= 0; i--)
-                                            {
-                                                collapsedRuns.Add(reversedSuffix[i]);
-                                            }
+                                            TextEllipsisHelper.AppendFittingSuffix(effectivePostSplitRuns,
+                                                availableSuffixWidth, collapsedRuns);
 
                                             return collapsedRuns.ToArray();
                                         }
                                         finally
                                         {
+                                            objectPool.TextRunLists.Return(ref ownedRuns);
                                             objectPool.TextRunLists.Return(ref rentedPreSplitRuns);
                                             objectPool.TextRunLists.Return(ref rentedPostSplitRuns);
-                                            objectPool.TextRunLists.Return(ref reversedSuffix);
                                             objectPool.TextRunLists.Return(ref collapsedRuns);
                                         }
                                     }
@@ -242,6 +207,8 @@ namespace Avalonia.Media.TextFormatting
 
                     charsBeforeCurrentRun += currentRun.Length;
                 }
+
+                shapedSymbol.Dispose();
 
                 return null;
             }

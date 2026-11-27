@@ -38,14 +38,25 @@ namespace Avalonia.Skia
             _glyphIndices = new ushort[count];
             _glyphPositions = new SKPoint[count];
 
-            // GetGlyphWidths needs _glyphIndices populated before the
-            // per-glyph bounds can be fetched, so this walk has to come
-            // first. It deliberately does no other work — positions and
-            // runBounds are built together in the fused walk below, using
-            // a single currentX accumulator.
-            for (int i = 0; i < count; i++)
+            // GetGlyphWidths needs _glyphIndices populated before the per-glyph
+            // bounds can be fetched, so this walk has to come first. It does no
+            // other work — positions and runBounds are built together in the
+            // fused walk below, using a single currentX accumulator.
+            //
+            // ShapedBuffer maintains a contiguous ushort span over the run's
+            // glyph IDs; copy it once instead of walking per glyph. Falls back
+            // to per-glyph when the caller constructed a GlyphRun directly from
+            // raw GlyphInfo records (custom rendering, glyph palettes).
+            if (glyphInfos is Media.TextFormatting.ShapedBuffer shapedBuffer)
             {
-                _glyphIndices[i] = glyphInfos[i].GlyphIndex;
+                shapedBuffer.GlyphIndices.CopyTo(_glyphIndices);
+            }
+            else
+            {
+                for (int i = 0; i < count; i++)
+                {
+                    _glyphIndices[i] = glyphInfos[i].GlyphIndex;
+                }
             }
 
             // Ideally the requested edging should be passed to the glyph run.
@@ -113,21 +124,26 @@ namespace Avalonia.Skia
                 };
             }
 
-            return _textBlobCache.GetOrAdd(textOptions, k =>
-            {
-                using var font = CreateFont(textOptions);
+            // A static local function, so that a cache hit allocates neither a closure nor a delegate.
+            return _textBlobCache.GetOrAdd(textOptions, Create, this);
 
-                var builder = SKTextBlobBuilderCache.Shared.Get();
+            static SKTextBlob Create(TextOptions textOptions, GlyphRunImpl self) => self.CreateTextBlob(textOptions);
+        }
 
-                var runBuffer = builder.AllocatePositionedRun(font, _glyphIndices.Length);
+        private SKTextBlob CreateTextBlob(TextOptions textOptions)
+        {
+            using var font = CreateFont(textOptions);
 
-                runBuffer.SetPositions(_glyphPositions);
-                runBuffer.SetGlyphs(_glyphIndices);
+            var builder = SKTextBlobBuilderCache.Shared.Get();
 
-                var textBlob = builder.Build()!;
-                SKTextBlobBuilderCache.Shared.Return(builder);
-                return textBlob;
-            });
+            var runBuffer = builder.AllocatePositionedRun(font, _glyphIndices.Length);
+
+            runBuffer.SetPositions(_glyphPositions);
+            runBuffer.SetGlyphs(_glyphIndices);
+
+            var textBlob = builder.Build()!;
+            SKTextBlobBuilderCache.Shared.Return(builder);
+            return textBlob;
         }
 
         private SKFont CreateFont(TextOptions textOptions)

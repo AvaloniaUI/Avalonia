@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Text;
 using Avalonia.Data.Core.Plugins;
+using Avalonia.Reactive;
 
 namespace Avalonia.Data.Core.ExpressionNodes;
 
@@ -30,7 +31,7 @@ internal sealed class StreamNode : ExpressionNode, IObserver<object?>
 
         if (_plugin.Start(new(source)) is { } accessor)
         {
-            _subscription = accessor.Subscribe(this);
+            _subscription = WeakObserverSubscription<object?>.Subscribe(accessor, this);
         }
         else
         {

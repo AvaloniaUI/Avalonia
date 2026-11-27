@@ -888,24 +888,67 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
-        [Fact]
-        public void Should_Throw_ArgumentOutOfRangeException_For_Zero_TextLength()
+        [Theory]
+        [InlineData("abc", 0, 0)]
+        [InlineData("abc", 0, 1)]
+        [InlineData("abc", 0, 3)]
+        [InlineData("a\r\nb\r\n", 0, 2)]
+        [InlineData("a\r\nb\r\n", 0, 3)]
+        [InlineData("a\r\nb\r\n", 3, 3)]
+        [InlineData("a\r\nb\r\n", 3, 6)]
+        [InlineData("\r\n", 0, 0)]
+        public void Should_GetTextBounds_For_Zero_TextLength(string text, int lineStart, int rangeStart)
         {
             using (Start())
             {
-                var typeface = Typeface.Default;
-
-                var defaultProperties = new GenericTextRunProperties(typeface);
-                var textSource = new CustomTextBufferTextSource(new TextCharacters("1234", defaultProperties));
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+                var textSource = new SingleBufferTextSource(text, defaultProperties);
                 var formatter = new TextFormatterImpl();
 
-                var textLine =
-                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                using var textLine =
+                    formatter.FormatLine(textSource, lineStart, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(defaultProperties));
+
+                Assert.NotNull(textLine);
+                Assert.Equal(lineStart, textLine.FirstTextSourceIndex);
+
+                Assert.Empty(textLine.GetTextBounds(rangeStart, 0));
+            }
+        }
+
+        [Theory]
+        [InlineData("abc", 0, 0, 3)]
+        [InlineData("abc", 0, 1, 1)]
+        [InlineData("a\r\nb\r\n", 3, 3, 1)]
+        public void Should_GetTextBounds_For_Non_Empty_TextLength(
+            string text, int lineStart, int rangeStart, int rangeLength)
+        {
+            using (Start())
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+                var textSource = new SingleBufferTextSource(text, defaultProperties);
+                var formatter = new TextFormatterImpl();
+
+                using var textLine =
+                    formatter.FormatLine(textSource, lineStart, double.PositiveInfinity,
                         new GenericTextParagraphProperties(defaultProperties));
 
                 Assert.NotNull(textLine);
 
-                Assert.Throws<ArgumentOutOfRangeException>(() => textLine.GetTextBounds(0, 0));
+                var bounds = Assert.Single(textLine.GetTextBounds(rangeStart, rangeLength));
+                var start = textLine.GetDistanceFromCharacterHit(new CharacterHit(rangeStart));
+                var end = textLine.GetDistanceFromCharacterHit(new CharacterHit(rangeStart + rangeLength));
+
+                Assert.Equal(start, bounds.Rectangle.Left, 3);
+                Assert.Equal(end - start, bounds.Rectangle.Width, 3);
+                Assert.Equal(0, bounds.Rectangle.Top);
+                Assert.Equal(textLine.Height, bounds.Rectangle.Height);
+                Assert.Equal(FlowDirection.LeftToRight, bounds.FlowDirection);
+
+                var runBounds = Assert.Single(bounds.TextRunBounds);
+
+                Assert.Equal(rangeStart, runBounds.TextSourceCharacterIndex);
+                Assert.Equal(rangeLength, runBounds.Length);
             }
         }
 
@@ -1413,11 +1456,14 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
             foreach (var textRun in shapedTextRuns)
             {
+                // Glyph clusters are relative to the run's own text, so they only line up across a
+                // multi-run line once the run's start is added - same as BuildGlyphClusters.
+                var runOffset = TextTestHelper.GetStartCharIndex(textRun.Text);
                 var shapedBuffer = textRun.ShapedBuffer;
 
                 for (var index = 0; index < shapedBuffer.Length; index++)
                 {
-                    var currentCluster = shapedBuffer[index].GlyphCluster;
+                    var currentCluster = shapedBuffer[index].GlyphCluster + runOffset;
 
                     var advance = shapedBuffer[index].GlyphAdvance;
 
@@ -1427,13 +1473,10 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     }
                     else
                     {
-                        var rect = rects[index - 1];
+                        // Another glyph of the cluster that produced the last rect: widen it.
+                        var rect = rects[rects.Count - 1];
 
-                        rects.Remove(rect);
-
-                        rect = rect.WithWidth(rect.Width + advance);
-
-                        rects.Add(rect);
+                        rects[rects.Count - 1] = rect.WithWidth(rect.Width + advance);
                     }
 
                     currentX += advance;
@@ -1571,38 +1614,151 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.NotNull(textLine);
 
+                // Runs come in visual order: the Latin word sits leftmost, then the space, then the
+                // Hebrew word. The space belongs to the primary font, so it is a run of its own.
+                var latinRun = Assert.IsType<ShapedTextRun>(textLine.TextRuns[0]);
+                var spaceRun = Assert.IsType<ShapedTextRun>(textLine.TextRuns[1]);
+                var hebrewRun = Assert.IsType<ShapedTextRun>(textLine.TextRuns[2]);
+
+                var hebrewAndSpaceWidth = hebrewRun.Size.Width + spaceRun.Size.Width;
+
                 var textBounds = textLine.GetTextBounds(0, 4);
 
-                var secondRun = Assert.IsType<ShapedTextRun>(textLine.TextRuns[1]);
-
                 Assert.Equal(1, textBounds.Count);
-                Assert.Equal(secondRun.Size.Width, textBounds.Sum(x => x.Rectangle.Width));
+                Assert.Equal(hebrewAndSpaceWidth, textBounds.Sum(x => x.Rectangle.Width));
 
                 textBounds = textLine.GetTextBounds(4, 3);
-
-                var firstRun = Assert.IsType<ShapedTextRun>(textLine.TextRuns[0]);
 
                 Assert.Equal(1, textBounds.Count);
 
                 Assert.Equal(3, textBounds[0].TextRunBounds.Sum(x => x.Length));
-                Assert.Equal(firstRun.Size.Width, textBounds.Sum(x => x.Rectangle.Width));
+                Assert.Equal(latinRun.Size.Width, textBounds.Sum(x => x.Rectangle.Width));
 
                 textBounds = textLine.GetTextBounds(0, 5);
 
                 Assert.Equal(2, textBounds.Count);
                 Assert.Equal(5, textBounds.Sum(x => x.TextRunBounds.Sum(x => x.Length)));
 
-                Assert.Equal(secondRun.Size.Width, textBounds[1].Rectangle.Width);
+                Assert.Equal(hebrewAndSpaceWidth, textBounds[1].Rectangle.Width);
                 Assert.Equal(7.201171875, textBounds[0].Rectangle.Width);
 
                 Assert.Equal(textLine.Start + 7.201171875, textBounds[0].Rectangle.Right, 2);
-                Assert.Equal(textLine.Start + firstRun.Size.Width, textBounds[1].Rectangle.Left, 2);
+                Assert.Equal(textLine.Start + latinRun.Size.Width, textBounds[1].Rectangle.Left, 2);
 
                 textBounds = textLine.GetTextBounds(0, text.Length);
 
                 Assert.Equal(2, textBounds.Count);
                 Assert.Equal(7, textBounds.Sum(x => x.TextRunBounds.Sum(x => x.Length)));
                 Assert.Equal(textLine.WidthIncludingTrailingWhitespace, textBounds.Sum(x => x.Rectangle.Width), 2);
+            }
+        }
+
+        [Theory]
+        [InlineData("abc אבג", FlowDirection.LeftToRight)]
+        [InlineData("abc אבג", FlowDirection.RightToLeft)]
+        [InlineData("אבג", FlowDirection.LeftToRight)]
+        [InlineData("אבג", FlowDirection.RightToLeft)]
+        [InlineData("אבג abc", FlowDirection.LeftToRight)]
+        [InlineData("אבג abc", FlowDirection.RightToLeft)]
+        [InlineData("abc", FlowDirection.LeftToRight)]
+        [InlineData("abc", FlowDirection.RightToLeft)]
+        public void EndOfParagraph_Should_Not_Change_Hit_Testing(string text, FlowDirection flowDirection)
+        {
+            using (Start())
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+                var paragraphProperties = new GenericTextParagraphProperties(flowDirection, TextAlignment.Left,
+                    true, true, defaultProperties, TextWrapping.NoWrap, 0, 0, 0);
+                var formatter = new TextFormatterImpl();
+
+                var withEnd = formatter.FormatLine(new SingleBufferTextSource(text, defaultProperties, true), 0,
+                    double.PositiveInfinity, paragraphProperties);
+                var withoutEnd = formatter.FormatLine(new SingleBufferTextSource(text, defaultProperties), 0,
+                    double.PositiveInfinity, paragraphProperties);
+
+                Assert.NotNull(withEnd);
+                Assert.NotNull(withoutEnd);
+
+                for (var start = 0; start < text.Length; start++)
+                {
+                    for (var length = 1; length <= text.Length - start; length++)
+                    {
+                        var expected = withoutEnd.GetTextBounds(start, length);
+                        var actual = withEnd.GetTextBounds(start, length);
+
+                        Assert.Equal(expected.Count, actual.Count);
+
+                        for (var i = 0; i < expected.Count; i++)
+                        {
+                            Assert.Equal(expected[i].Rectangle.Left, actual[i].Rectangle.Left, 5);
+                            Assert.Equal(expected[i].Rectangle.Right, actual[i].Rectangle.Right, 5);
+                            Assert.Equal(expected[i].FlowDirection, actual[i].FlowDirection);
+                            Assert.Equal(
+                                expected[i].TextRunBounds.Select(x => (x.TextSourceCharacterIndex, x.Length)),
+                                actual[i].TextRunBounds.Select(x => (x.TextSourceCharacterIndex, x.Length)));
+                        }
+                    }
+
+                    foreach (var characterHit in new[] { new CharacterHit(start), new CharacterHit(start, 1) })
+                    {
+                        Assert.Equal(withoutEnd.GetDistanceFromCharacterHit(characterHit),
+                            withEnd.GetDistanceFromCharacterHit(characterHit), 5);
+                    }
+                }
+
+                // The paragraph end covers one more character but adds no width.
+                var allBounds = withEnd.GetTextBounds(0, text.Length + 1);
+
+                Assert.Equal(text.Length + 1, allBounds.Sum(x => x.TextRunBounds.Sum(r => r.Length)));
+                Assert.Equal(withEnd.Start, allBounds.Min(x => x.Rectangle.Left), 5);
+                Assert.Equal(withEnd.Start + withEnd.WidthIncludingTrailingWhitespace,
+                    allBounds.Max(x => x.Rectangle.Right), 5);
+            }
+        }
+
+        [Theory]
+        [InlineData("abc", FlowDirection.LeftToRight)]
+        [InlineData("abc", FlowDirection.RightToLeft)]
+        [InlineData("אבג", FlowDirection.LeftToRight)]
+        [InlineData("אבג", FlowDirection.RightToLeft)]
+        [InlineData("abc אבג", FlowDirection.LeftToRight)]
+        [InlineData("abc אבג", FlowDirection.RightToLeft)]
+        [InlineData("אבג abc", FlowDirection.LeftToRight)]
+        [InlineData("אבג abc", FlowDirection.RightToLeft)]
+        public void EndOfParagraph_Should_Be_Placed_At_The_Paragraph_End(string text, FlowDirection flowDirection)
+        {
+            using (Start())
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+                var formatter = new TextFormatterImpl();
+
+                var textLine = formatter.FormatLine(new SingleBufferTextSource(text, defaultProperties, true), 0,
+                    double.PositiveInfinity, new GenericTextParagraphProperties(flowDirection, TextAlignment.Left,
+                        true, true, defaultProperties, TextWrapping.NoWrap, 0, 0, 0));
+
+                Assert.NotNull(textLine);
+
+                var paragraphEnd = flowDirection == FlowDirection.LeftToRight ?
+                    textLine.Start + textLine.WidthIncludingTrailingWhitespace :
+                    textLine.Start;
+
+                Assert.IsType<TextEndOfParagraph>(textLine.TextLineBreak?.TextEndOfLine);
+
+                Assert.Equal(paragraphEnd, textLine.GetDistanceFromCharacterHit(new CharacterHit(text.Length)), 5);
+
+                var endOfParagraphBounds = Assert.Single(textLine.GetTextBounds(text.Length, 1)
+                    .SelectMany(x => x.TextRunBounds)
+                    .Where(x => x.TextRun is TextEndOfParagraph));
+
+                Assert.Equal(paragraphEnd, endOfParagraphBounds.Rectangle.Left, 5);
+                Assert.Equal(0, endOfParagraphBounds.Rectangle.Width);
+
+                foreach (var distance in new[] { -1, textLine.WidthIncludingTrailingWhitespace + 1 })
+                {
+                    var characterHit = textLine.GetCharacterHitFromDistance(distance);
+
+                    Assert.True(characterHit.FirstCharacterIndex + characterHit.TrailingLength <= text.Length);
+                }
             }
         }
 
@@ -1737,19 +1893,30 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal(1, bounds.Count);
 
-                Assert.Equal(71.165859375, bounds[0].Rectangle.Right);
+                // The space between the Hebrew word and the digits is drawn with the primary font
+                // rather than the Hebrew fallback, which is 4.08 wider at this size, so everything
+                // laid out after it sits that much further right.
+                Assert.Equal(75.247031249999992, bounds[0].Rectangle.Right);
 
                 bounds = textLine.GetTextBounds(11, 1);
 
                 Assert.Equal(1, bounds.Count);
 
-                Assert.Equal(71.165859375, bounds[0].Rectangle.Left);
+                Assert.Equal(75.247031249999992, bounds[0].Rectangle.Left);
 
                 bounds = textLine.GetTextBounds(0, 25);
 
-                Assert.Equal(4, bounds.Count);
+                Assert.Equal(5, bounds.Count);
 
                 Assert.Equal(textLine.WidthIncludingTrailingWhitespace, bounds.Last().Rectangle.Right);
+
+                // The paragraph end takes the left-to-right paragraph level, so it closes the line as an empty
+                // left-to-right span after the trailing Hebrew word instead of joining it.
+                var endOfParagraphBounds = bounds.Last();
+
+                Assert.Equal(FlowDirection.LeftToRight, endOfParagraphBounds.FlowDirection);
+                Assert.Equal(0, endOfParagraphBounds.Rectangle.Width);
+                Assert.IsType<TextEndOfParagraph>(Assert.Single(endOfParagraphBounds.TextRunBounds).TextRun);
             }
         }
 

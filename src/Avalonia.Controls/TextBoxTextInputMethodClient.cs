@@ -54,7 +54,7 @@ namespace Avalonia.Controls
                     return default;
                 }
 
-                return _presenter.GetCursorRectangle().TransformToAABB(transform.Value);
+                return _presenter.CursorRectangle.TransformToAABB(transform.Value);
             }
         }
 
@@ -76,10 +76,11 @@ namespace Avalonia.Controls
                     return;
                 }
 
-                _parent.SelectionStart = value.Start;
-                _parent.SelectionEnd = value.End;
-
-                RaiseSelectionChanged();
+                using (BeginChange())
+                {
+                    _parent.SelectionStart = value.Start;
+                    _parent.SelectionEnd = value.End;
+                }
             }
         }
 

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Text;
+using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 
@@ -65,7 +66,40 @@ namespace Avalonia.Controls.Documents
             control.SetValue(TextDecorationsProperty, value);
         }
         
-        internal abstract void BuildTextRun(IList<TextRun> textRuns, Size blockSize);
+        internal abstract void BuildTextRun(IList<TextRun> textRuns);
+
+        /// <summary>
+        /// Measures the controls this inline embeds against the width available to the block.
+        /// </summary>
+        /// <returns>
+        /// True when a control came back a different size, so the caller can drop line metrics
+        /// that were measured against the old one.
+        /// </returns>
+        /// <remarks>
+        /// Text runs depend on the content alone, so they survive a constraint change. An embedded
+        /// control is the exception: its size answers to the available width. The run reports that
+        /// size live, but a formatted line snapshots its metrics, so a layout built before the
+        /// control resized keeps reporting the old width and height.
+        /// </remarks>
+        internal virtual bool MeasureEmbeddedControls(Size blockSize) => false;
+
+        /// <summary>
+        /// Applies the styles of this inline and of the inlines it contains.
+        /// </summary>
+        /// <remarks>
+        /// A style change clears the styles of every element below the style host. A control gets
+        /// them back from its own measure pass; an inline has none, so its block applies them from
+        /// its measure pass.
+        /// </remarks>
+        internal virtual void ApplyInlineStyling()
+        {
+            // A detached inline finds no styles, and styling it anyway would mark them applied,
+            // so attaching it later would not apply them. Attaching applies them in any case.
+            if (((ILogical)this).IsAttachedToLogicalTree)
+            {
+                ApplyStyling();
+            }
+        }
 
         internal abstract void AppendText(StringBuilder stringBuilder);
 
@@ -74,10 +108,11 @@ namespace Avalonia.Controls.Documents
             var parentOrSelfBackground = Background ?? FindParentBackground();
 
             var typeface = new Typeface(
-                FontFamily, 
-                FontStyle, 
-                FontWeight, 
-                FontStretch);
+                FontFamily,
+                FontStyle,
+                FontWeight,
+                FontStretch,
+                FontVariations);
 
             return new GenericTextRunProperties(
                 typeface,

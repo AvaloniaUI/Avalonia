@@ -349,7 +349,9 @@ namespace Avalonia.Controls
                     }
                 }
                 
-                var availableHeight = AvailableSize.Height - node.Top - node.Bottom;
+                var availableHeight = double.IsInfinity(AvailableSize.Height)
+                    ? AvailableSize.Height
+                    : AvailableSize.Height - node.Top - node.Bottom;
                 if (availableHeight.IsNaN())
                 {
                     availableHeight = AvailableSize.Height;
@@ -364,7 +366,9 @@ namespace Avalonia.Controls
                     }
                 }
 
-                var availableWidth = AvailableSize.Width - node.Left - node.Right;
+                var availableWidth = double.IsInfinity(AvailableSize.Width)
+                    ? AvailableSize.Width
+                    : AvailableSize.Width - node.Left - node.Right;
                 if (availableWidth.IsNaN())
                 {
                     availableWidth = AvailableSize.Width;

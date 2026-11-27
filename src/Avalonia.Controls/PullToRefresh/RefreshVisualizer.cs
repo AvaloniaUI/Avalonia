@@ -312,6 +312,7 @@ namespace Avalonia.Controls
         /// </summary>
         public void RequestRefresh()
         {
+            RefreshInfoProvider?.InteractionRatio = 1;
             RefreshVisualizerState = RefreshVisualizerState.Refreshing;
             RefreshInfoProvider?.OnRefreshStarted();
 
@@ -320,8 +321,8 @@ namespace Avalonia.Controls
 
         private void RefreshCompleted()
         {
+            RefreshInfoProvider?.InteractionRatio = 0;
             RefreshVisualizerState = RefreshVisualizerState.Idle;
-
             RefreshInfoProvider?.OnRefreshCompleted();
         }
 

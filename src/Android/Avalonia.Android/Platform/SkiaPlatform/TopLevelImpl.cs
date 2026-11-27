@@ -30,6 +30,8 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 {
     class TopLevelImpl : ITopLevelImpl, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfoWithWaitPolicy
     {
+        private readonly Context _context;
+        private AvaloniaView? _avaloniaView;
         private readonly AndroidKeyboardEventsHelper<TopLevelImpl> _keyboardHelper;
         private readonly AndroidMotionEventsHelper _pointerHelper;
         private readonly AndroidInputMethod<AvaloniaView> _textInputMethod;
@@ -43,6 +45,8 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         private readonly AndroidPlatformFeedback _feedback;
         private SurfaceViewImpl? _view;
         private WindowTransparencyLevel _transparencyLevel;
+        private PixelPoint _position;
+        private int[] _positionArray = new int[2];
 
         public TopLevelImpl(AvaloniaView avaloniaView, bool placeOnTop = false)
         {
@@ -51,6 +55,8 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 throw new ArgumentException("AvaloniaView.Context must not be null");
             }
 
+            _context = context;
+            _avaloniaView = avaloniaView;
             _view = new SurfaceViewImpl(context, this, placeOnTop);
             _textInputMethod = new AndroidInputMethod<AvaloniaView>(avaloniaView);
             _keyboardHelper = new AndroidKeyboardEventsHelper<TopLevelImpl>(this);
@@ -60,6 +66,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 context));
             _screens = new AndroidScreens(context);
             _feedback = new AndroidPlatformFeedback(avaloniaView);
+            DragDrop = new AndroidDragDrop(this);
 
             if (context is Activity mainActivity)
             {
@@ -77,6 +84,17 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             var framebuffer = new FramebufferManager(this);
             Surfaces = [gl, framebuffer, _view];
             Handle = new AndroidViewControlHandle(_view);
+
+            avaloniaView.LayoutChange += AvaloniaView_LayoutChange;
+        }
+
+        private void AvaloniaView_LayoutChange(object? sender, View.LayoutChangeEventArgs e)
+        {
+            if (_context is global::Android.App.Activity activity)
+            {
+                _view?.GetLocationOnScreen(_positionArray);
+                _position = new PixelPoint(_positionArray[0], _positionArray[1]);
+            }
         }
 
         public IInputRoot? InputRoot { get; private set; }
@@ -88,13 +106,15 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public Action<RawInputEventArgs>? Input { get; set; }
 
-        public Action<Rect>? Paint { get; set; }
+        public Action<ITopLevelImpl.PaintOptions?>? Paint { get; set; }
 
         public Action<Size, WindowResizeReason>? Resized { get; set; }
 
         public Action<double>? ScalingChanged { get; set; }
 
         public View? View => _view;
+
+        public AndroidDragDrop DragDrop { get; }
 
         internal InvalidationAwareSurfaceView? InternalView => _view;
 
@@ -108,17 +128,24 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public Point PointToClient(PixelPoint point)
         {
-            return point.ToPoint(RenderScaling);
+            var translatedPoint = point - _position;
+            return translatedPoint.ToPoint(RenderScaling);
         }
 
         public PixelPoint PointToScreen(Point point)
         {
-            return PixelPoint.FromPoint(point, RenderScaling);
+            var pixelPoint = PixelPoint.FromPoint(point, RenderScaling);
+            return _position + pixelPoint;
         }
 
         public void SetCursor(ICursorImpl? cursor)
         {
-            //still not implemented
+            cursor ??= CursorImpl.DefaultCursor;
+
+            if (cursor is CursorImpl androidCursor)
+            {
+                ViewCompat.SetPointerIcon(_view, androidCursor.PointerIcon);
+            }
         }
 
         public void SetInputRoot(IInputRoot inputRoot)
@@ -129,8 +156,11 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         public virtual void Dispose()
         {
             _systemNavigationManager.Dispose();
+            _avaloniaView?.LayoutChange -= AvaloniaView_LayoutChange;
+            _avaloniaView = null;
             _view?.Dispose();
             _view = null;
+            (DragDrop as IDisposable)?.Dispose();
         }
 
         protected void OnResized(Size size)
@@ -204,7 +234,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             public override void SurfaceRedrawNeeded(ISurfaceHolder holder)
             {
                 // Compositor Renderer handles Paint event in-sync, which is perfect for sync SurfaceRedrawNeeded
-                _tl.Paint?.Invoke(new Rect(new Point(), Size.ToSize(Scaling)));
+                _tl.Paint?.Invoke(null);
                 base.SurfaceRedrawNeeded(holder);
             }
 
@@ -245,22 +275,15 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 };
             }
 
-            // Sets the default app NightMode to AppCompatDelegate.ModeNightFollowSystem when themeVariant is null. This
-            // allows app to follow the current OS night mode. Using either ModeNightNo or ModeNightYes will force the app
-            // to use one night mode, ignoring the system's configuration and preventing us from detecting system theme changes
-            // in View.OnConfigurationChanged. In this case, only Activity.OnConfigurationChanged is called when system theme is
-            // changed, but we don't have access to that method if the toplevel view is embedded in a custom activity
-            var nightMode = themeVariant == null ? AppCompatDelegate.ModeNightFollowSystem :
-                themeVariant == PlatformThemeVariant.Light ? AppCompatDelegate.ModeNightNo : AppCompatDelegate.ModeNightYes;
-
-            AppCompatDelegate.DefaultNightMode = nightMode;
-
-            if (nightMode == AppCompatDelegate.ModeNightFollowSystem && _view?.Context is { } context
-                && context.Resources?.Configuration is { } config)
+            if (_context is AppCompatActivity activity)
             {
-                var settings =
-                    AvaloniaLocator.Current.GetRequiredService<IPlatformSettings>() as AndroidPlatformSettings;
-                settings?.OnViewConfigurationChanged(context, config);
+                var nightMode = themeVariant == PlatformThemeVariant.Dark ?
+                    AppCompatDelegate.ModeNightYes :
+                    AppCompatDelegate.ModeNightNo;
+
+                // Don't use AppCompatDelegate.DefaultNightMode: doing so will force the app to use one night mode,
+                // ignoring the system's configuration and preventing us from detecting system theme changes.
+                activity.Delegate.SetLocalNightMode(nightMode);
             }
         }
 

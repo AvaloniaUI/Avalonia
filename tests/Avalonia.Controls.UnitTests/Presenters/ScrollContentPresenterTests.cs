@@ -476,6 +476,37 @@ namespace Avalonia.Controls.UnitTests.Presenters
         }
 
         [Fact]
+        public void BringDescendantIntoView_Should_Be_Idempotent_Before_Next_Layout_Pass()
+        {
+            var panel = new StackPanel();
+
+            for (var i = 0; i < 100; ++i)
+                panel.Children.Add(new Border { Height = 20 });
+
+            var target = new ScrollContentPresenter
+            {
+                Width = 50,
+                Height = 100,
+                CanVerticallyScroll = true,
+                Content = panel,
+            };
+
+            target.UpdateChild();
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(0, 0, 50, 100));
+
+            // The 50th child spans 1000..1020, so with a 100px viewport it is brought into view by scrolling to 920.
+            var child = panel.Children[50];
+
+            target.BringDescendantIntoView(child, new Rect(child.Bounds.Size));
+            Assert.Equal(920, target.Offset.Y);
+            Assert.False(target.IsArrangeValid);
+
+            target.BringDescendantIntoView(child, new Rect(child.Bounds.Size));
+            Assert.Equal(920, target.Offset.Y);
+        }
+
+        [Fact]
         public void BringDescendantIntoView_Should_Handle_Child_Margin()
         {
             Border border;

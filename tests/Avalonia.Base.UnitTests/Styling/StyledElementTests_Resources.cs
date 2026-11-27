@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Avalonia.Base.UnitTests.Styling
 {
-    public class StyledElementTests_Resources
+    public class StyledElementTests_Resources : ScopedTestBase
     {
         [Fact]
         public void FindResource_Should_Find_Control_Resource()

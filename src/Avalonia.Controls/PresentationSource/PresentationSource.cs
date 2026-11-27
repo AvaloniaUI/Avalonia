@@ -1,5 +1,4 @@
 using System;
-using Avalonia.Controls.Chrome;
 using Avalonia.Input;
 using Avalonia.Input.TextInput;
 using Avalonia.Layout;
@@ -48,10 +47,7 @@ internal partial class PresentationSource : IPresentationSource, IInputRoot, IDi
         FocusRoot = defaultFocusVisual;
     }
 
-    // In WPF it's a Visual and it's nullable. For now we have it as non-nullable InputElement since 
-    // there are way too many things to update at once and the current goal is to decouple
-    // "visual tree root" concept from TopLevel
-    public InputElement RootVisual
+    public InputElement? RootVisual
     {
         get => field;
         set
@@ -72,7 +68,7 @@ internal partial class PresentationSource : IPresentationSource, IInputRoot, IDi
     IPlatformSettings? IPresentationSource.PlatformSettings => AvaloniaLocator.Current.GetService<IPlatformSettings>();
     
     ITextInputMethodImpl? IInputRoot.InputMethod => PlatformImpl?.TryGetFeature<ITextInputMethodImpl>();
-    public InputElement RootElement => RootVisual;
+    public InputElement? RootElement => RootVisual;
 
 
     public void Dispose()
@@ -149,7 +145,11 @@ internal partial class PresentationSource : IPresentationSource, IInputRoot, IDi
 
     WindowDecorationsElementRole? IInputRoot.HitTestChromeElement(Point point)
     {
-        var visual = RootVisual.GetVisualAt(point, ChromeHitTestFilter);
+        // RootVisual is cleared when the top level closes, but the platform can still hit-test the window.
+        if (RootVisual is not { } rootVisual)
+            return null;
+
+        var visual = rootVisual.GetVisualAt(point, ChromeHitTestFilter);
         return GetChromeRoleFromVisual(visual);
     }
 }

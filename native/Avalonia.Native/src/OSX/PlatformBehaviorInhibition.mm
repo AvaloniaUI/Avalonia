@@ -5,15 +5,13 @@ namespace
     id<NSObject> s_inhibitAppSleepHandle{};
 }
 
-class PlatformBehaviorInhibition : public ComSingleObject<IAvnPlatformBehaviorInhibition, &IID_IAvnCursorFactory>
+class PlatformBehaviorInhibition : public ComSingleObject<IAvnPlatformBehaviorInhibition, &IID_IAvnPlatformBehaviorInhibition>
 {
 public:
     FORWARD_IUNKNOWN()
     
     virtual void SetInhibitAppSleep(bool inhibitAppSleep, char* reason) override
     {
-        START_COM_CALL;
-        
         @autoreleasepool
         {
             if (inhibitAppSleep && s_inhibitAppSleepHandle == nullptr)
@@ -30,10 +28,7 @@ public:
     }
 };
 
-extern IAvnPlatformBehaviorInhibition* CreatePlatformBehaviorInhibition()
+extern ComPtr<IAvnPlatformBehaviorInhibition> CreatePlatformBehaviorInhibition()
 {
-    @autoreleasepool
-    {
-        return new PlatformBehaviorInhibition();
-    }
+    return comnew<PlatformBehaviorInhibition>();
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Avalonia.Android;
 using Avalonia.Android.Platform;
 using Avalonia.Android.Platform.Input;
@@ -78,6 +79,8 @@ namespace Avalonia.Android
         internal static Compositor? Compositor { get; private set; }
         internal static ChoreographerTimer? Timer { get; private set; }
 
+        public Lock SharedRenderLock { get; } = new Lock();
+
         public static void Initialize()
         {
             Options = AvaloniaLocator.Current.GetService<AndroidPlatformOptions>() ?? new AndroidPlatformOptions();
@@ -93,6 +96,7 @@ namespace Avalonia.Android
                 .Bind<IRenderLoop>().ToConstant(RenderLoop.FromTimer(Timer))
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
                 .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new Dictionary<Key, string>() { }))
+                .Bind<IPlatformDragSource>().ToConstant(new AndroidDragSource())
                 .Bind<IActivatableLifetime>().ToConstant(new AndroidActivatableLifetime());
 
             var graphics = InitializeGraphics(Options);
@@ -104,7 +108,7 @@ namespace Avalonia.Android
             Compositor = new Compositor(graphics);
             AvaloniaLocator.CurrentMutable.Bind<Compositor>().ToConstant(Compositor);
         }
-        
+
         private static IPlatformGraphics? InitializeGraphics(AndroidPlatformOptions opts)
         {
             if (opts.RenderingMode is null || !opts.RenderingMode.Any())

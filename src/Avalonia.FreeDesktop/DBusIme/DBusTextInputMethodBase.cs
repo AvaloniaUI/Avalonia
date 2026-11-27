@@ -213,17 +213,18 @@ namespace Avalonia.FreeDesktop.DBusIme
             _disposables.Clear();
             if (!IsConnected)
                 return;
+            _currentName = null;
             try
             {
-                await DisconnectAsync();
+                // Don't resume on the dispatcher: during shutdown it no longer runs jobs, so a failed call
+                // (e.g. ibus-portal doesn't implement Destroy) would never be observed.
+                await DisconnectAsync().ConfigureAwait(false);
             }
             catch (Exception ex)
             {
                 Logger.TryGet(LogEventLevel.Error, "IME")
                     ?.Log(this, "Error while destroying the context:\n" + ex);
             }
-
-            _currentName = null;
         }
 
         protected abstract Task SetCursorRectCore(PixelRect rect);

@@ -11,7 +11,7 @@ using Observable = Avalonia.Reactive.Observable;
 
 namespace Avalonia.Base.UnitTests
 {
-    public class AvaloniaObjectTests_SetCurrentValue
+    public class AvaloniaObjectTests_SetCurrentValue : ScopedTestBase
     {
         [Fact]
         public void SetCurrentValue_Sets_Unset_Value()

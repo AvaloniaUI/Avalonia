@@ -118,6 +118,10 @@ export class AvaloniaDOM {
             });
         }
 
+        globalThis.addEventListener("languagechange", () => {
+            JsExports.DomHelper.LanguageChanged(globalThis.navigator.language);
+        });
+
         globalThis.document.addEventListener("visibilitychange", () => {
             JsExports.DomHelper.DocumentVisibilityChanged(globalThis.document.visibilityState);
         });
@@ -136,7 +140,7 @@ export class AvaloniaDOM {
         const left = parseFloat(getComputedStyle(globalThis.document.documentElement).getPropertyValue("--av-sal"));
         const right = parseFloat(getComputedStyle(globalThis.document.documentElement).getPropertyValue("--av-sar"));
 
-        return [left, top, bottom, right];
+        return [left, top, right, bottom];
     }
 
     public static getDarkMode(globalThis: Window): number[] {
@@ -148,5 +152,9 @@ export class AvaloniaDOM {
             colorSchemeMedia.matches ? 1 : 0,
             prefersContrastMedia.matches ? 1 : 0
         ];
+    }
+
+    public static getNavigatorLanguage(globalThis: Window): string | null {
+        return globalThis.navigator?.language ?? null;
     }
 }

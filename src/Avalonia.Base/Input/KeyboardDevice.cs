@@ -108,7 +108,7 @@ namespace Avalonia.Input
             }
         }
         
-        private void ClearChildrenFocusWithin(IInputElement element, bool clearRoot)
+        private void ClearChildrenFocusWithin(IInputElement? element, bool clearRoot)
         {
             if (element is Visual v)
             {
@@ -255,6 +255,10 @@ namespace Avalonia.Input
                             PhysicalKey = keyInput.PhysicalKey,
                             KeySymbol = keyInput.KeySymbol,
                             KeyDeviceType = keyInput.KeyDeviceType,
+                            KeyText = keyInput.KeyText,
+                            AlternateKeyText = keyInput.AlternateKeyText,
+                            ConsumedModifiers = keyInput.ConsumedModifiers?.ToKeyModifiers(),
+                            PlatformKeyInfo = keyInput.PlatformKeyInfo,
                             Source = element
                         };
                         

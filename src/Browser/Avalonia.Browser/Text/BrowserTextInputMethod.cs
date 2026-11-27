@@ -1,6 +1,7 @@
 using System;
 using System.Runtime.InteropServices.JavaScript;
 using Avalonia.Browser.Interop;
+using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 
 namespace Avalonia.Browser.Text;
@@ -113,7 +114,7 @@ internal class BrowserTextInputMethod(
         _inputMethod?.Reset();
     }
 
-    internal void OnTextUpdate(int rangeStart, int rangeEnd, string? text, int selectionStart, int selectionEnd)
+    internal void OnTextUpdate(ulong timestamp, int rangeStart, int rangeEnd, string? text, int selectionStart, int selectionEnd)
     {
         if (_client != null && _inputMethod != null)
         {
@@ -128,12 +129,12 @@ internal class BrowserTextInputMethod(
 
                 if (!isDelete)
                 {
-                    _inputHandler.RawTextEvent(text ?? "");
+                    _inputHandler.RawTextEvent(timestamp, text ?? "");
                 }
                 else if (rangeStart != rangeEnd)
                 {
-                    inputHandler.OnKeyDown("Delete", "Delete", 0);
-                    inputHandler.OnKeyUp("Delete", "Delete", 0);
+                    _inputHandler.RawKeyEvent(RawKeyEventType.KeyDown, timestamp, "Delete", "Delete");
+                    _inputHandler.RawKeyEvent(RawKeyEventType.KeyUp, timestamp, "Delete", "Delete");
                 }
             }
             finally

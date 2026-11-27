@@ -35,12 +35,10 @@ namespace Avalonia.Input
             if (target == null)
                 return DragDropEffects.None;
 
-            var p = (inputRoot.RootElement).TranslatePoint(point, target);
-
-            if (!p.HasValue)
+            if (inputRoot.RootElement?.TranslatePoint(point, target) is not { } translatedPoint)
                 return DragDropEffects.None;
 
-            var args = new DragEventArgs(routedEvent, dataTransfer, target, p.Value, modifiers)
+            var args = new DragEventArgs(routedEvent, dataTransfer, target, translatedPoint, modifiers)
             {
                 RoutedEvent = routedEvent,
                 DragEffects = operation

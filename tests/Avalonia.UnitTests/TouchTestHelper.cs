@@ -64,9 +64,7 @@ namespace Avalonia.UnitTests
 
         public void Cancel()
         {
-            _pointer.Capture(null);
-            _pointer.CaptureGestureRecognizer(null);
-            _pointer.IsGestureRecognitionSkipped = false;
+            _pointer.CaptureLost(CaptureSource.Platform);
         }
     }
 }

@@ -265,9 +265,11 @@ namespace Avalonia.Controls.Remote.Server
 
         protected virtual Size Measure(Size constraint)
         {
-            var l = InputRoot!.RootElement;
-            l.Measure(constraint);
-            return l.DesiredSize;
+            if (InputRoot?.RootElement is not { } rootElement)
+                return default;
+
+            rootElement.Measure(constraint);
+            return rootElement.DesiredSize;
         }
 
         public override IPlatformRenderSurface[] Surfaces => [this];
@@ -320,7 +322,7 @@ namespace Avalonia.Controls.Remote.Server
             var framebuffer = GetOrCreateFramebuffer();
 
             if (framebuffer.Stride > 0)
-                Paint?.Invoke(new Rect(framebuffer.ClientSize));
+                Paint?.Invoke(null);
 
             SendLastFrameIfNeeded();
         }

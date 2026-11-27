@@ -22,8 +22,9 @@ internal class MetalRenderTarget : IMetalPlatformSurfaceRenderTarget
     {
     }
 
-    public IMetalPlatformSurfaceRenderingSession BeginRendering()
+    public IMetalPlatformSurfaceRenderingSession BeginRendering(IRenderTarget.RenderTargetSceneInfo sceneInfo)
     {
+        // TODO: use sceneInfo instead
         var (size, scaling) = PendingLayout;
         if (_lastLayout != (size, scaling))
         {

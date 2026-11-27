@@ -17,7 +17,7 @@ internal class SkiaMetalGpu : ISkiaGpu
 
     public SkiaMetalGpu(IMetalDevice device, long? maxResourceBytes, bool? useStencilBuffers = null)
     {
-        var avoidStencilBuffers = useStencilBuffers == false;
+        var avoidStencilBuffers = SkiaOptions.ShouldAvoidStencilBuffers(useStencilBuffers);
         _context = GRContext.CreateMetal(
                        new GRMtlBackendContext { DeviceHandle = device.Device, QueueHandle = device.CommandQueue, },
                        new GRContextOptions { AvoidStencilBuffers = avoidStencilBuffers })
@@ -97,14 +97,13 @@ internal class SkiaMetalGpu : ISkiaGpu
 
         public ISkiaGpuRenderSession BeginRenderingSession(IRenderTarget.RenderTargetSceneInfo sceneInfo)
         {
-            // TODO: use expectedPixelSize
             IMetalPlatformSurfaceRenderingSession? session = null;
             GRBackendRenderTarget? backendTarget = null;
             SKSurface? surface = null;
             var success = false;
             try
             {
-                session = (_target ?? throw new ObjectDisposedException(nameof(SkiaMetalRenderTarget))).BeginRendering();
+                session = (_target ?? throw new ObjectDisposedException(nameof(SkiaMetalRenderTarget))).BeginRendering(sceneInfo);
                 backendTarget = new GRBackendRenderTarget(session.Size.Width, session.Size.Height,
                     new GRMtlTextureInfo(session.Texture));
 

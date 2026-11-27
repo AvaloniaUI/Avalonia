@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Controls.Embedding;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
@@ -163,6 +164,81 @@ namespace Avalonia.Controls.UnitTests
                 impl.Object.Closed!();
 
                 Assert.True(raised);
+            }
+        }
+
+        [Fact]
+        public void Impl_Close_Should_Raise_Closed_Event_Only_Once()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var impl = CreateMockTopLevelImpl(true);
+
+                var raised = 0;
+                var target = new TestTopLevel(impl.Object);
+                target.Closed += (s, e) => raised++;
+
+                impl.Object.Closed!();
+                impl.Object.Closed!();
+
+                Assert.Equal(1, raised);
+            }
+        }
+
+        [Fact]
+        public void EmbeddableControlRoot_Dispose_Should_Raise_Closed_Event()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var impl = CreateMockTopLevelImpl(true);
+
+                var raised = 0;
+                var target = new EmbeddableControlRoot(impl.Object);
+                target.Closed += (s, e) => raised++;
+
+                target.Dispose();
+
+                Assert.Equal(1, raised);
+            }
+        }
+
+        [Fact]
+        public void EmbeddableControlRoot_Dispose_After_Impl_Close_Should_Raise_Closed_Event_Only_Once()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var impl = CreateMockTopLevelImpl(true);
+
+                var raised = 0;
+                var target = new EmbeddableControlRoot(impl.Object);
+                target.Closed += (s, e) => raised++;
+
+                impl.Object.Closed!();
+                target.Dispose();
+
+                Assert.Equal(1, raised);
+            }
+        }
+
+        [Fact]
+        public void EmbeddableControlRoot_Dispose_Should_Dispose_Impl_Before_Teardown()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var impl = CreateMockTopLevelImpl(true);
+
+                var closedRaised = false;
+                var implDisposedBeforeClosed = false;
+                impl.Setup(x => x.Dispose()).Callback(() => implDisposedBeforeClosed = !closedRaised);
+
+                var target = new EmbeddableControlRoot(impl.Object);
+                target.Closed += (s, e) => closedRaised = true;
+
+                target.Dispose();
+
+                impl.Verify(x => x.Dispose(), Times.Once);
+                Assert.True(implDisposedBeforeClosed);
+                Assert.True(closedRaised);
             }
         }
 

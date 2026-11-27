@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
+using Avalonia.Platform;
 using Xunit;
 
 namespace Avalonia.Skia.UnitTests.Media.TextFormatting
@@ -514,6 +515,335 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 Assert.Contains("…", text);
                 // The fully-fitting trailing run must survive in the logical-tail suffix.
                 Assert.Contains("B", text);
+            }
+        }
+
+        public static TheoryData<string> CollapsingKinds => new()
+        {
+            "TrailingCharacter", "TrailingWord", "LeadingPrefix", "PathSegment"
+        };
+
+        [Theory]
+        [MemberData(nameof(CollapsingKinds))]
+        public void Collapse_Does_Not_Release_Runs_Owned_By_Source_Line(string kind)
+        {
+            // Collapsing borrows the source line's runs. Collapsing the same line repeatedly
+            // must not release them, and disposing the collapsed lines must leave the source
+            // line's shaped buffers alive.
+            using (TextFormatterTests.Start())
+            {
+                var props = new GenericTextRunProperties(Typeface.Default);
+                var sourceRuns = new TextRun[]
+                {
+                    new TextCharacters("alpha\\beta ", props),
+                    new TextCharacters("gamma\\delta ", props),
+                    new TextCharacters("epsilon\\file.txt", props),
+                };
+                var formatter = new TextFormatterImpl();
+                var line = formatter.FormatLine(new FixedRunsTextSource(sourceRuns), 0, double.PositiveInfinity,
+                    new GenericTextParagraphProperties(props));
+                Assert.NotNull(line);
+
+                var sourceShapedRuns = line!.TextRuns.OfType<ShapedTextRun>().ToArray();
+                Assert.True(sourceShapedRuns.Length >= 3, "The line must consist of several shaped runs.");
+
+                var expectedText = LogicalText(line);
+                var collapsedLines = new List<TextLine>();
+
+                for (var fraction = 0.2; fraction < 1.0; fraction += 0.1)
+                {
+                    var width = line.Width * fraction;
+                    var collapsingProperties = CreateCollapsingProperties(kind, width);
+
+                    var first = line.Collapse(collapsingProperties);
+                    var second = line.Collapse(collapsingProperties);
+
+                    Assert.Equal(LogicalText(first), LogicalText(second));
+                    Assert.Equal(expectedText, LogicalText(line));
+
+                    collapsedLines.Add(first);
+                    collapsedLines.Add(second);
+                }
+
+                foreach (var collapsedLine in collapsedLines)
+                {
+                    if (!ReferenceEquals(collapsedLine, line))
+                    {
+                        collapsedLine.Dispose();
+                    }
+                }
+
+                foreach (var run in sourceShapedRuns)
+                {
+                    Assert.True(run.ShapedBuffer.GlyphStorageRefCount > 0,
+                        "Disposing a collapsed line released a run the source line still owns.");
+                }
+
+                Assert.Equal(expectedText, LogicalText(line));
+
+                line.Dispose();
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(CollapsingKinds))]
+        public void Collapse_Releases_Runs_The_Collapsed_Line_Does_Not_Keep(string kind)
+        {
+            // Collapsing creates split halves and an ellipsis symbol. Whatever the collapsed line
+            // does not keep must be released during collapse, and the rest must be released with
+            // the collapsed line. The source runs share one glyph storage with every half split
+            // from them, so a leaked half keeps that storage's reference count raised.
+            using (TextFormatterTests.Start())
+            {
+                var props = new GenericTextRunProperties(Typeface.Default);
+                var sourceRuns = new TextRun[]
+                {
+                    new TextCharacters("alpha\\beta ", props),
+                    new TextCharacters("gamma\\delta ", props),
+                    new TextCharacters("epsilon\\file.txt", props),
+                };
+                var formatter = new TextFormatterImpl();
+                using var line = formatter.FormatLine(new FixedRunsTextSource(sourceRuns), 0, double.PositiveInfinity,
+                    new GenericTextParagraphProperties(props));
+                Assert.NotNull(line);
+
+                var sourceBuffers = line!.TextRuns.OfType<ShapedTextRun>().Select(x => x.ShapedBuffer).ToArray();
+                var storageRefCounts = sourceBuffers.Select(x => x.GlyphStorageRefCount).ToArray();
+
+                // Only the symbols are shaped from here on.
+                var shaper = new TextFormatterTests.RecordingTextShaper(
+                    AvaloniaLocator.Current.GetRequiredService<ITextShaperImpl>());
+                AvaloniaLocator.CurrentMutable.Bind<TextShaper>().ToConstant(new TextShaper(shaper));
+
+                // Covers the symbol-only, empty and uncollapsed results along with real collapses.
+                var widths = new List<double> { 0.001, line.Width * 2 };
+
+                for (var fraction = 0.1; fraction < 1.0; fraction += 0.1)
+                {
+                    widths.Add(line.Width * fraction);
+                }
+
+                foreach (var width in widths)
+                {
+                    var collapsed = line.Collapse(CreateCollapsingProperties(kind, width));
+
+                    if (!ReferenceEquals(collapsed, line))
+                    {
+                        collapsed.Dispose();
+                    }
+
+                    Assert.Equal(storageRefCounts, sourceBuffers.Select(x => x.GlyphStorageRefCount));
+                    Assert.All(shaper.ShapedBuffers, x => Assert.Equal(0, x.Length));
+                }
+
+                Assert.NotEmpty(shaper.ShapedBuffers);
+            }
+        }
+
+        private static TextCollapsingProperties CreateCollapsingProperties(string kind, double width)
+        {
+            var symbolProperties = new GenericTextRunProperties(Typeface.Default);
+
+            return kind switch
+            {
+                "TrailingCharacter" => TrailingChar(width, FlowDirection.LeftToRight),
+                "TrailingWord" => TrailingWord(width, FlowDirection.LeftToRight),
+                "LeadingPrefix" => LeadingPrefix(prefixLength: 8, width, FlowDirection.LeftToRight),
+                "PathSegment" => new TextPathSegmentEllipsis("…", width, symbolProperties, FlowDirection.LeftToRight),
+                _ => throw new System.ArgumentOutOfRangeException(nameof(kind), kind, null)
+            };
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(8)]
+        public void LeadingPrefix_With_Mixed_Font_Runs_Keeps_Contiguous_Suffix(int prefixLength)
+        {
+            // The two fonts give the same characters different widths, so after a tail run is only
+            // partly kept, the leftover budget can still hold a narrow character of an earlier run.
+            using (TextFormatterTests.Start())
+            {
+                var runs = MixedFontRuns();
+                var lineWidth = BuildMixedFontLine(runs, out var fullText).Width;
+
+                for (var width = 30.0; width < lineWidth; width += 1.0)
+                {
+                    var line = BuildMixedFontLine(runs, out _);
+                    var collapsed = line.Collapse(LeadingPrefix(prefixLength, width, FlowDirection.LeftToRight));
+
+                    AssertPrefixEllipsisSuffix(fullText, LogicalTextWithPlaceholders(collapsed), width);
+                    AssertFits(collapsed, width);
+                }
+            }
+        }
+
+        [Fact]
+        public void LeadingPrefix_Keeps_Inline_Object_In_Suffix()
+        {
+            using (TextFormatterTests.Start())
+            {
+                var props = new GenericTextRunProperties(Typeface.Default, 12);
+                var runs = new TextRun[]
+                {
+                    new TextCharacters("aaaaaaaaaaaaaaaaaaaa", props),
+                    new FixedSizeRun(40),
+                    new TextCharacters("bbbb", props),
+                };
+                var lineWidth = BuildMixedFontLine(runs, out var fullText).Width;
+
+                for (var width = 20.0; width < lineWidth; width += 1.0)
+                {
+                    var line = BuildMixedFontLine(runs, out _);
+                    var collapsed = line.Collapse(LeadingPrefix(0, width, FlowDirection.LeftToRight));
+
+                    AssertPrefixEllipsisSuffix(fullText, LogicalTextWithPlaceholders(collapsed), width);
+                    AssertFits(collapsed, width);
+                }
+            }
+        }
+
+        [Fact]
+        public void PathSegmentEllipsis_With_Mixed_Font_Runs_Fits_Width()
+        {
+            // The fallback keeps the tail of a segment that spans several runs; every run after the
+            // first one of that segment has to count against the width as well.
+            using (TextFormatterTests.Start())
+            {
+                var regular = new GenericTextRunProperties(new Typeface("DejaVu Sans"), 20);
+                var alternate = new GenericTextRunProperties(new Typeface("Inter"), 20);
+                var runs = new TextRun[]
+                {
+                    new TextCharacters("C:/Users/Some", regular),
+                    new TextCharacters("VeryLongFolder", alternate),
+                    new TextCharacters("NameHere/Another", regular),
+                    new TextCharacters("Segment/file", alternate),
+                    new TextCharacters("name.txt", regular),
+                };
+                var lineWidth = BuildMixedFontLine(runs, out var fullText).Width;
+
+                for (var width = 20.0; width < lineWidth; width += 1.0)
+                {
+                    var line = BuildMixedFontLine(runs, out _);
+                    var collapsing = new TextPathSegmentEllipsis("…", width, regular, FlowDirection.LeftToRight);
+                    var collapsed = line.Collapse(collapsing);
+
+                    AssertPrefixEllipsisSuffix(fullText, LogicalTextWithPlaceholders(collapsed), width);
+                    AssertFits(collapsed, width);
+                }
+            }
+        }
+
+        [Fact]
+        public void LeadingCharacterEllipsis_TextLayout_With_Mixed_Font_Runs_Keeps_Contiguous_Suffix()
+        {
+            using (TextFormatterTests.Start())
+            {
+                var runs = MixedFontRuns();
+                var fullText = string.Concat(runs.Select(r => r.Text.ToString()));
+                var paragraphProps = new GenericTextParagraphProperties(
+                    FlowDirection.LeftToRight, TextAlignment.Left, true, false,
+                    runs[0].Properties!, TextWrapping.NoWrap, 0, 0, 0);
+
+                for (var width = 60.0; width <= 300.0; width += 1.0)
+                {
+                    using var layout = new TextLayout(new FixedRunsTextSource(runs), paragraphProps,
+                        TextTrimming.LeadingCharacterEllipsis, maxWidth: width);
+
+                    AssertPrefixEllipsisSuffix(fullText, LogicalTextWithPlaceholders(layout.TextLines[0]), width);
+                }
+            }
+        }
+
+        private static List<TextRun> MixedFontRuns()
+        {
+            var regular = new GenericTextRunProperties(new Typeface("DejaVu Sans"), 30);
+            var alternate = new GenericTextRunProperties(new Typeface("Inter"), 30);
+            var runs = new List<TextRun> { new TextCharacters("Hel", regular) };
+
+            for (var i = 0; i < 7; i++)
+            {
+                runs.Add(new TextCharacters("lo wo", alternate));
+                runs.Add(new TextCharacters(i < 6 ? "rld Hel" : "rld", regular));
+            }
+
+            return runs;
+        }
+
+        /// <summary>
+        /// Formats <paramref name="runs"/> into one line. Collapsing can split and release runs of
+        /// the source line, so tests collapse a freshly formatted line per width, as TextLayout does.
+        /// </summary>
+        private static TextLine BuildMixedFontLine(IReadOnlyList<TextRun> runs, out string fullText)
+        {
+            fullText = string.Concat(runs.Select(r => r is TextCharacters ? r.Text.ToString() : "#"));
+
+            var paragraphProps = new GenericTextParagraphProperties(
+                FlowDirection.LeftToRight, TextAlignment.Left, true, false,
+                runs[0].Properties!, TextWrapping.NoWrap, 0, 0, 0);
+            var line = new TextFormatterImpl().FormatLine(
+                new FixedRunsTextSource(runs), 0, double.PositiveInfinity, paragraphProps);
+
+            Assert.NotNull(line);
+            return line!;
+        }
+
+        /// <summary>
+        /// Asserts that the collapsed text is a leading piece of <paramref name="fullText"/>, the
+        /// ellipsis, then a trailing piece of it, with nothing taken from between the two pieces.
+        /// </summary>
+        private static void AssertPrefixEllipsisSuffix(string fullText, string collapsedText, double width)
+        {
+            var ellipsisIndex = collapsedText.IndexOf('…');
+            Assert.True(ellipsisIndex >= 0, $"width {width}: no ellipsis in '{collapsedText}'");
+
+            var prefix = collapsedText.Substring(0, ellipsisIndex);
+            var suffix = collapsedText.Substring(ellipsisIndex + 1);
+
+            Assert.True(fullText.StartsWith(prefix) && fullText.EndsWith(suffix),
+                $"width {width}: '{collapsedText}' is not a prefix, an ellipsis and a suffix of '{fullText}'");
+        }
+
+        private static void AssertFits(TextLine collapsed, double width)
+        {
+            Assert.True(collapsed.WidthIncludingTrailingWhitespace <= width + 0.01,
+                $"width {width}: collapsed line is {collapsed.WidthIncludingTrailingWhitespace} wide");
+        }
+
+        /// <summary>
+        /// Logical text of the line with each inline object written as '#'.
+        /// </summary>
+        private static string LogicalTextWithPlaceholders(TextLine line)
+        {
+            var enumerator = new LogicalTextRunEnumerator(line);
+            var sb = new StringBuilder();
+
+            while (enumerator.MoveNext(out var run))
+            {
+                if (run is ShapedTextRun)
+                {
+                    sb.Append(run.Text.Span);
+                }
+                else if (run is DrawableTextRun)
+                {
+                    sb.Append('#');
+                }
+            }
+
+            return sb.ToString();
+        }
+
+        private sealed class FixedSizeRun : DrawableTextRun
+        {
+            private readonly double _width;
+
+            public FixedSizeRun(double width) => _width = width;
+
+            public override Size Size => new(_width, 10);
+
+            public override double Baseline => 10;
+
+            public override void Draw(DrawingContext drawingContext, Point origin)
+            {
             }
         }
 

@@ -8,7 +8,7 @@
 
 #import "WindowBaseImpl.h"
 #include "IWindowStateChanged.h"
-class WindowImpl : public virtual WindowBaseImpl, public virtual IAvnWindow, public IWindowStateChanged
+class WindowImpl : public virtual WindowBaseImpl, public virtual MicroComImpl<IAvnWindow>, public IWindowStateChanged
 {
 public:
     FORWARD_IUNKNOWN()
@@ -22,7 +22,7 @@ BEGIN_INTERFACE_MAP()
 
     ComPtr<IAvnWindowEvents> WindowEvents;
 
-    WindowImpl(IAvnWindowEvents* events);
+    WindowImpl(const ComPtr<IAvnWindowEvents>& events);
 
     virtual HRESULT Show (bool activate, bool isDialog) override;
 
@@ -45,9 +45,9 @@ BEGIN_INTERFACE_MAP()
     void DoZoom();
 
     virtual HRESULT SetCanResize(bool value) override;
-    
+
     virtual HRESULT SetCanMinimize(bool value) override;
-    
+
     virtual HRESULT SetCanMaximize(bool value) override;
 
     virtual HRESULT SetDecorations(SystemDecorations value) override;
@@ -65,7 +65,7 @@ BEGIN_INTERFACE_MAP()
     virtual HRESULT GetExtendTitleBarHeight (double*ret) override;
 
     virtual HRESULT SetExtendTitleBarHeight (double value) override;
-    
+
     virtual HRESULT GetWindowZOrder (long* zOrder) override;
 
     void EnterFullScreenMode ();
@@ -73,15 +73,15 @@ BEGIN_INTERFACE_MAP()
     void ExitFullScreenMode ();
 
     virtual HRESULT SetWindowState (AvnWindowState state) override;
-    
+
     virtual HRESULT SetWindowState (AvnWindowState state, bool shouldResize);
 
     virtual bool IsModal() override;
-    
+
     bool IsOwned();
-    
+
     virtual void BringToFront () override;
-    
+
     bool CanBecomeKeyWindow ();
 
     bool CanZoom() override { return _isEnabled && _canMaximize; }

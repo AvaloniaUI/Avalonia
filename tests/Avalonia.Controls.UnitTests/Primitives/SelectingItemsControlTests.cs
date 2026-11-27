@@ -196,6 +196,34 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.Equal("B", listBox.SelectedItem);
         }
 
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Setting_SelectedIndex_During_Initialize_Raises_SelectionChanged_Once(bool comboBox)
+        {
+            // The order XAML uses: rooted, SelectedIndex set and inline items added before EndInit
+            SelectingItemsControl target = comboBox ? new ComboBox() : new ListBox();
+            var first = "first";
+            var second = "second";
+            var raised = new List<(object[] Added, object[] Removed)>();
+            var root = new TestRoot();
+
+            root.BeginInit();
+            target.BeginInit();
+            root.Child = target;
+            target.SelectedIndex = 0;
+            target.SelectionChanged += (_, e) => raised.Add((e.AddedItems.Cast<object>().ToArray(), e.RemovedItems.Cast<object>().ToArray()));
+            target.Items.Add(first);
+            target.Items.Add(second);
+            target.EndInit();
+            root.EndInit();
+
+            var change = Assert.Single(raised);
+            Assert.Equal(new object[] { first }, change.Added);
+            Assert.Empty(change.Removed);
+            Assert.Same(first, target.SelectedItem);
+        }
+
         [Fact]
         public void Setting_SelectedIndex_Before_Initialize_Should_Retain_Selection()
         {
@@ -1103,6 +1131,28 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
+        public void Changing_ItemsSource_During_SelectionChanged_When_Selection_Lost_Does_Not_Throw()
+        {
+            // Issue #7536.
+            var target = new SelectingItemsControl
+            {
+                ItemsSource = new ObservableCollection<Item> { new(), new(), new() },
+                SelectedIndex = 0,
+            };
+            var raised = 0;
+
+            target.SelectionChanged += (s, e) =>
+            {
+                target.ItemsSource = new ObservableCollection<Item> { new(), new() };
+                ++raised;
+            };
+
+            target.SelectedIndex = -1;
+
+            Assert.Equal(1, raised);
+        }
+
+        [Fact]
         public void Setting_SelectedIndex_Should_Raise_PropertyChanged_Events()
         {
             var items = new ObservableCollection<string> { "foo", "bar", "baz" };
@@ -1911,6 +1961,33 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             target.AutoScrollToSelectedItem = true;
             Threading.Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+            Assert.True(raised);
+        }
+
+        [Fact]
+        public void AutoScrollToSelectedItem_Scrolls_Synchronously_When_Laid_Out()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var items = new ObservableCollection<string>
+            {
+               "Foo",
+               "Bar",
+               "Baz"
+            };
+
+            var target = new ListBox
+            {
+                Template = Template(),
+                ItemsSource = items,
+            };
+
+            var raised = false;
+
+            Prepare(target);
+            target.AddHandler(Control.RequestBringIntoViewEvent, (_, _) => raised = true);
+            target.SelectedIndex = 2;
+
             Assert.True(raised);
         }
 

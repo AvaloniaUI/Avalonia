@@ -172,7 +172,8 @@ namespace Avalonia.Input
         public PointerPressedEventArgs(
             object? source,
             IPointer pointer,
-            Visual rootVisual, Point rootVisualPosition,
+            Visual? rootVisual,
+            Point rootVisualPosition,
             ulong timestamp,
             PointerPointProperties properties,
             KeyModifiers modifiers,
@@ -187,7 +188,8 @@ namespace Avalonia.Input
         public PointerPressedEventArgs(
             object? source,
             IPointer pointer,
-            Visual rootVisual, Point rootVisualPosition,
+            Visual? rootVisual,
+            Point rootVisualPosition,
             ulong timestamp,
             PointerPointProperties properties,
             KeyModifiers modifiers,
@@ -206,7 +208,7 @@ namespace Avalonia.Input
     {
         public PointerReleasedEventArgs(
             object? source, IPointer pointer,
-            Visual rootVisual, Point rootVisualPosition, ulong timestamp,
+            Visual? rootVisual, Point rootVisualPosition, ulong timestamp,
             PointerPointProperties properties, KeyModifiers modifiers,
             MouseButton initialPressMouseButton)
             : base(InputElement.PointerReleasedEvent, source, pointer, rootVisual, rootVisualPosition,

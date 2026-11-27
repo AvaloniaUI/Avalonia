@@ -21,6 +21,13 @@ public interface ICompositionGpuInterop
     IReadOnlyList<string> SupportedSemaphoreTypes { get; }
 
     /// <summary>
+    /// Returns the DRM format/modifier pairs the current GPU backend can import as
+    /// <see cref="KnownPlatformGraphicsExternalImageHandleTypes.DmaBufFileDescriptor"/> images,
+    /// or null when the backend cannot enumerate them.
+    /// </summary>
+    IReadOnlyList<PlatformGraphicsDrmFormat>? SupportedDmaBufFormats => null;
+
+    /// <summary>
     /// Returns the supported ways to synchronize access to the imported GPU image
     /// </summary>
     /// <returns></returns>

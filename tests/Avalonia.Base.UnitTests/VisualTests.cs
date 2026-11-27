@@ -12,8 +12,16 @@ using Xunit;
 
 namespace Avalonia.Base.UnitTests
 {
-    public class VisualTests
+    public class VisualTests : ScopedTestBase
     {
+        [Fact]
+        public void BackdropEffectBoundsSource_Defaults_To_Layout()
+        {
+            var target = new Visual();
+
+            Assert.Equal(BackdropEffectBoundsSource.Layout, target.BackdropEffectBoundsSource);
+        }
+
         [Fact]
         public void Added_Child_Should_Have_VisualParent_Set()
         {

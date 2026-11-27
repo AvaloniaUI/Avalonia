@@ -122,7 +122,7 @@
                            Grid.Column="1"
                            Width="{DynamicResource TimePickerSpacerThemeWidth}"
                            HorizontalAlignment="Center"
-                           Fill="{DynamicResource TimePickerSpacerFill}" />
+                           Fill="{DynamicResource ThemeControlMidHighBrush}" />
 
                 <Border x:Name="PART_SecondPickerHost"
                         Grid.Column="2"
@@ -141,7 +141,7 @@
                            Grid.Column="3"
                            Width="{DynamicResource TimePickerSpacerThemeWidth}"
                            HorizontalAlignment="Center"
-                           Fill="{DynamicResource TimePickerSpacerFill}" />
+                           Fill="{DynamicResource ThemeControlMidHighBrush}" />
                 
                 <Border x:Name="PART_ThirdPickerHost"
                         Grid.Column="4"
@@ -160,7 +160,7 @@
                            Grid.Column="5"
                            Width="{DynamicResource TimePickerSpacerThemeWidth}"
                            HorizontalAlignment="Center"
-                           Fill="{DynamicResource TimePickerSpacerFill}" />
+                           Fill="{DynamicResource ThemeControlMidHighBrush}" />
 
                 <Border x:Name="PART_FourthPickerHost"
                         Grid.Column="6"
@@ -191,6 +191,10 @@
 
     <Style Selector="^:disabled /template/ Rectangle">
       <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}" />
+    </Style>
+    
+    <Style Selector="^ /template/ Button#PART_FlyoutButton TextBlock">
+      <Setter Property="VerticalAlignment" Value="{TemplateBinding VerticalContentAlignment}"/>
     </Style>
 
     <Style Selector="^:hasnotime /template/ Button#PART_FlyoutButton TextBlock">
