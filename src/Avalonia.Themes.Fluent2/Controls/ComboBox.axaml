@@ -260,6 +260,7 @@
                      Text="{TemplateBinding Text, Mode=TwoWay}"
                      PlaceholderText="{TemplateBinding PlaceholderText}"
                      BorderThickness="0"
+                     IsReadOnly="{TemplateBinding IsReadOnly}"
                      IsVisible="{TemplateBinding IsEditable}">
               <TextBox.Resources>
                 <!-- WinUI's editable ComboBox hosts a chromeless TextBox (ComboBoxTextBoxStyle):
