@@ -203,6 +203,7 @@ namespace Avalonia.X11
             {X11Key.Tab, Key.Tab},
             {X11Key.Linefeed, Key.LineFeed},
             {X11Key.Clear, Key.Clear},
+            {X11Key.KP_Begin, Key.Clear}, // keypad 5 with Num Lock off; VK_CLEAR on Windows
             {X11Key.Return, Key.Return},
             {X11Key.KP_Enter, Key.Return},
             {X11Key.Pause, Key.Pause},
