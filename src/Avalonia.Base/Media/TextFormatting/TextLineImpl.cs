@@ -921,22 +921,7 @@ namespace Avalonia.Media.TextFormatting
 
                         if (isBackspaceDelete)
                         {
-                            var length = 0;
-
-                            while (Codepoint.ReadAt(shapedRun.GlyphRun.Characters.Span, length, out var count) is Codepoint codepoint && codepoint != Codepoint.ReplacementCodepoint)
-                            {
-                                if (codepoint.Value == 0x0D && Codepoint.ReadAt(shapedRun.GlyphRun.Characters.Span, length + count, out var lfCount).Value == 0x0A)
-                                {
-                                    count += lfCount;
-                                }
-
-                                if (length + count >= runOffset)
-                                {
-                                    break;
-                                }
-
-                                length += count;
-                            }
+                            var length = TextSegmentation.BackspaceStart(runOffset, shapedRun.GlyphRun.Characters.Span);
 
                             previousCharacterHit = new CharacterHit(characterIndex - runOffset + length);
                         }
