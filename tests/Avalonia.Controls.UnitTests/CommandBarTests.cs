@@ -1458,10 +1458,10 @@ public class CommandBarOverflowKeyboardTests : ScopedTestBase
     [Fact]
     public void PrimaryVisibilityChange_ThatChangesPlacement_PreservesFocusOnUnmovedCommand()
     {
-        var first = new CommandBarButton { Label = "A" };
-        var second = new CommandBarButton { Label = "B" };
-        var third = new CommandBarButton { Label = "C" };
-        var fourth = new CommandBarButton { Label = "D" };
+        var first = new CommandBarButton { Label = "A", Width = 100 };
+        var second = new CommandBarButton { Label = "B", Width = 100 };
+        var third = new CommandBarButton { Label = "C", Width = 100 };
+        var fourth = new CommandBarButton { Label = "D", Width = 100 };
         var cb = new CommandBar
         {
             ItemWidthBottom = 100,
@@ -1509,10 +1509,10 @@ public class CommandBarOverflowKeyboardTests : ScopedTestBase
     public void PrimaryVisibilityThatDependsOnOverflow_Settles()
     {
         const int maxVisibilityChanges = 10;
-        var first = new CommandBarButton();
-        var second = new CommandBarButton();
-        var third = new CommandBarButton();
-        var hiddenInOverflow = new CommandBarButton();
+        var first = new CommandBarButton { Width = 100 };
+        var second = new CommandBarButton { Width = 100 };
+        var third = new CommandBarButton { Width = 100 };
+        var hiddenInOverflow = new CommandBarButton { Width = 100 };
         var hideInOverflow = hiddenInOverflow.Bind(Visual.IsVisibleProperty, new Binding("!IsInOverflow") { RelativeSource = new RelativeSource(RelativeSourceMode.Self) });
         var cb = new CommandBar
         {
@@ -1534,6 +1534,7 @@ public class CommandBarOverflowKeyboardTests : ScopedTestBase
         };
 
         cb.IsDynamicOverflowEnabled = true;
+        root.LayoutManager.ExecuteLayoutPass();
 
         Assert.InRange(visibilityChanges, 1, maxVisibilityChanges);
         Assert.False(hiddenInOverflow.IsVisible);
@@ -1544,10 +1545,10 @@ public class CommandBarOverflowKeyboardTests : ScopedTestBase
     public void PrimaryVisibilityThatDependsOnAnotherCommandsOverflow_Settles()
     {
         const int maxVisibilityChanges = 10;
-        var first = new CommandBarButton();
-        var second = new CommandBarButton();
-        var trigger = new CommandBarButton();
-        var dependent = new CommandBarButton();
+        var first = new CommandBarButton { Width = 90 };
+        var second = new CommandBarButton { Width = 90 };
+        var trigger = new CommandBarButton { Width = 90 };
+        var dependent = new CommandBarButton { Width = 90 };
         var hideWhenTriggerOverflows = dependent.Bind(Visual.IsVisibleProperty, new Binding("!IsInOverflow") { Source = trigger });
         var cb = new CommandBar
         {
@@ -1569,6 +1570,7 @@ public class CommandBarOverflowKeyboardTests : ScopedTestBase
         };
 
         cb.IsDynamicOverflowEnabled = true;
+        root.LayoutManager.ExecuteLayoutPass();
 
         Assert.InRange(visibilityChanges, 1, maxVisibilityChanges);
     }
@@ -1576,10 +1578,10 @@ public class CommandBarOverflowKeyboardTests : ScopedTestBase
     [Fact]
     public void PrimaryVisibilityChange_WhileDetached_UpdatesOverflowOnReattach()
     {
-        var first = new CommandBarButton();
-        var second = new CommandBarButton();
-        var third = new CommandBarButton();
-        var fourth = new CommandBarButton();
+        var first = new CommandBarButton { Width = 100 };
+        var second = new CommandBarButton { Width = 100 };
+        var third = new CommandBarButton { Width = 100 };
+        var fourth = new CommandBarButton { Width = 100 };
         var cb = new CommandBar
         {
             ItemWidthBottom = 100,
@@ -1608,10 +1610,10 @@ public class CommandBarOverflowKeyboardTests : ScopedTestBase
     [InlineData(true)]
     public void PrimaryVisibilityBinding_ChangesDuringRebuild_UpdatesOverflowWithoutResizing(bool isVisible)
     {
-        var first = new CommandBarButton();
-        var second = new CommandBarButton();
-        var bound = new CommandBarButton();
-        var fourth = new CommandBarButton();
+        var first = new CommandBarButton { Width = 98 };
+        var second = new CommandBarButton { Width = 98 };
+        var bound = new CommandBarButton { Width = 98 };
+        var fourth = new CommandBarButton { Width = 98 };
         bound.Bind(Visual.IsVisibleProperty, new Binding("IsCommandVisible") { FallbackValue = !isVisible });
         var cb = new CommandBar
         {
