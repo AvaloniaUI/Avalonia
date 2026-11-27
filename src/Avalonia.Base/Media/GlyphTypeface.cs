@@ -89,15 +89,19 @@ namespace Avalonia.Media
         private readonly bool _ownsPlatformTypeface;
 
         // Variation point this typeface is bound to. default(NormalizedVariationPosition)
-        // for the source and for static fonts; non-default for variation clones.
+        // for static fonts and for a default-instance source; non-default for variation clones
+        // and for a source whose platform typeface is a named instance the platform applied.
         private readonly NormalizedVariationPosition _variationPosition;
 
+        // The font metrics of the default instance, which MVAR deltas apply to. A source bound to
+        // a named instance reports varied Metrics, so its clones vary these instead.
+        private readonly FontMetrics _defaultMetrics;
+
         // Precomputed projection of _variationPosition onto fvar's axis order. Allocated
-        // once during clone construction and reused by every variation-aware lookup
+        // once during construction and reused by every variation-aware lookup
         // (GetGlyphOutline, the gvar deformer, HVAR advance / LSB queries) instead of
-        // re-projecting per call. Null on the source typeface and on static fonts —
-        // both have IsDefault == true, and every consumer short-circuits before
-        // touching this field.
+        // re-projecting per call. Null on a default-instance source and on static fonts,
+        // and every consumer short-circuits before touching this field.
         private readonly float[]? _activeCoords;
 
         // Pre-computed per-region scaler arrays for each variation table's
@@ -127,6 +131,10 @@ namespace Avalonia.Media
         // the lock-free fast-path read in the getter safely observes the fully-published instance.
         private readonly object _textShaperLock = new();
         private volatile ITextShaperTypeface? _textShaperTypeface;
+
+        // The default-instance shaper that a source bound to a named instance derives its own
+        // shaper from. Disposed after that shaper, which shares its shaping face.
+        private ITextShaperTypeface? _defaultTextShaperTypeface;
 
         // A shaper without variation support returns the source's own instance from WithVariation;
         // the clone then shares it and must leave its disposal to the source.
@@ -381,6 +389,58 @@ namespace Avalonia.Media
                 VvarTable.TryLoad(this, _fvarTable.Axes.Length, out _vvarTable);
             }
 
+            _defaultMetrics = Metrics;
+
+            if (_fvarTable is not null)
+            {
+                var position = typeface.VariationPosition;
+                var instanceIndex = -1;
+
+                // DirectWrite and fontconfig answer a weight or stretch request on a variable font
+                // with a named instance applied inside the typeface, whose tables still describe the
+                // default instance. Read at the default, they would shape, measure and outline other
+                // glyphs than the platform draws.
+                if (position.IsDefault && typeface is IPlatformVariableInstance { MayBeNamedInstance: true } instance)
+                {
+                    instanceIndex = FindPlatformNamedInstance(instance, fontWeight, stretch);
+
+                    if (instanceIndex >= 0)
+                    {
+                        position = CreateNormalizedPosition(null, instanceIndex);
+                    }
+                }
+
+                if (!position.IsDefault)
+                {
+                    _variationPosition = position;
+                    _activeCoords = CreateActiveCoords(_fvarTable, position);
+                    _hvarRegionScalers = CreateRegionScalers(_hvarTable?.Store, _activeCoords);
+                    _vvarRegionScalers = CreateRegionScalers(_vvarTable?.Store, _activeCoords);
+
+                    if (_mvarTable is not null)
+                    {
+                        Metrics = ApplyMvarDeltas(_defaultMetrics, _mvarTable, position, _fvarTable);
+                    }
+                }
+
+                if (instanceIndex >= 0)
+                {
+                    var coordinates = _fvarTable.Instances[instanceIndex].Coordinates;
+
+                    // A simulated face reports the weight it stands for, as above.
+                    if ((fontSimulations & FontSimulations.Bold) == 0 &&
+                        coordinates.TryGetValue(s_weightAxisTag, out var wght))
+                    {
+                        Weight = ToFontWeight(wght);
+                    }
+
+                    if (coordinates.TryGetValue(s_widthAxisTag, out var wdth))
+                    {
+                        Stretch = ToFontStretch(wdth);
+                    }
+                }
+            }
+
             static CultureInfo GetCulture(int lcid)
             {
                 if (lcid == ushort.MaxValue)
@@ -483,38 +543,205 @@ namespace Avalonia.Media
             // Ascent / Descent / UnderlinePosition / StrikethroughPosition are stored
             // negated relative to their OpenType raw values, so the corresponding MVAR
             // deltas get subtracted; thicknesses and line gap are added as-is.
+            _defaultMetrics = source._defaultMetrics;
+
             Metrics = source._mvarTable is not null
-                ? ApplyMvarDeltas(source.Metrics, source._mvarTable, variation, source._fvarTable!)
-                : source.Metrics;
+                ? ApplyMvarDeltas(source._defaultMetrics, source._mvarTable, variation, source._fvarTable!)
+                : source._defaultMetrics;
 
             // _supportedFeatures is lazy — let each clone materialize independently.
             // _textShaperTypeface is intentionally null so the getter derives a variation-aware
             // shaper from the source's shaper via ITextShaperTypeface.WithVariation.
 
-            // Project the variation settings onto fvar's axis order once. WithVariation
-            // guarantees clones only exist for variable fonts, so _fvarTable is always
-            // non-null when we get here, and IsDefault is always false (default settings
-            // short-circuit to 'return source' before any clone is built).
-            var axes = source._fvarTable!.AxisTags;
-            _activeCoords = new float[axes.Length];
+            // Project the variation onto fvar's axis order once, with the per-region scalers of
+            // every ItemVariationStore that's queried per glyph, so HVAR / VVAR per-glyph delta
+            // lookups become array indices. WithVariation guarantees clones only exist for
+            // variable fonts, so _fvarTable is always non-null when we get here.
+            _activeCoords = CreateActiveCoords(source._fvarTable!, variation);
+            _hvarRegionScalers = CreateRegionScalers(source._hvarTable?.Store, _activeCoords);
+            _vvarRegionScalers = CreateRegionScalers(source._vvarTable?.Store, _activeCoords);
+        }
+
+        private static float[] CreateActiveCoords(FvarTable fvar, NormalizedVariationPosition variation)
+        {
+            var axes = fvar.AxisTags;
+            var coords = new float[axes.Length];
+
             for (var i = 0; i < axes.Length; i++)
             {
                 variation.TryGetCoordinate(axes[i], out var v);
-                _activeCoords[i] = v;
+                coords[i] = v;
             }
 
-            // Pre-compute per-region scalers for every ItemVariationStore that's likely
-            // to be queried per-glyph. Done once here so HVAR / VVAR per-glyph delta
-            // lookups become array indices.
-            if (source._hvarTable is not null)
+            return coords;
+        }
+
+        private static float[]? CreateRegionScalers(ItemVariationStore? store, float[] activeCoords)
+        {
+            if (store is null)
             {
-                _hvarRegionScalers = new float[source._hvarTable.Store.RegionCount];
-                source._hvarTable.Store.ComputeRegionScalers(_activeCoords, _hvarRegionScalers);
+                return null;
             }
-            if (source._vvarTable is not null)
+
+            var scalers = new float[store.RegionCount];
+            store.ComputeRegionScalers(activeCoords, scalers);
+
+            return scalers;
+        }
+
+        private static readonly OpenTypeTag s_weightAxisTag = OpenTypeTag.Parse("wght");
+        private static readonly OpenTypeTag s_widthAxisTag = OpenTypeTag.Parse("wdth");
+
+        // The OpenType width classes as wdth percentages, UltraCondensed (1) to UltraExpanded (9).
+        private static readonly float[] s_widthClassPercents = [50f, 62.5f, 75f, 87.5f, 100f, 112.5f, 125f, 150f, 200f];
+
+        private static FontWeight ToFontWeight(float wght) => (FontWeight)Math.Clamp((int)MathF.Round(wght), 1, 1000);
+
+        private static FontStretch ToFontStretch(float wdth)
+        {
+            var nearest = 0;
+
+            for (var i = 1; i < s_widthClassPercents.Length; i++)
             {
-                _vvarRegionScalers = new float[source._vvarTable.Store.RegionCount];
-                source._vvarTable.Store.ComputeRegionScalers(_activeCoords, _vvarRegionScalers);
+                if (MathF.Abs(s_widthClassPercents[i] - wdth) < MathF.Abs(s_widthClassPercents[nearest] - wdth))
+                {
+                    nearest = i;
+                }
+            }
+
+            return (FontStretch)(nearest + 1);
+        }
+
+        /// <summary>
+        /// Finds the named instance a platform applied inside a typeface whose tables describe the
+        /// default instance.
+        /// </summary>
+        /// <remarks>
+        /// An instance the platform names is taken when its advances match what the platform draws.
+        /// Otherwise the candidates are the default instance and the named instances whose weight
+        /// and width match the face the platform reports, and the one whose advances match the
+        /// drawn advances wins, the default instance on a tie. Weight and width alone do not tell
+        /// apart instances that differ on another axis, such as the optical sizes of Segoe UI
+        /// Variable; their advances do. Instances whose advances do not vary between them, such as
+        /// the weights of Bahnschrift, are told apart by weight.
+        /// </remarks>
+        /// <param name="platform">The platform typeface.</param>
+        /// <param name="designWeight">The weight the OS/2 table declares for the default instance.</param>
+        /// <param name="designStretch">The stretch the OS/2 table declares for the default instance.</param>
+        /// <returns>The index of the named instance, or -1 for the default instance.</returns>
+        private int FindPlatformNamedInstance(IPlatformVariableInstance platform, FontWeight designWeight,
+            FontStretch designStretch)
+        {
+            var fvar = _fvarTable!;
+            var instances = fvar.Instances;
+            var hmTable = _hmTable;
+
+            if (instances.IsEmpty || hmTable is null || GlyphCount < 2)
+            {
+                return -1;
+            }
+
+            var sampleCount = Math.Min(GlyphCount - 1, 64);
+            var glyphs = new ushort[sampleCount];
+
+            for (var i = 0; i < sampleCount; i++)
+            {
+                glyphs[i] = (ushort)(i + 1);
+            }
+
+            var drawn = new float[sampleCount];
+            var advances = new ushort[sampleCount];
+            var canMeasure = platform.TryGetGlyphAdvances(glyphs, drawn);
+
+            // The platform's variation of a few glyphs differs from the HVAR advance by more than
+            // delta rounding, so an instance matches with a few glyphs off.
+            var tolerance = sampleCount / 16;
+
+            if (platform.TryGetNamedInstanceIndex(out var named) && (uint)named < (uint)instances.Length &&
+                (!canMeasure || CountMismatches(CreateNormalizedPosition(null, named)) <= tolerance))
+            {
+                return named;
+            }
+
+            if (!canMeasure)
+            {
+                return -1;
+            }
+
+            var weight = platform.InstanceWeight;
+            var stretch = platform.InstanceStretch;
+            var defaultWeight = GetDefaultValue(s_weightAxisTag);
+            var defaultWidth = GetDefaultValue(s_widthAxisTag);
+
+            var best = -1;
+            var bestMismatches = int.MaxValue;
+
+            if (IsPlatformFace(defaultWeight, defaultWidth))
+            {
+                bestMismatches = CountMismatches(default);
+            }
+
+            for (var i = 0; i < instances.Length; i++)
+            {
+                var coordinates = instances[i].Coordinates;
+
+                if (!IsPlatformFace(
+                        coordinates.TryGetValue(s_weightAxisTag, out var wght) ? wght : defaultWeight,
+                        coordinates.TryGetValue(s_widthAxisTag, out var wdth) ? wdth : defaultWidth))
+                {
+                    continue;
+                }
+
+                var mismatches = CountMismatches(CreateNormalizedPosition(null, i));
+
+                if (mismatches < bestMismatches)
+                {
+                    best = i;
+                    bestMismatches = mismatches;
+                }
+            }
+
+            return bestMismatches <= tolerance ? best : -1;
+
+            float? GetDefaultValue(OpenTypeTag tag)
+            {
+                foreach (var axis in fvar.Axes)
+                {
+                    if (axis.Tag == tag)
+                    {
+                        return axis.DefaultValue;
+                    }
+                }
+
+                return null;
+            }
+
+            bool IsPlatformFace(float? wght, float? wdth)
+                => (wght is { } w ? ToFontWeight(w) : designWeight) == weight &&
+                   (wdth is { } d ? ToFontStretch(d) : designStretch) == stretch;
+
+            int CountMismatches(NormalizedVariationPosition position)
+            {
+                var scalers = position.IsDefault ?
+                    null :
+                    CreateRegionScalers(_hvarTable?.Store, CreateActiveCoords(fvar, position));
+
+                if (!hmTable.TryGetAdvances(glyphs, advances, _hvarTable, scalers))
+                {
+                    return int.MaxValue;
+                }
+
+                var count = 0;
+
+                for (var i = 0; i < sampleCount; i++)
+                {
+                    if (MathF.Abs(advances[i] - drawn[i]) > 1f)
+                    {
+                        count++;
+                    }
+                }
+
+                return count;
             }
         }
 
@@ -954,7 +1181,8 @@ namespace Avalonia.Media
         /// <para>
         /// Equals <c>default(NormalizedVariationPosition)</c> for static fonts and for
         /// variable fonts at their default instance. Non-default for typefaces produced
-        /// by <see cref="WithVariation"/> on a variable font.
+        /// by <see cref="WithVariation"/> on a variable font, and for a typeface whose
+        /// platform typeface is a named instance the platform applied.
         /// </para>
         /// <para>
         /// These are the normalized coordinates used by gvar / HVAR / MVAR / VVAR
@@ -963,6 +1191,12 @@ namespace Avalonia.Media
         /// </para>
         /// </remarks>
         internal NormalizedVariationPosition VariationPosition => _variationPosition;
+
+        /// <summary>
+        /// Gets whether this typeface is a variation produced by <see cref="WithVariation"/>, as
+        /// opposed to a face of its family, which can still be a named instance the platform applied.
+        /// </summary>
+        internal bool IsVariation => _sourceTypeface is not null;
 
         /// <summary>
         /// Gets the variation axes declared by the font's <c>fvar</c> table, in declaration
@@ -1046,7 +1280,22 @@ namespace Avalonia.Media
                     else
                     {
                         var textShaper = AvaloniaLocator.Current.GetRequiredService<ITextShaperImpl>();
-                        _textShaperTypeface = textShaper.CreateTypeface(this);
+                        var defaultShaper = textShaper.CreateTypeface(this);
+
+                        // The shaper reads the font's tables at the default instance, while a
+                        // source bound to a named instance shapes at that instance.
+                        if (!_variationPosition.IsDefault)
+                        {
+                            var variedShaper = defaultShaper.WithVariation(_variationPosition);
+
+                            if (!ReferenceEquals(variedShaper, defaultShaper))
+                            {
+                                _defaultTextShaperTypeface = defaultShaper;
+                                defaultShaper = variedShaper;
+                            }
+                        }
+
+                        _textShaperTypeface = defaultShaper;
                     }
 
                     return _textShaperTypeface;
@@ -1649,10 +1898,11 @@ namespace Avalonia.Media
         /// axis maximum) share one clone.
         /// </returns>
         /// <remarks>
-        /// A clone is owned by the default-instance typeface it was created from, whichever
-        /// typeface <see cref="WithVariations"/> was called on. Disposing that typeface
-        /// disposes every clone, and calling <see cref="Dispose()"/> on a clone has no effect.
-        /// Keep the default-instance typeface alive for as long as any clone is in use.
+        /// A clone is owned by the face it was created from, whichever typeface
+        /// <see cref="WithVariations"/> was called on. That face is usually the default instance,
+        /// or a named instance the platform applied. Disposing it disposes every clone, and
+        /// calling <see cref="Dispose()"/> on a clone has no effect. Keep the face alive for as
+        /// long as any clone is in use.
         /// </remarks>
         /// <exception cref="ObjectDisposedException">
         /// The default-instance typeface this typeface belongs to has been disposed.
@@ -1723,11 +1973,11 @@ namespace Avalonia.Media
             // font share resources and a single ownership chain.
             var source = _sourceTypeface ?? this;
 
-            // The default position always resolves to the source. This makes
-            // clone.WithVariation(default) return the original default-instance
-            // typeface and clone.WithVariation(clone.VariationPosition) return the
-            // clone itself (via the cache hit below).
-            if (variation.IsDefault)
+            // The source's own position resolves to the source: the default for a
+            // default-instance source, the named instance for a source the platform bound to
+            // one. clone.WithVariation(clone.VariationPosition) returns the clone itself via
+            // the cache hit below.
+            if (variation == source._variationPosition)
             {
                 return source;
             }
@@ -1940,6 +2190,8 @@ namespace Avalonia.Media
             {
                 _textShaperTypeface?.Dispose();
             }
+
+            _defaultTextShaperTypeface?.Dispose();
 
             // Only the source-of-truth owns and disposes the platform typeface. When
             // the platform's WithVariation override returned 'this', the clone shares

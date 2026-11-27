@@ -9,7 +9,7 @@ using SkiaSharp;
 
 namespace Avalonia.Skia
 {
-    internal class SkiaTypeface : IPlatformTypeface, IPlatformTypefaceSimulator
+    internal class SkiaTypeface : IPlatformTypeface, IPlatformTypefaceSimulator, IPlatformVariableInstance
     {
         private readonly FontSimulations _platformSimulations;
         private readonly bool _ownsTypeface;
@@ -37,8 +37,13 @@ namespace Avalonia.Skia
         /// Whether disposing this instance disposes <paramref name="typeface"/>. A simulated variant
         /// shares the typeface of its source and leaves it to the source.
         /// </param>
+        /// <param name="mayBeNamedInstance">
+        /// Whether the platform matched the typeface and may have applied a named instance of a
+        /// variable font inside it.
+        /// </param>
         public SkiaTypeface(SKTypeface typeface, FontSimulations fontSimulations, FontSimulations platformSimulations,
-            FontStyle style, FontWeight weight, FontStretch stretch, bool ownsTypeface = true)
+            FontStyle style, FontWeight weight, FontStretch stretch, bool ownsTypeface = true,
+            bool mayBeNamedInstance = false)
         {
             SKTypeface = typeface ?? throw new ArgumentNullException(nameof(typeface));
             FontSimulations = fontSimulations | platformSimulations;
@@ -47,6 +52,7 @@ namespace Avalonia.Skia
             Weight = weight;
             Style = style;
             Stretch = stretch;
+            MayBeNamedInstance = mayBeNamedInstance;
         }
 
         public SKTypeface SKTypeface { get; }
@@ -65,6 +71,58 @@ namespace Avalonia.Skia
         /// Gets the simulations the platform applied inside <see cref="SKTypeface"/>.
         /// </summary>
         internal FontSimulations PlatformSimulations => _platformSimulations;
+
+        public bool MayBeNamedInstance { get; }
+
+        public FontWeight InstanceWeight => (FontWeight)SKTypeface.FontWeight;
+
+        public FontStretch InstanceStretch => (FontStretch)SKTypeface.FontWidth;
+
+        public bool TryGetNamedInstanceIndex(out int instanceIndex)
+        {
+            instanceIndex = -1;
+
+            // FreeType, which Skia's fontconfig font manager draws with, carries a named instance
+            // in the high 16 bits of the face index, one-based. DirectWrite always reports 0, and
+            // CoreText builds a whole font file to answer, so neither is asked.
+            if (OperatingSystem.IsWindows() || OperatingSystem.IsMacOS() || OperatingSystem.IsIOS() ||
+                OperatingSystem.IsMacCatalyst() || OperatingSystem.IsTvOS())
+            {
+                return false;
+            }
+
+            using var stream = SKTypeface.OpenStream(out var ttcIndex);
+
+            if (stream is null || ttcIndex >> 16 == 0)
+            {
+                return false;
+            }
+
+            instanceIndex = (ttcIndex >> 16) - 1;
+
+            return true;
+        }
+
+        public bool TryGetGlyphAdvances(ReadOnlySpan<ushort> glyphIndices, Span<float> advances)
+        {
+            var unitsPerEm = SKTypeface.UnitsPerEm;
+
+            if (unitsPerEm <= 0)
+            {
+                return false;
+            }
+
+            // Measured at one unit per pixel, unhinted, so the widths are the design advances of
+            // the instance the platform draws.
+            using var font = new SKFont(SKTypeface, unitsPerEm)
+            {
+                LinearMetrics = true, Subpixel = true, Hinting = SKFontHinting.None
+            };
+
+            font.GetGlyphWidths(glyphIndices, advances, Span<SKRect>.Empty);
+
+            return true;
+        }
 
         public SKFont CreateSKFont(float size)
         {
@@ -90,7 +148,7 @@ namespace Avalonia.Skia
             }
 
             typeface = new SkiaTypeface(SKTypeface, fontSimulations & ~_platformSimulations, _platformSimulations,
-                style, weight, stretch, ownsTypeface: false);
+                style, weight, stretch, ownsTypeface: false, MayBeNamedInstance);
 
             return true;
         }
