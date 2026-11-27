@@ -108,15 +108,21 @@ public:
 };
 
 
-class AvnApplicationCommands : public ComSingleObject<IAvnApplicationCommands, &IID_IAvnApplicationCommands>
+class AvnApplicationCommands : public ComObject, public virtual MicroComImpl<IAvnApplicationCommands2>
 {
 public:
     FORWARD_IUNKNOWN()
+
+    BEGIN_INTERFACE_MAP()
+        INTERFACE_MAP_ENTRY(IAvnApplicationCommands, IID_IAvnApplicationCommands)
+        INTERFACE_MAP_ENTRY(IAvnApplicationCommands2, IID_IAvnApplicationCommands2)
+    END_INTERFACE_MAP()
     
     virtual HRESULT UnhideApp() override;
     virtual HRESULT HideApp() override;
     virtual HRESULT ShowAll() override;
     virtual HRESULT HideOthers() override;
+    virtual HRESULT ReplyToApplicationShouldTerminate(bool shouldTerminate) override;
 };
 #define NSApp [NSApplication sharedApplication]
 
