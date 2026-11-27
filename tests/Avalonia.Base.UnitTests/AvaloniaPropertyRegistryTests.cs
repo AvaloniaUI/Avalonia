@@ -1,6 +1,9 @@
 using System;
 using System.Linq;
 using System.Reactive.Linq;
+using System.Reflection;
+using System.Reflection.Emit;
+using System.Runtime.CompilerServices;
 using Xunit;
 
 namespace Avalonia.Base.UnitTests
@@ -107,6 +110,89 @@ namespace Avalonia.Base.UnitTests
             var result = AvaloniaPropertyRegistry.Instance.FindRegistered(typeof(Class2), "Attached");
 
             Assert.Null(result);
+        }
+
+        [Fact]
+        public void UnregisterByModule_Removes_Properties_And_Invalidates_Surviving_Owner_Caches()
+        {
+            var registry = new AvaloniaPropertyRegistry();
+            var owner = typeof(Class4);
+            var host = typeof(Class1);
+            var styled = new StyledProperty<int>("UnloadStyled", owner, owner, new(1));
+            var attached = new AttachedProperty<int>("UnloadAttached", owner, host, new(2), inherits: true);
+            var direct = new DirectProperty<Class4, int>("UnloadDirect", _ => 3, null, new(3));
+            var surviving = new StyledProperty<int>("Surviving", host, host, new(4));
+            registry.Register(owner, styled);
+            registry.Register(host, styled);
+            registry.Register(owner, attached);
+            registry.RegisterAttached(host, attached);
+            registry.Register(owner, direct);
+            registry.Register(host, surviving);
+            surviving.OverrideDefaultValue<Class4>(5);
+
+            Assert.Contains(styled, registry.GetRegistered(host));
+            Assert.Contains(attached, registry.GetRegisteredAttached(host));
+            Assert.Contains(direct, registry.GetRegisteredDirect(owner));
+            Assert.Contains(attached, registry.GetRegisteredInherited(host));
+            Assert.Equal(5, surviving.GetDefaultValue(owner));
+
+            Assert.True(registry.UnregisterByModule(new[] { owner }));
+            Assert.True(registry.UnregisterByModule(new[] { owner }));
+
+            Assert.Equal(new[] { surviving }, registry.Properties);
+            Assert.Equal(new[] { surviving }, registry.GetRegistered(host));
+            Assert.Empty(registry.GetRegisteredAttached(host));
+            Assert.Empty(registry.GetRegisteredDirect(owner));
+            Assert.Empty(registry.GetRegisteredInherited(host));
+            Assert.Empty(registry.GetRegistered(owner));
+            Assert.Equal(4, surviving.GetDefaultValue(owner));
+            Assert.Null(registry.FindRegistered(styled.Id));
+            Assert.Null(registry.FindRegistered(attached.Id));
+            Assert.Null(registry.FindRegistered(direct.Id));
+            Assert.Same(surviving, registry.FindRegistered(surviving.Id));
+        }
+
+        [Fact]
+        public void UnregisterByModule_Releases_Collectible_Owner_Type()
+        {
+            var registry = new AvaloniaPropertyRegistry();
+            var reference = RegisterAndUnregisterCollectibleType(registry);
+
+            for (var i = 0; i < 10 && reference.IsAlive; ++i)
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+            }
+
+            Assert.False(reference.IsAlive);
+            GC.KeepAlive(registry);
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static WeakReference RegisterAndUnregisterCollectibleType(AvaloniaPropertyRegistry registry)
+        {
+            var assembly = AssemblyBuilder.DefineDynamicAssembly(
+                new AssemblyName("UnloadPropertyOwner"), AssemblyBuilderAccess.RunAndCollect);
+            var type = assembly.DefineDynamicModule("Main").DefineType(
+                "CollectibleOwner", TypeAttributes.Public, typeof(AvaloniaObject)).CreateType()!;
+            var property = new AttachedProperty<int>("Collectible", type, typeof(AvaloniaObject), new(1), inherits: true);
+            registry.Register(type, property);
+            registry.RegisterAttached(typeof(AvaloniaObject), property);
+            registry.GetRegistered(type);
+            registry.GetRegisteredInherited(typeof(AvaloniaObject));
+
+            // AddOwner creates a separate instance with the same ID. Its metadata cache must also be cleared.
+            var direct = new DirectProperty<Class1, int>("SharedDirect", _ => 0, null, new());
+            var copy = direct.AddOwner<Class4>(_ => 0);
+            copy.OverrideMetadata(type, new DirectPropertyMetadata<int>(9));
+            copy.GetMetadata(type);
+            registry.Register(typeof(Class1), direct);
+            registry.Register(typeof(Class4), copy);
+
+            Assert.True(registry.UnregisterByModule(new[] { type }));
+            Assert.Same(direct, registry.FindRegistered(direct.Id));
+            Assert.Contains(copy, registry.GetRegisteredDirect(typeof(Class4)));
+            return new WeakReference(type);
         }
 
         private class Class1 : AvaloniaObject

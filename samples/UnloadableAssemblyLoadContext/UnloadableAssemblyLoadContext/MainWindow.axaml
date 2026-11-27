@@ -4,6 +4,12 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="UnloadableAssemblyLoadContext.MainWindow"
-        Title="UnloadableAssemblyLoadContext">
-    Welcome to Avalonia!
+        Title="UnloadableAssemblyLoadContext" Width="620" Height="220">
+    <StackPanel Margin="24" Spacing="16">
+        <TextBlock x:Name="Status" TextWrapping="Wrap" />
+        <StackPanel Orientation="Horizontal" Spacing="12">
+            <Button x:Name="LoadButton" Content="Load plugin" Click="OnLoadClick" />
+            <Button x:Name="UnloadButton" Content="Unload plugin" Click="OnUnloadClick" IsEnabled="False" />
+        </StackPanel>
+    </StackPanel>
 </Window>

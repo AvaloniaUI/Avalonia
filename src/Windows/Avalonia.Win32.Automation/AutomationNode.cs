@@ -191,7 +191,14 @@ namespace Avalonia.Win32.Automation
             return peer is null ? null : s_nodes.GetValue(peer, Create);
         }
 
-        public static void Release(AutomationPeer peer) => s_nodes.Remove(peer);
+        public static void Release(AutomationPeer peer)
+        {
+            if (s_nodes.TryGetValue(peer, out var node))
+            {
+                UiaCoreProviderApi.UiaDisconnectProvider(node);
+                s_nodes.Remove(peer);
+            }
+        }
 
         IRawElementProviderSimple[]? IRawElementProviderFragment.GetEmbeddedFragmentRoots() => null;
         void IRawElementProviderSimple2.ShowContextMenu() => InvokeSync(() => Peer.ShowContextMenu());

@@ -7,5 +7,8 @@
         x:Class="UnloadableAssemblyLoadContextPlug.Window1"
         x:DataType="unloadableAssemblyLoadContextPlug:Window1ViewModel"
         Title="Window1">
-    <TextBlock Text="{Binding Text }" HorizontalAlignment="Center" VerticalAlignment="Center" />
+    <StackPanel Margin="24" Spacing="12" unloadableAssemblyLoadContextPlug:TestControl.Priority="7">
+        <TextBlock Text="{Binding Text}" />
+        <unloadableAssemblyLoadContextPlug:TestControl Text="Styled, direct and attached plugin properties" Count="1" />
+    </StackPanel>
 </Window>

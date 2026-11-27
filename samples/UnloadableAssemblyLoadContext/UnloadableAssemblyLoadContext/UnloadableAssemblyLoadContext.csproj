@@ -20,6 +20,8 @@
   </ImportGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\UnloadableAssemblyLoadContextPlug\UnloadableAssemblyLoadContextPlug.csproj"
+                      ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\..\..\packages\Avalonia\Avalonia.csproj" />
     <ProjectReference Include="..\..\..\src\Avalonia.Base\Avalonia.Base.csproj" />
     <ProjectReference Include="..\..\..\src\Avalonia.Desktop\Avalonia.Desktop.csproj" />
@@ -27,4 +29,10 @@
     <ProjectReference Include="..\..\..\src\Avalonia.Themes.Fluent\Avalonia.Themes.Fluent.csproj" />
     </ItemGroup>
 
+  <Target Name="CopyPluginSample" AfterTargets="Build">
+    <ItemGroup>
+      <PluginSampleFiles Include="../UnloadableAssemblyLoadContextPlug/bin/$(Configuration)/$(TargetFramework)/UnloadableAssemblyLoadContextPlug.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(PluginSampleFiles)" DestinationFolder="$(OutDir)Plugin" SkipUnchangedFiles="true" />
+  </Target>
 </Project>

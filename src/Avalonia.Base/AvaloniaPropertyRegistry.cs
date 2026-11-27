@@ -41,10 +41,16 @@ namespace Avalonia
 
         private object _unregisteringLocker = new object();
         /// <summary>
-        /// Unregister all<see cref="AvaloniaProperty"/>s registered on types
+        /// Unregisters property owners and metadata for the specified types.
         /// </summary>
-        /// <param name="types"></param>
-        /// <exception cref="ArgumentNullException"></exception>
+        /// <param name="types">The types being unloaded.</param>
+        /// <returns>Whether the registrations were successfully removed.</returns>
+        /// <remarks>
+        /// Properties owned by these types are removed from all registrations, including attached
+        /// properties registered on surviving types. Shared properties owned by other types remain registered.
+        /// Callers must first release controls, styles and subscriptions that reference the unloaded types.
+        /// </remarks>
+        /// <exception cref="ArgumentNullException"><paramref name="types"/> is null.</exception>
         public bool UnregisterByModule(IEnumerable<Type> types)
         {
             _ = types ?? throw new ArgumentNullException(nameof(types));
@@ -53,16 +59,36 @@ namespace Avalonia
             {
                 try
                 {
-                    foreach (var type in types)
+                    var owners = new HashSet<Type>(types);
+                    if (owners.Count == 0)
+                        return true;
+
+                    // Direct properties can have owner-specific instances sharing the same ID.
+                    var properties = new HashSet<AvaloniaProperty>(_properties.Values, ReferenceEqualityComparer.Instance);
+                    foreach (var registrations in new[] { _registered, _attached, _direct })
+                        foreach (var registered in registrations.Values)
+                            properties.UnionWith(registered.Values);
+                    foreach (var property in properties)
+                        foreach (var type in owners)
+                            property.Unregister(type);
+
+                    var propertyIds = new HashSet<int>();
+                    foreach (var property in _properties.Values)
                     {
-                        Unregister(_registered, type);
-                        Unregister(_attached, type);
-                        Unregister(_direct, type);
-                        Unregister(_registeredCache,type);
-                        Unregister(_attachedCache,type);
-                        Unregister(_directCache,type);
-                        Unregister(_inheritedCache,type);
+                        if (owners.Contains(property.OwnerType))
+                            propertyIds.Add(property.Id);
                     }
+
+                    Unregister(_registered, owners, propertyIds);
+                    Unregister(_attached, owners, propertyIds);
+                    Unregister(_direct, owners, propertyIds);
+                    foreach (var id in propertyIds)
+                        _properties.Remove(id);
+
+                    _registeredCache.Clear();
+                    _attachedCache.Clear();
+                    _directCache.Clear();
+                    _inheritedCache.Clear();
                 }
                 catch (Exception)
                 {
@@ -72,20 +98,19 @@ namespace Avalonia
 
             return true;
         }
-        private void Unregister( Dictionary<Type, List<AvaloniaProperty>> dictionary,Type type)
+
+        private static void Unregister(
+            Dictionary<Type, Dictionary<int, AvaloniaProperty>> dictionary,
+            HashSet<Type> types,
+            HashSet<int> propertyIds)
         {
-            dictionary.Remove(type);
+            foreach (var type in types)
+                dictionary.Remove(type);
+            foreach (var properties in dictionary.Values)
+                foreach (var id in propertyIds)
+                    properties.Remove(id);
         }
-        private void Unregister( Dictionary<Type, Dictionary<int, AvaloniaProperty>> dictionary,Type type)
-        {
-            foreach (var keyValuePair in dictionary)
-            {
-                foreach (var key in keyValuePair.Value)
-                {
-                    key.Value.Unregister(type);
-                }
-            }
-        }
+
         /// <summary>
         /// Gets all non-attached <see cref="AvaloniaProperty"/>s registered on a type.
         /// </summary>
@@ -369,7 +394,7 @@ namespace Avalonia
         /// <returns>The registered property or null if no matching property found.</returns>
         internal AvaloniaProperty? FindRegistered(int id)
         {
-            return id < _properties.Count ? _properties[id] : null;
+            return _properties.GetValueOrDefault(id);
         }
 
         /// <summary>

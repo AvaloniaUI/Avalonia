@@ -150,7 +150,12 @@ namespace Avalonia.Win32
 
                 case WindowsMessage.WM_DESTROY:
                     {
-                        // The first and foremost thing to do - notify the TopLevel
+                        // Disconnect while the peer can still resolve its platform window.
+                        // UI Automation clients can otherwise retain the closed window.
+                        if (_owner?.FocusRoot is Control destroyedControl &&
+                            ControlAutomationPeer.FromElement(destroyedControl) is { } peer)
+                            AutomationNode.Release(peer);
+
                         Closed?.Invoke();
 
                         UiaCoreProviderApi.UiaReturnRawElementProvider(_hwnd, IntPtr.Zero, IntPtr.Zero, null);

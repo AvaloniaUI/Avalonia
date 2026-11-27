@@ -1,31 +1,52 @@
-﻿using System;
-using System.Linq;
+using System;
+using System.Runtime.CompilerServices;
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Markup.Xaml.Styling;
 
 namespace UnloadableAssemblyLoadContext;
 
 public class PlugTool
 {
-    public AssemblyLoadContextH? AssemblyLoadContextH;
-    public WeakReference Unload()
+    private AssemblyLoadContextH? _context;
+    private StyleInclude? _style;
+    private Window? _window;
+
+    public PlugTool(string pluginPath)
     {
-       var weakReference = new WeakReference(AssemblyLoadContextH);
-        AssemblyLoadContextH?.Unload();
-        AssemblyLoadContextH = null;
-        return weakReference;
+        _context = new AssemblyLoadContextH(pluginPath, "sample-plugin");
+        try
+        {
+            var assembly = _context.LoadFromAssemblyPath(pluginPath);
+            _style = new StyleInclude(new Uri("avares://UnloadableAssemblyLoadContextPlug/"))
+            {
+                Source = new Uri("ControlStyle.axaml", UriKind.Relative)
+            };
+            Application.Current!.Styles.Add(_style);
+            _window = (Window)Activator.CreateInstance(
+                assembly.GetType("UnloadableAssemblyLoadContextPlug.Window1", throwOnError: true)!)!;
+            _window.Show();
+        }
+        catch
+        {
+            Unload();
+            throw;
+        }
     }
 
-    public Control? FindControl(string type)
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    public WeakReference Unload()
     {
-        var type1 = AssemblyLoadContextH!.Assemblies.
-                                         FirstOrDefault(x => x.GetName().Name == "UnloadableAssemblyLoadContextPlug")?.
-                                         GetType(type);
-        if (type1 is not null && type1.IsSubclassOf(typeof(Control)))
-        {
-            var constructorInfo = type1.GetConstructor([])!.Invoke(null) as Control;
-            return constructorInfo;
-        }
+        _window?.Close();
+        _window = null;
+        if (_style is not null)
+            Application.Current?.Styles.Remove(_style);
+        _style = null;
 
-        return null;
+        var context = _context;
+        _context = null;
+        var reference = new WeakReference(context, trackResurrection: true);
+        context?.Unload();
+        return reference;
     }
 }
