@@ -2,6 +2,7 @@ using System;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using Avalonia.Platform;
 using Avalonia.Wayland.Server;
 using Avalonia.Wayland.Server.Persistent;
 using NWayland.Protocols.XdgShell;
@@ -16,6 +17,8 @@ partial class WindowImpl
         private XdgConfigureBatch? _initialBatch;
         private WaylandSurfaceCreateResult<WXdgTopLevelProxy>? _handle;
         private WXdgTopLevelProxy? _surfaceProxy;
+        private readonly TitleBarDoubleClickHelper _titleBarDoubleClickHelper = new();
+        private readonly TitleBarMoveDragHelper _titleBarMoveDragHelper = new();
 
         public Sink(WindowImpl parent, bool secondShow) : base(parent)
         {
@@ -127,15 +130,43 @@ partial class WindowImpl
             // so we might want to move that handling to x-plat part of the codebase
             // another point is that we generally need to cancel implicit capture if pointer gesture started
             // with right mouse button
-            if (InputRoot == null || !(args is RawPointerEventArgs
+            if (InputRoot == null || args is not RawPointerEventArgs pointer)
+                return false;
+
+            // Wait for a drag before handing the pointer to the compositor.
+            if (_titleBarMoveDragHelper.HandleEvent(pointer, out var movePress))
+            {
+                if (movePress is { } press)
                 {
-                    Type: RawPointerEventType.LeftButtonDown or RawPointerEventType.TouchBegin
-                } mouse))
+                    _titleBarDoubleClickHelper.Reset();
+                    _surfaceProxy?.Move(press.PlatformInputEventCookie, WaylandDispatchPriority.Oob);
+                }
+
+                return true;
+            }
+
+            if (pointer is not { Type: RawPointerEventType.LeftButtonDown or RawPointerEventType.TouchBegin } mouse)
                 return false;
 
             var chromeRole = InputRoot.HitTestChromeElement(mouse.Position);
             if (chromeRole == WindowDecorationsElementRole.TitleBar)
             {
+                if (mouse.Type == RawPointerEventType.LeftButtonDown)
+                {
+                    // xdg_toplevel has no title-bar double-click action.
+                    if (_titleBarDoubleClickHelper.IsDoubleClick(mouse.Timestamp, mouse.Position))
+                    {
+                        if (TitleBarDoubleClickHelper.GetStateAfterDoubleClick(Parent.WindowState, Parent._canMaximize, Parent._canResize) is { } newState)
+                            Parent.WindowState = newState;
+                    }
+                    else
+                    {
+                        _titleBarMoveDragHelper.Begin(mouse);
+                    }
+
+                    return true;
+                }
+
                 _surfaceProxy?.Move(mouse.PlatformInputEventCookie, WaylandDispatchPriority.Oob);
                 return true;
             }
