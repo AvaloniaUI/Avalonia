@@ -5,9 +5,6 @@ using Avalonia.Interactivity;
 using Avalonia.Logging;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
-using Avalonia.PropertyStore;
-using Avalonia.Styling;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -57,7 +54,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public static readonly StyledProperty<FontFeatureCollection?> FontFeaturesProperty =
             TextElement.FontFeaturesProperty.AddOwner<TemplatedControl>();
-        
+
         /// <summary>
         /// Defines the <see cref="FontSize"/> property.
         /// </summary>
@@ -81,6 +78,12 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public static readonly StyledProperty<FontStretch> FontStretchProperty =
             TextElement.FontStretchProperty.AddOwner<TemplatedControl>();
+
+        /// <summary>
+        /// Defines the <see cref="FontVariations"/> property.
+        /// </summary>
+        public static readonly StyledProperty<FontVariationSettings?> FontVariationsProperty =
+            TextElement.FontVariationsProperty.AddOwner<TemplatedControl>();
 
         /// <summary>
         /// Defines the <see cref="Foreground"/> property.
@@ -117,7 +120,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public static readonly RoutedEvent<TemplateAppliedEventArgs> TemplateAppliedEvent =
             RoutedEvent.Register<TemplatedControl, TemplateAppliedEventArgs>(
-                nameof(TemplateApplied), 
+                nameof(TemplateApplied),
                 RoutingStrategies.Direct);
 
         private IControlTemplate? _appliedTemplate;
@@ -237,6 +240,16 @@ namespace Avalonia.Controls.Primitives
         {
             get => GetValue(FontStretchProperty);
             set => SetValue(FontStretchProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the variable-font axis values (e.g. <c>wght=700</c>) used to draw
+        /// the control's text. <c>null</c> means the font's design defaults.
+        /// </summary>
+        public FontVariationSettings? FontVariations
+        {
+            get => GetValue(FontVariationsProperty);
+            set => SetValue(FontVariationsProperty, value);
         }
 
         /// <summary>

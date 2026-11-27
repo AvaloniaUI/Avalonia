@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Reactive.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
@@ -19,6 +21,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
+    [InvariantCulture]
     public class MaskedTextBoxTests : ScopedTestBase
     {
         [Fact]
@@ -851,6 +854,51 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Theory]
+        [InlineData(typeof(TimeoutException))]
+        [InlineData(typeof(OperationCanceledException))]
+        [InlineData(typeof(UnauthorizedAccessException))]
+        [InlineData(typeof(COMException))]
+        public void Paste_Does_Not_Change_Text_When_Clipboard_Fails(Type exceptionType)
+        {
+            using (Start())
+            {
+                var clipboardImpl = new ThrowingClipboardImplStub(exceptionType);
+                var target = new MaskedTextBox
+                {
+                    Template = CreateTemplate(),
+                    Mask = "00:00",
+                    Text = "12:34"
+                };
+
+                var topLevel = new TestTopLevel(CreateMockTopLevelImpl(clipboardImpl).Object)
+                {
+                    Template = CreateTopLevelTemplate(),
+                    Content = target
+                };
+
+                topLevel.ApplyTemplate();
+                topLevel.LayoutManager.ExecuteInitialLayoutPass();
+                target.ApplyTemplate();
+
+                var messages = new List<string>();
+
+                using (TestLogSink.Start((_, _, _, messageTemplate, _) => messages.Add(messageTemplate)))
+                {
+                    using var syncContext = UnitTestSynchronizationContext.Begin();
+
+                    RaiseKeyEvent(target, Key.V, KeyModifiers.Control);
+
+                    Assert.Null(Record.Exception(syncContext.ExecutePostedCallbacks));
+                }
+
+                Assert.Equal(1, clipboardImpl.TryGetDataCount);
+                Assert.Equal("12:34", target.Text);
+                Assert.False(target.CanUndo);
+                Assert.Equal(["Failed to read text from clipboard: {Error}"], messages);
+            }
+        }
+
+        [Theory]
         [InlineData(Key.X, KeyModifiers.Control)]
         [InlineData(Key.Back, KeyModifiers.None)]
         [InlineData(Key.Delete, KeyModifiers.None)]
@@ -1042,6 +1090,53 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Default_Culture_Uses_Current_Culture_When_Mask_Is_Set()
+        {
+            using var app = Start();
+
+            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("fr-FR");
+            var target1 = new MaskedTextBox { Mask = "0.0" };
+
+            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("en-US");
+            var target2 = new MaskedTextBox { Mask = "0.0" };
+
+            Assert.Equal("fr-FR", target1.MaskProvider?.Culture.Name);
+            Assert.Equal("_,_", target1.Text);
+            Assert.Equal("en-US", target2.MaskProvider?.Culture.Name);
+            Assert.Equal("_._", target2.Text);
+        }
+
+        [Fact]
+        public void Culture_Defaults_To_Current_Culture_At_Creation()
+        {
+            using var app = Start();
+
+            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("fr-FR");
+            var target1 = new MaskedTextBox();
+
+            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("en-US");
+            var target2 = new MaskedTextBox();
+
+            Assert.Equal("fr-FR", target1.Culture?.Name);
+            Assert.Equal("en-US", target2.Culture?.Name);
+        }
+
+        [Fact]
+        public void Explicit_Culture_Overrides_Current_Culture()
+        {
+            using var app = Start();
+
+            var target = new MaskedTextBox
+            {
+                Culture = CultureInfo.GetCultureInfo("fr-FR"),
+                Mask = "0.0"
+            };
+
+            Assert.Equal("fr-FR", target.MaskProvider?.Culture.Name);
+            Assert.Equal("_,_", target.Text);
+        }
+
         private static TestServices FocusServices => TestServices.MockThreadingInterface.With(
             keyboardDevice: () => new KeyboardDevice(),
             keyboardNavigation: () => new KeyboardNavigationHandler(),
@@ -1101,7 +1196,6 @@ namespace Avalonia.Controls.UnitTests
 
         private static IDisposable Start(TestServices? services = null)
         {
-            CultureInfo.CurrentCulture = CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("en-US");
             return UnitTestApplication.Start((services ?? Services).With(assetLoader: new StandardAssetLoader()));
         }
 
@@ -1127,12 +1221,12 @@ namespace Avalonia.Controls.UnitTests
         {
         }
 
-        private static Mock<ITopLevelImpl> CreateMockTopLevelImpl()
+        private static Mock<ITopLevelImpl> CreateMockTopLevelImpl(IClipboardImpl? clipboardImpl = null)
         {
             var clipboard = new Mock<ITopLevelImpl>();
             clipboard.Setup(x => x.Compositor).Returns(RendererMocks.CreateDummyCompositor());
             clipboard.Setup(r => r.TryGetFeature(typeof(IClipboard)))
-                .Returns(new Clipboard(new HeadlessClipboardImplStub()));
+                .Returns(new Clipboard(clipboardImpl ?? new HeadlessClipboardImplStub()));
             clipboard.SetupGet(x => x.RenderScaling).Returns(1);
             return clipboard;
         }

@@ -33,13 +33,14 @@ namespace Avalonia.Media.TextFormatting
             TextLineBreak? nextLineBreak = null;
             var objectPool = FormattingObjectPool.Instance;
             var fontManager = FontManager.Current;
+            var lineIndent = GetLineIndent(paragraphProperties, previousLineBreak);
 
             // we've wrapped the previous line and need to continue wrapping: ignore the textSource and do that instead
             if (previousLineBreak is WrappingTextLineBreak wrappingTextLineBreak
                 && wrappingTextLineBreak.AcquireRemainingRuns() is { } remainingRuns
                 && paragraphProperties.TextWrapping != TextWrapping.NoWrap)
             {
-                return PerformTextWrapping(remainingRuns, true, firstTextSourceIndex, paragraphWidth,
+                return PerformTextWrapping(remainingRuns, true, firstTextSourceIndex, paragraphWidth, lineIndent,
                     paragraphProperties, previousLineBreak.FlowDirection, previousLineBreak, objectPool);
             }
 
@@ -47,7 +48,7 @@ namespace Avalonia.Media.TextFormatting
             if (textRunCache != null
                 && textRunCache.TryGetShapedRuns(firstTextSourceIndex, out var cached))
             {
-                return FormatLineFromCache(cached, firstTextSourceIndex, paragraphWidth,
+                return FormatLineFromCache(cached, firstTextSourceIndex, paragraphWidth, lineIndent,
                     paragraphProperties, objectPool);
             }
 
@@ -88,7 +89,8 @@ namespace Avalonia.Media.TextFormatting
 
                             var textLine = new TextLineImpl(lineRuns, firstTextSourceIndex,
                                 textSourceLength,
-                                paragraphWidth, paragraphProperties, resolvedFlowDirection, nextLineBreak);
+                                paragraphWidth, paragraphProperties, resolvedFlowDirection, nextLineBreak,
+                                lineIndent: lineIndent);
 
                             textLine.FinalizeLine();
 
@@ -98,7 +100,7 @@ namespace Avalonia.Media.TextFormatting
                     case TextWrapping.Wrap:
                         {
                             return PerformTextWrapping(shapedTextRuns, false, firstTextSourceIndex, paragraphWidth,
-                                paragraphProperties, resolvedFlowDirection, nextLineBreak, objectPool);
+                                lineIndent, paragraphProperties, resolvedFlowDirection, nextLineBreak, objectPool);
                         }
                     default:
                         throw new ArgumentOutOfRangeException(nameof(paragraphProperties.TextWrapping));
@@ -115,7 +117,8 @@ namespace Avalonia.Media.TextFormatting
         /// Formats a line from cached shaped runs, skipping shaping and bidi processing.
         /// </summary>
         private static TextLine FormatLineFromCache(CachedShapingResult cached, int firstTextSourceIndex,
-            double paragraphWidth, TextParagraphProperties paragraphProperties, FormattingObjectPool objectPool)
+            double paragraphWidth, double lineIndent, TextParagraphProperties paragraphProperties,
+            FormattingObjectPool objectPool)
         {
             var resolvedFlowDirection = cached.ResolvedFlowDirection;
 
@@ -134,7 +137,8 @@ namespace Avalonia.Media.TextFormatting
 
                         var textLine = new TextLineImpl(lineRuns, firstTextSourceIndex,
                             cached.TextSourceLength,
-                            paragraphWidth, paragraphProperties, resolvedFlowDirection, nextLineBreak);
+                            paragraphWidth, paragraphProperties, resolvedFlowDirection, nextLineBreak,
+                            lineIndent: lineIndent);
 
                         textLine.FinalizeLine();
 
@@ -153,7 +157,7 @@ namespace Avalonia.Media.TextFormatting
                         }
 
                         return PerformTextWrapping(runs, false, firstTextSourceIndex,
-                            paragraphWidth, paragraphProperties, resolvedFlowDirection,
+                            paragraphWidth, lineIndent, paragraphProperties, resolvedFlowDirection,
                             nextLineBreak, objectPool);
                     }
                 default:
@@ -407,6 +411,7 @@ namespace Avalonia.Media.TextFormatting
 
                                 var text = shapeableRun.Text;
                                 var properties = shapeableRun.Properties;
+                                var script = shapeableRun.Script;
 
                                 while (index + 1 < processedRuns.Count)
                                 {
@@ -417,7 +422,8 @@ namespace Avalonia.Media.TextFormatting
 
                                     if (shapeableRun.BidiLevel == nextRun.BidiLevel
                                         && TryJoinContiguousMemories(text, nextRun.Text, out var joinedText)
-                                        && CanShapeTogether(properties, nextRun.Properties))
+                                        && CanShapeTogether(properties, nextRun.Properties)
+                                        && TryJoinScripts(script, nextRun.Script, out script))
                                     {
                                         groupedRuns.Add(nextRun);
                                         index++;
@@ -523,6 +529,29 @@ namespace Avalonia.Media.TextFormatting
             }
         }
 
+        /// <summary>
+        /// Joins the scripts of two neighbouring runs. Runs of two different scripts must not share a
+        /// buffer: the shaper picks one script for the whole buffer, so the other one would be shaped
+        /// without its complex-script rules.
+        /// </summary>
+        private static bool TryJoinScripts(Script x, Script y, out Script joined)
+        {
+            if (x == y || y is Script.Common or Script.Unknown)
+            {
+                joined = x;
+                return true;
+            }
+
+            if (x is Script.Common or Script.Unknown)
+            {
+                joined = y;
+                return true;
+            }
+
+            joined = x;
+            return false;
+        }
+
         private static bool CanShapeTogether(TextRunProperties x, TextRunProperties y)
             => MathUtilities.AreClose(x.FontRenderingEmSize, y.FontRenderingEmSize)
                && x.Typeface == y.Typeface
@@ -540,6 +569,13 @@ namespace Avalonia.Media.TextFormatting
                 var currentRun = textRuns[i];
 
                 var splitResult = shapedBuffer.Split(previousLength + currentRun.Length);
+
+                // Both halves hold their own references to the pooled arrays, so the split buffer
+                // can go. Split returns the buffer itself when there is nothing to split.
+                if (splitResult.First != shapedBuffer && splitResult.Second != shapedBuffer)
+                {
+                    shapedBuffer.Dispose();
+                }
 
                 // Split by text, not by glyph count: a run can legitimately shape to no glyphs at
                 // all and still own its characters. Shapers drop default ignorables that the font
@@ -838,11 +874,46 @@ namespace Avalonia.Media.TextFormatting
         }
 
         /// <summary>
+        /// Gets the distance from the leading edge of the paragraph at which a line starts.
+        /// </summary>
+        /// <remarks>
+        /// Every line is offset by <see cref="TextParagraphProperties.ParagraphIndent"/>. The first line of a
+        /// paragraph is offset by <see cref="TextParagraphProperties.Indent"/> as well. A line is the first one
+        /// when <see cref="TextParagraphProperties.FirstLineInParagraph"/> is set and nothing precedes it or the
+        /// preceding line ended the paragraph. A line after a wrap or a hard line break continues the paragraph:
+        /// the preceding line reports a <see cref="TextLineBreak"/> for both, a newline character included.
+        /// A negative first-line indent makes the first line hang past the leading edge.
+        /// </remarks>
+        /// <param name="paragraphProperties">The paragraph properties.</param>
+        /// <param name="previousLineBreak">The line break of the preceding line, if any.</param>
+        /// <returns>The indent of the line.</returns>
+        internal static double GetLineIndent(TextParagraphProperties paragraphProperties, TextLineBreak? previousLineBreak)
+        {
+            var lineIndent = SanitizeIndent(paragraphProperties.ParagraphIndent);
+
+            var isFirstLine = paragraphProperties.FirstLineInParagraph
+                && (previousLineBreak is null || previousLineBreak.TextEndOfLine is TextEndOfParagraph);
+
+            if (isFirstLine)
+            {
+                lineIndent += SanitizeIndent(paragraphProperties.Indent);
+            }
+
+            return lineIndent;
+
+            static double SanitizeIndent(double value) => double.IsNaN(value) || double.IsInfinity(value) ? 0 : value;
+        }
+
+        /// <summary>
         /// Creates an empty text line.
         /// </summary>
+        /// <param name="firstTextSourceIndex">The text source index of the line.</param>
+        /// <param name="paragraphWidth">The paragraph width.</param>
+        /// <param name="paragraphProperties">The text paragraph properties.</param>
+        /// <param name="lineIndent">The indent of the line, see <see cref="GetLineIndent"/>.</param>
         /// <returns>The empty text line.</returns>
         public static TextLineImpl CreateEmptyTextLine(int firstTextSourceIndex, double paragraphWidth,
-            TextParagraphProperties paragraphProperties)
+            TextParagraphProperties paragraphProperties, double lineIndent = 0)
         {
             var flowDirection = paragraphProperties.FlowDirection;
             var properties = paragraphProperties.DefaultTextRunProperties;
@@ -855,12 +926,71 @@ namespace Avalonia.Media.TextFormatting
 
             var textRuns = new TextRun[] { new ShapedTextRun(shapedBuffer, properties) };
 
-            var line = new TextLineImpl(textRuns, firstTextSourceIndex, 0, paragraphWidth, paragraphProperties, flowDirection);
+            var line = new TextLineImpl(textRuns, firstTextSourceIndex, 0, paragraphWidth, paragraphProperties, flowDirection,
+                lineIndent: lineIndent);
 
             line.FinalizeLine();
 
             return line;
         }
+
+        /// <summary>
+        /// The number of characters past the fitting length that are searched for a break opportunity.
+        /// A word that overflows the line by more than this has no opportunity in reach and is broken
+        /// at the fitting length instead, just like a word that does not fit with <see cref="TextWrapping.Wrap"/>.
+        /// </summary>
+        private const int MaxBreakLookahead = 4096;
+
+        /// <summary>
+        /// Creates an enumerator that stops searching for break opportunities beyond the reach of the current line.
+        /// Enumerating the whole run would scan all remaining text for every line of a long unbroken run.
+        /// </summary>
+        /// <param name="text">The text of the run.</param>
+        /// <param name="preceding">
+        /// The end context of the previous run's enumerator, which the rules see before the first character of
+        /// the run, or <c>default</c> if the run starts the text.
+        /// </param>
+        /// <param name="following">
+        /// The first code point of the next run, which decides whether the end of the run is an opportunity,
+        /// or <c>null</c> if the end of the run is the end of text.
+        /// </param>
+        /// <param name="measuredLength">
+        /// The number of characters of the run that fit the line. It is negative for a run past the fitting
+        /// length, which then has only what is left of the lookahead shared by all runs of the line.
+        /// </param>
+        private static LineBreakEnumerator CreateLineBreakEnumerator(ReadOnlySpan<char> text,
+            LineBreakEnumerator.LineBreakContext preceding, Codepoint? following, int measuredLength)
+        {
+            var limit = Math.Max((long)measuredLength + MaxBreakLookahead, 0);
+            var textLimit = limit < text.Length ? (int)limit : int.MaxValue;
+
+            return new LineBreakEnumerator(text, preceding, following, textLimit);
+        }
+
+        /// <summary>
+        /// Finds where the whitespace that ends the text starts, so whitespace continued from a previous run
+        /// is measured as hanging whitespace of the line.
+        /// </summary>
+        /// <returns>The index of the first trailing space, or the text length if the text does not end in a space.</returns>
+        private static int FindTrailingWhitespaceStart(ReadOnlySpan<char> text)
+        {
+            var position = text.Length;
+
+            while (position > 0)
+            {
+                var codepoint = Codepoint.ReadAt(text, position - 1, out var count);
+
+                if (codepoint.LineBreakClass != LineBreakClass.Space)
+                {
+                    break;
+                }
+
+                position -= count;
+            }
+
+            return position;
+        }
+
 
         /// <summary>
         /// Performs text wrapping returns a list of text lines.
@@ -869,21 +999,22 @@ namespace Avalonia.Media.TextFormatting
         /// <param name="canReuseTextRunList">Whether <see cref="TextRun"/> can be reused to store the split runs.</param>
         /// <param name="firstTextSourceIndex">The first text source index.</param>
         /// <param name="paragraphWidth">The paragraph width.</param>
+        /// <param name="lineIndent">The indent of the line, which narrows the width the line wraps against.</param>
         /// <param name="paragraphProperties">The text paragraph properties.</param>
         /// <param name="resolvedFlowDirection"></param>
         /// <param name="currentLineBreak">The current line break if the line was explicitly broken.</param>
         /// <param name="objectPool">A pool used to get reusable formatting objects.</param>
         /// <returns>The wrapped text line.</returns>
         private static TextLineImpl PerformTextWrapping(List<TextRun> textRuns, bool canReuseTextRunList,
-            int firstTextSourceIndex, double paragraphWidth, TextParagraphProperties paragraphProperties,
+            int firstTextSourceIndex, double paragraphWidth, double lineIndent, TextParagraphProperties paragraphProperties,
             FlowDirection resolvedFlowDirection, TextLineBreak? currentLineBreak, FormattingObjectPool objectPool)
         {
             if (textRuns.Count == 0)
             {
-                return CreateEmptyTextLine(firstTextSourceIndex, paragraphWidth, paragraphProperties);
+                return CreateEmptyTextLine(firstTextSourceIndex, paragraphWidth, paragraphProperties, lineIndent);
             }
 
-            var measuredLength = MeasureLength(textRuns, paragraphWidth);
+            var measuredLength = MeasureLength(textRuns, paragraphWidth - lineIndent);
 
             if(measuredLength == 0)
             {
@@ -924,6 +1055,10 @@ namespace Avalonia.Media.TextFormatting
 
             var currentPosition = 0;
 
+            // Where the whitespace that ends the previous runs starts, and the line break state they end with.
+            var whitespaceStart = 0;
+            var precedingContext = default(LineBreakEnumerator.LineBreakContext);
+
             var wrappingMode = paragraphProperties.TextWrapping;
             var runCount = textRuns.Count;
 
@@ -938,12 +1073,32 @@ namespace Avalonia.Media.TextFormatting
                 {
                     case ShapedTextRun:
                         {
-                            var lineBreaker = new LineBreakEnumerator(currentRun.Text.Span);
+                            // Shaping splits runs at every script change, which in Japanese text happens
+                            // between nearly every Han and kana character. The enumeration continues from the
+                            // state the previous run ended with, and sees the next run's first code point, so a
+                            // break at the end of the run is a real opportunity rather than the end of text,
+                            // decided by the characters on both sides.
+                            Codepoint? following = null;
+
+                            if (index < runCount - 1 && textRuns[index + 1] is ShapedTextRun nextRun &&
+                                !nextRun.Text.IsEmpty)
+                            {
+                                following = Codepoint.ReadAt(nextRun.Text.Span, 0, out _);
+                            }
+
+                            var endIsOpportunity = following.HasValue;
+
+                            var lineBreaker = CreateLineBreakEnumerator(
+                                currentRun.Text.Span, precedingContext, following, measuredLength - currentLength);
 
                             while (lineBreaker.MoveNext(out var lineBreak))
                             {
-                                if (lineBreak.Required &&
-                                    currentLength + lineBreak.PositionMeasure <= measuredLength)
+                                // Whitespace from the start of the run continues the whitespace of the previous runs.
+                                var measurePosition = lineBreak.PositionMeasure == 0
+                                    ? whitespaceStart
+                                    : currentLength + lineBreak.PositionMeasure;
+
+                                if (lineBreak.Required && measurePosition <= measuredLength)
                                 {
                                     //Explicit break found
                                     breakFound = true;
@@ -953,7 +1108,7 @@ namespace Avalonia.Media.TextFormatting
                                     break;
                                 }
 
-                                if (currentLength + lineBreak.PositionMeasure > measuredLength)
+                                if (measurePosition > measuredLength)
                                 {
                                     if (wrappingMode == TextWrapping.WrapWithOverflow)
                                     {
@@ -969,7 +1124,7 @@ namespace Avalonia.Media.TextFormatting
                                         //Find next possible wrap position (overflow)
                                         if (index < runCount - 1)
                                         {
-                                            if (lineBreak.PositionWrap != currentRunLength)
+                                            if (endIsOpportunity || lineBreak.PositionWrap != currentRunLength)
                                             {
                                                 //We already found the next possible wrap position.
                                                 breakFound = true;
@@ -1024,11 +1179,30 @@ namespace Avalonia.Media.TextFormatting
                                     break;
                                 }
 
-                                if (lineBreak.PositionMeasure != lineBreak.PositionWrap || lineBreak.PositionWrap != currentRunLength)
+                                if (endIsOpportunity || lineBreak.PositionMeasure != lineBreak.PositionWrap ||
+                                    lineBreak.PositionWrap != currentRunLength)
                                 {
                                     lastWrapPosition = currentLength + lineBreak.PositionWrap;
                                 }
                             }
+
+                            if (!breakFound && lineBreaker.LimitReached)
+                            {
+                                //No opportunity within reach of the line: use the last one or break at the fitting length.
+                                currentPosition = lastWrapPosition == 0 ? measuredLength : lastWrapPosition;
+
+                                breakFound = true;
+                            }
+
+                            // Empty unless the enumeration reached the next run's first code point.
+                            precedingContext = lineBreaker.EndContext;
+
+                            break;
+                        }
+
+                    default:
+                        {
+                            precedingContext = default;
 
                             break;
                         }
@@ -1036,6 +1210,21 @@ namespace Avalonia.Media.TextFormatting
 
                 if (!breakFound)
                 {
+                    if (currentRun is ShapedTextRun)
+                    {
+                        var trailingWhitespaceStart = FindTrailingWhitespaceStart(currentRun.Text.Span);
+
+                        // A run of only whitespace leaves the whitespace start of the previous runs in place.
+                        if (trailingWhitespaceStart > 0)
+                        {
+                            whitespaceStart = currentLength + trailingWhitespaceStart;
+                        }
+                    }
+                    else
+                    {
+                        whitespaceStart = currentLength + currentRunLength;
+                    }
+
                     currentLength += currentRunLength;
 
                     continue;
@@ -1092,7 +1281,7 @@ namespace Avalonia.Media.TextFormatting
 
                 if(preSplitRuns is null)
                 {
-                    return CreateEmptyTextLine(firstTextSourceIndex, paragraphWidth, paragraphProperties);
+                    return CreateEmptyTextLine(firstTextSourceIndex, paragraphWidth, paragraphProperties, lineIndent);
                 }
 
                 if (postSplitRuns?.Count > 0)
@@ -1114,7 +1303,7 @@ namespace Avalonia.Media.TextFormatting
 
                 var textLine = new TextLineImpl(remainingTextRuns, firstTextSourceIndex, splitLength,
                     paragraphWidth, paragraphProperties, resolvedFlowDirection,
-                    textLineBreak);
+                    textLineBreak, lineIndent: lineIndent);
 
                 textLine.FinalizeLine();
 

@@ -66,6 +66,7 @@ namespace Avalonia.Controls
         private FlexLayoutState _state = new FlexLayoutState();
         private Dictionary<Visual, IDisposable> _childVisibilitySubscriptions = new Dictionary<Visual, IDisposable>();
         private Layoutable[]? _visibleChildren;
+        private bool _visibleChildrenDirty;
 
         static FlexPanel()
         {
@@ -90,6 +91,8 @@ namespace Avalonia.Controls
 
             AffectsParentArrange<FlexPanel>(
                 Flex.AlignSelfProperty);
+
+            Flex.OrderProperty.Changed.AddClassHandler<Layoutable>(OnChildOrderChanged);
         }
 
         /// <summary>
@@ -195,6 +198,15 @@ namespace Avalonia.Controls
         /// <inheritdoc />
         protected override Size MeasureOverride(Size availableSize)
         {
+            if (_visibleChildrenDirty)
+            {
+                _visibleChildren = Children.Where(s_isVisible).OrderBy(s_getOrder).ToArray();
+                _visibleChildrenDirty = false;
+
+                // Arrange may be marked valid after the list changed during a measure that Arrange started.
+                InvalidateArrange();
+            }
+
             if (_visibleChildren is not { Length: > 0 } children)
             {
                 _state.Lines.Clear();
@@ -254,7 +266,7 @@ namespace Avalonia.Controls
                 var (itemsCount, freeU) = GetLineMeasureU(flexLine, max.U, spacing.U);
                 var (lineMult, autoMargins, remainingFreeU) = GetLineMultInfo(flexLine, freeU);
 
-                if (lineMult != 0.0 && remainingFreeU != 0.0)
+                if (double.IsFinite(max.U) && lineMult != 0.0 && remainingFreeU != 0.0)
                 {
                     double maxV = 0.0;
                     for (var j = flexLine.First; j <= flexLine.Last; j++)
@@ -387,7 +399,7 @@ namespace Avalonia.Controls
             {
                 FlexBasisKind.Auto => max.U,
                 FlexBasisKind.Absolute => basis.Value,
-                FlexBasisKind.Relative => max.U * basis.Value / 100,
+                FlexBasisKind.Relative => max.U * basis.Value,
                 _ => throw new InvalidOperationException($"Unsupported FlexBasisKind value: {basis.Kind}")
             };
             element.Measure(Uv.ToSize(max.WithU(flexConstraint), isColumn));
@@ -551,17 +563,25 @@ namespace Avalonia.Controls
                     }
                 }
 
-            UpdateVisibleChildren();
+            InvalidateVisibleChildren();
         }
 
         private void OnChildVisibilityChanged(bool isVisible)
         {
-            UpdateVisibleChildren();
+            InvalidateVisibleChildren();
         }
 
-        private void UpdateVisibleChildren()
+        private static void OnChildOrderChanged(Layoutable child, AvaloniaPropertyChangedEventArgs e)
         {
-            _visibleChildren = Children.Where(s_isVisible).OrderBy(s_getOrder).ToArray();
+            if (child.VisualParent is FlexPanel panel)
+            {
+                panel.InvalidateVisibleChildren();
+            }
+        }
+
+        private void InvalidateVisibleChildren()
+        {
+            _visibleChildrenDirty = true;
 
             InvalidateMeasure();
         }

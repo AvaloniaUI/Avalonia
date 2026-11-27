@@ -157,6 +157,8 @@
       <AvaloniaXamlVerboseExceptions Condition="'$(AvaloniaXamlVerboseExceptions)' == ''">false</AvaloniaXamlVerboseExceptions>
       <AvaloniaXamlCreateSourceInfo Condition="'$(AvaloniaXamlCreateSourceInfo)' == '' AND '$(Configuration)' == 'Debug'">true</AvaloniaXamlCreateSourceInfo>
       <AvaloniaXamlCreateSourceInfo Condition="'$(AvaloniaXamlCreateSourceInfo)' == '' AND '$(Configuration)' != 'Debug'">false</AvaloniaXamlCreateSourceInfo>
+      <AvaloniaXamlIlCompactHelperNames Condition="'$(AvaloniaXamlIlCompactHelperNames)' == '' AND '$(Configuration)' == 'Release'">true</AvaloniaXamlIlCompactHelperNames>
+      <AvaloniaXamlIlCompactHelperNames Condition="'$(AvaloniaXamlIlCompactHelperNames)' == ''">false</AvaloniaXamlIlCompactHelperNames>
     </PropertyGroup>
 
     <ItemGroup>
@@ -183,9 +185,11 @@
       AssemblyOriginatorKeyFile="$(AssemblyOriginatorKeyFile)"
       SignAssembly="$(SignAssembly)"
       DelaySign="$(DelaySign)"
+      PublicSign="$(PublicSign)"
       SkipXamlCompilation="$(_AvaloniaSkipXamlCompilation)"
       DebuggerLaunch="$(AvaloniaXamlIlDebuggerLaunch)"
       CreateSourceInfo="$(AvaloniaXamlCreateSourceInfo)"
+      CompactHelperNames="$(AvaloniaXamlIlCompactHelperNames)"
       DefaultCompileBindings="$(AvaloniaUseCompiledBindingsByDefault)"
       VerboseExceptions="$(AvaloniaXamlVerboseExceptions)"
       AnalyzerConfigFiles="@(EditorConfigFiles)"/>

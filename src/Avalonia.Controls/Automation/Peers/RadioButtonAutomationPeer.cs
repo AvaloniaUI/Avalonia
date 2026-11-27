@@ -49,7 +49,7 @@ namespace Avalonia.Controls.Automation.Peers
             if (!IsEnabled())
                 throw new InvalidOperationException("Element is disabled thus it cannot be selected");
 
-            ((RadioButton)Owner).IsChecked = true;
+            Owner.SetCurrentValue(RadioButton.IsCheckedProperty, true);
         }
 
         internal virtual void RaiseToggleStatePropertyChangedEvent(bool? oldValue, bool? newValue)

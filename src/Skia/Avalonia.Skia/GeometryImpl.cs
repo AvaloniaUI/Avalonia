@@ -36,6 +36,15 @@ namespace Avalonia.Skia
         public abstract SKPath? StrokePath { get; }
         public abstract SKPath? FillPath { get; }
 
+        [return: NotNullIfNotNull(nameof(path))]
+        protected static SKPath? CachePathBounds(SKPath? path)
+        {
+            // Skia caches bounds lazily, even for read-only calls like Contains.
+            // Initialize them before sharing the path with the render thread.
+            _ = path?.Bounds;
+            return path;
+        }
+
         /// <inheritdoc />
         public bool FillContains(Point point)
         {
@@ -52,7 +61,7 @@ namespace Avalonia.Skia
                 return PathContainsCore(_pathCache.ExpandedPath, point);
             }
         }
-        
+
         /// <summary>
         /// Check Skia path if it contains a point.
         /// </summary>
@@ -93,10 +102,10 @@ namespace Avalonia.Skia
                 // The path returned to us by skia here does not have closed figures.
                 // Fix that by calling CreateClosedPath.
                 var closed = SKPathHelper.CreateClosedPath(path);
-                return new StreamGeometryImpl(closed, closed);
+                return new SimpleGeometryImpl(closed, closed);
             }
             
-            return new StreamGeometryImpl(new SKPath(), null);
+            return new SimpleGeometryImpl(new SKPath(), null);
         }
 
         /// <inheritdoc />
@@ -152,44 +161,40 @@ namespace Avalonia.Skia
 
             if (res)
             {
-                segmentGeometry = new StreamGeometryImpl(_skPathSegment, null);
+                segmentGeometry = new SimpleGeometryImpl(_skPathSegment, null);
             }
 
             return res;
         }
 
-        /// <summary>
-        /// Invalidate all caches. Call after chaining path contents.
-        /// </summary>
-        protected void InvalidateCaches()
-        {
-            lock (_lock)
-            {
-                _pathCache.Dispose();
-                _pathCache = default;
-            }
-        }
-
         /// <inheritdoc />
         public IntersectionResult GetFillIntersectionResult(IGeometryImpl geometry)
         {
-            var other = geometry as GeometryImpl;
-            if (other == null || FillPath == null || other.FillPath == null)
+            if (geometry is  not GeometryImpl other)
                 return IntersectionResult.Empty;
 
-            var region = new SKRegion(FillPath);
-            var otherRegion = new SKRegion(other.FillPath);
+            return HitTestPath(FillPath, other.FillPath);
 
-            if(region.Contains(otherRegion))
-                return IntersectionResult.FullyInside;
+            static IntersectionResult HitTestPath(SKPath? path1, SKPath? path2)
+            {
+                if (path1 == null || path2 == null)
+                    return IntersectionResult.Empty;
 
-            if (otherRegion.Contains(region))
-                return IntersectionResult.FullyContains;
+                var region = new SKRegion(path1);
+                var otherRegion = new SKRegion(path2);
 
-            if (region.Intersects(otherRegion))
-                return IntersectionResult.Intersects;
+                if (region.Intersects(otherRegion))
+                {
+                    if (region.Contains(otherRegion))
+                        return IntersectionResult.FullyInside;
 
-            return IntersectionResult.Empty;
+                    if (otherRegion.Contains(region))
+                        return IntersectionResult.FullyContains;
+                    return IntersectionResult.Intersects;
+                }
+
+                return IntersectionResult.Empty;
+            }
         }
 
         private struct PathCache : IDisposable
@@ -198,7 +203,7 @@ namespace Avalonia.Skia
             private SKPath? _path, _cachedFor;
             private Rect? _renderBounds;
             private static readonly SKPath s_emptyPath = new();
-            
+
             public Rect RenderBounds => _renderBounds ??= (_path ?? _cachedFor ?? s_emptyPath).TightBounds.ToAvaloniaRect();
             public SKPath ExpandedPath => _path ?? s_emptyPath;
 
@@ -212,16 +217,16 @@ namespace Avalonia.Skia
                     return;
                 }
 
+                // Keep the previous cache valid if creating the new stroke throws.
+                var path = strokePath is not null && pen is not null
+                    ? SKPathHelper.CreateStrokedPath(strokePath, pen)
+                    : null;
+                var oldPath = _path;
+                _path = path;
                 _renderBounds = null;
                 _cachedFor = strokePath;
                 _penHash = penHash;
-                _path?.Dispose();
-
-                if (strokePath is not null && pen is not null)
-                    _path = SKPathHelper.CreateStrokedPath(strokePath, pen);
-                else
-                    _path = null;
-
+                oldPath?.Dispose();
             }
 
             public void Dispose()

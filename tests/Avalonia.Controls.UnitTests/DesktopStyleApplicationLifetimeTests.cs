@@ -28,6 +28,48 @@ namespace Avalonia.Controls.UnitTests
         
         
         [Fact]
+        public void Should_Return_ExitCode_When_Shutdown_From_MainWindow_Opened()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            using (var lifetime = new ClassicDesktopStyleApplicationLifetime())
+            {
+                Setup(lifetime);
+
+                var mainWindow = new Window();
+                mainWindow.Opened += (_, _) => lifetime.Shutdown(1337);
+                lifetime.MainWindow = mainWindow;
+
+                var exitCode = lifetime.Start(Array.Empty<string>());
+
+                Assert.Equal(1337, exitCode);
+            }
+        }
+
+        [Fact]
+        public void Should_Exit_When_MainWindow_Closed_From_Opened()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            using (var lifetime = new ClassicDesktopStyleApplicationLifetime())
+            {
+                Setup(lifetime);
+
+                var hasExit = false;
+
+                lifetime.Exit += (_, _) => hasExit = true;
+
+                var mainWindow = new Window();
+                mainWindow.Opened += (_, _) => mainWindow.Close();
+                lifetime.MainWindow = mainWindow;
+
+                var exitCode = lifetime.Start(Array.Empty<string>());
+
+                Assert.Equal(0, exitCode);
+                Assert.True(hasExit);
+                Assert.Empty(lifetime.Windows);
+            }
+        }
+
+        [Fact]
         public void Should_Close_All_Remaining_Open_Windows_After_Explicit_Exit_Call()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))

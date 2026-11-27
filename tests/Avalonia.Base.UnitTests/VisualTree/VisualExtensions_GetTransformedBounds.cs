@@ -2,10 +2,11 @@
 using Avalonia.Media;
 using Avalonia.VisualTree;
 using Xunit;
+using Avalonia.UnitTests;
 
 namespace Avalonia.Base.UnitTests.VisualTree
 {
-    public class VisualExtensions_GetTransformedBounds
+    public class VisualExtensions_GetTransformedBounds : ScopedTestBase
     {
         [Fact]
         public void Root()

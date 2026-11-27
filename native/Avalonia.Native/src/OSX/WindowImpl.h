@@ -8,7 +8,7 @@
 
 #import "WindowBaseImpl.h"
 #include "IWindowStateChanged.h"
-class WindowImpl : public virtual WindowBaseImpl, public virtual IAvnWindow, public IWindowStateChanged
+class WindowImpl : public virtual WindowBaseImpl, public virtual MicroComImpl<IAvnWindow>, public IWindowStateChanged
 {
 public:
     FORWARD_IUNKNOWN()
@@ -22,7 +22,7 @@ BEGIN_INTERFACE_MAP()
 
     ComPtr<IAvnWindowEvents> WindowEvents;
 
-    WindowImpl(IAvnWindowEvents* events);
+    WindowImpl(const ComPtr<IAvnWindowEvents>& events);
 
     virtual HRESULT Show (bool activate, bool isDialog) override;
 

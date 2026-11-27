@@ -6,5 +6,6 @@
         public int RunIndex { get; set; }
         public int NextRunIndex { get; set; }
         public TextRun? TextRun { get; set; }
+        public sbyte BidiLevel { get; init; }
     }
 }

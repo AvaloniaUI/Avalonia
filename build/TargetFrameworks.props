@@ -10,6 +10,10 @@
     <AvsCurrentBrowserTargetFramework>$(AvsCurrentTargetFramework)-browser</AvsCurrentBrowserTargetFramework>
     <AvsCurrentWinUITargetFramework>$(AvsCurrentTargetFramework)-windows10.0.19041.0</AvsCurrentWinUITargetFramework>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(AvsSkipBuildingNextTargetFrameworks)' != 'True'">
+    <AvsNextTargetFramework>net11.0</AvsNextTargetFramework>
+    <AvsNextBrowserTargetFramework>$(AvsNextTargetFramework)-browser</AvsNextBrowserTargetFramework>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(AvsSkipBuildingLegacyTargetFrameworks)' != 'True'">
     <AvsLegacyTargetFrameworks>net8.0</AvsLegacyTargetFrameworks>
     <AvsLegacyWindowsTargetFrameworks>net8.0-windows</AvsLegacyWindowsTargetFrameworks>

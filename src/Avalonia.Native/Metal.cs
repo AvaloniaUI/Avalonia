@@ -196,9 +196,14 @@ internal class MetalRenderTarget : IMetalPlatformSurfaceRenderTarget
         _native = null;
     }
 
-    public IMetalPlatformSurfaceRenderingSession BeginRendering()
+    public IMetalPlatformSurfaceRenderingSession BeginRendering(IRenderTarget.RenderTargetSceneInfo sceneInfo)
     {
-        var session = Native.BeginDrawing();
+        var size = new AvnPixelSize
+        {
+            Width = Math.Max(1, sceneInfo.Size.Width),
+            Height = Math.Max(1, sceneInfo.Size.Height)
+        };
+        var session = Native.BeginDrawing(size, sceneInfo.Scaling);
         return new MetalDrawingSession(session);
     }
 }

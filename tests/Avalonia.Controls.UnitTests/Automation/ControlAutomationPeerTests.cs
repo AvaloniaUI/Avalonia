@@ -1,8 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using Avalonia.Android;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
@@ -194,6 +197,30 @@ namespace Avalonia.Controls.UnitTests.Automation
                 parentPeer = Assert.IsAssignableFrom<ControlAutomationPeer>(target.GetParent());
                 Assert.Same(root2, parentPeer.Owner);
             }
+
+            [Fact]
+            public void Parent_Kept_When_New_Parent_Reads_Children_Before_Old_Parent()
+            {
+                var border = new Border();
+                var oldParent = new Decorator { Child = border };
+                var newParent = new Decorator();
+                var root = new StackPanel { Children = { oldParent, newParent } };
+                var oldParentPeer = CreatePeer(oldParent);
+                var newParentPeer = CreatePeer(newParent);
+                var target = CreatePeer(border);
+
+                CreatePeer(root).GetChildren();
+                Assert.Same(oldParentPeer, target.GetParent());
+
+                oldParent.Child = null;
+                newParent.Child = border;
+
+                // An automation client may read the new parent's children before the old parent's.
+                Assert.Contains(target, newParentPeer.GetChildren());
+                Assert.DoesNotContain(target, oldParentPeer.GetChildren());
+
+                Assert.Same(newParentPeer, target.GetParent());
+            }
         }
 
         public class AutomationIdNotifications : ScopedTestBase
@@ -260,6 +287,75 @@ namespace Avalonia.Controls.UnitTests.Automation
         private static AutomationPeer CreatePeer(Control control)
         {
             return ControlAutomationPeer.CreatePeerForElement(control);
+        }
+
+        /// <summary>
+        /// Tests <see cref="AndroidAccessRoleHelper.GetClassName"/>, which maps automation peers
+        /// to the Android widget class names TalkBack uses to announce roles.
+        /// </summary>
+        public class AndroidRoles : ScopedTestBase
+        {
+            [Theory]
+            [InlineData(typeof(Button), "android.widget.Button")]
+            [InlineData(typeof(ToggleButton), "android.widget.ToggleButton")]
+            [InlineData(typeof(ToggleSwitch), "android.widget.Switch")]
+            [InlineData(typeof(ToggleSplitButton), "android.widget.ToggleButton")]
+            [InlineData(typeof(CheckBox), "android.widget.CheckBox")]
+            [InlineData(typeof(RadioButton), "android.widget.RadioButton")]
+            [InlineData(typeof(TextBox), "android.widget.EditText")]
+            [InlineData(typeof(MaskedTextBox), "android.widget.EditText")]
+            [InlineData(typeof(TextBlock), "android.widget.TextView")]
+            [InlineData(typeof(Label), "android.widget.TextView")]
+            [InlineData(typeof(NumericUpDown), "android.widget.NumberPicker")]
+            [InlineData(typeof(Calendar), "android.widget.DatePicker")]
+            [InlineData(typeof(CalendarDatePicker), "android.widget.DatePicker")]
+            [InlineData(typeof(DatePicker), "android.widget.DatePicker")]
+            [InlineData(typeof(TimePicker), "android.widget.TimePicker")]
+            public void GetClassName_Returns_Android_Widget_Class(Type controlType, string expectedRole)
+            {
+                var control = (Control)Activator.CreateInstance(controlType)!;
+                var peer = CreatePeer(control);
+
+                var role = AndroidAccessRoleHelper.GetClassName(peer);
+
+                Assert.Equal(expectedRole, role);
+            }
+
+            [Theory]
+            [InlineData(typeof(Border), AutomationControlType.Button, "android.widget.Button")]
+            [InlineData(typeof(ToggleButton), AutomationControlType.RadioButton, "android.widget.RadioButton")]
+            public void ControlTypeOverride_Determines_Role(Type controlType, AutomationControlType controlTypeOverride, string expectedRole)
+            {
+                var control = (Control)Activator.CreateInstance(controlType)!;
+                AutomationProperties.SetControlTypeOverride(control, controlTypeOverride);
+                var peer = CreatePeer(control);
+
+                var role = AndroidAccessRoleHelper.GetClassName(peer);
+
+                Assert.Equal(expectedRole, role);
+            }
+
+            [Fact]
+            public void ClassNameOverride_Takes_Precedence_Over_Role()
+            {
+                var control = new Button();
+                AutomationProperties.SetClassNameOverride(control, "com.example.CustomButton");
+                var peer = CreatePeer(control);
+
+                var role = AndroidAccessRoleHelper.GetClassName(peer);
+
+                Assert.Equal("com.example.CustomButton", role);
+            }
+
+            [Fact]
+            public void Unmapped_Control_Type_Uses_Peer_Class_Name()
+            {
+                var peer = CreatePeer(new Border());
+
+                var role = AndroidAccessRoleHelper.GetClassName(peer);
+
+                Assert.Equal("Border", role);
+            }
         }
     }
 }

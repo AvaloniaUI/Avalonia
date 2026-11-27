@@ -34,6 +34,9 @@ internal partial class PopupImpl : WindowBaseImpl, IPopupImpl
     private WXdgPopupProxy? _surfaceProxy;
     private XdgPopupPositionerParams? _lastPositioner;
     private bool _isHitTestVisible = true;
+    private PixelRect? _configuredGeometry;
+    private Thickness _shadowExtents;
+    private PixelPoint _position;
 
     public PopupImpl(WaylandWorkerClient client, WindowBaseImpl parent) : base(client)
     {
@@ -46,6 +49,13 @@ internal partial class PopupImpl : WindowBaseImpl, IPopupImpl
         RenderScaling = parent.RenderScaling;
 
         PopupPositioner = new WaylandPopupPositioner(this);
+        _parent.ChildPositionsInvalidated += UpdatePosition;
+    }
+
+    public override void Dispose()
+    {
+        _parent.ChildPositionsInvalidated -= UpdatePosition;
+        base.Dispose();
     }
 
     public override IPlatformRenderSurface[] Surfaces => _handle?.GetRenderSurfaces() ?? [];
@@ -59,6 +69,32 @@ internal partial class PopupImpl : WindowBaseImpl, IPopupImpl
     public override Size MaxAutoSizeHint => _parent.MaxAutoSizeHint;
 
     internal override WXdgShellSurfaceProxy? SurfaceProxy => _surfaceProxy;
+
+    public override PixelPoint Position => _position;
+
+    internal override PixelPoint WindowGeometryOrigin => new((int)_shadowExtents.Left, (int)_shadowExtents.Top);
+
+    /// <summary>
+    /// Derives the buffer-relative position from the last configure (parent
+    /// window-geometry-relative) and both sides' geometry origins, chaining
+    /// through the parent so nested popups end up in the toplevel's space.
+    /// </summary>
+    private void UpdatePosition()
+    {
+        if (_configuredGeometry is not { } g)
+            return;
+        var parentPos = _parent.Position;
+        var parentOrigin = _parent.WindowGeometryOrigin;
+        var ownOrigin = WindowGeometryOrigin;
+        var position = new PixelPoint(
+            parentPos.X + parentOrigin.X + g.X - ownOrigin.X,
+            parentPos.Y + parentOrigin.Y + g.Y - ownOrigin.Y);
+        if (_position == position)
+            return;
+        _position = position;
+        PositionChanged?.Invoke(position);
+        InvalidateChildPositions();
+    }
 
     public IPopupPositioner PopupPositioner { get; }
 
@@ -96,7 +132,11 @@ internal partial class PopupImpl : WindowBaseImpl, IPopupImpl
             ClientSize = translated.Size;
             Resized?.Invoke(translated.Size, WindowResizeReason.Layout);
         }
+        // Mirrors the worker: a default Deflate leaves the previously set extents in place.
+        if (translated.Deflate != default)
+            _shadowExtents = translated.Deflate;
         _surfaceProxy?.UpdatePositioner(translated);
+        UpdatePosition();
     }
 
     public void SetWindowManagerAddShadowHint(bool enabled)

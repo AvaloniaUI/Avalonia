@@ -85,7 +85,6 @@ namespace IntegrationTestApp
                 new("DesktopPage", () => new DesktopPage()),
                 new("DragDrop", () => new DragDropPage()),
                 new("Embedding", () => new EmbeddingPage()),
-                new("Gestures", () => new GesturesPage()),
                 new("Keyboard", () => new KeyboardPage()),
                 new("ListBox", () => new ListBoxPage()),
                 new("Menu", () => new MenuPage()),

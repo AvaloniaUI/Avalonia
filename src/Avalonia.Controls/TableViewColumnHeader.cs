@@ -62,7 +62,7 @@ public class TableViewColumnHeader : ContentControl
             return;
 
         var minWidth = _resizer?.Bounds.Width ?? 0;
-        var newWidth = Math.Max(minWidth, actualWidth + e.Vector.X);
+        var newWidth = column.ClampWidth(Math.Max(minWidth, actualWidth + e.Vector.X));
         column.Width = new GridLength(newWidth, GridUnitType.Pixel);
     }
 

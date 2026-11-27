@@ -9,7 +9,7 @@
           MaxWidth="760"
           HorizontalAlignment="Stretch" Margin="0 16 0 0">
       <Button Name="left" Grid.Column="0" Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="10,20" Margin="4">
-        <Path Name="leftArrow" Data="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" Fill="Black"/>
+        <PathIcon Name="leftArrow" Data="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"/>
       </Button>
       <Carousel Name="carousel" Grid.Column="1" Grid.Row="1" Background="Transparent" Height="400" Focusable="True" ViewportFraction="1.0">
         <Carousel.PageTransition>
@@ -44,7 +44,7 @@
         </Border>
       </Carousel>
       <Button Name="right" Grid.Column="2" Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="10,20" Margin="4">
-        <Path Name="rightArrow" Data="M4,11V13H16L10.5,18.5L11.92,19.92L19.84,12L11.92,4.08L10.5,5.5L16,11H4Z" Fill="Black"/>
+        <PathIcon Name="rightArrow" Data="M4,11V13H16L10.5,18.5L11.92,19.92L19.84,12L11.92,4.08L10.5,5.5L16,11H4Z"/>
       </Button>
     </Grid>
 

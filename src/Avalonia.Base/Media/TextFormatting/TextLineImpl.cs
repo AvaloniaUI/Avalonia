@@ -14,6 +14,7 @@ namespace Avalonia.Media.TextFormatting
         internal IReadOnlyList<IndexedTextRun>? _indexedTextRuns;
         private readonly TextRun[] _textRuns;
         private readonly double _paragraphWidth;
+        private readonly double _lineIndent;
         private readonly TextParagraphProperties _paragraphProperties;
         private TextLineMetrics _textLineMetrics;
         private TextLineBreak? _textLineBreak;
@@ -24,7 +25,7 @@ namespace Avalonia.Media.TextFormatting
 
         public TextLineImpl(TextRun[] textRuns, int firstTextSourceIndex, int length, double paragraphWidth,
             TextParagraphProperties paragraphProperties, FlowDirection resolvedFlowDirection = FlowDirection.LeftToRight,
-            TextLineBreak? lineBreak = null, bool hasCollapsed = false)
+            TextLineBreak? lineBreak = null, bool hasCollapsed = false, double lineIndent = 0)
         {
             FirstTextSourceIndex = firstTextSourceIndex;
             Length = length;
@@ -33,6 +34,7 @@ namespace Avalonia.Media.TextFormatting
 
             _textRuns = textRuns;
             _paragraphWidth = paragraphWidth;
+            _lineIndent = lineIndent;
             _paragraphProperties = paragraphProperties;
 
             _resolvedFlowDirection = resolvedFlowDirection;
@@ -40,6 +42,12 @@ namespace Avalonia.Media.TextFormatting
 
         /// <inheritdoc/>
         public override IReadOnlyList<TextRun> TextRuns => _textRuns;
+
+        /// <summary>
+        /// Gets the distance from the leading edge of the paragraph at which the line's box starts.
+        /// The line is aligned within the paragraph width minus this indent.
+        /// </summary>
+        internal double LineIndent => _lineIndent;
 
         /// <inheritdoc/>
         public override int FirstTextSourceIndex { get; }
@@ -178,8 +186,21 @@ namespace Avalonia.Media.TextFormatting
                 return this;
             }
 
+            if (!collapsingProperties.ReturnsOwnedRuns)
+            {
+                // Both lines dispose their runs, so the collapsed line needs its own reference
+                // to each run it shares with this line. Any other run passes to it as it is.
+                foreach (var run in collapsedRuns)
+                {
+                    if (run is ShapedTextRun shapedRun && TextCollapsingProperties.IsSourceRun(this, shapedRun))
+                    {
+                        shapedRun.AddRef();
+                    }
+                }
+            }
+
             var collapsedLine = new TextLineImpl(collapsedRuns, FirstTextSourceIndex, Length, _paragraphWidth, _paragraphProperties,
-                _resolvedFlowDirection, TextLineBreak, true);
+                _resolvedFlowDirection, TextLineBreak, true, _lineIndent);
 
             if (collapsedRuns.Length > 0)
             {
@@ -240,21 +261,30 @@ namespace Avalonia.Media.TextFormatting
 
             distance -= Start;
 
+            var firstIndex = 0;
             var lastIndex = _textRuns.Length - 1;
 
-            if (_textRuns[lastIndex] is TextEndOfLine)
+            // The end of line run has no width and is never hit. It sits at the visual end of the
+            // paragraph direction, so it is the first run of a right-to-left line.
+            var endOfLineIndex = GetEndOfLineRunIndex();
+
+            if (endOfLineIndex == lastIndex)
             {
                 lastIndex--;
             }
+            else if (endOfLineIndex == firstIndex)
+            {
+                firstIndex++;
+            }
 
-            if (lastIndex < 0)
+            if (lastIndex < firstIndex)
             {
                 return new CharacterHit(FirstTextSourceIndex);
             }
 
             if (distance <= 0)
             {
-                return GetRunCharacterHit(_textRuns[0], GetRunTextSourcePosition(0), 0);
+                return GetRunCharacterHit(_textRuns[firstIndex], GetRunTextSourcePosition(firstIndex), 0);
             }
 
             if (distance >= WidthIncludingTrailingWhitespace)
@@ -265,9 +295,9 @@ namespace Avalonia.Media.TextFormatting
             // process hit that happens within the line
             var characterHit = new CharacterHit();
             var currentDistance = 0.0;
-            var currentVisualIndex = 0;
+            var currentVisualIndex = firstIndex;
 
-            for (var i = 0; i <= lastIndex; i++)
+            for (var i = firstIndex; i <= lastIndex; i++)
             {
                 var currentRun = _textRuns[i];
                 currentVisualIndex = i;
@@ -389,18 +419,6 @@ namespace Avalonia.Media.TextFormatting
 
             var currentPosition = FirstTextSourceIndex;
 
-            static FlowDirection GetDirection(TextRun textRun, FlowDirection currentDirection)
-            {
-                if (textRun is ShapedTextRun shapedTextRun)
-                {
-                    return shapedTextRun.ShapedBuffer.IsLeftToRight ?
-                        FlowDirection.LeftToRight :
-                        FlowDirection.RightToLeft;
-                }
-
-                return currentDirection;
-            }
-
             IndexedTextRun FindIndexedRun(out int index)
             {
                 index = 0;
@@ -475,7 +493,7 @@ namespace Avalonia.Media.TextFormatting
             var directionalWidth = 0.0;
             var firstRunIndex = currentIndexedRun.RunIndex;
 
-            var currentDirection = GetDirection(currentTextRun, _resolvedFlowDirection);
+            var currentDirection = GetRunDirection(currentIndexedRun);
 
             var currentX = Start + GetPreceedingDistance(currentIndexedRun.RunIndex);
 
@@ -577,16 +595,17 @@ namespace Avalonia.Media.TextFormatting
             return GetPreviousCharacterHit(characterHit, true);
         }
 
-        private static FlowDirection GetRunDirection(TextRun? textRun, FlowDirection currentDirection)
+        /// <summary>
+        /// Gets the direction of a run from the bidi level it was reordered with.
+        /// </summary>
+        /// <remarks>
+        /// Runs without glyphs must report the direction they were placed with. The visual walk over a
+        /// directional span assumes visual order matches logical order for that direction, so a run that
+        /// borrows its neighbour's direction gets consumed out of order and shifts every index after it.
+        /// </remarks>
+        private static FlowDirection GetRunDirection(IndexedTextRun indexedTextRun)
         {
-            if (textRun is ShapedTextRun shapedTextRun)
-            {
-                return shapedTextRun.ShapedBuffer.IsLeftToRight ?
-                    FlowDirection.LeftToRight :
-                    FlowDirection.RightToLeft;
-            }
-
-            return currentDirection;
+            return (indexedTextRun.BidiLevel & 1) == 0 ? FlowDirection.LeftToRight : FlowDirection.RightToLeft;
         }
 
         /// <summary>
@@ -652,7 +671,7 @@ namespace Avalonia.Media.TextFormatting
                     break;
                 }
 
-                var nextDirection = GetRunDirection(nextRun, flowDirection);
+                var nextDirection = GetRunDirection(nextIndexedRun);
 
                 if (nextDirection != flowDirection)
                 {
@@ -674,7 +693,7 @@ namespace Avalonia.Media.TextFormatting
         {
             if (textLength == 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(textLength), textLength, $"{nameof(textLength)} ('0') must be a non-zero value. ");
+                return [];
             }
 
             if (_indexedTextRuns is null || _indexedTextRuns.Count == 0)
@@ -689,7 +708,7 @@ namespace Avalonia.Media.TextFormatting
             if (firstTextSourceIndex + textLength < FirstTextSourceIndex)
             {
                 var indexedTextRun = _indexedTextRuns[0];
-                var currentDirection = GetRunDirection(indexedTextRun.TextRun, _resolvedFlowDirection);
+                var currentDirection = GetRunDirection(indexedTextRun);
 
                 return [new TextBounds(new Rect(0, 0, 0, Height), currentDirection, [])];
             }
@@ -698,7 +717,7 @@ namespace Avalonia.Media.TextFormatting
             if (firstTextSourceIndex >= FirstTextSourceIndex + Length)
             {
                 var indexedTextRun = _indexedTextRuns[_indexedTextRuns.Count - 1];
-                var currentDirection = GetRunDirection(indexedTextRun.TextRun, _resolvedFlowDirection);
+                var currentDirection = GetRunDirection(indexedTextRun);
 
                 return [new TextBounds(new Rect(WidthIncludingTrailingWhitespace, 0, 0, Height), currentDirection, [])];
             }
@@ -723,7 +742,7 @@ namespace Avalonia.Media.TextFormatting
                     break;
                 }
 
-                var currentDirection = GetRunDirection(currentTextRun, _resolvedFlowDirection);
+                var currentDirection = GetRunDirection(currentIndexedRun);
 
                 if (currentIndexedRun.TextSourceCharacterIndex + currentTextRun.Length <= firstTextSourceIndex)
                 {
@@ -1222,10 +1241,36 @@ namespace Avalonia.Media.TextFormatting
 
             _textLineMetrics = CreateLineMetrics();
 
-            if (_textLineBreak is null && _textRuns.Length > 1 && _textRuns[_textRuns.Length - 1] is TextEndOfLine textEndOfLine)
+            if (_textLineBreak is null && _textRuns.Length > 1 && GetEndOfLineRunIndex() is var endOfLineIndex and >= 0)
             {
-                _textLineBreak = new TextLineBreak(textEndOfLine);
+                _textLineBreak = new TextLineBreak((TextEndOfLine)_textRuns[endOfLineIndex]);
             }
+            else if (_textLineBreak is null && _textLineMetrics.NewlineLength > 0)
+            {
+                // A line that ends at a newline character continues its paragraph. Without a break the
+                // next line would look like the first line of a paragraph and take the first-line indent.
+                _textLineBreak = new TextLineBreak(null, _resolvedFlowDirection);
+            }
+        }
+
+        /// <summary>
+        /// Gets the visual index of the <see cref="TextEndOfLine"/> run that ends the line.
+        /// </summary>
+        /// <remarks>
+        /// <see cref="_textRuns"/> is in visual order, so its last run is not the end of the line when the
+        /// paragraph flows right to left. The logical order in <see cref="_indexedTextRuns"/> is used instead.
+        /// </remarks>
+        /// <returns>The visual index of the end of line run, or -1 when the line does not end with one.</returns>
+        private int GetEndOfLineRunIndex()
+        {
+            if (_indexedTextRuns is null || _indexedTextRuns.Count == 0)
+            {
+                return -1;
+            }
+
+            var lastIndexedRun = _indexedTextRuns[_indexedTextRuns.Count - 1];
+
+            return lastIndexedRun.TextRun is TextEndOfLine ? lastIndexedRun.RunIndex : -1;
         }
 
         /// <summary>
@@ -1483,7 +1528,7 @@ namespace Avalonia.Media.TextFormatting
             var overhangLeading = inkBounds.Left;
             //The width of overhanging pixels at the end of the natural bounds. Positive value means we are inside.
             var overhangTrailing = widthIncludingWhitespace - inkBounds.Right;
-            var hasOverflowed = MathUtilities.GreaterThan(width, _paragraphWidth);
+            var hasOverflowed = MathUtilities.GreaterThan(width, _paragraphWidth - _lineIndent);
 
             var start = GetParagraphOffsetX(width, widthIncludingWhitespace);
 
@@ -1517,7 +1562,25 @@ namespace Avalonia.Media.TextFormatting
         /// <returns>The paragraph offset.</returns>
         private double GetParagraphOffsetX(double width, double widthIncludingTrailingWhitespace)
         {
-            if (double.IsPositiveInfinity(_paragraphWidth))
+            var paragraphFlowDirection = _paragraphProperties.FlowDirection;
+
+            // The indent narrows the box on the paragraph's leading side: a left-to-right box starts at the
+            // indent, a right-to-left box ends at the paragraph width minus the indent.
+            var leadingOffset = paragraphFlowDirection == FlowDirection.LeftToRight ? _lineIndent : 0;
+
+            return leadingOffset + GetAlignmentOffsetX(_paragraphWidth - _lineIndent, width, widthIncludingTrailingWhitespace);
+        }
+
+        /// <summary>
+        /// Gets the offset of the line within its box for the paragraph's text alignment.
+        /// </summary>
+        /// <param name="boxWidth">The width the line is aligned within.</param>
+        /// <param name="width">The line width.</param>
+        /// <param name="widthIncludingTrailingWhitespace">The line width including trailing whitespace.</param>
+        /// <returns>The offset from the start of the box.</returns>
+        private double GetAlignmentOffsetX(double boxWidth, double width, double widthIncludingTrailingWhitespace)
+        {
+            if (double.IsPositiveInfinity(boxWidth))
             {
                 return 0;
             }
@@ -1552,7 +1615,7 @@ namespace Avalonia.Media.TextFormatting
             switch (textAlignment)
             {
                 case TextAlignment.Center:
-                    var start = (_paragraphWidth - width) / 2;
+                    var start = (boxWidth - width) / 2;
 
                     if (paragraphFlowDirection == FlowDirection.RightToLeft)
                     {
@@ -1561,7 +1624,7 @@ namespace Avalonia.Media.TextFormatting
 
                     return Math.Max(0, start);
                 case TextAlignment.Right:
-                    return Math.Max(0, _paragraphWidth - widthIncludingTrailingWhitespace);
+                    return Math.Max(0, boxWidth - widthIncludingTrailingWhitespace);
                 default:
                     return 0;
             }

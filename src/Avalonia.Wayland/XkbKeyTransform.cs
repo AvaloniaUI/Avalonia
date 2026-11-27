@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Avalonia.Input;
+using Avalonia.Input.Raw;
 
 namespace Avalonia.Wayland;
 
@@ -333,19 +334,23 @@ internal static class XkbKeyTransform
     /// 3. If Key.None, cycle other layout groups to find a latin key
     /// 4. Ultimate fallback to PhysicalKey.ToQwertyKey()
     /// </summary>
-    public static (Key key, string? keySymbol) ResolveKeyWithFallback(
+    public static (Key key, string? keySymbol, string? text, uint keysym) ResolveKeyWithFallback(
         XkbCommonKeymap keymap, uint evdevKeycode, PhysicalKey physicalKey)
     {
         var (keysym, text) = keymap.ResolveKey(evdevKeycode);
         var keySymbol = FilterKeySymbol(text);
+        return (ResolveKey(keymap, evdevKeycode, physicalKey, keysym), keySymbol, text, keysym);
+    }
 
+    private static Key ResolveKey(XkbCommonKeymap keymap, uint evdevKeycode, PhysicalKey physicalKey, uint keysym)
+    {
         // Always use digit keys from QWERTY, matching Windows/macOS
         if (physicalKey is >= PhysicalKey.Digit0 and <= PhysicalKey.Digit9)
-            return (physicalKey.ToQwertyKey(), keySymbol);
+            return physicalKey.ToQwertyKey();
 
         var key = KeyFromKeysym(keysym);
         if (key != Key.None)
-            return (key, keySymbol);
+            return key;
 
         // Non-latin fallback: cycle through other layout groups
         var layoutCount = keymap.LayoutCount;
@@ -356,15 +361,31 @@ internal static class XkbKeyTransform
             {
                 key = KeyFromKeysym(groupKeysym);
                 if (key != Key.None)
-                    return (key, keySymbol);
+                    return key;
             }
         }
 
         // Ultimate fallback: QWERTY physical key mapping
         if (keysym != 0)
-            return (physicalKey.ToQwertyKey(), keySymbol);
+            return physicalKey.ToQwertyKey();
 
-        return (Key.None, keySymbol);
+        return Key.None;
+    }
+
+    // Standard XKB modifier bit positions
+    private const uint ModShift = 1 << 0;
+    private const uint ModControl = 1 << 2;
+    private const uint ModAlt = 1 << 3;    // Mod1
+    private const uint ModMeta = 1 << 6;   // Mod4 / Super
+
+    public static RawInputModifiers ModifiersFromXkbMask(uint mask)
+    {
+        var mods = RawInputModifiers.None;
+        if ((mask & ModShift) != 0) mods |= RawInputModifiers.Shift;
+        if ((mask & ModControl) != 0) mods |= RawInputModifiers.Control;
+        if ((mask & ModAlt) != 0) mods |= RawInputModifiers.Alt;
+        if ((mask & ModMeta) != 0) mods |= RawInputModifiers.Meta;
+        return mods;
     }
 
     internal static string? FilterKeySymbol(string? text)

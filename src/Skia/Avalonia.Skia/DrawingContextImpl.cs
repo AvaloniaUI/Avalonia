@@ -18,7 +18,8 @@ namespace Avalonia.Skia
     /// </summary>
     internal partial class DrawingContextImpl : IDrawingContextImpl,
         IDrawingContextWithAcrylicLikeSupport,
-        IDrawingContextImplWithEffects
+        IDrawingContextImplWithEffects,
+        IDrawingContextImplWithBackdropSupport
     {
         private IDisposable?[]? _disposables;
         // TODO: Get rid of this value, it's currently used to calculate intermediate sizes for tile brushes
@@ -43,6 +44,9 @@ namespace Avalonia.Skia
         private readonly ISkiaGpuRenderSession? _session;
         private bool _leased;
         private bool _useOpacitySaveLayer;
+        // Number of open intermediate layers (effect, opacity mask, PushLayer, opacity). Plain clip and
+        // transform saves are not counted. See IsBackdropSamplingSafe.
+        private int _intermediateLayerDepth;
 
         /// <summary>
         /// Context create info.
@@ -663,12 +667,12 @@ namespace Avalonia.Skia
             // Get a round rect from the cache.
             var roundRect = SKRoundRectCache.Shared.Get();
 
-            roundRect.SetRectRadii(rc,
-                new[]
-                {
-                    clip.RadiiTopLeft.ToSKPoint(), clip.RadiiTopRight.ToSKPoint(),
-                    clip.RadiiBottomRight.ToSKPoint(), clip.RadiiBottomLeft.ToSKPoint(),
-                });
+            Span<SKPoint> radii = stackalloc SKPoint[4]
+            {
+                clip.RadiiTopLeft.ToSKPoint(), clip.RadiiTopRight.ToSKPoint(),
+                clip.RadiiBottomRight.ToSKPoint(), clip.RadiiBottomLeft.ToSKPoint(),
+            };
+            roundRect.SetRectRadii(rc, radii);
 
             Canvas.ClipRoundRect(roundRect, antialias:true);
 
@@ -701,12 +705,14 @@ namespace Avalonia.Skia
         {
             CheckLease();
             Canvas.SaveLayer(bounds.ToSKRect(), null!);
+            _intermediateLayerDepth++;
         }
 
         public void PopLayer()
         {
             CheckLease();
             RestoreCanvas();
+            _intermediateLayerDepth--;
         }
 
         /// <inheritdoc />
@@ -733,6 +739,8 @@ namespace Avalonia.Skia
                 {
                     Canvas.SaveLayer(new SKPaint { ColorF = new SKColorF(0, 0, 0, (float)opacity) });
                 }
+
+                _intermediateLayerDepth++;
             }
             else
             {
@@ -750,6 +758,7 @@ namespace Avalonia.Skia
             if (useOpacitySaveLayer)
             {
                 RestoreCanvas();
+                _intermediateLayerDepth--;
             }
 
             _currentOpacity = _opacityStack.Pop();
@@ -836,10 +845,26 @@ namespace Avalonia.Skia
         {
             CheckLease();
 
-            var paint = SKPaintCache.Shared.Get();
+            Canvas.SaveLayer(bounds.ToSKRect(), null);
+            _intermediateLayerDepth++;
 
-            Canvas.SaveLayer(bounds.ToSKRect(), paint);
-            _maskStack.Push((Canvas.TotalMatrix, CreatePaint(paint, mask, bounds)));
+            // Mask paints are a plain color or shader, so DstIn applies the mask straight to the layer.
+            // The content of the layer gets the multiply opacity when it is drawn. The mask must not apply it a
+            // second time.
+            var contentOpacity = _currentOpacity;
+            _currentOpacity = 1;
+            PaintWrapper maskPaint;
+            try
+            {
+                maskPaint = CreatePaint(SKPaintCache.Shared.Get(), mask, bounds);
+            }
+            finally
+            {
+                _currentOpacity = contentOpacity;
+            }
+
+            maskPaint.Paint.BlendMode = SKBlendMode.DstIn;
+            _maskStack.Push((Canvas.TotalMatrix, maskPaint));
         }
 
         /// <inheritdoc />
@@ -847,12 +872,6 @@ namespace Avalonia.Skia
         {
             CheckLease();
 
-            var paint = SKPaintCache.Shared.Get();
-            paint.BlendMode = SKBlendMode.DstIn;
-            
-            Canvas.SaveLayer(paint);
-            SKPaintCache.Shared.ReturnReset(paint);
-            
             var (transform, paintWrapper) = _maskStack.Pop();
             Canvas.SetMatrix(transform);
             using (paintWrapper)
@@ -863,8 +882,7 @@ namespace Avalonia.Skia
             SKPaintCache.Shared.Return(paintWrapper.Paint);
 
             RestoreCanvas();
-
-            RestoreCanvas();
+            _intermediateLayerDepth--;
         }
 
         /// <inheritdoc />
@@ -896,6 +914,8 @@ namespace Avalonia.Skia
 
         public object? GetFeature(Type t)
         {
+            if (t == typeof(IPartialPresentationFeature))
+                return (_session as ISkiaGpuRenderSessionWithPartialPresentation)?.PartialPresentation;
             if (t == typeof(ISkiaSharpApiLeaseFeature))
                 return new SkiaLeaseFeature(this);
             return null;
@@ -1016,6 +1036,14 @@ namespace Avalonia.Skia
 
                             var origin = originPoint.ToSKPoint();
 
+                            // Skia leaves the area that no gradient circle reaches unpainted, which only
+                            // happens when the origin is outside the circle. Everywhere else the gradient
+                            // covers the whole area, and a backdrop would show through its transparent parts.
+                            var originOffsetX = originPoint.X - centerPoint.X;
+                            var originOffsetY = originPoint.Y - centerPoint.Y;
+                            var originIsOutside =
+                                originOffsetX * originOffsetX + originOffsetY * originOffsetY >= radiusX * radiusX;
+
                             var endOffset = stopOffsets[stopOffsets.Length - 1];
 
                             var start = origin;
@@ -1056,16 +1084,16 @@ namespace Avalonia.Skia
                                 stopOffsets = reversedStops;
                             }
 
-                            // compose with a background colour of the final stop to match D2D's behaviour of filling with the final color
-                            using (var shader = SKShader.CreateCompose(
-                                       SKShader.CreateColor(stopColors[0]),
-                                       transform.HasValue
-                                           ? SKShader.CreateTwoPointConicalGradient(start, radiusStart, end, radiusEnd,
-                                              stopColors, stopOffsets, tileMode, transform.Value.ToSKMatrix())
-                                           : SKShader.CreateTwoPointConicalGradient(start, radiusStart, end, radiusEnd,
-                                              stopColors, stopOffsets, tileMode)
-                                        )
-                                    )
+                            // Fill that unpainted area with the colour the gradient clamps to, like D2D does.
+                            var gradient = transform.HasValue
+                                ? SKShader.CreateTwoPointConicalGradient(start, radiusStart, end, radiusEnd,
+                                    stopColors, stopOffsets, tileMode, transform.Value.ToSKMatrix())
+                                : SKShader.CreateTwoPointConicalGradient(start, radiusStart, end, radiusEnd,
+                                    stopColors, stopOffsets, tileMode);
+
+                            using (var shader = originIsOutside
+                                       ? SKShader.CreateCompose(SKShader.CreateColor(stopColors[0]), gradient)
+                                       : gradient)
                             {
                                 paintWrapper.Paint.Shader = shader;
                             }

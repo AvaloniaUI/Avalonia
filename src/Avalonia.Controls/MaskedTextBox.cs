@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
+using Avalonia.Controls.Utils;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Logging;
@@ -16,7 +17,7 @@ namespace Avalonia.Controls
              AvaloniaProperty.Register<MaskedTextBox, bool>(nameof(AsciiOnly));
 
         public static readonly StyledProperty<CultureInfo?> CultureProperty =
-             AvaloniaProperty.Register<MaskedTextBox, CultureInfo?>(nameof(Culture), CultureInfo.CurrentCulture);
+             AvaloniaProperty.Register<MaskedTextBox, CultureInfo?>(nameof(Culture), coerce: CoerceCulture);
 
         public static readonly StyledProperty<bool> HidePromptOnLeaveProperty =
              AvaloniaProperty.Register<MaskedTextBox, bool>(nameof(HidePromptOnLeave));
@@ -76,7 +77,11 @@ namespace Avalonia.Controls
             return baseValue;
         }
 
-        public MaskedTextBox() { }
+        private static CultureInfo CoerceCulture(AvaloniaObject sender, CultureInfo? baseValue)
+            => baseValue ?? CultureInfo.CurrentCulture;
+
+        public MaskedTextBox()
+            => CoerceValue(CultureProperty);
 
         /// <summary>
         ///  Constructs the MaskedTextBox with the specified MaskedTextProvider object.
@@ -85,6 +90,7 @@ namespace Avalonia.Controls
             "AVP1012:An AvaloniaObject should use SetCurrentValue when assigning its own StyledProperty or AttachedProperty values",
             Justification = "These values are being explicitly provided by a constructor parameter.")]
         public MaskedTextBox(MaskedTextProvider maskedTextProvider)
+            : this()
         {
             if (maskedTextProvider == null)
             {
@@ -220,13 +226,9 @@ namespace Avalonia.Controls
                 {
                     text = await clipboard.TryGetTextAsync();
                 }
-                catch (TimeoutException)
+                catch (Exception ex) when (ClipboardHelper.IsExpectedClipboardException(ex))
                 {
-                    // Silently ignore.
-                }
-                catch (UnauthorizedAccessException uex)
-                {
-                    Logger.TryGet(LogEventLevel.Warning, LogArea.Control)?.Log(this, "Failed to read text from clipboard: {Error}", uex);
+                    Logger.TryGet(LogEventLevel.Warning, LogArea.Control)?.Log(this, "Failed to read text from clipboard: {Error}", ex);
                 }
 
                 if (text == null)
@@ -352,7 +354,7 @@ namespace Avalonia.Controls
                 }
             }
             else if (change.Property == AsciiOnlyProperty && MaskProvider != null && MaskProvider.AsciiOnly != AsciiOnly
-                 || change.Property == CultureProperty && MaskProvider != null && !MaskProvider.Culture.Equals(Culture))
+                 || change.Property == CultureProperty && MaskProvider != null && !MaskProvider.Culture.Equals(Culture ?? CultureInfo.CurrentCulture))
             {
                 UpdateMaskProvider();
             }

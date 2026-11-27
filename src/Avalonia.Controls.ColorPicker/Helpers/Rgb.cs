@@ -3,19 +3,21 @@
 //
 // Licensed to The Avalonia Project under the MIT License.
 
+using System;
 using Avalonia.Media;
 using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Primitives
 {
     /// <summary>
-    /// Contains and allows modification of Red, Green and Blue components.
+    /// Contains and allows modification of 64bit floating point Red, Green and Blue components.
     /// </summary>
     /// <remarks>
-    ///   The is a specialized struct optimized for performance and memory:
+    ///   This is a specialized struct optimized for performance, memory and high bit-depth:
     ///   <list type="bullet">
-    ///     <item>This is not a read-only struct like <see cref="Color"/> and allows editing the fields</item>
-    ///     <item>Removes the alpha component unnecessary in core calculations</item>
+    ///     <item>High bit-depth per component (64bit floating point instead of 8 bit) to avoid conversion/calculation losses.</item>
+    ///     <item>This is not a read-only struct like <see cref="Color"/> and allows editing the fields.</item>
+    ///     <item>Removes the alpha component unnecessary in core calculations.</item>
     ///     <item>Normalizes RGB components in the range of 0..1 to simplify calculations.</item>
     ///     <item>No component bounds checks or clamping is done.</item>
     ///   </list>
@@ -63,16 +65,17 @@ namespace Avalonia.Controls.Primitives
 
         /// <summary>
         /// Converts this <see cref="Rgb"/> struct into a standard <see cref="Color"/>.
+        /// Warning: Precision will be reduced to 8 bits per component.
         /// </summary>
         /// <param name="alpha">The Alpha component in the range from 0..1.</param>
         /// <returns>A new <see cref="Color"/> representing this <see cref="Rgb"/> struct.</returns>
         public Color ToColor(double alpha = 1.0)
         {
             return Color.FromArgb(
-                (byte)MathUtilities.Clamp(alpha * 255.0, 0x00, 0xFF),
-                (byte)MathUtilities.Clamp(R * 255.0, 0x00, 0xFF),
-                (byte)MathUtilities.Clamp(G * 255.0, 0x00, 0xFF),
-                (byte)MathUtilities.Clamp(B * 255.0, 0x00, 0xFF));
+                (byte)MathUtilities.Clamp(Math.Round(alpha * 255.0), 0x00, 0xFF),
+                (byte)MathUtilities.Clamp(Math.Round(R * 255.0), 0x00, 0xFF),
+                (byte)MathUtilities.Clamp(Math.Round(G * 255.0), 0x00, 0xFF),
+                (byte)MathUtilities.Clamp(Math.Round(B * 255.0), 0x00, 0xFF));
         }
 
         /// <summary>

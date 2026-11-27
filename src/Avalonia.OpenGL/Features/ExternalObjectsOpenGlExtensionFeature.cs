@@ -29,6 +29,9 @@ unsafe partial class ExternalObjectsInterface
     [GetProcAddress("glDeleteMemoryObjectsEXT")]
     public partial void DeleteMemoryObjectsEXT(int n, ref uint objects);
 
+    [GetProcAddress("glMemoryObjectParameterivEXT", true)]
+    public partial void MemoryObjectParameterivEXT(uint memoryObject, int pname, int* parameters);
+
     [GetProcAddress("glTexStorageMem2DEXT")]
     public partial void TexStorageMem2DEXT(int target, int levels, int internalFormat, int width, int height,
         uint memory, ulong offset);
@@ -140,7 +143,7 @@ public class ExternalObjectsOpenGlExtensionFeature : IGlContextExternalObjectsFe
 
     public IGlExportableExternalImageTexture CreateSemaphore(string type) => throw new NotSupportedException();
 
-    public IGlExternalImageTexture ImportImage(IPlatformHandle handle, PlatformGraphicsExternalImageProperties properties)
+    public unsafe IGlExternalImageTexture ImportImage(IPlatformHandle handle, PlatformGraphicsExternalImageProperties properties)
     {
         var handleDescriptor = handle.HandleDescriptor;
 
@@ -156,7 +159,14 @@ public class ExternalObjectsOpenGlExtensionFeature : IGlContextExternalObjectsFe
             {
                 //Skip existing errors
             }
+            if (properties.VulkanProperties?.IsDedicatedAllocation == true && !_ext.IsMemoryObjectParameterivEXTAvailable)
+                throw new NotSupportedException("glMemoryObjectParameterivEXT is required to import dedicated allocations");
             _ext.CreateMemoryObjectsEXT(1, out var memoryObject);
+            if (properties.VulkanProperties?.IsDedicatedAllocation == true)
+            {
+                var dedicated = 1;
+                _ext.MemoryObjectParameterivEXT(memoryObject, GL_DEDICATED_MEMORY_OBJECT_EXT, &dedicated);
+            }
             _ext.ImportMemoryFdEXT(memoryObject, properties.MemorySize, GL_HANDLE_TYPE_OPAQUE_FD_EXT,
                 handle.Handle.ToInt32());
             

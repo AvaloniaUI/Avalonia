@@ -207,6 +207,37 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void MenuItem_Subscribes_Once_To_Style_Set_Command_CanExecuteChanged_When_Added_To_Logical_Tree()
+        {
+            var command = new TestCommand();
+            var target = new MenuItem();
+            var root = new TestRoot
+            {
+                Styles = { new Style(x => x.OfType<MenuItem>()) { Setters = { new Setter(MenuItem.CommandProperty, command) } } },
+                Child = target,
+            };
+
+            Assert.Same(command, target.Command);
+            Assert.Equal(1, command.SubscriptionCount);
+        }
+
+        [Fact]
+        public void MenuItem_Unsubscribes_From_Style_Set_Command_CanExecuteChanged_When_Removed_From_Logical_Tree()
+        {
+            var command = new TestCommand();
+            var target = new MenuItem();
+            var root = new TestRoot
+            {
+                Styles = { new Style(x => x.OfType<MenuItem>()) { Setters = { new Setter(MenuItem.CommandProperty, command) } } },
+                Child = target,
+            };
+
+            root.Child = null;
+
+            Assert.Equal(0, command.SubscriptionCount);
+        }
+
+        [Fact]
         public void MenuItem_Invokes_CanExecute_When_Added_To_Logical_Tree_And_CommandParameter_Changed()
         {
             var command = new TestCommand(p => p is bool value && value);

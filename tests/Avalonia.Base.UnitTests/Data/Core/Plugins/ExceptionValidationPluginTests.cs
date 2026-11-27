@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Avalonia.Base.UnitTests.Data.Core.Plugins
 {
-    public class ExceptionValidationPluginTests
+    public class ExceptionValidationPluginTests : ScopedTestBase
     {
         [Fact]
         public void Produces_BindingNotifications()

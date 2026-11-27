@@ -165,7 +165,10 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
             if (args.Type == RawKeyEventType.KeyUp)
                 state |= IBusModifierMask.ReleaseMask;
 
-            return _context is not null ? _context.ProcessKeyEventAsync((uint)keyVal, (uint)keyCode, (uint)state) : Task.FromResult(false);
+            // IBus expects evdev keycodes, which are X11 keycodes minus 8.
+            return _context is not null
+                ? _context.ProcessKeyEventAsync((uint)keyVal, (uint)(keyCode - 8), (uint)state)
+                : Task.FromResult(false);
         }
 
         public override void SetOptions(TextInputOptions options)

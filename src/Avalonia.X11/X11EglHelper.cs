@@ -11,16 +11,42 @@ namespace Avalonia.X11
     internal static class X11EglHelper
     {
         /// <summary>
-        /// Resolves the <see cref="XVisualInfo"/> that matches the EGL config's native visual id.
+        /// Resolves the <see cref="XVisualInfo"/> to create windows with for the EGL config.
         /// nvidia's driver requires the X11 window visual to match the config used to create the surface,
-        /// otherwise eglCreateWindowSurface fails. Returns null when the config doesn't advertise a visual id
-        /// (e.g. mesa, where any visual works).
+        /// otherwise eglCreateWindowSurface fails, so the config's native visual id is used. Returns null when
+        /// the config doesn't advertise a visual id. On Mesa builds that report stale visual ids for alpha
+        /// configs the server's 32-bit visual is used instead, see <see cref="HasStaleAlphaVisualIds"/>.
         /// </summary>
         public static XVisualInfo? GetVisualInfo(X11Info x11, EglInterface egl, IntPtr display, IntPtr config)
         {
             if (!egl.GetConfigAttrib(display, config, EGL_NATIVE_VISUAL_ID, out var visualId) || visualId == 0)
                 return null;
-            return XGetVisualInfoById(x11.DeferredDisplay, new IntPtr(visualId));
+            var visual = XGetVisualInfoById(x11.DeferredDisplay, new IntPtr(visualId));
+            if (visual is { depth: not 32 }
+                && x11.TransparentVisualInfo is { } transparent
+                && egl.GetConfigAttrib(display, config, EGL_ALPHA_SIZE, out var alphaSize) && alphaSize > 0
+                && HasStaleAlphaVisualIds(egl, display))
+            {
+                Logger.TryGet(LogEventLevel.Verbose, "OpenGL")?.Log(null,
+                    "EGL config {Config}: using 32-bit visual {Visual} instead of native visual {Native}",
+                    config, transparent.visualid, visualId);
+                return XGetVisualInfoById(x11.DeferredDisplay, transparent.visualid);
+            }
+
+            return visual;
+        }
+
+        // Mesa before 24.1 merges the alpha configs of the 32-bit X visual into the ones registered for the
+        // 24-bit default visual, so EGL_NATIVE_VISUAL_ID of every alpha config points at a 24-bit visual and
+        // windows created with it are never alpha-blended by the compositor. Mesa fixed that together with
+        // introducing EGL_MESA_x11_native_visual_id, so its absence on a Mesa display identifies the bug.
+        private static bool HasStaleAlphaVisualIds(EglInterface egl, IntPtr display)
+        {
+            var vendor = egl.QueryString(display, EGL_VENDOR);
+            if (vendor == null || !vendor.Contains("Mesa"))
+                return false;
+            var extensions = egl.QueryString(display, EGL_EXTENSIONS);
+            return extensions?.Contains("EGL_MESA_x11_native_visual_id") != true;
         }
 
         public static XVisualInfo? GetVisualInfo(X11Info x11, EglDisplay display) =>

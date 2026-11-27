@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Avalonia.Base.UnitTests
 {
-    public class AvaloniaObjectTests_Inheritance
+    public class AvaloniaObjectTests_Inheritance : ScopedTestBase
     {
         [Fact]
         public void GetValue_Returns_Inherited_Value_1()

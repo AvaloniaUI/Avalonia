@@ -64,6 +64,30 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(control.Value, expected);
         }
 
+        [Theory]
+        [InlineData("30", null, SpinDirection.Increase, "31")]
+        [InlineData("30", null, SpinDirection.Decrease, "29")]
+        [InlineData("30.00", null, SpinDirection.Increase, "31.00")]
+        [InlineData("30", "1.0", SpinDirection.Increase, "31.0")]
+        [InlineData("30", "0.1", SpinDirection.Increase, "30.1")]
+        public void Step_Keeps_The_Places_Of_The_Value_And_Increment(string value, string? increment,
+            SpinDirection direction, string expected)
+        {
+            RunTest((control, textbox) =>
+            {
+                control.NumberFormat = NumberFormatInfo.InvariantInfo;
+                control.Value = decimal.Parse(value, CultureInfo.InvariantCulture);
+                if (increment is not null)
+                {
+                    control.Increment = decimal.Parse(increment, CultureInfo.InvariantCulture);
+                }
+
+                GetSpinner(control).RaiseEvent(new SpinEventArgs(Spinner.SpinEvent, direction));
+
+                Assert.Equal(expected, control.Text);
+            });
+        }
+
         [Fact]
         public void FormatString_Is_Applied_Immediately()
         {
