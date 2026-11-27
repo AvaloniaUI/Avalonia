@@ -142,6 +142,23 @@ namespace Avalonia.FreeDesktop.AtSpi
         }
 
         /// <summary>
+        /// Gets what a live region announces when its name changes.
+        /// </summary>
+        /// <returns>False when the peer is not a live region or has no name to announce.</returns>
+        internal static bool TryGetLiveAnnouncement(AutomationPeer peer, out string text, out AtSpiLive politeness)
+        {
+            text = peer.GetName();
+            politeness = peer.GetLiveSetting() switch
+            {
+                AutomationLiveSetting.Polite => AtSpiLive.Polite,
+                AutomationLiveSetting.Assertive => AtSpiLive.Assertive,
+                _ => AtSpiLive.None,
+            };
+
+            return politeness != AtSpiLive.None && !string.IsNullOrWhiteSpace(text);
+        }
+
+        /// <summary>
         /// Builds the AT-SPI object attributes reported for this node.
         /// </summary>
         /// <returns>The attributes shared by Accessible.GetAttributes and Collection matching.</returns>
@@ -469,6 +486,9 @@ namespace Avalonia.FreeDesktop.AtSpi
                 eventHandler.EmitPropertyChangeSignal(
                     "accessible-name",
                     new DBusVariant(GetAccessibleName(Peer)));
+
+                if (TryGetLiveAnnouncement(Peer, out var text, out var politeness))
+                    eventHandler.EmitAnnouncementSignal(text, politeness);
             }
             else if (e.Property == AutomationElementIdentifiers.HelpTextProperty)
             {
