@@ -729,6 +729,7 @@ namespace Avalonia.Win32
         {
             _owner = inputRoot;
             CreateDropTarget(inputRoot);
+            UnmanagedMethods.NotifyWinEvent(UnmanagedMethods.EventObjectUIFragmentCreate, _hwnd, 0, 0);
         }
 
         public void Hide()

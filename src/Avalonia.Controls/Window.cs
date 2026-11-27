@@ -16,6 +16,7 @@ using Avalonia.Platform;
 using Avalonia.Reactive;
 using Avalonia.Styling;
 using Avalonia.Utilities;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -1560,6 +1561,17 @@ namespace Avalonia.Controls
         protected override AutomationPeer OnCreateAutomationPeer()
         {
             return new WindowAutomationPeer(this);
+        }
+
+        protected override void OnOpened(EventArgs e)
+        {
+            base.OnOpened(e);
+
+            if (FocusManager.GetFocusedElement() is Visual focusedElement && this.IsVisualAncestorOf(focusedElement))
+                return;
+
+            var firstTabStop = FocusManager.FindFirstFocusableElement();
+            firstTabStop?.Focus(NavigationMethod.Tab);
         }
 
         private static WindowIcon? LoadDefaultIcon()

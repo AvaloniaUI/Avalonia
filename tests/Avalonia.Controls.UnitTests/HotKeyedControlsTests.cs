@@ -99,11 +99,16 @@ namespace Avalonia.Controls.UnitTests
             using var _ = CreateServicesWithFocus();
             
             var keyboardDevice = new KeyboardDevice();
+            var firstTabStop = new TextBox();
             var hotKeyedTextBox = new HotKeyedTextBox { HotKey = new KeyGesture(Key.F, KeyModifiers.Control) };
             var root = PreparedWindow();
-            root.Content = hotKeyedTextBox;
+            root.Content = new StackPanel
+            {
+                Children = { firstTabStop, hotKeyedTextBox },
+            };
             root.Show();
 
+            Assert.Same(firstTabStop, root.FocusManager.GetFocusedElement());
             Assert.False(hotKeyedTextBox.IsFocused);
 
             keyboardDevice.ProcessRawEvent(
