@@ -23,6 +23,14 @@ class WSurface : IPersistentWaylandObject, IWSurface, IWaylandFramebufferSurface
     protected WaylandConnection? Connection { get; private set; }
     public WaylandGlobals? Globals { get; private set; }
     public WlSurface? WlSurface { get; private set; }
+
+    /// <summary>
+    /// UI-thread sink that receives worker→UI events for this surface.
+    /// xdg surfaces and layer surfaces provide their typed proxy; plain
+    /// <see cref="WSurface"/> instances return <c>null</c>.
+    /// </summary>
+    internal virtual WSurfaceEventSinkProxy? EventSink => null;
+
     protected WpFractionalScaleV1? FractionalScale { get; private set; }
     protected WpViewport? Viewport { get; private set; }
     protected int? LastPreferredBufferScale { get; private set; }
@@ -180,6 +188,7 @@ class WSurface : IPersistentWaylandObject, IWSurface, IWaylandFramebufferSurface
         Connection = connection;
         Globals = globals;
         WlSurface = Globals.WlCompositor.CreateSurface(new Listener(this));
+        WlSurface.Tags[typeof(WSurface)] = this;
 
         if (globals.HasFractionalScaling)
         {
@@ -386,6 +395,7 @@ class WSurface : IPersistentWaylandObject, IWSurface, IWaylandFramebufferSurface
             FractionalScale.Dispose();
             FractionalScale = null;
         }
+        WlSurface?.Tags.Remove(typeof(WSurface));
         WlSurface?.Destroy();
         WlSurface = null;
         Globals = null;
@@ -393,7 +403,7 @@ class WSurface : IPersistentWaylandObject, IWSurface, IWaylandFramebufferSurface
     }
 }
 
-class WXdgShellSurface : WSurface, IWXdgShellSurface
+class WXdgShellSurface : WSurface, IWXdgShellSurface, IWXdgPopupParent
 {
     public XdgSurface? XdgSurface { get; private set; }
     private uint? _pendingAckSerial;
@@ -427,10 +437,25 @@ class WXdgShellSurface : WSurface, IWXdgShellSurface
     internal void RegisterPendingChildPopup(WXdgPopup popup) => _pendingChildPopups.Add(popup);
     internal void UnregisterPendingChildPopup(WXdgPopup popup) => _pendingChildPopups.Remove(popup);
 
+    bool IWXdgPopupParent.IsMapped => _mapped;
+    bool IWXdgPopupParent.IsPopupParentReady => _mapped && XdgSurface != null;
+    (int Left, int Top, int Width, int Height)? IWXdgPopupParent.PopupParentGeometry =>
+        LastWindowGeometry;
+    void IWXdgPopupParent.RegisterPendingChildPopup(WXdgPopup popup) =>
+        RegisterPendingChildPopup(popup);
+    void IWXdgPopupParent.UnregisterPendingChildPopup(WXdgPopup popup) =>
+        UnregisterPendingChildPopup(popup);
+
+    XdgPopup IWXdgPopupParent.CreatePopup(
+        XdgSurface popupSurface,
+        XdgPositioner positioner,
+        XdgPopup.Listener listener) =>
+        popupSurface.GetPopup(XdgSurface, positioner, listener);
+
     /// <summary>
     /// The UI-thread event sink associated with this surface.
     /// </summary>
-    internal WSurfaceEventSinkProxy EventSink { get; }
+    internal override WSurfaceEventSinkProxy EventSink { get; }
 
     private Thickness? _shadowExtents;
 
@@ -899,7 +924,7 @@ class WXdgTopLevel : WXdgShellSurface, IWXdgTopLevel
 class WXdgPopup : WXdgShellSurface, IWXdgPopup
 {
     private readonly WXdgPopupEventSinkProxy _popupEventSink;
-    private readonly WXdgShellSurface _parent;
+    private readonly IWXdgPopupParent _parent;
 
     private XdgPopup? _xdgPopup;
     private XdgPopupConfigureBatch _pendingBatch = new();
@@ -907,7 +932,7 @@ class WXdgPopup : WXdgShellSurface, IWXdgPopup
     // 0 is reserved (means "no token"); start at 1 and bump on every reposition.
     private uint _nextRepositionToken = 1;
 
-    public WXdgPopup(WaylandWorker worker, WXdgPopupEventSinkProxy eventSink, WXdgShellSurface parent)
+    public WXdgPopup(WaylandWorker worker, WXdgPopupEventSinkProxy eventSink, IWXdgPopupParent parent)
         : base(worker, eventSink)
     {
         _popupEventSink = eventSink;
@@ -978,7 +1003,7 @@ class WXdgPopup : WXdgShellSurface, IWXdgPopup
         if (_xdgPopup != null) return;                         // already attached
         if (XdgSurface == null) return;                       // we're not connected
         if (_positioner is not { } pos) return;                // UI hasn't supplied positioner yet
-        if (!_parent.IsMapped || _parent.XdgSurface is not { } parentXdgSurface)
+        if (!_parent.IsPopupParentReady)
         {
             // Parent not yet mapped — register; parent will call us back
             // when its first buffer commits.
@@ -992,7 +1017,8 @@ class WXdgPopup : WXdgShellSurface, IWXdgPopup
         try
         {
             _pendingBatch = new();
-            _xdgPopup = XdgSurface.GetPopup(parentXdgSurface, positioner, new PopupListener(this));
+            _xdgPopup = _parent.CreatePopup(
+                XdgSurface, positioner, new PopupListener(this));
         }
         finally
         {
@@ -1038,7 +1064,7 @@ class WXdgPopup : WXdgShellSurface, IWXdgPopup
         // violation (we shouldn't be building a positioner before the
         // parent is mapped) — fall back to assuming origin (0,0) and skip
         // clamping rather than crashing.
-        var parentGeom = _parent.LastWindowGeometry;
+        var parentGeom = _parent.PopupParentGeometry;
         var originX = parentGeom?.Left ?? 0;
         var originY = parentGeom?.Top ?? 0;
 

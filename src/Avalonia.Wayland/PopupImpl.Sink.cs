@@ -20,12 +20,13 @@ partial class PopupImpl
             // thread proxy so they marshal onto the dispatcher.
             var sinkProxy = new WXdgPopupEventSinkProxy(this, WaylandMarshallers.UIThread);
 
-            // The xdg_popup parent is the direct parent surface (toplevel
-            // or another popup). The compositor uses parent-relative
-            // coordinates and is free to reposition the popup; chaining
-            // through the real visual hierarchy lets it constrain each
-            // link's anchor rect against its direct parent.
-            var parentProxy = Parent._parent.SurfaceProxy
+            // The parent is whatever surface advertises popup parenting:
+            // an xdg_surface for toplevels/popups, or the layer surface for
+            // the island. The compositor uses parent-relative coordinates
+            // and is free to reposition the popup; chaining through the real
+            // visual hierarchy lets it constrain each link's anchor rect
+            // against its direct parent.
+            var parentProxy = Parent._parent.PopupParentProxy
                 ?? throw new InvalidOperationException(
                     "Cannot create popup: parent surface has not been mapped yet.");
 

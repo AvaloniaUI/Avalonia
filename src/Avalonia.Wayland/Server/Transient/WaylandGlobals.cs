@@ -11,6 +11,7 @@ using NWayland.Protocols.LinuxDmabufV1;
 using NWayland.Protocols.TextInputUnstableV3;
 using NWayland.Protocols.Viewporter;
 using NWayland.Protocols.Wayland;
+using NWayland.Protocols.Wlr.WlrLayerShellUnstableV1;
 using NWayland.Protocols.XdgDecorationUnstableV1;
 using NWayland.Protocols.XdgForeignUnstableV2;
 using NWayland.Protocols.XdgOutputUnstableV1;
@@ -41,6 +42,13 @@ class WaylandGlobals
     /// as <c>wl_output.mode / wl_output.scale</c>.
     /// </summary>
     public ZxdgOutputManagerV1? XdgOutputManager { get; }
+    /// <summary>
+    /// Bound when the compositor advertises <c>zwlr_layer_shell_v1</c>.
+    /// <c>null</c> on compositors that don't implement the wlr layer-shell
+    /// protocol (GNOME/Mutter); callers must fall back to a regular xdg
+    /// toplevel or another backend.
+    /// </summary>
+    public ZwlrLayerShellV1? LayerShell { get; }
     /// <summary>
     /// Bound only when the compositor advertises
     /// <c>zxdg_decoration_manager_v1</c> AND the platform option
@@ -126,7 +134,7 @@ class WaylandGlobals
             eventSender.Pong(serial);
         }
     }
-    
+
     public WaylandGlobals(WaylandConnection connection, WaylandWorker worker, WaylandPlatformOptions platformOptions,
         WaylandOutputsSinkProxy? outputsSink)
     {
@@ -141,6 +149,10 @@ class WaylandGlobals
         connection.Queue.Roundtrip();
         WlShm = BindRequired<WlShm>(1, 1, new ShmListener(this));
         WlCompositor = BindRequired<WlCompositor>(4, 6, null);
+        // xdg-shell v2 is enough for toplevels and initial popups. The
+        // positioner's replay/reactive requests and popup repositioning are
+        // v3+ and are guarded where they are optional. Some wlroots
+        // compositors (Sway 1.9) still advertise only v2.
         XdgWmBase = BindRequired<XdgWmBase>(3, 4, new XdgWmBaseListener());
         CursorManager = new WaylandCursorManager(connection.Display, WlShm, WlCompositor);
         DataDeviceManager = Bind<WlDataDeviceManager>(3, 3, null);
@@ -154,6 +166,7 @@ class WaylandGlobals
         // v3). Simplifies init-batch gating — same pragmatism as the
         // wl_output v2 minimum.
         XdgOutputManager = Bind<ZxdgOutputManagerV1>(3, 3, null);
+        LayerShell = Bind<ZwlrLayerShellV1>(1, 4, null);
         if (XdgOutputManager != null)
             Outputs.AttachXdgOutputManager(XdgOutputManager);
         // ForceDrawnDecorations is a test/debug option: skip binding the

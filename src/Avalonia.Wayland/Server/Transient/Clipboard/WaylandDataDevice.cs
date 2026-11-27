@@ -159,7 +159,7 @@ partial class WaylandDataDevice : IDisposable
 
         var modifiers = _getKeyboardModifiers();
 
-        _dndSink.OnDragEnter(_dndPosition, mimeTypes, _dndCookie!, sourceEffects, modifiers);
+        _dndSink!.OnDragEnter(_dndPosition, mimeTypes, _dndCookie!, sourceEffects, modifiers);
     }
 
     internal void OnDndMotion(double x, double y)

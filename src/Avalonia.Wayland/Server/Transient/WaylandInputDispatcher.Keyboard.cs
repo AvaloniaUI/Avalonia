@@ -18,7 +18,7 @@ partial class WaylandInputDispatcher
         private readonly XkbContext _xkbContext;
         private readonly XkbComposeTable? _composeTable;
 
-        private WXdgShellSurface? _focusedSurface;
+        private WSurface? _focusedSurface;
         private int _repeatRate;  // keys/sec (0 = disabled)
         private int _repeatDelay; // ms before first repeat
         private XkbCommonKeymap? _keymap;
@@ -134,7 +134,7 @@ partial class WaylandInputDispatcher
             protected override void Enter(WlKeyboard eventSender, uint serial, WlSurface? surface, ReadOnlySpan<byte> keys)
             {
                 handler._focusedSurface = WaylandInputDispatcher.FindSurfaceForWlSurface(surface);
-                handler._focusedSurface?.EventSink.OnKeyRepeatInfo(handler._repeatRate, handler._repeatDelay);
+                handler._focusedSurface?.EventSink?.OnKeyRepeatInfo(handler._repeatRate, handler._repeatDelay);
 
                 if (handler._seat.DataDevice != null)
                     handler._seat.DataDevice.LastInputSerial = serial;
@@ -143,7 +143,7 @@ partial class WaylandInputDispatcher
             protected override void Leave(WlKeyboard eventSender, uint serial, WlSurface? surface)
             {
                 handler._composeState?.Reset();
-                handler._focusedSurface?.EventSink.OnKeyboardLeave();
+                handler._focusedSurface?.EventSink?.OnKeyboardLeave();
                 handler._focusedSurface = null;
                 handler._seat.KeyboardModifiers = RawInputModifiers.None;
                 handler._effectiveMods = 0;
@@ -196,7 +196,7 @@ partial class WaylandInputDispatcher
             {
                 handler._repeatRate = rate;
                 handler._repeatDelay = delay;
-                handler._focusedSurface?.EventSink.OnKeyRepeatInfo(rate, delay);
+                handler._focusedSurface?.EventSink?.OnKeyRepeatInfo(rate, delay);
             }
         }
     }
