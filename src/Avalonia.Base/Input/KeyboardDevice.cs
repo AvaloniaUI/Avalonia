@@ -211,6 +211,12 @@ namespace Avalonia.Input
                         KeyModifiers = keyModifiers
                     });
 
+                    // A LostFocus or GotFocus handler can move focus again. The nested change has raised its own
+                    // events and updated the text input client, so carrying on here with the original target would
+                    // undo it.
+                    if (_focusedElement != element)
+                        return;
+
                     (element as Interactive)?.RaiseEvent(new FocusChangedEventArgs(InputElement.GotFocusEvent)
                     {
                         OldFocusedElement = oldElement,
@@ -218,6 +224,9 @@ namespace Avalonia.Input
                         NavigationMethod = method,
                         KeyModifiers = keyModifiers
                     });
+
+                    if (_focusedElement != element)
+                        return;
 
                     _textInputManager.SetFocusedElement(element);
                     RaisePropertyChanged(nameof(FocusedElement));
