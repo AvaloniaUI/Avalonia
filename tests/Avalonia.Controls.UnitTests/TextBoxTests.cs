@@ -2551,11 +2551,11 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Theory]
-        [InlineData("a\U0001F5C2️", "a")]
+        [InlineData("a\U0001F5C2\uFE0F", "a")]
         [InlineData("a\U0001F1EF\U0001F1F5", "a")]
-        [InlineData("a\U0001F468‍\U0001F4BB", "a\U0001F468")]
-        [InlineData("किः", "कि")]
-        [InlineData("é", "e")]
+        [InlineData("a\U0001F468\u200D\U0001F4BB", "a\U0001F468")]
+        [InlineData("\u0915\u093F\u0903", "\u0915\u093F")]
+        [InlineData("e\u0301", "e")]
         [InlineData("a\U0001F44D\U0001F3FD", "a\U0001F44D")]
         public void Backspace_Should_Delete_Last_Codepoint_With_Its_Variation_Selector_Flag_Pair_Or_Joiner(
             string text, string expected)

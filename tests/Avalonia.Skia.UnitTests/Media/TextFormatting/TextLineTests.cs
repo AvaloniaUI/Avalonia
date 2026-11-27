@@ -2483,14 +2483,14 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         }
 
         [Theory]
-        [InlineData("a\U0001F5C2️", 1)]
-        [InlineData("a☁️", 1)]
-        [InlineData("a1️", 1)]
-        [InlineData("葛\U000E0100", 0)]
+        [InlineData("a\U0001F5C2\uFE0F", 1)]
+        [InlineData("a\u2601\uFE0F", 1)]
+        [InlineData("a1\uFE0F", 1)]
+        [InlineData("\u845B\U000E0100", 0)]
         [InlineData("a\U0001F1EF\U0001F1F5", 1)]
         [InlineData("\U0001F1EF\U0001F1F5\U0001F1FA\U0001F1F8", 4)]
-        [InlineData("a\U0001F468‍\U0001F4BB", 3)]
-        [InlineData("a\U0001F441️‍\U0001F5E8️", 4)]
+        [InlineData("a\U0001F468\u200D\U0001F4BB", 3)]
+        [InlineData("a\U0001F441\uFE0F\u200D\U0001F5E8\uFE0F", 4)]
         public void Backspace_Should_Keep_Variation_Sequences_Flags_And_Joiners_Together(string text, int expectedIndex)
         {
             using (Start())
@@ -2504,13 +2504,13 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         }
 
         [Theory]
-        [InlineData("किः", 2)]
-        [InlineData("கா", 1)]
-        [InlineData("é", 1)]
+        [InlineData("\u0915\u093F\u0903", 2)]
+        [InlineData("\u0B95\u0BBE", 1)]
+        [InlineData("e\u0301", 1)]
         [InlineData("a\U0001F44D\U0001F3FD", 3)]
-        [InlineData("a1️⃣", 3)]
+        [InlineData("a1\uFE0F\u20E3", 3)]
         [InlineData("a\U0001F1EF\U0001F1F5\U0001F1FA", 5)]
-        [InlineData("a‍", 1)]
+        [InlineData("a\u200D", 1)]
         public void Backspace_Should_Remove_Last_Codepoint_Of_Cluster(string text, int expectedIndex)
         {
             using (Start())
