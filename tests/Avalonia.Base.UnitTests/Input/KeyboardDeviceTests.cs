@@ -146,6 +146,96 @@ namespace Avalonia.Base.UnitTests.Input
             Assert.Equal(1, raised);
         }
 
+        private class HandlingControl : Control
+        {
+            public int Handled { get; private set; }
+
+            protected override void OnKeyDown(KeyEventArgs e)
+            {
+                if (e.Key == Key.V && e.KeyModifiers == KeyModifiers.Control)
+                {
+                    ++Handled;
+                    e.Handled = true;
+                }
+                base.OnKeyDown(e);
+            }
+        }
+
+        private static RawKeyEventArgs CtrlV(KeyboardDevice device, IInputRoot root) =>
+            new RawKeyEventArgs(device, 0, root, RawKeyEventType.KeyDown, Key.V,
+                RawInputModifiers.Control, PhysicalKey.V, "v");
+
+        [Fact]
+        public void Focused_Control_Should_Handle_Key_Before_Ancestor_KeyBinding()
+        {
+            var target = new KeyboardDevice();
+            var focused = new HandlingControl();
+            var parent = new Panel { Children = { focused } };
+            var root = new TestRoot(parent);
+            var raised = 0;
+
+            parent.KeyBindings.Add(new KeyBinding
+            {
+                Gesture = new KeyGesture(Key.V, KeyModifiers.Control),
+                Command = new Utilities.DelegateCommand(() => ++raised),
+            });
+
+            target.SetFocusedElement(focused, NavigationMethod.Pointer, 0);
+            target.ProcessRawEvent(CtrlV(target, root));
+
+            Assert.Equal(1, focused.Handled);
+            Assert.Equal(0, raised);
+        }
+
+        [Fact]
+        public void KeyBinding_On_Focused_Control_Should_Take_Priority_Over_Its_OnKeyDown()
+        {
+            var target = new KeyboardDevice();
+            var focused = new HandlingControl();
+            var root = new TestRoot(focused);
+            var raised = 0;
+
+            focused.KeyBindings.Add(new KeyBinding
+            {
+                Gesture = new KeyGesture(Key.V, KeyModifiers.Control),
+                Command = new Utilities.DelegateCommand(() => ++raised),
+            });
+
+            target.SetFocusedElement(focused, NavigationMethod.Pointer, 0);
+            target.ProcessRawEvent(CtrlV(target, root));
+
+            Assert.Equal(0, focused.Handled);
+            Assert.Equal(1, raised);
+        }
+
+        [Fact]
+        public void Inner_KeyBinding_Should_Take_Priority_Over_Outer_KeyBinding()
+        {
+            var target = new KeyboardDevice();
+            var focused = new Control();
+            var parent = new Panel { Children = { focused } };
+            var root = new TestRoot(parent);
+            var inner = 0;
+            var outer = 0;
+
+            parent.KeyBindings.Add(new KeyBinding
+            {
+                Gesture = new KeyGesture(Key.V, KeyModifiers.Control),
+                Command = new Utilities.DelegateCommand(() => ++inner),
+            });
+            root.KeyBindings.Add(new KeyBinding
+            {
+                Gesture = new KeyGesture(Key.V, KeyModifiers.Control),
+                Command = new Utilities.DelegateCommand(() => ++outer),
+            });
+
+            target.SetFocusedElement(focused, NavigationMethod.Pointer, 0);
+            target.ProcessRawEvent(CtrlV(target, root));
+
+            Assert.Equal(1, inner);
+            Assert.Equal(0, outer);
+        }
+
         [Fact]
         public void Control_Focus_Should_Be_Set_Before_FocusedElement_Raises_PropertyChanged()
         {
