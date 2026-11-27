@@ -85,6 +85,26 @@ namespace Avalonia.Base.UnitTests.Layout
         }
 
         [Fact]
+        public void Making_Control_Visible_During_Attachment_Does_Not_Invalidate_Detached_Descendant()
+        {
+            var descendant = new LayoutTestControl();
+            var parent = new Decorator
+            {
+                Child = descendant,
+                IsVisible = false,
+            };
+            parent.AttachedToVisualTree += (_, _) => parent.IsVisible = true;
+
+            var root = new LayoutTestRoot { Child = parent };
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            Assert.True(parent.IsVisible);
+            Assert.True(descendant.IsAttachedToVisualTree);
+            Assert.True(descendant.IsMeasureValid);
+            Assert.True(descendant.IsArrangeValid);
+        }
+
+        [Fact]
         public void Arranges_InvalidateArranged_Control()
         {
             var control = new LayoutTestControl();
