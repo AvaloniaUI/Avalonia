@@ -2491,6 +2491,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         [InlineData("\U0001F1EF\U0001F1F5\U0001F1FA\U0001F1F8", 4)]
         [InlineData("a\U0001F468\u200D\U0001F4BB", 3)]
         [InlineData("a\U0001F441\uFE0F\u200D\U0001F5E8\uFE0F", 4)]
+        [InlineData("a\U0001F3F4\U000E0067\U000E0062\U000E0065\U000E006E\U000E0067\U000E007F", 3)]
         public void Backspace_Should_Keep_Variation_Sequences_Flags_And_Joiners_Together(string text, int expectedIndex)
         {
             using (Start())

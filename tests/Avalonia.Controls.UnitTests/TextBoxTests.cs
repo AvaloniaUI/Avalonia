@@ -2554,6 +2554,7 @@ namespace Avalonia.Controls.UnitTests
         [InlineData("a\U0001F5C2\uFE0F", "a")]
         [InlineData("a\U0001F1EF\U0001F1F5", "a")]
         [InlineData("a\U0001F468\u200D\U0001F4BB", "a\U0001F468")]
+        [InlineData("a\U0001F3F4\U000E0067\U000E0062\U000E0065\U000E006E\U000E0067\U000E007F", "a\U0001F3F4")]
         [InlineData("\u0915\u093F\u0903", "\u0915\u093F")]
         [InlineData("e\u0301", "e")]
         [InlineData("a\U0001F44D\U0001F3FD", "a\U0001F44D")]
