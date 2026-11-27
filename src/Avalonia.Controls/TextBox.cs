@@ -1632,20 +1632,7 @@ namespace Avalonia.Controls
 
                             if (!DeleteSelection())
                             {
-                                var characterHit = _presenter.GetNextCharacterHit(LogicalDirection.Backward);
-
-                                var backspacePosition = characterHit.FirstCharacterIndex + characterHit.TrailingLength;
-
-                                var lineIndex = _presenter.TextLayout.GetLineIndexFromCharacterIndex(caretIndex, true);
-
-                                var backspaceCharacterHit = _presenter.TextLayout.TextLines[lineIndex]
-                                    .GetBackspaceCaretCharacterHit(new CharacterHit(caretIndex));
-
-                                if (backspaceCharacterHit.FirstCharacterIndex > backspacePosition &&
-                                    backspaceCharacterHit.FirstCharacterIndex < caretIndex)
-                                {
-                                    backspacePosition = backspaceCharacterHit.FirstCharacterIndex;
-                                }
+                                var backspacePosition = TextSegmentation.BackspaceStart(caretIndex, text);
 
                                 if (caretIndex != backspacePosition)
                                 {
