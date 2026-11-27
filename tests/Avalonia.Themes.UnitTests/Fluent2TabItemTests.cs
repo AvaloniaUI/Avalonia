@@ -1,5 +1,6 @@
 using System.Linq;
 using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Shapes;
 using Avalonia.Layout;
 using Avalonia.Themes.Fluent2;
@@ -44,13 +45,26 @@ public class Fluent2TabItemTests() : ThemeTestBase(typeof(Fluent2Theme))
         Assert.True(pill.Width > pill.Height);
     }
 
-    private Rectangle ShowSelectedPill(Dock placement)
+    [Fact]
+    public void Selected_Pill_Is_At_The_Strip_Edge_For_Right_Placement_When_Header_Is_Narrower()
+    {
+        var pill = ShowSelectedPill(Dock.Right, "A", "A much longer header");
+        var item = pill.FindAncestorOfType<TabItem>()!;
+        var strip = pill.FindAncestorOfType<ItemsPresenter>()!;
+
+        var pillRight = Assert.NotNull(pill.TranslatePoint(new Point(pill.Bounds.Width, 0), strip)).X;
+        var expected = strip.Bounds.Width - item.BorderThickness.Right - pill.Margin.Right;
+
+        Assert.Equal(expected, pillRight, 3);
+    }
+
+    private Rectangle ShowSelectedPill(Dock placement, string firstHeader = "First", string secondHeader = "Second")
     {
         CreateAttachedTheme();
         var target = new TabControl
         {
             TabStripPlacement = placement,
-            ItemsSource = new[] { new TabItem { Header = "First" }, new TabItem { Header = "Second" } },
+            ItemsSource = new[] { new TabItem { Header = firstHeader }, new TabItem { Header = secondHeader } },
             SelectedIndex = 0,
         };
         var window = new Window { Content = target };

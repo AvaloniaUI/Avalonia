@@ -81,7 +81,6 @@
     <Setter Property="Margin" Value="0" />
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
-    <Setter Property="HorizontalAlignment" Value="Left"/>
     <Setter Property="VerticalAlignment" Value="Center"/>
     <Setter Property="BackgroundSizing" Value="OuterBorderEdge"/>
     <Setter Property="Template">
