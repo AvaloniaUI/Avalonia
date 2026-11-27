@@ -100,9 +100,14 @@ namespace Avalonia.OpenGL.Egl
                 var previousApi = _egl.QueryApi();
                 _egl.BindApi(_config.Api);
                 IntPtr ctx;
+                // Read the error before eglBindAPI restores the previous API: a successful EGL call
+                // resets the error to EGL_SUCCESS.
+                var createError = EGL_SUCCESS;
                 try
                 {
                     ctx = _egl.CreateContext(_display, Config, share?.Context ?? IntPtr.Zero, _config.Attributes);
+                    if (ctx == IntPtr.Zero)
+                        createError = _egl.GetError();
                 }
                 finally
                 {
@@ -111,7 +116,7 @@ namespace Avalonia.OpenGL.Egl
                 }
                 if (ctx == IntPtr.Zero)
                 {
-                    var ex = OpenGlException.GetFormattedException("eglCreateContext", _egl);
+                    var ex = OpenGlException.GetFormattedEglException("eglCreateContext", createError);
                     offscreenSurface?.Dispose();
                     throw ex;
                 }
