@@ -22,10 +22,22 @@ namespace Avalonia.Platform.Surfaces
         ILockedFramebuffer Lock(IRenderTarget.RenderTargetSceneInfo sceneInfo, out FramebufferLockProperties properties);
 
         bool RetainsFrameContents => false;
+
+        /// <summary>
+        /// Indicates that <see cref="Lock"/> provides <see cref="FramebufferLockProperties.PartialPresentation"/>.
+        /// </summary>
+        bool SupportsPartialPresentation => false;
     }
     
     [PrivateApi]
-    public record struct FramebufferLockProperties(bool PreviousFrameIsRetained);
+    public record struct FramebufferLockProperties(bool PreviousFrameIsRetained)
+    {
+        /// <summary>
+        /// Partial presentation of the locked framebuffer. The framebuffer is only presented on disposal
+        /// if <see cref="IPartialPresentationFeature.Succeeded"/> was called.
+        /// </summary>
+        public IPartialPresentationFeature? PartialPresentation { get; init; }
+    }
 
     /// <summary>
     /// For simple cases when framebuffer is always available

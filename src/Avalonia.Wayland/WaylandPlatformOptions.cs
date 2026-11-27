@@ -82,7 +82,7 @@ public class WaylandPlatformOptions
 
     /// <summary>
     /// Enables partial presentation when supported by the rendering backend.
-    /// Currently supported with the EGL window surface backend.
+    /// Currently supported with the EGL window surface and software rendering backends.
     /// When <c>null</c>, uses the platform default, which is currently disabled.
     /// </summary>
     public bool? UsePartialPresentation { get; set; }

@@ -44,6 +44,7 @@ namespace Avalonia.Skia
         {
             RetainsPreviousFrameContents = !_hadConversionShim
                                            && _renderTarget?.RetainsFrameContents == true,
+            SupportsPartialPresentation = _renderTarget?.SupportsPartialPresentation == true,
             IsSuitableForDirectRendering = true
         };
 
@@ -72,11 +73,17 @@ namespace Avalonia.Skia
             canvas.Save();
             canvas.ResetMatrix();
 
+            var partialPresentation = lockProperties.PartialPresentation;
+            // The conversion shim draws into its own bitmap, so the framebuffer contents can't be tracked.
+            if (partialPresentation != null && _conversionShim != null)
+                partialPresentation = new UntrackedPartialPresentation(partialPresentation);
+
             var createInfo = new DrawingContextImpl.CreateInfo
             {
                 Surface = _framebufferSurface,
                 Dpi = framebuffer.Dpi,
-                ScaleDrawingToDpi = _useScaledDrawing
+                ScaleDrawingToDpi = _useScaledDrawing,
+                PartialPresentation = partialPresentation
             };
 
             properties = new()
@@ -156,6 +163,18 @@ namespace Avalonia.Skia
             _framebufferSurface?.Dispose();
             _framebufferSurface = null;
             _currentFramebufferAddress = IntPtr.Zero;
+        }
+
+        private sealed class UntrackedPartialPresentation(IPartialPresentationFeature inner)
+            : IPartialPresentationFeature
+        {
+            public IPartialPresentationBuffer? Buffer => null;
+
+            public void SetDirtyRects(ReadOnlySpan<PixelRect> frameDirtyRects,
+                ReadOnlySpan<PixelRect> bufferDirtyRects) =>
+                inner.SetDirtyRects(frameDirtyRects, bufferDirtyRects);
+
+            public void Succeeded() => inner.Succeeded();
         }
 
         /// <summary>
