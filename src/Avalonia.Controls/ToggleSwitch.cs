@@ -31,7 +31,8 @@ namespace Avalonia.Controls
             OnContentProperty.Changed.AddClassHandler<ToggleSwitch>((x, e) => x.OnContentChanged(e));
             IsCheckedProperty.Changed.AddClassHandler<ToggleSwitch>((x, e) =>
             {
-                if ((e.NewValue != null) && (e.NewValue is bool val))
+                // Not e.NewValue: an IsCheckedChanged handler may have changed IsChecked again (#22570).
+                if (x.IsChecked is bool val)
                 {
                     x.UpdateKnobPos(val);
                 }
