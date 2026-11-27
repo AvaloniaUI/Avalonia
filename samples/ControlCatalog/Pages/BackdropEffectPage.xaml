@@ -53,5 +53,59 @@
         <ComboBoxItem>Volatile</ComboBoxItem>
       </ComboBox>
     </StackPanel>
+
+    <!-- Bug repro: the same frosted panel, but inside a ScrollViewer that has an OpacityMask. The mask makes
+         the renderer open an intermediate layer around the panel's backdrop, which used to stop the blur from
+         rendering at all. -->
+    <TextBlock TextWrapping="Wrap"
+               Text="Bug repro: a BackdropEffect blur inside a ScrollViewer with an OpacityMask. The mask fades the ScrollViewer's content out at the edges, and while it is applied an intermediate layer stays open around the blurred panel. The blur used to disappear in that case; it should always stay visible. Scroll and toggle the mask to compare." />
+
+    <StackPanel Orientation="Horizontal" Spacing="8">
+      <CheckBox x:Name="MaskToggle" IsChecked="True" IsCheckedChanged="MaskToggle_IsCheckedChanged">
+        OpacityMask on the ScrollViewer
+      </CheckBox>
+      <TextBlock VerticalAlignment="Center" Text="Cache mode:" />
+      <ComboBox SelectedIndex="0" SelectionChanged="MaskedCacheMode_SelectionChanged">
+        <ComboBoxItem>Default</ComboBoxItem>
+        <ComboBoxItem>Retained</ComboBoxItem>
+        <ComboBoxItem>Volatile</ComboBoxItem>
+      </ComboBox>
+    </StackPanel>
+
+    <Border CornerRadius="8" ClipToBounds="True" Height="320" MaxWidth="660">
+      <ScrollViewer x:Name="MaskedScroll" HorizontalScrollBarVisibility="Disabled">
+        <ScrollViewer.OpacityMask>
+          <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+            <GradientStop Color="#00000000" Offset="0" />
+            <GradientStop Color="#FF000000" Offset="0.15" />
+            <GradientStop Color="#FF000000" Offset="0.85" />
+            <GradientStop Color="#00000000" Offset="1" />
+          </LinearGradientBrush>
+        </ScrollViewer.OpacityMask>
+        <Panel Height="700">
+          <!-- Busy scrolled content so the blur is clearly visible. -->
+          <StackPanel Margin="20,16" Spacing="12">
+            <Border Height="90" CornerRadius="8" Background="#FFEF4444" />
+            <Border Height="90" CornerRadius="8" Background="#FFF59E0B" />
+            <Border Height="90" CornerRadius="8" Background="#FF10B981" />
+            <Border Height="90" CornerRadius="8" Background="#FF3B82F6" />
+            <Border Height="90" CornerRadius="8" Background="#FF8B5CF6" />
+            <Border Height="90" CornerRadius="8" Background="#FFEC4899" />
+          </StackPanel>
+          <!-- Frosted overlay: its BackdropEffect must keep blurring while the mask is applied. -->
+          <Border Width="340" Height="150"
+                  HorizontalAlignment="Center" VerticalAlignment="Center"
+                  CornerRadius="16" Background="#30FFFFFF"
+                  BorderBrush="#50FFFFFF" BorderThickness="1"
+                  x:Name="MaskedFrosted">
+            <Border.BackdropEffect>
+              <BlurEffect Radius="18" />
+            </Border.BackdropEffect>
+            <TextBlock Text="Backdrop blur (masked)" FontSize="18" Foreground="White"
+                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+          </Border>
+        </Panel>
+      </ScrollViewer>
+    </Border>
   </StackPanel>
 </ContentPage>

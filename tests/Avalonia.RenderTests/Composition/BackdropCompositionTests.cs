@@ -724,9 +724,9 @@ public class BackdropCompositionTests : TestBase
 
     // A container with an effect, which opens an intermediate layer for its whole subtree. A red/blue split is
     // drawn into that intermediate layer, and a visual over it can have a backdrop effect. The split is not in
-    // the root layer, so only the volatile path can read it, and the retained path has to skip. The container's
-    // effect has a zero radius: it opens the intermediate layer but does not blur, so the split stays hard
-    // unless the backdrop effect blurs it. Returns the visual over the split.
+    // the root layer, so only the volatile path can read it, and a retained backdrop visual has to fall back to
+    // the volatile draw. The container's effect has a zero radius: it opens the intermediate layer but does not
+    // blur, so the split stays hard unless the backdrop effect blurs it. Returns the visual over the split.
     private static CompositionSolidColorVisual BuildAncestorEffectTree(Harness h, bool withBackdrop,
         bool volatileBackdrop)
     {
@@ -785,12 +785,13 @@ public class BackdropCompositionTests : TestBase
     }
 
     [Fact]
-    public void Retained_Backdrop_Under_Parent_Effect_Is_Skipped_Not_Garbage()
+    public void Retained_Backdrop_Under_Parent_Effect_Falls_Back_To_Volatile()
     {
-        // The retained path cannot read the intermediate layer that the parent's effect opened. The backdrop
-        // effect is skipped, so the frame equals the same tree without a backdrop effect.
+        // The parent's effect opens an intermediate layer, which the retained path cannot read. The draw falls
+        // back to the volatile path, which reads through the layer: the backdrop effect is drawn correctly and
+        // equals a full redraw of the same tree.
         using var reference = new Harness(200, 200);
-        BuildAncestorEffectTree(reference, withBackdrop: false, volatileBackdrop: false);
+        BuildAncestorEffectTree(reference, withBackdrop: true, volatileBackdrop: true);
         reference.Retained(false);
         reference.Frame();
         reference.Frame();
@@ -805,13 +806,65 @@ public class BackdropCompositionTests : TestBase
         });
         Assert.Null(ex); // no exception
 
-        // There is an AABB (so drawing is attempted), but the backdrop effect is skipped: the frame equals the
-        // reference without it, and the split stays a hard red/blue edge.
         Assert.NotNull(inner.Server.BackdropState);
         Assert.NotNull(inner.Server.BackdropState!.Aabb);
+        AssertSimilar(h.Fb, reference.Fb); // equals a full redraw of the same tree
+
+        // The split was read through the intermediate layer and blurred: the split column (root x 100) is a
+        // red/blue mix, and some colour has spread a few pixels into each half.
+        var seam = h.Px(100, 100);
+        Assert.InRange((int)seam.Red, 40, 220);
+        Assert.InRange((int)seam.Blue, 40, 220);
+        Assert.True(h.Px(98, 100).Blue > 30, $"blur should bleed blue left of the seam, got {h.Px(98, 100)}");
+        Assert.True(h.Px(102, 100).Red > 30, $"blur should bleed red right of the seam, got {h.Px(102, 100)}");
+    }
+
+    [Fact]
+    public void Retained_Backdrop_Refreshes_Snapshot_After_Intermediate_Layer_Closes()
+    {
+        // While the intermediate layer of the parent's effect is open, the retained backdrop visual draws the
+        // volatile way and its snapshot is not refreshed. When the layer closes, the accumulated input dirty
+        // rect has to refresh the snapshot with the change that happened only while the layer was open.
+        static (CompositionContainerVisual Container, CompositionSolidColorVisual Behind) Build(
+            Harness h, bool withEffect, double behindY)
+        {
+            h.Root.Children.Add(h.Rect(Colors.White, 0, 0, 200, 200));
+            h.Root.Children.Add(h.Rect(Colors.Blue, 0, 0, 200, 30));
+            var container = h.Compositor.CreateContainerVisual();
+            container.ClipToBounds = false;
+            if (withEffect)
+                container.Effect = Blur(0); // opens an intermediate layer, no blur of its own
+            var behind = h.Rect(Colors.Red, 20, behindY, 40, 40);
+            container.Children.Add(behind);
+            var backdropVisual = h.Rect(Colors.Transparent, 40, 40, 120, 120);
+            backdropVisual.BackdropEffect = Blur(5);
+            backdropVisual.BackdropEffectCache = MakeRetainedCacheMode(h.Compositor);
+            container.Children.Add(backdropVisual);
+            h.Root.Children.Add(container);
+            return (container, behind);
+        }
+
+        using var reference = new Harness(200, 200);
+        Build(reference, withEffect: false, behindY: 120);
+        reference.Frame();
+        reference.Frame();
+
+        using var h = new Harness(200, 200);
+        var (container, behind) = Build(h, withEffect: true, behindY: 40);
+        h.Frame();
+        h.Frame();
+
+        // The change behind the backdrop visual happens while the intermediate layer is still open.
+        h.Retained(true);
+        behind.Offset = new Vector3D(20, 120, 0);
+        h.Frame();
+
+        // The layer closes: the next draw refreshes the snapshot from the accumulated input dirty rect.
+        container.Effect = null;
+        h.Frame();
+        h.Frame();
+
         AssertSimilar(h.Fb, reference.Fb);
-        Assert.True(h.Px(98, 100).Red > 200 && h.Px(98, 100).Blue < 40, $"seam must stay hard, got {h.Px(98, 100)}");
-        Assert.True(h.Px(102, 100).Blue > 200 && h.Px(102, 100).Red < 40, $"seam must stay hard, got {h.Px(102, 100)}");
     }
 
     [Fact]

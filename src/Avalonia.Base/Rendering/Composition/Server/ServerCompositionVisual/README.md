@@ -207,16 +207,19 @@ written.
   transparent pixels. This is a limit of the Skia backend, see the TODO in `DrawVolatileBackdropEffect`.
 - A backdrop visual reads the backdrop only inside its own backdrop bounds. The effect sees the content mirrored
   at the edges of the bounds. So a change outside of the AABB never changes the output.
-- Retained and volatile produce the same pixels, with two exceptions that are described below: under an
-  intermediate layer, and for a rotated visual that is partly outside of the layer. Apart from that the mode is a
-  performance choice only.
+- Retained and volatile produce the same pixels, with one exception that is described below: for a rotated visual
+  that is partly outside of the layer. Under an intermediate layer the retained path draws the volatile way (see
+  below), so the two modes match there, including that exception. Apart from that the mode is a performance choice
+  only.
 - Every layer has its own backdrop. A backdrop visual inside a bitmap cache reads the bitmap cache layer and never
   sees dirty rects of the layer around it. The cached visual's own backdrop effect is the exception: it is drawn into
   the outer layer and reads from it.
 - A retained backdrop visual needs its whole input marked dirty when the dirty rects behind it are not in the working
   set yet at the time the update walk reaches it. This happens under a dirty parent (its rect is collected after its
   subtree) and when children were added, removed or reordered in the parent chain.
-- The retained path reads the layer directly and cannot read an intermediate layer, so it is skipped while one is
-  open (`IsBackdropSamplingSafe`). The volatile path is handled by the backend and reads through intermediate
-  layers.
+- The retained path reads the layer directly and cannot read an intermediate layer, so while one is open
+  (`IsBackdropSamplingSafe` false) the draw falls back to the volatile path. The snapshot and its input dirty rect
+  are kept: the walks keep accumulating the input dirty rect while the fallback is active, so the first safe draw
+  refreshes the snapshot with everything that changed in between. The volatile path is handled by the backend and
+  reads through intermediate layers.
 - A root layer without readable pixels (PDF, picture recording) draws no backdrop effects.

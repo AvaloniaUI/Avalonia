@@ -214,16 +214,22 @@ partial class ServerCompositionVisual
                 return;
             var bounds = visibleBounds.ToRect();
 
+            // The retained path reads the layer directly and cannot read the backdrop while an intermediate
+            // layer (effect, opacity mask, opacity) is open. Fall back to the volatile draw, which the backend
+            // reads through open intermediate layers, so a retained effect keeps rendering under an OpacityMask
+            // and friends instead of disappearing. The snapshot and its input dirty rect are kept: the walks
+            // keep accumulating the input dirty rect while the fallback is active, so the next safe draw
+            // catches the snapshot up on everything that changed in between. For a rotated visual that is
+            // partly outside of the layer this drops the retained path's repeated edge pixels (see the TODO in
+            // DrawVolatileBackdropEffect).
+            if (!backdropCanvas.IsBackdropSamplingSafe)
+            {
+                backdropCanvas.DrawVolatileBackdropEffect(bounds, visual.BackdropEffect!);
+                return;
+            }
+
             if (state.IsRetained)
             {
-                // The retained path cannot read the backdrop while an intermediate layer is open. Draw no
-                // effect and drop the snapshot: a new one refreshes the whole AABB when reading works again.
-                if (!backdropCanvas.IsBackdropSamplingSafe)
-                {
-                    state.DisposeSnapshot();
-                    return;
-                }
-
                 // The snapshot covers only the part of the AABB that is inside of the layer.
                 var snapshotBounds = new LtrbPixelRect(
                     Math.Max(aabbInLayerPixels.Left, 0), Math.Max(aabbInLayerPixels.Top, 0),
