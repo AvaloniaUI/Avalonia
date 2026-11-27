@@ -19,7 +19,8 @@ partial class WindowImpl
 
         public Sink(WindowImpl parent, bool secondShow) : base(parent)
         {
-            _handle = Parent.Client.CreateTopLevelHandle(new WXdgTopLevelEventSinkProxy(this, WaylandMarshallers.UIThread));
+            _handle = Parent.Client.CreateTopLevelHandle(new WXdgTopLevelEventSinkProxy(this, WaylandMarshallers.UIThread),
+                Parent._sessionName);
             _surfaceProxy = _handle.Proxy;
             Parent._handle = _handle;
             Parent._surfaceProxy = _surfaceProxy;
@@ -28,6 +29,8 @@ partial class WindowImpl
             _initialBatch = initialBatch;
 
             Parent.ApplyConfigureBatch(initialBatch);
+            if (initialBatch.SessionRestored && initialBatch.Size is { Width: > 0, Height: > 0 })
+                Parent._restoredSize = Parent.ClientSize;
 
             // If compositor didn't provide a size, auto-size
             if (!secondShow && initialBatch.Size is not { Width: > 0, Height: > 0 })

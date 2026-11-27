@@ -14,6 +14,7 @@ using NWayland.Protocols.Wayland;
 using NWayland.Protocols.XdgDecorationUnstableV1;
 using NWayland.Protocols.XdgForeignUnstableV2;
 using NWayland.Protocols.XdgOutputUnstableV1;
+using NWayland.Protocols.XdgSessionManagementV1;
 using NWayland.Protocols.XdgShell;
 
 namespace Avalonia.Wayland.Server.Transient;
@@ -49,6 +50,11 @@ class WaylandGlobals
     /// every toplevel (no SSD negotiation will be attempted).
     /// </summary>
     public ZxdgDecorationManagerV1? XdgDecorationManager { get; }
+    /// <summary>
+    /// Opened only when <see cref="WaylandPlatformOptions.UseSessionManagement"/> is set and the compositor
+    /// advertises <c>xdg_session_manager_v1</c>.
+    /// </summary>
+    public XdgSession? Session { get; }
     public string? AppId { get; }
     public bool UsePartialPresentation { get; }
 
@@ -162,6 +168,8 @@ class WaylandGlobals
         XdgDecorationManager = platformOptions.ForceDrawnDecorationsInternal
             ? null
             : Bind<ZxdgDecorationManagerV1>(1, 1, null);
+        if (platformOptions.UseSessionManagement && Bind<XdgSessionManagerV1>(1, 1, null) is { } sessionManager)
+            Session = new XdgSession(sessionManager, connection, worker, platformOptions);
         
         // Seats may have been announced before the data-device manager / text-input
         // manager were bound — InputDispatcher backfills now and constructs the

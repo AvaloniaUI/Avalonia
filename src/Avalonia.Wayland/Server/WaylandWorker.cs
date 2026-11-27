@@ -38,6 +38,11 @@ partial class WaylandWorker
     private HashSet<IPersistentWaylandObject> _connectedObjects = new();
 
 
+    /// <summary>
+    /// The compositor session last confirmed for this application, recovered on reconnect. Worker thread only.
+    /// </summary>
+    public string? SessionId { get; set; }
+
     public WaylandWorker(IRawEventGrouperDispatchQueue inputDispatchQueue)
     {
         InputDispatchQueue = inputDispatchQueue;
