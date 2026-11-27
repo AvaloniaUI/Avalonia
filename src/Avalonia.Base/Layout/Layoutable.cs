@@ -133,6 +133,13 @@ namespace Avalonia.Layout
         public static readonly StyledProperty<bool> UseLayoutRoundingProperty =
             AvaloniaProperty.Register<Layoutable, bool>(nameof(UseLayoutRounding), defaultValue: true, inherits: true);
 
+        /// <summary>
+        /// Defines the uniform scale that ancestor layout transforms apply to the control, which
+        /// layout rounding takes into account.
+        /// </summary>
+        internal static readonly StyledProperty<double> LayoutTransformScaleProperty =
+            AvaloniaProperty.Register<Layoutable, double>("LayoutTransformScale", defaultValue: 1.0, inherits: true);
+
         private bool _measuring;
         private Size? _previousMeasure;
         private Rect? _previousArrange;
@@ -154,7 +161,8 @@ namespace Avalonia.Layout
                 MaxHeightProperty,
                 MarginProperty,
                 HorizontalAlignmentProperty,
-                VerticalAlignmentProperty);
+                VerticalAlignmentProperty,
+                LayoutTransformScaleProperty);
         }
 
         private static bool ValidateDimension(double value) => double.IsNaN(value) || ValidateMinimumDimension(value);
@@ -741,6 +749,13 @@ namespace Avalonia.Layout
 
                 if (useLayoutRounding)
                 {
+                    // The origin is in the parent's coordinate space, which is not scaled by a
+                    // layout transform that this control is the root of.
+                    if (IsSet(LayoutTransformScaleProperty) && this.GetVisualParent<Layoutable>() is { } parent)
+                    {
+                        scale = LayoutHelper.GetLayoutScale(parent);
+                    }
+
                     origin = LayoutHelper.RoundLayoutPoint(origin, scale);
                 }
 
