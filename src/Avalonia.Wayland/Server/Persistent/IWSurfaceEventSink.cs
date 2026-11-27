@@ -46,7 +46,7 @@ internal interface IWSurfaceEventSink
     void OnDragLeave();
     void OnDrop(Point position, RawInputModifiers modifiers);
 
-    void OnScaleChanged(double scale);
+    void OnScaleChanged(double scale, double desktopScale);
 
     /// <summary>
     /// Pushed from the worker whenever this surface's set of

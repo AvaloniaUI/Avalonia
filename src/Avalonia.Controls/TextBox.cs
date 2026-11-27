@@ -12,6 +12,7 @@ using Avalonia.Controls.Utils;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
+using Avalonia.Input.TextInput;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Logging;
@@ -377,8 +378,12 @@ namespace Avalonia.Controls
         private TextPresenter? _presenter;
         private ScrollViewer? _scrollViewer;
         private readonly TextBoxTextInputMethodClient _imClient = new();
+        private long _clipboardEditVersion;
+        private long _clipboardOperation;
+        private Window? _clipboardWindow;
         private readonly UndoRedoHelper<UndoRedoState> _undoRedoHelper;
         private bool _isUndoingRedoing;
+        private bool _isApplyingInputMethodCommit;
         private TextMutationKind _textMutationKind;
         // Coercion runs before the new value is committed, so a snapshot taken there would capture the old text.
         private bool _needsUndoRedoSnapshotAfterTextChange;
@@ -417,6 +422,7 @@ namespace Avalonia.Controls
 
         public TextBox()
         {
+            this.Bind(TextInputOptions.MultilineProperty, this.GetObservable(AcceptsReturnProperty), BindingPriority.Style);
             var horizontalScrollBarVisibility = Observable.CombineLatest(
                 this.GetObservable(AcceptsReturnProperty),
                 this.GetObservable(TextWrappingProperty),
@@ -1012,6 +1018,9 @@ namespace Avalonia.Controls
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
+            _clipboardWindow = TopLevel.GetTopLevel(this) as Window;
+            if (_clipboardWindow is not null)
+                _clipboardWindow.Deactivated += OnClipboardWindowDeactivated;
 
             if (_presenter != null)
             {
@@ -1034,6 +1043,10 @@ namespace Avalonia.Controls
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnDetachedFromVisualTree(e);
+            _clipboardEditVersion++;
+            if (_clipboardWindow is not null)
+                _clipboardWindow.Deactivated -= OnClipboardWindowDeactivated;
+            _clipboardWindow = null;
 
             if (_presenter != null)
             {
@@ -1044,6 +1057,8 @@ namespace Avalonia.Controls
 
             _imClient.SetPresenter(null, null);
         }
+
+        private void OnClipboardWindowDeactivated(object? sender, EventArgs e) => _clipboardEditVersion++;
 
         private void PresenterPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
@@ -1060,6 +1075,12 @@ namespace Avalonia.Controls
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
+            if (change.Property == TextProperty || change.Property == SelectionStartProperty ||
+                change.Property == SelectionEndProperty || change.Property == CaretIndexProperty ||
+                (change.Property == IsFocusedProperty && !IsFocused) || change.Property == IsReadOnlyProperty ||
+                change.Property == PasswordCharProperty || change.Property == RevealPasswordProperty)
+                _clipboardEditVersion++;
+
             base.OnPropertyChanged(change);
 
             if (change.Property == TextProperty)
@@ -1087,6 +1108,9 @@ namespace Avalonia.Controls
                 change.Property == RevealPasswordProperty)
             {
                 UpdateCommandStates();
+                if (change.Property == IsReadOnlyProperty)
+                    RaiseEvent(new TextInputMethodClientRequeryRequestedEventArgs
+                    { RoutedEvent = InputMethod.TextInputMethodClientRequeryRequestedEvent });
             }
             else if (change.Property == CaretIndexProperty)
             {
@@ -1162,6 +1186,9 @@ namespace Avalonia.Controls
 
         protected override void OnLostFocus(FocusChangedEventArgs e)
         {
+            // The input method must finish composition while this client still has its editor
+            // and original selection. The manager's later SetClient(null) is too late.
+            _imClient.Reset();
             base.OnLostFocus(e);
 
             if ((ContextFlyout == null || !ContextFlyout.IsOpen) &&
@@ -1194,6 +1221,46 @@ namespace Avalonia.Controls
             {
                 HandleTextInput(e.Text);
                 e.Handled = true;
+            }
+        }
+
+        internal void ApplyInputMethodCommit(string text, int replacementStart, int replacementLength, int cursorPosition)
+        {
+            if (IsReadOnly)
+                return;
+
+            SnapshotUndoRedo();
+            var wasApplying = _isApplyingInputMethodCommit;
+            _isApplyingInputMethodCommit = true;
+            try
+            {
+                var insertionStart = Math.Min(SelectionStart, SelectionEnd);
+                if (replacementStart != 0 || replacementLength != 0)
+                {
+                    DeleteSelection();
+                    var length = Text?.Length ?? 0;
+                    insertionStart = (int)Math.Clamp((long)insertionStart + replacementStart, 0, length);
+                    SetCurrentValue(SelectionStartProperty, insertionStart);
+                    SetCurrentValue(SelectionEndProperty,
+                        (int)Math.Clamp((long)insertionStart + replacementLength, insertionStart, length));
+                }
+
+                if (text.Length > 0)
+                    RaiseEvent(new TextInputEventArgs { RoutedEvent = TextInputEvent, Text = text });
+                else if (replacementLength > 0)
+                    DeleteSelection();
+
+                if (cursorPosition >= 0)
+                {
+                    var cursor = (int)Math.Clamp((long)insertionStart + cursorPosition, 0, Text?.Length ?? 0);
+                    SetCurrentValue(CaretIndexProperty, cursor);
+                    ClearSelection();
+                }
+            }
+            finally
+            {
+                _isApplyingInputMethodCommit = wasApplying;
+                SnapshotUndoRedo();
             }
         }
 
@@ -1302,6 +1369,9 @@ namespace Avalonia.Controls
         /// </summary>
         public async void Cut()
         {
+            if (IsReadOnly || IsPasswordBox)
+                return;
+            _imClient.Reset();
             var text = GetSelection();
 
             if (string.IsNullOrEmpty(text))
@@ -1309,12 +1379,12 @@ namespace Avalonia.Controls
                 return;
             }
 
+            var version = _clipboardEditVersion;
+            var operation = ++_clipboardOperation;
             var eventArgs = new RoutedEventArgs(CuttingToClipboardEvent);
             RaiseEvent(eventArgs);
-            if (!eventArgs.Handled)
+            if (!eventArgs.Handled && version == _clipboardEditVersion && operation == _clipboardOperation)
             {
-                SnapshotUndoRedo();
-
                 var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
 
                 if (clipboard == null)
@@ -1331,6 +1401,9 @@ namespace Avalonia.Controls
                     return;
                 }
 
+                if (version != _clipboardEditVersion || operation != _clipboardOperation || IsReadOnly)
+                    return;
+                SnapshotUndoRedo();
                 DeleteSelection();
             }
         }
@@ -1340,6 +1413,10 @@ namespace Avalonia.Controls
         /// </summary>
         public async void Copy()
         {
+            if (IsPasswordBox)
+                return;
+            _imClient.Reset();
+            ++_clipboardOperation;
             var text = GetSelection();
 
             if (string.IsNullOrEmpty(text))
@@ -1377,6 +1454,9 @@ namespace Avalonia.Controls
 
         private async Task PasteCoreAsync(IClipboard? clipboard)
         {
+            if (IsReadOnly)
+                return;
+            _imClient.Reset();
             var eventArgs = new PastingFromClipboardEventArgs(PastingFromClipboardEvent, clipboard);
             RaiseEvent(eventArgs);
             if (eventArgs.Handled || clipboard is null)
@@ -1384,6 +1464,8 @@ namespace Avalonia.Controls
                 return;
             }
 
+            var version = _clipboardEditVersion;
+            var operation = ++_clipboardOperation;
             string? text = null;
 
             try
@@ -1401,6 +1483,8 @@ namespace Avalonia.Controls
                 return;
             }
 
+            if (version != _clipboardEditVersion || operation != _clipboardOperation || IsReadOnly)
+                return;
             SnapshotUndoRedo();
             HandleTextInput(text);
         }
@@ -1843,6 +1927,8 @@ namespace Avalonia.Controls
                 return;
             }
 
+            // Finalize composition before hit testing and moving the selection into committed text.
+            _imClient.Reset();
             var text = Text;
             var clickInfo = e.GetCurrentPoint(this);
 
@@ -2664,7 +2750,7 @@ namespace Avalonia.Controls
 
         private void SnapshotUndoRedo(bool ignoreChangeCount = true)
         {
-            if (IsUndoEnabled)
+            if (IsUndoEnabled && !_isApplyingInputMethodCommit)
             {
                 if (ignoreChangeCount ||
                     !_hasDoneSnapshotOnce ||

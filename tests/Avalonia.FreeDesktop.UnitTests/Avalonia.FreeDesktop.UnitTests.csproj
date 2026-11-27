@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>$(AvsCurrentTargetFramework)</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <IsTestProject>true</IsTestProject>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <Import Project="../../build/UnitTests.NetCore.targets" />
+  <Import Project="../../build/UnitTests.NetFX.props" />
+  <Import Project="../../build/XUnit.props" />
+  <Import Project="../../build/SharedVersion.props" />
+  <ItemGroup>
+    <ProjectReference Include="../../src/Avalonia.FreeDesktop/Avalonia.FreeDesktop.csproj" />
+    <ProjectReference Include="../Avalonia.UnitTests/Avalonia.UnitTests.csproj" />
+    <Using Include="Xunit" />
+  </ItemGroup>
+</Project>

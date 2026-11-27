@@ -924,6 +924,7 @@ namespace Avalonia.X11
                 // Occurs once the window has been mapped, which is the earliest the extents
                 // can be retrieved, so invoke event to force update of TopLevel.FrameSize.
                 Resized?.Invoke(ClientSize, WindowResizeReason.Unspecified);
+                (_imeControl as IX11InputMethodWithInputPane)?.UpdateClientSize(ClientSize);
             }
 
             if (property == _x11.Atoms._NET_WM_STATE)
@@ -965,6 +966,7 @@ namespace Avalonia.X11
                     {
                         _realSize = newSize;
                         Resized?.Invoke(ClientSize, WindowResizeReason.Unspecified);
+                        (_imeControl as IX11InputMethodWithInputPane)?.UpdateClientSize(ClientSize);
                     }
                 }
 
@@ -1165,6 +1167,9 @@ namespace Avalonia.X11
             {
                 return _nativeControlHost;
             }
+
+            if (featureType == typeof(IInputPane))
+                return _ime as IInputPane;
 
             if (featureType == typeof(IClipboard))
             {
@@ -1403,6 +1408,7 @@ namespace Avalonia.X11
                 _realSize = pixelSize;
                 _selfResizeRequestSerial = resizeRequestSerial;
                 Resized?.Invoke(ClientSize, reason);
+                (_imeControl as IX11InputMethodWithInputPane)?.UpdateClientSize(ClientSize);
             }
         }
         
@@ -1488,7 +1494,7 @@ namespace Avalonia.X11
         public TouchDevice TouchDevice => _touch;
 
         public IPopupImpl? CreatePopup() 
-            => _platform.Options.OverlayPopups ? null : new X11Window(_platform, this);
+            => (_platform.Options.OverlayPopups || _platform.IsUbuntuTouch) ? null : new X11Window(_platform, this);
 
         public void Activate() => _mode.Activate();
 

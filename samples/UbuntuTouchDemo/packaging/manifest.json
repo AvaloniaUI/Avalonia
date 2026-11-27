@@ -1,0 +1,10 @@
+{
+  "name": "avalonia.inputdemo",
+  "title": "Avalonia Input",
+    "version": "0.2.6",
+  "description": "Native Ubuntu Touch input from Avalonia source.",
+  "maintainer": "Mi Lattanzio <mi@polecola.it>",
+  "architecture": "arm64",
+  "framework": "ubuntu-touch-24.04-2.x",
+  "hooks": { "inputdemo": { "apparmor": "inputdemo.apparmor", "desktop": "inputdemo.desktop" } }
+}

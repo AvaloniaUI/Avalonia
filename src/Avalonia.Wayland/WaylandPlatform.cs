@@ -4,6 +4,7 @@ using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using Avalonia.Controls.Platform;
 using Avalonia.FreeDesktop;
+using Avalonia.FreeDesktop.UbuntuTouch;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Platform;
@@ -68,12 +69,13 @@ class WaylandPlatform
             : new ManagedDispatcherImpl(null);
         Dispatcher.InitializeUIThreadDispatcher(dispatcherImpl);
         
-        var clipboardImpl = new WaylandClipboardImpl(worker);
+        IClipboardImpl clipboardImpl = options.IsUbuntuTouch
+            ? new ContentHubClipboard() : new WaylandClipboardImpl(worker);
         var clipboard = new Input.Platform.Clipboard(clipboardImpl);
 
         AvaloniaLocator.CurrentMutable
 
-            .Bind<IWindowingPlatform>().ToConstant(new WaylandTopLevelFactory(worker.Client))
+            .Bind<IWindowingPlatform>().ToConstant(new WaylandTopLevelFactory(worker.Client, options.IsUbuntuTouch))
             .Bind<IRenderLoop>().ToConstant(worker.RenderLoop)
             .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(KeyModifiers.Control))
             .Bind<KeyGestureFormatInfo>()

@@ -1,0 +1,18 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="UbuntuTouchDemo.InputDialog"
+        KeyboardNavigation.TabNavigation="Cycle">
+  <Grid Margin="16">
+    <ScrollViewer MaxWidth="340" VerticalAlignment="Center"
+                  HorizontalAlignment="Stretch">
+      <StackPanel Spacing="12">
+        <TextBlock Text="Dialog text" FontSize="20" />
+        <TextBox x:Name="InputField" MinHeight="48" PlaceholderText="Enter text" />
+        <Button Content="Close" MinHeight="48"
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                Click="OnCloseClick" />
+      </StackPanel>
+    </ScrollViewer>
+  </Grid>
+</UserControl>

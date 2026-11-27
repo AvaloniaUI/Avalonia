@@ -23,6 +23,7 @@
   </ItemGroup>
 
   <ItemGroup Label="InternalsVisibleTo">
+    <InternalsVisibleTo Include="Avalonia.FreeDesktop.UnitTests, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.X11, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.Wayland, PublicKey=$(AvaloniaPublicKey)" />
   </ItemGroup>

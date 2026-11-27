@@ -31,6 +31,8 @@ class WaylandWorkerClient
     }
 
     public Compositor Compositor { get; }
+    internal double InitialRenderScaling { get; set; } = 1;
+    internal double InitialDesktopScaling { get; set; } = 1;
 
     /// <summary>Shared platform-wide input-dispatch queue (any-thread safe).</summary>
     public IRawEventGrouperDispatchQueue InputDispatchQueue { get; }

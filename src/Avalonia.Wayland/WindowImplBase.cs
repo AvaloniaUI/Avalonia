@@ -42,6 +42,8 @@ internal abstract partial class WindowBaseImpl : IWindowBaseImpl
     protected WindowBaseImpl(WaylandWorkerClient client)
     {
         Client = client;
+        RenderScaling = client.InitialRenderScaling;
+        DesktopScaling = client.InitialDesktopScaling;
         Compositor = client.Compositor;
         Mouse = MouseDevice.Primary;
         Touch = new TouchDevice();
@@ -49,7 +51,7 @@ internal abstract partial class WindowBaseImpl : IWindowBaseImpl
     }
 
     public Compositor Compositor { get; }
-    public double DesktopScaling => 1;
+    public double DesktopScaling { get; private set; } = 1;
     public IPlatformHandle? Handle => null;
 
     public Size ClientSize
@@ -65,11 +67,11 @@ internal abstract partial class WindowBaseImpl : IWindowBaseImpl
     public abstract IPlatformRenderSurface[] Surfaces { get; }
 
     // Wayland doesn't expose toplevel positions, so the "screen" space is the
-    // toplevel's buffer-relative logical space (DesktopScaling is 1). Popups
-    // report their offset within that space.
+    // toplevel's compositor-local space. DesktopScaling converts that space
+    // to Avalonia logical units when the application supplies its own UI scale.
     public virtual PixelPoint Position => default;
-    public Point PointToClient(PixelPoint point) => new(point.X - Position.X, point.Y - Position.Y);
-    public PixelPoint PointToScreen(Point point) => new((int)point.X + Position.X, (int)point.Y + Position.Y);
+    public Point PointToClient(PixelPoint point) => new((point.X - Position.X) / DesktopScaling, (point.Y - Position.Y) / DesktopScaling);
+    public PixelPoint PointToScreen(Point point) => new((int)(point.X * DesktopScaling) + Position.X, (int)(point.Y * DesktopScaling) + Position.Y);
 
     /// <summary>
     /// Top-left of the window geometry within the buffer, in logical pixels, as the UI
@@ -160,12 +162,20 @@ internal abstract partial class WindowBaseImpl : IWindowBaseImpl
     /// </summary>
     internal abstract WXdgShellSurfaceProxy? SurfaceProxy { get; }
 
-    protected void UpdateScaling(double scale)
+    protected void UpdateScaling(double scale, double desktopScale)
     {
-        if (Math.Abs(scale - RenderScaling) < 1e-6)
+        if (Math.Abs(scale - RenderScaling) < 1e-6 && Math.Abs(desktopScale - DesktopScaling) < 1e-6)
             return;
+        var oldDesktopScale = DesktopScaling;
+        var newClientSize = ClientSize * (oldDesktopScale / desktopScale);
+        DesktopScaling = desktopScale;
         RenderScaling = scale;
         ScalingChanged?.Invoke(scale);
+        if (Math.Abs(oldDesktopScale - desktopScale) > 1e-6)
+        {
+            ClientSize = newClientSize;
+            Resized?.Invoke(ClientSize, WindowResizeReason.DpiChange);
+        }
         Client.AnyThreadWakeupRenderLoop();
     }
 
@@ -267,11 +277,11 @@ internal abstract partial class WindowBaseImpl : IWindowBaseImpl
         // Configure/close are surface-role-specific (xdg_toplevel vs xdg_popup
         // carry different payloads). Subclasses implement the matching
         // worker→UI interface (IWXdgTopLevelEventSink / IWXdgPopupEventSink).
-        public virtual void OnScaleChanged(double scale)
+        public virtual void OnScaleChanged(double scale, double desktopScale)
         {
             if (IsDisposed)
                 return;
-            Parent.UpdateScaling(scale);
+            Parent.UpdateScaling(scale, desktopScale);
         }
 
         public virtual void OnSurfaceOutputsChanged(IReadOnlyList<object> outputIds)

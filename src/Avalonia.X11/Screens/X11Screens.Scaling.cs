@@ -231,6 +231,12 @@ internal partial class X11Screens
             }
         }
 
+        if (config == null && !forceAuto && global == 1 && platform.IsUbuntuTouch &&
+            Avalonia.FreeDesktop.UbuntuTouch.UbuntuTouchPlatform.GetScale(Environment.GetEnvironmentVariable("GRID_UNIT_PX")) is { } scale &&
+            Environment.GetEnvironmentVariable("AVALONIA_GLOBAL_SCALE_FACTOR") is null &&
+            Environment.GetEnvironmentVariable("AVALONIA_SCREEN_SCALE_FACTORS") is null)
+            return new PostMultiplyScalingProvider(new NullScalingProvider(), scale);
+
         IScalingProvider provider;
         if (config != null)
             provider = new UserConfiguredScalingProvider(config.NamedConfig, config.IndexedConfig);

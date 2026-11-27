@@ -1560,6 +1560,171 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Theory]
+        [InlineData("abcdef", 3, 3, "X", -2, 2, -1, "aXdef", 2)]
+        [InlineData("abcdef", 3, 3, "", -2, 2, -1, "adef", 1)]
+        [InlineData("abcdef", 2, 4, "X", -1, 1, 0, "aXef", 1)]
+        [InlineData("abcdef", 3, 3, "X", -99, 1, 1, "Xbcdef", 1)]
+        public void Input_Method_Commit_Uses_Replacement_And_Cursor(string initial, int start, int end,
+            string text, int replacementStart, int replacementLength, int cursor, string expected, int expectedCursor)
+        {
+            using var app = UnitTestApplication.Start(Services);
+            var target = new TextBox { Template = CreateTemplate(), Text = initial };
+            target.ApplyTemplate();
+            target.SelectionStart = start;
+            target.SelectionEnd = end;
+            Assert.True(GetInputMethodClient(target).CommitText(text, replacementStart, replacementLength, cursor));
+            Assert.Equal(expected, target.Text);
+            Assert.Equal(expectedCursor, target.CaretIndex);
+            target.Undo();
+            // Replacement is a normal edit and remains undoable.
+            Assert.Equal(initial, target.Text);
+            target.Redo();
+            Assert.Equal(expected, target.Text);
+        }
+
+        [Fact]
+        public void Input_Method_Commit_Respects_Editing_Constraints()
+        {
+            using var app = UnitTestApplication.Start(Services);
+            var target = new TextBox { Template = CreateTemplate(), Text = "ab", MaxLength = 4 };
+            target.ApplyTemplate();
+            target.CaretIndex = 2;
+            var client = GetInputMethodClient(target);
+            client.CommitText("cdef\nignored", 0, 0, -1);
+            Assert.Equal("abcd", target.Text);
+            target.IsReadOnly = true;
+            client.CommitText("", -4, 4, -1);
+            Assert.Equal("abcd", target.Text);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void Pending_Clipboard_Edit_Does_Not_Use_Changed_Selection(bool cut)
+        {
+            using var app = UnitTestApplication.Start(Services);
+            var clipboard = new DelayedClipboard();
+            var target = CreateTextBoxInTopLevel(clipboard);
+            if (cut) target.Cut(); else target.Paste();
+            target.SelectionStart = 0;
+            target.SelectionEnd = 1;
+            // Returning to the original selection still invalidates the operation.
+            target.SelectionStart = 1;
+            target.SelectionEnd = 3;
+            clipboard.Complete();
+            Avalonia.Threading.Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+            Assert.Equal("abcd", target.Text);
+        }
+
+        [Fact]
+        public void Pending_Paste_Does_Not_Replace_External_Text()
+        {
+            using var app = UnitTestApplication.Start(Services);
+            var clipboard = new DelayedClipboard();
+            var target = CreateTextBoxInTopLevel(clipboard);
+            target.Paste();
+            target.Text = "replacement";
+            clipboard.Complete();
+            Avalonia.Threading.Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+            Assert.Equal("replacement", target.Text);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void Pending_Clipboard_Edit_Allows_Focus_Returning_From_Menu(bool cut)
+        {
+            using var app = UnitTestApplication.Start(FocusServices);
+            var clipboard = new DelayedClipboard();
+            var target = CreateTextBoxInTopLevel(clipboard);
+            // A menu invokes the command before returning focus to its target.
+            Assert.False(target.IsFocused);
+            if (cut) target.Cut(); else target.Paste();
+            Assert.True(target.Focus());
+            clipboard.Complete();
+            Avalonia.Threading.Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+            Assert.Equal(cut ? "ad" : "apasted", target.Text);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void Pending_Clipboard_Edit_Rejects_Focus_Loss_And_Return(bool cut)
+        {
+            using var app = UnitTestApplication.Start(FocusServices);
+            var clipboard = new DelayedClipboard();
+            var target = CreateTextBoxInTopLevel(clipboard);
+            target.ClearSelectionOnLostFocus = false;
+            Assert.True(target.Focus());
+            if (cut) target.Cut(); else target.Paste();
+            TopLevel.GetTopLevel(target)!.FocusManager!.Focus(null);
+            Assert.False(target.IsFocused);
+            Assert.True(target.Focus());
+            clipboard.Complete();
+            Avalonia.Threading.Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+            Assert.Equal("abcd", target.Text);
+        }
+
+        private sealed class DelayedClipboard : IClipboardImpl
+        {
+            private readonly TaskCompletionSource<IAsyncDataTransfer?> _read = new();
+            private readonly TaskCompletionSource _write = new();
+            public Task<IAsyncDataTransfer?> TryGetDataAsync() => _read.Task;
+            public Task SetDataAsync(IAsyncDataTransfer data) => _write.Task;
+            public Task ClearAsync() => Task.CompletedTask;
+            public void Complete()
+            {
+                var transfer = new DataTransfer();
+                transfer.Add(DataTransferItem.CreateText("paste"));
+                _read.SetResult(transfer);
+                _write.SetResult();
+            }
+        }
+
+        [Fact]
+        public void PasswordChar_Marks_Input_Client_Sensitive_And_AcceptsReturn_Sets_Multiline()
+        {
+            using var app = UnitTestApplication.Start(Services);
+            var target = new TextBox { Template = CreateTemplate(), PasswordChar = '*', AcceptsReturn = true };
+            target.ApplyTemplate();
+            Assert.True(GetInputMethodClient(target).IsSensitive);
+            Assert.True(TextInputOptions.GetMultiline(target));
+            target.RevealPassword = true;
+            Assert.True(GetInputMethodClient(target).IsSensitive);
+            target.AcceptsReturn = false;
+            Assert.False(TextInputOptions.GetMultiline(target));
+        }
+
+        [Fact]
+        public void Focus_Loss_Resets_Composition_Before_Detaching_Input_Client()
+        {
+            using var app = UnitTestApplication.Start(FocusServices);
+            var target = new TextBox { Template = CreateTemplate(), Text = "" };
+            var other = new TextBox { Template = CreateTemplate() };
+            var panel = new StackPanel();
+            panel.Children.Add(target);
+            panel.Children.Add(other);
+            var root = new TestRoot(panel);
+            target.ApplyTemplate();
+            other.ApplyTemplate();
+            target.Focus();
+            var client = GetInputMethodClient(target);
+            client.SetPreeditText("ciao", 4);
+            var reset = false;
+            client.ResetRequested += (_, _) =>
+            {
+                if (!reset)
+                {
+                    reset = true;
+                    client.CommitText("ciao", 0, 0, -1);
+                }
+            };
+            other.Focus();
+            Assert.True(reset);
+            Assert.Equal("ciao", target.Text);
+        }
+
         public static TheoryData<Type> ExpectedClipboardExceptions =>
         [
             typeof(TimeoutException),

@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using Avalonia.FreeDesktop;
+using Avalonia.FreeDesktop.DBusIme.Maliit;
 using Avalonia.Platform;
 using Avalonia.Wayland.Server;
 using Avalonia.Wayland.Server.Persistent;
@@ -11,13 +12,21 @@ namespace Avalonia.Wayland;
 class WaylandTopLevelFactory : IWindowingPlatform
 {
     private readonly WaylandWorkerClient _client;
+    private readonly bool _ubuntuTouch;
+    private readonly MaliitInputMethodManager? _maliit;
+    private readonly bool _textInputEnabled;
 
-    public WaylandTopLevelFactory(WaylandWorkerClient client)
+    public WaylandTopLevelFactory(WaylandWorkerClient client, bool ubuntuTouch = false)
     {
         _client = client;
+        _ubuntuTouch = ubuntuTouch;
+        var module = Environment.GetEnvironmentVariable("AVALONIA_IM_MODULE");
+        _textInputEnabled = module != "none";
+        if (module == "maliit" || ubuntuTouch && string.IsNullOrEmpty(module))
+            _maliit = new MaliitInputMethodManager();
     }
 
-    public IWindowImpl CreateWindow() => new WindowImpl(_client);
+    public IWindowImpl CreateWindow() => new WindowImpl(_client, _ubuntuTouch, _maliit, _textInputEnabled);
 
     public ITopLevelImpl CreateEmbeddableTopLevel() => throw new System.NotSupportedException();
 
