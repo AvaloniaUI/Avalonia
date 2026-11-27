@@ -75,12 +75,16 @@ internal partial class ServerCompositionVisual
                 _childrenChangedParentChainCount = _childrenChangedParentChainCountStack.Pop();
                 if (visual.Cache.IsDirty)
                     AddToDirtyRegion(visual._subTreeBounds);
+                // The visual is dirty for render when this is set, so the outer layer gets its bounds anyway.
+                if (visual._cacheNeedsFullInvalidate)
+                    visual.Cache.InvalidateProperties();
             }
         }
         
         private bool NeedToPushBoundsAffectingProperties(ServerCompositionVisual node)
         {
-            return (node._isDirtyForRenderInSubgraph || node._needsToAddExtraDirtyRectToDirtyRegion || node._contentChanged);
+            return (node._isDirtyForRenderInSubgraph || node._needsToAddExtraDirtyRectToDirtyRegion || node._contentChanged
+                    || node._cacheNeedsFullInvalidate);
         }
 
         private bool IsBitmapCacheSkipped(ServerCompositionVisual node) =>
@@ -235,6 +239,7 @@ internal partial class ServerCompositionVisual
             node._needsToAddExtraDirtyRectToDirtyRegion = false;
             node._contentChanged = false;
             node._childrenChanged = false;
+            node._cacheNeedsFullInvalidate = false;
         }
 
         private void FinalizeSubtreeBounds(ServerCompositionVisual node)

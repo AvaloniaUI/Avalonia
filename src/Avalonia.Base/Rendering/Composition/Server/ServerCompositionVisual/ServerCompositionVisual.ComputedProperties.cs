@@ -33,6 +33,10 @@ partial class ServerCompositionVisual
     // Updated by RecomputeOwnProperties pass
     private LtrbRect? _ownContentBounds;
 
+    // Set on a bitmap cache root when its whole cache layer must be redrawn. Handled by the update walk.
+    // The cache layer draws the root without its transform, clip and opacity, so changes to those do not set it.
+    private bool _cacheNeedsFullInvalidate;
+
     // The bounds of this visual and its subtree
     // Coordinate space: local
     // Updated by: PreSubgraph, PostSubraph (recursive)
@@ -106,6 +110,12 @@ partial class ServerCompositionVisual
         _needsBoundingBoxUpdate |= needsBoundingBoxUpdate;
         _isDirtyForRender |= dirtyForRender;
         
+        // Extra dirty rects (for example, of removed children) are dropped below, because the bounds of a dirty
+        // visual cover them. A bitmap cache root adds its bounds only to the outer layer, so its cache layer
+        // loses these rects and must be redrawn in full.
+        if (dirtyForRender && Cache != null && (_needsToAddExtraDirtyRectToDirtyRegion || additionalDirtyRegion))
+            _cacheNeedsFullInvalidate = true;
+
         // If node itself is dirty for render, we don't need to keep track of extra dirty rects
         _needsToAddExtraDirtyRectToDirtyRegion = !dirtyForRender && (_needsToAddExtraDirtyRectToDirtyRegion || additionalDirtyRegion);
     }
@@ -128,6 +138,9 @@ partial class ServerCompositionVisual
             if (BackdropEffect != null && BackdropEffectBoundsSource == BackdropEffectBoundsSource.Layout
                                        && Size.X > 0 && Size.Y > 0)
                 _ownContentBounds = LtrbRect.FullUnion(_ownContentBounds, new LtrbRect(0, 0, Size.X, Size.Y));
+            // The old own content bounds are lost here, so the cache layer is redrawn as a whole.
+            if (Cache != null)
+                _cacheNeedsFullInvalidate = true;
             setDirtyForRender = setDirtyBounds = true;
         }
 

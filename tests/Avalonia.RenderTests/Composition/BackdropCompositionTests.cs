@@ -43,87 +43,6 @@ public class BackdropCompositionTests : TestBase
     private static ImmutableDropShadowEffect DropShadow(double offset, double blur) =>
         new(offset, offset, blur, Colors.Black, 1);
 
-    private sealed class FuncFramebufferSurface : IFramebufferPlatformSurface
-    {
-        private readonly Func<IFramebufferRenderTarget> _cb;
-        public FuncFramebufferSurface(Func<IFramebufferRenderTarget> cb) => _cb = cb;
-        public IFramebufferRenderTarget CreateFramebufferRenderTarget() => _cb();
-    }
-
-    // A compositor that draws into an SKBitmap framebuffer, with one container visual (`Root`) for the tests
-    // to fill. `Retained` sets PreviousFrameIsRetained for the next frames.
-    private sealed class Harness : IDisposable
-    {
-        private readonly ManualRenderTimer _timer = new();
-        private readonly CompositingRenderer _renderer;
-        private readonly TestRenderRoot _root;
-        private bool _retained;
-
-        public Compositor Compositor { get; }
-        public CompositionContainerVisual Root { get; }
-        public SKBitmap Fb { get; }
-
-        public Harness(int width, int height, double scaling = 1)
-        {
-            Compositor = new Compositor(RenderLoop.FromTimer(_timer), null, true,
-                new DispatcherCompositorScheduler(), true, Dispatcher.UIThread, new CompositionOptions
-                {
-                    UseRegionDirtyRectClipping = true
-                });
-
-            var pxW = (int)Math.Ceiling(width * scaling);
-            var pxH = (int)Math.Ceiling(height * scaling);
-            Fb = new SKBitmap(pxW, pxH, SKColorType.Rgba8888, SKAlphaType.Premul);
-
-            ILockedFramebuffer LockFb() => new LockedFramebuffer(Fb.GetAddress(0, 0), new(Fb.Width, Fb.Height),
-                Fb.RowBytes, new Vector(96 * scaling, 96 * scaling), PixelFormat.Rgba8888, AlphaFormat.Premul, null);
-
-            IFramebufferRenderTarget rt = new FuncFramebufferRenderTarget((_, out props) =>
-            {
-                props = new() { PreviousFrameIsRetained = _retained };
-                return LockFb();
-            }, retainsFrameContents: true);
-
-            var control = new Canvas { Width = width, Height = height };
-            _root = new TestRenderRoot(scaling, null!);
-            _renderer = new CompositingRenderer(_root, Compositor, () => new[] { new FuncFramebufferSurface(() => rt) });
-            _root.Initialize(_renderer, control);
-            _renderer.Start();
-
-            Root = Compositor.CreateContainerVisual();
-            Root.ClipToBounds = false;
-            ElementComposition.SetElementChildVisual(control, Root);
-        }
-
-        internal CompositingRenderer Renderer => _renderer;
-
-        public CompositionSolidColorVisual Rect(Color color, double x, double y, double w, double h)
-        {
-            var v = Compositor.CreateSolidColorVisual();
-            v.Color = color;
-            v.Offset = new Vector3D(x, y, 0);
-            v.Size = new Vector(w, h);
-            return v;
-        }
-
-        public void Retained(bool value) => _retained = value;
-        public void Erase() => Fb.Erase(SKColor.Empty);
-
-        public void Frame()
-        {
-            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
-            _timer.TriggerTick();
-        }
-
-        public SKColor Px(int x, int y) => Fb.GetPixel(x, y);
-
-        public void Dispose()
-        {
-            _renderer.Dispose();
-            Fb.Dispose();
-        }
-    }
-
     private static bool IsPainted(SKColor c) => c.Alpha != 0;
 
     // The frames are almost the same as their full redraw reference, so a real difference is far above this.
@@ -148,7 +67,7 @@ public class BackdropCompositionTests : TestBase
     // An opaque base, a movable `behind` square (earlier in draw order), a retained blur backdrop visual over
     // the middle, and a `caret` square in front of it.
     private static (CompositionSolidColorVisual behind, CompositionSolidColorVisual caret) BuildScene(
-        Harness h, double behindY, double caretX, bool volatileBackdrop = false)
+        FramebufferCompositionFixture h, double behindY, double caretX, bool volatileBackdrop = false)
     {
         var baseRect = h.Rect(Colors.White, 0, 0, 200, 200);
         var stripe = h.Rect(Colors.Blue, 0, 0, 200, 30); // a pattern for the blur to show
@@ -173,13 +92,13 @@ public class BackdropCompositionTests : TestBase
     public void Retained_Front_Change_Equals_Full_Redraw()
     {
         // The caret moves. It is in front, so it is not input: the result equals a full redraw.
-        using var reference = new Harness(200, 200);
+        using var reference = new FramebufferCompositionFixture(200, 200);
         BuildScene(reference, behindY: 40, caretX: 100);
         reference.Retained(false);
         reference.Frame();
         reference.Frame();
 
-        using var h = new Harness(200, 200);
+        using var h = new FramebufferCompositionFixture(200, 200);
         var (_, caret) = BuildScene(h, behindY: 40, caretX: 70);
         h.Retained(false);
         h.Frame();
@@ -195,13 +114,13 @@ public class BackdropCompositionTests : TestBase
     [Fact]
     public void Retained_Behind_Change_Equals_Full_Redraw()
     {
-        using var reference = new Harness(200, 200);
+        using var reference = new FramebufferCompositionFixture(200, 200);
         BuildScene(reference, behindY: 120, caretX: 100);
         reference.Retained(false);
         reference.Frame();
         reference.Frame();
 
-        using var h = new Harness(200, 200);
+        using var h = new FramebufferCompositionFixture(200, 200);
         var (behind, _) = BuildScene(h, behindY: 40, caretX: 100);
         h.Retained(false);
         h.Frame();
@@ -219,13 +138,13 @@ public class BackdropCompositionTests : TestBase
     {
         // With scaling 2, the root scale is part of the AABB and of the draw transform. An error in either shows
         // as a difference from the full redraw.
-        using var reference = new Harness(200, 200, scaling: 2);
+        using var reference = new FramebufferCompositionFixture(200, 200, scaling: 2);
         BuildScene(reference, behindY: 120, caretX: 100);
         reference.Retained(false);
         reference.Frame();
         reference.Frame();
 
-        using var h = new Harness(200, 200, scaling: 2);
+        using var h = new FramebufferCompositionFixture(200, 200, scaling: 2);
         var (behind, _) = BuildScene(h, behindY: 40, caretX: 100);
         h.Retained(false);
         h.Frame();
@@ -242,7 +161,7 @@ public class BackdropCompositionTests : TestBase
     public void Retained_Backdrop_Move_Equals_Full_Redraw()
     {
         // A move without a size change keeps the snapshot. It has to be refreshed completely.
-        CompositionSolidColorVisual Build(Harness h, double x)
+        CompositionSolidColorVisual Build(FramebufferCompositionFixture h, double x)
         {
             h.Root.Children.Add(h.Rect(Colors.White, 0, 0, 200, 200));
             h.Root.Children.Add(h.Rect(Colors.Blue, 0, 0, 200, 30));
@@ -254,12 +173,12 @@ public class BackdropCompositionTests : TestBase
             return backdropVisual;
         }
 
-        using var reference = new Harness(200, 200);
+        using var reference = new FramebufferCompositionFixture(200, 200);
         Build(reference, 90);
         reference.Frame();
         reference.Frame();
 
-        using var h = new Harness(200, 200);
+        using var h = new FramebufferCompositionFixture(200, 200);
         var backdropVisual = Build(h, 10);
         h.Frame();
         h.Frame();
@@ -277,7 +196,7 @@ public class BackdropCompositionTests : TestBase
     {
         // The parent's own content is behind the backdrop visual. Its opacity change has to reach the backdrop
         // visual, even when nothing else is dirty.
-        CompositionSolidColorVisual Build(Harness h, float opacity)
+        CompositionSolidColorVisual Build(FramebufferCompositionFixture h, float opacity)
         {
             h.Root.Children.Add(h.Rect(Colors.White, 0, 0, 200, 200));
             var ancestor = h.Rect(Colors.Blue, 20, 20, 120, 120);
@@ -290,12 +209,12 @@ public class BackdropCompositionTests : TestBase
             return ancestor;
         }
 
-        using var reference = new Harness(200, 200);
+        using var reference = new FramebufferCompositionFixture(200, 200);
         Build(reference, 0.3f);
         reference.Frame();
         reference.Frame();
 
-        using var h = new Harness(200, 200);
+        using var h = new FramebufferCompositionFixture(200, 200);
         var ancestor = Build(h, 1);
         h.Frame();
         h.Frame();
@@ -312,7 +231,7 @@ public class BackdropCompositionTests : TestBase
     public void Retained_Backdrop_Earlier_Sibling_Removal_Equals_Full_Redraw()
     {
         // The dirty rect of the removed visual is collected after the update walk has passed the backdrop visual.
-        (CompositionContainerVisual panel, CompositionSolidColorVisual? behind) Build(Harness h, bool withBehind)
+        (CompositionContainerVisual panel, CompositionSolidColorVisual? behind) Build(FramebufferCompositionFixture h, bool withBehind)
         {
             h.Root.Children.Add(h.Rect(Colors.White, 0, 0, 200, 200));
             var panel = h.Compositor.CreateContainerVisual();
@@ -332,12 +251,12 @@ public class BackdropCompositionTests : TestBase
             return (panel, behind);
         }
 
-        using var reference = new Harness(200, 200);
+        using var reference = new FramebufferCompositionFixture(200, 200);
         Build(reference, false);
         reference.Frame();
         reference.Frame();
 
-        using var h = new Harness(200, 200);
+        using var h = new FramebufferCompositionFixture(200, 200);
         var (panel, behind) = Build(h, true);
         h.Frame();
         h.Frame();
@@ -355,7 +274,7 @@ public class BackdropCompositionTests : TestBase
     [InlineData(true)]
     public void Rotated_Backdrop_Is_Limited_To_The_Rotated_Bounds(bool retained)
     {
-        using var h = new Harness(200, 200);
+        using var h = new FramebufferCompositionFixture(200, 200);
         h.Root.Children.Add(h.Rect(Colors.White, 0, 0, 200, 200));
         h.Root.Children.Add(h.Rect(Colors.Black, 0, 0, 60, 200)); // hard edge at x = 60
 
@@ -385,7 +304,7 @@ public class BackdropCompositionTests : TestBase
     public void Change_Just_Outside_Backdrop_Bounds_Equals_Full_Redraw(bool retained)
     {
         // A visual moves next to the backdrop visual: closer to its edge than the blur radius, but not over it.
-        CompositionSolidColorVisual Build(Harness h, double neighbourX)
+        CompositionSolidColorVisual Build(FramebufferCompositionFixture h, double neighbourX)
         {
             h.Root.Children.Add(h.Rect(Colors.White, 0, 0, 200, 200));
             var next = h.Rect(Colors.Red, neighbourX, 40, 10, 80);
@@ -397,12 +316,12 @@ public class BackdropCompositionTests : TestBase
             return next;
         }
 
-        using var reference = new Harness(200, 200);
+        using var reference = new FramebufferCompositionFixture(200, 200);
         Build(reference, 29); // x 29..39, the backdrop bounds start at 40
         reference.Frame();
         reference.Frame();
 
-        using var h = new Harness(200, 200);
+        using var h = new FramebufferCompositionFixture(200, 200);
         var next = Build(h, 0);
         h.Frame();
         h.Frame();
@@ -422,7 +341,7 @@ public class BackdropCompositionTests : TestBase
     }
 
     // Stripes behind a backdrop visual with subtree bounds. Its only child defines the bounds.
-    private static CompositionSolidColorVisual BuildSubtreeBoundsScene(Harness h, bool retained, double childWidth)
+    private static CompositionSolidColorVisual BuildSubtreeBoundsScene(FramebufferCompositionFixture h, bool retained, double childWidth)
     {
         h.Root.Children.Add(h.Rect(Colors.White, 0, 0, 200, 200));
         for (var x = 0; x < 200; x += 20)
@@ -445,12 +364,12 @@ public class BackdropCompositionTests : TestBase
     [InlineData(true)]
     public void Subtree_Bounds_Backdrop_Follows_Child_Resize_In_The_Same_Frame(bool retained)
     {
-        using var reference = new Harness(200, 200);
+        using var reference = new FramebufferCompositionFixture(200, 200);
         BuildSubtreeBoundsScene(reference, retained, 180);
         for (var i = 0; i < 3; i++)
             reference.Frame();
 
-        using var h = new Harness(200, 200);
+        using var h = new FramebufferCompositionFixture(200, 200);
         var child = BuildSubtreeBoundsScene(h, retained, 20);
         for (var i = 0; i < 3; i++)
             h.Frame();
@@ -467,12 +386,12 @@ public class BackdropCompositionTests : TestBase
     [InlineData(true)]
     public void Subtree_Bounds_Backdrop_Appears_In_The_First_Frame(bool retained)
     {
-        using var reference = new Harness(200, 200);
+        using var reference = new FramebufferCompositionFixture(200, 200);
         BuildSubtreeBoundsScene(reference, retained, 180);
         for (var i = 0; i < 3; i++)
             reference.Frame();
 
-        using var h = new Harness(200, 200);
+        using var h = new FramebufferCompositionFixture(200, 200);
         BuildSubtreeBoundsScene(h, retained, 180);
         h.Frame();
 
@@ -484,7 +403,7 @@ public class BackdropCompositionTests : TestBase
     [InlineData(true)]
     public void Layout_Bounds_Backdrop_Visual_Without_Content_Draws_The_Effect(bool retained)
     {
-        using var h = new Harness(200, 200);
+        using var h = new FramebufferCompositionFixture(200, 200);
         h.Root.Children.Add(h.Rect(Colors.White, 0, 0, 200, 200));
         h.Root.Children.Add(h.Rect(Colors.Black, 0, 0, 100, 200)); // hard edge at x = 100
 
@@ -505,7 +424,7 @@ public class BackdropCompositionTests : TestBase
     }
 
     // Stripes behind a backdrop visual that is much taller than the 200x200 target.
-    private static CompositionSolidColorVisual BuildTallBackdropScene(Harness h, bool retained, double y)
+    private static CompositionSolidColorVisual BuildTallBackdropScene(FramebufferCompositionFixture h, bool retained, double y)
     {
         h.Root.Children.Add(h.Rect(Colors.White, 0, 0, 200, 200));
         for (var x = 0; x < 200; x += 20)
@@ -522,7 +441,7 @@ public class BackdropCompositionTests : TestBase
     [Fact]
     public void Retained_Snapshot_Is_Limited_To_The_Root_Layer()
     {
-        using var h = new Harness(200, 200);
+        using var h = new FramebufferCompositionFixture(200, 200);
         var backdropVisual = BuildTallBackdropScene(h, retained: true, y: 20);
         h.Frame();
         h.Frame();
@@ -539,12 +458,12 @@ public class BackdropCompositionTests : TestBase
     [Fact]
     public void Retained_Tall_Backdrop_Visual_Move_Equals_Full_Redraw()
     {
-        using var reference = new Harness(200, 200);
+        using var reference = new FramebufferCompositionFixture(200, 200);
         BuildTallBackdropScene(reference, retained: true, y: -500);
         reference.Frame();
         reference.Frame();
 
-        using var h = new Harness(200, 200);
+        using var h = new FramebufferCompositionFixture(200, 200);
         var backdropVisual = BuildTallBackdropScene(h, retained: true, y: 20);
         h.Frame();
         h.Frame();
@@ -560,22 +479,22 @@ public class BackdropCompositionTests : TestBase
     [Fact]
     public void Retained_And_Volatile_Match_For_A_Backdrop_Visual_That_Leaves_The_Layer()
     {
-        using var retained = new Harness(200, 200);
+        using var retained = new FramebufferCompositionFixture(200, 200);
         BuildTallBackdropScene(retained, retained: true, y: 20);
         retained.Frame();
         retained.Frame();
 
-        using var volatileHarness = new Harness(200, 200);
-        BuildTallBackdropScene(volatileHarness, retained: false, y: 20);
-        volatileHarness.Frame();
-        volatileHarness.Frame();
+        using var volatileFixture = new FramebufferCompositionFixture(200, 200);
+        BuildTallBackdropScene(volatileFixture, retained: false, y: 20);
+        volatileFixture.Frame();
+        volatileFixture.Frame();
 
-        AssertSimilar(retained.Fb, volatileHarness.Fb);
+        AssertSimilar(retained.Fb, volatileFixture.Fb);
         // The bottom row is where the layer ends inside of the backdrop bounds. The effect is mirrored there,
         // so the row is blurred like the rows above it, in both modes.
         for (var x = 45; x < 155; x += 5)
         {
-            var expected = volatileHarness.Px(x, 199);
+            var expected = volatileFixture.Px(x, 199);
             var actual = retained.Px(x, 199);
             Assert.True(Math.Abs(expected.Red - actual.Red) <= 8, $"x={x}: volatile {expected}, retained {actual}");
             var above = retained.Px(x, 170);
@@ -586,7 +505,7 @@ public class BackdropCompositionTests : TestBase
     [Fact]
     public void Retained_Snapshot_Is_Limited_To_The_Bitmap_Cache_Layer()
     {
-        using var h = new Harness(200, 200);
+        using var h = new FramebufferCompositionFixture(200, 200);
         h.Root.Children.Add(h.Rect(Colors.White, 0, 0, 200, 200));
 
         // A clipping visual with a bitmap cache: its layer is 100x100, the backdrop visual inside is far taller.
@@ -612,13 +531,13 @@ public class BackdropCompositionTests : TestBase
     [Fact]
     public void Volatile_Overlap_Equals_Full_Redraw()
     {
-        using var reference = new Harness(200, 200);
+        using var reference = new FramebufferCompositionFixture(200, 200);
         BuildScene(reference, behindY: 120, caretX: 100, volatileBackdrop: true);
         reference.Retained(false);
         reference.Frame();
         reference.Frame();
 
-        using var h = new Harness(200, 200);
+        using var h = new FramebufferCompositionFixture(200, 200);
         var (behind, _) = BuildScene(h, behindY: 40, caretX: 100, volatileBackdrop: true);
         h.Retained(false);
         h.Frame();
@@ -634,7 +553,7 @@ public class BackdropCompositionTests : TestBase
     [Fact]
     public void Retained_Behind_Change_Repaints_Only_The_Output_Dirty_Rect_Not_The_Whole_Aabb()
     {
-        using var h = new Harness(200, 200);
+        using var h = new FramebufferCompositionFixture(200, 200);
         var (behind, _) = BuildScene(h, behindY: 45, caretX: 100);
         h.Retained(false);
         h.Frame();
@@ -657,7 +576,7 @@ public class BackdropCompositionTests : TestBase
     [Fact]
     public void Volatile_Overlap_Repaints_The_Whole_Aabb()
     {
-        using var h = new Harness(200, 200);
+        using var h = new FramebufferCompositionFixture(200, 200);
         var (behind, _) = BuildScene(h, behindY: 45, caretX: 100, volatileBackdrop: true);
         h.Retained(false);
         h.Frame();
@@ -677,7 +596,7 @@ public class BackdropCompositionTests : TestBase
     [Fact]
     public void Retained_Front_Change_Does_Not_Repaint_Backdrop_Interior()
     {
-        using var h = new Harness(200, 200);
+        using var h = new FramebufferCompositionFixture(200, 200);
         var (_, caret) = BuildScene(h, behindY: 40, caretX: 70);
         h.Retained(false);
         h.Frame();
@@ -697,7 +616,7 @@ public class BackdropCompositionTests : TestBase
     [Fact]
     public void Surfaceless_Context_Skips_Backdrop_Without_Crashing()
     {
-        using var h = new Harness(200, 200);
+        using var h = new FramebufferCompositionFixture(200, 200);
         var backdropVisual = h.Rect(Colors.Transparent, 40, 40, 120, 120);
         backdropVisual.BackdropEffect = Blur(5);
         h.Root.Children.Add(h.Rect(Colors.White, 0, 0, 200, 200));
@@ -727,7 +646,7 @@ public class BackdropCompositionTests : TestBase
     // the root layer, so only the volatile path can read it, and the retained path has to skip. The container's
     // effect has a zero radius: it opens the intermediate layer but does not blur, so the split stays hard
     // unless the backdrop effect blurs it. Returns the visual over the split.
-    private static CompositionSolidColorVisual BuildAncestorEffectTree(Harness h, bool withBackdrop,
+    private static CompositionSolidColorVisual BuildAncestorEffectTree(FramebufferCompositionFixture h, bool withBackdrop,
         bool volatileBackdrop)
     {
         h.Root.Children.Add(h.Rect(Colors.White, 0, 0, 200, 200)); // opaque base
@@ -756,13 +675,13 @@ public class BackdropCompositionTests : TestBase
     {
         // The parent's effect opens an intermediate layer. The volatile path reads through it, so the backdrop
         // effect is drawn correctly and equals a full redraw of the same tree.
-        using var reference = new Harness(200, 200);
+        using var reference = new FramebufferCompositionFixture(200, 200);
         BuildAncestorEffectTree(reference, withBackdrop: true, volatileBackdrop: true);
         reference.Retained(false);
         reference.Frame();
         reference.Frame();
 
-        using var h = new Harness(200, 200);
+        using var h = new FramebufferCompositionFixture(200, 200);
         var inner = BuildAncestorEffectTree(h, withBackdrop: true, volatileBackdrop: true);
         h.Retained(false);
         var ex = Record.Exception(() =>
@@ -789,13 +708,13 @@ public class BackdropCompositionTests : TestBase
     {
         // The retained path cannot read the intermediate layer that the parent's effect opened. The backdrop
         // effect is skipped, so the frame equals the same tree without a backdrop effect.
-        using var reference = new Harness(200, 200);
+        using var reference = new FramebufferCompositionFixture(200, 200);
         BuildAncestorEffectTree(reference, withBackdrop: false, volatileBackdrop: false);
         reference.Retained(false);
         reference.Frame();
         reference.Frame();
 
-        using var h = new Harness(200, 200);
+        using var h = new FramebufferCompositionFixture(200, 200);
         var inner = BuildAncestorEffectTree(h, withBackdrop: true, volatileBackdrop: false);
         h.Retained(false);
         var ex = Record.Exception(() =>
@@ -818,7 +737,7 @@ public class BackdropCompositionTests : TestBase
     public void Blur_Backdrop_Over_Pattern_Softens_A_Hard_Edge()
     {
         // A hard red/blue split behind a blur backdrop visual: the split column becomes a red/blue mix.
-        using var h = new Harness(200, 200);
+        using var h = new FramebufferCompositionFixture(200, 200);
         h.Root.Children.Add(h.Rect(Colors.Red, 0, 0, 100, 200));
         h.Root.Children.Add(h.Rect(Colors.Blue, 100, 0, 100, 200));
         var backdropVisual = h.Rect(Colors.Transparent, 40, 40, 120, 120);
@@ -839,7 +758,7 @@ public class BackdropCompositionTests : TestBase
     [Fact]
     public void Container_With_Children_Renders_Backdrop_Effect_But_Empty_Container_Has_No_Region()
     {
-        using var h = new Harness(200, 200);
+        using var h = new FramebufferCompositionFixture(200, 200);
         h.Root.Children.Add(h.Rect(Colors.Red, 0, 0, 100, 200));
         h.Root.Children.Add(h.Rect(Colors.Blue, 100, 0, 100, 200));
 
@@ -872,7 +791,7 @@ public class BackdropCompositionTests : TestBase
     // A visual with a bitmap cache. Inside it: a red/blue pattern and a retained blur backdrop visual, which
     // reads the bitmap cache layer. The content does not start at the origin of the cached visual, so the
     // layer space mapping has an offset.
-    private static void BuildCachedSplitScene(Harness h)
+    private static void BuildCachedSplitScene(FramebufferCompositionFixture h)
     {
         var cacheHost = h.Compositor.CreateContainerVisual();
         cacheHost.ClipToBounds = false;
@@ -888,14 +807,14 @@ public class BackdropCompositionTests : TestBase
     [Fact]
     public void Retained_Backdrop_Inside_BitmapCache_Over_Pattern_Equals_Full_Redraw()
     {
-        using var reference = new Harness(200, 200);
+        using var reference = new FramebufferCompositionFixture(200, 200);
         BuildCachedSplitScene(reference);
         reference.Retained(false);
         reference.Frame();
         reference.Frame();
         reference.Frame();
 
-        using var h = new Harness(200, 200);
+        using var h = new FramebufferCompositionFixture(200, 200);
         BuildCachedSplitScene(h);
         h.Retained(false);
         h.Frame();
@@ -920,7 +839,7 @@ public class BackdropCompositionTests : TestBase
     {
         // A movable `behind` square and a retained blur backdrop visual, both inside the bitmap cache. The square
         // stays over the opaque base, so the bounds of the cached subtree (and the layer size) do not change.
-        static CompositionSolidColorVisual Build(Harness h, double moverY)
+        static CompositionSolidColorVisual Build(FramebufferCompositionFixture h, double moverY)
         {
             var cacheHost = h.Compositor.CreateContainerVisual();
             cacheHost.ClipToBounds = false;
@@ -935,14 +854,14 @@ public class BackdropCompositionTests : TestBase
             return mover;
         }
 
-        using var reference = new Harness(200, 200);
+        using var reference = new FramebufferCompositionFixture(200, 200);
         Build(reference, moverY: 90);
         reference.Retained(false);
         reference.Frame();
         reference.Frame();
         reference.Frame();
 
-        using var h = new Harness(200, 200);
+        using var h = new FramebufferCompositionFixture(200, 200);
         var mover = Build(h, moverY: 40);
         h.Retained(false);
         h.Frame();
@@ -959,7 +878,7 @@ public class BackdropCompositionTests : TestBase
     }
 
     // A transparent backdrop visual over a red square on a transparent target. The shadow is offset by 20.
-    private static CompositionSolidColorVisual BuildDropShadowScene(Harness h, bool retained, double squareY)
+    private static CompositionSolidColorVisual BuildDropShadowScene(FramebufferCompositionFixture h, bool retained, double squareY)
     {
         var square = h.Rect(Colors.Red, 70, squareY, 30, 30);
         var backdropVisual = h.Rect(Colors.Transparent, 30, 30, 80, 80);
@@ -978,7 +897,7 @@ public class BackdropCompositionTests : TestBase
     {
         // Same as CSS backdrop-filter: drop-shadow(): the shadow shows only where the backdrop is transparent, and
         // is clipped to the backdrop bounds (30..110).
-        using var h = new Harness(200, 200);
+        using var h = new FramebufferCompositionFixture(200, 200);
         BuildDropShadowScene(h, retained, squareY: 70);
         h.Frame();
         h.Frame();
@@ -997,7 +916,7 @@ public class BackdropCompositionTests : TestBase
     public void DropShadow_Backdrop_Over_Opaque_Content_Equals_No_Backdrop(bool retained)
     {
         // Opaque backdrop pixels cover their own shadow, and the edges of the bounds cast no shadow outside.
-        void Build(Harness h, bool withBackdrop)
+        void Build(FramebufferCompositionFixture h, bool withBackdrop)
         {
             h.Root.Children.Add(h.Rect(Colors.White, 0, 0, 200, 200));
             h.Root.Children.Add(h.Rect(Colors.Blue, 0, 60, 200, 30));
@@ -1012,12 +931,12 @@ public class BackdropCompositionTests : TestBase
             h.Root.Children.Add(backdropVisual);
         }
 
-        using var reference = new Harness(200, 200);
+        using var reference = new FramebufferCompositionFixture(200, 200);
         Build(reference, false);
         reference.Frame();
         reference.Frame();
 
-        using var h = new Harness(200, 200);
+        using var h = new FramebufferCompositionFixture(200, 200);
         Build(h, true);
         h.Frame();
         h.Frame();
@@ -1031,13 +950,13 @@ public class BackdropCompositionTests : TestBase
     public void DropShadow_Backdrop_Behind_Change_Equals_Full_Redraw(bool retained)
     {
         // The shadow reads its input at an offset. The output dirty rect has to cover that.
-        using var reference = new Harness(200, 200);
+        using var reference = new FramebufferCompositionFixture(200, 200);
         BuildDropShadowScene(reference, retained, squareY: 40);
         reference.Retained(false);
         reference.Frame();
         reference.Frame();
 
-        using var h = new Harness(200, 200);
+        using var h = new FramebufferCompositionFixture(200, 200);
         var square = BuildDropShadowScene(h, retained, squareY: 70);
         h.Retained(false);
         h.Frame();
@@ -1054,7 +973,7 @@ public class BackdropCompositionTests : TestBase
     public void Volatile_DropShadow_Backdrop_Does_Not_Clip_Overflowing_Children()
     {
         // The effect is clipped to the layout bounds (30..80). A child outside of them is still drawn.
-        using var h = new Harness(200, 200);
+        using var h = new FramebufferCompositionFixture(200, 200);
         var host = h.Compositor.CreateContainerVisual();
         host.Offset = new Vector3D(30, 30, 0);
         host.Size = new Vector(50, 50);
