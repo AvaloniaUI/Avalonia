@@ -465,7 +465,10 @@ namespace Avalonia.Controls
 
         private string GetText(MaskedTextProvider provider)
         {
-            return HidePromptOnLeave && !IsFocused
+            // The box's own context menu takes the focus while the box is still in use, as in TextBox.OnLostFocus.
+            var hidePrompt = HidePromptOnLeave && !IsFocused && ContextFlyout?.IsOpen != true && ContextMenu?.IsOpen != true;
+
+            return hidePrompt
                 ? provider.ToString(ignorePasswordChar: false, includePrompt: false, includeLiterals: true, 0, provider.Length)
                 : provider.ToDisplayString();
         }

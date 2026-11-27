@@ -1294,6 +1294,33 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void HidePromptOnLeave_Keeps_Prompts_And_Selection_While_Context_Menu_Is_Open()
+        {
+            using (Start(FocusServices))
+            {
+                var target = new MaskedTextBox
+                {
+                    Template = CreateTemplate(),
+                    Mask = "000-000",
+                    HidePromptOnLeave = true,
+                    ContextMenu = new TestContextMenu()
+                };
+                var other = new MaskedTextBox { Template = CreateTemplate() };
+                var root = new TestRoot { Child = new StackPanel { Children = { target, other } } };
+                target.ApplyTemplate();
+                other.ApplyTemplate();
+
+                target.Focus();
+                target.Text = "123";
+                target.SelectAll();
+                other.Focus();
+
+                Assert.Equal("123-___", target.Text);
+                Assert.Equal("123-___", target.SelectedText);
+            }
+        }
+
+        [Fact]
         public void HidePromptOnLeave_Keeps_Text_When_Mask_Accepts_PasswordChar()
         {
             using (Start(FocusServices))
