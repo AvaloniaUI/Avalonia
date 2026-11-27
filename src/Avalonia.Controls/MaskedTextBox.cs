@@ -304,7 +304,7 @@ namespace Avalonia.Controls
             void UpdateMaskProvider()
             {
                 // Text may hold password characters.
-                var text = MaskProvider is { } previous ? previous.ToString(true, true, true, 0, previous.Length) : Text;
+                var text = MaskProvider is { } previous ? previous.ToString(includePrompt: true, includeLiterals: true) : Text;
                 MaskProvider = new MaskedTextProvider(Mask!, Culture, true, PromptChar, PasswordChar, AsciiOnly) { ResetOnSpace = ResetOnSpace, ResetOnPrompt = ResetOnPrompt };
                 if (text != null)
                 {

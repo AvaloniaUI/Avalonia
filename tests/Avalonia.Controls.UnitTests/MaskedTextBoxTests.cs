@@ -434,10 +434,11 @@ namespace Avalonia.Controls.UnitTests
                 var target = new MaskedTextBox
                 {
                     Template = CreateTemplate(),
-                    Mask = "000-000",
-                    Text = "123456",
-                    PasswordChar = '*'
+                    Mask = "000-000"
                 };
+
+                RaiseTextEvent(target, "123456");
+                target.PasswordChar = '*';
 
                 Assert.Equal("***-***", target.Text);
 
@@ -452,7 +453,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Changing_PasswordChar_Should_Keep_Partial_Text_When_ResetOnPrompt_Is_False()
+        public void Changing_PasswordChar_Should_Keep_Partial_Text()
         {
             using (Start())
             {
@@ -460,7 +461,6 @@ namespace Avalonia.Controls.UnitTests
                 {
                     Template = CreateTemplate(),
                     Mask = "000-000",
-                    ResetOnPrompt = false,
                     Text = "12"
                 };
 
