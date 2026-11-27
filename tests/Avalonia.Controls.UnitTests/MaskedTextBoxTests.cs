@@ -1268,6 +1268,32 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void HidePromptOnLeave_Does_Not_Change_The_Text()
+        {
+            using (Start(FocusServices))
+            {
+                var target = new MaskedTextBox
+                {
+                    Template = CreateTemplate(),
+                    Mask = "(LLL) 999-0000",
+                    ResetOnSpace = false,
+                    HidePromptOnLeave = true,
+                };
+                var other = new MaskedTextBox { Template = CreateTemplate() };
+                var root = new TestRoot { Child = new StackPanel { Children = { target, other } } };
+                target.ApplyTemplate();
+                other.ApplyTemplate();
+
+                target.Focus();
+                RaiseTextEvent(target, "ABC12");
+                other.Focus();
+                target.Focus();
+
+                Assert.Equal("(ABC) 12_-____", target.Text);
+            }
+        }
+
+        [Fact]
         public void HidePromptOnLeave_Hides_Prompts_Of_Text_Set_While_Not_Focused()
         {
             using (Start(FocusServices))
