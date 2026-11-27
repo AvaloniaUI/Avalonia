@@ -168,9 +168,16 @@ namespace Avalonia.Controls.Primitives
         
         internal static IPopupHost CreatePopupHost(Visual target, IAvaloniaDependencyResolver? dependencyResolver, bool shouldUseOverlayLayer)
         {
-            if (!shouldUseOverlayLayer)
+            var topLevel = TopLevel.GetTopLevel(target);
+            var policyTopLevel = topLevel;
+            while (policyTopLevel is PopupRoot popupRoot)
+                policyTopLevel = popupRoot.ParentTopLevel;
+
+            var useOverlayPopups = policyTopLevel?.UseOverlayPopups == true;
+
+            if (!shouldUseOverlayLayer && !useOverlayPopups)
             {
-                if (TopLevel.GetTopLevel(target) is { } topLevel && topLevel.PlatformImpl?.CreatePopup() is { } popupImpl)
+                if (topLevel?.PlatformImpl?.CreatePopup() is { } popupImpl)
                 {
                     return new PopupRoot(topLevel, popupImpl, dependencyResolver);
                 }
@@ -179,6 +186,12 @@ namespace Avalonia.Controls.Primitives
             if (PopupOverlayLayer.GetPopupOverlayLayer(target) is { } overlayLayer)
             {
                 return new OverlayPopupHost(overlayLayer);
+            }
+
+            if (!shouldUseOverlayLayer && useOverlayPopups
+                && topLevel?.PlatformImpl?.CreatePopup() is { } fallbackPopupImpl)
+            {
+                return new PopupRoot(topLevel, fallbackPopupImpl, dependencyResolver);
             }
 
             throw new InvalidOperationException(
