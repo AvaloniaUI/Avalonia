@@ -2550,6 +2550,31 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal("FirstSecond", target.Text);
         }
 
+        [Theory]
+        [InlineData("a\U0001F5C2️", "a")]
+        [InlineData("a\U0001F1EF\U0001F1F5", "a")]
+        [InlineData("a\U0001F468‍\U0001F4BB", "a\U0001F468")]
+        [InlineData("किः", "कि")]
+        [InlineData("é", "e")]
+        [InlineData("a\U0001F44D\U0001F3FD", "a\U0001F44D")]
+        public void Backspace_Should_Delete_Last_Codepoint_With_Its_Variation_Selector_Flag_Pair_Or_Joiner(
+            string text, string expected)
+        {
+            using var _ = UnitTestApplication.Start(Services);
+            var target = new TextBox
+            {
+                Template = CreateTemplate(),
+                Text = text,
+                CaretIndex = text.Length
+            };
+            target.ApplyTemplate();
+
+            RaiseKeyEvent(target, Key.Back, KeyModifiers.None);
+
+            Assert.Equal(expected, target.Text);
+            Assert.Equal(expected.Length, target.CaretIndex);
+        }
+
         [Fact]
         public void PlaceholderForeground_Can_Be_Set()
         {

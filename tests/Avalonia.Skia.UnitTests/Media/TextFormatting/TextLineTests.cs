@@ -2482,6 +2482,64 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        [Theory]
+        [InlineData("a\U0001F5C2️", 1)]
+        [InlineData("a☁️", 1)]
+        [InlineData("a1️", 1)]
+        [InlineData("葛\U000E0100", 0)]
+        [InlineData("a\U0001F1EF\U0001F1F5", 1)]
+        [InlineData("\U0001F1EF\U0001F1F5\U0001F1FA\U0001F1F8", 4)]
+        [InlineData("a\U0001F468‍\U0001F4BB", 3)]
+        [InlineData("a\U0001F441️‍\U0001F5E8️", 4)]
+        public void Backspace_Should_Keep_Variation_Sequences_Flags_And_Joiners_Together(string text, int expectedIndex)
+        {
+            using (Start())
+            {
+                var textLine = FormatBackspaceLine(text);
+
+                var backspaceHit = textLine.GetBackspaceCaretCharacterHit(new CharacterHit(text.Length));
+
+                Assert.Equal(expectedIndex, backspaceHit.FirstCharacterIndex);
+            }
+        }
+
+        [Theory]
+        [InlineData("किः", 2)]
+        [InlineData("கா", 1)]
+        [InlineData("é", 1)]
+        [InlineData("a\U0001F44D\U0001F3FD", 3)]
+        [InlineData("a1️⃣", 3)]
+        [InlineData("a\U0001F1EF\U0001F1F5\U0001F1FA", 5)]
+        [InlineData("a‍", 1)]
+        public void Backspace_Should_Remove_Last_Codepoint_Of_Cluster(string text, int expectedIndex)
+        {
+            using (Start())
+            {
+                var textLine = FormatBackspaceLine(text);
+
+                var backspaceHit = textLine.GetBackspaceCaretCharacterHit(new CharacterHit(text.Length));
+
+                Assert.Equal(expectedIndex, backspaceHit.FirstCharacterIndex);
+            }
+        }
+
+        private static TextLine FormatBackspaceLine(string text)
+        {
+            var typeface = new Typeface(FontFamily.Parse("resm:Avalonia.Skia.UnitTests.Fonts?assembly=Avalonia.Skia.UnitTests#Manrope"));
+            var defaultProperties = new GenericTextRunProperties(typeface);
+            var textSource = new SingleBufferTextSource(text, defaultProperties);
+
+            var formatter = new TextFormatterImpl();
+
+            var textLine =
+                formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                    new GenericTextParagraphProperties(defaultProperties));
+
+            Assert.NotNull(textLine);
+
+            return textLine;
+        }
+
         [Fact]
         public void Should_Collapse_With_TextPathSegmentTrimming_Without_PathSegment()
         {
