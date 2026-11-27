@@ -49,10 +49,16 @@ namespace Avalonia.Native
 
                 var imageData = ms.ToArray();
 
+                // Points are DIPs on macOS, so the cursor takes the bitmap's DPI into account: a 64x64 bitmap
+                // at 192 DPI shows as a 32x32 cursor that is sharp on Retina displays.
+                var size = cursor.Size;
+                var hotSpotPoint = hotSpot.ToPointWithDpi(cursor.Dpi);
+
                 fixed(void* ptr = imageData)
                 {
                     var avnCursor = _native.CreateCustomCursor(ptr, new IntPtr(imageData.Length),
-                        new AvnPixelSize { Width = hotSpot.X, Height = hotSpot.Y });
+                        new AvnSize { Width = size.Width, Height = size.Height },
+                        new AvnPoint { X = hotSpotPoint.X, Y = hotSpotPoint.Y });
 
                     return new AvaloniaNativeCursor(avnCursor);
                 }

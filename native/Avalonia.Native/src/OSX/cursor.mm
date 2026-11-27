@@ -57,7 +57,7 @@ public:
         return S_OK;
     }
     
-    virtual HRESULT CreateCustomCursor (void* bitmapData, size_t length, AvnPixelSize hotPixel, ComPtr<IAvnCursor>& retOut) override
+    virtual HRESULT CreateCustomCursor (void* bitmapData, size_t length, AvnSize size, AvnPoint hotSpot, ComPtr<IAvnCursor>& retOut) override
     {
         @autoreleasepool
         {
@@ -65,16 +65,14 @@ public:
             {
                 return E_POINTER;
             }
-            
+
             NSData *imageData = [NSData dataWithBytes:bitmapData length:length];
             NSImage *image = [[NSImage alloc] initWithData:imageData];
-            
-            
-            NSPoint hotSpot;
-            hotSpot.x = hotPixel.Width;
-            hotSpot.y = hotPixel.Height;
-            
-            retOut = comnew<Cursor>([[NSCursor new] initWithImage: image hotSpot: hotSpot]);
+
+            // Without this NSImage maps one pixel to one point, which upscales the cursor on Retina displays.
+            image.size = NSMakeSize(size.Width, size.Height);
+
+            retOut = comnew<Cursor>([[NSCursor alloc] initWithImage: image hotSpot: NSMakePoint(hotSpot.X, hotSpot.Y)]);
             
             return S_OK;
         }
