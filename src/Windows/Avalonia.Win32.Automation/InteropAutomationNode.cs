@@ -30,10 +30,12 @@ internal partial class InteropAutomationNode : AutomationNode, IRawElementProvid
 
     public override IRawElementProviderSimple? GetHostRawElementProvider()
     {
-        var hr = UiaCoreProviderApi.UiaHostProviderFromHwnd(_handle, out var result);
+        var hr = UiaCoreProviderApi.UiaHostProviderFromHwnd(GetHostedWindow(_handle), out var result);
         Marshal.ThrowExceptionForHR(hr);
         return result;
     }
+
+    internal static IntPtr GetHostedWindow(IntPtr handle) => GetAncestor(handle, GA_PARENT);
 
     public override IRawElementProviderFragment? Navigate(NavigateDirection direction)
     {
@@ -43,4 +45,9 @@ internal partial class InteropAutomationNode : AutomationNode, IRawElementProvid
     public IRawElementProviderFragment? ElementProviderFromPoint(double x, double y) => null;
     public IRawElementProviderFragment? GetFocus() => null;
     public IRawElementProviderSimple[]? GetEmbeddedFragmentRoots() => null;
+
+    private const uint GA_PARENT = 1;
+
+    [LibraryImport("user32.dll")]
+    private static partial IntPtr GetAncestor(IntPtr hwnd, uint flags);
 }

@@ -18,9 +18,6 @@
     <Compile Include="$(AvDBusSourcePath)/**/*.cs"
              Exclude="$(AvDBusSourcePath)/obj/**/*.cs"
              LinkBase="Avalonia.DBus" />
-    <Compile Include="../Avalonia.Controls/Utils/StringUtils.cs">
-      <Link>Shared/StringUtils.cs</Link>
-    </Compile>
   </ItemGroup>
 
   <ItemGroup>

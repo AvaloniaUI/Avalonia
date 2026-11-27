@@ -1,15 +1,19 @@
 ﻿using System;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.Marshalling;
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
+using Avalonia.Controls;
+using Avalonia.Controls.Automation.Peers;
 using Avalonia.Platform;
+using Avalonia.VisualTree;
 using Avalonia.Win32.Automation.Interop;
 
 namespace Avalonia.Win32.Automation
 {
     [GeneratedComClass]
-    internal partial class RootAutomationNode : AutomationNode, IRawElementProviderFragmentRoot
+    internal partial class RootAutomationNode : AutomationNode, IRawElementProviderFragmentRoot, IRawElementProviderHwndOverride
     {
         public RootAutomationNode(AutomationPeer peer)
             : base(peer)
@@ -48,6 +52,30 @@ namespace Avalonia.Win32.Automation
             var hr = UiaCoreProviderApi.UiaHostProviderFromHwnd(handle, out var result);
             Marshal.ThrowExceptionForHR(hr);
             return result;
+        }
+
+        public IRawElementProviderSimple? GetOverrideProviderForHwnd(IntPtr hwnd)
+        {
+            return InvokeSync<IRawElementProviderSimple?>(() =>
+            {
+                if (base.Peer is not ControlAutomationPeer { Owner: { } owner })
+                    return null;
+
+                foreach (var host in owner.GetVisualDescendants().OfType<NativeControlHost>())
+                {
+                    if (host.NativeControlHandle is { } handle &&
+                        InteropAutomationNode.GetHostedWindow(handle.Handle) == hwnd)
+                    {
+                        var peer = ControlAutomationPeer.CreatePeerForElement(host)
+                            .GetChildren()
+                            .OfType<InteropAutomationPeer>()
+                            .FirstOrDefault();
+                        return GetOrCreate(peer);
+                    }
+                }
+
+                return null;
+            });
         }
 
         private void OnRootFocusChanged(object? sender, EventArgs e)
