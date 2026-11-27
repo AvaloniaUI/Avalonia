@@ -394,12 +394,12 @@ namespace Avalonia.Controls.UnitTests
                 {
                     new Border()
                     {
-                        [Flex.BasisProperty] = new FlexBasis(50, FlexBasisKind.Relative),
+                        [Flex.BasisProperty] = new FlexBasis(0.5, FlexBasisKind.Relative),
                         Height = 15
                     },
                     new Border()
                     {
-                        [Flex.BasisProperty] = new FlexBasis(50, FlexBasisKind.Relative),
+                        [Flex.BasisProperty] = new FlexBasis(0.5, FlexBasisKind.Relative),
                         Height = 15
                     }
                 }
@@ -411,6 +411,35 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(new Size(50, 15), target.Bounds.Size);
             Assert.Equal(new Rect(0, 0, 25, 15), target.Children[0].Bounds);
             Assert.Equal(new Rect(25, 0, 25, 15), target.Children[1].Bounds);
+        }
+
+        [Fact]
+        public void Applies_Parsed_Percentage_FlexBasis_Properties()
+        {
+            var target = new FlexPanel
+            {
+                Width = 100,
+                Children =
+                {
+                    new Border
+                    {
+                        [Flex.BasisProperty] = FlexBasis.Parse("25%"),
+                        Height = 15
+                    },
+                    new Border
+                    {
+                        [Flex.BasisProperty] = FlexBasis.Parse("75%"),
+                        Height = 15
+                    }
+                }
+            };
+
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(target.DesiredSize));
+
+            Assert.Equal(new Size(100, 15), target.Bounds.Size);
+            Assert.Equal(new Rect(0, 0, 25, 15), target.Children[0].Bounds);
+            Assert.Equal(new Rect(25, 0, 75, 15), target.Children[1].Bounds);
         }
 
         [Theory]
@@ -463,6 +492,146 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal(default, target.DesiredSize);
             Assert.Equal(new Size(100, 50), stack.DesiredSize);
+        }
+
+        [Fact]
+        public void Applies_Order_Set_After_Child_Is_Added()
+        {
+            var target = new FlexPanel()
+            {
+                Width = 300,
+                Children =
+                {
+                    new Border { Height = 50, Width = 100 },
+                    new Border { Height = 50, Width = 100 },
+                    new Border { Height = 50, Width = 100 },
+                }
+            };
+
+            Flex.SetOrder(target.Children[2], -1);
+
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(target.DesiredSize));
+
+            Assert.Equal(new Rect(100, 0, 100, 50), target.Children[0].Bounds);
+            Assert.Equal(new Rect(200, 0, 100, 50), target.Children[1].Bounds);
+            Assert.Equal(new Rect(0, 0, 100, 50), target.Children[2].Bounds);
+        }
+
+        [Fact]
+        public void Applies_Order_Changed_After_Layout()
+        {
+            var target = new FlexPanel()
+            {
+                Width = 300,
+                Children =
+                {
+                    new Border { Height = 50, Width = 100 },
+                    new Border { Height = 50, Width = 100 },
+                    new Border { Height = 50, Width = 100 },
+                }
+            };
+
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(target.DesiredSize));
+
+            Flex.SetOrder(target.Children[0], 1);
+
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(target.DesiredSize));
+
+            Assert.Equal(new Rect(200, 0, 100, 50), target.Children[0].Bounds);
+            Assert.Equal(new Rect(0, 0, 100, 50), target.Children[1].Bounds);
+            Assert.Equal(new Rect(100, 0, 100, 50), target.Children[2].Bounds);
+        }
+
+        [Fact]
+        public void Hiding_Child_During_Measure_Lays_Out_Remaining_Children()
+        {
+            var last = new Border { MinWidth = 50, Height = 50, [Flex.GrowProperty] = 1.0 };
+            var target = new FlexPanel()
+            {
+                Width = 300,
+                Height = 50,
+                Children =
+                {
+                    new MeasureCallbackControl(() => last.IsVisible = false) { MinWidth = 50, Height = 50, [Flex.GrowProperty] = 1.0 },
+                    new Border { MinWidth = 50, Height = 50, [Flex.GrowProperty] = 1.0 },
+                    last,
+                }
+            };
+            var root = new TestRoot(target);
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            Assert.Equal(new Rect(0, 0, 150, 50), target.Children[0].Bounds);
+            Assert.Equal(new Rect(150, 0, 150, 50), target.Children[1].Bounds);
+        }
+
+        [Fact]
+        public void Hiding_Child_During_Measure_Started_By_Arrange_Lays_Out_Remaining_Children()
+        {
+            var last = new Border { MinWidth = 50, Height = 50, [Flex.GrowProperty] = 1.0 };
+            var target = new FlexPanel()
+            {
+                Width = 300,
+                Height = 50,
+                Children =
+                {
+                    new MeasureCallbackControl(() => last.IsVisible = false) { MinWidth = 50, Height = 50, [Flex.GrowProperty] = 1.0 },
+                    new Border { MinWidth = 50, Height = 50, [Flex.GrowProperty] = 1.0 },
+                    last,
+                }
+            };
+
+            target.Arrange(new Rect(0, 0, 300, 50));
+            target.Measure(new Size(300, 50));
+            target.Arrange(new Rect(0, 0, 300, 50));
+
+            Assert.Equal(new Rect(0, 0, 150, 50), target.Children[0].Bounds);
+            Assert.Equal(new Rect(150, 0, 150, 50), target.Children[1].Bounds);
+        }
+
+        [Fact]
+        public void Hiding_Child_During_Arrange_Lays_Out_Remaining_Children()
+        {
+            var first = new Border { MinWidth = 50, Height = 50, [Flex.GrowProperty] = 1.0 };
+            var last = new Border { MinWidth = 50, Height = 50, [Flex.GrowProperty] = 1.0 };
+            var target = new FlexPanel()
+            {
+                Width = 300,
+                Height = 50,
+                Children =
+                {
+                    first,
+                    new Border { MinWidth = 50, Height = 50, [Flex.GrowProperty] = 1.0 },
+                    last,
+                }
+            };
+            var root = new TestRoot(target);
+
+            first.PropertyChanged += (_, e) =>
+            {
+                if (e.Property == Visual.BoundsProperty)
+                {
+                    last.IsVisible = first.Bounds.Width < 100;
+                }
+            };
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            Assert.False(last.IsVisible);
+            Assert.Equal(new Rect(0, 0, 150, 50), target.Children[0].Bounds);
+            Assert.Equal(new Rect(150, 0, 150, 50), target.Children[1].Bounds);
+        }
+
+        private class MeasureCallbackControl(Action onMeasure) : Control
+        {
+            protected override Size MeasureOverride(Size availableSize)
+            {
+                onMeasure();
+                return base.MeasureOverride(availableSize);
+            }
         }
     }
 }

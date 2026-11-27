@@ -16,6 +16,13 @@ internal interface IDirtyRectTracker : IDirtyRectCollector
     void Initialize(LtrbRect bounds);
     void Visualize(IDrawingContextImpl context);
     LtrbRect CombinedRect { get; }
+
+    /// <summary>
+    /// Appends the working set, in layer pixels, to <paramref name="buffer"/>. Does not finalize, inflate or
+    /// merge anything.
+    /// </summary>
+    void CopyWorkingSetTo(List<LtrbRect> buffer);
+
     void CopyRects(List<PixelRect> rects);
     // Dirty rectangles before antialiasing inflation, for replay through AddRect/FinalizeFrame.
     void CopyUninflatedRects(List<LtrbRect> rects);
@@ -24,4 +31,9 @@ internal interface IDirtyRectTracker : IDirtyRectCollector
 internal interface IDirtyRectCollector
 {
     void AddRect(LtrbRect rect);
+
+    /// <summary>
+    /// The working set of the layer that this collector belongs to.
+    /// </summary>
+    DirtyRectWorkingSet GetWorkingSet();
 }

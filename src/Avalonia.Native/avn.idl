@@ -1117,7 +1117,7 @@ interface IAvnMetalDevice : IUnknown
 [uuid(f1306b71-eca0-426e-8700-105192693b1a)]
 interface IAvnMetalRenderTarget : IUnknown
 {
-    HRESULT BeginDrawing(IAvnMetalRenderingSession** ret);
+    HRESULT BeginDrawing(AvnPixelSize size, double scaling, IAvnMetalRenderingSession** ret);
 }
 
 [uuid(a1f4fcde-9152-48bd-bf8a-b1b651134a69)]
@@ -1342,6 +1342,7 @@ interface IAvnAutomationPeer : IUnknown
      void SelectionItemProvider_Select();
      void SelectionItemProvider_AddToSelection();
      void SelectionItemProvider_RemoveFromSelection();
+     IAvnAutomationPeer* SelectionItemProvider_GetSelectionContainer();
 
      IAvnAutomationPeer* ScrollProvider_GetHorizontalScrollBar();
      IAvnAutomationPeer* ScrollProvider_GetVerticalScrollBar();

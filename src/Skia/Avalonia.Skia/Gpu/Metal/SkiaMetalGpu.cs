@@ -97,14 +97,13 @@ internal class SkiaMetalGpu : ISkiaGpu
 
         public ISkiaGpuRenderSession BeginRenderingSession(IRenderTarget.RenderTargetSceneInfo sceneInfo)
         {
-            // TODO: use expectedPixelSize
             IMetalPlatformSurfaceRenderingSession? session = null;
             GRBackendRenderTarget? backendTarget = null;
             SKSurface? surface = null;
             var success = false;
             try
             {
-                session = (_target ?? throw new ObjectDisposedException(nameof(SkiaMetalRenderTarget))).BeginRendering();
+                session = (_target ?? throw new ObjectDisposedException(nameof(SkiaMetalRenderTarget))).BeginRendering(sceneInfo);
                 backendTarget = new GRBackendRenderTarget(session.Size.Width, session.Size.Height,
                     new GRMtlTextureInfo(session.Texture));
 

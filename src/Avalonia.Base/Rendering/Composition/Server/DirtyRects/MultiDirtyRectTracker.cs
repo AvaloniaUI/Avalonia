@@ -52,6 +52,8 @@ internal partial class MultiDirtyRectTracker : IDirtyRectTracker
 
     public bool IsEmpty => _regions.IsEmpty;
 
+    public void CopyWorkingSetTo(List<LtrbRect> buffer) => _regions.CopyRawRegionsTo(buffer);
+
     public bool Intersects(LtrbRect rect)
     {
         foreach(var r in _inflatedRects)
@@ -81,8 +83,10 @@ internal partial class MultiDirtyRectTracker : IDirtyRectTracker
     }
 
     public LtrbRect CombinedRect { get; private set; }
-    
+
     public IReadOnlyList<LtrbRect> InflatedRects => _inflatedRects;
+
+    public DirtyRectWorkingSet GetWorkingSet() => new(this, DirtyRectSpaceMapping.Identity);
 
     public void CopyRects(List<PixelRect> rects)
     {

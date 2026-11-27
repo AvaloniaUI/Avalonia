@@ -276,6 +276,8 @@ internal unsafe class VulkanExternalObjectsFeature : IVulkanContextExternalObjec
                 sType = VkStructureType.VK_STRUCTURE_TYPE_MEMORY_DEDICATED_ALLOCATE_INFO,
             };
             
+            var pDedicated = _properties.VulkanProperties?.IsDedicatedAllocation != false ? &dedicated : null;
+
             var isPosixHandle = handle.HandleDescriptor ==
                                 KnownPlatformGraphicsExternalImageHandleTypes.VulkanOpaquePosixFileDescriptor;
             var win32Info = new VkImportMemoryWin32HandleInfoKHR
@@ -283,14 +285,14 @@ internal unsafe class VulkanExternalObjectsFeature : IVulkanContextExternalObjec
                 sType = VkStructureType.VK_STRUCTURE_TYPE_IMPORT_MEMORY_WIN32_HANDLE_INFO_KHR,
                 handle = handle.Handle,
                 handleType = _typeBit,
-                pNext = &dedicated
+                pNext = pDedicated
             };
             var posixInfo = new VkImportMemoryFdInfoKHR()
             {
                 sType = VkStructureType.VK_STRUCTURE_TYPE_IMPORT_MEMORY_FD_INFO_KHR,
                 handleType = _typeBit,
                 fd = isPosixHandle ? handle.Handle.ToInt32() : 0,
-                pNext = &dedicated
+                pNext = pDedicated
             };
         
             var memoryAllocateInfo = new VkMemoryAllocateInfo

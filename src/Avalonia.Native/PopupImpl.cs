@@ -39,6 +39,8 @@ namespace Avalonia.Native
             }
         }
 
+        internal ITopLevelImpl ParentTopLevel => _parent;
+
         public override void Dispose()
         {
             Native!.SetParent(null);

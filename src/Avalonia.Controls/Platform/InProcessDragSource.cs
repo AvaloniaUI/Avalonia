@@ -76,7 +76,7 @@ namespace Avalonia.Platform
             _lastPosition = pt;
 
             RawDragEvent rawEvent = new RawDragEvent(_dragDrop, type, root, pt, _draggedData!, _allowedEffects, modifiers);
-            var source = root.RootElement.PresentationSource as PresentationSource;
+            var source = root.RootElement?.PresentationSource as PresentationSource;
             
             source?.PlatformImpl?.Input?.Invoke(rawEvent);
 

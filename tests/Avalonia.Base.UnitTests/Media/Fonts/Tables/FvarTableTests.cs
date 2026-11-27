@@ -166,5 +166,28 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
                 Assert.Equal(fvar.Axes[i].Tag, fvar.AxisTags[i]);
             }
         }
+
+        [Fact]
+        public void TryLoadAxisTags_Should_Read_The_Axis_Tags_Of_Inter_Variable()
+        {
+            var typeface = LoadTypeface(InterVariableAsset);
+
+            Assert.True(typeface.PlatformTypeface.TryGetTable(FvarTable.Tag, out var data));
+            Assert.True(FvarTable.TryLoadAxisTags(data.Span, out var axisTags));
+
+            Assert.Equal(new[] { OpenTypeTag.Parse("opsz"), OpenTypeTag.Parse("wght") }, axisTags);
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(15)]
+        [InlineData(20)]
+        public void TryLoadAxisTags_Should_Return_False_For_A_Truncated_Table(int length)
+        {
+            var typeface = LoadTypeface(InterVariableAsset);
+
+            Assert.True(typeface.PlatformTypeface.TryGetTable(FvarTable.Tag, out var data));
+            Assert.False(FvarTable.TryLoadAxisTags(data.Span.Slice(0, length), out _));
+        }
     }
 }

@@ -3,6 +3,7 @@
 //
 // Licensed to The Avalonia Project under the MIT License.
 
+using System;
 using Avalonia.Media;
 using Avalonia.Utilities;
 
@@ -71,10 +72,10 @@ namespace Avalonia.Controls.Primitives
         public Color ToColor(double alpha = 1.0)
         {
             return Color.FromArgb(
-                (byte)MathUtilities.Clamp(alpha * 255.0, 0x00, 0xFF),
-                (byte)MathUtilities.Clamp(R * 255.0, 0x00, 0xFF),
-                (byte)MathUtilities.Clamp(G * 255.0, 0x00, 0xFF),
-                (byte)MathUtilities.Clamp(B * 255.0, 0x00, 0xFF));
+                (byte)MathUtilities.Clamp(Math.Round(alpha * 255.0), 0x00, 0xFF),
+                (byte)MathUtilities.Clamp(Math.Round(R * 255.0), 0x00, 0xFF),
+                (byte)MathUtilities.Clamp(Math.Round(G * 255.0), 0x00, 0xFF),
+                (byte)MathUtilities.Clamp(Math.Round(B * 255.0), 0x00, 0xFF));
         }
 
         /// <summary>
