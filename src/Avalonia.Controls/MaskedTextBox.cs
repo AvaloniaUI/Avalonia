@@ -194,10 +194,7 @@ namespace Avalonia.Controls
         /// <inheritdoc />
         protected override void OnGotFocus(FocusChangedEventArgs e)
         {
-            if (HidePromptOnLeave == true && MaskProvider != null)
-            {
-                SetTextFromInternalSynchronization(MaskProvider.ToDisplayString());
-            }
+            SyncText();
             base.OnGotFocus(e);
         }
 
@@ -291,10 +288,7 @@ namespace Avalonia.Controls
         /// <inheritdoc />
         protected override void OnLostFocus(FocusChangedEventArgs e)
         {
-            if (HidePromptOnLeave && MaskProvider != null)
-            {
-                SetTextFromInternalSynchronization(MaskProvider.ToString(!HidePromptOnLeave, true));
-            }
+            SyncText();
             base.OnLostFocus(e);
         }
 
@@ -342,6 +336,10 @@ namespace Avalonia.Controls
                     MaskProvider.PromptChar = PromptChar;
                     RefreshText(MaskProvider, 0, isEdit: false);
                 }
+            }
+            else if (change.Property == HidePromptOnLeaveProperty)
+            {
+                SyncText();
             }
             else if (change.Property == ResetOnPromptProperty)
             {
@@ -438,11 +436,11 @@ namespace Avalonia.Controls
             {
                 if (isEdit)
                 {
-                    SetTextFromEdit(provider.ToDisplayString());
+                    SetTextFromEdit(GetText(provider));
                 }
                 else
                 {
-                    SetTextFromInternalSynchronization(provider.ToDisplayString());
+                    SetTextFromInternalSynchronization(GetText(provider));
                 }
                 SetCurrentValue(CaretIndexProperty, position);
             }
@@ -451,18 +449,42 @@ namespace Avalonia.Controls
         /// <inheritdoc />
         protected override string? CoerceText(string? text)
         {
-            // The display string can hold password characters, which some masks accept as input.
-            if (!_ignoreTextChanges && MaskProvider is { } maskProvider && text != maskProvider.ToDisplayString())
+            // The shown text can hold password characters, which some masks accept as input.
+            if (!_ignoreTextChanges && MaskProvider is { } maskProvider && text != GetText(maskProvider))
             {
                 if (string.IsNullOrEmpty(text))
                     maskProvider.Clear();
                 else
                     maskProvider.Set(text);
 
-                text = maskProvider.ToDisplayString();
+                text = GetText(maskProvider);
             }
 
             return base.CoerceText(text);
+        }
+
+        private string GetText(MaskedTextProvider provider)
+        {
+            return HidePromptOnLeave && !IsFocused
+                ? provider.ToString(ignorePasswordChar: false, includePrompt: false, includeLiterals: true, 0, provider.Length)
+                : provider.ToDisplayString();
+        }
+
+        private void SyncText()
+        {
+            if (MaskProvider is { } provider)
+            {
+                // Setting the text through the provider would read prompts and password characters as input.
+                _ignoreTextChanges = true;
+                try
+                {
+                    SetTextFromInternalSynchronization(GetText(provider));
+                }
+                finally
+                {
+                    _ignoreTextChanges = false;
+                }
+            }
         }
     }
 }
