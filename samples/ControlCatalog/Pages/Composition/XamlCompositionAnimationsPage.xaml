@@ -1,0 +1,501 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             xmlns:controls="using:ControlCatalog.Controls"
+             xmlns:models="using:ControlCatalog.Models"
+             xmlns:composition="using:ControlCatalog.Pages.Composition"
+             xmlns:viewModels="using:ControlCatalog.ViewModels"
+             x:DataType="viewModels:CompositionAnimationViewModel"
+             x:Class="ControlCatalog.Pages.Composition.XamlCompositionAnimationsPage">
+  <StackPanel Spacing="20" Orientation="Vertical" Margin="10,20,10,40">
+    <controls:SampleSection Header="Implicit Animations"
+                            HorizontalContentAlignment="Stretch"
+                            VerticalContentAlignment="Stretch">
+      <controls:SampleSection.Codes>
+        <controls:Codes>
+          <controls:Code Language="Xaml">
+            <x:String xml:space="preserve">
+<![CDATA[<Canvas HorizontalAlignment="Stretch"
+                  Name="ImplicitAnimationsCanvas"
+                  IsHitTestVisible="True"
+                  Background="Transparent"
+                  Height="400">
+            <Ellipse Width="20" Height="20"
+                     Fill="#00F610"
+                     Canvas.Left="{Binding ElipseCanvasLeft}"
+                     Canvas.Top="{Binding ElipseCanvasTop}"
+                     RenderTransform="translate(-10px, -10px)"
+                     Opacity="{Binding ElipseCanvasOpacity}">
+              <Ellipse.Transitions>
+                <Transitions>
+                  <ScalarCompositionTransition Property="Composition.Opacity"
+                                               Duration="0:0:0.5"/>
+                  <Vector3DCompositionTransition Property="Composition.Offset"
+                                                 Duration="0:0:1.2"/>
+                </Transitions>
+              </Ellipse.Transitions>
+            </Ellipse>
+            <Ellipse Width="20" Height="20"
+                     Fill="#0ECD2C"
+                     Canvas.Left="{Binding ElipseCanvasLeft}"
+                     Canvas.Top="{Binding ElipseCanvasTop}"
+                     RenderTransform="translate(-10px, -10px)"
+                     Opacity="{Binding ElipseCanvasOpacity}">
+              <Ellipse.Transitions>
+                <Transitions>
+                  <ScalarCompositionTransition Property="Composition.Opacity"
+                                               Duration="0:0:0.5"/>
+                  <Vector3DCompositionTransition Property="Composition.Offset"
+                                                 Duration="0:0:1.09"/>
+                </Transitions>
+              </Ellipse.Transitions>
+            </Ellipse>
+            <Ellipse Width="20" Height="20"
+                     Fill="#1BA348"
+                     Canvas.Left="{Binding ElipseCanvasLeft}"
+                     Canvas.Top="{Binding ElipseCanvasTop}"
+                     RenderTransform="translate(-10px, -10px)"
+                     Opacity="{Binding ElipseCanvasOpacity}">
+              <Ellipse.Transitions>
+                <Transitions>
+                  <ScalarCompositionTransition Property="Composition.Opacity"
+                                               Duration="0:0:0.5"/>
+                  <Vector3DCompositionTransition Property="Composition.Offset"
+                                                 Duration="0:0:0.88"/>
+                </Transitions>
+              </Ellipse.Transitions>
+            </Ellipse>
+            <Ellipse Width="20" Height="20"
+                     Fill="#297A65"
+                     Canvas.Left="{Binding ElipseCanvasLeft}"
+                     Canvas.Top="{Binding ElipseCanvasTop}"
+                     RenderTransform="translate(-10px, -10px)"
+                     Opacity="{Binding ElipseCanvasOpacity}">
+              <Ellipse.Transitions>
+                <Transitions>
+                  <ScalarCompositionTransition Property="Composition.Opacity"
+                                               Duration="0:0:0.5"/>
+                  <Vector3DCompositionTransition Property="Composition.Offset"
+                                                 Duration="0:0:0.68"/>
+                </Transitions>
+              </Ellipse.Transitions>
+            </Ellipse>
+            <Ellipse Width="20" Height="20"
+                     Fill="#2F6573"
+                     Canvas.Left="{Binding ElipseCanvasLeft}"
+                     Canvas.Top="{Binding ElipseCanvasTop}"
+                     RenderTransform="translate(-10px, -10px)"
+                     Opacity="{Binding ElipseCanvasOpacity}">
+              <Ellipse.Transitions>
+                <Transitions>
+                  <ScalarCompositionTransition Property="Composition.Opacity"
+                                               Duration="0:0:0.5"/>
+                  <Vector3DCompositionTransition Property="Composition.Offset"
+                                                 Duration="0:0:0.55"/>
+                </Transitions>
+              </Ellipse.Transitions>
+            </Ellipse>
+            <Ellipse Width="20" Height="20" Fill="#365181"
+                     Canvas.Left="{Binding ElipseCanvasLeft}"
+                     Canvas.Top="{Binding ElipseCanvasTop}"
+                     RenderTransform="translate(-10px, -10px)"
+                     Opacity="{Binding ElipseCanvasOpacity}">
+              <Ellipse.Transitions>
+                <Transitions>
+                  <ScalarCompositionTransition Property="Composition.Opacity"
+                                               Duration="0:0:0.5"/>
+                  <Vector3DCompositionTransition Property="Composition.Offset"
+                                                 Duration="0:0:0.5"/>
+                </Transitions>
+              </Ellipse.Transitions>
+            </Ellipse>
+          </Canvas>]]>
+            </x:String>
+          </controls:Code>
+          <controls:Code Language="CSharp">
+             <x:String xml:space="preserve">
+<![CDATA[
+public partial class AnimationsPage : UserControl
+    {
+        private bool _pointerPressed;
+        private IDisposable? _timer;
+        private CompositionAnimationViewModel? _vm;
+
+        public XamlCompositionAnimationsPage()
+        {
+            InitializeComponent();
+
+            ImplicitAnimationsCanvas.PointerPressed += ImplicitAnimationsCanvas_PointerPressed;
+            ImplicitAnimationsCanvas.PointerReleased += ImplicitAnimationsCanvas_PointerReleased;
+            ImplicitAnimationsCanvas.PointerMoved += ImplicitAnimationsCanvas_PointerMoved;
+            ImplicitAnimationsCanvas.PointerCaptureLost += ImplicitAnimationsCanvas_PointerCaptureLost;
+        }
+
+        private void ImplicitAnimationsCanvas_PointerCaptureLost(object? sender, Avalonia.Input.PointerCaptureLostEventArgs e)
+        {
+            _pointerPressed = false;
+            _timer = DispatcherTimer.RunOnce(() => _vm?.ElipseCanvasOpacity = 0.2f, TimeSpan.FromSeconds(1));
+        }
+
+        protected override void OnDataContextChanged(EventArgs e)
+        {
+            base.OnDataContextChanged(e);
+
+            _vm = DataContext as ViewModel;
+        }
+
+        private void ImplicitAnimationsCanvas_PointerMoved(object? sender, Avalonia.Input.PointerEventArgs e)
+        {
+            if (_pointerPressed && _vm != null)
+            {
+                SetElipsePosition(e);
+                _vm?.ElipseCanvasOpacity = 1;
+            }
+        }
+
+        private void ImplicitAnimationsCanvas_PointerReleased(object? sender, Avalonia.Input.PointerReleasedEventArgs e)
+        {
+            _pointerPressed = false;
+            _timer = DispatcherTimer.RunOnce(() => _vm?.ElipseCanvasOpacity = 0.2f, TimeSpan.FromSeconds(1));
+        }
+
+        private void ImplicitAnimationsCanvas_PointerPressed(object? sender, Avalonia.Input.PointerPressedEventArgs e)
+        {
+            _pointerPressed = true;
+            SetElipsePosition(e);
+            _timer?.Dispose();
+            _timer = null;
+            _vm?.ElipseCanvasOpacity = 1;
+        }
+
+        public void SetElipsePosition(Avalonia.Input.PointerEventArgs pointerEventArgs)
+        {
+            if (_vm != null)
+            {
+                var point = pointerEventArgs.GetPosition(ImplicitAnimationsCanvas);
+                _vm.ElipseCanvasLeft = point.X;
+                _vm.ElipseCanvasTop = point.Y;
+            }
+        }
+    }
+
+]]>
+            </x:String>
+          </controls:Code>
+          <controls:Code Language="CSharp">
+             <x:String xml:space="preserve">
+<![CDATA[
+internal class ViewModel : ViewModelBase
+    {
+
+        public float ElipseCanvasOpacity
+        {
+            get => field;
+            set { RaiseAndSetIfChanged(ref field, value); }
+        }
+
+        public bool AnimateElipse
+        {
+            get => field;
+            set { RaiseAndSetIfChanged(ref field, value); }
+        } = false;
+    }
+
+]]>
+            </x:String>
+          </controls:Code>
+        </controls:Codes>
+      </controls:SampleSection.Codes>
+      <StackPanel Orientation="Vertical" Spacing="10">
+        <TextBlock  Classes="sample-caption">
+          Click anywhere in the canvas to move the elipses. The elipses will animate to the new position and fade out.
+        </TextBlock>
+        <Border HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                BorderBrush="Gray"
+                BorderThickness="2">
+
+          <Canvas HorizontalAlignment="Stretch"
+                  Name="ImplicitAnimationsCanvas"
+                  IsHitTestVisible="True"
+                  Background="Transparent"
+                  Height="400">
+            <Ellipse Width="20" Height="20"
+                     Fill="#00F610"
+                     Canvas.Left="{Binding ElipseCanvasLeft}"
+                     Canvas.Top="{Binding ElipseCanvasTop}"
+                     RenderTransform="translate(-10px, -10px)"
+                     Opacity="{Binding ElipseCanvasOpacity}">
+              <Ellipse.Transitions>
+                <Transitions>
+                  <ScalarCompositionTransition Property="Composition.Opacity"
+                                               Duration="0:0:0.5"/>
+                  <Vector3DCompositionTransition Property="Composition.Offset"
+                                                 Duration="0:0:1.2"/>
+                </Transitions>
+              </Ellipse.Transitions>
+            </Ellipse>
+            <Ellipse Width="20" Height="20"
+                     Fill="#0ECD2C"
+                     Canvas.Left="{Binding ElipseCanvasLeft}"
+                     Canvas.Top="{Binding ElipseCanvasTop}"
+                     RenderTransform="translate(-10px, -10px)"
+                     Opacity="{Binding ElipseCanvasOpacity}">
+              <Ellipse.Transitions>
+                <Transitions>
+                  <ScalarCompositionTransition Property="Composition.Opacity"
+                                               Duration="0:0:0.5"/>
+                  <Vector3DCompositionTransition Property="Composition.Offset"
+                                                 Duration="0:0:1.09"/>
+                </Transitions>
+              </Ellipse.Transitions>
+            </Ellipse>
+            <Ellipse Width="20" Height="20"
+                     Fill="#1BA348"
+                     Canvas.Left="{Binding ElipseCanvasLeft}"
+                     Canvas.Top="{Binding ElipseCanvasTop}"
+                     RenderTransform="translate(-10px, -10px)"
+                     Opacity="{Binding ElipseCanvasOpacity}">
+              <Ellipse.Transitions>
+                <Transitions>
+                  <ScalarCompositionTransition Property="Composition.Opacity"
+                                               Duration="0:0:0.5"/>
+                  <Vector3DCompositionTransition Property="Composition.Offset"
+                                                 Duration="0:0:0.88"/>
+                </Transitions>
+              </Ellipse.Transitions>
+            </Ellipse>
+            <Ellipse Width="20" Height="20"
+                     Fill="#297A65"
+                     Canvas.Left="{Binding ElipseCanvasLeft}"
+                     Canvas.Top="{Binding ElipseCanvasTop}"
+                     RenderTransform="translate(-10px, -10px)"
+                     Opacity="{Binding ElipseCanvasOpacity}">
+              <Ellipse.Transitions>
+                <Transitions>
+                  <ScalarCompositionTransition Property="Composition.Opacity"
+                                               Duration="0:0:0.5"/>
+                  <Vector3DCompositionTransition Property="Composition.Offset"
+                                                 Duration="0:0:0.68"/>
+                </Transitions>
+              </Ellipse.Transitions>
+            </Ellipse>
+            <Ellipse Width="20" Height="20"
+                     Fill="#2F6573"
+                     Canvas.Left="{Binding ElipseCanvasLeft}"
+                     Canvas.Top="{Binding ElipseCanvasTop}"
+                     RenderTransform="translate(-10px, -10px)"
+                     Opacity="{Binding ElipseCanvasOpacity}">
+              <Ellipse.Transitions>
+                <Transitions>
+                  <ScalarCompositionTransition Property="Composition.Opacity"
+                                               Duration="0:0:0.5"/>
+                  <Vector3DCompositionTransition Property="Composition.Offset"
+                                                 Duration="0:0:0.55"/>
+                </Transitions>
+              </Ellipse.Transitions>
+            </Ellipse>
+            <Ellipse Width="20" Height="20" Fill="#365181"
+                     Canvas.Left="{Binding ElipseCanvasLeft}"
+                     Canvas.Top="{Binding ElipseCanvasTop}"
+                     RenderTransform="translate(-10px, -10px)"
+                     Opacity="{Binding ElipseCanvasOpacity}">
+              <Ellipse.Transitions>
+                <Transitions>
+                  <ScalarCompositionTransition Property="Composition.Opacity"
+                                               Duration="0:0:0.5"/>
+                  <Vector3DCompositionTransition Property="Composition.Offset"
+                                                 Duration="0:0:0.5"/>
+                </Transitions>
+              </Ellipse.Transitions>
+            </Ellipse>
+          </Canvas>
+        </Border>
+      </StackPanel>
+    </controls:SampleSection>
+    <controls:SampleSection Header="KeyFrame Animations"
+                            HorizontalContentAlignment="Stretch"
+                            VerticalContentAlignment="Stretch">
+      <controls:SampleSection.Codes>
+        <controls:Codes>
+          <controls:Code Language="Xaml">
+            <x:String xml:space="preserve">
+<![CDATA[<Border HorizontalAlignment="Stretch"
+              VerticalAlignment="Stretch"
+              BorderBrush="Gray"
+              BorderThickness="2">
+        <Border.Styles>
+          <Style Selector="Ellipse.KeyFrameAnimationElipse">
+            <Style.Animations>
+              <Animation Duration="0:0:5" IterationCount="Infinite" FillMode="Backward">
+                <KeyFrame Cue="0%">
+                  <Setter Property="IsVisible" Value="True"/>
+                  <Setter Property="Composition.Offset" Value="{Binding AnimationCue1Value}"/>
+                  <Setter Property="Composition.Scale">1,1,0</Setter>
+                </KeyFrame>
+                <KeyFrame Cue="20%">
+                  <Setter Property="Composition.Offset" Value="{Binding AnimationCue2Value}"/>
+                  <Setter Property="Composition.Scale">1,1.5,0</Setter>
+                </KeyFrame>
+                <KeyFrame Cue="40%">
+                  <Setter Property="Composition.Offset" Value="{Binding AnimationCue3Value}"/>
+                  <Setter Property="Composition.Scale">1.5,1,0</Setter>
+                </KeyFrame>
+                <KeyFrame Cue="60%">
+                  <Setter Property="Composition.Offset" Value="{Binding AnimationCue4Value}"/>
+                  <Setter Property="Composition.Scale">0.5,0.5,0</Setter>
+                </KeyFrame>
+                <KeyFrame Cue="100%">
+                  <Setter Property="Composition.Offset" Value="{Binding AnimationCue1Value}"/>
+                  <Setter Property="Composition.Scale">1,1,0</Setter>
+                </KeyFrame>
+              </Animation>
+            </Style.Animations>
+          </Style>
+
+        </Border.Styles>
+        <Canvas HorizontalAlignment="Stretch"
+                Name="ExplicitAnimationsCanvas"
+                IsHitTestVisible="True"
+                SizeChanged="ExplicitAnimationsCanvas_SizeChanged"
+                Background="Transparent"
+                Height="400">
+          <Ellipse Width="20" Height="20"
+                   Fill="#00F610"
+                   IsVisible="False"
+                   Classes.KeyFrameAnimationElipse="{Binding AnimateElipse}"
+                   RenderTransform="translate(-10px, -10px)"/>
+        </Canvas>
+      </Border>]]>
+            </x:String>
+          </controls:Code>
+          <controls:Code Language="CSharp">
+             <x:String xml:space="preserve">
+<![CDATA[
+public partial class AnimationsPage : UserControl
+    {
+        private CompositionAnimationViewModel? _vm;
+
+        public XamlCompositionAnimationsPage()
+        {
+            InitializeComponent();
+        }
+
+        protected override void OnDataContextChanged(EventArgs e)
+        {
+            base.OnDataContextChanged(e);
+
+            _vm = DataContext as ViewModel;
+        }
+
+        private void ExplicitAnimationsCanvas_SizeChanged(object? sender, SizeChangedEventArgs e)
+        {
+            _vm?.ExplicitAnimationCanvasSize = e.NewSize;
+        }
+    }
+
+]]>
+            </x:String>
+          </controls:Code>
+          <controls:Code Language="CSharp">
+             <x:String xml:space="preserve">
+<![CDATA[
+internal class ViewModel : ViewModelBase
+    {       
+
+        public bool AnimateElipse
+        {
+            get => field;
+            set { RaiseAndSetIfChanged(ref field, value); }
+        } = false;
+
+        public Vector3D AnimationCue1Value { get; } = new Vector3D(AnimationPadding, AnimationPadding, 0);
+
+        public Vector3D AnimationCue2Value
+        {
+            get => field;
+            set { RaiseAndSetIfChanged(ref field, value); }
+        }
+
+        public Vector3D AnimationCue3Value
+        {
+            get => field;
+            set { RaiseAndSetIfChanged(ref field, value); }
+        }
+
+        public Vector3D AnimationCue4Value
+        {
+            get => field;
+            set { RaiseAndSetIfChanged(ref field, value); }
+        }
+
+        public Size ExplicitAnimationCanvasSize
+        {
+            get => field;
+            set { RaiseAndSetIfChanged(ref field, value); }
+        }
+    }
+
+]]>
+            </x:String>
+          </controls:Code>
+        </controls:Codes>
+      </controls:SampleSection.Codes>
+      <Border HorizontalAlignment="Stretch"
+              VerticalAlignment="Stretch"
+              BorderBrush="Gray"
+              BorderThickness="2">
+        <Border.Styles>
+          <Style Selector="Ellipse.KeyFrameAnimationElipse">
+            <Style.Animations>
+              <Animation Duration="0:0:5" IterationCount="Infinite" FillMode="Backward">
+                <KeyFrame Cue="0%">
+                  <Setter Property="IsVisible" Value="True"/>
+                  <Setter Property="Composition.Offset" Value="{Binding AnimationCue1Value}"/>
+                  <Setter Property="Composition.Scale">1,1,0</Setter>
+                </KeyFrame>
+                <KeyFrame Cue="20%">
+                  <Setter Property="Composition.Offset" Value="{Binding AnimationCue2Value}"/>
+                  <Setter Property="Composition.Scale">1,1.5,0</Setter>
+                </KeyFrame>
+                <KeyFrame Cue="40%">
+                  <Setter Property="Composition.Offset" Value="{Binding AnimationCue3Value}"/>
+                  <Setter Property="Composition.Scale">1.5,1,0</Setter>
+                </KeyFrame>
+                <KeyFrame Cue="60%">
+                  <Setter Property="Composition.Offset" Value="{Binding AnimationCue4Value}"/>
+                  <Setter Property="Composition.Scale">0.5,0.5,0</Setter>
+                </KeyFrame>
+                <KeyFrame Cue="100%">
+                  <Setter Property="Composition.Offset" Value="{Binding AnimationCue1Value}"/>
+                  <Setter Property="Composition.Scale">1,1,0</Setter>
+                </KeyFrame>
+              </Animation>
+            </Style.Animations>
+          </Style>
+
+        </Border.Styles>
+        <Canvas HorizontalAlignment="Stretch"
+                Name="ExplicitAnimationsCanvas"
+                IsHitTestVisible="True"
+                SizeChanged="ExplicitAnimationsCanvas_SizeChanged"
+                Background="Transparent"
+                Height="400">
+          <Ellipse Width="20" Height="20"
+                   Fill="#00F610"
+                   IsVisible="False"
+                   Classes.KeyFrameAnimationElipse="{Binding AnimateElipse}"
+                   RenderTransform="translate(-10px, -10px)"/>
+        </Canvas>
+      </Border>
+      <controls:SampleSection.Options>
+        <StackPanel Spacing="8">
+          <CheckBox IsChecked="{Binding AnimateElipse}">Animate Elipse</CheckBox>
+        </StackPanel>
+      </controls:SampleSection.Options>
+    </controls:SampleSection>
+
+  </StackPanel>
+</UserControl>

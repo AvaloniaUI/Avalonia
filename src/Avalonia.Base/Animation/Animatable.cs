@@ -30,9 +30,9 @@ namespace Avalonia.Animation
         private bool _transitionsEnabled = true;
         private bool _isSubscribedToTransitionsCollection = false;
         private Dictionary<ITransition, TransitionState>? _transitionState;
-        private NotifyCollectionChangedEventHandler? _collectionChanged;
+
         private NotifyCollectionChangedEventHandler TransitionsCollectionChangedHandler => 
-            _collectionChanged ??= TransitionsCollectionChanged;
+            field ??= TransitionsCollectionChanged;
 
         /// <summary>
         /// Gets or sets the clock which controls the animations on the control.
@@ -65,7 +65,7 @@ namespace Avalonia.Animation
             {
                 _transitionsEnabled = true;
 
-                if (Transitions is Transitions transitions)
+                if (Transitions is { } transitions)
                 {
                     if (!_isSubscribedToTransitionsCollection)
                     {
@@ -90,7 +90,7 @@ namespace Avalonia.Animation
             {
                 _transitionsEnabled = false;
 
-                if (Transitions is Transitions transitions)
+                if (Transitions is { } transitions)
                 {
                     if (_isSubscribedToTransitionsCollection)
                     {
@@ -115,7 +115,7 @@ namespace Avalonia.Animation
                 // change, there is a corresponding entry in `_transitionStates`. This means that we
                 // need to account for any transitions present in both the old and new transitions
                 // collections.
-                if (newTransitions is object)
+                if (newTransitions is not null)
                 {
                     var toAdd = (IList)newTransitions;
 
@@ -135,7 +135,7 @@ namespace Avalonia.Animation
                     AddTransitions(toAdd);
                 }
 
-                if (oldTransitions is object)
+                if (oldTransitions is not null)
                 {
                     var toRemove = (IList)oldTransitions;
 
@@ -149,16 +149,15 @@ namespace Avalonia.Animation
                 }
             }
             else if (_transitionsEnabled &&
-                     Transitions is Transitions transitions &&
-                     _transitionState is object &&
+                     Transitions is { } transitions &&
+                     _transitionState is not null &&
                      !change.Property.IsDirect &&
                      change.Priority > BindingPriority.Animation)
             {
                 for (var i = transitions.Count - 1; i >= 0; --i)
                 {
-                    var transition = transitions[i];
-
-                    if (transition.Property == change.Property &&
+                    if (transitions[i] is IPropertyTransition transition &&
+                        transition.Property == change.Property &&
                         _transitionState.TryGetValue(transition, out var state))
                     {
                         var oldValue = state.BaseValue;
@@ -224,34 +223,67 @@ namespace Avalonia.Animation
             }
 
             _transitionState ??= new Dictionary<ITransition, TransitionState>();
+            var compTransitionsChanged = false;
 
             for (var i = 0; i < items.Count; ++i)
             {
-                var t = (ITransition)items[i]!;
-
-                _transitionState.Add(t, new TransitionState
+                switch (items[i])
                 {
-                    BaseValue = GetAnimationBaseValue(t.Property),
-                });
+                    case ICompositionTransition ct:
+                        compTransitionsChanged = true;
+                        ct.AnimationInvalidated += CompositionOnAnimationInvalidated; 
+                        break;
+                    case IPropertyTransition t:
+                        _transitionState.Add(t, new TransitionState
+                        {
+                            BaseValue = GetAnimationBaseValue(t.Property),
+                        });
+                        break;
+                }
+            }
+
+            if (compTransitionsChanged)
+            {
+                InvalidateCompositionTransitions();
             }
         }
 
         private void RemoveTransitions(IList items)
         {
-            if (_transitionState is null)
-            {
-                return;
-            }
+            var compTransitionsChanged = false;
 
             for (var i = 0; i < items.Count; ++i)
             {
-                var t = (ITransition)items[i]!;
-
-                if (_transitionState.TryGetValue(t, out var state))
+                switch (items[i])
                 {
-                    state.Instance?.Dispose();
-                    _transitionState.Remove(t);
+                    case ICompositionTransition ct:
+                        compTransitionsChanged = true;
+                        ct.AnimationInvalidated -= CompositionOnAnimationInvalidated;
+                        break;
+                    case IPropertyTransition t when _transitionState?.TryGetValue(t, out var state) == true:
+                        state.Instance?.Dispose();
+                        _transitionState.Remove(t);
+                        break;
                 }
+            }
+
+            if (compTransitionsChanged)
+            {
+                InvalidateCompositionTransitions();
+            }
+        }
+
+        private void CompositionOnAnimationInvalidated(object? sender, EventArgs e)
+        {
+            InvalidateCompositionTransitions();
+        }
+
+        private protected void InvalidateCompositionTransitions()
+        {
+            if (this is Visual { CompositionVisual: { } compVisual } visual
+                && Transitions is { } transitions)
+            {
+                compVisual.ImplicitAnimations = transitions.GetImplicitAnimations(visual);
             }
         }
 
