@@ -335,6 +335,13 @@ namespace Avalonia.Android
             nodeInfo.AccessibilityFocused = peer.HasKeyboardFocus();
             nodeInfo.Focused = peer.HasKeyboardFocus();
 
+            // Control Parent
+            if (peer.GetParent() is { } parent)
+            {
+                GetOrCreateNodeInfoProvidersFromPeer(parent, out var parentVirtualViewId);
+                nodeInfo.SetParent(_view, parentVirtualViewId);
+            }
+
             // On-screen bounds
             Rect bounds = peer.GetBoundingRectangle();
 
