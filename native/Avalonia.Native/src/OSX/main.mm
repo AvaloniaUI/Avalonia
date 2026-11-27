@@ -2,6 +2,7 @@
 #define COM_GUIDS_MATERIALIZE
 #include "common.h"
 #include "menu.h"
+#include <os/lock.h>
 
 static NSString* s_appTitle = @"Avalonia";
 static int disableSetProcessName = 0;
@@ -194,6 +195,8 @@ public:
 // Not released at exit: .NET is already shut down by then
 static ComStaticPtr<IAvnGCHandleDeallocatorCallback> _deallocator;
 static ComStaticPtr<IAvnDispatcher> _dispatcher;
+// A render thread can still present a frame while the platform is disposed at exit (#21519)
+static os_unfair_lock _dispatcherLock = OS_UNFAIR_LOCK_INIT;
 class AvaloniaNative : public ComSingleObject<IAvaloniaNativeFactory, &IID_IAvaloniaNativeFactory>
 {
     
@@ -204,7 +207,9 @@ public:
     {
         ReleaseAvnAppEvents();
         _deallocator.reset();
+        os_unfair_lock_lock(&_dispatcherLock);
         _dispatcher.reset();
+        os_unfair_lock_unlock(&_dispatcherLock);
     }
     
     virtual HRESULT Initialize(const ComPtr<IAvnGCHandleDeallocatorCallback>& deallocator,
@@ -212,7 +217,9 @@ public:
             const ComPtr<IAvnDispatcher>& dispatcher) override
     {
         _deallocator.set(deallocator);
+        os_unfair_lock_lock(&_dispatcherLock);
         _dispatcher.set(dispatcher);
+        os_unfair_lock_unlock(&_dispatcherLock);
         @autoreleasepool{
             [[ThreadingInitializer new] do];
         }
@@ -386,7 +393,10 @@ extern void FreeAvnGCHandle(void* handle)
 
 extern void PostDispatcherCallback(const ComPtr<IAvnActionCallback>& cb)
 {
-    _dispatcher->Post(cb);
+    os_unfair_lock_lock(&_dispatcherLock);
+    if(_dispatcher)
+        _dispatcher->Post(cb);
+    os_unfair_lock_unlock(&_dispatcherLock);
 }
 
 NSSize ToNSSize (AvnSize s)
