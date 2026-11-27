@@ -11,6 +11,8 @@ using Avalonia.Automation.Provider;
 using Avalonia.Controls.Automation.Peers;
 using Java.Lang;
 
+using static Avalonia.Android.AndroidAccessRoleHelper;
+
 namespace Avalonia.Android
 {
     internal class AvaloniaAccessHelper : ExploreByTouchHelper
@@ -57,7 +59,6 @@ namespace Avalonia.Android
         /// and reusing it would hand out an ID that is still in use.
         /// </remarks>
         private int _nextPeerViewId;
-
         private readonly AvaloniaView _view;
 
         public AvaloniaAccessHelper(AvaloniaView view) : base(view)
@@ -69,7 +70,27 @@ namespace Avalonia.Android
             AutomationPeer rootPeer = ControlAutomationPeer.CreatePeerForElement(view.TopLevel!);
             GetOrCreateNodeInfoProvidersFromPeer(rootPeer, out int _);
 
+            if (rootPeer.GetProvider<IEmbeddedRootProvider>() is { } rootProvider)
+            {
+                rootProvider.FocusChanged += RootProvider_FocusChanged;
+            }
+
             _view = view;
+        }
+
+        private void RootProvider_FocusChanged(object? sender, EventArgs e)
+        {
+            if (sender is IEmbeddedRootProvider embeddedRoot)
+            {
+                if (embeddedRoot.GetFocus() is { } focused)
+                {
+                    GetOrCreateNodeInfoProvidersFromPeer(focused, out int viewId);
+                    InvalidateVirtualView(viewId);
+                    RequestKeyboardFocusForVirtualView(viewId);
+                }
+                else if (KeyboardFocusedVirtualViewId != InvalidId)
+                    ClearKeyboardFocusForVirtualView(KeyboardFocusedVirtualViewId);
+            }
         }
 
         private HashSet<INodeInfoProvider>? GetNodeInfoProvidersFromVirtualViewId(int virtualViewId)
@@ -173,7 +194,7 @@ namespace Avalonia.Android
 
         protected override int GetVirtualViewAt(float x, float y)
         {
-            Point p = _view.TopLevelImpl.PointToClient(new PixelPoint((int)x, (int)y));
+            Point p = new PixelPoint((int)x, (int)y).ToPoint(_view.TopLevelImpl.RenderScaling);
             IEmbeddedRootProvider? embeddedRootProvider = _peers[0].GetProvider<IEmbeddedRootProvider>();
             AutomationPeer? peer = embeddedRootProvider?.GetPeerFromPoint(p);
             if (peer is not null)
@@ -184,7 +205,7 @@ namespace Avalonia.Android
                 }
 
                 int virtualViewId;
-                if (peer.GetParent() is AutomationPeer parent && 
+                if (peer.GetParent() is AutomationPeer parent &&
                     !s_containerTypes.Contains(parent.GetAutomationControlType()))
                 {
                     GetOrCreateNodeInfoProvidersFromPeer(parent, out virtualViewId);
@@ -298,7 +319,7 @@ namespace Avalonia.Android
             }
 
             // UI debug metadata
-            nodeInfo.ClassName = peer.GetClassName();
+            nodeInfo.ClassName = GetClassName(peer);
             var automationId = peer.GetAutomationId();
             nodeInfo.UniqueId = automationId;
             nodeInfo.ViewIdResourceName = automationId;
@@ -316,10 +337,13 @@ namespace Avalonia.Android
 
             // On-screen bounds
             Rect bounds = peer.GetBoundingRectangle();
-            PixelRect screenRect = new PixelRect(
-                _view.TopLevelImpl.InputRoot?.RootElement.PointToScreen(bounds.TopLeft) ?? default,
-                _view.TopLevelImpl.InputRoot?.RootElement.PointToScreen(bounds.BottomRight) ?? default
-                );
+
+            var rootElement = _view.TopLevelImpl.InputRoot?.RootElement;
+
+            var screenRect = rootElement is null ? default : new PixelRect(
+                rootElement.PointToScreen(bounds.TopLeft),
+                rootElement.PointToScreen(bounds.BottomRight));
+
             nodeInfo.SetBoundsInScreen(new(
                 screenRect.X, screenRect.Y,
                 screenRect.Right, screenRect.Bottom

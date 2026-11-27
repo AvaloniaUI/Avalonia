@@ -9,7 +9,9 @@ permissions: {}
 jobs:
   label:
     name: Add team label
-    if: github.event.pull_request.head.repo.full_name == github.repository
+    if: >-
+      github.repository == 'AvaloniaUI/Avalonia'
+      && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
 
     permissions:

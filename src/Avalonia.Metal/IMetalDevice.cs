@@ -22,7 +22,7 @@ public interface IMetalPlatformSurface : IPlatformRenderSurface
 [PrivateApi]
 public interface IMetalPlatformSurfaceRenderTarget : IDisposable, IPlatformRenderSurfaceRenderTarget
 {
-    IMetalPlatformSurfaceRenderingSession BeginRendering();
+    IMetalPlatformSurfaceRenderingSession BeginRendering(IRenderTarget.RenderTargetSceneInfo sceneInfo);
 }
 
 [PrivateApi]

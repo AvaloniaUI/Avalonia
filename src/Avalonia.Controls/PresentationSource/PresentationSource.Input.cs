@@ -21,9 +21,9 @@ internal partial class PresentationSource
         using var _ = Diagnostic.BeginLayoutInputPass();
 
         var e = (RawInputEventArgs)state!;
-        if (e is RawPointerEventArgs pointerArgs)
+        if (e is RawPointerEventArgs pointerArgs && RootElement is { } rootElement)
         {
-            var hitTestElement = RootElement.InputHitTest(pointerArgs.Position, enabledElementsOnly: false);
+            var hitTestElement = rootElement.InputHitTest(pointerArgs.Position, enabledElementsOnly: false);
 
             pointerArgs.InputHitTestResult = (hitTestElement, FirstEnabledAncestor(hitTestElement));
         }

@@ -1,9 +1,11 @@
-﻿using System.Text;
+﻿using System.Linq;
+using System.Text;
 using Avalonia.Controls.Documents;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Xunit;
@@ -1306,6 +1308,218 @@ namespace Avalonia.Controls.UnitTests
             services.RunJobs();
 
             Assert.NotEmpty(child.GetVisualChildren());
+        }
+
+        [Fact]
+        public void Inline_Should_Keep_Its_Style_When_Another_Style_Is_Added_At_Runtime()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = new Window { Styles = { CodeRunStyle() } };
+                var run = CodeRun();
+                var target = new TextBlock { Inlines = new InlineCollection { run } };
+
+                window.Content = target;
+                window.Show();
+
+                window.Styles.Add(new Style(x => x.OfType<Border>())
+                {
+                    Setters = { new Setter(Visual.OpacityProperty, 0.5) }
+                });
+                window.UpdateLayout();
+
+                Assert.Equal(Brushes.Red, run.Background);
+                Assert.Equal(Brushes.Red, LaidOutBackground(target));
+            }
+        }
+
+        [Fact]
+        public void Nested_Inline_Should_Keep_Its_Style_When_Another_Style_Is_Added_At_Runtime()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = new Window { Styles = { CodeRunStyle() } };
+                var run = CodeRun();
+                var target = new TextBlock { Inlines = new InlineCollection { new Span { Inlines = { run } } } };
+
+                window.Content = target;
+                window.Show();
+
+                window.Styles.Add(new Style(x => x.OfType<Border>())
+                {
+                    Setters = { new Setter(Visual.OpacityProperty, 0.5) }
+                });
+                window.UpdateLayout();
+
+                Assert.Equal(Brushes.Red, run.Background);
+                Assert.Equal(Brushes.Red, LaidOutBackground(target));
+            }
+        }
+
+        [Fact]
+        public void Nested_Inline_Should_Apply_A_Style_Added_At_Runtime()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = new Window();
+                var run = CodeRun();
+                var target = new TextBlock { Inlines = new InlineCollection { new Span { Inlines = { run } } } };
+
+                window.Content = target;
+                window.Show();
+
+                Assert.Null(LaidOutBackground(target));
+
+                window.Styles.Add(CodeRunStyle());
+                window.UpdateLayout();
+
+                Assert.Equal(Brushes.Red, run.Background);
+                Assert.Equal(Brushes.Red, LaidOutBackground(target));
+            }
+        }
+
+        [Fact]
+        public void Inline_Should_Apply_Styles_When_Its_Block_Is_Measured_Before_It_Is_Attached()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = new Window { Styles = { CodeRunStyle() } };
+                var run = CodeRun();
+                var target = new TextBlock { Inlines = new InlineCollection { run } };
+
+                target.Measure(Size.Infinity);
+
+                window.Content = target;
+                window.Show();
+
+                Assert.Equal(Brushes.Red, run.Background);
+                Assert.Equal(Brushes.Red, LaidOutBackground(target));
+            }
+        }
+
+        [Fact]
+        public void Inline_Should_Apply_A_Style_Added_To_It_At_Runtime()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = new Window();
+                var run = CodeRun();
+                var target = new TextBlock { Inlines = new InlineCollection { run } };
+
+                window.Content = target;
+                window.Show();
+
+                run.Styles.Add(CodeRunStyle());
+                window.UpdateLayout();
+
+                Assert.Equal(Brushes.Red, run.Background);
+                Assert.Equal(Brushes.Red, LaidOutBackground(target));
+            }
+        }
+
+        [Fact]
+        public void Nested_Inline_Should_Apply_A_Style_Added_To_Its_Span_At_Runtime()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = new Window();
+                var run = CodeRun();
+                var span = new Span { Inlines = { run } };
+                var target = new TextBlock { Inlines = new InlineCollection { span } };
+
+                window.Content = target;
+                window.Show();
+
+                span.Styles.Add(CodeRunStyle());
+                window.UpdateLayout();
+
+                Assert.Equal(Brushes.Red, run.Background);
+                Assert.Equal(Brushes.Red, LaidOutBackground(target));
+            }
+        }
+
+        private static Style CodeRunStyle() => new Style(x => x.OfType<Run>().Class("code"))
+        {
+            Setters = { new Setter(TextElement.BackgroundProperty, Brushes.Red) }
+        };
+
+        private static Run CodeRun() => new Run("code") { Classes = { "code" } };
+
+        private static IBrush? LaidOutBackground(TextBlock textBlock) => textBlock.TextLayout.TextLines
+            .SelectMany(x => x.TextRuns)
+            .Select(x => x.Properties?.BackgroundBrush)
+            .FirstOrDefault(x => x is not null);
+
+        [Fact]
+        public void Should_Render_Embedded_Control_Of_Block_Hidden_At_First_Render()
+        {
+            using var services = new CompositorTestServices();
+
+            var child = CreateTemplatedChild();
+            var target = new TextBlock
+            {
+                IsVisible = false,
+                Inlines = new InlineCollection { new Run("Text "), new InlineUIContainer(child) }
+            };
+
+            services.TopLevel.Content = new StackPanel { Children = { target } };
+            services.RunJobs();
+
+            Assert.Empty(child.GetVisualChildren());
+
+            target.IsVisible = true;
+            services.RunJobs();
+
+            Assert.NotEmpty(child.GetVisualChildren());
+            Assert.Equal(new Size(20, 10), child.DesiredSize);
+        }
+
+        [Fact]
+        public void Should_Render_Embedded_Control_Of_Block_Shown_Again_After_Its_Text_Changed()
+        {
+            using var services = new CompositorTestServices();
+
+            var child = CreateTemplatedChild();
+            var title = new Run("Text ");
+            var target = new TextBlock { Inlines = new InlineCollection { title, new InlineUIContainer(child) } };
+
+            services.TopLevel.Content = new StackPanel { Children = { target } };
+            services.RunJobs();
+
+            target.IsVisible = false;
+            services.RunJobs();
+
+            title.Text = "Other text ";
+            services.RunJobs();
+
+            target.IsVisible = true;
+            services.RunJobs();
+
+            Assert.NotEmpty(child.GetVisualChildren());
+            Assert.Equal(new Size(20, 10), child.DesiredSize);
+        }
+
+        [Fact]
+        public void Reading_TextLayout_Should_Not_Apply_Embedded_Control_Templates()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var child = CreateTemplatedChild();
+            var target = new TextBlock
+            {
+                IsVisible = false,
+                Inlines = new InlineCollection { new Run("Text "), new InlineUIContainer(child) }
+            };
+
+            // Layout only, no render pass
+            var root = new TestRoot(new StackPanel { Children = { target } });
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            Assert.True(target.IsMeasureValid);
+            Assert.False(target.HasTextLayout);
+
+            Assert.NotNull(target.TextLayout);
+            Assert.Empty(child.GetVisualChildren());
         }
 
         private static Button CreateTemplatedChild() => new Button

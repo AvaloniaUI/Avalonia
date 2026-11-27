@@ -265,9 +265,11 @@ namespace Avalonia.Controls.Remote.Server
 
         protected virtual Size Measure(Size constraint)
         {
-            var l = InputRoot!.RootElement;
-            l.Measure(constraint);
-            return l.DesiredSize;
+            if (InputRoot?.RootElement is not { } rootElement)
+                return default;
+
+            rootElement.Measure(constraint);
+            return rootElement.DesiredSize;
         }
 
         public override IPlatformRenderSurface[] Surfaces => [this];
