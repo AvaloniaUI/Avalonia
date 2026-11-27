@@ -2512,6 +2512,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         [InlineData("a1\uFE0F\u20E3", 3)]
         [InlineData("a\U0001F1EF\U0001F1F5\U0001F1FA", 5)]
         [InlineData("a\u200D", 1)]
+        [InlineData("\u0915\u094D\u200D\u0937", 3)]
         public void Backspace_Should_Remove_Last_Codepoint_Of_Cluster(string text, int expectedIndex)
         {
             using (Start())

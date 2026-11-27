@@ -2557,6 +2557,8 @@ namespace Avalonia.Controls.UnitTests
         [InlineData("a\U0001F3F4\U000E0067\U000E0062\U000E0065\U000E006E\U000E0067\U000E007F", "a\U0001F3F4")]
         [InlineData("\u0915\u093F\u0903", "\u0915\u093F")]
         [InlineData("e\u0301", "e")]
+        [InlineData("\u0915\u094D\u200D\u0937", "\u0915\u094D\u200D")]
+        [InlineData("a\n\uFE0F", "a\n")]
         [InlineData("a\U0001F44D\U0001F3FD", "a\U0001F44D")]
         public void Backspace_Should_Delete_Last_Codepoint_With_Its_Variation_Selector_Flag_Pair_Or_Joiner(
             string text, string expected)
