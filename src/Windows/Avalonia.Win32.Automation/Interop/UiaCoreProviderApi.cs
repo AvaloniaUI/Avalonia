@@ -1,6 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.Marshalling;
+using System.Runtime.Versioning;
 
 namespace Avalonia.Win32.Automation.Interop
 {
@@ -65,6 +66,22 @@ namespace Avalonia.Win32.Automation.Interop
     internal static partial class UiaCoreProviderApi
     {
         public const int UIA_E_ELEMENTNOTENABLED = unchecked((int)0x80040200);
+        public const int UIA_E_ELEMENTNOTAVAILABLE = unchecked((int)0x80040201);
+
+        [SupportedOSPlatform("windows")]
+        internal static object GetReservedNotSupportedValue()
+        {
+            var hr = RawUiaGetReservedNotSupportedValue(out var value);
+            Marshal.ThrowExceptionForHR(hr);
+            try
+            {
+                return Marshal.GetObjectForIUnknown(value);
+            }
+            finally
+            {
+                Marshal.Release(value);
+            }
+        }
 
         [LibraryImport("UIAutomationCore.dll", StringMarshalling = StringMarshalling.Utf8)]
         [return: MarshalAs(UnmanagedType.Bool)]
@@ -81,6 +98,9 @@ namespace Avalonia.Win32.Automation.Interop
 
         [LibraryImport("UIAutomationCore.dll", StringMarshalling = StringMarshalling.Utf8)]
         public static partial int UiaRaiseAutomationPropertyChangedEvent(IRawElementProviderSimple? provider, int id, [MarshalUsing(typeof(ComVariantMarshaller))] object? oldValue, [MarshalUsing(typeof(ComVariantMarshaller))] object? newValue);
+
+        [LibraryImport("UIAutomationCore.dll", EntryPoint = "UiaGetReservedNotSupportedValue")]
+        private static partial int RawUiaGetReservedNotSupportedValue(out IntPtr value);
 
         [LibraryImport("UIAutomationCore.dll", StringMarshalling = StringMarshalling.Utf8)]
         public static partial int UiaRaiseStructureChangedEvent(IRawElementProviderSimple? provider, StructureChangeType structureChangeType, int[]? runtimeId, int runtimeIdLen);

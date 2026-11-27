@@ -137,7 +137,8 @@ namespace Avalonia.Automation.Peers
             }
 
             // Windows uses HelpText for placeholder text; macOS uses a separate property.
-            if (string.IsNullOrWhiteSpace(result))
+            if (string.IsNullOrWhiteSpace(result) &&
+                (Owner is not TextBox textBox || string.IsNullOrEmpty(textBox.Text)))
             {
                 result = GetPlaceholderTextCore();
             }

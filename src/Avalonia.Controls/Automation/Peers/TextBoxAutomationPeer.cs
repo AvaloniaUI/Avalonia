@@ -21,6 +21,20 @@ namespace Avalonia.Automation.Peers
             return AutomationControlType.Edit;
         }
 
+        protected override string GetClassNameCore() => "TextBox";
+
+        protected override string? GetHelpTextCore() => GetHelpTextForMultiline(Owner.AcceptsReturn || Owner.AcceptsTab);
+
+        internal string? GetHelpTextForMultiline(bool multiline)
+        {
+            var helpText = base.GetHelpTextCore();
+            if (!multiline)
+                return helpText;
+
+            // UIA has no IsMultiline property; expose the extra state through HelpText.
+            return string.IsNullOrWhiteSpace(helpText) ? "Multiline" : $"{helpText} Multiline";
+        }
+
         protected override string? GetPlaceholderTextCore() => Owner.PlaceholderText;
 
         protected virtual void OwnerPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
@@ -51,7 +65,8 @@ namespace Avalonia.Automation.Peers
         // Expose the text as drawn so a masked password is not reported in clear.
         private static string? GetDisplayedText(string? text, char passwordChar, bool revealPassword)
         {
-            if (text is null || passwordChar == default(char) || revealPassword)
+            text ??= string.Empty;
+            if (passwordChar == default(char) || revealPassword)
                 return text;
             return new string(passwordChar, text.Length);
         }
