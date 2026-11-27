@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Xml;
 using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Logging;
@@ -412,9 +413,141 @@ public class NullConditionalBindingTests
         Assert.Empty(log.Messages);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Should_Not_Report_Error_With_Null_Conditional_Operator_For_Nullable_Struct(bool compileBindings)
+    {
+        using var app = Start();
+        using var log = TestLogger.Create();
+        var xaml = $$$"""
+            <Window xmlns='https://github.com/avaloniaui'
+                    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                    xmlns:local='using:Avalonia.Base.UnitTests.Data.Core'
+                    x:DataType='local:NullConditionalBindingTests+First'
+                    x:CompileBindings='{{{compileBindings}}}'>
+                <local:ErrorCollectingTextBox Text='{Binding NullableSecond?.Final}'/>
+            </Window>
+            """;
+        var data = new First { NullableSecond = null };
+        var window = CreateTarget(xaml, data);
+        var textBox = Assert.IsType<ErrorCollectingTextBox>(window.Content);
+
+        Assert.Null(textBox.Text);
+        Assert.Null(textBox.Error);
+        Assert.Equal(BindingValueType.Value, textBox.ErrorState);
+        Assert.Empty(log.Messages);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Should_Read_Property_With_Null_Conditional_Operator_For_Nullable_Struct(bool compileBindings)
+    {
+        using var app = Start();
+        using var log = TestLogger.Create();
+        var xaml = $$$"""
+            <Window xmlns='https://github.com/avaloniaui'
+                    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                    xmlns:local='using:Avalonia.Base.UnitTests.Data.Core'
+                    x:DataType='local:NullConditionalBindingTests+First'
+                    x:CompileBindings='{{{compileBindings}}}'>
+                <local:ErrorCollectingTextBox Text='{Binding NullableSecond?.Final}'/>
+            </Window>
+            """;
+        var data = new First { NullableSecond = new NullableSecondValue { Final = "foo" } };
+        var window = CreateTarget(xaml, data);
+        var textBox = Assert.IsType<ErrorCollectingTextBox>(window.Content);
+
+        Assert.Equal("foo", textBox.Text);
+        Assert.Null(textBox.Error);
+        Assert.Equal(BindingValueType.Value, textBox.ErrorState);
+        Assert.Empty(log.Messages);
+    }
+
+    [Fact]
+    public void Should_Access_Value_Of_Nullable_Struct()
+    {
+        // Only compiled bindings: boxing erases Nullable<T>, so reflection bindings never see
+        // Value or HasValue.
+        using var app = Start();
+        using var log = TestLogger.Create();
+        var xaml = """
+            <Window xmlns='https://github.com/avaloniaui'
+                    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                    xmlns:local='using:Avalonia.Base.UnitTests.Data.Core'
+                    x:DataType='local:NullConditionalBindingTests+First'
+                    x:CompileBindings='True'>
+                <local:ErrorCollectingTextBox Text='{Binding NullableSecond.Value.Final}'/>
+            </Window>
+            """;
+        var data = new First { NullableSecond = new NullableSecondValue { Final = "foo" } };
+        var window = CreateTarget(xaml, data);
+        var textBox = Assert.IsType<ErrorCollectingTextBox>(window.Content);
+
+        Assert.Equal("foo", textBox.Text);
+        Assert.Null(textBox.Error);
+        Assert.Empty(log.Messages);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Should_Read_Value_Property_Of_Struct_With_Null_Conditional_Operator(bool compileBindings)
+    {
+        // As in C#, ?. binds to the member of T, not to Nullable<T>.Value.
+        using var app = Start();
+        using var log = TestLogger.Create();
+        var xaml = $$$"""
+            <Window xmlns='https://github.com/avaloniaui'
+                    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                    xmlns:local='using:Avalonia.Base.UnitTests.Data.Core'
+                    x:DataType='local:NullConditionalBindingTests+First'
+                    x:CompileBindings='{{{compileBindings}}}'>
+                <local:ErrorCollectingTextBox Text='{Binding NullableWithValue?.Value}'/>
+            </Window>
+            """;
+        var data = new First { NullableWithValue = new StructWithValue { Value = "foo" } };
+        var window = CreateTarget(xaml, data);
+        var textBox = Assert.IsType<ErrorCollectingTextBox>(window.Content);
+
+        Assert.Equal("foo", textBox.Text);
+        Assert.Null(textBox.Error);
+        Assert.Empty(log.Messages);
+    }
+
+    [Theory]
+    [InlineData("NullableSecond?.Value.Final")]
+    [InlineData("NullableSecond?.HasValue")]
+    public void Should_Not_Compile_Nullable_Member_With_Null_Conditional_Operator(string path)
+    {
+        using var app = Start();
+        var xaml = $$"""
+            <Window xmlns='https://github.com/avaloniaui'
+                    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                    xmlns:local='using:Avalonia.Base.UnitTests.Data.Core'
+                    x:DataType='local:NullConditionalBindingTests+First'
+                    x:CompileBindings='True'>
+                <TextBlock Tag='{Binding {{path}}}'/>
+            </Window>
+            """;
+
+        Assert.ThrowsAny<XmlException>(() => AvaloniaRuntimeXamlLoader.Load(xaml));
+    }
+
     private static IDisposable Start()
     {
         return UnitTestApplication.Start(TestServices.StyledWindow);
+    }
+
+    public struct NullableSecondValue
+    {
+        public string? Final { get; set; }
+    }
+
+    public struct StructWithValue
+    {
+        public string? Value { get; set; }
     }
 
     public class First : StyledElement
@@ -423,6 +556,10 @@ public class NullConditionalBindingTests
             AvaloniaProperty.Register<First, Second?>(nameof(StyledSecond));
 
         public Second? Second { get; set; }
+
+        public NullableSecondValue? NullableSecond { get; set; }
+
+        public StructWithValue? NullableWithValue { get; set; }
 
         public Second? StyledSecond
         {
