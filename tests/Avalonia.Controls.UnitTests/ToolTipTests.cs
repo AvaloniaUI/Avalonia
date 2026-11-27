@@ -76,6 +76,35 @@ namespace Avalonia.Controls.UnitTests
 
             AssertToolTipOpen(target);
         }
+
+        [Fact]
+        public void Should_Set_ToolTip_Kind_On_Popup_Window_Before_Showing_It()
+        {
+            using var app = UnitTestApplication.Start(ConfigureServices(TestServices.FocusableWindow));
+
+            var target = new Decorator
+            {
+                [ToolTip.TipProperty] = "Tip",
+                [ToolTip.ShowDelayProperty] = 0
+            };
+
+            var scope = SetupWindow(target);
+
+            var windowImpl = Mock.Get(scope.Window.PlatformImpl!);
+            var popupImpl = MockWindowingPlatform.CreatePopupMock(windowImpl.Object);
+            PopupKind? kind = null, kindWhenShown = null;
+            popupImpl.As<IPopupWithKindImpl>()
+                .Setup(x => x.SetPopupKind(It.IsAny<PopupKind>()))
+                .Callback<PopupKind>(x => kind = x);
+            popupImpl.Setup(x => x.Show(It.IsAny<bool>(), It.IsAny<bool>()))
+                .Callback(() => kindWhenShown = kind);
+            windowImpl.Setup(x => x.CreatePopup()).Returns(popupImpl.Object);
+
+            scope.MouseEnter(target);
+            AssertToolTipOpen(target);
+
+            Assert.Equal(PopupKind.ToolTip, kindWhenShown);
+        }
     }
 
     public class ToolTipTests_Overlay : ToolTipTests, IDisposable

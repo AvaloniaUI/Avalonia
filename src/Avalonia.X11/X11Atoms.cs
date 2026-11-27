@@ -182,6 +182,8 @@ namespace Avalonia.X11
         public IntPtr _NET_WM_WINDOW_TYPE_SPLASH;
         public IntPtr _NET_WM_WINDOW_TYPE_DIALOG;
         public IntPtr _NET_WM_WINDOW_TYPE_NORMAL;
+        public IntPtr _NET_WM_WINDOW_TYPE_POPUP_MENU;
+        public IntPtr _NET_WM_WINDOW_TYPE_TOOLTIP;
         public IntPtr CLIPBOARD;
         public IntPtr CLIPBOARD_MANAGER;
         public IntPtr SAVE_TARGETS;
