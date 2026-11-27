@@ -22,13 +22,15 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <item>BS1: CR LF is deleted as one unit.</item>
         /// <item>BS2: A variation selector is deleted with the codepoint it modifies.</item>
         /// <item>BS3: A regional indicator that completes a flag is deleted with its partner.</item>
+        /// <item>BS4: A tag character is deleted with the tag characters before it, which leaves the base
+        /// of a tag sequence such as the black flag of a subdivision flag.</item>
         /// </list>
         /// Then, unless the deletion is a line break:
         /// <list type="bullet">
-        /// <item>BS4: A zero width joiner before the deletion is deleted with it.</item>
+        /// <item>BS5: A zero width joiner before the deletion is deleted with it.</item>
         /// </list>
         /// Deleting only part of those sequences leaves text nobody typed on purpose: a text-style glyph, a
-        /// lone regional indicator, or an invisible joiner that takes another press.
+        /// lone regional indicator, or invisible tags and joiners that each take another press.
         /// </remarks>
         /// <param name="offset">The caret offset.</param>
         /// <param name="text">The text the caret is in.</param>
@@ -65,8 +67,23 @@ namespace Avalonia.Media.TextFormatting.Unicode
             {
                 start = PreviousCodepointStart(start, text, out _);
             }
-
             // BS4
+            else if (IsTag(deleted))
+            {
+                while (start > 0)
+                {
+                    var previousStart = PreviousCodepointStart(start, text, out var previous);
+
+                    if (!IsTag(previous))
+                    {
+                        break;
+                    }
+
+                    start = previousStart;
+                }
+            }
+
+            // BS5
             if (start > 0 && text[start - 1] == ZeroWidthJoiner)
             {
                 start--;
@@ -104,6 +121,10 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
             return count;
         }
+
+        // The Tags block: tag spec characters and the cancel tag.
+        private static bool IsTag(Codepoint codepoint)
+            => codepoint.Value is >= 0xE0020 and <= 0xE007F;
 
         private static bool IsRegionalIndicator(Codepoint codepoint)
             => codepoint.GraphemeBreakClass == GraphemeBreakClass.RegionalIndicator;
