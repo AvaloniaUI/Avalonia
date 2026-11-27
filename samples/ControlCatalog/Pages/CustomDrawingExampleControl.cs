@@ -40,7 +40,6 @@ namespace ControlCatalog.Pages
         public CustomDrawingExampleControl()
         {
             _pen = new Pen(new SolidColorBrush(Colors.Black), lineCap: PenLineCap.Round);
-
             var _arc = new ArcSegment()
             {
                 IsLargeArc = false,
@@ -146,7 +145,7 @@ namespace ControlCatalog.Pages
 
             Point cursorInWorldPoint = UIPointToWorldPoint(_cursorPoint, ViewportCenterX, ViewportCenterY, Scale, Rotation);
             context.DrawEllipse(Brushes.Gray, _pen, cursorInWorldPoint, 20.0d, 20.0d);
-            
+
 
             for (int i = 0; i < 10; i++)
             {
