@@ -77,8 +77,13 @@ namespace Avalonia.X11
             {
                 (_ime, _imeControl) = ime.Value;
                 _imeControl.Commit += s =>
-                    ScheduleInput(new RawTextInputEventArgs(_keyboard, (ulong)_x11.LastActivityTimestamp.ToInt64(),
-                        InputRoot, s));
+                {
+                    var input = new RawTextInputEventArgs(_keyboard, (ulong)_x11.LastActivityTimestamp.ToInt64(), InputRoot, s);
+                    if (_imeControl is IX11SynchronousInputMethodControl)
+                        DispatchInput(input);
+                    else
+                        ScheduleInput(input);
+                };
                 _imeControl.ForwardKey += OnImeControlForwardKey;
             }
         }
@@ -98,7 +103,7 @@ namespace Avalonia.X11
                     (RawInputModifiers)forwardedKey.Modifiers,
                     PhysicalKey.None,
                     keySymbol,
-                    keySymbol) :
+                    FilterControlChars(forwardedKey.Text ?? keySymbol)) :
                 new RawKeyEventArgs(
                     _keyboard,
                     (ulong)_x11.LastActivityTimestamp.ToInt64(),
@@ -116,10 +121,17 @@ namespace Avalonia.X11
                 VirtualKey = x11Key != 0 ? (uint)x11Key : null
             };
 
-            ScheduleInput(args);
+            if (_imeControl is IX11SynchronousInputMethodControl)
+                DispatchInput(args);
+            else
+                ScheduleInput(args);
         }
 
-        private void UpdateImePosition() => _imeControl?.UpdateWindowInfo(_position ?? default, RenderScaling);
+        private void UpdateImePosition()
+        {
+            _imeControl?.UpdateWindowInfo(_position ?? default, RenderScaling);
+            (_imeControl as IX11InputMethodWithInputPane)?.UpdateClientSize(ClientSize);
+        }
 
         private void HandleKeyEvent(ref XEvent ev)
         {

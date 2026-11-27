@@ -17,6 +17,7 @@ internal class X11ActiveWindowTracker
     private IntPtr _activeWindow;
 
     public event Action<IntPtr>? ActiveWindowChanged;
+    public IntPtr ActiveWindow => _activeWindow;
 
     public X11ActiveWindowTracker(AvaloniaX11Platform platform)
     {

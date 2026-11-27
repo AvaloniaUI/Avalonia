@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Avalonia Input
+Comment=Native Ubuntu Touch input
+Exec=./launch.sh
+Icon=icon.svg
+Terminal=false
+Type=Application
+X-Ubuntu-Touch=true
+X-Ubuntu-XMir-Enable=true

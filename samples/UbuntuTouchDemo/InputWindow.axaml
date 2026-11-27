@@ -1,0 +1,62 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:input="using:Avalonia.Input.TextInput"
+        x:Class="UbuntuTouchDemo.InputWindow"
+        Title="Avalonia · Ubuntu Touch"
+        Width="408" Height="760" FontSize="16">
+  <Window.Resources>
+    <DataTemplate x:Key="DynamicFieldTemplate">
+      <TextBox PlaceholderText="Dynamic field"
+               GotFocus="OnFieldGotFocus" TextChanged="OnFieldTextChanged" />
+    </DataTemplate>
+  </Window.Resources>
+  <Window.Styles>
+    <Style Selector="TextBox">
+      <Setter Property="MinHeight" Value="48" />
+      <Setter Property="TextWrapping" Value="Wrap" />
+      <Setter Property="input:TextInputOptions.ContentType" Value="Normal" />
+      <Setter Property="input:TextInputOptions.AutoCapitalization" Value="True" />
+      <Setter Property="input:TextInputOptions.ShowSuggestions" Value="True" />
+    </Style>
+    <Style Selector="Button">
+      <Setter Property="MinHeight" Value="48" />
+      <Setter Property="Focusable" Value="False" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+  </Window.Styles>
+  <ScrollViewer x:Name="FormScroll">
+    <StackPanel x:Name="Form" Spacing="10" Margin="16">
+      <TextBlock Text="Native Avalonia input" FontSize="24" />
+      <TextBlock x:Name="KeyboardStatus" Text="Tap a field to open the keyboard" TextWrapping="Wrap" />
+      <TextBox PlaceholderText="Text"
+               GotFocus="OnFieldGotFocus" TextChanged="OnFieldTextChanged" />
+      <TextBox PlaceholderText="Number"
+               input:TextInputOptions.ContentType="Number"
+               input:TextInputOptions.AutoCapitalization="False"
+               input:TextInputOptions.ShowSuggestions="False"
+               GotFocus="OnFieldGotFocus" TextChanged="OnFieldTextChanged" />
+      <TextBox PlaceholderText="Password" PasswordChar="●"
+               input:TextInputOptions.ContentType="Password"
+               input:TextInputOptions.AutoCapitalization="False"
+               input:TextInputOptions.ShowSuggestions="False"
+               GotFocus="OnFieldGotFocus" TextChanged="OnFieldTextChanged" />
+      <TextBox PlaceholderText="Email"
+               input:TextInputOptions.ContentType="Email"
+               input:TextInputOptions.AutoCapitalization="False"
+               input:TextInputOptions.ShowSuggestions="False"
+               GotFocus="OnFieldGotFocus" TextChanged="OnFieldTextChanged" />
+      <TextBox PlaceholderText="Multiline" AcceptsReturn="True" MinHeight="100"
+               GotFocus="OnFieldGotFocus" TextChanged="OnFieldTextChanged" />
+      <StackPanel Orientation="Horizontal" Spacing="8">
+        <Button Content="Copy" Click="OnCopyClick" />
+        <Button Content="Cut" Click="OnCutClick" />
+        <Button Content="Paste" Click="OnPasteClick" />
+      </StackPanel>
+      <StackPanel Orientation="Horizontal" Spacing="8">
+        <Button Content="+ Field" Click="OnAddFieldClick" />
+        <Button Content="Dialog" Click="OnDialogClick" />
+      </StackPanel>
+    </StackPanel>
+  </ScrollViewer>
+</Window>
