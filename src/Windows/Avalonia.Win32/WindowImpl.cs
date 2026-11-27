@@ -79,6 +79,7 @@ namespace Avalonia.Win32
         private readonly IPlatformRenderSurface? _glSurface;
         private readonly bool _wmPointerEnabled;
         private Action? _pendingDrag;
+        private Action? _cancelPendingDrag;
         private bool _dragRequestedFromPointer;
 
         private readonly Win32NativeControlHost _nativeControlHost;
@@ -774,19 +775,12 @@ namespace Avalonia.Win32
                 throw new InvalidOperationException("BeginMoveDrag Failed");
             }
 
-            _dragRequestedFromPointer = e.Pointer.Type != PointerType.Mouse;
-
-            Dispatcher.UIThread.Post(() =>
+            if (TrySetPendingDrag(e, StartMoveDrag))
             {
-                if (e.Pointer.Type != PointerType.Mouse && GetKeyState(VirtualKeyStates.VK_LBUTTON) >= 0)
-                {
-                    _pendingDrag = StartMoveDrag;
-                }
-                else
-                {
-                    StartMoveDrag();
-                }
-            }, DispatcherPriority.Send);
+                return;
+            }
+
+            Dispatcher.UIThread.Post(StartMoveDrag, DispatcherPriority.Send);
         }
 
         private void StartMoveDrag()
@@ -808,12 +802,7 @@ namespace Avalonia.Win32
 #else
                 e.Pointer.Capture(null);
 
-                if (e.Pointer.Type != PointerType.Mouse && GetKeyState(VirtualKeyStates.VK_LBUTTON) >= 0)
-                {
-                    _dragRequestedFromPointer = true;
-                    _pendingDrag = () => StartResizeDrag(edge);
-                }
-                else
+                if (!TrySetPendingDrag(e, () => StartResizeDrag(edge)))
                 {
                     StartResizeDrag(edge);
                 }
@@ -825,6 +814,40 @@ namespace Avalonia.Win32
         {
             DefWindowProc(_hwnd, (int)WindowsMessage.WM_NCLBUTTONDOWN,
                 new IntPtr((int)s_edgeLookup[edge]), IntPtr.Zero);
+        }
+
+        internal bool TrySetPendingDrag(PointerPressedEventArgs e, Action drag, Action? cancel = null)
+        {
+            // The drag waits for the left button that Windows emulates from the primary contact once it goes down.
+            if (e.Pointer.Type == PointerType.Mouse
+                || !e.Pointer.IsPrimary
+                || GetKeyState(VirtualKeyStates.VK_LBUTTON) < 0)
+            {
+                return false;
+            }
+
+            // A gesture recognizer further up would otherwise claim the pointer while the drag waits for that button.
+            e.PreventGestureRecognition();
+
+            // The emulated button only arrives if this pointer message also gets its default handling.
+            _dragRequestedFromPointer = true;
+            SetPendingDrag(drag, cancel);
+            return true;
+        }
+
+        private void SetPendingDrag(Action drag, Action? cancel = null)
+        {
+            CancelPendingDrag();
+            _pendingDrag = drag;
+            _cancelPendingDrag = cancel;
+        }
+
+        private void CancelPendingDrag()
+        {
+            var cancel = _cancelPendingDrag;
+            _pendingDrag = null;
+            _cancelPendingDrag = null;
+            cancel?.Invoke();
         }
 
         public void SetTitle(string? title)
