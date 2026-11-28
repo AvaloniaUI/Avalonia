@@ -4,6 +4,7 @@ import { IMemoryView } from "../../types/dotnet";
 import { StorageItem } from "../storage/storageItem";
 import { InputQueue } from "./inputQueue";
 import { RecordType } from "./inputLayout.g";
+declare var EditContext: any;
 
 /*
 * This is a hack to handle older Firefox (before v127 from June 2024) clipboard events in a more convenient way for framework users.
@@ -338,16 +339,49 @@ export class InputHelper {
     public static subscribeInputEvents(element: HTMLInputElement, topLevelId: number) {
         const keySub = this.subscribeKeyEvents(element, topLevelId);
         const pointerSub = this.subscribePointerEvents(element, topLevelId);
-        const textSub = this.subscribeTextEvents(element, topLevelId);
         const dndSub = this.subscribeDropEvents(element, topLevelId);
         const paneSub = this.subscribeKeyboardGeometryChange(element, topLevelId);
 
         return () => {
             keySub();
             pointerSub();
-            textSub();
             dndSub();
             paneSub();
+        };
+    }
+
+    public static subscribeEditContextEvents(editContext: EditContext, topLevelId: number) {
+        // EditContext events bypass the input queue; flushing first keeps them ordered after queued input.
+        const textUpdateHandler = (args: TextUpdateEvent) => {
+            InputQueue.flush();
+            JsExports.InputHelper.OnTextUpdate(topLevelId, args.timeStamp,
+                args.updateRangeStart, args.updateRangeEnd, args.text, args.selectionStart, args.selectionEnd);
+        };
+        editContext.addEventListener("textupdate", textUpdateHandler);
+
+        const compositionStartHandler = (args: Event) => {
+            InputQueue.flush();
+            JsExports.InputHelper.OnCompositionStart(topLevelId);
+        };
+        editContext.addEventListener("compositionstart", compositionStartHandler);
+
+        const characterBoundsUpdateHandler = (args: CharacterBoundsUpdateEvent) => {
+            JsExports.InputHelper.OnCharacterBoundsUpdate(topLevelId,
+                args.rangeStart, args.rangeEnd);
+        };
+        editContext.addEventListener("characterboundsupdate", characterBoundsUpdateHandler);
+
+        const compositionEndHandler = (args: Event) => {
+            InputQueue.flush();
+            JsExports.InputHelper.OnCompositionEnd(topLevelId);
+        };
+        editContext.addEventListener("compositionend", compositionEndHandler);
+
+        return () => {
+            editContext.removeEventListener("textupdate", textUpdateHandler);
+            editContext.removeEventListener("compositionstart", compositionStartHandler);
+            editContext.removeEventListener("characterboundsupdate", characterBoundsUpdateHandler);
+            editContext.removeEventListener("compositionend", compositionEndHandler);
         };
     }
 
@@ -380,56 +414,6 @@ export class InputHelper {
         return () => {
             element.removeEventListener("keydown", keyDownHandler);
             element.removeEventListener("keyup", keyUpHandler);
-        };
-    }
-
-    public static subscribeTextEvents(
-        element: HTMLInputElement,
-        topLevelId: number) {
-        // Text events bypass the input queue; flushing first keeps them ordered after queued input.
-        const compositionStartHandler = (args: CompositionEvent) => {
-            InputQueue.flush();
-            JsExports.InputHelper.OnCompositionStart(topLevelId);
-        };
-        element.addEventListener("compositionstart", compositionStartHandler);
-
-        const beforeInputHandler = (args: InputEvent) => {
-            InputQueue.flush();
-
-            const ranges = args.getTargetRanges();
-            let start = -1;
-            let end = -1;
-            if (ranges.length > 0) {
-                start = ranges[0].startOffset;
-                end = ranges[0].endOffset;
-            }
-
-            if (args.inputType === "insertCompositionText") {
-                start = 2;
-                end = start + 2;
-            }
-
-            JsExports.InputHelper.OnBeforeInput(topLevelId, args.inputType, start, end);
-        };
-        element.addEventListener("beforeinput", beforeInputHandler);
-
-        const compositionUpdateHandler = (args: CompositionEvent) => {
-            InputQueue.flush();
-            JsExports.InputHelper.OnCompositionUpdate(topLevelId, args.data);
-        };
-        element.addEventListener("compositionupdate", compositionUpdateHandler);
-
-        const compositionEndHandler = (args: CompositionEvent) => {
-            InputQueue.flush();
-            JsExports.InputHelper.OnCompositionEnd(topLevelId, args.timeStamp, args.data);
-            args.preventDefault();
-        };
-        element.addEventListener("compositionend", compositionEndHandler);
-
-        return () => {
-            element.removeEventListener("compositionstart", compositionStartHandler);
-            element.removeEventListener("compositionupdate", compositionUpdateHandler);
-            element.removeEventListener("compositionend", compositionEndHandler);
         };
     }
 
@@ -548,6 +532,44 @@ export class InputHelper {
 
     public static focusElement(inputElement: HTMLElement) {
         inputElement.focus();
+    }
+
+    public static attachEditContext(inputElement: HTMLElement): EditContext {
+        if (inputElement.editContext != undefined)
+            inputElement.editContext = undefined;
+
+        const editContext = new EditContext();
+
+        inputElement.editContext = editContext;
+        return editContext;
+    }
+
+    public static detachEditContext(inputElement: HTMLElement) {
+        inputElement.editContext = undefined; DOMRect
+    }
+
+    public static updateText(editContext: EditContext, rangeStart: number, rangeEnd: number, text: string) {
+        editContext.updateText(rangeStart, rangeEnd, text);
+    }
+
+    public static clearText(editContext: EditContext) {
+        editContext.updateText(0, editContext.text.length, "");
+    }
+
+    public static updateSelection(editContext: EditContext, start: number, end: number) {
+        editContext.updateSelection(start, end);
+    }
+
+    public static updateControlBounds(editContext: EditContext, x: number, y: number, width: number, height: number) {
+        editContext.updateControlBounds(new DOMRect(x, y, width, height));
+    }
+
+    public static updateSelectionBounds(editContext: EditContext, x: number, y: number, width: number, height: number) {
+        editContext.updateSelectionBounds(new DOMRect(x, y, width, height));
+    }
+
+    public static updateCharacterBounds(editContext: EditContext, rangeStart: number, x: number, y: number, width: number, height: number) {
+        editContext.updateCharacterBounds(rangeStart, [new DOMRect(x, y, width, height)]);
     }
 
     public static setCursor(inputElement: HTMLInputElement, kind: string) {

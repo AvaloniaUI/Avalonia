@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices.JavaScript;
 using Avalonia.Browser.Interop;
+using Avalonia.Browser.Text;
 using Avalonia.Collections.Pooled;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
@@ -33,13 +34,13 @@ internal class BrowserInputHandler
 
         _rawEventGrouper = new RawEventGrouper(DispatchInput, BrowserWindowingPlatform.EventGrouperDispatchQueue);
 
-        TextInputMethod = new BrowserTextInputMethod(this, container, inputElement);
+        TextInputMethod = new BrowserTextInputMethod(this, container, inputElement, topLevelId);
         InputPane = new BrowserInputPane();
 
         InputHelper.SubscribeInputEvents(container, topLevelId);
     }
 
-    public BrowserTextInputMethod TextInputMethod { get; }
+    public BrowserTextInputMethod? TextInputMethod { get; }
     public BrowserInputPane InputPane { get; }
 
     internal void SetInputRoot(IInputRoot inputRoot)
@@ -171,6 +172,21 @@ internal class BrowserInputHandler
         // And instead assume, that event is handled for any "drop" and "drag-over" stages.
         return eventType is RawDragEventType.Drop or RawDragEventType.DragOver
                && dropEffect != DragDropEffects.None;
+    }
+
+    // Key events synthesized from text input bypass the input queue like the text events themselves.
+    internal bool RawKeyEvent(RawKeyEventType type, ulong timestamp, string domCode, string domKey)
+    {
+        if (_inputRoot is null)
+            return false;
+
+        var physicalKey = KeyInterop.PhysicalKeyFromDomCode(domCode);
+        var args = new RawKeyEventArgs(BrowserWindowingPlatform.Keyboard, timestamp, _inputRoot, type,
+            KeyInterop.KeyFromDomKey(domKey, physicalKey), RawInputModifiers.None, physicalKey,
+            KeyInterop.KeySymbolFromDomKey(domKey));
+        ScheduleDirectInput(args);
+
+        return args.Handled;
     }
 
     // timestamp is the DOM event's timeStamp, the same clock as queued input records.
