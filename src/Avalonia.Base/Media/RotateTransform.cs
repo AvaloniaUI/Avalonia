@@ -32,7 +32,6 @@ namespace Avalonia.Media
         /// </summary>
         public RotateTransform()
         {
-            this.GetObservable(AngleProperty).Subscribe(_ => RaiseChanged());
         }
 
         /// <summary>
@@ -92,5 +91,15 @@ namespace Avalonia.Media
         public override Matrix Value => Matrix.CreateTranslation(-CenterX, -CenterY) *
             Matrix.CreateRotation(Matrix.ToRadians(Angle)) *
             Matrix.CreateTranslation(CenterX, CenterY);
+
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == AngleProperty || change.Property == CenterXProperty || change.Property == CenterYProperty)
+            {
+                RaiseChanged();
+            }
+        }
     }
 }

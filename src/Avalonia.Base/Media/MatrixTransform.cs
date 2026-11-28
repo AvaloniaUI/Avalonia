@@ -20,7 +20,6 @@ namespace Avalonia.Media
         /// </summary>
         public MatrixTransform()
         {
-            this.GetObservable(MatrixProperty).Subscribe(_ => RaiseChanged());
         }
 
         /// <summary>
@@ -46,5 +45,15 @@ namespace Avalonia.Media
         /// Gets the matrix.
         /// </summary>
         public override Matrix Value => Matrix;
+
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == MatrixProperty)
+            {
+                RaiseChanged();
+            }
+        }
     }
 }
