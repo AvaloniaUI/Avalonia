@@ -6,9 +6,12 @@ using System.Diagnostics.CodeAnalysis;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
 using Avalonia.Metadata;
 using Avalonia.Reactive;
+using Avalonia.Styling;
 using Avalonia.Threading;
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls
 {
@@ -20,6 +23,7 @@ namespace Avalonia.Controls
     [TemplatePart("PART_OverflowPopup",    typeof(Popup))]
     [TemplatePart("PART_OverflowPresenter", typeof(ItemsControl))]
     [TemplatePart("PART_ContentPresenter",  typeof(Control))]
+    [TemplatePart("PART_PrimaryCommands",   typeof(ItemsControl))]
     public class CommandBar : TemplatedControl
     {
         /// <summary>
@@ -134,6 +138,7 @@ namespace Avalonia.Controls
         private Popup? _overflowPopup;
         private ItemsControl? _overflowPresenter;
         private Control? _contentPresenter;
+        private ItemsControl? _primaryCommandsPresenter;
 
         private readonly ObservableCollection<ICommandBarElement> _visiblePrimaryCommands = new();
         private readonly ObservableCollection<ICommandBarElement> _overflowItems = new();
@@ -144,7 +149,18 @@ namespace Avalonia.Controls
         private bool _isOpeningOverflowPopup;
         private bool _hasDeferredDynamicOverflowUpdate;
         private double _constraintWidth = double.PositiveInfinity;
+        private readonly HashSet<ICommandBarElement> _overflowedPrimaryCommands = new(ReferenceEqualityComparer.Instance);
+        private readonly Dictionary<ICommandBarElement, double> _measuredWidths = new(ReferenceEqualityComparer.Instance);
+        private double _itemGap;
+        private double _overflowButtonWidth = DefaultOverflowButtonWidth;
+        private bool _isOverflowButtonMeasured;
+        private double _separatorWidth;
+        private ThemeVariant? _measuredThemeVariant;
+        private bool _isMeasuring;
         private bool _openedViaKeyboard;
+
+        // The width the overflow button is assumed to take before it has been measured.
+        private const double DefaultOverflowButtonWidth = 48;
 
         public CommandBar()
         {
@@ -157,7 +173,7 @@ namespace Avalonia.Controls
             var secondaryCommands = new ObservableCollection<ICommandBarElement>();
             SetCurrentValue(SecondaryCommandsProperty, (IList<ICommandBarElement>)secondaryCommands);
 
-            RebuildCommandVisibilitySubscriptions(PrimaryCommands, _primaryCommandVisibilitySubscriptions);
+            RebuildCommandVisibilitySubscriptions(PrimaryCommands, _primaryCommandVisibilitySubscriptions, isPrimary: true);
             RebuildCommandVisibilitySubscriptions(SecondaryCommands, _secondaryCommandVisibilitySubscriptions);
             SizeChanged += CommandBar_SizeChanged;
         }
@@ -275,6 +291,10 @@ namespace Avalonia.Controls
         /// Gets or sets the estimated item width used in dynamic-overflow calculations
         /// when <see cref="DefaultLabelPosition"/> is <see cref="CommandBarDefaultLabelPosition.Bottom"/>.
         /// </summary>
+        /// <remarks>
+        /// A command bar whose template has PART_PrimaryCommands fits its primary commands by the widths they
+        /// measured in it, and uses the estimate only for a command it has not shown yet.
+        /// </remarks>
         public double ItemWidthBottom
         {
             get => GetValue(ItemWidthBottomProperty);
@@ -285,6 +305,10 @@ namespace Avalonia.Controls
         /// Gets or sets the estimated item width used in dynamic-overflow calculations
         /// when <see cref="DefaultLabelPosition"/> is <see cref="CommandBarDefaultLabelPosition.Right"/>.
         /// </summary>
+        /// <remarks>
+        /// A command bar whose template has PART_PrimaryCommands fits its primary commands by the widths they
+        /// measured in it, and uses the estimate only for a command it has not shown yet.
+        /// </remarks>
         public double ItemWidthRight
         {
             get => GetValue(ItemWidthRightProperty);
@@ -295,6 +319,10 @@ namespace Avalonia.Controls
         /// Gets or sets the estimated item width used in dynamic-overflow calculations
         /// when <see cref="DefaultLabelPosition"/> is <see cref="CommandBarDefaultLabelPosition.Collapsed"/>.
         /// </summary>
+        /// <remarks>
+        /// A command bar whose template has PART_PrimaryCommands fits its primary commands by the widths they
+        /// measured in it, and uses the estimate only for a command it has not shown yet.
+        /// </remarks>
         public double ItemWidthCollapsed
         {
             get => GetValue(ItemWidthCollapsedProperty);
@@ -375,6 +403,8 @@ namespace Avalonia.Controls
             _overflowPopup = e.NameScope.Find<Popup>("PART_OverflowPopup");
             _overflowPresenter = e.NameScope.Find<ItemsControl>("PART_OverflowPresenter");
             _contentPresenter = e.NameScope.Find<Control>("PART_ContentPresenter");
+            _primaryCommandsPresenter = e.NameScope.Find<ItemsControl>("PART_PrimaryCommands");
+            ForgetMeasuredWidths();
 
             if (_overflowButton != null)
             {
@@ -391,13 +421,18 @@ namespace Avalonia.Controls
             ApplyLabelPositionToChildren();
             UpdateOverflowButtonVisibility();
             UpdateStickyBehavior();
-            RequestDynamicOverflowUpdate();
+
+            // The template is applied as the bar is measured, which places the commands.
+            if (IsDynamicOverflowEnabled && _primaryCommandsPresenter is not null)
+                _hasDeferredDynamicOverflowUpdate = true;
+            else
+                RequestDynamicOverflowUpdate();
         }
 
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
-            RebuildCommandVisibilitySubscriptions(PrimaryCommands, _primaryCommandVisibilitySubscriptions);
+            RebuildCommandVisibilitySubscriptions(PrimaryCommands, _primaryCommandVisibilitySubscriptions, isPrimary: true);
             RebuildCommandVisibilitySubscriptions(SecondaryCommands, _secondaryCommandVisibilitySubscriptions);
             RequestDynamicOverflowUpdate();
         }
@@ -443,8 +478,21 @@ namespace Avalonia.Controls
                     RaiseEvent(new RoutedEventArgs(ClosedEvent));
                 }
             }
+            else if (change.Property == ThemeVariant.ActualThemeVariantProperty)
+            {
+                // Commands can measure differently in another theme variant. A detached bar has none, so only a variant other
+                // than the one the widths were measured in counts, also when the bar is attached somewhere else.
+                if (change.NewValue is ThemeVariant variant && _measuredThemeVariant is not null && variant != _measuredThemeVariant)
+                {
+                    ForgetMeasuredWidths();
+                    if (IsDynamicOverflowEnabled)
+                        RequestDynamicOverflowUpdate();
+                }
+            }
             else if (change.Property == DefaultLabelPositionProperty)
             {
+                // Commands measure differently with another label position.
+                ForgetMeasuredWidths();
                 ApplyLabelPositionToChildren();
                 if (IsDynamicOverflowEnabled)
                     RequestDynamicOverflowUpdate();
@@ -452,6 +500,7 @@ namespace Avalonia.Controls
             else if (change.Property == OverflowButtonVisibilityProperty)
             {
                 UpdateOverflowButtonVisibility();
+                RequestDynamicOverflowUpdate();
             }
             else if (change.Property == IsStickyProperty)
             {
@@ -467,7 +516,8 @@ namespace Avalonia.Controls
                     oldPrimary.CollectionChanged -= OnPrimaryCommandsChanged;
                 if (change.NewValue is INotifyCollectionChanged newPrimary)
                     newPrimary.CollectionChanged += OnPrimaryCommandsChanged;
-                RebuildCommandVisibilitySubscriptions(PrimaryCommands, _primaryCommandVisibilitySubscriptions);
+                RebuildCommandVisibilitySubscriptions(PrimaryCommands, _primaryCommandVisibilitySubscriptions, isPrimary: true);
+                ForgetRemovedPrimaryCommands();
                 ApplyLabelPositionToChildren();
                 RequestDynamicOverflowUpdate();
             }
@@ -489,18 +539,269 @@ namespace Avalonia.Controls
                 ? availableSize.Width
                 : double.PositiveInfinity;
 
-            if (newConstraint != _constraintWidth)
+            if (!IsDynamicOverflowEnabled || _primaryCommandsPresenter is null)
             {
-                _constraintWidth = newConstraint;
-                RequestDynamicOverflowUpdate();
+                if (newConstraint != _constraintWidth)
+                {
+                    _constraintWidth = newConstraint;
+                    RequestDynamicOverflowUpdate();
+                }
+
+                return base.MeasureOverride(availableSize);
             }
 
-            return base.MeasureOverride(availableSize);
+            _constraintWidth = newConstraint;
+            _isMeasuring = true;
+            try
+            {
+                return MeasureAndPlacePrimaryCommands(availableSize);
+            }
+            finally
+            {
+                _isMeasuring = false;
+            }
+        }
+
+        // Shows the highest-priority visible commands that fit the available width and moves the rest to the overflow, then
+        // measures the template for the available size. The width a number of commands needs is computed from the widths the
+        // commands, separators and overflow button last measured in the bar and compared with the space the items panel gets,
+        // as WinUI's CommandBar does, and checked by measuring the template again. A command moved to the overflow does not come back during the same measure, so one
+        // whose visibility or width depends on the placement does not move back and forth; only while the overflow button has
+        // not been measured yet may the measured width bring it back. As in WinUI, an overflowed command is not measured again
+        // until it shows, so one that gets narrower in the overflow comes back once its last width fits.
+        private Size MeasureAndPlacePrimaryCommands(Size availableSize)
+        {
+            var canOverflow = double.IsFinite(availableSize.Width) && availableSize.Width >= 50;
+            if (!canOverflow && _overflowedPrimaryCommands.Count > 0)
+            {
+                _overflowedPrimaryCommands.Clear();
+                UpdateDynamicOverflow();
+            }
+
+            var movedOut = new HashSet<ICommandBarElement>(ReferenceEqualityComparer.Instance);
+            var maxPasses = 2 * PrimaryCommands.Count + 6;
+            // Placement changes since the last measure, such as added commands, must reach the widths read below.
+            InvalidateTemplateMeasure();
+
+            for (var pass = 0; ; pass++)
+            {
+                if (_hasDeferredDynamicOverflowUpdate)
+                {
+                    _hasDeferredDynamicOverflowUpdate = false;
+                    UpdateDynamicOverflow();
+                    InvalidateTemplateMeasure();
+                }
+
+                if (canOverflow && pass < maxPasses && PlaceFittingCommands(availableSize, movedOut))
+                {
+                    UpdateDynamicOverflow();
+                    InvalidateTemplateMeasure();
+                    continue;
+                }
+
+                // An update requested meanwhile, such as by the visibility binding of a command attached to the bar, takes
+                // another pass; one that comes too late is applied by the next measure.
+                var size = base.MeasureOverride(availableSize);
+                if (!canOverflow)
+                    RecordMeasuredWidths();
+                if (!_hasDeferredDynamicOverflowUpdate || pass >= maxPasses)
+                    return size;
+            }
+        }
+
+        // Places the commands that fit the given width by the widths measured in the bar. Returns whether the placement changed.
+        private bool PlaceFittingCommands(Size availableSize, HashSet<ICommandBarElement> movedOut)
+        {
+            // The items panel measures its commands without a width limit, as their widths are what is compared, and gets the
+            // space the template leaves it, which grows by the overflow button while that shows.
+            base.MeasureOverride(availableSize);
+            RecordMeasuredWidths();
+            if (_primaryCommandsPresenter?.ItemsPanelRoot is not { } panel || LayoutInformation.GetPreviousMeasureConstraint(panel) is not { } space)
+                return false;
+            var commands = GetVisibleCommandsByPriority();
+            var buttonWidth = _overflowButton is { IsVisible: true } ? _overflowButton.DesiredSize.Width : 0;
+            var width = space.Width + buttonWidth;
+            if (!double.IsFinite(width))
+            {
+                // A template that does not limit the items panel, such as one with it in an Auto column, leaves it whatever the
+                // rest of the template does not take.
+                var templateWidth = base.MeasureOverride(new Size(double.PositiveInfinity, availableSize.Height)).Width;
+                width = availableSize.Width - (templateWidth - panel.DesiredSize.Width - buttonWidth);
+            }
+
+            var shown = CountFittingCommands(commands, width);
+            for (var i = 0; i < shown; i++)
+            {
+                if (movedOut.Contains(PrimaryCommands[commands[i]]))
+                    shown = i;
+            }
+
+            var changed = false;
+            for (var i = 0; i < commands.Count; i++)
+            {
+                var command = PrimaryCommands[commands[i]];
+                if (i < shown)
+                    changed |= _overflowedPrimaryCommands.Remove(command);
+                else if (_overflowedPrimaryCommands.Add(command))
+                {
+                    changed = true;
+                    if (_isOverflowButtonMeasured || !CanShowOverflowButton())
+                        movedOut.Add(command);
+                }
+            }
+
+            return changed;
+        }
+
+        // The indices of the visible primary commands, highest priority first: lower DynamicOverflowOrder, then earlier.
+        private List<int> GetVisibleCommandsByPriority()
+        {
+            var commands = new List<int>();
+            for (var i = 0; i < PrimaryCommands.Count; i++)
+            {
+                if (PrimaryCommands[i] is not CommandBarSeparator && IsCommandVisible(PrimaryCommands[i]))
+                    commands.Add(i);
+            }
+
+            commands.Sort((a, b) =>
+            {
+                var order = GetDynamicOverflowOrder(PrimaryCommands[a]).CompareTo(GetDynamicOverflowOrder(PrimaryCommands[b]));
+                return order != 0 ? order : a.CompareTo(b);
+            });
+            return commands;
+        }
+
+        // How many of the given commands, highest priority first, fit the given width together with the separators between
+        // them and the overflow button they need. One command stays while it has more than 32px.
+        private int CountFittingCommands(List<int> commands, double width)
+        {
+            if (MathUtilities.LessThanOrClose(GetRequiredWidth(commands, commands.Count), width))
+                return commands.Count;
+
+            // With a command in the overflow the button shows, so the width grows with every command shown.
+            int fitting = 0, notFitting = commands.Count;
+            while (notFitting - fitting > 1)
+            {
+                var middle = (fitting + notFitting) / 2;
+                if (MathUtilities.LessThanOrClose(GetRequiredWidth(commands, middle), width))
+                    fitting = middle;
+                else
+                    notFitting = middle;
+            }
+
+            return fitting == 0 && commands.Count > 0 && width - GetRequiredWidth(commands, 0) > 32 ? 1 : fitting;
+        }
+
+        // The width the items panel needs to show the first count commands, with the separators that remain between them and
+        // the gap between items, plus the overflow button when it shows.
+        private double GetRequiredWidth(List<int> commands, int count)
+        {
+            var shown = new HashSet<int>();
+            for (var i = 0; i < count; i++)
+                shown.Add(commands[i]);
+            if (count > 0)
+            {
+                for (var i = 0; i < PrimaryCommands.Count; i++)
+                {
+                    if (PrimaryCommands[i] is CommandBarSeparator && IsCommandVisible(PrimaryCommands[i]))
+                        shown.Add(i);
+                }
+            }
+
+            TrimOrphanedSeparatorsFromVisibleCommands(PrimaryCommands, shown);
+
+            var width = Math.Max(0, shown.Count - 1) * _itemGap;
+            foreach (var index in shown)
+            {
+                var command = PrimaryCommands[index];
+                if (_measuredWidths.TryGetValue(command, out var commandWidth))
+                    width += commandWidth;
+                else
+                    width += command is CommandBarSeparator ? _separatorWidth : GetItemWidth();
+            }
+
+            var showsButton = CanShowOverflowButton()
+                && (OverflowButtonVisibility == CommandBarOverflowButtonVisibility.Visible || count < commands.Count || SecondaryCommands.Count > 0);
+
+            return showsButton ? width + _overflowButtonWidth : width;
+        }
+
+        // Whether overflowed commands show the overflow button, whose width then counts.
+        private bool CanShowOverflowButton() => _overflowButton is not null && OverflowButtonVisibility != CommandBarOverflowButtonVisibility.Collapsed;
+
+        private double GetItemWidth() => DefaultLabelPosition switch
+        {
+            CommandBarDefaultLabelPosition.Right => ItemWidthRight,
+            CommandBarDefaultLabelPosition.Collapsed => ItemWidthCollapsed,
+            _ => ItemWidthBottom
+        };
+
+        // Records the widths the shown commands, separators and overflow button measured in the bar and the gap the items panel
+        // leaves between its items, such as StackPanel.Spacing.
+        private void RecordMeasuredWidths()
+        {
+            if (_overflowButton is { IsVisible: true })
+            {
+                _overflowButtonWidth = _overflowButton.DesiredSize.Width;
+                _isOverflowButtonMeasured = true;
+            }
+            _measuredThemeVariant = ActualThemeVariant;
+            if (_primaryCommandsPresenter?.ItemsPanelRoot is not { } panel)
+                return;
+
+            var itemsWidth = 0.0;
+            var items = 0;
+            foreach (var child in panel.Children)
+            {
+                if (!child.IsVisible)
+                    continue;
+                itemsWidth += child.DesiredSize.Width;
+                items++;
+                if (child is CommandBarSeparator)
+                    _separatorWidth = child.DesiredSize.Width;
+                if (child is ICommandBarElement command)
+                    _measuredWidths[command] = child.DesiredSize.Width;
+            }
+
+            // Another panel tells the gap only while it is not limited to the space it was given.
+            var isLimited = LayoutInformation.GetPreviousMeasureConstraint(panel) is { } constraint
+                && MathUtilities.AreClose(panel.DesiredSize.Width, constraint.Width);
+            if (panel is StackPanel stackPanel)
+                _itemGap = stackPanel.Spacing;
+            else if (items > 1 && !isLimited)
+                _itemGap = Math.Max(0, (panel.DesiredSize.Width - itemsWidth) / (items - 1));
+        }
+
+        // A changed items panel, overflow button or content is measured again only when the template is: an ancestor that keeps
+        // its measure for the same size would return its last result.
+        private void InvalidateTemplateMeasure()
+        {
+            InvalidateMeasureUpToThis((Visual?)_primaryCommandsPresenter?.ItemsPanelRoot ?? _primaryCommandsPresenter);
+            InvalidateMeasureUpToThis(_overflowButton);
+            InvalidateMeasureUpToThis(_contentPresenter);
+        }
+
+        // Commands measure differently after a change such as another label position, so every command shows to be measured
+        // again, as on the first layout.
+        private void ForgetMeasuredWidths()
+        {
+            _measuredWidths.Clear();
+            _overflowedPrimaryCommands.Clear();
+            _isOverflowButtonMeasured = false;
+            _measuredThemeVariant = null;
+        }
+
+        private void InvalidateMeasureUpToThis(Visual? visual)
+        {
+            for (var current = visual; current is not null && current != this; current = current.VisualParent)
+                (current as Layoutable)?.InvalidateMeasure();
         }
 
         private void CommandBar_SizeChanged(object? sender, SizeChangedEventArgs e)
         {
-            RequestDynamicOverflowUpdate();
+            // A bar that fits its commands by measuring them has already placed them for its new size.
+            if (!IsDynamicOverflowEnabled || _primaryCommandsPresenter is null)
+                RequestDynamicOverflowUpdate();
         }
 
         private void OnOverflowButtonClick(object? sender, Interactivity.RoutedEventArgs e)
@@ -617,7 +918,8 @@ namespace Avalonia.Controls
                         ApplyLabelPositionToElement(element);
                 }
             }
-            RebuildCommandVisibilitySubscriptions(PrimaryCommands, _primaryCommandVisibilitySubscriptions);
+            RebuildCommandVisibilitySubscriptions(PrimaryCommands, _primaryCommandVisibilitySubscriptions, isPrimary: true);
+            ForgetRemovedPrimaryCommands();
             RequestDynamicOverflowUpdate();
         }
 
@@ -635,7 +937,9 @@ namespace Avalonia.Controls
 
         private void ApplyDeferredDynamicOverflowUpdate()
         {
-            if (_isOpeningOverflowPopup || _isDynamicUpdateInProgress)
+            // While the bar measures, an update waits for its next pass; rebuilding the collections now could change them while
+            // the items presenters enumerate them.
+            if (_isOpeningOverflowPopup || _isDynamicUpdateInProgress || _isMeasuring)
                 return;
 
             // A visibility change during an update, such as a binding that resolves when a command is re-parented, needs
@@ -665,8 +969,34 @@ namespace Avalonia.Controls
 
                 var availableWidth = double.IsFinite(_constraintWidth) ? _constraintWidth : Bounds.Width;
 
-                if (!IsDynamicOverflowEnabled || availableWidth <= 0)
+                if (IsDynamicOverflowEnabled && _primaryCommandsPresenter is not null)
                 {
+                    // A templated bar keeps its placement, which MeasureOverride fits to the available width.
+                    var visibleIndices = new HashSet<int>();
+                    for (var i = 0; i < PrimaryCommands.Count; i++)
+                    {
+                        var command = PrimaryCommands[i];
+                        if (command is not CommandBarSeparator && IsCommandVisible(command) && !_overflowedPrimaryCommands.Contains(command))
+                            visibleIndices.Add(i);
+                    }
+
+                    if (visibleIndices.Count > 0)
+                    {
+                        for (var i = 0; i < PrimaryCommands.Count; i++)
+                        {
+                            if (PrimaryCommands[i] is CommandBarSeparator && IsCommandVisible(PrimaryCommands[i]))
+                                visibleIndices.Add(i);
+                        }
+                    }
+
+                    TrimOrphanedSeparatorsFromVisibleCommands(PrimaryCommands, visibleIndices);
+                    DistributePrimaryCommands(visibleIndices, visiblePrimaryCommands, overflowedPrimaryCommands);
+                    if (!_isMeasuring)
+                        InvalidateMeasure();
+                }
+                else if (!IsDynamicOverflowEnabled || availableWidth <= 0)
+                {
+                    _overflowedPrimaryCommands.Clear();
                     foreach (var item in PrimaryCommands)
                     {
                         SetOverflowMode(item, false);
@@ -679,6 +1009,7 @@ namespace Avalonia.Controls
 
                     if (availableWidth < 50)
                     {
+                        _overflowedPrimaryCommands.Clear();
                         foreach (var item in PrimaryCommands)
                         {
                             SetOverflowMode(item, false);
@@ -687,19 +1018,14 @@ namespace Avalonia.Controls
                     }
                     else
                     {
-                        var itemWidth = DefaultLabelPosition switch
-                        {
-                            CommandBarDefaultLabelPosition.Right     => ItemWidthRight,
-                            CommandBarDefaultLabelPosition.Collapsed => ItemWidthCollapsed,
-                            _                                        => ItemWidthBottom
-                        };
+                        var itemWidth = GetItemWidth();
 
                         int primaryNonSepCount = 0;
                         foreach (var item in PrimaryCommands)
                             if (item is not CommandBarSeparator && IsCommandVisible(item))
                                 primaryNonSepCount++;
 
-                        const double overflowButtonWidth = 48;
+                        const double overflowButtonWidth = DefaultOverflowButtonWidth;
                         var paddingH = Padding.Left + Padding.Right;
                         var baseAvailable = availableWidth - contentWidth - paddingH;
                         bool allFitWithoutButton = SecondaryCommands.Count == 0
@@ -748,29 +1074,11 @@ namespace Avalonia.Controls
                             visibleIndices.Clear();
 
                         TrimOrphanedSeparatorsFromVisibleCommands(PrimaryCommands, visibleIndices);
+                        DistributePrimaryCommands(visibleIndices, visiblePrimaryCommands, overflowedPrimaryCommands);
 
-                        for (var i = 0; i < PrimaryCommands.Count; i++)
-                        {
-                            if (!IsCommandVisible(PrimaryCommands[i]))
-                            {
-                                // A hidden command keeps its placement state, so visibility that depends on IsInOverflow does not flip back.
-                                visiblePrimaryCommands.Add(PrimaryCommands[i]);
-                            }
-                            else if (visibleIndices.Contains(i))
-                            {
-                                SetOverflowMode(PrimaryCommands[i], false);
-                                visiblePrimaryCommands.Add(PrimaryCommands[i]);
-                            }
-                            else if (PrimaryCommands[i] is CommandBarSeparator)
-                            {
-                                SetOverflowMode(PrimaryCommands[i], false);
-                            }
-                            else
-                            {
-                                SetOverflowMode(PrimaryCommands[i], true);
-                                overflowedPrimaryCommands.Add(PrimaryCommands[i]);
-                            }
-                        }
+                        _overflowedPrimaryCommands.Clear();
+                        foreach (var command in overflowedPrimaryCommands)
+                            _overflowedPrimaryCommands.Add(command);
                     }
                 }
 
@@ -782,6 +1090,49 @@ namespace Avalonia.Controls
             finally
             {
                 _isDynamicUpdateInProgress = false;
+            }
+        }
+
+        private void DistributePrimaryCommands(HashSet<int> visibleIndices, List<ICommandBarElement> visiblePrimaryCommands,
+            List<ICommandBarElement> overflowedPrimaryCommands)
+        {
+            for (var i = 0; i < PrimaryCommands.Count; i++)
+            {
+                if (!IsCommandVisible(PrimaryCommands[i]))
+                {
+                    // A hidden command keeps its placement state, so visibility that depends on IsInOverflow does not flip back.
+                    visiblePrimaryCommands.Add(PrimaryCommands[i]);
+                }
+                else if (visibleIndices.Contains(i))
+                {
+                    SetOverflowMode(PrimaryCommands[i], false);
+                    visiblePrimaryCommands.Add(PrimaryCommands[i]);
+                }
+                else if (PrimaryCommands[i] is CommandBarSeparator)
+                {
+                    SetOverflowMode(PrimaryCommands[i], false);
+                }
+                else
+                {
+                    SetOverflowMode(PrimaryCommands[i], true);
+                    overflowedPrimaryCommands.Add(PrimaryCommands[i]);
+                }
+            }
+        }
+
+        private void ForgetRemovedPrimaryCommands()
+        {
+            if (_overflowedPrimaryCommands.Count == 0 && _measuredWidths.Count == 0)
+                return;
+
+            var commands = new HashSet<ICommandBarElement>(ReferenceEqualityComparer.Instance);
+            if (PrimaryCommands is not null)
+                commands.UnionWith(PrimaryCommands);
+            _overflowedPrimaryCommands.IntersectWith(commands);
+            foreach (var command in new List<ICommandBarElement>(_measuredWidths.Keys))
+            {
+                if (!commands.Contains(command))
+                    _measuredWidths.Remove(command);
             }
         }
 
@@ -905,7 +1256,7 @@ namespace Avalonia.Controls
             return -1;
         }
 
-        private void RebuildCommandVisibilitySubscriptions(IList<ICommandBarElement>? commands, CompositeDisposable subscriptions)
+        private void RebuildCommandVisibilitySubscriptions(IList<ICommandBarElement>? commands, CompositeDisposable subscriptions, bool isPrimary = false)
         {
             subscriptions.Clear();
 
@@ -929,6 +1280,22 @@ namespace Avalonia.Controls
                             RequestDynamicOverflowUpdate();
                         })
                         .DisposeWith(subscriptions);
+
+                    if (isPrimary)
+                    {
+                        var command = commands[i];
+                        // A shown command that changes size does not always change the size of the items panel, which the bar
+                        // limits to the space it has, so the bar would not measure again and place the commands.
+                        visual.GetPropertyChangedObservable(Visual.BoundsProperty)
+                            .Subscribe(_ =>
+                            {
+                                if (!command.IsInOverflow && IsDynamicOverflowEnabled && _primaryCommandsPresenter is not null
+                                    && visual is Layoutable layoutable
+                                    && (!_measuredWidths.TryGetValue(command, out var width) || Math.Abs(width - layoutable.DesiredSize.Width) > 0.5))
+                                    InvalidateMeasure();
+                            })
+                            .DisposeWith(subscriptions);
+                    }
                 }
             }
         }

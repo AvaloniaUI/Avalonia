@@ -1458,10 +1458,10 @@ public class CommandBarOverflowKeyboardTests : ScopedTestBase
     [Fact]
     public void PrimaryVisibilityChange_ThatChangesPlacement_PreservesFocusOnUnmovedCommand()
     {
-        var first = new CommandBarButton { Label = "A" };
-        var second = new CommandBarButton { Label = "B" };
-        var third = new CommandBarButton { Label = "C" };
-        var fourth = new CommandBarButton { Label = "D" };
+        var first = new CommandBarButton { Label = "A", Width = 100 };
+        var second = new CommandBarButton { Label = "B", Width = 100 };
+        var third = new CommandBarButton { Label = "C", Width = 100 };
+        var fourth = new CommandBarButton { Label = "D", Width = 100 };
         var cb = new CommandBar
         {
             ItemWidthBottom = 100,
@@ -1509,10 +1509,10 @@ public class CommandBarOverflowKeyboardTests : ScopedTestBase
     public void PrimaryVisibilityThatDependsOnOverflow_Settles()
     {
         const int maxVisibilityChanges = 10;
-        var first = new CommandBarButton();
-        var second = new CommandBarButton();
-        var third = new CommandBarButton();
-        var hiddenInOverflow = new CommandBarButton();
+        var first = new CommandBarButton { Width = 100 };
+        var second = new CommandBarButton { Width = 100 };
+        var third = new CommandBarButton { Width = 100 };
+        var hiddenInOverflow = new CommandBarButton { Width = 100 };
         var hideInOverflow = hiddenInOverflow.Bind(Visual.IsVisibleProperty, new Binding("!IsInOverflow") { RelativeSource = new RelativeSource(RelativeSourceMode.Self) });
         var cb = new CommandBar
         {
@@ -1534,6 +1534,7 @@ public class CommandBarOverflowKeyboardTests : ScopedTestBase
         };
 
         cb.IsDynamicOverflowEnabled = true;
+        root.LayoutManager.ExecuteLayoutPass();
 
         Assert.InRange(visibilityChanges, 1, maxVisibilityChanges);
         Assert.False(hiddenInOverflow.IsVisible);
@@ -1544,10 +1545,10 @@ public class CommandBarOverflowKeyboardTests : ScopedTestBase
     public void PrimaryVisibilityThatDependsOnAnotherCommandsOverflow_Settles()
     {
         const int maxVisibilityChanges = 10;
-        var first = new CommandBarButton();
-        var second = new CommandBarButton();
-        var trigger = new CommandBarButton();
-        var dependent = new CommandBarButton();
+        var first = new CommandBarButton { Width = 90 };
+        var second = new CommandBarButton { Width = 90 };
+        var trigger = new CommandBarButton { Width = 90 };
+        var dependent = new CommandBarButton { Width = 90 };
         var hideWhenTriggerOverflows = dependent.Bind(Visual.IsVisibleProperty, new Binding("!IsInOverflow") { Source = trigger });
         var cb = new CommandBar
         {
@@ -1569,6 +1570,7 @@ public class CommandBarOverflowKeyboardTests : ScopedTestBase
         };
 
         cb.IsDynamicOverflowEnabled = true;
+        root.LayoutManager.ExecuteLayoutPass();
 
         Assert.InRange(visibilityChanges, 1, maxVisibilityChanges);
     }
@@ -1576,10 +1578,10 @@ public class CommandBarOverflowKeyboardTests : ScopedTestBase
     [Fact]
     public void PrimaryVisibilityChange_WhileDetached_UpdatesOverflowOnReattach()
     {
-        var first = new CommandBarButton();
-        var second = new CommandBarButton();
-        var third = new CommandBarButton();
-        var fourth = new CommandBarButton();
+        var first = new CommandBarButton { Width = 100 };
+        var second = new CommandBarButton { Width = 100 };
+        var third = new CommandBarButton { Width = 100 };
+        var fourth = new CommandBarButton { Width = 100 };
         var cb = new CommandBar
         {
             ItemWidthBottom = 100,
@@ -1608,10 +1610,10 @@ public class CommandBarOverflowKeyboardTests : ScopedTestBase
     [InlineData(true)]
     public void PrimaryVisibilityBinding_ChangesDuringRebuild_UpdatesOverflowWithoutResizing(bool isVisible)
     {
-        var first = new CommandBarButton();
-        var second = new CommandBarButton();
-        var bound = new CommandBarButton();
-        var fourth = new CommandBarButton();
+        var first = new CommandBarButton { Width = 98 };
+        var second = new CommandBarButton { Width = 98 };
+        var bound = new CommandBarButton { Width = 98 };
+        var fourth = new CommandBarButton { Width = 98 };
         bound.Bind(Visual.IsVisibleProperty, new Binding("IsCommandVisible") { FallbackValue = !isVisible });
         var cb = new CommandBar
         {
@@ -1645,6 +1647,596 @@ public class CommandBarOverflowKeyboardTests : ScopedTestBase
             Assert.Equal(new ICommandBarElement[] { bound, first, second, fourth }, cb.VisiblePrimaryCommands);
             Assert.Empty(cb.OverflowItems);
         }
+    }
+
+    [Fact]
+    public void ShortCommands_AllFit_WhereTheEstimateWouldOverflowThem()
+    {
+        var first = new CommandBarButton { Width = 60 };
+        var second = new CommandBarButton { Width = 60 };
+        var third = new CommandBarButton { Width = 60 };
+        var fourth = new CommandBarButton { Width = 60 };
+        var cb = new CommandBar
+        {
+            Padding = new Thickness(0),
+            ItemWidthBottom = 100,
+            IsDynamicOverflowEnabled = true,
+            PrimaryCommands = { first, second, third, fourth },
+        };
+        var root = new TestRoot(useGlobalStyles: true, child: cb)
+        {
+            ClientSize = new Size(300, 100),
+        };
+
+        root.LayoutManager.ExecuteInitialLayoutPass();
+
+        Assert.Equal(new ICommandBarElement[] { first, second, third, fourth }, cb.VisiblePrimaryCommands);
+        Assert.Empty(cb.OverflowItems);
+    }
+
+    [Fact]
+    public void LongCommands_TakeTheirMeasuredWidth_AndKeepPriorityOrder()
+    {
+        var first = new CommandBarButton { Width = 150 };
+        var second = new CommandBarButton { Width = 150 };
+        var third = new CommandBarButton { Width = 50 };
+        var cb = new CommandBar
+        {
+            Padding = new Thickness(0),
+            ItemWidthBottom = 70,
+            IsDynamicOverflowEnabled = true,
+            PrimaryCommands = { first, second, third },
+        };
+        var root = new TestRoot(useGlobalStyles: true, child: cb)
+        {
+            ClientSize = new Size(300, 100),
+        };
+
+        root.LayoutManager.ExecuteInitialLayoutPass();
+
+        // The third command alone would fit after the first, but it must not show while the second one, ahead of it, overflows.
+        Assert.Equal(new ICommandBarElement[] { first }, cb.VisiblePrimaryCommands);
+        Assert.Equal(new ICommandBarElement[] { second, third }, cb.OverflowItems);
+    }
+
+    [Fact]
+    public void CommandsThatFitOnlyWithoutPanelSpacing_Overflow()
+    {
+        var first = new CommandBarButton { Width = 100 };
+        var second = new CommandBarButton { Width = 100 };
+        var third = new CommandBarButton { Width = 100 };
+        var cb = new CommandBar
+        {
+            Padding = new Thickness(0),
+            ItemWidthBottom = 100,
+            IsDynamicOverflowEnabled = true,
+            PrimaryCommands = { first, second, third },
+        };
+        var root = new TestRoot(useGlobalStyles: true, child: cb)
+        {
+            ClientSize = new Size(302, 100),
+        };
+
+        // Inside its 1px border the bar has room for 300px of commands, but not for the spacing between them.
+        root.LayoutManager.ExecuteInitialLayoutPass();
+
+        Assert.Equal(new ICommandBarElement[] { first, second }, cb.VisiblePrimaryCommands);
+        Assert.Equal(new ICommandBarElement[] { third }, cb.OverflowItems);
+    }
+
+    [Fact]
+    public void ShownCommandThatGrows_PlacesTheCommandsAgain()
+    {
+        var first = new CommandBarButton { Width = 60 };
+        var second = new CommandBarButton { Width = 60 };
+        var third = new CommandBarButton { Width = 60 };
+        var cb = new CommandBar
+        {
+            Padding = new Thickness(0),
+            ItemWidthBottom = 100,
+            IsDynamicOverflowEnabled = true,
+            PrimaryCommands = { first, second, third },
+        };
+        var root = new TestRoot(useGlobalStyles: true, child: cb)
+        {
+            ClientSize = new Size(300, 100),
+        };
+        root.LayoutManager.ExecuteInitialLayoutPass();
+        Assert.Empty(cb.OverflowItems);
+
+        second.Width = 230;
+        root.LayoutManager.ExecuteLayoutPass();
+
+        Assert.Equal(new ICommandBarElement[] { first }, cb.VisiblePrimaryCommands);
+        Assert.Equal(new ICommandBarElement[] { second, third }, cb.OverflowItems);
+    }
+
+    [Fact]
+    public void OverflowedCommands_ComeBack_WhenTheBarWidens()
+    {
+        var first = new CommandBarButton { Width = 60 };
+        var second = new CommandBarButton { Width = 60 };
+        var third = new CommandBarButton { Width = 60 };
+        var fourth = new CommandBarButton { Width = 60 };
+        var cb = new CommandBar
+        {
+            Padding = new Thickness(0),
+            ItemWidthBottom = 100,
+            IsDynamicOverflowEnabled = true,
+            PrimaryCommands = { first, second, third, fourth },
+        };
+        var root = new TestRoot(useGlobalStyles: true, child: cb)
+        {
+            ClientSize = new Size(150, 100),
+        };
+        root.LayoutManager.ExecuteInitialLayoutPass();
+        Assert.NotEmpty(cb.OverflowItems);
+
+        root.ClientSize = new Size(300, 100);
+        root.InvalidateMeasure();
+        root.LayoutManager.ExecuteLayoutPass();
+
+        Assert.Equal(new ICommandBarElement[] { first, second, third, fourth }, cb.VisiblePrimaryCommands);
+        Assert.Empty(cb.OverflowItems);
+    }
+
+    [Fact]
+    public void ShownCommandThatGrows_WhileTheCommandsFillTheBar_PlacesTheCommandsAgain()
+    {
+        var first = new CommandBarButton { Width = 86 };
+        var second = new CommandBarButton { Width = 86 };
+        var third = new CommandBarButton { Width = 82 };
+        var fourth = new CommandBarButton { Width = 86 };
+        var cb = new CommandBar
+        {
+            Padding = new Thickness(0),
+            ItemWidthBottom = 100,
+            IsDynamicOverflowEnabled = true,
+            PrimaryCommands = { first, second, third, fourth },
+            SecondaryCommands = { new CommandBarButton { Label = "S" } },
+        };
+        var root = new TestRoot(useGlobalStyles: true, child: cb)
+        {
+            ClientSize = new Size(300, 100),
+        };
+        root.LayoutManager.ExecuteInitialLayoutPass();
+        Assert.Equal(new ICommandBarElement[] { first, second, third }, cb.VisiblePrimaryCommands);
+
+        second.Width = 150;
+        root.LayoutManager.ExecuteLayoutPass();
+
+        Assert.Equal(new ICommandBarElement[] { first, second }, cb.VisiblePrimaryCommands);
+    }
+
+    [Fact]
+    public void OverflowedCommand_ComesBack_WhenTheLastSecondaryCommandIsRemoved()
+    {
+        var first = new CommandBarButton { Width = 60 };
+        var second = new CommandBarButton { Width = 60 };
+        var third = new CommandBarButton { Width = 60 };
+        var secondary = new CommandBarButton { Label = "S" };
+        var cb = new CommandBar
+        {
+            Padding = new Thickness(0),
+            ItemWidthBottom = 100,
+            IsDynamicOverflowEnabled = true,
+            PrimaryCommands = { first, second, third },
+            SecondaryCommands = { secondary },
+        };
+        var root = new TestRoot(useGlobalStyles: true, child: cb)
+        {
+            ClientSize = new Size(200, 100),
+        };
+        root.LayoutManager.ExecuteInitialLayoutPass();
+        Assert.Equal(new ICommandBarElement[] { first, second }, cb.VisiblePrimaryCommands);
+
+        // Without the overflow button, which the secondary command needed, all three fit.
+        cb.SecondaryCommands.Remove(secondary);
+        root.LayoutManager.ExecuteLayoutPass();
+
+        Assert.Equal(new ICommandBarElement[] { first, second, third }, cb.VisiblePrimaryCommands);
+        Assert.Empty(cb.OverflowItems);
+    }
+
+    [Fact]
+    public void OverflowedCommand_ComesBack_WhenTheOverflowButtonNoLongerAlwaysShows()
+    {
+        var first = new CommandBarButton { Width = 60 };
+        var second = new CommandBarButton { Width = 60 };
+        var third = new CommandBarButton { Width = 60 };
+        var cb = new CommandBar
+        {
+            Padding = new Thickness(0),
+            ItemWidthBottom = 100,
+            IsDynamicOverflowEnabled = true,
+            OverflowButtonVisibility = CommandBarOverflowButtonVisibility.Visible,
+            PrimaryCommands = { first, second, third },
+        };
+        var root = new TestRoot(useGlobalStyles: true, child: cb)
+        {
+            ClientSize = new Size(200, 100),
+        };
+        root.LayoutManager.ExecuteInitialLayoutPass();
+        Assert.Equal(new ICommandBarElement[] { first, second }, cb.VisiblePrimaryCommands);
+
+        cb.OverflowButtonVisibility = CommandBarOverflowButtonVisibility.Auto;
+        root.LayoutManager.ExecuteLayoutPass();
+
+        Assert.Equal(new ICommandBarElement[] { first, second, third }, cb.VisiblePrimaryCommands);
+        Assert.Empty(cb.OverflowItems);
+    }
+
+    [Fact]
+    public void OverflowedCommand_ComesBack_WhenAnotherOverflowedCommandIsHidden()
+    {
+        var first = new CommandBarButton { Width = 90 };
+        var second = new CommandBarButton { Width = 90 };
+        var third = new CommandBarButton { Width = 90 };
+        var fourth = new CommandBarButton { Width = 90 };
+        var cb = new CommandBar
+        {
+            Padding = new Thickness(0),
+            ItemWidthBottom = 120,
+            IsDynamicOverflowEnabled = true,
+            PrimaryCommands = { first, second, third, fourth },
+        };
+        var root = new TestRoot(useGlobalStyles: true, child: cb)
+        {
+            ClientSize = new Size(300, 100),
+        };
+        root.LayoutManager.ExecuteInitialLayoutPass();
+        Assert.Equal(new ICommandBarElement[] { first, second }, cb.VisiblePrimaryCommands);
+
+        fourth.IsVisible = false;
+        root.LayoutManager.ExecuteLayoutPass();
+
+        Assert.Equal(new ICommandBarElement[] { first, second, third, fourth }, cb.VisiblePrimaryCommands);
+        Assert.Empty(cb.OverflowItems);
+    }
+
+    [Fact]
+    public void OverflowedCommand_ComesBack_WhenTheSeparatorBeforeItIsRemoved()
+    {
+        var first = new CommandBarButton { Width = 60 };
+        var second = new CommandBarButton { Width = 60 };
+        var separator = new CommandBarSeparator();
+        var third = new CommandBarButton { Width = 60 };
+        var cb = new CommandBar
+        {
+            Padding = new Thickness(0),
+            ItemWidthBottom = 100,
+            IsDynamicOverflowEnabled = true,
+            PrimaryCommands = { first, second, separator, third },
+            SecondaryCommands = { new CommandBarButton { Label = "S" } },
+        };
+        var root = new TestRoot(useGlobalStyles: true, child: cb)
+        {
+            ClientSize = new Size(235, 100),
+        };
+        root.LayoutManager.ExecuteInitialLayoutPass();
+        Assert.Equal(new ICommandBarElement[] { first, second }, cb.VisiblePrimaryCommands);
+
+        cb.PrimaryCommands.Remove(separator);
+        root.LayoutManager.ExecuteLayoutPass();
+
+        Assert.Equal(new ICommandBarElement[] { first, second, third }, cb.VisiblePrimaryCommands);
+    }
+
+    [Fact]
+    public void ChangingAFocusedOverflowedCommand_WhileTheOverflowIsOpen_KeepsItInTheOverflowAndFocused()
+    {
+        var first = new CommandBarButton { Label = "A", Width = 100 };
+        var second = new CommandBarButton { Label = "B", Width = 100 };
+        var third = new CommandBarButton { Label = "C", Width = 200 };
+        var cb = new CommandBar
+        {
+            Padding = new Thickness(0),
+            IsDynamicOverflowEnabled = true,
+            IsSticky = true,
+            PrimaryCommands = { first, second, third },
+        };
+        var window = CreateWindow(new Border { Width = 300, Child = cb });
+        window.LayoutManager.ExecuteInitialLayoutPass();
+        Assert.Equal(new ICommandBarElement[] { first, second }, cb.VisiblePrimaryCommands);
+        cb.IsOpen = true;
+        window.LayoutManager.ExecuteLayoutPass();
+        Assert.True(third.Focus(NavigationMethod.Directional));
+        var placementChanges = 0;
+        third.PropertyChanged += (_, e) =>
+        {
+            if (e.Property == CommandBarButton.IsInOverflowProperty)
+                placementChanges++;
+        };
+
+        third.Label = "Changed";
+        window.LayoutManager.ExecuteLayoutPass();
+
+        Assert.True(third.IsInOverflow);
+        Assert.True(third.IsFocused);
+        Assert.Equal(0, placementChanges);
+    }
+
+    [Fact]
+    public void HighestPriorityCommands_StayWhileOthersOverflow()
+    {
+        var first = new CommandBarButton { Width = 60 };
+        var second = new CommandBarButton { Width = 60, DynamicOverflowOrder = 1 };
+        var third = new CommandBarButton { Width = 60 };
+        var cb = new CommandBar
+        {
+            Padding = new Thickness(0),
+            ItemWidthBottom = 100,
+            IsDynamicOverflowEnabled = true,
+            PrimaryCommands = { first, second, third },
+        };
+        var root = new TestRoot(useGlobalStyles: true, child: cb)
+        {
+            ClientSize = new Size(170, 100),
+        };
+
+        root.LayoutManager.ExecuteInitialLayoutPass();
+
+        Assert.Equal(new ICommandBarElement[] { first, third }, cb.VisiblePrimaryCommands);
+        Assert.Equal(new ICommandBarElement[] { second }, cb.OverflowItems);
+    }
+
+    [Fact]
+    public void FirstOverflow_TakesTheMeasuredWidthOfTheOverflowButton()
+    {
+        var first = new CommandBarButton { Width = 60 };
+        var second = new CommandBarButton { Width = 60 };
+        var third = new CommandBarButton { Width = 60 };
+        var cb = new CommandBar
+        {
+            Padding = new Thickness(0),
+            ItemWidthBottom = 100,
+            IsDynamicOverflowEnabled = true,
+            PrimaryCommands = { first, second, third },
+        };
+        var root = new TestRoot(useGlobalStyles: true, child: cb)
+        {
+            ClientSize = new Size(300, 100),
+        };
+        root.LayoutManager.ExecuteInitialLayoutPass();
+        Assert.Empty(cb.OverflowItems);
+
+        // Two commands and the overflow button fit, which takes less than the 48px assumed before it has shown.
+        root.ClientSize = new Size(165, 100);
+        root.InvalidateMeasure();
+        root.LayoutManager.ExecuteLayoutPass();
+
+        Assert.Equal(new ICommandBarElement[] { first, second }, cb.VisiblePrimaryCommands);
+        Assert.Equal(new ICommandBarElement[] { third }, cb.OverflowItems);
+    }
+
+    [Fact]
+    public void ChangingTheLabelPosition_BringsBackCommandsThatFit()
+    {
+        var commands = new[]
+        {
+            new CommandBarButton { Label = "Command" },
+            new CommandBarButton { Label = "Command" },
+            new CommandBarButton { Label = "Command" },
+            new CommandBarButton { Label = "Command" },
+        };
+        var cb = new CommandBar
+        {
+            Padding = new Thickness(0),
+            ItemWidthCollapsed = 60,
+            IsDynamicOverflowEnabled = true,
+            PrimaryCommands = { commands[0], commands[1], commands[2], commands[3] },
+        };
+        var root = new TestRoot(useGlobalStyles: true, child: cb)
+        {
+            ClientSize = new Size(180, 100),
+        };
+        root.LayoutManager.ExecuteInitialLayoutPass();
+        Assert.NotEmpty(cb.OverflowItems);
+
+        // Without labels every command takes less width than it did when the overflowed ones overflowed.
+        cb.DefaultLabelPosition = CommandBarDefaultLabelPosition.Collapsed;
+        root.LayoutManager.ExecuteLayoutPass();
+
+        Assert.Equal(commands, cb.VisiblePrimaryCommands);
+        Assert.Empty(cb.OverflowItems);
+    }
+
+    [Fact]
+    public void ChangingTheThemeVariant_PlacesCommandsByTheirWidthsInIt()
+    {
+        var commands = new[] { new CommandBarButton(), new CommandBarButton(), new CommandBarButton(), new CommandBarButton() };
+        var cb = new CommandBar
+        {
+            Padding = new Thickness(0),
+            ItemWidthBottom = 100,
+            IsDynamicOverflowEnabled = true,
+            PrimaryCommands = { commands[0], commands[1], commands[2], commands[3] },
+        };
+        var scope = new ThemeVariantScope { RequestedThemeVariant = ThemeVariant.Light, Child = cb };
+        scope.Resources.ThemeDictionaries[ThemeVariant.Light] = new ResourceDictionary { ["CommandWidth"] = 100d };
+        scope.Resources.ThemeDictionaries[ThemeVariant.Dark] = new ResourceDictionary { ["CommandWidth"] = 60d };
+        foreach (var command in commands)
+            command.Bind(Layout.Layoutable.WidthProperty, command.GetResourceObservable("CommandWidth"));
+        var root = new TestRoot(useGlobalStyles: true, child: scope)
+        {
+            ClientSize = new Size(200, 100),
+        };
+        root.LayoutManager.ExecuteInitialLayoutPass();
+        Assert.Equal(new ICommandBarElement[] { commands[0] }, cb.VisiblePrimaryCommands);
+
+        // The overflowed commands are narrower in the dark variant than they were when they overflowed.
+        scope.RequestedThemeVariant = ThemeVariant.Dark;
+        root.LayoutManager.ExecuteLayoutPass();
+
+        Assert.Equal(new ICommandBarElement[] { commands[0], commands[1] }, cb.VisiblePrimaryCommands);
+    }
+
+    [Fact]
+    public void Content_TakesItsWidthFromTheCommands()
+    {
+        var first = new CommandBarButton { Width = 60 };
+        var second = new CommandBarButton { Width = 60 };
+        var third = new CommandBarButton { Width = 60 };
+        var cb = new CommandBar
+        {
+            Padding = new Thickness(8, 0),
+            ItemWidthBottom = 100,
+            IsDynamicOverflowEnabled = true,
+            Content = new Border { Width = 50 },
+            PrimaryCommands = { first, second, third },
+        };
+        var root = new TestRoot(useGlobalStyles: true, child: cb)
+        {
+            ClientSize = new Size(240, 100),
+        };
+
+        root.LayoutManager.ExecuteInitialLayoutPass();
+
+        Assert.Equal(new ICommandBarElement[] { first, second }, cb.VisiblePrimaryCommands);
+        Assert.Equal(new ICommandBarElement[] { third }, cb.OverflowItems);
+    }
+
+    [Fact]
+    public void CommandThatShowsOnlyWhileAnotherIsShown_WithoutAnOverflowButton_LeavesNoCommandClipped()
+    {
+        var first = new CommandBarButton { Width = 90 };
+        var second = new CommandBarButton { Width = 90 };
+        var dependent = new CommandBarButton { Width = 90 };
+        var trigger = new CommandBarButton { Width = 90 };
+        dependent.Bind(Visual.IsVisibleProperty, new Binding("!IsInOverflow") { Source = trigger });
+        var cb = new CommandBar
+        {
+            Padding = new Thickness(0),
+            ItemWidthBottom = 50,
+            IsDynamicOverflowEnabled = true,
+            OverflowButtonVisibility = CommandBarOverflowButtonVisibility.Collapsed,
+            PrimaryCommands = { first, second, dependent, trigger },
+        };
+        var root = new TestRoot(useGlobalStyles: true, child: cb)
+        {
+            ClientSize = new Size(300, 100),
+        };
+
+        root.LayoutManager.ExecuteInitialLayoutPass();
+
+        var shown = cb.VisiblePrimaryCommands.Where(command => ((Visual)command).IsVisible).ToList();
+        Assert.True(shown.Count * 90 + (shown.Count - 1) * 2 <= cb.Bounds.Width - 2, $"{shown.Count} commands shown in {cb.Bounds.Width}px");
+    }
+
+    [Fact]
+    public void DetachingAndAttachingTheBar_LeavesItsCommandsInPlace()
+    {
+        var commands = new[]
+        {
+            new CommandBarButton { Width = 60 },
+            new CommandBarButton { Width = 60 },
+            new CommandBarButton { Width = 60 },
+            new CommandBarButton { Width = 60 },
+        };
+        var cb = new CommandBar
+        {
+            Padding = new Thickness(0),
+            ItemWidthBottom = 100,
+            IsDynamicOverflowEnabled = true,
+            PrimaryCommands = { commands[0], commands[1], commands[2], commands[3] },
+        };
+        var host = new Border { Child = cb };
+        var scope = new ThemeVariantScope { RequestedThemeVariant = ThemeVariant.Dark, Child = host };
+        var root = new TestRoot(useGlobalStyles: true, child: scope)
+        {
+            ClientSize = new Size(170, 100),
+        };
+        root.LayoutManager.ExecuteInitialLayoutPass();
+        Assert.Equal(new ICommandBarElement[] { commands[0], commands[1] }, cb.VisiblePrimaryCommands);
+        var placementChanges = 0;
+        foreach (var command in commands)
+        {
+            command.PropertyChanged += (_, e) =>
+            {
+                if (e.Property == CommandBarButton.IsInOverflowProperty)
+                    placementChanges++;
+            };
+        }
+
+        host.Child = null;
+        host.Child = cb;
+        root.LayoutManager.ExecuteLayoutPass();
+
+        Assert.Equal(new ICommandBarElement[] { commands[0], commands[1] }, cb.VisiblePrimaryCommands);
+        Assert.Equal(0, placementChanges);
+    }
+
+    [Fact]
+    public void TemplateWithTheCommandsInAnAutoColumn_StillOverflows()
+    {
+        var commands = Enumerable.Range(0, 6).Select(_ => new CommandBarButton { Width = 60 }).ToArray();
+        var cb = new CommandBar
+        {
+            Padding = new Thickness(0),
+            ItemWidthBottom = 100,
+            IsDynamicOverflowEnabled = true,
+            Template = new FuncControlTemplate<CommandBar>((bar, scope) =>
+            {
+                var grid = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto,Auto") };
+                grid.Children.Add(new ContentPresenter { Name = "PART_ContentPresenter" }.RegisterInNameScope(scope));
+                var items = new ItemsControl
+                {
+                    Name = "PART_PrimaryCommands",
+                    ItemsSource = bar.VisiblePrimaryCommands,
+                    ItemsPanel = new FuncTemplate<Panel?>(() => new StackPanel { Orientation = Layout.Orientation.Horizontal, Spacing = 2 }),
+                }.RegisterInNameScope(scope);
+                Grid.SetColumn(items, 1);
+                grid.Children.Add(items);
+                var button = new Button { Name = "PART_OverflowButton", Width = 40, [!Visual.IsVisibleProperty] = bar[!CommandBar.IsOverflowButtonVisibleProperty] };
+                Grid.SetColumn(button.RegisterInNameScope(scope), 2);
+                grid.Children.Add(button);
+                return grid;
+            }),
+        };
+        foreach (var command in commands)
+            cb.PrimaryCommands.Add(command);
+        var root = new TestRoot(useGlobalStyles: true, child: cb)
+        {
+            ClientSize = new Size(200, 100),
+        };
+
+        root.LayoutManager.ExecuteInitialLayoutPass();
+
+        Assert.Equal(commands.Take(2), cb.VisiblePrimaryCommands);
+        Assert.Equal(commands.Skip(2), cb.OverflowItems);
+    }
+
+    [Fact]
+    public void MovingTheBarToAnotherThemeVariant_PlacesCommandsByTheirWidthsInIt()
+    {
+        var commands = new[] { new CommandBarButton(), new CommandBarButton(), new CommandBarButton(), new CommandBarButton() };
+        var cb = new CommandBar
+        {
+            Width = 200,
+            Padding = new Thickness(0),
+            ItemWidthBottom = 100,
+            IsDynamicOverflowEnabled = true,
+            PrimaryCommands = { commands[0], commands[1], commands[2], commands[3] },
+        };
+        foreach (var command in commands)
+            command.Bind(Layout.Layoutable.WidthProperty, command.GetResourceObservable("CommandWidth"));
+        var light = new ThemeVariantScope { RequestedThemeVariant = ThemeVariant.Light, Child = cb };
+        var dark = new ThemeVariantScope { RequestedThemeVariant = ThemeVariant.Dark };
+        var host = new Panel { Children = { light, dark } };
+        host.Resources.ThemeDictionaries[ThemeVariant.Light] = new ResourceDictionary { ["CommandWidth"] = 100d };
+        host.Resources.ThemeDictionaries[ThemeVariant.Dark] = new ResourceDictionary { ["CommandWidth"] = 60d };
+        var root = new TestRoot(useGlobalStyles: true, child: host)
+        {
+            ClientSize = new Size(300, 100),
+        };
+        root.LayoutManager.ExecuteInitialLayoutPass();
+        Assert.Equal(new ICommandBarElement[] { commands[0] }, cb.VisiblePrimaryCommands);
+
+        light.Child = null;
+        dark.Child = cb;
+        root.LayoutManager.ExecuteLayoutPass();
+
+        Assert.Equal(new ICommandBarElement[] { commands[0], commands[1] }, cb.VisiblePrimaryCommands);
     }
 
     private static ItemsControl GetOverflowPresenter(CommandBar cb)
