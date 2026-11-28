@@ -2432,6 +2432,80 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Clicking_During_Composition_Ends_Composition()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var (textBox, topLevel, presenter, client) = CreateComposingTextBox("abcdef", 2, "xyz");
+            var resetRequested = 0;
+            client.ResetRequested += (_, _) => resetRequested++;
+
+            var mouse = new MouseTestHelper();
+            mouse.Down(textBox, position: GetPointForCombinedPosition(presenter, topLevel, 0));
+            mouse.Up(textBox);
+
+            Assert.Equal(0, textBox.CaretIndex);
+            Assert.Null(presenter.PreeditText);
+            Assert.Equal(1, resetRequested);
+        }
+
+        [Fact]
+        public void Clicking_After_Preedit_Moves_Caret_To_Clicked_Text_Position()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            // Displayed as "abxyzcdef"; clicking between "d" and "e" must put the caret at 4 in "abcdef".
+            var (textBox, topLevel, presenter, _) = CreateComposingTextBox("abcdef", 2, "xyz");
+
+            var mouse = new MouseTestHelper();
+            mouse.Down(textBox, position: GetPointForCombinedPosition(presenter, topLevel, 7));
+            mouse.Up(textBox);
+
+            Assert.Equal(4, textBox.CaretIndex);
+            Assert.Equal(4, presenter.CaretIndex);
+            Assert.Null(presenter.PreeditText);
+        }
+
+        private static (TextBox, TestTopLevel, TextPresenter, TextInputMethodClient) CreateComposingTextBox(
+            string text, int caretIndex, string preeditText)
+        {
+            var textBox = new TextBox
+            {
+                Template = CreateTemplate(),
+                Text = text,
+                CaretIndex = caretIndex
+            };
+
+            var impl = CreateMockTopLevelImpl();
+            var topLevel = new TestTopLevel(impl.Object)
+            {
+                Template = CreateTopLevelTemplate(),
+                Content = textBox
+            };
+            topLevel.ApplyTemplate();
+            topLevel.LayoutManager.ExecuteInitialLayoutPass();
+
+            var client = GetInputMethodClient(textBox);
+            var presenter = textBox.FindDescendantOfType<TextPresenter>();
+            Assert.NotNull(presenter);
+
+            client.SetPreeditText(preeditText);
+            topLevel.LayoutManager.ExecuteLayoutPass();
+
+            Assert.Equal(preeditText, presenter.PreeditText);
+
+            return (textBox, topLevel, presenter, client);
+        }
+
+        private static Point GetPointForCombinedPosition(TextPresenter presenter, Visual root, int position)
+        {
+            var bounds = presenter.TextLayout.HitTestTextPosition(position);
+            var point = new Point(bounds.X, bounds.Y + bounds.Height / 2);
+
+            return presenter.TranslatePoint(point, root)!.Value;
+        }
+
+        [Fact]
         public void InputMethodClient_Selection_Setter_Uses_Document_Offsets_For_Multiline_Text()
         {
             using var _ = UnitTestApplication.Start(Services);
