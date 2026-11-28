@@ -635,7 +635,16 @@ namespace Avalonia.Controls.Primitives
                 var newIndex = GetIndexFromTextSearch(_textSearchTerm);
                 if (newIndex >= 0)
                 {
+                    // Selecting an unrealized item scrolls it into view and may recycle
+                    // the focused container, clearing IsKeyboardFocusWithin.
+                    var hadFocus = IsKeyboardFocusWithin;
                     SelectedIndex = newIndex;
+
+                    if (hadFocus)
+                    {
+                        ScrollIntoView(newIndex);
+                        ContainerFromIndex(newIndex)?.Focus();
+                    }
                 }
 
                 StartTextSearchTimer();

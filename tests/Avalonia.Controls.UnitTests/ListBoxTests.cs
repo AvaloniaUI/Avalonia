@@ -915,6 +915,133 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void TextSearch_Should_Focus_Selection()
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealFocus);
+            var target = new ListBox
+            {
+                Template = ListBoxTemplate(),
+                ItemsSource = new[] { "Android", "IOS", "Linux", "MacOS", "Web", "Windows" },
+                IsTextSearchEnabled = true,
+                SelectedIndex = 0,
+            };
+
+            Prepare(target);
+
+            var first = target.ContainerFromIndex(0)!;
+            first.Focus();
+            Assert.True(first.IsFocused);
+
+            first.RaiseEvent(new TextInputEventArgs
+            {
+                RoutedEvent = InputElement.TextInputEvent,
+                Text = "w",
+            });
+
+            Assert.Equal(4, target.SelectedIndex);
+            Assert.Equal("Web", target.SelectedItem);
+            Assert.True(target.ContainerFromIndex(4)!.IsFocused);
+        }
+
+        [Fact]
+        public void TextSearch_Brings_Unrealized_Selection_Into_View_And_Focuses_It()
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealFocus);
+            var items = Enumerable.Range(0, 99).Select(x => $"Item {x}").Append("Web").ToArray();
+            var target = new ListBox
+            {
+                Template = ListBoxTemplate(),
+                ItemsSource = items,
+                ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Width = 20, Height = 10 }),
+                Width = 100,
+                Height = 100,
+                IsTextSearchEnabled = true,
+                SelectedIndex = 0,
+            };
+
+            Prepare(target);
+
+            var first = target.ContainerFromIndex(0)!;
+            first.Focus();
+            Assert.Null(target.ContainerFromIndex(99));
+
+            first.RaiseEvent(new TextInputEventArgs
+            {
+                RoutedEvent = InputElement.TextInputEvent,
+                Text = "w",
+            });
+
+            Assert.Equal(99, target.SelectedIndex);
+            Assert.NotNull(target.ContainerFromIndex(99));
+            Assert.True(target.ContainerFromIndex(99)!.IsFocused);
+        }
+
+        [Fact]
+        public void TextSearch_Focuses_Unrealized_Selection_When_AutoScrollToSelectedItem_Is_False()
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealFocus);
+            var items = Enumerable.Range(0, 99).Select(x => $"Item {x}").Append("Web").ToArray();
+            var target = new ListBox
+            {
+                Template = ListBoxTemplate(),
+                ItemsSource = items,
+                ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Width = 20, Height = 10 }),
+                Width = 100,
+                Height = 100,
+                AutoScrollToSelectedItem = false,
+                IsTextSearchEnabled = true,
+                SelectedIndex = 0,
+            };
+
+            Prepare(target);
+
+            var first = target.ContainerFromIndex(0)!;
+            first.Focus();
+            Assert.Null(target.ContainerFromIndex(99));
+
+            first.RaiseEvent(new TextInputEventArgs
+            {
+                RoutedEvent = InputElement.TextInputEvent,
+                Text = "w",
+            });
+
+            Assert.Equal(99, target.SelectedIndex);
+            Assert.NotNull(target.ContainerFromIndex(99));
+            Assert.True(target.ContainerFromIndex(99)!.IsFocused);
+        }
+
+        [Fact]
+        public void TextSearch_Does_Not_Move_Focus_When_Focus_Is_Outside()
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealFocus);
+            var button = new Button();
+            var target = new ListBox
+            {
+                Template = ListBoxTemplate(),
+                ItemsSource = new[] { "Android", "Web" },
+                IsTextSearchEnabled = true,
+            };
+
+            var root = new TestRoot(new StackPanel
+            {
+                Children = { button, target }
+            });
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            button.Focus();
+            Assert.True(button.IsFocused);
+
+            target.RaiseEvent(new TextInputEventArgs
+            {
+                RoutedEvent = InputElement.TextInputEvent,
+                Text = "w",
+            });
+
+            Assert.Equal(1, target.SelectedIndex);
+            Assert.True(button.IsFocused);
+        }
+
+        [Fact]
         public void WrapSelection_Should_Wrap()
         {
             using (UnitTestApplication.Start(TestServices.RealFocus))

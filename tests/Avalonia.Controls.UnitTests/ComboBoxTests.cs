@@ -610,6 +610,66 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void TextSearch_When_DropDown_Closed_Should_Keep_Focus_On_ComboBox()
+        {
+            using var app = UnitTestApplication.Start(TestServices.FocusableWindow);
+
+            var target = new ComboBox
+            {
+                Template = GetTemplate(),
+                ItemsSource = new[] { "Android", "IOS", "Web" },
+                SelectedIndex = 0,
+            };
+
+            var window = new Window { Content = target };
+            window.Show();
+            window.LayoutManager.ExecuteInitialLayoutPass();
+            target.ApplyTemplate();
+            target.Presenter!.ApplyTemplate();
+
+            target.Focus();
+            Assert.True(target.IsFocused);
+
+            target.RaiseEvent(new TextInputEventArgs
+            {
+                RoutedEvent = InputElement.TextInputEvent,
+                Text = "i",
+            });
+
+            Assert.Equal(1, target.SelectedIndex);
+            Assert.True(target.IsFocused);
+
+            var reopenedTarget = new ComboBox
+            {
+                Template = GetTemplate(),
+                ItemsSource = new[] { "Android", "IOS", "Web" },
+                SelectedIndex = 0,
+            };
+
+            window.Content = reopenedTarget;
+            window.LayoutManager.ExecuteLayoutPass();
+            reopenedTarget.ApplyTemplate();
+            reopenedTarget.Presenter!.ApplyTemplate();
+
+            reopenedTarget.IsDropDownOpen = true;
+            window.LayoutManager.ExecuteLayoutPass();
+            reopenedTarget.IsDropDownOpen = false;
+            window.LayoutManager.ExecuteLayoutPass();
+
+            reopenedTarget.Focus();
+            Assert.True(reopenedTarget.IsFocused);
+
+            reopenedTarget.RaiseEvent(new TextInputEventArgs
+            {
+                RoutedEvent = InputElement.TextInputEvent,
+                Text = "w",
+            });
+
+            Assert.Equal(2, reopenedTarget.SelectedIndex);
+            Assert.True(reopenedTarget.IsFocused);
+        }
+
+        [Fact]
         public void SelectedItem_Validation()
         {
 
