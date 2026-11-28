@@ -13,8 +13,8 @@ namespace Avalonia.Media
         /// </summary>
         /// <param name="brush">The brush.</param>
         /// <returns>
-        /// The result of calling <see cref="IMutableBrush.ToImmutable"/> if the brush is mutable,
-        /// otherwise <paramref name="brush"/>.
+        /// An immutable brush if <paramref name="brush"/> is mutable, otherwise
+        /// <paramref name="brush"/> unchanged.
         /// </returns>
         public static IImmutableBrush ToImmutable(this IBrush brush)
         {

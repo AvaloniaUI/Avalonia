@@ -4,6 +4,7 @@ using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Platform.Surfaces;
 using Avalonia.Rendering.Composition.Animations;
+using Avalonia.Rendering.Composition.Drawing;
 using Avalonia.Rendering.Composition.Server;
 
 namespace Avalonia.Rendering.Composition;
@@ -21,6 +22,14 @@ public partial class Compositor
     }
 
     public CompositionContainerVisual CreateContainerVisual() => new(this, new ServerCompositionContainerVisual(_server));
+
+    /// <summary>
+    /// Creates a visual that renders a compositor-bound
+    /// <see cref="DrawingRecording"/> behind its children; see
+    /// <see cref="CompositionRecordingVisual"/>.
+    /// </summary>
+    public CompositionRecordingVisual CreateRecordingVisual() =>
+        new(this, new ServerCompositionRecordingVisual(_server));
 
     public ExpressionAnimation CreateExpressionAnimation() => new ExpressionAnimation(this);
 
