@@ -781,6 +781,26 @@ namespace Avalonia.Controls.Presenters
         public void MoveCaretToPoint(Point point)
         {
             var hit = TextLayout.HitTestPoint(point);
+            var preeditText = PreeditText;
+
+            if (!string.IsNullOrEmpty(preeditText))
+            {
+                // The layout contains the preedit text: map the hit back to a position in Text
+                // (a hit inside the preedit maps to the composition start) and drop the preedit.
+                var caretIndex = CaretIndex;
+                var position = hit.CharacterHit.FirstCharacterIndex + hit.CharacterHit.TrailingLength;
+
+                if (position > caretIndex)
+                {
+                    position = Math.Max(caretIndex, position - preeditText.Length);
+                }
+
+                SetCurrentValue(PreeditTextProperty, null);
+
+                MoveCaretToTextPosition(position);
+
+                return;
+            }
 
             UpdateCaret(hit.CharacterHit);
 

@@ -1846,8 +1846,15 @@ namespace Avalonia.Controls
                     _presenter.TextSelectionHandleCanvas?.Hide();
                     _currentClickCount = e.ClickCount;
                     var point = e.GetPosition(_presenter);
+                    var isComposing = !string.IsNullOrEmpty(_presenter.PreeditText);
 
                     _presenter.MoveCaretToPoint(point);
+
+                    if (isComposing)
+                    {
+                        // The click dropped the preedit, so the input method must stop composing too.
+                        _imClient.ResetComposition();
+                    }
 
                     var caretIndex = _presenter.CaretIndex;
                     var clickToSelect = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
