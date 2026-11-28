@@ -506,6 +506,15 @@ enum AvnRawMouseEventType
     Swipe,
 }
 
+enum AvnGesturePhase
+{
+    AvnGesturePhaseNone,
+    AvnGesturePhaseBegan,
+    AvnGesturePhaseChanged,
+    AvnGesturePhaseEnded,
+    AvnGesturePhaseCancelled
+}
+
 enum AvnRawKeyEventType
 {
     KeyDown,
@@ -839,8 +848,9 @@ interface IAvnTopLevelEvents : IUnknown
                                     AvnVector delta,
                                     float pressure,
                                     float xTilt,
-                                    float yTilt
-                                    );
+                                    float yTilt,
+                                    AvnGesturePhase phase,
+                                    AvnGesturePhase momentumPhase);
     bool RawKeyEvent(AvnRawKeyEventType type, u_int64_t timeStamp, AvnInputModifiers modifiers,
                           AvnKey key, AvnPhysicalKey physicalKey, [const] char* keySymbol,
                           IAvnString* keyText, IAvnString* alternateKeyText, AvnKeyEventInfo info);

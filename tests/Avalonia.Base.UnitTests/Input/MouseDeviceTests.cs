@@ -13,7 +13,7 @@ using Xunit;
 
 namespace Avalonia.Base.UnitTests.Input
 {
-    public class MouseDeviceTests : PointerTestsBase
+    public partial class MouseDeviceTests : PointerTestsBase
     {
         [Fact]
         public void Initial_Buttons_Are_Not_Set_Without_Corresponding_Mouse_Down()
