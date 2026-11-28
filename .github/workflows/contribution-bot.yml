@@ -22,5 +22,6 @@ jobs:
       cla-url: https://github.com/AvaloniaUI/Avalonia/blob/main/CLA.md
       introduction-url: https://github.com/AvaloniaUI/Avalonia/discussions/new?category=introductions
       closed-label: not-vouched
+      team-label: team
     secrets:
       private-key: ${{ secrets.CONTRIBUTION_BOT_PRIVATE_KEY }}
