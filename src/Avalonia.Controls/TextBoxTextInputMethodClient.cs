@@ -155,6 +155,8 @@ namespace Avalonia.Controls
             _presenter.SetCurrentValue(TextPresenter.PreeditTextCursorPositionProperty, cursorPos);
         }
 
+        internal void ResetComposition() => RequestReset();
+
         public override void ExecuteContextMenuAction(ContextMenuAction action)
         {
             base.ExecuteContextMenuAction(action);
