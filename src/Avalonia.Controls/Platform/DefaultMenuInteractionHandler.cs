@@ -208,8 +208,20 @@ namespace Avalonia.Controls.Platform
         {
             var item = GetMenuItemCore(e.Source as Control);
 
+            if (item is null)
+            {
+                // A press on the menu bar outside any item. The submenu's light dismiss overlay passes
+                // input through to the menu, so nothing else closes it.
+                if (!_isContextMenu && Menu?.IsOpen == true)
+                {
+                    Menu.Close();
+                }
+
+                return;
+            }
+
             if (sender is Visual visual &&
-                e.GetCurrentPoint(visual).Properties.IsLeftButtonPressed && item?.HasSubMenu == true)
+                e.GetCurrentPoint(visual).Properties.IsLeftButtonPressed && item.HasSubMenu)
             {
                 if (item.IsSubMenuOpen)
                 {
