@@ -406,6 +406,10 @@ namespace Avalonia.Layout
                     return false;
             }
 
+            // Measuring an ancestor can hide or recycle this control.
+            if (!control.IsVisible || !control.IsAttachedToVisualTree)
+                return false;
+
             // If the control being measured has IsMeasureValid == true here then its measure was
             // handed by an ancestor and can be ignored. The measure may have also caused the
             // control to be removed.
