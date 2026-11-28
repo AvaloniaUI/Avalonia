@@ -213,6 +213,11 @@
     return [super accessibilityTitle];
 }
 
+- (id)accessibilityTitleUIElement
+{
+    return [AvnAccessibilityElement acquire:_peer->GetLabeledBy()];
+}
+
 - (NSString *)accessibilityHelp
 {
     return GetNSString(_peer->GetHelpText());
