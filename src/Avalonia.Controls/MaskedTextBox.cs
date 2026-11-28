@@ -194,10 +194,7 @@ namespace Avalonia.Controls
         /// <inheritdoc />
         protected override void OnGotFocus(FocusChangedEventArgs e)
         {
-            if (HidePromptOnLeave == true && MaskProvider != null)
-            {
-                SetTextFromInternalSynchronization(MaskProvider.ToDisplayString());
-            }
+            SyncText();
             base.OnGotFocus(e);
         }
 
@@ -291,10 +288,7 @@ namespace Avalonia.Controls
         /// <inheritdoc />
         protected override void OnLostFocus(FocusChangedEventArgs e)
         {
-            if (HidePromptOnLeave && MaskProvider != null)
-            {
-                SetTextFromInternalSynchronization(MaskProvider.ToString(!HidePromptOnLeave, true));
-            }
+            SyncText();
             base.OnLostFocus(e);
         }
 
@@ -303,10 +297,12 @@ namespace Avalonia.Controls
         {
             void UpdateMaskProvider()
             {
+                // Text may hold password characters.
+                var text = MaskProvider is { } previous ? previous.ToString(includePrompt: true, includeLiterals: true) : Text;
                 MaskProvider = new MaskedTextProvider(Mask!, Culture, true, PromptChar, PasswordChar, AsciiOnly) { ResetOnSpace = ResetOnSpace, ResetOnPrompt = ResetOnPrompt };
-                if (Text != null)
+                if (text != null)
                 {
-                    MaskProvider.Set(Text);
+                    MaskProvider.Set(text);
                 }
                 RefreshText(MaskProvider, 0, isEdit: false);
             }
@@ -329,15 +325,21 @@ namespace Avalonia.Controls
             {
                 if (MaskProvider != null && MaskProvider.PasswordChar != PasswordChar)
                 {
-                    UpdateMaskProvider();
+                    MaskProvider.PasswordChar = PasswordChar;
+                    RefreshText(MaskProvider, 0, isEdit: false);
                 }
             }
             else if (change.Property == PromptCharProperty)
             {
                 if (MaskProvider != null && MaskProvider.PromptChar != PromptChar)
                 {
-                    UpdateMaskProvider();
+                    MaskProvider.PromptChar = PromptChar;
+                    RefreshText(MaskProvider, 0, isEdit: false);
                 }
+            }
+            else if (change.Property == HidePromptOnLeaveProperty)
+            {
+                SyncText();
             }
             else if (change.Property == ResetOnPromptProperty)
             {
@@ -434,11 +436,11 @@ namespace Avalonia.Controls
             {
                 if (isEdit)
                 {
-                    SetTextFromEdit(provider.ToDisplayString());
+                    SetTextFromEdit(GetText(provider));
                 }
                 else
                 {
-                    SetTextFromInternalSynchronization(provider.ToDisplayString());
+                    SetTextFromInternalSynchronization(GetText(provider));
                 }
                 SetCurrentValue(CaretIndexProperty, position);
             }
@@ -447,17 +449,36 @@ namespace Avalonia.Controls
         /// <inheritdoc />
         protected override string? CoerceText(string? text)
         {
-            if (!_ignoreTextChanges && MaskProvider is { } maskProvider)
+            // The shown text can hold password characters or hidden prompts, which the provider would read as input.
+            if (!_ignoreTextChanges && MaskProvider is { } maskProvider && text != GetText(maskProvider))
             {
                 if (string.IsNullOrEmpty(text))
                     maskProvider.Clear();
                 else
                     maskProvider.Set(text);
 
-                text = maskProvider.ToDisplayString();
+                text = GetText(maskProvider);
             }
 
             return base.CoerceText(text);
+        }
+
+        private string GetText(MaskedTextProvider provider)
+        {
+            // The box's own context menu takes the focus while the box is still in use, as in TextBox.OnLostFocus.
+            var hidePrompt = HidePromptOnLeave && !IsFocused && ContextFlyout?.IsOpen != true && ContextMenu?.IsOpen != true;
+
+            return hidePrompt
+                ? provider.ToString(ignorePasswordChar: false, includePrompt: false, includeLiterals: true, startPosition: 0, length: provider.Length)
+                : provider.ToDisplayString();
+        }
+
+        private void SyncText()
+        {
+            if (MaskProvider is { } provider)
+            {
+                SetTextFromInternalSynchronization(GetText(provider));
+            }
         }
     }
 }

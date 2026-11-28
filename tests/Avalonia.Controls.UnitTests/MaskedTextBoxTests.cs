@@ -426,6 +426,138 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Changing_PasswordChar_Should_Keep_Text()
+        {
+            using (Start())
+            {
+                var target = new MaskedTextBox
+                {
+                    Template = CreateTemplate(),
+                    Mask = "000-000"
+                };
+
+                RaiseTextEvent(target, "123456");
+                target.PasswordChar = '*';
+
+                Assert.Equal("***-***", target.Text);
+
+                target.PasswordChar = '#';
+
+                Assert.Equal("###-###", target.Text);
+
+                target.PasswordChar = '\0';
+
+                Assert.Equal("123-456", target.Text);
+            }
+        }
+
+        [Fact]
+        public void Changing_PasswordChar_Should_Keep_Partial_Text()
+        {
+            using (Start())
+            {
+                var target = new MaskedTextBox
+                {
+                    Template = CreateTemplate(),
+                    Mask = "000-000",
+                    Text = "12"
+                };
+
+                target.PasswordChar = '*';
+
+                Assert.Equal("**_-___", target.Text);
+
+                target.PasswordChar = '\0';
+
+                Assert.Equal("12_-___", target.Text);
+            }
+        }
+
+        [Fact]
+        public void Changing_PromptChar_Should_Keep_Text()
+        {
+            using (Start())
+            {
+                var target = new MaskedTextBox
+                {
+                    Template = CreateTemplate(),
+                    Mask = "000-000",
+                    Text = "12"
+                };
+
+                Assert.Equal("12_-___", target.Text);
+
+                target.PromptChar = '#';
+
+                Assert.Equal("12#-###", target.Text);
+            }
+        }
+
+        [Fact]
+        public void Changing_AsciiOnly_With_PasswordChar_Should_Keep_Text()
+        {
+            using (Start())
+            {
+                var target = new MaskedTextBox
+                {
+                    Template = CreateTemplate(),
+                    Mask = "000-000",
+                    Text = "123456",
+                    PasswordChar = '*'
+                };
+
+                target.AsciiOnly = true;
+                target.PasswordChar = '\0';
+
+                Assert.Equal("123-456", target.Text);
+            }
+        }
+
+        [Theory]
+        [InlineData("&&&&")]
+        [InlineData("CCCC")]
+        public void Changing_PasswordChar_Should_Keep_Text_When_Mask_Accepts_PasswordChar(string mask)
+        {
+            using (Start())
+            {
+                var target = new MaskedTextBox
+                {
+                    Template = CreateTemplate(),
+                    Mask = mask,
+                    Text = "abcd",
+                    PasswordChar = '*'
+                };
+
+                Assert.Equal("****", target.Text);
+
+                target.PasswordChar = '\0';
+
+                Assert.Equal("abcd", target.Text);
+            }
+        }
+
+        [Fact]
+        public void Backspace_With_PasswordChar_Should_Keep_Text_When_Mask_Accepts_PasswordChar()
+        {
+            using (Start())
+            {
+                var target = new MaskedTextBox
+                {
+                    Template = CreateTemplate(),
+                    Mask = "&&&&",
+                    Text = "abcd",
+                    PasswordChar = '*'
+                };
+
+                target.CaretIndex = 4;
+                RaiseKeyEvent(target, Key.Back, KeyModifiers.None);
+                target.PasswordChar = '\0';
+
+                Assert.Equal("abc_", target.Text);
+            }
+        }
+
         [Theory]
         [InlineData("00/00/0000", "12102000", "12/10/2000")]
         [InlineData("LLLL", "дбs", "дбs_")]
@@ -997,6 +1129,282 @@ namespace Avalonia.Controls.UnitTests
                 other.Focus();
 
                 Assert.False(target.CanUndo);
+            }
+        }
+
+        [Fact]
+        public void HidePromptOnLeave_Hides_Prompts_While_Not_Focused()
+        {
+            using (Start(FocusServices))
+            {
+                var target = new MaskedTextBox
+                {
+                    Template = CreateTemplate(),
+                    Mask = "000-000",
+                    HidePromptOnLeave = true,
+                };
+                var other = new MaskedTextBox { Template = CreateTemplate() };
+                var root = new TestRoot { Child = new StackPanel { Children = { target, other } } };
+                target.ApplyTemplate();
+                other.ApplyTemplate();
+
+                target.Focus();
+                target.Text = "123";
+                Assert.Equal("123-___", target.Text);
+
+                other.Focus();
+                Assert.Equal("123-", target.Text);
+
+                target.Focus();
+                Assert.Equal("123-___", target.Text);
+            }
+        }
+
+        [Fact]
+        public void Changing_HidePromptOnLeave_While_Not_Focused_Updates_Text()
+        {
+            using (Start(FocusServices))
+            {
+                var target = new MaskedTextBox
+                {
+                    Template = CreateTemplate(),
+                    Mask = "000-000",
+                    HidePromptOnLeave = true,
+                };
+                var other = new MaskedTextBox { Template = CreateTemplate() };
+                var root = new TestRoot { Child = new StackPanel { Children = { target, other } } };
+                target.ApplyTemplate();
+                other.ApplyTemplate();
+
+                target.Focus();
+                target.Text = "123";
+                other.Focus();
+                target.HidePromptOnLeave = false;
+
+                Assert.Equal("123-___", target.Text);
+
+                target.HidePromptOnLeave = true;
+
+                Assert.Equal("123-", target.Text);
+            }
+        }
+
+        [Fact]
+        public void HidePromptOnLeave_Selects_Text_With_Prompts_On_Tab_Focus()
+        {
+            using (Start(FocusServices))
+            {
+                var target = new MaskedTextBox
+                {
+                    Template = CreateTemplate(),
+                    Mask = "000-000",
+                    HidePromptOnLeave = true,
+                };
+                var other = new MaskedTextBox { Template = CreateTemplate() };
+                var root = new TestRoot { Child = new StackPanel { Children = { target, other } } };
+                target.ApplyTemplate();
+                other.ApplyTemplate();
+
+                target.Focus();
+                target.Text = "123";
+                other.Focus();
+                target.Focus(NavigationMethod.Tab);
+
+                Assert.Equal("123-___", target.SelectedText);
+            }
+        }
+
+        [Fact]
+        public void HidePromptOnLeave_Keeps_PasswordChar_While_Not_Focused()
+        {
+            using (Start(FocusServices))
+            {
+                var target = new MaskedTextBox
+                {
+                    Template = CreateTemplate(),
+                    Mask = "000",
+                    HidePromptOnLeave = true,
+                    PasswordChar = '*',
+                };
+                var other = new MaskedTextBox { Template = CreateTemplate() };
+                var root = new TestRoot { Child = new StackPanel { Children = { target, other } } };
+                target.ApplyTemplate();
+                other.ApplyTemplate();
+
+                target.Focus();
+                target.Text = "12";
+                other.Focus();
+
+                Assert.Equal("**", target.Text);
+            }
+        }
+
+        [Theory]
+        [InlineData("000-000", false, "123", "123-___")]
+        [InlineData("000-000", true, "1 3", "1 3-")]
+        [InlineData("000-000", true, "", "   -")]
+        [InlineData("000", true, "", "")]
+        public void HidePromptOnLeave_Text_After_Focus_Leaves(string mask, bool hidePromptOnLeave, string text, string expected)
+        {
+            using (Start(FocusServices))
+            {
+                var target = new MaskedTextBox
+                {
+                    Template = CreateTemplate(),
+                    Mask = mask,
+                    HidePromptOnLeave = hidePromptOnLeave,
+                };
+                var other = new MaskedTextBox { Template = CreateTemplate() };
+                var root = new TestRoot { Child = new StackPanel { Children = { target, other } } };
+                target.ApplyTemplate();
+                other.ApplyTemplate();
+
+                target.Focus();
+                target.Text = text;
+                other.Focus();
+
+                Assert.Equal(expected, target.Text);
+            }
+        }
+
+        [Fact]
+        public void HidePromptOnLeave_Does_Not_Change_The_Text()
+        {
+            using (Start(FocusServices))
+            {
+                var target = new MaskedTextBox
+                {
+                    Template = CreateTemplate(),
+                    Mask = "(LLL) 999-0000",
+                    ResetOnSpace = false,
+                    HidePromptOnLeave = true,
+                };
+                var other = new MaskedTextBox { Template = CreateTemplate() };
+                var root = new TestRoot { Child = new StackPanel { Children = { target, other } } };
+                target.ApplyTemplate();
+                other.ApplyTemplate();
+
+                target.Focus();
+                RaiseTextEvent(target, "ABC12");
+                other.Focus();
+                target.Focus();
+
+                Assert.Equal("(ABC) 12_-____", target.Text);
+            }
+        }
+
+        [Fact]
+        public void HidePromptOnLeave_Hides_Prompts_Of_Text_Set_While_Not_Focused()
+        {
+            using (Start(FocusServices))
+            {
+                var target = new MaskedTextBox
+                {
+                    Template = CreateTemplate(),
+                    Mask = "000-000",
+                    HidePromptOnLeave = true,
+                    Text = "123"
+                };
+                var root = new TestRoot { Child = target };
+                target.ApplyTemplate();
+
+                Assert.Equal("123-", target.Text);
+
+                target.Text = "4567";
+
+                Assert.Equal("456-7", target.Text);
+            }
+        }
+
+        [Fact]
+        public void HidePromptOnLeave_Text_Matches_Source_Of_LostFocus_Binding()
+        {
+            using (Start(FocusServices))
+            {
+                var source = new Class1();
+                var target = new MaskedTextBox
+                {
+                    Template = CreateTemplate(),
+                    Mask = "000-000",
+                    HidePromptOnLeave = true,
+                    DataContext = source
+                };
+                target.Bind(TextBox.TextProperty, new Binding(nameof(Class1.Bar))
+                {
+                    Mode = BindingMode.TwoWay,
+                    UpdateSourceTrigger = UpdateSourceTrigger.LostFocus
+                });
+                var other = new MaskedTextBox { Template = CreateTemplate() };
+                var root = new TestRoot { Child = new StackPanel { Children = { target, other } } };
+                target.ApplyTemplate();
+                other.ApplyTemplate();
+
+                target.Focus();
+                RaiseTextEvent(target, "123");
+                other.Focus();
+
+                Assert.Equal("123-", target.Text);
+                Assert.Equal("123-", source.Bar);
+            }
+        }
+
+        [Fact]
+        public void HidePromptOnLeave_Keeps_Prompts_And_Selection_While_Context_Menu_Is_Open()
+        {
+            using (Start(FocusServices))
+            {
+                var target = new MaskedTextBox
+                {
+                    Template = CreateTemplate(),
+                    Mask = "000-000",
+                    HidePromptOnLeave = true,
+                    ContextMenu = new TestContextMenu()
+                };
+                var other = new MaskedTextBox { Template = CreateTemplate() };
+                var root = new TestRoot { Child = new StackPanel { Children = { target, other } } };
+                target.ApplyTemplate();
+                other.ApplyTemplate();
+
+                target.Focus();
+                target.Text = "123";
+                target.SelectAll();
+                other.Focus();
+
+                Assert.Equal("123-___", target.Text);
+                Assert.Equal("123-___", target.SelectedText);
+            }
+        }
+
+        [Fact]
+        public void HidePromptOnLeave_Keeps_Text_When_Mask_Accepts_PasswordChar()
+        {
+            using (Start(FocusServices))
+            {
+                var source = new Class1();
+                var target = new MaskedTextBox
+                {
+                    Template = CreateTemplate(),
+                    Mask = "&&&-&&&",
+                    PasswordChar = '*',
+                    HidePromptOnLeave = true,
+                    DataContext = source
+                };
+                target.Bind(TextBox.TextProperty, new Binding(nameof(Class1.Bar))
+                {
+                    Mode = BindingMode.TwoWay,
+                    UpdateSourceTrigger = UpdateSourceTrigger.LostFocus
+                });
+                var other = new MaskedTextBox { Template = CreateTemplate() };
+                var root = new TestRoot { Child = new StackPanel { Children = { target, other } } };
+                target.ApplyTemplate();
+                other.ApplyTemplate();
+
+                target.Focus();
+                RaiseTextEvent(target, "abc");
+                other.Focus();
+                target.PasswordChar = '\0';
+
+                Assert.Equal("abc-", target.Text);
             }
         }
 
