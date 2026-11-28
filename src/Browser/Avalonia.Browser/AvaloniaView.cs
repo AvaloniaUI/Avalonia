@@ -40,7 +40,7 @@ namespace Avalonia.Browser
             _topLevel = new EmbeddableControlRoot(topLevelImpl);
 
             _topLevel.Prepare();
-            _topLevel.GotFocus += (_, _) => InputHelper.FocusElement(host);
+            _topLevel.GotFocus += (_, _) => InputHelper.FocusHost(host);
             _topLevel.Renderer.Start(); // TODO: use Start+StopRenderer() instead.
             _topLevel.RequestAnimationFrame(_ =>
             {

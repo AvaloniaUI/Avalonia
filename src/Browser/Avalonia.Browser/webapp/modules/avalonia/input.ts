@@ -550,6 +550,14 @@ export class InputHelper {
         inputElement.focus();
     }
 
+    // The text input element lives inside the host and holds DOM focus while an IME client is active.
+    // Pulling focus back to the host would disconnect the IME from it.
+    public static focusHost(host: HTMLElement) {
+        if (!host.contains(document.activeElement)) {
+            host.focus();
+        }
+    }
+
     public static setCursor(inputElement: HTMLInputElement, kind: string) {
         if (kind === "default") {
             inputElement.style.removeProperty("cursor");

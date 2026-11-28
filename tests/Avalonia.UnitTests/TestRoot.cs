@@ -84,7 +84,7 @@ namespace Avalonia.UnitTests
 
         public IInputElement? PointerOverElement { get; set; }
         public IInputElement? CursorElement { get; set; }
-        public ITextInputMethodImpl? InputMethod { get; }
+        public ITextInputMethodImpl? InputMethod { get; set; }
         public InputElement RootElement => this;
         public InputElement FocusRoot => this;
 
