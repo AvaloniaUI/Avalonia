@@ -473,6 +473,64 @@ public partial class DispatcherTests
         }
     }
 
+    private sealed class InlineTaskScheduler : TaskScheduler
+    {
+        protected override IEnumerable<Task> GetScheduledTasks() => Array.Empty<Task>();
+        protected override bool TryExecuteTaskInline(Task task, bool taskWasPreviouslyQueued) => TryExecuteTask(task);
+        protected override void QueueTask(Task task) => TryExecuteTask(task);
+    }
+
+    public enum OperationKind
+    {
+        Action,
+        Func,
+        SendOrPostCallback
+    }
+
+    [Theory]
+    [InlineData(OperationKind.Action, false)]
+    [InlineData(OperationKind.Action, true)]
+    [InlineData(OperationKind.Func, false)]
+    [InlineData(OperationKind.Func, true)]
+    [InlineData(OperationKind.SendOrPostCallback, false)]
+    [InlineData(OperationKind.SendOrPostCallback, true)]
+    public async Task OperationCompletesTaskOutsideDispatcherLock(OperationKind kind, bool fault)
+    {
+        var error = new InvalidOperationException();
+        int Callback()
+        {
+            if (fault)
+                throw error;
+            return 42;
+        }
+
+        var priority = DispatcherPriority.Normal;
+        DispatcherOperation operation = kind switch
+        {
+            OperationKind.Action => new DispatcherOperation(_uiThread, priority, () => Callback(), throwOnUiThread: false),
+            OperationKind.Func => new DispatcherOperation<int>(_uiThread, priority, Callback),
+            OperationKind.SendOrPostCallback => new SendOrPostCallbackDispatcherOperation(
+                _uiThread, priority, _ => Callback(), null, throwOnUiThread: false),
+            _ => throw new ArgumentOutOfRangeException(nameof(kind))
+        };
+        var task = operation.GetTask();
+        var token = TestContext.Current.CancellationToken;
+        // Task completion calls QueueTask even when the task requests asynchronous continuations.
+        var lockHeld = task.ContinueWith(_ => Monitor.IsEntered(_uiThread.InstanceLock),
+            token, TaskContinuationOptions.None, new InlineTaskScheduler());
+
+        _uiThread.InvokeAsyncImpl(operation, token);
+        _uiThread.RunJobs(null, token);
+
+        Assert.True(lockHeld.IsCompleted);
+        Assert.False(await lockHeld);
+        Assert.Equal(DispatcherOperationStatus.Completed, operation.Status);
+        if (fault)
+            Assert.Same(error, task.Exception?.InnerException);
+        else
+            Assert.True(task.IsCompletedSuccessfully);
+    }
+
     public enum TestDispatcherImplKind
     {
         Simple,

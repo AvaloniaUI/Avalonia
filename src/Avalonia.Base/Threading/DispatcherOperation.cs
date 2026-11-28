@@ -293,23 +293,28 @@ public class DispatcherOperation
         try
         {
             ((Action)Callback!)();
+            TaskCompletionSource<object?>? tcs;
             lock (Dispatcher.InstanceLock)
             {
                 Status = DispatcherOperationStatus.Completed;
-                if (TaskSource is TaskCompletionSource<object?> tcs)
-                    tcs.SetResult(null);
+                tcs = TaskSource as TaskCompletionSource<object?>;
             }
+
+            // Task completion can reenter the dispatcher while notifying synchronous waiters.
+            tcs?.SetResult(null);
         }
         catch (Exception e)
         {
+            TaskCompletionSource<object?>? tcs;
             lock (Dispatcher.InstanceLock)
             {
                 // Ensure TaskSource created.
                 _ = GetTaskCore();
                 Status = DispatcherOperationStatus.Completed;
-                if (TaskSource is TaskCompletionSource<object?> tcs)
-                    tcs.SetException(e);
+                tcs = TaskSource as TaskCompletionSource<object?>;
             }
+
+            tcs?.SetException(e);
 
             if (ThrowOnUiThread && !Dispatcher.TryCatchWhen(e))
             {
@@ -387,16 +392,18 @@ public class DispatcherOperation<T> : DispatcherOperation
             lock (Dispatcher.InstanceLock)
             {
                 Status = DispatcherOperationStatus.Completed;
-                TaskCompletionSource.SetResult(result);
             }
+
+            TaskCompletionSource.SetResult(result);
         }
         catch (Exception e)
         {
             lock (Dispatcher.InstanceLock)
             {
                 Status = DispatcherOperationStatus.Completed;
-                TaskCompletionSource.SetException(e);
             }
+
+            TaskCompletionSource.SetException(e);
         }
     }
 
@@ -428,23 +435,27 @@ internal sealed class SendOrPostCallbackDispatcherOperation : DispatcherOperatio
         try
         {
             ((SendOrPostCallback)Callback!)(_arg);
+            TaskCompletionSource<object?>? tcs;
             lock (Dispatcher.InstanceLock)
             {
                 Status = DispatcherOperationStatus.Completed;
-                if (TaskSource is TaskCompletionSource<object?> tcs)
-                    tcs.SetResult(null);
+                tcs = TaskSource as TaskCompletionSource<object?>;
             }
+
+            tcs?.SetResult(null);
         }
         catch (Exception e)
         {
+            TaskCompletionSource<object?>? tcs;
             lock (Dispatcher.InstanceLock)
             {
                 // Ensure TaskSource created.
                 _ = GetTaskCore();
                 Status = DispatcherOperationStatus.Completed;
-                if (TaskSource is TaskCompletionSource<object?> tcs)
-                    tcs.SetException(e);
+                tcs = TaskSource as TaskCompletionSource<object?>;
             }
+
+            tcs?.SetException(e);
 
             if (ThrowOnUiThread && !Dispatcher.TryCatchWhen(e))
             {
