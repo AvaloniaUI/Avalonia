@@ -101,6 +101,29 @@ namespace Avalonia.Base.UnitTests.Layout
         }
 
         [Fact]
+        public void Doesnt_Measure_Child_Removed_During_Ancestor_Measure()
+        {
+            var child = new LayoutTestControl();
+            var parent = new LayoutTestControl { Child = child };
+            var root = new LayoutTestRoot { Child = parent };
+            root.LayoutManager.ExecuteInitialLayoutPass();
+            child.Measured = child.Arranged = false;
+
+            parent.DoMeasureOverride = (_, size) =>
+            {
+                parent.Child = null;
+                return size;
+            };
+            child.InvalidateMeasure();
+            parent.InvalidateMeasure();
+            root.LayoutManager.ExecuteLayoutPass();
+
+            Assert.False(child.Measured);
+            Assert.False(child.Arranged);
+            Assert.False(child.IsMeasureValid);
+        }
+
+        [Fact]
         public void Measures_Parent_Of_Newly_Added_Control()
         {
             var control = new LayoutTestControl();

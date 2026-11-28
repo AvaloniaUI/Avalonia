@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Utils;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Logging;
+using Avalonia.LogicalTree;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
 
@@ -17,6 +19,11 @@ namespace Avalonia.Controls
     /// <summary>
     /// Arranges and virtualizes content on a single line that is oriented either horizontally or vertically.
     /// </summary>
+    /// <remarks>
+    /// When hosted by an <see cref="IScrollAnchorProvider"/>, changes to the available size
+    /// perpendicular to <see cref="Orientation"/> preserve the current scroll anchor.
+    /// The sizes of unrealized items, and therefore the scroll extent, are estimated.
+    /// </remarks>
     public class VirtualizingStackPanel : VirtualizingPanel, IScrollSnapPointsInfo
     {
         /// <summary>
@@ -63,16 +70,25 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterAttached<VirtualizingStackPanel, Control, object?>("RecycleKey");
 
         private static readonly object s_itemIsItsOwnContainer = new object();
+        private readonly ConditionalWeakTable<Control, StrongBox<int>> _ownContainerIndexes = new();
         private readonly Action<Control, int> _recycleElement;
-        private readonly Action<Control> _recycleElementOnItemRemoved;
         private readonly Action<Control, int, int> _updateElementIndex;
         private int _scrollToIndex = -1;
         private Control? _scrollToElement;
         private bool _isInLayout;
         private bool _isWaitingForViewportUpdate;
         private double _lastEstimatedElementSizeU = 25;
+        private double _lastNonZeroEstimatedElementSizeU = 25;
         private RealizedStackElements? _measureElements;
         private RealizedStackElements? _realizedElements;
+        private readonly (int Index, double Size)[] _leadingElementSizes =
+            { (0, double.NaN), (1, double.NaN), (-1, double.NaN) };
+        private int _measuredPrefixSamples;
+        private bool _prefixProbesDeferred;
+        private Size? _lastMeasureSize;
+        private Orientation _lastMeasureOrientation;
+        private bool _realizedElementsFromEmptyViewport;
+        private bool _hasMeasuredViewport;
         private IScrollAnchorProvider? _scrollAnchorProvider;
         private Rect _viewport;
         private Dictionary<object, Stack<Control>>? _recyclePool;
@@ -95,7 +111,6 @@ namespace Avalonia.Controls
         public VirtualizingStackPanel()
         {
             _recycleElement = RecycleElement;
-            _recycleElementOnItemRemoved = RecycleElementOnItemRemoved;
             _updateElementIndex = UpdateElementIndex;
 
             _bufferFactor = Math.Max(0, CacheLength);
@@ -203,7 +218,7 @@ namespace Avalonia.Controls
 
             try
             {
-                _realizedElements?.ValidateStartU(Orientation);
+                var preservedAnchor = ValidateStartU(availableSize, GetAnchorForConstraintChange(availableSize));
                 _realizedElements ??= new();
                 _measureElements ??= new();
 
@@ -213,7 +228,7 @@ namespace Avalonia.Controls
                 // We handle horizontal and vertical layouts here so X and Y are abstracted to:
                 // - Horizontal layouts: U = horizontal, V = vertical
                 // - Vertical layouts: U = vertical, V = horizontal
-                var viewport = CalculateMeasureViewport(orientation, items);
+                var viewport = CalculateMeasureViewport(orientation, items, preservedAnchor);
 
                 // If the viewport is disjunct then we can recycle everything.
                 if (viewport.viewportIsDisjunct)
@@ -222,10 +237,34 @@ namespace Avalonia.Controls
                 // Do the measure, creating/recycling elements as necessary to fill the viewport. Don't
                 // write to _realizedElements yet, only _measureElements.
                 RealizeElements(items, availableSize, ref viewport);
+                _realizedElementsFromEmptyViewport = _lastMeasuredExtendedViewport.Width <= 0 ||
+                    _lastMeasuredExtendedViewport.Height <= 0;
+                _hasMeasuredViewport |= !_realizedElementsFromEmptyViewport;
 
                 // Now swap the measureElements and realizedElements collection.
                 (_measureElements, _realizedElements) = (_realizedElements, _measureElements);
                 _measureElements.ResetForReuse();
+
+                // Remember a bounded sample of the prefix, without retaining containers.
+                for (var i = 0; i < _leadingElementSizes.Length - 1; ++i)
+                {
+                    var index = double.IsNaN(_leadingElementSizes[i].Size) ?
+                        i : _leadingElementSizes[i].Index;
+                    if (_realizedElements.GetElement(index) is { } element)
+                        SetPrefixSample(i, index, GetSizeU(element));
+                }
+
+                // Keep a sample near the viewport as well as the leading items, which
+                // may be fixed-size headers unrelated to the sizes of the data rows. Any
+                // unrealized row works, so only probe when the slot has no usable sample.
+                var precedingIndex = _realizedElements.FirstIndex - 1;
+                if (precedingIndex >= 0 && !_prefixProbesDeferred && double.IsNaN(_leadingElementSizes[^1].Size))
+                    _leadingElementSizes[^1] = (precedingIndex,
+                        MeasurePrefixElement(precedingIndex, orientation, availableSize));
+
+                if (_focusedElement is { VisualParent: null } focusedElement && IsOwnContainer(focusedElement) &&
+                    _focusedIndex >= 0 && _focusedIndex < items.Count)
+                    GetItemAsOwnContainer(focusedElement, _focusedIndex);
 
                 // If there is a focused element is outside the visible viewport (i.e.
                 // _focusedElement is non-null), ensure it's measured.
@@ -343,10 +382,50 @@ namespace Avalonia.Controls
 
         protected override void OnItemsChanged(IReadOnlyList<object?> items, NotifyCollectionChangedEventArgs e)
         {
+            _measuredPrefixSamples = 0;
+            var firstChangedIndex = e.Action switch
+            {
+                NotifyCollectionChangedAction.Add => e.NewStartingIndex,
+                NotifyCollectionChangedAction.Move => Math.Min(e.OldStartingIndex, e.NewStartingIndex),
+                NotifyCollectionChangedAction.Reset => -1,
+                _ => e.OldStartingIndex,
+            };
+            // Measurement re-derives the index of every invalidated sample.
+            for (var i = 0; i < _leadingElementSizes.Length; ++i)
+            {
+                if (_leadingElementSizes[i].Index >= firstChangedIndex)
+                    _leadingElementSizes[i] = (-1, double.NaN);
+            }
             InvalidateMeasure();
 
             // Always update special elements
             UpdateSpecialElementsOnItemsChanged(e);
+
+            // A reset can include the entire realized collection. Check source
+            // membership once per edit instead of scanning it for every own container.
+            HashSet<object?>? remainingItems = null;
+            bool RemainsInSource(Control element) => (remainingItems ??= new(items)).Contains(element);
+            void RecycleChangedElement(Control element) =>
+                RecycleElementOnItemRemoved(element, IsOwnContainer(element) && RemainsInSource(element));
+
+            // Own containers keep their logical owner while virtualized, so release the
+            // detached ones that left the source. Realized containers are handled below.
+            var detached = e.Action switch
+            {
+                NotifyCollectionChangedAction.Remove or NotifyCollectionChangedAction.Replace =>
+                    e.OldItems!.OfType<Control>().ToArray(),
+                NotifyCollectionChangedAction.Reset => _ownContainerIndexes.Select(x => x.Key).ToArray(),
+                _ => null,
+            };
+            foreach (var control in detached ?? Array.Empty<Control>())
+            {
+                if (control.VisualParent is not null || !IsOwnContainer(control))
+                    continue;
+                if (!RemainsInSource(control))
+                    RecycleElementOnItemRemoved(control, false);
+                else
+                    ItemsControl!.AddLogicalChild(control);
+            }
 
             if (_realizedElements is null)
                 return;
@@ -357,10 +436,10 @@ namespace Avalonia.Controls
                     _realizedElements.ItemsInserted(e.NewStartingIndex, e.NewItems!.Count, _updateElementIndex);
                     break;
                 case NotifyCollectionChangedAction.Remove:
-                    _realizedElements.ItemsRemoved(e.OldStartingIndex, e.OldItems!.Count, _updateElementIndex, _recycleElementOnItemRemoved);
+                    _realizedElements.ItemsRemoved(e.OldStartingIndex, e.OldItems!.Count, _updateElementIndex, RecycleChangedElement);
                     break;
                 case NotifyCollectionChangedAction.Replace:
-                    _realizedElements.ItemsReplaced(e.OldStartingIndex, e.OldItems!.Count, _recycleElementOnItemRemoved);
+                    _realizedElements.ItemsReplaced(e.OldStartingIndex, e.OldItems!.Count, RecycleChangedElement);
                     break;
                 case NotifyCollectionChangedAction.Move:
                     if (e.OldStartingIndex < 0)
@@ -368,7 +447,7 @@ namespace Avalonia.Controls
                         goto case NotifyCollectionChangedAction.Reset;
                     }
 
-                    _realizedElements.ItemsRemoved(e.OldStartingIndex, e.OldItems!.Count, _updateElementIndex, _recycleElementOnItemRemoved);
+                    _realizedElements.ItemsRemoved(e.OldStartingIndex, e.OldItems!.Count, _updateElementIndex, RecycleChangedElement);
                     var insertIndex = e.NewStartingIndex;
 
                     if (e.NewStartingIndex > e.OldStartingIndex)
@@ -379,9 +458,11 @@ namespace Avalonia.Controls
                     _realizedElements.ItemsInserted(insertIndex, e.NewItems!.Count, _updateElementIndex);
                     break;
                 case NotifyCollectionChangedAction.Reset:
-                    _realizedElements.ItemsReset(_recycleElementOnItemRemoved);
+                    _realizedElements.ItemsReset(RecycleChangedElement);
                     break;
             }
+
+            EnsureTabOnceActiveElement();
         }
 
         private void UpdateSpecialElementsOnItemsChanged(NotifyCollectionChangedEventArgs e)
@@ -514,6 +595,12 @@ namespace Avalonia.Controls
         {
             base.OnItemsControlChanged(oldValue);
 
+            Array.Fill(_leadingElementSizes, (-1, double.NaN));
+            _measuredPrefixSamples = 0;
+            _lastMeasureSize = null;
+            _realizedElementsFromEmptyViewport = false;
+            _hasMeasuredViewport = false;
+
             if (oldValue is not null)
                 oldValue.PropertyChanged -= OnItemsControlPropertyChanged;
             if (ItemsControl is not null)
@@ -616,7 +703,7 @@ namespace Avalonia.Controls
                 return _realizingElement;
             if (GetRealizedElement(index) is { } realized)
                 return realized;
-            if (Items[index] is Control c && c.GetValue(RecycleKeyProperty) == s_itemIsItsOwnContainer)
+            if (Items[index] is Control c && IsOwnContainer(c))
                 return c;
             return null;
         }
@@ -629,7 +716,12 @@ namespace Avalonia.Controls
                 return _focusedIndex;
             if (container == _realizingElement)
                 return _realizingIndex;
-            return _realizedElements?.GetIndex(container) ?? -1;
+            var index = _realizedElements?.GetIndex(container) ?? -1;
+            if (index >= 0)
+                return index;
+            if (ItemsControl is { } itemsControl && container.Parent == itemsControl && IsOwnContainer(container))
+                return itemsControl.ItemsView.IndexOf(container);
+            return -1;
         }
 
         protected internal override Control? ScrollIntoView(int index)
@@ -724,7 +816,10 @@ namespace Avalonia.Controls
             return _realizedElements?.Elements ?? Array.Empty<Control>();
         }
 
-        private MeasureViewport CalculateMeasureViewport(Orientation orientation, IReadOnlyList<object?> items)
+        private MeasureViewport CalculateMeasureViewport(
+            Orientation orientation,
+            IReadOnlyList<object?> items,
+            (int Index, double Position)? preservedAnchor)
         {
             Debug.Assert(_realizedElements is not null);
 
@@ -745,6 +840,11 @@ namespace Avalonia.Controls
             {
                 anchorIndex = _scrollToIndex;
                 anchorU = orientation == Orientation.Horizontal ? _scrollToElement.Bounds.Left : _scrollToElement.Bounds.Top;
+            }
+            else if (preservedAnchor is { } anchor)
+            {
+                anchorIndex = anchor.Index;
+                anchorU = anchor.Position;
             }
             else
             {
@@ -803,9 +903,196 @@ namespace Avalonia.Controls
             return DesiredSize;
         }
 
+        private (int Index, double Position)? GetAnchorForConstraintChange(Size availableSize)
+        {
+            if (_scrollToIndex >= 0 || _lastMeasureOrientation != Orientation ||
+                _lastMeasureSize is not { } previous ||
+                (Orientation == Orientation.Vertical ? previous.Width == availableSize.Width :
+                    previous.Height == availableSize.Height) ||
+                _realizedElements is not { } realized || double.IsNaN(realized.StartU))
+                return null;
+
+            // Items inserted or replaced since the last measure have no size yet.
+            // Estimate them, so the realized items after them can still be anchors.
+            double GetRealizedSizeU(int i) =>
+                realized.SizeU[i] is var size && double.IsNaN(size) ? _lastEstimatedElementSizeU : size;
+
+            // Ask the provider before measuring can change or recycle its candidate.
+            if (_scrollAnchorProvider?.CurrentAnchor is { IsVisible: true } anchor)
+            {
+                var index = realized.GetIndex(anchor);
+                if (index >= 0)
+                {
+                    var position = realized.StartU;
+                    for (var i = 0; i < index - realized.FirstIndex; ++i)
+                        position += GetRealizedSizeU(i);
+                    if (double.IsFinite(position))
+                        return (index, position);
+                }
+            }
+
+            // A standalone panel may not have an anchor provider. Use the first visible
+            // realized item without examining any unrealized prefix.
+            var start = Orientation == Orientation.Horizontal ? _viewport.Left : _viewport.Top;
+            var end = Orientation == Orientation.Horizontal ? _viewport.Right : _viewport.Bottom;
+            var u = realized.StartU;
+            for (var i = 0; i < realized.Count; ++i)
+            {
+                var size = GetRealizedSizeU(i);
+                if (realized.Elements[i] is { IsVisible: true } && u < end && u + size > start)
+                    return (realized.FirstIndex + i, u);
+                u += size;
+            }
+            return null;
+        }
+
+        private (int Index, double Position)? ValidateStartU(
+            Size availableSize, (int Index, double Position)? preservedAnchor)
+        {
+            var orientation = Orientation;
+            var constraintsChanged = _lastMeasureSize != availableSize;
+            _prefixProbesDeferred = false;
+
+            if (_lastMeasureOrientation != orientation)
+            {
+                Array.Fill(_leadingElementSizes, (-1, double.NaN));
+                _realizedElements?.InvalidateStartU();
+            }
+
+            _lastMeasureSize = availableSize;
+            _lastMeasureOrientation = orientation;
+
+            if (_realizedElements is not { } realized)
+                return null;
+
+            var resized = realized.MeasureElements(orientation, availableSize);
+            if (preservedAnchor is { } anchor && realized.GetElement(anchor.Index) is { } element &&
+                GetSizeU(element) <= 0)
+                preservedAnchor = null;
+
+            // Only missing samples that would be measured outside the realized range
+            // need a baseline. The others are refreshed from the realized elements.
+            var needsBaseline = false;
+            for (var i = 0; i < _leadingElementSizes.Length && !needsBaseline; ++i)
+            {
+                var index = i == _leadingElementSizes.Length - 1 ? realized.FirstIndex - 1 : i;
+                needsBaseline = double.IsNaN(_leadingElementSizes[i].Size) && index >= 0 &&
+                    index < Math.Min(realized.FirstIndex, Items.Count);
+            }
+
+            if (resized || constraintsChanged || needsBaseline)
+                _measuredPrefixSamples = 0;
+            if (!resized && !constraintsChanged && !needsBaseline)
+                return preservedAnchor;
+
+            // A cross-axis change that keeps a visible anchor doesn't use the prefix. Defer
+            // its probes, so that resizing the window doesn't measure them on every frame.
+            _prefixProbesDeferred = preservedAnchor is not null && constraintsChanged;
+
+            // Constraint changes may only affect rows within or after the viewport.
+            // Compare and refresh the prefix samples before discarding the known origin.
+            // The visible sizes alone cannot distinguish a local edit from a collection-wide
+            // change, especially when only one item is visible. Remeasure previously measured
+            // prefix items before discarding the known origin. This also handles heterogeneous
+            // sizes and changes whose last visible item happens to keep its old size.
+            for (var i = 0; i < _leadingElementSizes.Length; ++i)
+            {
+                var (index, previousSize) = _leadingElementSizes[i];
+                // Replacements and resets can remove every sample. Establish the new
+                // baseline from preceding items, rather than from the visible range.
+                if (double.IsNaN(previousSize))
+                    index = i == _leadingElementSizes.Length - 1 ? realized.FirstIndex - 1 : i;
+                if (index < 0 || index >= Items.Count)
+                    continue;
+
+                // Keep measurements made at the origin before realization can recycle
+                // them. A formerly collapsed range may only have one measured row.
+                if (index >= realized.FirstIndex)
+                {
+                    if (realized.GetElement(index) is { IsMeasureValid: true } measured)
+                        SetPrefixSample(i, index, GetSizeU(measured));
+                    else
+                    {
+                        _leadingElementSizes[i] = (index, double.NaN);
+                        _measuredPrefixSamples &= ~(1 << i);
+                    }
+                    continue;
+                }
+
+                if (_prefixProbesDeferred)
+                {
+                    _leadingElementSizes[i] = (index, double.NaN);
+                    continue;
+                }
+
+                var size = MeasurePrefixElement(index, orientation, availableSize);
+                // Constraint-driven wrapping preserves the visible anchor. Samples are
+                // refreshed for later data edits, rather than used to infer the whole prefix.
+                if (preservedAnchor is null && !double.IsNaN(previousSize) && size != previousSize)
+                    realized.InvalidateStartU();
+
+                SetPrefixSample(i, index, size);
+            }
+
+            // A resize within a stable range keeps the first realized element in place.
+            if (preservedAnchor is null && resized && !constraintsChanged && realized.Count > 0 &&
+                !double.IsNaN(realized.StartU) && realized.SizeU.Any(size => size > 0))
+                return (realized.FirstIndex, realized.StartU);
+            return preservedAnchor;
+        }
+
+        private void SetPrefixSample(int slot, int index, double size)
+        {
+            _leadingElementSizes[slot] = (index, size);
+            _measuredPrefixSamples |= 1 << slot;
+        }
+
+        private double MeasurePrefixElement(int index, Orientation orientation, Size availableSize)
+        {
+            // Reuse measurements until a resize, constraint change, or collection edit
+            // requires revalidation. Viewport updates can span multiple measure passes.
+            for (var i = 0; i < _leadingElementSizes.Length; ++i)
+            {
+                if ((_measuredPrefixSamples & (1 << i)) != 0 && _leadingElementSizes[i].Index == index)
+                    return _leadingElementSizes[i].Size;
+            }
+
+            var element = index == _focusedIndex ? _focusedElement :
+                index == _scrollToIndex ? _scrollToElement : null;
+            var recycle = element is null;
+            _realizingIndex = index;
+
+            try
+            {
+                element ??= GetOrCreateElement(Items, index);
+                _realizingElement = element;
+                element.Measure(availableSize);
+                return GetSizeU(element);
+            }
+            finally
+            {
+                _realizingIndex = -1;
+                _realizingElement = null;
+
+                if (recycle && element is not null)
+                {
+                    if (IsOwnContainer(element))
+                        RecycleElement(element, index);
+                    else
+                        // A temporary generated probe must not retain focus through
+                        // a tab-once marker left on a previously removed container.
+                        RecycleElementOnItemRemoved(element, false);
+                }
+            }
+        }
+
         private double EstimateElementSizeU()
         {
-            if (_realizedElements is null)
+            // An empty viewport can temporarily realize just the first item while the
+            // ScrollViewer coerces its offset after an extent reduction. That item is
+            // not a representative sample (for example, after hiding alternate rows).
+            if (_realizedElements is null ||
+                (_realizedElementsFromEmptyViewport && _hasMeasuredViewport && _lastEstimatedElementSizeU > 0))
                 return _lastEstimatedElementSizeU;
 
             var orientation = Orientation;
@@ -825,11 +1112,22 @@ namespace Avalonia.Controls
             }
 
             // Check we have enough information on which to base our estimate.
-            if (divisor == 0 || total == 0)
+            if (divisor == 0)
                 return _lastEstimatedElementSizeU;
 
+            if (total == 0)
+            {
+                // When every item was measured at zero, preserve that empty extent
+                // through the temporary empty viewport used while coercing the offset.
+                if (_realizedElements.FirstIndex == 0 && _realizedElements.LastIndex == Items.Count - 1)
+                    _lastEstimatedElementSizeU = 0;
+                return _lastEstimatedElementSizeU;
+            }
+
             // Store and return the estimate.
-            return _lastEstimatedElementSizeU = total / divisor;
+            _lastEstimatedElementSizeU = total / divisor;
+            _lastNonZeroEstimatedElementSizeU = _lastEstimatedElementSizeU;
+            return _lastEstimatedElementSizeU;
         }
 
         private void GetOrEstimateAnchorElementForViewport(
@@ -849,6 +1147,25 @@ namespace Avalonia.Controls
 
             var horizontal = Orientation == Orientation.Horizontal;
             var viewportEnd = horizontal ? _viewport.Right : _viewport.Bottom;
+
+            if (_realizedElements is { Count: > 0 } collapsed && double.IsNaN(collapsed.StartU))
+            {
+                var hasSize = false;
+                foreach (var element in collapsed.Elements)
+                {
+                    if (element is not null && GetSizeU(element) > 0)
+                    {
+                        hasSize = true;
+                        break;
+                    }
+                }
+                if (!hasSize)
+                {
+                    index = 0;
+                    position = 0;
+                    return;
+                }
+            }
 
             if (!_hasReachedEnd && MathUtilities.GreaterThanOrClose(
                 viewportEnd,
@@ -889,6 +1206,8 @@ namespace Avalonia.Controls
             // We don't have any realized elements in the requested viewport, or can't rely on
             // StartU being valid. Estimate the index using only the estimated element size.
             var estimatedSize = EstimateElementSizeU();
+            if (estimatedSize <= 0)
+                estimatedSize = _lastNonZeroEstimatedElementSizeU;
 
             // Estimate the element at the start of the viewport.
             var startIndex = Math.Min((int)(viewportStartU / estimatedSize), itemCount - 1);
@@ -964,7 +1283,10 @@ namespace Avalonia.Controls
             // If the anchor element is at the beginning of, or before, the start of the viewport
             // then we can recycle all elements before it.
             if (u <= viewport.viewportUStart)
+            {
+                RememberMeasuredPredecessor(viewport.anchorIndex);
                 _realizedElements.RecycleElementsBefore(viewport.anchorIndex, _recycleElement);
+            }
 
             // Start at the anchor element and move forwards, realizing elements.
             do
@@ -1016,6 +1338,15 @@ namespace Avalonia.Controls
                 var sizeV = horizontal ? e.DesiredSize.Height : e.DesiredSize.Width;
                 u -= sizeU;
 
+                // Keep coordinates nonnegative and place item 0 at the panel origin.
+                // Let the scroll provider track any shift of the preserved anchor.
+                if (u < 0 || (index == 0 && u > 0))
+                {
+                    viewport.anchorU -= u;
+                    viewport.realizedEndU -= u;
+                    u = 0;
+                }
+
                 _measureElements!.Add(index, e, u, sizeU);
                 viewport.measuredV = Math.Max(viewport.measuredV, sizeV);
                 --index;
@@ -1025,7 +1356,17 @@ namespace Avalonia.Controls
             _hasReachedStart = index < 0;
 
             // We can now recycle elements before the first element.
+            RememberMeasuredPredecessor(index + 1);
             _realizedElements.RecycleElementsBefore(index + 1, _recycleElement);
+        }
+
+        private void RememberMeasuredPredecessor(int firstIndex)
+        {
+            // ValidateStartU already measured the old realized range. Save the size
+            // before recycling clears bindings or destroys a non-recycling template.
+            var index = firstIndex - 1;
+            if (_realizedElements?.GetElement(index) is { IsMeasureValid: true } element)
+                SetPrefixSample(_leadingElementSizes.Length - 1, index, GetSizeU(element));
         }
 
         private Control GetOrCreateElement(IReadOnlyList<object?> items, int index)
@@ -1080,16 +1421,32 @@ namespace Avalonia.Controls
 
             var controlItem = (Control)item!;
             var generator = ItemContainerGenerator!;
+            // A replaced panel leaves its recycle key on detached containers but takes its
+            // index table along, so prepare containers this panel has not prepared itself.
+            var needsPreparation = !controlItem.IsSet(RecycleKeyProperty) ||
+                !_ownContainerIndexes.TryGetValue(controlItem, out _);
 
-            if (!controlItem.IsSet(RecycleKeyProperty))
+            if (needsPreparation)
             {
+                SetOwnContainerIndex(controlItem, index);
                 generator.PrepareItemContainer(controlItem, controlItem, index);
+            }
+            else if (GetOwnContainerIndex(controlItem) is var oldIndex && oldIndex != index)
+            {
+                // Collection edits only notify realized containers. Refresh index-based
+                // styles when an already prepared own container returns to the viewport.
+                UpdateElementIndex(controlItem, oldIndex, index);
+            }
+
+            if (controlItem.GetVisualParent() != this)
                 AddInternalChild(controlItem);
+
+            if (needsPreparation)
+            {
                 controlItem.SetValue(RecycleKeyProperty, s_itemIsItsOwnContainer);
                 generator.ItemContainerPrepared(controlItem, item, index);
             }
 
-            controlItem.SetCurrentValue(Visual.IsVisibleProperty, true);
             return controlItem;
         }
 
@@ -1105,7 +1462,6 @@ namespace Avalonia.Controls
             if (_recyclePool?.TryGetValue(recycleKey, out var recyclePool) == true && recyclePool.Count > 0)
             {
                 var recycled = recyclePool.Pop();
-                recycled.SetCurrentValue(Visual.IsVisibleProperty, true);
                 generator.PrepareItemContainer(recycled, item, index);
                 AddInternalChild(recycled);
                 generator.ItemContainerPrepared(recycled, item, index);
@@ -1144,25 +1500,32 @@ namespace Avalonia.Controls
                 ItemContainerGenerator!.ClearItemContainer(element);
                 RemoveInternalChild(element);
             }
-            else if (recycleKey == s_itemIsItsOwnContainer)
-            {
-                element.SetCurrentValue(Visual.IsVisibleProperty, false);
-            }
             else if (KeyboardNavigation.GetTabOnceActiveElement(ItemsControl) == element)
             {
                 _focusedElement = element;
                 _focusedIndex = index;
             }
+            else if (recycleKey == s_itemIsItsOwnContainer)
+            {
+                // The source owns the logical child. Only detach it from the panel's
+                // visual children, preserving its application visibility and logical parent.
+                Children.Remove(element);
+            }
             else
             {
                 ItemContainerGenerator!.ClearItemContainer(element);
                 PushToRecyclePool(recycleKey, element);
-                element.SetCurrentValue(Visual.IsVisibleProperty, false);
                 RemoveInternalChild(element);
             }
         }
 
         private void RecycleElementOnItemRemoved(Control element)
+        {
+            var remainsInSource = IsOwnContainer(element) && ItemsControl!.ItemsView.IndexOf(element) >= 0;
+            RecycleElementOnItemRemoved(element, remainsInSource);
+        }
+
+        private void RecycleElementOnItemRemoved(Control element, bool remainsInSource)
         {
             Debug.Assert(ItemContainerGenerator is not null);
 
@@ -1177,13 +1540,24 @@ namespace Avalonia.Controls
             }
             else if (recycleKey == s_itemIsItsOwnContainer)
             {
-                RemoveInternalChild(element);
+                // Moves and resets also use this callback. Supplied containers that
+                // remain in the source keep their logical owner and preparation state.
+                if (remainsInSource)
+                {
+                    Children.Remove(element);
+                    ItemsControl!.AddLogicalChild(element);
+                }
+                else
+                {
+                    RemoveInternalChild(element);
+                    element.ClearValue(RecycleKeyProperty);
+                    _ownContainerIndexes.Remove(element);
+                }
             }
             else
             {
                 ItemContainerGenerator!.ClearItemContainer(element);
                 PushToRecyclePool(recycleKey, element);
-                element.SetCurrentValue(Visual.IsVisibleProperty, false);
                 RemoveInternalChild(element);
             }
         }
@@ -1225,8 +1599,22 @@ namespace Avalonia.Controls
         {
             Debug.Assert(ItemContainerGenerator is not null);
 
+            if (IsOwnContainer(element))
+                SetOwnContainerIndex(element, newIndex);
             ItemContainerGenerator.ItemContainerIndexChanged(element, oldIndex, newIndex);
         }
+
+        private static bool IsOwnContainer(Control element) =>
+            element.GetValue(RecycleKeyProperty) == s_itemIsItsOwnContainer;
+
+        private double GetSizeU(Control element) =>
+            Orientation == Orientation.Horizontal ? element.DesiredSize.Width : element.DesiredSize.Height;
+
+        private int GetOwnContainerIndex(Control element) =>
+            _ownContainerIndexes.TryGetValue(element, out var index) ? index.Value : -1;
+
+        private void SetOwnContainerIndex(Control element, int index) =>
+            _ownContainerIndexes.GetValue(element, static _ => new StrongBox<int>()).Value = index;
 
         private Rect CalculateExtendedViewport(bool vertical, double viewportSize, double bufferSize)
         {
@@ -1393,14 +1781,33 @@ namespace Avalonia.Controls
 
         private void OnItemsControlPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
+            if (e.Property != KeyboardNavigation.TabOnceActiveElementProperty)
+                return;
+
             if (_focusedElement is not null &&
-                e.Property == KeyboardNavigation.TabOnceActiveElementProperty &&
                 e.GetOldValue<IInputElement?>() == _focusedElement)
             {
                 // TabOnceActiveElement has moved away from _focusedElement so we can recycle it.
                 RecycleElement(_focusedElement, _focusedIndex);
                 _focusedElement = null;
                 _focusedIndex = -1;
+            }
+
+            EnsureTabOnceActiveElement();
+        }
+
+        private void EnsureTabOnceActiveElement()
+        {
+            // Selection can activate a supplied container after it was virtualized.
+            // Keep that tab stop attached, just as when recycling an already active item.
+            if (ItemsControl is not null &&
+                KeyboardNavigation.GetTabOnceActiveElement(ItemsControl) is Control { VisualParent: null } element &&
+                element.Parent == ItemsControl && IsOwnContainer(element) &&
+                IndexFromContainer(element) is var index && index >= 0)
+            {
+                _focusedElement = element;
+                _focusedIndex = index;
+                InvalidateMeasure();
             }
         }
 

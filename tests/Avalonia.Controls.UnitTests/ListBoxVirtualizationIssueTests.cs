@@ -415,7 +415,7 @@ public class ListBoxVirtualizationIssueTests : ScopedTestBase
                 
             // container should be removed from children because RecycleElementOnItemRemoved is called
             Assert.DoesNotContain(container, panel.Children);
-            Assert.False(container.IsVisible);
+            Assert.Null(container.GetVisualParent());
         }
     }
 

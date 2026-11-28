@@ -1245,21 +1245,24 @@ namespace Avalonia.Controls.Primitives
         /// <param name="e">The event.</param>
         private void ContainerSelectionChanged(RoutedEventArgs e)
         {
-            if (!_ignoreContainerSelectionChanged &&
-                e.Source is Control control &&
-                control.Parent == this &&
-                IndexFromContainer(control) is var index &&
-                index >= 0)
+            if (e.Source is Control control)
+                ContainerSelectionChanged(control);
+
+            if (e.Source != this)
+            {
+                e.Handled = true;
+            }
+        }
+
+        internal void ContainerSelectionChanged(Control control)
+        {
+            if (!_ignoreContainerSelectionChanged && control.Parent == this &&
+                IndexFromContainer(control) is var index && index >= 0)
             {
                 if (GetIsSelected(control))
                     Selection.Select(index);
                 else
                     Selection.Deselect(index);
-            }
-
-            if (e.Source != this)
-            {
-                e.Handled = true;
             }
         }
 

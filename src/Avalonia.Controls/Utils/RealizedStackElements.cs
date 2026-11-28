@@ -417,32 +417,45 @@ namespace Avalonia.Controls.Utils
         }
 
         /// <summary>
-        /// Validates that <see cref="StartU"/> is still valid.
+        /// Measures the realized elements and reports whether any stored size has changed.
         /// </summary>
         /// <param name="orientation">The panel orientation.</param>
-        /// <remarks>
-        /// If the U size of any element in the realized elements has changed, then the value of
-        /// <see cref="StartU"/> should be considered unstable.
-        /// </remarks>
-        public void ValidateStartU(Orientation orientation)
+        /// <param name="availableSize">The available size for measuring realized elements.</param>
+        /// <returns>Whether any element with a known previous size has resized.</returns>
+        public bool MeasureElements(Orientation orientation, Size availableSize)
         {
-            if (_elements is null || _sizes is null || _startUUnstable)
-                return;
+            if (_elements is null || _sizes is null)
+                return false;
+
+            var resized = false;
 
             for (var i = 0; i < _elements.Count; ++i)
             {
                 if (_elements[i] is not { } element)
                     continue;
 
+                element.Measure(availableSize);
                 var sizeU = orientation == Orientation.Horizontal ?
                     element.DesiredSize.Width : element.DesiredSize.Height;
 
-                if (sizeU != _sizes[i])
+                if (!resized && !double.IsNaN(_sizes[i]) && sizeU != _sizes[i])
                 {
-                    _startUUnstable = true;
-                    break;
+                    resized = true;
+
+                    // A fully collapsed range can contain the entire collection. Once
+                    // it starts growing, let normal realization measure the viewport
+                    // instead of measuring (and building templates for) every row.
+                    if (_sizes[i] == 0 && _sizes.TrueForAll(static size => size == 0 || double.IsNaN(size)))
+                        break;
                 }
             }
+
+            return resized;
         }
+
+        /// <summary>
+        /// Marks the position of the first realized element as requiring a new estimate.
+        /// </summary>
+        public void InvalidateStartU() => _startUUnstable = true;
     }
 }
