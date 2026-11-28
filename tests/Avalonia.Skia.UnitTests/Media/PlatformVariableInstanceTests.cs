@@ -108,8 +108,7 @@ namespace Avalonia.Skia.UnitTests.Media
         [Win32Fact("Windows specific font")]
         public void Should_Get_The_Glyph_Outline_Of_A_DirectWrite_Instance()
         {
-            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface
-                       .With(renderInterface: new PlatformRenderInterface(), fontManagerImpl: new FontManagerImpl())))
+            using (Start())
             {
                 var bold = GetPlatformFace("Segoe UI Variable Text", FontWeight.Bold, FontStretch.Normal);
                 var expected = GetNamedInstance("Segoe UI Variable Text", "Bold Text");
@@ -171,8 +170,10 @@ namespace Avalonia.Skia.UnitTests.Media
 
         private static IDisposable Start()
         {
+            // A glyph run takes the render interface of the first application that creates one in
+            // the process, so laying out text with the headless one breaks later Skia glyph runs.
             return UnitTestApplication.Start(TestServices.MockPlatformRenderInterface
-                .With(fontManagerImpl: new FontManagerImpl()));
+                .With(renderInterface: new PlatformRenderInterface(), fontManagerImpl: new FontManagerImpl()));
         }
 
         private static void AssertShapedLikeNamedInstance(string familyName, FontWeight weight, FontStretch stretch,
