@@ -62,6 +62,7 @@ export class InputHelper {
     static clipboardState: ClipboardState = ClipboardState.None;
     static resolveClipboard?: (value: ClipboardResult) => void;
     static rejectClipboard?: (reason?: any) => void;
+    static pendingKey: string | null = null;
 
     public static initializeBackgroundHandlers() {
         if (this.clipboardState !== ClipboardState.None) {
@@ -356,6 +357,9 @@ export class InputHelper {
         // state is known before the browser applies the default action. Only handled keys suppress it;
         // when the state isn't known (multithreaded runtime) the default is always suppressed.
         const keyDownHandler = (args: KeyboardEvent) => {
+            const isSingleChar = args.key && args.key.length === 1 && !args.ctrlKey && !args.metaKey;
+            InputHelper.pendingKey = isSingleChar ? args.key : null;
+
             const handled = InputQueue.postKey(RecordType.KeyDown, topLevelId, args);
             // A pending clipboard read needs the browser's paste action, which follows an unprevented keydown.
             if (handled !== false && this.clipboardState !== ClipboardState.Pending) {
@@ -365,6 +369,8 @@ export class InputHelper {
         element.addEventListener("keydown", keyDownHandler);
 
         const keyUpHandler = (args: KeyboardEvent) => {
+            InputHelper.pendingKey = null;
+
             const handled = InputQueue.postKey(RecordType.KeyUp, topLevelId, args);
             if (handled !== false) {
                 args.preventDefault();
@@ -409,7 +415,17 @@ export class InputHelper {
                 end = start + 2;
             }
 
-            JsExports.InputHelper.OnBeforeInput(topLevelId, args.inputType, start, end);
+            let text: string | null = null;
+            if ((args.inputType === "insertText" || args.inputType === "insertReplacementText") && args.data && !args.isComposing) {
+                if (InputHelper.pendingKey !== null && InputHelper.pendingKey === args.data) {
+                    InputHelper.pendingKey = null;
+                } else {
+                    args.preventDefault();
+                    text = args.data;
+                }
+            }
+
+            JsExports.InputHelper.OnBeforeInput(topLevelId, args.inputType, start, end, args.timeStamp, text);
         };
         element.addEventListener("beforeinput", beforeInputHandler);
 
@@ -428,6 +444,7 @@ export class InputHelper {
 
         return () => {
             element.removeEventListener("compositionstart", compositionStartHandler);
+            element.removeEventListener("beforeinput", beforeInputHandler);
             element.removeEventListener("compositionupdate", compositionUpdateHandler);
             element.removeEventListener("compositionend", compositionEndHandler);
         };
