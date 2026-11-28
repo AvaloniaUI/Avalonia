@@ -7,6 +7,7 @@ using Avalonia.Media;
 using Avalonia.Media.Fonts;
 using Avalonia.Platform;
 using Avalonia.Skia;
+using Avalonia.UnitTests;
 using SkiaSharp;
 using Xunit;
 
@@ -165,6 +166,97 @@ namespace Avalonia.Skia.RenderTests
                 : (ushort)0;
 
             Assert.Null(gt.GetGlyphOutline(glyphIndex));
+        }
+
+        [Fact]
+        public void Outline_Is_Shifted_By_A_Left_Side_Bearing_That_Differs_From_xMin()
+        {
+            // The left phantom point sits at xMin - lsb, and the outline is translated so that it
+            // lands on the origin (FreeType's TT_Load_Glyph, HarfBuzz's glyf extents). An hmtx lsb
+            // 40 units larger than xMin therefore moves the outline 40 units right.
+            var original = SyntheticFont.FromAsset(InterRegularAsset);
+            var glyph = original.CreateGlyphTypeface().CharacterToGlyphMap['H'];
+
+            var shifted = SyntheticFont.FromAsset(InterRegularAsset).AddToLeftSideBearing(glyph, 40);
+
+            AssertShiftedBy(40, original.CreateGlyphTypeface(), shifted.CreateGlyphTypeface(), glyph);
+        }
+
+        [Fact]
+        public void Composite_Outline_Is_Shifted_By_Its_Use_My_Metrics_Component_Left_Phantom_Point()
+        {
+            // Á takes its metrics from 'A' through USE_MY_METRICS, so A's left phantom point decides
+            // where the whole composite sits, while Á's own hmtx entry stays untouched.
+            var original = SyntheticFont.FromAsset(InterRegularAsset);
+            var map = original.CreateGlyphTypeface().CharacterToGlyphMap;
+
+            var shifted = SyntheticFont.FromAsset(InterRegularAsset).AddToLeftSideBearing(map['A'], 40);
+
+            AssertShiftedBy(40, original.CreateGlyphTypeface(), shifted.CreateGlyphTypeface(), map['Á']);
+        }
+
+        [Fact]
+        public void Varied_Outline_Is_Shifted_By_The_gvar_Delta_Of_Its_Left_Phantom_Point()
+        {
+            // A gvar whose only tuple moves H's left phantom point 30 units left at wght 900 (and
+            // leaves every contour point alone) moves the varied outline 30 units right.
+            var font = SyntheticFont.FromAsset(InterVariableAsset).Remove("HVAR");
+            var glyph = font.CreateGlyphTypeface().CharacterToGlyphMap['H'];
+
+            var typeface = font.WithLeftPhantomGvar(glyph, axis: 1, delta: -30).CreateGlyphTypeface();
+
+            AssertShiftedBy(30, typeface, typeface.WithVariation(WghtPosition(typeface, 900)), glyph);
+        }
+
+        [Fact]
+        public void Left_Phantom_gvar_Delta_Is_Ignored_When_The_Font_Has_Hvar()
+        {
+            // With HVAR the horizontal metrics come from HVAR, and FreeType drops the gvar deltas of
+            // the horizontal phantom points, so the same tuple leaves the outline in place.
+            var font = SyntheticFont.FromAsset(InterVariableAsset);
+            var glyph = font.CreateGlyphTypeface().CharacterToGlyphMap['H'];
+
+            var typeface = font.WithLeftPhantomGvar(glyph, axis: 1, delta: -30).CreateGlyphTypeface();
+
+            AssertShiftedBy(0, typeface, typeface.WithVariation(WghtPosition(typeface, 900)), glyph);
+        }
+
+        [Fact]
+        public void Glyph_Metrics_Describe_The_Outline_When_The_Left_Side_Bearing_Differs_From_xMin()
+        {
+            // The glyf header box and the outline are control-point boxes of the same points, so
+            // once both are placed by the left phantom point they coincide. Á follows A's lsb
+            // through USE_MY_METRICS.
+            var font = SyntheticFont.FromAsset(InterRegularAsset);
+            var map = font.CreateGlyphTypeface().CharacterToGlyphMap;
+
+            var typeface = font.AddToLeftSideBearing(map['H'], 40).AddToLeftSideBearing(map['A'], 40)
+                .CreateGlyphTypeface();
+
+            foreach (var character in "HAÁ")
+            {
+                var glyph = map[character];
+                var bounds = typeface.GetGlyphOutline(glyph)!.Bounds;
+
+                Assert.True(typeface.TryGetGlyphMetrics(glyph, out var metrics));
+                Assert.Equal(metrics.XBearing, bounds.X, 3);
+                Assert.Equal(metrics.XBearing + metrics.Width, bounds.Right, 3);
+
+                var batchMetrics = new GlyphMetrics[1];
+                Assert.True(typeface.TryGetGlyphMetrics(new[] { glyph }, batchMetrics));
+                Assert.Equal(metrics, batchMetrics[0]);
+            }
+        }
+
+        private static void AssertShiftedBy(double expected, GlyphTypeface original, GlyphTypeface shifted, ushort glyph)
+        {
+            var originalBounds = original.GetGlyphOutline(glyph)!.Bounds;
+            var shiftedBounds = shifted.GetGlyphOutline(glyph)!.Bounds;
+
+            Assert.Equal(originalBounds.X + expected, shiftedBounds.X, 3);
+            Assert.Equal(originalBounds.Y, shiftedBounds.Y, 3);
+            Assert.Equal(originalBounds.Width, shiftedBounds.Width, 3);
+            Assert.Equal(originalBounds.Height, shiftedBounds.Height, 3);
         }
 
         private static GlyphTypeface LoadGlyphTypeface(string assetUri)
