@@ -63,12 +63,13 @@ public class BackdropCompositionTests : TestBase
         public CompositionContainerVisual Root { get; }
         public SKBitmap Fb { get; }
 
-        public Harness(int width, int height, double scaling = 1)
+        public Harness(int width, int height, double scaling = 1, bool useSaveLayerRootClip = false)
         {
             Compositor = new Compositor(RenderLoop.FromTimer(_timer), null, true,
                 new DispatcherCompositorScheduler(), true, Dispatcher.UIThread, new CompositionOptions
                 {
-                    UseRegionDirtyRectClipping = true
+                    UseRegionDirtyRectClipping = true,
+                    UseSaveLayerRootClip = useSaveLayerRootClip
                 });
 
             var pxW = (int)Math.Ceiling(width * scaling);
@@ -724,9 +725,9 @@ public class BackdropCompositionTests : TestBase
 
     // A container with an effect, which opens an intermediate layer for its whole subtree. A red/blue split is
     // drawn into that intermediate layer, and a visual over it can have a backdrop effect. The split is not in
-    // the root layer, so only the volatile path can read it, and a retained backdrop visual has to fall back to
-    // the volatile draw. The container's effect has a zero radius: it opens the intermediate layer but does not
-    // blur, so the split stays hard unless the backdrop effect blurs it. Returns the visual over the split.
+    // the root layer, so the walk has to rewind the layer around the backdrop visual's retained draw. The
+    // container's effect has a zero radius: it opens the intermediate layer but does not blur, so the split stays
+    // hard unless the backdrop effect blurs it. Returns the visual over the split.
     private static CompositionSolidColorVisual BuildAncestorEffectTree(Harness h, bool withBackdrop,
         bool volatileBackdrop)
     {
@@ -785,11 +786,11 @@ public class BackdropCompositionTests : TestBase
     }
 
     [Fact]
-    public void Retained_Backdrop_Under_Parent_Effect_Falls_Back_To_Volatile()
+    public void Retained_Backdrop_Under_Parent_Effect_Draws_Through_Rewound_Segment()
     {
-        // The parent's effect opens an intermediate layer, which the retained path cannot read. The draw falls
-        // back to the volatile path, which reads through the layer: the backdrop effect is drawn correctly and
-        // equals a full redraw of the same tree.
+        // The parent's effect opens an intermediate layer, which the retained path cannot read directly. The
+        // walk rewinds the layer around the backdrop visual and draws the retained effect inside a fresh empty
+        // segment: the backdrop effect is drawn correctly and equals a full redraw of the same tree.
         using var reference = new Harness(200, 200);
         BuildAncestorEffectTree(reference, withBackdrop: true, volatileBackdrop: true);
         reference.Retained(false);
@@ -865,6 +866,97 @@ public class BackdropCompositionTests : TestBase
         h.Frame();
 
         AssertSimilar(h.Fb, reference.Fb);
+    }
+
+    // A container with 50% opacity and RequiresFullOpacityHandling, which opens an intermediate layer for
+    // its whole subtree (same as SkiaOptions.UseOpacitySaveLayer would do for every opacity). A red/blue
+    // split is drawn into that layer, and the walk rewinds the layer around the backdrop visual's retained
+    // draw. Returns the visual over the split.
+    private static CompositionSolidColorVisual BuildAncestorOpacityLayerTree(Harness h, bool fullOpacityHandling)
+    {
+        h.Root.Children.Add(h.Rect(Colors.White, 0, 0, 200, 200)); // opaque base
+
+        var container = h.Compositor.CreateContainerVisual();
+        container.ClipToBounds = false;
+        container.Offset = new Vector3D(40, 40, 0);
+        container.Opacity = 0.5f;
+        if (fullOpacityHandling)
+            container.RenderOptions = new RenderOptions { RequiresFullOpacityHandling = true };
+        container.Children.Add(h.Rect(Colors.Red, 0, 0, 60, 120));   // drawn into the opacity layer
+        container.Children.Add(h.Rect(Colors.Blue, 60, 0, 60, 120)); // split at container x 60, root x 100
+
+        var inner = h.Rect(Colors.Transparent, 0, 0, 120, 120); // covers the split
+        inner.BackdropEffect = Blur(8);
+        container.Children.Add(inner);
+        h.Root.Children.Add(container);
+        return inner;
+    }
+
+    [Fact]
+    public void Retained_Backdrop_Under_Opacity_Layer_Equals_Full_Redraw()
+    {
+        // RequiresFullOpacityHandling turns the parent's opacity into a save-layer. The walk rewinds the
+        // layer around the retained backdrop visual and draws the effect inside a fresh empty segment,
+        // matching the plain per-draw opacity handling.
+        using var reference = new Harness(200, 200);
+        BuildAncestorOpacityLayerTree(reference, fullOpacityHandling: false);
+        reference.Retained(false);
+        reference.Frame();
+        reference.Frame();
+
+        using var h = new Harness(200, 200);
+        var inner = BuildAncestorOpacityLayerTree(h, fullOpacityHandling: true);
+        h.Retained(false);
+        var ex = Record.Exception(() =>
+        {
+            h.Frame();
+            h.Frame();
+        });
+        Assert.Null(ex); // no exception
+
+        Assert.NotNull(inner.Server.BackdropState);
+        AssertSimilar(h.Fb, reference.Fb);
+
+        // The blur mixes the split across the seam, and the frame tracks the per-draw-opacity reference
+        // closely: the volatile draw inside the opacity layer composites exactly like the plain handling.
+        var seam = h.Px(100, 100);
+        var refSeam = reference.Px(100, 100);
+        Assert.InRange((int)seam.Red, (int)refSeam.Red - 8, (int)refSeam.Red + 8);
+        Assert.InRange((int)seam.Blue, (int)refSeam.Blue - 8, (int)refSeam.Blue + 8);
+        Assert.True(h.Px(98, 100).Blue > 30, $"blur should bleed blue left of the seam, got {h.Px(98, 100)}");
+        Assert.True(h.Px(102, 100).Red > 30, $"blur should bleed red right of the seam, got {h.Px(102, 100)}");
+    }
+
+    [Fact]
+    public void Retained_Backdrop_Under_Root_Clip_Layer_Equals_Full_Redraw()
+    {
+        // UseSaveLayerRootClip wraps the whole frame in a PushLayer: an intermediate layer that stays open
+        // for every draw of the frame, outside of the render walk's journal. The rewind cannot reach it, so
+        // the backdrop visual falls back to the volatile draw, which the backend reads through the layer
+        // (before the fallback the effect would have been skipped entirely).
+        using var reference = new Harness(200, 200);
+        BuildAncestorEffectTree(reference, withBackdrop: true, volatileBackdrop: false);
+        reference.Retained(false);
+        reference.Frame();
+        reference.Frame();
+
+        using var h = new Harness(200, 200, useSaveLayerRootClip: true);
+        BuildAncestorEffectTree(h, withBackdrop: true, volatileBackdrop: false);
+        h.Retained(false);
+        var ex = Record.Exception(() =>
+        {
+            h.Frame();
+            h.Frame();
+        });
+        Assert.Null(ex); // no exception
+
+        AssertSimilar(h.Fb, reference.Fb);
+
+        var seam = h.Px(100, 100);
+        Assert.InRange((int)seam.Red, 40, 220);
+        Assert.InRange((int)seam.Blue, 40, 220);
+        Assert.True(h.Px(98, 100).Blue > 30, $"blur should bleed blue left of the seam, got {h.Px(98, 100)}");
+        Assert.True(h.Px(102, 100).Red > 30, $"blur should bleed red right of the seam, got {h.Px(102, 100)}");
     }
 
     [Fact]

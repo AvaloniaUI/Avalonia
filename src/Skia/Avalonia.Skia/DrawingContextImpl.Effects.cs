@@ -20,6 +20,7 @@ partial class DrawingContextImpl
         else
             Canvas.SaveLayer(paint);
         _intermediateLayerDepth++;
+        _openLayersHaveContent = false;
         SKPaintCache.Shared.ReturnReset(paint);
     }
 
@@ -28,6 +29,8 @@ partial class DrawingContextImpl
         CheckLease();
         RestoreCanvas();
         _intermediateLayerDepth--;
+        if (_intermediateLayerDepth == 0)
+            _openLayersHaveContent = false;
     }
 
     SKImageFilter? CreateEffect(IEffect effect)
@@ -82,10 +85,23 @@ partial class DrawingContextImpl
 
     public bool SupportsBackdrop => Surface != null;
 
+    public int IntermediateLayerDepth => _intermediateLayerDepth;
+
+    // Marks the open intermediate layers as having received content. Content drawn into an open intermediate
+    // layer is not in the surface yet, so the surface no longer matches the visible result. Every draw method
+    // calls this, same as it calls CheckLease.
+    private void MarkLayerContent()
+    {
+        if (_intermediateLayerDepth > 0)
+            _openLayersHaveContent = true;
+    }
+
     // The retained path reads Surface, which is always the layer's own surface. While an intermediate layer
-    // (effect, opacity mask, PushLayer, opacity) is open, drawing goes to that intermediate layer, so Surface does
-    // not have the backdrop. Plain clip and transform saves do not open one.
-    public bool IsBackdropSamplingSafe => Surface != null && _intermediateLayerDepth == 0;
+    // (effect, opacity mask, PushLayer, opacity) is open, drawing goes to that intermediate layer, so Surface
+    // does not have what was drawn there. A freshly opened, still empty intermediate layer changes nothing:
+    // Surface still matches the visible result, so the read stays safe. Plain clip and transform saves do not
+    // open layers.
+    public bool IsBackdropSamplingSafe => Surface != null && !_openLayersHaveContent;
 
     public IDrawingContextBackdropSnapshotImpl CreateBackdropSnapshot(PixelSize size)
     {
@@ -96,6 +112,7 @@ partial class DrawingContextImpl
     public void DrawVolatileBackdropEffect(Rect bounds, IEffect effect)
     {
         CheckLease();
+        MarkLayerContent();
         // A SaveLayer with a backdrop filter starts with the filtered canvas contents (read through any open
         // intermediate layers). Restoring it right away draws that result back. A null filter (e.g. a zero blur
         // radius) gives an empty one, which draws nothing.
@@ -121,6 +138,7 @@ partial class DrawingContextImpl
         IReadOnlyList<PixelRect> dirtyRects, IEffect effect, Rect bounds)
     {
         CheckLease();
+        MarkLayerContent();
         // The snapshot is always one that CreateBackdropSnapshot returned.
         if (Surface is not { } surface || snapshot is not SurfaceRenderTarget skiaSnapshot)
             return;

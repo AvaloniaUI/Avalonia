@@ -47,6 +47,10 @@ namespace Avalonia.Skia
         // Number of open intermediate layers (effect, opacity mask, PushLayer, opacity). Plain clip and
         // transform saves are not counted. See IsBackdropSamplingSafe.
         private int _intermediateLayerDepth;
+        // Whether any open intermediate layer has received content. Content drawn into an open intermediate
+        // layer is not in the surface yet, so the surface stops matching the visible result until every open
+        // layer is closed again. See IsBackdropSamplingSafe.
+        private bool _openLayersHaveContent;
 
         /// <summary>
         /// Context create info.
@@ -239,6 +243,7 @@ namespace Avalonia.Skia
         public void Clear(Color color)
         {
             CheckLease();
+            MarkLayerContent();
             Canvas.Clear(color.ToSKColor());
         }
 
@@ -246,6 +251,7 @@ namespace Avalonia.Skia
         public void DrawBitmap(IBitmapImpl source, double opacity, Rect sourceRect, Rect destRect)
         {
             CheckLease();
+            MarkLayerContent();
             var drawableImage = (IDrawableBitmapImpl)source;
             var s = sourceRect.ToSKRect();
             var d = destRect.ToSKRect();
@@ -275,6 +281,7 @@ namespace Avalonia.Skia
         public void DrawLine(IPen? pen, Point p1, Point p2)
         {
             CheckLease();
+            MarkLayerContent();
 
             if (pen is not null
                 && TryCreatePaint(_strokePaint, pen, new Rect(p1, p2).Normalize()) is { } stroke)
@@ -290,6 +297,7 @@ namespace Avalonia.Skia
         public void DrawGeometry(IBrush? brush, IPen? pen, IGeometryImpl geometry)
         {
             CheckLease();
+            MarkLayerContent();
             var impl = (GeometryImpl) geometry;
             var rect = geometry.Bounds;
 
@@ -381,7 +389,8 @@ namespace Avalonia.Skia
             if (rect.Rect.Height <= 0 || rect.Rect.Width <= 0)
                 return;
             CheckLease();
-            
+            MarkLayerContent();
+
             var rc = rect.Rect.ToSKRect();
             SKRoundRect? skRoundRect = null;
 
@@ -422,6 +431,7 @@ namespace Avalonia.Skia
             if (rect.Rect.Height <= 0 || rect.Rect.Width <= 0)
                 return;
             CheckLease();
+            MarkLayerContent();
             // Arbitrary chosen values
             // On OSX Skia breaks OpenGL context when asked to draw, e. g. (0, 0, 623, 6666600) rect
             if (rect.Rect.Height > 8192 || rect.Rect.Width > 8192)
@@ -549,7 +559,8 @@ namespace Avalonia.Skia
             if(r.IsEmpty)
                 return;
             CheckLease();
-            
+            MarkLayerContent();
+
             if (brush != null)
             {
                 using (var fill = CreatePaint(_fillPaint, brush, r.Bounds.ToRectUnscaled()))
@@ -574,7 +585,8 @@ namespace Avalonia.Skia
             if (rect.Height <= 0 || rect.Width <= 0)
                 return;
             CheckLease();
-            
+            MarkLayerContent();
+
             var rc = rect.ToSKRect();
 
             if (brush != null)
@@ -599,6 +611,7 @@ namespace Avalonia.Skia
         public void DrawGlyphRun(IBrush? foreground, IGlyphRunImpl glyphRun)
         {
             CheckLease();
+            MarkLayerContent();
 
             if (foreground is null)
             {
@@ -706,6 +719,7 @@ namespace Avalonia.Skia
             CheckLease();
             Canvas.SaveLayer(bounds.ToSKRect(), null!);
             _intermediateLayerDepth++;
+            _openLayersHaveContent = false;
         }
 
         public void PopLayer()
@@ -713,6 +727,8 @@ namespace Avalonia.Skia
             CheckLease();
             RestoreCanvas();
             _intermediateLayerDepth--;
+            if (_intermediateLayerDepth == 0)
+                _openLayersHaveContent = false;
         }
 
         /// <inheritdoc />
@@ -741,6 +757,7 @@ namespace Avalonia.Skia
                 }
 
                 _intermediateLayerDepth++;
+                _openLayersHaveContent = false;
             }
             else
             {
@@ -759,6 +776,8 @@ namespace Avalonia.Skia
             {
                 RestoreCanvas();
                 _intermediateLayerDepth--;
+                if (_intermediateLayerDepth == 0)
+                    _openLayersHaveContent = false;
             }
 
             _currentOpacity = _opacityStack.Pop();
@@ -847,6 +866,7 @@ namespace Avalonia.Skia
 
             Canvas.SaveLayer(bounds.ToSKRect(), null);
             _intermediateLayerDepth++;
+            _openLayersHaveContent = false;
 
             // Mask paints are a plain color or shader, so DstIn applies the mask straight to the layer.
             // The content of the layer gets the multiply opacity when it is drawn. The mask must not apply it a
@@ -883,6 +903,8 @@ namespace Avalonia.Skia
 
             RestoreCanvas();
             _intermediateLayerDepth--;
+            if (_intermediateLayerDepth == 0)
+                _openLayersHaveContent = false;
         }
 
         /// <inheritdoc />

@@ -67,4 +67,5 @@ internal class CompositorPools
     public ListPool<ServerCompositionTarget.BackdropVolatilePass.LayerScan> BackdropLayerScanListPool { get; } = new();
     public ListPool<ServerCompositionTarget.BackdropVolatilePass.VolatileEntry> BackdropVolatileEntryListPool { get; } = new();
     public ListPool<ServerCompositionTarget.BackdropVolatilePass.RetainedEntry> BackdropRetainedEntryListPool { get; } = new();
+    public ListPool<ServerCompositionVisual.CanvasJournalEntry> CanvasJournalEntryListPool { get; } = new();
 }

@@ -230,9 +230,18 @@ namespace Avalonia.Platform
         bool SupportsBackdrop { get; }
 
         /// <summary>
-        /// Whether <see cref="DrawRetainedBackdropEffect"/> can read the backdrop right now. False while an
-        /// intermediate layer (effect, opacity mask, opacity) is open and the backend cannot read it back.
-        /// <see cref="DrawVolatileBackdropEffect"/> is not affected.
+        /// The number of intermediate layers that are currently open. Plain clip and transform saves are not
+        /// counted.
+        /// </summary>
+        int IntermediateLayerDepth { get; }
+
+        /// <summary>
+        /// Whether <see cref="DrawRetainedBackdropEffect"/> can read the backdrop right now. The backdrop is
+        /// read from the layer's own surface, so this is false while an intermediate layer
+        /// (<see cref="IDrawingContextImpl.PushLayer"/>, effect, opacity mask, opacity) is open and has
+        /// already received content: that content is not in the surface yet. A freshly opened, still empty
+        /// intermediate layer does not block the read. <see cref="DrawVolatileBackdropEffect"/> is not
+        /// affected.
         /// </summary>
         bool IsBackdropSamplingSafe { get; }
 

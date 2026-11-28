@@ -97,13 +97,19 @@ partial class ServerCompositionVisual
             
             if (visual.ClipToBounds)
             {
+                var journalMatrix = _canvas.Transform;
+                var journalDepth = CanvasLayerDepth;
                 _canvas.PushClip(new Rect(0, 0, visual.Size.X, visual.Size.Y));
+                JournalPush(CanvasJournalKind.AdornerClipRect, visual, journalMatrix, journalDepth);
                 _adornerPushedClipStack!.Push((int)Op.PopClip);
             }
-            
+
             if (visual.Clip != null)
             {
+                var journalMatrix = _canvas.Transform;
+                var journalDepth = CanvasLayerDepth;
                 _canvas.PushGeometryClip(visual.Clip);
+                JournalPush(CanvasJournalKind.AdornerGeometryClip, visual, journalMatrix, journalDepth);
                 _adornerPushedClipStack!.Push((int)Op.PopGeometryClip);
             }
 
@@ -159,9 +165,15 @@ partial class ServerCompositionVisual
                 if (op == Op.Stop)
                     break;
                 if (op == Op.PopGeometryClip)
+                {
                     _canvas.PopGeometryClip();
+                    EndCanvasJournalEntry(CanvasJournalKind.AdornerGeometryClip);
+                }
                 else if (op == Op.PopClip)
+                {
                     _canvas.PopClip();
+                    EndCanvasJournalEntry(CanvasJournalKind.AdornerClipRect);
+                }
             }
         }
 

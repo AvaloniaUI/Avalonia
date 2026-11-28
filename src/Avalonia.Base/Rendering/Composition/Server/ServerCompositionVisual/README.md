@@ -58,8 +58,8 @@ See "Frame pipeline" for the order and the details.
 
   Say which kind you mean. Use the bare word only for something that is true for both kinds.
 - **intermediate layer** ('save-layer'): a temporary layer that the drawing backend opens inside a layer for
-  opacity, an effect or an opacity mask. Whether its pixels can be read back depends on the backend. Never call it
-  just "layer".
+  opacity, an effect, an opacity mask or an explicit `PushLayer`. Whether its pixels can be read back depends on
+  the backend. Never call it just "layer".
 - **layer space** ('host space'): the coordinate space of a layer. Device pixels for the root layer, the local space
   of the cached visual for a bitmap cache layer.
 - **layer pixels** ('surface pixels', 'tracker space'): pixel coordinates on the layer's surface. Same as layer space
@@ -208,18 +208,22 @@ written.
 - A backdrop visual reads the backdrop only inside its own backdrop bounds. The effect sees the content mirrored
   at the edges of the bounds. So a change outside of the AABB never changes the output.
 - Retained and volatile produce the same pixels, with one exception that is described below: for a rotated visual
-  that is partly outside of the layer. Under an intermediate layer the retained path draws the volatile way (see
-  below), so the two modes match there, including that exception. Apart from that the mode is a performance choice
-  only.
+  that is partly outside of the layer. Apart from that the mode is a performance choice only.
 - Every layer has its own backdrop. A backdrop visual inside a bitmap cache reads the bitmap cache layer and never
   sees dirty rects of the layer around it. The cached visual's own backdrop effect is the exception: it is drawn into
   the outer layer and reads from it.
 - A retained backdrop visual needs its whole input marked dirty when the dirty rects behind it are not in the working
   set yet at the time the update walk reaches it. This happens under a dirty parent (its rect is collected after its
   subtree) and when children were added, removed or reordered in the parent chain.
-- The retained path reads the layer directly and cannot read an intermediate layer, so while one is open
-  (`IsBackdropSamplingSafe` false) the draw falls back to the volatile path. The snapshot and its input dirty rect
-  are kept: the walks keep accumulating the input dirty rect while the fallback is active, so the first safe draw
-  refreshes the snapshot with everything that changed in between. The volatile path is handled by the backend and
-  reads through intermediate layers.
+- The retained path reads the layer's own surface, which stops matching the visible result while an intermediate
+  layer has received content (`IsBackdropSamplingSafe` false). The render walk journals its canvas pushes, so when
+  a retained backdrop visual draws under such a layer, it closes the layer (its content composites into the
+  surface), replays the pushes as a fresh empty segment, refreshes the snapshot and draws the effect inside it,
+  then closes the segment and replays the pushes again for the rest of the subtree. Masks, effects and opacities
+  apply per segment, which composes to the same pixels as applying them once, because alpha masks are linear. When
+  the canvas cannot be rewound this way (several open intermediate layers, pushes outside of the walk such as the
+  save-layer root clip, adorner clips above the layer), the draw falls back to the volatile path, which the backend
+  reads through intermediate layers. The snapshot and its input dirty rect are kept: the walks keep accumulating
+  the input dirty rect while the fallback is active, so the first safe draw refreshes the snapshot with everything
+  that changed in between.
 - A root layer without readable pixels (PDF, picture recording) draws no backdrop effects.
