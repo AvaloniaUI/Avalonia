@@ -43,6 +43,11 @@ namespace Avalonia.Controls.Utils
         public IReadOnlyList<double> SizeU => _sizes ??= new List<double>();
 
         /// <summary>
+        /// Gets or sets the spacing between elements on the primary axis.
+        /// </summary>
+        public double Spacing { get; set; }
+
+        /// <summary>
         /// Gets the position of the first element on the primary axis, or NaN if the position is
         /// unstable.
         /// </summary>
@@ -120,7 +125,7 @@ namespace Avalonia.Controls.Utils
             var u = StartU;
 
             for (var i = 0; i < endIndex; ++i)
-                u += _sizes[i];
+                u += _sizes[i] + Spacing;
 
             return u;
         }
@@ -414,6 +419,15 @@ namespace Avalonia.Controls.Utils
             _startUUnstable = false;
             _elements?.Clear();
             _sizes?.Clear();
+        }
+
+        /// <summary>
+        /// Marks <see cref="StartU"/> as unstable, e.g. when the spacing between
+        /// elements changes.
+        /// </summary>
+        public void InvalidateStartU()
+        {
+            _startUUnstable = true;
         }
 
         /// <summary>
