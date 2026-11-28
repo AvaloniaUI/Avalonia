@@ -194,6 +194,11 @@ namespace Avalonia.Controls
             return new TabItem();
         }
 
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new TabControlAutomationPeer(this);
+        }
+
         protected internal override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
         {
             return NeedsContainer<TabItem>(item, out recycleKey);
