@@ -82,6 +82,10 @@ namespace Avalonia.Native
             void IAvnWindowEvents.WindowStateChanged(AvnWindowState state)
             {
             }
+
+            void IAvnWindowEvents.TrafficLightSizeChanged(AvnSize size)
+            {
+            }
         }
 
         public override IPopupImpl CreatePopup() => new PopupImpl(Factory, this);
