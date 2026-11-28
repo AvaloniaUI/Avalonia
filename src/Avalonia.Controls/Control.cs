@@ -416,7 +416,14 @@ namespace Avalonia.Controls
                     if (_focusAdorner != null && GetTemplateFocusTarget() is Visual target)
                     {
                         AdornerLayer.SetAdornedElement((Visual)_focusAdorner, target);
-                        adornerLayer.Children.Add(_focusAdorner);
+
+                        // GotFocus can arrive again without a LostFocus in between when focus is moved
+                        // from a LostFocus handler, so the adorner may still be in a layer.
+                        if (_focusAdorner.Parent != adornerLayer)
+                        {
+                            (_focusAdorner.Parent as Panel)?.Children.Remove(_focusAdorner);
+                            adornerLayer.Children.Add(_focusAdorner);
+                        }
                     }
                 }
             }
