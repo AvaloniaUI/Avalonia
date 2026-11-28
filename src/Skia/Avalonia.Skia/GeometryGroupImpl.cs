@@ -32,7 +32,7 @@ namespace Avalonia.Skia
                 }
             }
             
-            StrokePath = stroke;
+            StrokePath = CachePathBounds(stroke);
             
             if (requiresFillPass)
             {
